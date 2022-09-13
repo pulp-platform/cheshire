@@ -1,0 +1,11 @@
+src/*.o
+src/**/*.o
+*.bin
+*.dump
+*.o
+*.rcf
+*.elf
+*.memh
+*.dtb
+src/*_regs.h
+src/**/*_regs.h

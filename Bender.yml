@@ -1,0 +1,58 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+#
+# Nicole Narr <narrn@student.ethz.ch>
+# Christopher Reinwardt <creinwar@student.ethz.ch>
+
+
+package:
+  name: cheshire
+  authors:
+    - "Nicole Narr <narrn@student.ethz.ch>"
+    - "Christopher Reinwardt <creinwar@student.ethz.ch>"
+
+dependencies:
+  ariane: { path: ./cva6 }
+  axi: { git: "git@github.com:pulp-platform/axi.git", version: 0.37.0 }
+  apb: { git: "git@github.com:pulp-platform/apb.git", version: 0.2.1 }
+  register_interface: { git: "git@github.com:pulp-platform/register_interface.git", version: 0.3.3 }
+  serial_link: { git: "git@github.com:pulp-platform/serial_link.git", rev: d4072df77065513d247862f7e9246a9c248fe43a }
+  apb_uart: { git: "git@github.com:pulp-platform/apb_uart.git", rev: b6145341df79137ac584c83e9c081f80a7a40440 }
+  opentitan_peripherals: { git: "git@github.com:pulp-platform/opentitan_peripherals.git", version: 0.1.0 }
+  clint: { git: "git@github.com:pulp-platform/clint.git", version: 0.1.0 }
+  tech_cells_generic: { git: "git@github.com:pulp-platform/tech_cells_generic.git", version: 0.2.9 }
+  axi-vga: { git: "git@iis-git.ee.ethz.ch:bslk/neo/neo-vga", rev: master } # TODO
+  common_cells: { git: "git@github.com:pulp-platform/common_cells", version: 1.25.0 }
+  #riscv-dbg: { git: "git@github.com:pulp-platform/riscv-dbg.git", version: 0.5.1 }
+  riscv-dbg: { path: ./future/riscv-dbg }
+  #iDMA: { git: "git@github.com:pulp-platform/iDMA.git", version: 0.2.3 } TODO
+  iDMA: { path: ./future/iDMA }
+  spm_interface: { path: ./future/spm_interface }
+  axi_riscv_atomics: { git: "git@github.com:pulp-platform/axi_riscv_atomics.git", version: 0.5.0 }
+
+sources:
+  - src/cheshire_pkg.sv
+  - src/regs/cheshire_register_file_reg_pkg.sv
+  - src/regs/cheshire_register_file_reg_top.sv
+  - future/reg_err_slv.sv
+  - future/reg_to_apb.sv
+  - future/mem_to_axi_lite.sv
+  - src/cheshire_soc.sv
+
+  - target: sim
+    files:
+      - src/bootrom/bootrom.sv
+      - test/models/spi/S25fs512s/model/s25fs512s.v
+      - test/models/i2c/M24FC1025.v
+      - test/models/uart_tb_rx.sv
+      - future/jtag/jtag_test.sv
+      - future/jtag/jtag_intf.sv 
+      - test/cheshire_soc_fixture.sv
+      - test/tb_cheshire_soc.sv
+
+  - target: fpga
+    files:
+      - vivado/bootrom/bootrom.sv
+      - src/fan_ctrl.sv
+      - src/cheshire_top_xilinx.sv
