@@ -1,0 +1,84 @@
+// Copyright 2020 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+// Licensed under Solderpad Hardware License, Version 0.51, see LICENSE for details.
+
+{
+  name: "cheshire_register_file"
+  clock_primary: "clk_i"
+  bus_interfaces: [
+    { protocol: "reg_iface", direction: "device" }
+  ],
+  regwidth: 32
+  registers: [
+    { name: "VERSION"
+      desc: "Version register, should read 1."
+      swaccess: "ro"
+      hwaccess: "none"
+      fields: [
+        {
+          bits: "15:0"
+          resval: "1"
+          name: "VERSION"
+          desc: '''
+                System version.
+                '''
+        }
+      ]
+    }
+    { multireg:
+      { name: "SCRATCH"
+        desc: "Scratch register for SW to write to."
+        swaccess: "rw"
+        hwaccess: "none"
+        count: "4"
+        cname: "scratch"
+        fields: [
+          { bits: "31:0"
+            resval: "0"
+            name: "SCRATCH"
+            desc: '''
+                  Scratch register for software to read/write.
+                  '''
+          }
+        ]
+      }
+    }
+    { name: "BOOT_MODE",
+      desc: "Selected boot mode exposed as a register.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwqe:     "true",
+      hwext:    "true",
+      fields: [
+        { bits: "1:0"
+          name: "MODE"
+          desc: "Selected boot mode."
+          enum: [
+               { value: "0", name: "Idle_lock", desc: "Bootrom locks the FLL and waits for debugging." },
+               { value: "1", name: "SPI_unlock", desc: "Bootrom tries to boot via SPI with unlocked FLL." },
+               { value: "2", name: "SPI_lock", desc: "Bootrom locks the FLL and tries to boot from SPI." },
+               { value: "3", name: "I2C_lock", desc: "Bootrom locks the FLL and tries to boot from I2C." }
+          ]
+        }
+      ]
+    }
+    { name: "FLL_LOCK",
+      desc: "FLL frequency lock exposed as a register.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwqe:     "true",
+      hwext:    "true",
+      fields: [
+        { bits: "0"
+          name: "FLL_LOCK"
+          desc: "FLL frequency lock."
+          enum: [
+               { value: "0", name: "Unlocked", desc: "FLL is not locked onto reference frequency." },
+               { value: "1", name: "Locked", desc: "FLL is locked to reference frequency." },
+          ]
+        }
+      ]
+    }
+  ]
+}

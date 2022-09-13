@@ -1,0 +1,26 @@
+package:
+  name: cheshire
+  authors:
+    - "Nicole Narr <narrn@student.ethz.ch>"
+    - "Christopher Reinwardt <creinwar@student.ethz.ch>"
+
+dependencies:
+  ariane: { path: ./cva6 }
+  apb: { git: "git@github.com:pulp-platform/apb.git", rev: master }
+  register_interface: { git: "git@github.com:pulp-platform/register_interface.git", rev: master }
+  serial_link: { git: "git@github.com:pulp-platform/serial_link.git", rev: main }
+  apb_uart: { git: "git@github.com:pulp-platform/apb_uart.git", rev: master }
+  opentitan_peripherals: { git: "git@github.com:pulp-platform/opentitan_peripherals.git", rev: master }
+  clint: { git: "git@github.com:pulp-platform/clint.git", rev: master }
+  tech_cells_generic: { git: "git@github.com:pulp-platform/tech_cells_generic.git", rev: v0.2.9}
+  neo_vga: { git: "git@iis-git.ee.ethz.ch:bslk/neo/neo-vga", rev: master }
+
+sources:
+  - src/cheshire_pkg.sv
+  - src/regs/cheshire_register_file_reg_pkg.sv
+  - src/regs/cheshire_register_file_reg_top.sv
+  - src/cheshire_soc.sv
+
+  - target: sim
+    files:
+      - test/tb_cheshire.sv
