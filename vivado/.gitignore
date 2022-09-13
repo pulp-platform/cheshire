@@ -1,0 +1,11 @@
+*.log
+*.jou
+*.xci
+*.Xil/
+scripts/add_sources.tcl
+neo.cache/
+neo.hw/
+neo.runs/
+neo.xpr
+out/
+reports/

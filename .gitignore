@@ -1,0 +1,13 @@
+# Makefile helper files
+.cheshire_regs
+
+# Generated files
+src/regs/cheshire_register_file*
+sw/include/cheshire_regs.h
+
+# Test models
+test/models
+
+# Bender files
+.bender/
+Bender.lock
