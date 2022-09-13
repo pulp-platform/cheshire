@@ -19,8 +19,11 @@ sources:
   - src/cheshire_pkg.sv
   - src/regs/cheshire_register_file_reg_pkg.sv
   - src/regs/cheshire_register_file_reg_top.sv
+  - future/reg_err_slv.sv
+  - future/reg_to_apb.sv
   - src/cheshire_soc.sv
 
   - target: sim
     files:
-      - test/tb_cheshire.sv
+      - test/cheshire_soc_fixture.sv
+      - test/tb_cheshire_soc.sv
