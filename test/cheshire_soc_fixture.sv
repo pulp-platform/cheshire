@@ -32,6 +32,9 @@ module cheshire_soc_fixture;
   logic clk_jtag;
   logic clk_rtc;
 
+  logic testmode;
+  logic [1:0] bootmode;
+
 
   //////////////////////
   // Global Variables //
@@ -76,6 +79,18 @@ module cheshire_soc_fixture;
   task wait_for_reset;
     @(posedge rst_n);
     @(posedge clk_sys);
+  endtask
+
+  task set_bootmode (
+    input logic [1:0] mode
+  );
+    bootmode = mode;
+  endtask
+
+  task set_testmode (
+    input logic mode
+  );
+    testmode = mode;
   endtask
 
   ///////////////////
@@ -347,6 +362,12 @@ module cheshire_soc_fixture;
   // Serial Link //
   /////////////////
 
+  axi_a48_d64_mst_u0_req_t sl_in_req;
+  axi_a48_d64_mst_u0_resp_t sl_in_resp;
+
+  axi_a48_d64_mst_u0_req_t sl_out_req;
+  axi_a48_d64_mst_u0_resp_t sl_out_req;
+
   AXI_BUS_DV #(
     .AXI_ADDR_WIDTH ( cheshire_pkg::AXI_ADDR_WIDTH  ),
     .AXI_DATA_WIDTH ( cheshire_pkg::AXI_DATA_WIDTH  ),
@@ -374,17 +395,20 @@ module cheshire_soc_fixture;
   `AXI_ASSIGN_FROM_RESP(axi_bus_tb2sl, sl_in_resp)
 
   serial_link #(
-    parameter type axi_req_t  = logic,
-    parameter type axi_rsp_t  = logic,
-    parameter type aw_chan_t  = logic,
-    parameter type ar_chan_t  = logic,
-    parameter type r_chan_t   = logic,
-    parameter type w_chan_t   = logic,
-    parameter type b_chan_t   = logic,
-    parameter type cfg_req_t  = logic,
-    parameter type cfg_rsp_t  = logic,
+    .axi_req_t      ( axi_a48_d64_mst_u0_req_t      ),
+    .axi_rsp_t      ( axi_a48_d64_mst_u0_resp_t     ),
+    .aw_chan_t      ( axi_a48_d64_mst_u0_aw_chan_t  ),
+    .ar_chan_t      ( axi_a48_d64_mst_u0_ar_chan_t  ),
+    .r_chan_t       ( axi_a48_d64_mst_u0_r_chan_t   ),
+    .w_chan_t       ( axi_a48_d64_mst_u0_w_chan_t   ),
+    .b_chan_t       ( axi_a48_d64_mst_u0_b_chan_t   ),
+    .cfg_req_t      ( reg_a48_d32_req_t             ),
+    .cfg_rsp_t      ( reg_a48_d32_rsp_t             ),
     .hw2reg_t (serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t),
-    .reg2hw_t (serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t)
+    .reg2hw_t (serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t),
+    .NumChannels    ( 1                       ),
+    .NumLanes       ( 4                       ),
+    .MaxClkDiv      ( 1024                    )
   ) i_fix_serial_link (
     // There are 3 different clock/resets:
     // 1) clk_i & rst_ni: "always-on" clock & reset coming from the SoC domain. Only config registers are conected to this clock
@@ -397,13 +421,13 @@ module cheshire_soc_fixture;
     .rst_sl_ni      ( rst_n         ),
     .clk_reg_i      ( clk_sys       ),
     .rst_reg_ni     ( rst_n         ),
-    .testmode_i     ( 1'b0          ),
+    .testmode_i     ( testmode      ),
     .axi_in_req_i   ( sl_in_req     ),
     .axi_in_rsp_o   ( sl_in_resp    ),
     .axi_out_req_o  ( sl_out_req    ),
     .axi_out_rsp_i  ( sl_out_resp   ),
-    .cfg_req_i      ( sl_reg_req    ),
-    .cfg_rsp_o      ( sl_reg_resp   ),
+    .cfg_req_i      ( '0            ),
+    .cfg_rsp_o      (               ),
     .ddr_rcv_clk_i  ( sl_ddr_clk_o  ),
     .ddr_rcv_clk_o  ( sl_ddr_clk_i  ),
     .ddr_i          ( sl_ddr_data_o ),
@@ -626,22 +650,70 @@ module cheshire_soc_fixture;
   // Cheshire SoC //
   //////////////////
 
-  cheshire_soc #(
+  cheshire_soc i_dut_cheshire_soc (
+    .clk_i            ( clk_sys         ),
+    .rst_ni           ( rst_n           ),
 
-  ) i_dut_cheshire_soc (
-    .clk_i        ( clk_sys     ),
-    .rst_ni       ( rst_n       ),
+    .testmode_i       ( testmode        ),
 
-    .rtc_i        ( clk_rtc     ),
+    // Boot mode selection
+    .bootmode_i       ( bootmode        ),
 
-    .jtag_tclk_i  ( jtag_tck    ),
-    .jtag_trst_ni ( jtag_trst_n ),
-    .jtag_tms_i   ( jtag_tms    ),
-    .jtag_tdi_i   ( jtag_tdi    ),
-    .jtag_tdo_o   ( jtag_tdo    ),
+    // Boot address for CVA6
+    .bootaddr_i       ( 64'h0100_0000   ),
 
-    .uart_tx_o    ( uart_tx     )
+    // DDR-Link
+    .ddr_link_i       ( sl_ddr_data_i   ),
+    .ddr_link_o       ( sl_ddr_data_o   ),
+    .ddr_link_clk_i   ( sl_ddr_clk_i    ),
+    .ddr_link_clk_o   ( sl_ddr_clk_o    ),
 
+    // VGA Controller
+    .vga_hsync_o      (                 ),
+    .vga_vsync_o      (                 ),
+    .vga_red_o        (                 ),
+    .vga_green_o      (                 ),
+    .vga_blue_o       (                 ),
+
+    // JTAG Interface
+    .jtag_tck_i       ( jtag_tck        ),
+    .jtag_trst_ni     ( jtag_trst_n     ),
+    .jtag_tms_i       ( jtag_tms        ),
+    .jtag_tdi_i       ( jtag_tdi        ),
+    .jtag_tdo_o       ( jtag_tdo        ),
+
+    // UART Interface
+    .uart_tx_o        ( uart_tx         ),
+    .uart_rx_i        ( 1'b0            ),
+
+    // I2C Interface
+    .i2c_sda_o        ( i2c_sda_out     ),
+    .i2c_sda_i        ( i2c_sda_in      ),
+    .i2c_sda_en_o     ( i2c_sda_oe      ),
+    .i2c_scl_o        ( i2c_scl_out     ),
+    .i2c_scl_i        ( i2c_scl_in      ),
+    .i2c_scl_en_o     ( i2c_scl_oe      ),
+
+    // SPI Host Interface
+    .spim_sck_o       ( spi_sck_soc_out ),
+    .spim_sck_en_o    ( spi_sck_en      ),
+    .spim_csb_o       ( spi_cs_soc_out  ),
+    .spim_csb_en_o    ( spi_cs_en       ),
+    .spim_sd_o        ( spi_sd_soc_out  ),
+    .spim_sd_en_o     ( spi_sd_en       ),
+    .spim_sd_i        ( spi_sd_soc_in   ),
+
+    // CLINT
+    .rtc_i            ( clk_rtc         ),
+
+    // FLL
+    .fll_reg_req_o    (                 ),
+    .fll_reg_rsp_i    ( '0              ),
+    .fll_lock_i       ( 1'b0            ),
+
+    // PAD CTRL
+    .pad_config_req_o (                 ),
+    .pad_config_rsp_i ( '0              )
   );
 
 endmodule

@@ -8,18 +8,18 @@ module cheshire_soc
 
   input   logic                       testmode_i,
 
-  // Boot address for CVA6
-  input   logic                       boot_mode_i,
+  // Boot mode selection
+  input   logic [1:0]                 bootmode_i,
 
   // Boot address for CVA6
-  input   logic [63:0]                boot_addr_i,
+  input   logic [63:0]                bootaddr_i,
 
   // DDR-Link
   input   logic [3:0]                 ddr_link_i,
   output  logic [3:0]                 ddr_link_o,
 
   input   logic                       ddr_link_clk_i,
-  output  logic                       ddr_link_clk_o
+  output  logic                       ddr_link_clk_o,
 
   // VGA Controller
   output  logic                       vga_hsync_o,
