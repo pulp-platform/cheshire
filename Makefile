@@ -8,6 +8,8 @@ PYTHON      ?= python3
 REGGEN_PATH  = $(shell find -path "./.bender/git/checkouts/register_interface*/vendor/lowrisc_opentitan/util/regtool.py") 
 REGGEN	     = $(PYTHON) $(REGGEN_PATH) 
 
+VLOG_ARGS    = -timescale 1ns/1ps -suppress 8607
+
 .PHONY: all 
 
 all: 	cheshire_regs\
@@ -37,4 +39,4 @@ bender: Bender.yml
 ##############
 
 vsim/compile.tcl: bender
-	$(BENDER) script vsim -t sim > $@
+	$(BENDER) script vsim -t sim --vlog-arg="$(VLOG_ARGS)" > $@

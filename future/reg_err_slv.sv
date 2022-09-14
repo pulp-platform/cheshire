@@ -10,12 +10,12 @@ module reg_err_slv #(
   parameter int unsigned    DW      = 64,
   parameter logic [DW-1:0]  ERR_VAL = 64'hCA11AB1E_BADCAB1E,
   parameter type            req_t   = logic,
-  parameter type            rsp_t   = logic, 
+  parameter type            rsp_t   = logic
 ) (
   input  logic               clk_i,
   input  logic               rst_ni,
   input  req_t               req_i,
-  output rsp_t               rsp_o,
+  output rsp_t               rsp_o
 );
 
   // Always ready to return an error and the error message
