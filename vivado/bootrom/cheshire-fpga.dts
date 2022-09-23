@@ -1,0 +1,81 @@
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+//
+// Nicole Narr <narrn@student.ethz.ch>
+// Christopher Reinwardt <creinwar@student.ethz.ch>
+
+/dts-v1/;
+/ {
+  #address-cells = <2>;
+  #size-cells = <2>;
+  compatible = "eth,cheshire-dev";
+  model = "eth,cheshire";
+  chosen {
+    stdout-path = "/htif";
+  };
+  memory@80000000 {
+    device_type = "memory";
+    reg = <0x0 0x80000000 0x0 0x40000000>;
+  };
+  cpus {
+    #address-cells = <1>;
+    #size-cells = <0>;
+    timebase-frequency = <1000000>;
+    CPU0: cpu@0 {
+      device_type = "cpu";
+      status = "okay";
+      compatible = "riscv", "eth,ariane";
+      clock-frequency = <50000000>;
+      riscv,isa = "rv64imafdc";
+      mmu-type = "riscv,sv39";
+      tlb-split;
+      reg = <0>;
+      CPU0_intc: interrupt-controller {
+        #address-cells = <0>;
+        #interrupt-cells = <1>;
+        interrupt-controller;
+        compatible = "riscv,cpu-intc";
+      };
+    };
+  };
+  soc: soc {
+    #address-cells = <2>;
+    #size-cells = <2>;
+    compatible = "simple-bus";
+    ranges;
+    debug@0 {
+      compatible = "riscv,debug-013";
+      interrupts-extended = <&CPU0_intc 65535>;
+      reg-names = "control";
+      reg = <0x0 0x0 0x0 0x1000>;
+    };
+    serial@2002000 {
+      compatible = "lowrisc,serial";
+      clock-frequency = <50000000>;
+      current-speed = <115200>;
+      interrupt-parent = <&PLIC0>;
+      interrupts = <1>;
+      reg = <0x0 0x2002000 0x0 0x1000>;
+    };
+    PLIC0: interrupt-controller@c000000 {
+      compatible = "riscv,plic0";
+      #address-cells = <0>;
+      #interrupt-cells = <1>;
+      interrupt-controller;
+      interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9>;
+      riscv,max-priority = <7>;
+      riscv,ndev = <30>;
+      reg = <0x0 0xc000000 0x0 0x4000000>;
+    };
+    clint@4000000 {
+      compatible = "riscv,clint0";
+      interrupts-extended = <&CPU0_intc 3 &CPU0_intc 7>;
+      reg-names = "control";
+      reg = <0x0 0x4000000 0x0 0x100000>;
+    };
+  };
+  htif {
+    compatible = "ucb,htif0";
+  };
+};
