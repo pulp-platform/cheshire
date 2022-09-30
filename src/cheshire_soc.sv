@@ -1,4 +1,5 @@
 `include "axi/assign.svh"
+`include "common_cells/registers.svh"
 
 module cheshire_soc
   import cheshire_pkg::*;
@@ -9,10 +10,18 @@ module cheshire_soc
   input   logic                       testmode_i,
 
   // Boot mode selection
-  input   logic [1:0]                 bootmode_i,
+  input   logic [1:0]                 boot_mode_i,
 
   // Boot address for CVA6
-  input   logic [63:0]                bootaddr_i,
+  input   logic [63:0]                boot_addr_i,
+
+  // DRAM AXI interface
+  output  axi_a48_d64_slv_u0_req_t    dram_req_o,
+  input   axi_a48_d64_slv_u0_resp_t   dram_resp_i,
+
+  // DRAM Regbus interface
+  output  reg_a48_d32_req_t           dram_conf_req_o,
+  input   reg_a48_d32_rsp_t           dram_conf_rsp_i,
 
   // DDR-Link
   input   logic [3:0]                 ddr_link_i,
@@ -24,9 +33,9 @@ module cheshire_soc
   // VGA Controller
   output  logic                       vga_hsync_o,
   output  logic                       vga_vsync_o,
-  output  logic                       vga_red_o,
-  output  logic                       vga_green_o,
-  output  logic                       vga_blue_o,
+  output  logic [2:0]                 vga_red_o,
+  output  logic [2:0]                 vga_green_o,
+  output  logic [1:0]                 vga_blue_o,
 
   // JTAG Interface
   input   logic                       jtag_tck_i,
@@ -85,6 +94,26 @@ module cheshire_soc
   reg_a48_d32_req_t [REGBUS_PERIPH_NUM_OUTPUTS-1:0] regbus_periph_out_req;
   reg_a48_d32_rsp_t [REGBUS_PERIPH_NUM_OUTPUTS-1:0] regbus_periph_out_rsp;
 
+
+  // Connect the external DRAM signals
+  // AXI first
+  assign dram_req_o = axi_xbar_mst_port_reqs[AXI_XBAR_OUT_RPC_DRAM];
+  assign axi_xbar_mst_port_rsps[AXI_XBAR_OUT_RPC_DRAM] = dram_resp_i;
+
+  // Then Regbus
+  assign dram_conf_req_o = regbus_periph_out_req[REGBUS_PERIPH_OUT_RPC_DRAM];
+  assign regbus_periph_out_rsp[REGBUS_PERIPH_OUT_RPC_DRAM] = dram_conf_rsp_i;
+
+
+  // Machine timer and machine software interrupt pending.
+  logic [1:0] mtip, msip;
+
+  logic [1:0] eip;
+
+  cheshire_interrupt_t irq;
+
+  logic debug_req;
+  
   ////////////
   //  CVA6  //
   ////////////
@@ -111,8 +140,8 @@ module cheshire_soc
   /////////////////
 
   axi_xbar #(
-    .ATOPs          ( 1'b1                          ),
     .Cfg            ( axi_xbar_cfg                  ),
+    .ATOPs          ( 1'b1                          ),
     .Connectivity   ( AXI_XBAR_CONNECTIVITY         ),
     .slv_aw_chan_t  ( axi_a48_d64_mst_u0_aw_chan_t  ),
     .mst_aw_chan_t  ( axi_a48_d64_slv_u0_aw_chan_t  ),
@@ -145,7 +174,175 @@ module cheshire_soc
   //  Debug  //
   /////////////
 
-  // TODO
+  // TODO: debug dbmodule and remove hacky solution
+
+  logic dmi_rst_n;
+  dm::dmi_req_t dmi_req;
+  logic dmi_req_ready;
+  logic dmi_req_valid;
+  dm::dmi_resp_t dmi_resp;
+  logic dmi_resp_ready;
+  logic dmi_resp_valid;
+
+  logic           dbg_req;
+  logic   [47:0]  dbg_addr;
+  logic           dbg_we;
+  logic   [63:0]  dbg_wdata;
+  logic   [ 7:0]  dbg_wstrb;
+  logic   [63:0]  dbg_rdata;
+  logic           dbg_rvalid;
+    
+  
+  logic           sba_req;
+  logic   [47:0]  sba_addr;
+  logic   [63:0]  sba_addr_long;
+  logic           sba_we;
+  logic   [63:0]  sba_wdata;
+  logic   [ 7:0]  sba_strb;
+  logic           sba_gnt;
+  logic   [63:0]  sba_rdata;
+  logic           sba_rvalid;
+  logic           sba_err;
+
+  // Ignore the upper 16 bits
+  assign sba_addr = sba_addr_long[47:0];
+
+  // AXI4+ATOP -> Memory Inteface
+  axi_to_mem_interleaved #(
+    .axi_req_t       ( axi_a48_d64_slv_u0_req_t  ),
+    .axi_resp_t      ( axi_a48_d64_slv_u0_resp_t ),
+    .AddrWidth       ( 48                        ),
+    .DataWidth       ( 64                        ),
+    .IdWidth         ( AXI_XBAR_SLAVE_ID_WIDTH   ),
+    .NumBanks        ( 1                         ),
+    .BufDepth        ( 3                         )
+  ) i_axi_to_mem_dbg (
+    .clk_i,
+    .rst_ni,
+    .busy_o          (                           ),
+    .axi_req_i       ( axi_xbar_mst_port_reqs[AXI_XBAR_OUT_DEBUG] ),
+    .axi_resp_o      ( axi_xbar_mst_port_rsps[AXI_XBAR_OUT_DEBUG] ),
+    .mem_req_o       ( dbg_req                   ),
+    .mem_gnt_i       ( dbg_req                   ),
+    .mem_addr_o      ( dbg_addr                  ),
+    .mem_wdata_o     ( dbg_wdata                 ),
+    .mem_strb_o      ( dbg_wstrb                 ),
+    .mem_atop_o      (                           ),
+    .mem_we_o        ( dbg_we                    ),
+    .mem_rvalid_i    ( dbg_rvalid                ),
+    .mem_rdata_i     ( dbg_rdata                 )
+  );
+
+  //dbg_rvalid = #1 dbg_req
+  `FF(dbg_rvalid, dbg_req, 1'b0, clk_i, rst_ni)
+
+  dm::hartinfo_t [0:0] hartinfo;
+  assign hartinfo[0] = ariane_pkg::DebugHartInfo;
+
+  // Debug Module
+  dm_top #(
+    .NrHarts              ( 1                 ),
+    .BusWidth             ( 64                ),
+    .DmBaseAddress        ( 'h0               )
+  ) i_dm_top (
+    .clk_i,
+    .rst_ni,
+    .testmode_i,
+    .ndmreset_o           (                   ),
+    .dmactive_o           (                   ),
+    .debug_req_o          ( debug_req         ),
+    .unavailable_i        ( '0                ),
+    .hartinfo_i           ( hartinfo          ),
+    .slave_req_i          ( dbg_req           ),
+    .slave_we_i           ( dbg_we            ),
+    .slave_addr_i         ( {16'b0, dbg_addr} ),
+    .slave_be_i           ( dbg_wstrb         ),
+    .slave_wdata_i        ( dbg_wdata         ),
+    .slave_rdata_o        ( dbg_rdata         ),
+    .master_req_o         ( sba_req           ),
+    .master_add_o         ( sba_addr_long     ),
+    .master_we_o          ( sba_we            ),
+    .master_wdata_o       ( sba_wdata         ),
+    .master_be_o          ( sba_strb          ),
+    .master_gnt_i         ( sba_gnt           ),
+    .master_r_valid_i     ( sba_rvalid        ),
+    .master_r_rdata_i     ( sba_rdata         ),
+    .master_r_err_i       ( sba_err           ),
+    .master_r_other_err_i ( 1'b0              ),
+    .dmi_rst_ni           ( dmi_rst_n         ),
+    .dmi_req_valid_i      ( dmi_req_valid     ),
+    .dmi_req_ready_o      ( dmi_req_ready     ),
+    .dmi_req_i            ( dmi_req           ),
+    .dmi_resp_valid_o     ( dmi_resp_valid    ),
+    .dmi_resp_ready_i     ( dmi_resp_ready    ),
+    .dmi_resp_o           ( dmi_resp          )
+  );
+
+  axi_lite_a48_d64_req_t dbg_axi_lite_to_axi_req;
+  axi_lite_a48_d64_resp_t dbg_axi_lite_to_axi_rsp;
+
+  // From DM --> AXI Lite
+  mem_to_axi_lite #(
+    .MemAddrWidth    ( 48                      ),
+    .AxiAddrWidth    ( 48                      ),
+    .DataWidth       ( 64                      ),
+    .MaxRequests     ( 2                       ),
+    .AxiProt         ( '0                      ),
+    .axi_req_t       ( axi_lite_a48_d64_req_t  ),
+    .axi_rsp_t       ( axi_lite_a48_d64_resp_t )
+  ) i_mem_to_axi_lite_dbg (
+    .clk_i,
+    .rst_ni,
+    .mem_req_i       ( sba_req                 ),
+    .mem_addr_i      ( sba_addr                ),
+    .mem_we_i        ( sba_we                  ),
+    .mem_wdata_i     ( sba_wdata               ),
+    .mem_be_i        ( sba_strb                ),
+    .mem_gnt_o       ( sba_gnt                 ),
+    .mem_rsp_valid_o ( sba_rvalid              ),
+    .mem_rsp_rdata_o ( sba_rdata               ),
+    .mem_rsp_error_o ( sba_err                 ),
+    .axi_req_o       ( dbg_axi_lite_to_axi_req ),
+    .axi_rsp_i       ( dbg_axi_lite_to_axi_rsp )
+  );
+
+  // AXI Lite --> AXI crossbar
+  axi_lite_to_axi #(
+    .AxiDataWidth    ( 64                        ),
+    .req_lite_t      ( axi_lite_a48_d64_req_t    ),
+    .resp_lite_t     ( axi_lite_a48_d64_resp_t   ),
+    .axi_req_t       ( axi_a48_d64_mst_u0_req_t  ),
+    .axi_resp_t      ( axi_a48_d64_mst_u0_resp_t )
+  ) i_axi_lite_to_axi_dbg (
+    .slv_req_lite_i  ( dbg_axi_lite_to_axi_req   ),
+    .slv_resp_lite_o ( dbg_axi_lite_to_axi_rsp   ),
+    .slv_aw_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
+    .slv_ar_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
+    .mst_req_o       ( axi_xbar_slv_port_reqs[AXI_XBAR_IN_DEBUG]  ),
+    .mst_resp_i      ( axi_xbar_slv_port_rsps[AXI_XBAR_IN_DEBUG] )
+  );
+
+  // Debug Transfer Module + Debug Module Interface
+  dmi_jtag #(
+    .IdcodeValue      ( cheshire_pkg::IDCode )
+  ) i_dmi_jtag (
+    .clk_i,
+    .rst_ni,
+    .testmode_i,
+    .dmi_rst_no       ( dmi_rst_n            ),
+    .dmi_req_o        ( dmi_req              ),
+    .dmi_req_ready_i  ( dmi_req_ready        ),
+    .dmi_req_valid_o  ( dmi_req_valid        ),
+    .dmi_resp_i       ( dmi_resp             ),
+    .dmi_resp_ready_o ( dmi_resp_ready       ),
+    .dmi_resp_valid_i ( dmi_resp_valid       ),
+    .tck_i            ( jtag_tck_i           ),
+    .tms_i            ( jtag_tms_i           ),
+    .trst_ni          ( jtag_trst_ni         ),
+    .td_i             ( jtag_tdi_i           ),
+    .td_o             ( jtag_tdo_o           ),
+    .tdo_oe_o         (                      )
+  );
 
   ///////////////////
   //  Serial Link  //
@@ -170,26 +367,26 @@ module cheshire_soc
     .clk_i,
     .rst_ni,
     .slv_req_i              ( axi_xbar_mst_port_reqs[AXI_XBAR_OUT_DDR_LINK] ),
-    .slv_resp_o             ( axi_xbar_mst_port_rsps[AXI_XBAR_IN_DDR_LINK]  ),
+    .slv_resp_o             ( axi_xbar_mst_port_rsps[AXI_XBAR_OUT_DDR_LINK]  ),
     .mst_req_o              ( ddr_link_axi_in_req           ),
     .mst_resp_i             ( ddr_link_axi_in_rsp           )
   );
 
   serial_link #(
-    .axi_req_t      ( axi_a48_d64_mst_u0_req_t        ),
-    .axi_rsp_t      ( axi_a48_d64_mst_u0_resp_t       ),
-    .cfg_req_t      ( reg_a48_d32_req_t               ),
-    .cfg_rsp_t      ( reg_a48_d32_rsp_t               ),
-    .aw_chan_t      ( axi_a48_d64_mst_u0_aw_chan_t    ),
-    .ar_chan_t      ( axi_a48_d64_mst_u0_ar_chan_t    ),
-    .r_chan_t       ( axi_a48_d64_mst_u0_r_chan_t     ),
-    .w_chan_t       ( axi_a48_d64_mst_u0_w_chan_t     ),
-    .b_chan_t       ( axi_a48_d64_mst_u0_b_chan_t     ),
+    .axi_req_t      ( axi_a48_d64_mst_u0_req_t     ),
+    .axi_rsp_t      ( axi_a48_d64_mst_u0_resp_t    ),
+    .cfg_req_t      ( reg_a48_d32_req_t            ),
+    .cfg_rsp_t      ( reg_a48_d32_rsp_t            ),
+    .aw_chan_t      ( axi_a48_d64_mst_u0_aw_chan_t ),
+    .ar_chan_t      ( axi_a48_d64_mst_u0_ar_chan_t ),
+    .r_chan_t       ( axi_a48_d64_mst_u0_r_chan_t  ),
+    .w_chan_t       ( axi_a48_d64_mst_u0_w_chan_t  ),
+    .b_chan_t       ( axi_a48_d64_mst_u0_b_chan_t  ),
     .hw2reg_t       ( serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t ),
     .reg2hw_t       ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t ),
-    .NumChannels    ( 1                               ),
-    .NumLanes       ( 4                               ),
-    .MaxClkDiv      ( 1024                            )
+    .NumChannels    ( 1                            ),
+    .NumLanes       ( 4                            ),
+    .MaxClkDiv      ( 1024                         )
   ) i_serial_link (
     .clk_i          ( clk_i                 ),
     .rst_ni         ( rst_ni                ),
@@ -200,8 +397,8 @@ module cheshire_soc
     .testmode_i     ( testmode_i            ),
     .axi_in_req_i   ( ddr_link_axi_in_req   ),
     .axi_in_rsp_o   ( ddr_link_axi_in_rsp   ),
-    .axi_out_req_o  ( axi_xbar_slv_port_reqs[AXI_XBAR_IN_SERIAL_LINK]   ),
-    .axi_out_rsp_i  ( axi_xbar_slv_port_rsps[AXI_XBAR_IN_SERIAL_LINK]   ),
+    .axi_out_req_o  ( axi_xbar_slv_port_reqs[AXI_XBAR_IN_DDR_LINK]   ),
+    .axi_out_rsp_i  ( axi_xbar_slv_port_rsps[AXI_XBAR_IN_DDR_LINK]   ),
     .cfg_req_i      ( regbus_periph_out_req[REGBUS_PERIPH_OUT_DDR_LINK] ),
     .cfg_rsp_o      ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_DDR_LINK] ),
     .ddr_rcv_clk_i  ( ddr_link_clk_i        ),
@@ -218,17 +415,20 @@ module cheshire_soc
   //  VGA Controller  //
   //////////////////////
 
-  neo_vga #(
+  axi_vga #(
     .RedWidth       ( 3                         ),
     .GreenWidth     ( 3                         ),
     .BlueWidth      ( 2                         ),
     .HCountWidth    ( 32                        ),
     .VCountWidth    ( 32                        ),
+    .AXIAddrWidth   ( AXI_ADDR_WIDTH            ),
+    .AXIDataWidth   ( AXI_DATA_WIDTH            ),          
+    .AXIStrbWidth   ( AXI_STRB_WIDTH            ),
     .axi_req_t      ( axi_a48_d64_mst_u0_req_t  ),
     .axi_resp_t     ( axi_a48_d64_mst_u0_resp_t ),
     .reg_req_t      ( reg_a48_d32_req_t         ),
     .reg_resp_t     ( reg_a48_d32_rsp_t         )
-  ) i_neo_vga (
+  ) i_axi_vga (
     .clk_i,
     .rst_ni,
     .test_mode_en_i ( testmode_i                ),
@@ -248,116 +448,75 @@ module cheshire_soc
   //////////////////////
 
   AXI_BUS #(
-    .AXI_ADDR_WIDTH ( 48  ),
-    .AXI_DATA_WIDTH ( 64  ),
-    .AXI_ID_WIDTH   ( AXI_XBAR_MASTER_ID_WIDTH  ),
-    .AXI_USER_WIDTH ( 1   )
+    .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH            ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH            ),
+    .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH  ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH            )
   ) axi_xbar_atomics_dma ();
 
   AXI_BUS #(
-    .AXI_ADDR_WIDTH ( 48  ),
-    .AXI_DATA_WIDTH ( 64  ),
-    .AXI_ID_WIDTH   ( AXI_XBAR_MASTER_ID_WIDTH  ),
-    .AXI_USER_WIDTH ( 1   )
-  ) axi_atomics_to_reg ();
+    .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH           ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+    .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+  ) axi_atomics_dma_wrap ();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH           ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+    .AXI_ID_WIDTH   ( AXI_XBAR_MASTER_ID_WIDTH ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+  ) dma_wrap_axi_xbar ();
 
   axi_a48_d64_slv_u0_req_t axi_xbar_atomics_dma_req;
   axi_a48_d64_slv_u0_resp_t axi_xbar_atomics_dma_rsp;
 
-  axi_a48_d64_slv_u0_req_t axi_atomics_to_reg_req;
-  axi_a48_d64_slv_u0_resp_t axi_atomics_to_reg_rsp;
+  axi_a48_d64_mst_u0_req_t dma_wrap_axi_xbar_req;
+  axi_a48_d64_mst_u0_resp_t dma_wrap_axi_xbar_rsp;
 
-  // TODO 
-  //`AXI_ASSIGN_(axi_xbar_atomics_dma, axi_xbar_atomics_dma_req)
-  //`AXI_ASSIGN_(axi_xbar_atomics_dma, axi_xbar_atomics_dma_rsp)
-  //`AXI_ASSIGN_FROM_REQ(axi_atomics_to_reg, axi_atomics_to_reg_req)
-  //`AXI_ASSIGN_FROM_RESP(axi_atomics_to_reg, axi_atomics_to_reg_rsp)
+  // From XBar to atomics wrap
+  `AXI_ASSIGN_FROM_REQ(axi_xbar_atomics_dma, axi_xbar_atomics_dma_req)
+  `AXI_ASSIGN_TO_RESP(axi_xbar_atomics_dma_rsp, axi_xbar_atomics_dma)
 
-  assign axi_xbar_slv_port_reqs[AXI_XBAR_IN_DMA] = axi_xbar_atomics_dma_req;
-  assign axi_xbar_atomics_dma_rsp = axi_xbar_slv_port_rsps[AXI_XBAR_IN_DMA];
+  // From DMA wrap to XBar
+  `AXI_ASSIGN_TO_REQ(dma_wrap_axi_xbar_req, dma_wrap_axi_xbar)
+  `AXI_ASSIGN_FROM_RESP(dma_wrap_axi_xbar, dma_wrap_axi_xbar_rsp)
 
-  reg_a48_d64_req_t idma_cfg_reg_req;
-  reg_a48_d64_rsp_t idma_cfg_reg_rsp;
-
+  assign axi_xbar_slv_port_reqs[AXI_XBAR_IN_DMA] = dma_wrap_axi_xbar_req;
+  assign dma_wrap_axi_xbar_rsp = axi_xbar_slv_port_rsps[AXI_XBAR_IN_DMA];
+  
   axi_riscv_atomics_wrap #(
-    .AXI_ADDR_WIDTH     ( 48                         ),
-    .AXI_DATA_WIDTH     ( 64                         ),
-    .AXI_ID_WIDTH       ( AXI_XBAR_SLAVE_ID_WIDTH    ),
-    .AXI_USER_WIDTH     ( 1                          ),
-    .AXI_MAX_READ_TXNS  ( 4                          ),
-    .AXI_MAX_WRITE_TXNS ( 4                          ),
-    .AXI_USER_AS_ID     ( 1'b1                       ),
-    .AXI_USER_ID_MSB    ( 0                          ),
-    .AXI_USER_ID_LSB    ( 0                          ),
-    .RISCV_WORD_WIDTH   ( 64                         ),
-    .AXI_STRB_WIDTH     ( 1                          )
+    .AXI_ADDR_WIDTH     ( 48                          ),
+    .AXI_DATA_WIDTH     ( 64                          ),
+    .AXI_ID_WIDTH       ( AXI_XBAR_SLAVE_ID_WIDTH     ),
+    .AXI_USER_WIDTH     ( 1                           ),
+    .AXI_MAX_READ_TXNS  ( 4                           ),
+    .AXI_MAX_WRITE_TXNS ( 4                           ),
+    .AXI_USER_AS_ID     ( 1'b1                        ),
+    .AXI_USER_ID_MSB    ( 0                           ),
+    .AXI_USER_ID_LSB    ( 0                           ),
+    .RISCV_WORD_WIDTH   ( 64                          )
   ) i_axi_riscv_atomics_dma (
     .clk_i,
     .rst_ni,
-    .mst                ( axi_xbar_atomics_dma.Master  ), // TODO
-    .slv                ( axi_atomics_to_reg.Slave   )  // TODO
+    .mst                ( axi_atomics_dma_wrap.Master ),
+    .slv                ( axi_xbar_atomics_dma.Slave    )
   );
 
-  axi_to_reg #(
-    .ADDR_WIDTH  ( 48                        ),
-    .DATA_WIDTH  ( 64                        ),
-    .ID_WIDTH    ( AXI_XBAR_SLAVE_ID_WIDTH   ),
-    .USER_WIDTH  ( 1                         ),
-    .axi_req_t   ( axi_a48_d64_slv_u0_req_t  ),
-    .axi_rsp_t   ( axi_a48_d64_slv_u0_resp_t ),
-    .reg_req_t   ( reg_a48_d64_req_t         ),
-    .reg_rsp_t   ( reg_a48_d64_rsp_t         )
-  ) i_axi_to_reg_idma_cfg (
-    .clk_i,
-    .rst_ni,
-    .testmode_i  ( testmode_i                ),
-    .axi_req_i   ( axi_atomics_to_reg_req    ),
-    .axi_rsp_o   ( axi_atomics_to_reg_rsp    ),
-    .reg_req_o   ( idma_cfg_reg_req          ),
-    .reg_rsp_i   ( idma_cfg_reg_rsp          )
-  );
+  dma_core_wrap #(
+  .AXI_ADDR_WIDTH   ( 48                          ),
+  .AXI_DATA_WIDTH   ( 64                          ),
+  .AXI_USER_WIDTH   ( 1                           ),
+  .AXI_ID_WIDTH     ( AXI_XBAR_SLAVE_ID_WIDTH     ), // TODO
+  .AXI_SLV_ID_WIDTH ( AXI_XBAR_SLAVE_ID_WIDTH     )
+  ) i_dma_core_wrap (
+  .clk_i,
+  .rst_ni,
+  .testmode_i,
+  .axi_master       ( dma_wrap_axi_xbar.Master    ),
+  .axi_slave        ( axi_atomics_dma_wrap.Slave  )
+);
 
-  idma_reg64_frontend #(
-    .DmaAddrWidth      ( 'd48                   ),
-    .dma_regs_req_t    ( reg_a48_d64_req_t      ),
-    .dma_regs_rsp_t    ( reg_a48_d64_rsp_t      ),
-    .burst_req_t       ( idma_burst_req_t       )
-  ) i_idma_reg64_frontend (
-    .clk_i,
-    .rst_ni,
-    .dma_ctrl_req_i    ( idma_cfg_reg_req       ),
-    .dma_ctrl_rsp_o    ( idma_cfg_reg_rsp       ),
-    .burst_req_o       ( idma_burst_req         ),
-    .valid_o           ( idma_be_valid          ),
-    .ready_i           ( idma_be_ready          ),
-    .backend_idle_i    ( idma_be_idle           ),
-    .trans_complete_i  ( idma_be_trans_complete )
-  );
-
-  axi_dma_backend #(
-    .DataWidth         ( 64                        ),
-    .AddrWidth         ( 48                        ),
-    .IdWidth           ( AXI_XBAR_MASTER_ID_WIDTH  ),
-    .AxReqFifoDepth    ( 'd8                       ),
-    .TransFifoDepth    ( 'd8                       ),
-    .BufferDepth       ( 'd3                       ),
-    .axi_req_t         ( axi_a48_d64_mst_u0_req_t  ),
-    .axi_res_t         ( axi_a48_d64_mst_u0_resp_t ),
-    .burst_req_t       ( idma_burst_req_t          ),
-    .DmaIdWidth        ( 'd32                      ),
-    .DmaTracing        ( 1'b1                      )
-  ) i_axi_dma_backend (
-    .clk_i,
-    .rst_ni,
-    .dma_id_i          ( 'd0                       ),
-    .axi_dma_req_o     ( dma_xbar_req              ),
-    .axi_dma_res_i     ( dma_xbar_resp             ),
-    .burst_req_i       ( idma_burst_req            ),
-    .valid_i           ( idma_be_valid             ),
-    .ready_o           ( idma_be_ready             ),
-    .backend_idle_o    ( idma_be_idle              ),
-    .trans_complete_o  ( idma_be_trans_complete    )
-  );
 
 
   /////////////////////////
@@ -402,6 +561,7 @@ module cheshire_soc
     .EnableInputPipeline  ( 1               ),
     .EnableOutputPipeline ( 1               ),
     .EnableECC            ( 0               ),
+    .SimInit              ( "zeros"         ),
     .sram_cfg_t           ( sram_cfg_t      )
   ) i_spm (
     .clk_i,
@@ -424,8 +584,19 @@ module cheshire_soc
 
   logic [cf_math_pkg::idx_width(REGBUS_PERIPH_NUM_OUTPUTS)-1:0] regbus_periph_select; // TODO
 
-  AXI_BUS axi_xbar_atomics_regbus();
-  AXI_BUS axi_atomics_dw_conv();
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH          ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH          ),
+    .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH          )
+  ) axi_xbar_atomics_regbus();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH          ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH          ),
+    .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH          )
+  ) axi_atomics_dw_conv();
 
   axi_a48_d64_slv_u0_req_t  axi_xbar_atomics_req;
   axi_a48_d64_slv_u0_resp_t axi_xbar_atomics_rsp;
@@ -433,15 +604,19 @@ module cheshire_soc
   axi_a48_d64_slv_u0_req_t  axi_atomics_dw_conv_req;
   axi_a48_d64_slv_u0_resp_t axi_atomics_dw_conv_rsp;
 
-  // TODO
-  //`AXI_ASSIGN_TO_REQ(axi_xbar_atomics, axi_xbar_atomics_req)
-  //`AXI_ASSIGN_TO_RESP(axi_xbar_atomics, axi_xbar_atomics_rsp)
+  axi_a48_d32_slv_u0_req_t axi_dw_conv_to_req;
+  axi_a48_d32_slv_u0_resp_t axi_dw_conv_to_rsp;
 
-  //`AXI_ASSIGN_FROM_REQ(axi_atomics_dw_conv, axi_atomics_dw_conv_req)
-  //`AXI_ASSIGN_FROM_RESP(axi_atomics_dw_conv, axi_atomics_dw_conv_rsp)
+  // From XBar to Atomics Wrap
+  `AXI_ASSIGN_FROM_REQ(axi_xbar_atomics_regbus, axi_xbar_atomics_req)
+  `AXI_ASSIGN_TO_RESP(axi_xbar_atomics_rsp, axi_xbar_atomics_regbus)
 
-  assign axi_xbar_atomics_req = axi_xbar_mst_port_reqs[AXI_XBAR_OUT_REGBUS];
-  assign axi_xbar_mst_port_rsps[AXI_XBAR_OUT_REGBUS] = axi_xbar_atomics_rsp;
+  // From Atomics Wrap to DW Converter
+  `AXI_ASSIGN_TO_REQ(axi_atomics_dw_conv_req, axi_atomics_dw_conv)
+  `AXI_ASSIGN_FROM_RESP(axi_atomics_dw_conv, axi_atomics_dw_conv_rsp)
+
+  assign axi_xbar_atomics_req = axi_xbar_mst_port_reqs[AXI_XBAR_OUT_REGBUS_PERIPH];
+  assign axi_xbar_mst_port_rsps[AXI_XBAR_OUT_REGBUS_PERIPH] = axi_xbar_atomics_rsp;
 
   axi_riscv_atomics_wrap #(
     .AXI_ADDR_WIDTH     ( 48                         ),
@@ -453,13 +628,12 @@ module cheshire_soc
     .AXI_USER_AS_ID     ( 1'b1                       ),
     .AXI_USER_ID_MSB    ( 0                          ),
     .AXI_USER_ID_LSB    ( 0                          ),
-    .RISCV_WORD_WIDTH   ( 64                         ),
-    .AXI_STRB_WIDTH     ( 1                          )
+    .RISCV_WORD_WIDTH   ( 64                         )
   ) i_axi_riscv_atomics_regbus (
     .clk_i,
     .rst_ni,
-    .mst                ( axi_xbar_atomics_regbus.Master ), // TODO
-    .slv                ( axi_atomics_dw_conv.Slave  )      // TODO
+    .mst                ( axi_atomics_dw_conv.Master ),
+    .slv                ( axi_xbar_atomics_regbus.Slave )
   );
 
   axi_dw_converter #(
@@ -516,7 +690,7 @@ module cheshire_soc
     .rule_t           ( address_rule_48_t         )
   ) i_addr_decode_regbus_periph (
     .addr_i           ( regbus_periph_in_req.addr ),
-    .addr_map_i       ( RegbusPeriphAddrmap       ),
+    .addr_map_i       ( regbus_periph_addrmap     ),
     .idx_o            ( regbus_periph_select      ),
     .dec_valid_o      (                           ),
     .dec_error_o      (                           ),
@@ -703,6 +877,13 @@ module cheshire_soc
     .data_o     ( rom_data_d )
   );
 
+  // Data register
+  `FF(rom_data_q, rom_data_d, '0, clk_i, rst_ni)
+
+  // As the bootrom can answer in one clock cycle the valid signal is
+  // just the one clock cycle delayed version of the request signal
+  `FF(rom_rvalid, rom_req, '0, clk_i, rst_ni)
+   
   ////////////
   //  PLIC  //
   ////////////

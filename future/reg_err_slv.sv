@@ -12,8 +12,6 @@ module reg_err_slv #(
   parameter type            req_t   = logic,
   parameter type            rsp_t   = logic
 ) (
-  input  logic               clk_i,
-  input  logic               rst_ni,
   input  req_t               req_i,
   output rsp_t               rsp_o
 );

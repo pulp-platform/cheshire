@@ -1,0 +1,11 @@
+*.log
+*.jou
+*.xci
+*.Xil/
+scripts/add_sources.tcl
+cheshire.cache/
+cheshire.hw/
+cheshire.runs/
+cheshire.xpr
+out/
+reports/

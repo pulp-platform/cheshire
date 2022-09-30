@@ -15,11 +15,15 @@ module tb_cheshire_soc;
 
   initial begin
 
+    fix.set_bootmode(0);
+    fix.set_testmode(0);
+ 
+     
     fix.wait_for_reset();
 
     // Load binaries into memory (if any)
     if ($value$plusargs("BINARY=%s", binary)) begin
-      display("[tb_cheshire_soc] BINARY = %s", binary);
+      $display("[tb_cheshire_soc] BINARY = %s", binary);
       fix.load_binary(binary);
 
       // Obtain the entry point from the ELF file
@@ -31,13 +35,15 @@ module tb_cheshire_soc;
       entry = cheshire_pkg::SPM_BASE;
     end
 
+    fix.sl_preload();
+     
     fix.jtag_init();
 
-    // Preload the sections from an #eLF file
-    fix.jtag_preload();
-
+    // Preload the sections from an ELF file
+    //fix.jtag_preload();
+    
     // Check the preloaded sections
-    fix.jtag_preload_check();
+    //fix.jtag_preload_check();
 
     // Run from entrypoint
     fix.jtag_run(entry);

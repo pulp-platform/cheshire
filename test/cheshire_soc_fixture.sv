@@ -47,6 +47,9 @@ module cheshire_soc_fixture;
   localparam int UartBaudRate     = 115200;
   localparam int UartParityEna    = 0;
 
+  localparam real TA      = 0.1;
+  localparam real TT      = 0.9;
+
 
   /////////////////////////
   // Clocking and Resets //
@@ -57,7 +60,7 @@ module cheshire_soc_fixture;
     .RstClkCycles ( 5             )
   ) i_clk_rst_sys (
     .clk_o        ( clk_sys       ),
-    .rst_no       ( rst_n         )
+    .rst_no       (               )
   );
 
   clk_rst_gen #(
@@ -75,6 +78,14 @@ module cheshire_soc_fixture;
     .clk_o        ( clk_rtc       ),
     .rst_no       (               )
   );
+
+  initial begin
+    rst_n = 1'b0;
+
+    #(5*ClkPeriodSys);
+
+    rst_n = 1'b1;
+  end
 
   task wait_for_reset;
     @(posedge rst_n);
@@ -179,8 +190,8 @@ module cheshire_soc_fixture;
 
     // Check ID code to match
     riscv_dbg.get_idcode(idcode);
-    assert (idcode == neo_pkg::IDCode) else
-        $error("[JTAG] IDCode Mismatch (0x%h (act) != 0x%h (exp))", idcode, neo_pkg::IDCode);
+    assert (idcode == IDCode) else
+        $error("[JTAG] IDCode Mismatch (0x%h (act) != 0x%h (exp))", idcode, IDCode);
     $display("[JTAG] Read IDCode 0x%h", idcode);
 
     // Activate debug module
@@ -188,7 +199,7 @@ module cheshire_soc_fixture;
     
     // Check for the activation to complete
     do riscv_dbg.read_dmi(dm::DMControl, dmctrl);
-    while !(dmctrl & 32'h0000_0001);
+    while (!(dmctrl & 32'h0000_0001));
     
     // Ensure the system bus is ready too
     riscv_dbg.write_dmi(dm::SBCS, sbcs);
@@ -260,15 +271,17 @@ module cheshire_soc_fixture;
   );
 
     logic [31:0] dm_data;
-
+    $display("[JTAG] halting hart 0");
     // Halt hart 0
     dm_data = 32'h8000_0001;
     riscv_dbg.write_dmi(dm::DMControl, dm_data);
     
     // Check that all selected harts have halted
     do riscv_dbg.read_dmi(dm::DMStatus, dm_data);
-    while !(dm_data & 32'h0000_0200);
+    while (!(dm_data & 32'h0000_0200));
 
+
+    $display("[JTAG] writing start address to register");
     // Write start address to dpc
     // High 4 bytes
     dm_data = start_addr[63:32];
@@ -278,11 +291,13 @@ module cheshire_soc_fixture;
     dm_data = start_addr[31:0];
     riscv_dbg.write_dmi(dm::Data0, dm_data);
 
+
+    $display("[JTAG] writing abstract command");
     dm_data = 32'h0033_07b1;
     riscv_dbg.write_dmi(dm::Command, dm_data);
     
     // Wait until the abstract command has completed
-    do riscv_dbg.read_dmi(dm::abstractcs, dm_data);
+    do riscv_dbg.read_dmi(dm::AbstractCS, dm_data);
     while (dm_data & 32'h0000_1000);
 
     // Set resume request for hart 0
@@ -362,29 +377,26 @@ module cheshire_soc_fixture;
   // Serial Link //
   /////////////////
 
-  axi_a48_d64_mst_u0_req_t sl_in_req;
-  axi_a48_d64_mst_u0_resp_t sl_in_resp;
-
-  axi_a48_d64_mst_u0_req_t sl_out_req;
-  axi_a48_d64_mst_u0_resp_t sl_out_req;
-
   AXI_BUS_DV #(
-    .AXI_ADDR_WIDTH ( cheshire_pkg::AXI_ADDR_WIDTH  ),
-    .AXI_DATA_WIDTH ( cheshire_pkg::AXI_DATA_WIDTH  ),
-    .AXI_ID_WIDTH   ( cheshire_pkg::AXI_ID_WIDTH    ),
-    .AXI_USER_WIDTH ( cheshire_pkg::AXI_USER_WIDTH  )
+    .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH  ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH  ),
+    .AXI_ID_WIDTH   ( AXI_XBAR_MASTER_ID_WIDTH ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH  )
   ) axi_bus_sl2tb (
     .clk_i  ( clk_sys )
   );
 
   AXI_BUS_DV #(
-    .AXI_ADDR_WIDTH ( cheshire_pkg::AXI_ADDR_WIDTH  ),
-    .AXI_DATA_WIDTH ( cheshire_pkg::AXI_DATA_WIDTH  ),
-    .AXI_ID_WIDTH   ( cheshire_pkg::AXI_ID_WIDTH    ),
-    .AXI_USER_WIDTH ( cheshire_pkg::AXI_USER_WIDTH  )
+    .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH  ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH  ),
+    .AXI_ID_WIDTH   ( AXI_XBAR_MASTER_ID_WIDTH ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH  )
   ) axi_bus_tb2sl (
     .clk_i  ( clk_sys )
   );
+
+  axi_a48_d64_mst_u0_req_t sl_out_req, sl_in_req;
+  axi_a48_d64_mst_u0_resp_t sl_out_resp, sl_in_resp;
 
   // From the Serial Link to the Testbench
   `AXI_ASSIGN_FROM_REQ(axi_bus_sl2tb, sl_out_req)
@@ -394,21 +406,24 @@ module cheshire_soc_fixture;
   `AXI_ASSIGN_TO_REQ(sl_in_req, axi_bus_tb2sl)
   `AXI_ASSIGN_FROM_RESP(axi_bus_tb2sl, sl_in_resp)
 
+  logic [3:0]   sl_ddr_data_o, sl_ddr_data_i;
+  logic         sl_ddr_clk_o, sl_ddr_clk_i;
+
   serial_link #(
-    .axi_req_t      ( axi_a48_d64_mst_u0_req_t      ),
-    .axi_rsp_t      ( axi_a48_d64_mst_u0_resp_t     ),
-    .aw_chan_t      ( axi_a48_d64_mst_u0_aw_chan_t  ),
-    .ar_chan_t      ( axi_a48_d64_mst_u0_ar_chan_t  ),
-    .r_chan_t       ( axi_a48_d64_mst_u0_r_chan_t   ),
-    .w_chan_t       ( axi_a48_d64_mst_u0_w_chan_t   ),
-    .b_chan_t       ( axi_a48_d64_mst_u0_b_chan_t   ),
-    .cfg_req_t      ( reg_a48_d32_req_t             ),
-    .cfg_rsp_t      ( reg_a48_d32_rsp_t             ),
-    .hw2reg_t (serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t),
-    .reg2hw_t (serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t),
-    .NumChannels    ( 1                       ),
-    .NumLanes       ( 4                       ),
-    .MaxClkDiv      ( 1024                    )
+    .axi_req_t      ( axi_a48_d64_mst_u0_req_t     ),
+    .axi_rsp_t      ( axi_a48_d64_mst_u0_resp_t    ),
+    .cfg_req_t      ( reg_a48_d32_req_t            ),
+    .cfg_rsp_t      ( reg_a48_d32_rsp_t            ),
+    .aw_chan_t      ( axi_a48_d64_mst_u0_aw_chan_t ),
+    .ar_chan_t      ( axi_a48_d64_mst_u0_ar_chan_t ),
+    .r_chan_t       ( axi_a48_d64_mst_u0_r_chan_t  ),
+    .w_chan_t       ( axi_a48_d64_mst_u0_w_chan_t  ),
+    .b_chan_t       ( axi_a48_d64_mst_u0_b_chan_t  ),
+    .hw2reg_t       (serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t),
+    .reg2hw_t       (serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t),
+    .NumChannels    ( 1                            ),
+    .NumLanes       ( 4                            ),
+    .MaxClkDiv      ( 1024                         )
   ) i_fix_serial_link (
     // There are 3 different clock/resets:
     // 1) clk_i & rst_ni: "always-on" clock & reset coming from the SoC domain. Only config registers are conected to this clock
@@ -442,15 +457,23 @@ module cheshire_soc_fixture;
   );
 
   // Random slave that keeps written data for the slave side
-  axi_rand_slave #(
-    .AW     ( cheshire_pkg::AXI_ADDR_WIDTH  ),
-    .DW     ( cheshire_pkg::AXI_DATA_WIDTH  ),
-    .IW     ( cheshire_pkg::AXI_ID_WIDTH    ),
-    .UW     ( cheshire_pkg::AXI_USER_WIDTH  ),
-    .MAPPED ( 1'b1                          )
-  ) sl_axi_rand_slave;
+  axi_test::axi_rand_slave #(
+    .AW                   ( AXI_ADDR_WIDTH  ),
+    .DW                   ( AXI_DATA_WIDTH  ),
+    .IW                   ( AXI_XBAR_MASTER_ID_WIDTH ),
+    .UW                   ( AXI_USER_WIDTH  ),
+    .MAPPED               ( 1'b1                          ),
+    .TA                   ( TA                            ),
+    .TT                   ( TT                            ),
+    .RAND_RESP            ( 0                             ),
+    .AX_MIN_WAIT_CYCLES   ( 0                             ),
+    .AX_MAX_WAIT_CYCLES   ( 100                           ),
+    .R_MIN_WAIT_CYCLES    ( 0                             ),
+    .R_MAX_WAIT_CYCLES    ( 5                             ),
+    .RESP_MIN_WAIT_CYCLES ( 0                             ),
+    .RESP_MAX_WAIT_CYCLES ( 20                            )
+  ) sl_axi_rand_slave = new (axi_bus_sl2tb);
 
-  sl_axi_rand_slave = new (axi_bus_sl2tb);
 
   // Start the rand slave directly from the beginning
   initial begin
@@ -458,11 +481,13 @@ module cheshire_soc_fixture;
   end
 
   // An AXI driver for the master side
-  typedef axi_driver #(
-    .AW     ( cheshire_pkg::AXI_ADDR_WIDTH  ),
-    .DW     ( cheshire_pkg::AXI_DATA_WIDTH  ),
-    .IW     ( cheshire_pkg::AXI_ID_WIDTH    ),
-    .UW     ( cheshire_pkg::AXI_USER_WIDTH  )
+  typedef axi_test::axi_driver #(
+    .AW     ( AXI_ADDR_WIDTH  ),
+    .DW     ( AXI_DATA_WIDTH  ),
+    .IW     ( AXI_XBAR_MASTER_ID_WIDTH ),
+    .UW     ( AXI_USER_WIDTH  ),
+    .TA     ( TA              ),
+    .TT     ( TT              )
   ) sl_axi_driver_t;
 
   sl_axi_driver_t sl_axi_driver = new (axi_bus_tb2sl);
@@ -474,9 +499,9 @@ module cheshire_soc_fixture;
 
   // Write data from queue with given granularity (1, 2, 4 or 8 bytes)
   task automatic sl_write_size(
-    input logic [cheshire_pkg::AXI_ADDR_WIDTH-1:0]  addr,
+    input logic [AXI_ADDR_WIDTH-1:0]  addr,
     input logic [3:0]                               size,
-    ref logic   [cheshire_pkg::AXI_DATA_WIDTH-1:0]  data [$]
+    ref logic   [AXI_DATA_WIDTH-1:0]  data [$]
   );
     automatic sl_axi_driver_t::ax_beat_t ax = new();
     automatic sl_axi_driver_t::w_beat_t w = new();
@@ -485,51 +510,65 @@ module cheshire_soc_fixture;
     automatic int size_bytes = (1 << size);
 
     @(posedge clk_sys);
+
+    sl_axi_driver.reset_master();  
     
-    $display("[SL] Write address: %h, len: %0d", addr, data.size()-1);
+    //$display("[SL] Write address: %h, len: %0d", addr, data.size()-1);
     ax.ax_addr  = addr;
     ax.ax_id    = '0;
     ax.ax_len   = data.size() - 1;
     ax.ax_size  = size;
     ax.ax_burst = axi_pkg::BURST_INCR;
 
-    $write("[SL] - Sending AW... ");
+    sl_axi_driver.cycle_start();
+    sl_axi_driver.cycle_end();
+     
+    //$write("[SL] - Sending AW... ");
     sl_axi_driver.send_aw(ax);
 
-    $display("OK");
+    sl_axi_driver.cycle_start();
+    sl_axi_driver.cycle_end();
     
+    //$display("OK");
+    //$display("[SL] - Writing burst data");
+     
     do begin
-      w.w_strb = (~('1 << size_bytes)) << addr[$clog2(cheshire_pkg::AXI_DATA_WIDTH)-1:0];
+      w.w_strb = (~('1 << size_bytes)) << addr[$clog2(AXI_DATA_WIDTH)-1:0];
       w.w_data = data[i];
       w.w_last = (i == ax.ax_len);
 
-      $write("[SL] - Sending W... ");
+      sl_axi_driver.cycle_start();
+      sl_axi_driver.cycle_end();
+       
       sl_axi_driver.send_w(w);
 
-      $display("OK");
-      
+      sl_axi_driver.cycle_start();
+      sl_axi_driver.cycle_end();
+         
       i++;
       addr += size_bytes;
       addr &= size_bytes - 1;
     end while (i <= ax.ax_len);
     
-    $write("[SL] - Waiting for B... ");
+    //$write("[SL] - Waiting for B... ");
     sl_axi_driver.recv_b(b);
 
-    $display("OK (1)");
+    //$display("OK (1)");
   endtask
 
   task automatic sl_read_size(
-    input logic [cheshire_pkg::AXI_ADDR_WIDTH-1:0]  addr,
+    input logic [AXI_ADDR_WIDTH-1:0]  addr,
     input logic [3:0]                               size,
     input logic [7:0]                               len,
-    ref logic   [cheshire_pkg::AXI_DATA_WIDTH-1:0]  data [$]
+    ref logic   [AXI_DATA_WIDTH-1:0]  data [$]
   );
     automatic sl_axi_driver_t::ax_beat_t ax = new();
     automatic sl_axi_driver_t::r_beat_t r;
 
     @(posedge clk_sys);
 
+    sl_axi_driver.reset_master();
+     
     $display("[SL] Read address: %h, len: %0d", addr, len);
     ax.ax_addr  = addr;
     ax.ax_id    = '0;
@@ -537,9 +576,15 @@ module cheshire_soc_fixture;
     ax.ax_size  = size;
     ax.ax_burst = axi_pkg::BURST_INCR;
 
+    sl_axi_driver.cycle_start();
+    sl_axi_driver.cycle_end();
+     
     $write("[SL] - Sending AR... ");
     sl_axi_driver.send_ar(ax);
 
+    sl_axi_driver.cycle_start();
+    sl_axi_driver.cycle_end();
+    
     $display("OK");
 
     do begin
@@ -554,14 +599,15 @@ module cheshire_soc_fixture;
 
   // Preload the ELF sections using 64-bit bursts
   task sl_preload;
-    logic [cheshire_pkg::AXI_DATA_WIDTH-1:0] wdata [$];
+    logic [AXI_DATA_WIDTH-1:0] wdata [$];
+    int loopcount;
+
     $display("[SL] Preloading ELF sections");
 
     foreach (sections[addr]) begin
       $display("[SL] Writing section 0x%x (%0d words)", addr * 8, sections[addr]);
 
-      int i;
-      for (i = 0; i < sections[addr]/256; i++) begin
+      for (int i = 0; i < sections[addr]/256; i++) begin
         wdata = {};
 
         // Load the queue for one burst
@@ -570,23 +616,68 @@ module cheshire_soc_fixture;
         end
 
         $display(" - Word %0d/%0d (%0d%%)", i*256, sections[addr], i*256*100/(sections[addr] > 1 ? sections[addr]-1 : 1));
-        ddr_write_size(((addr + i*256) * 8), 3, wdata);
+        sl_write_size(((addr + i*256) * 8), 3, wdata);
+
+        loopcount = i+1;
       end
 
       // Complete the remainder in a shorter burst
-      if(i*256 < sections[addr]) begin
+      if(loopcount*256 < sections[addr]) begin
         wdata = {};
 
-        for(int k = i*256; k < sections[addr]; k++) begin
+        for(int k = loopcount*256; k < sections[addr]; k++) begin
           wdata.push_back(memory[addr + k]);
         end
 
-        $display(" - Word %0d/%0d (%0d%%)", sections[addr], sections[addr], 100);
-        ddr_write_size(((addr + i*256) * 8), 3, wdata);
+        $display(" - Word %0d/%0d (%0d%%)", loopcount*256, sections[addr], loopcount*256*100/(sections[addr] > 1 ? sections[addr]-1 : 1));
+        sl_write_size(((addr + loopcount*256) * 8), 3, wdata);
       end
     end
   endtask
 
+  //////////
+  // DRAM //
+  //////////
+  AXI_BUS_DV #(
+    .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH  ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH  ),
+    .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH  )
+  ) axi_bus_dram2tb (
+    .clk_i  ( clk_sys )
+  );
+
+  axi_a48_d64_slv_u0_req_t  dram_req;
+  axi_a48_d64_slv_u0_resp_t dram_resp;
+   
+  `AXI_ASSIGN_FROM_REQ(axi_bus_dram2tb, dram_req)
+  `AXI_ASSIGN_TO_RESP(dram_resp, axi_bus_dram2tb)
+
+  // Random slave that keeps written data for the slave side
+  axi_test::axi_rand_slave #(
+    .AW                   ( AXI_ADDR_WIDTH  ),
+    .DW                   ( AXI_DATA_WIDTH  ),
+    .IW                   ( AXI_XBAR_SLAVE_ID_WIDTH ),
+    .UW                   ( AXI_USER_WIDTH  ),
+    .MAPPED               ( 1'b1                          ),
+    .TA                   ( TA                            ),
+    .TT                   ( TT                            ),
+    .RAND_RESP            ( 0                             ),
+    .AX_MIN_WAIT_CYCLES   ( 0                             ),
+    .AX_MAX_WAIT_CYCLES   ( 100                           ),
+    .R_MIN_WAIT_CYCLES    ( 0                             ),
+    .R_MAX_WAIT_CYCLES    ( 5                             ),
+    .RESP_MIN_WAIT_CYCLES ( 0                             ),
+    .RESP_MAX_WAIT_CYCLES ( 20                            )
+  ) dram_axi_rand_slave = new (axi_bus_dram2tb);
+
+
+  // Start the rand slave directly from the beginning
+  initial begin
+    dram_axi_rand_slave.run();
+  end  
+   
+   
   ///////////////
   // SPI Model //
   ///////////////
@@ -623,7 +714,7 @@ module cheshire_soc_fixture;
     // Controls
     .SCK      ( spi_sck   ),
     .CSNeg    ( spi_cs    ),
-    .WPNeg    ( spi_io[2] ),
+    .WPNeg    ( 1'b1      ),
     .RESETNeg ( spi_reset_n )
   );
 
@@ -645,7 +736,44 @@ module cheshire_soc_fixture;
     .bite_evt  (                  )
   );
 
+  /////////////////////////
+  // Regbus Error Slaves //
+  /////////////////////////
 
+  reg_a48_d32_req_t dram_conf_req, fll_conf_req, pad_conf_req;
+  reg_a48_d32_rsp_t dram_conf_rsp, fll_conf_rsp, pad_conf_rsp; 
+   
+  reg_err_slv #(
+    .DW       ( 32                 ),
+    .ERR_VAL  ( 32'hBADCAB1E       ),
+    .req_t    ( reg_a48_d32_req_t  ),
+    .rsp_t    ( reg_a48_d32_rsp_t  )
+  ) i_reg_err_slv_dram (
+    .req_i ( dram_conf_req  ),
+    .rsp_o ( dram_conf_rsp  )
+  );
+   
+  reg_err_slv #(
+    .DW       ( 32                 ),
+    .ERR_VAL  ( 32'hBADCAB1E       ),
+    .req_t    ( reg_a48_d32_req_t  ),
+    .rsp_t    ( reg_a48_d32_rsp_t  )
+  ) i_reg_err_slv_fll (
+    .req_i ( fll_conf_req  ),
+    .rsp_o ( fll_conf_rsp  )
+  );
+   
+  reg_err_slv #(
+    .DW       ( 32                 ),
+    .ERR_VAL  ( 32'hBADCAB1E       ),
+    .req_t    ( reg_a48_d32_req_t  ),
+    .rsp_t    ( reg_a48_d32_rsp_t  )
+  ) i_reg_err_slv_pad (
+    .req_i ( pad_conf_req  ),
+    .rsp_o ( pad_conf_rsp  )
+  );
+
+   
   //////////////////
   // Cheshire SoC //
   //////////////////
@@ -657,11 +785,17 @@ module cheshire_soc_fixture;
     .testmode_i       ( testmode        ),
 
     // Boot mode selection
-    .bootmode_i       ( bootmode        ),
+    .boot_mode_i      ( bootmode        ),
 
     // Boot address for CVA6
-    .bootaddr_i       ( 64'h0100_0000   ),
+    .boot_addr_i      ( 64'h0100_0000   ),
 
+    // DRAM
+    .dram_req_o       ( dram_req        ),
+    .dram_resp_i      ( dram_resp       ),
+    .dram_conf_req_o  ( dram_conf_req   ),
+    .dram_conf_rsp_i  ( dram_conf_rsp   ),
+                                   
     // DDR-Link
     .ddr_link_i       ( sl_ddr_data_i   ),
     .ddr_link_o       ( sl_ddr_data_o   ),
@@ -707,13 +841,13 @@ module cheshire_soc_fixture;
     .rtc_i            ( clk_rtc         ),
 
     // FLL
-    .fll_reg_req_o    (                 ),
-    .fll_reg_rsp_i    ( '0              ),
+    .fll_reg_req_o    ( fll_conf_req    ),
+    .fll_reg_rsp_i    ( fll_conf_rsp    ),
     .fll_lock_i       ( 1'b0            ),
 
     // PAD CTRL
-    .pad_config_req_o (                 ),
-    .pad_config_rsp_i ( '0              )
+    .pad_config_req_o ( pad_conf_req    ),
+    .pad_config_rsp_i ( pad_conf_rsp    )
   );
 
 endmodule

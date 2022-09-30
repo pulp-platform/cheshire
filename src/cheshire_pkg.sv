@@ -1,3 +1,11 @@
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+//
+// Nicole Narr <narrn@student.ethz.ch>
+// Christopher Reinwardt <creinwar@student.ethz.ch>
+
+
 package cheshire_pkg;
 
   `include "axi/typedef.svh"
@@ -26,7 +34,12 @@ package cheshire_pkg;
     AXI_XBAR_NUM_OUTPUTS
   } axi_xbar_outputs_e;
 
-  localparam int unsigned AXI_XBAR_MASTER_ID_WIDTH = 2;
+  localparam int unsigned AXI_ADDR_WIDTH           = 48;
+  localparam int unsigned AXI_DATA_WIDTH           = 64;
+  localparam int unsigned AXI_USER_WIDTH           = 1;
+  localparam int unsigned AXI_STRB_WIDTH           = $clog2(AXI_DATA_WIDTH);
+
+  localparam int unsigned AXI_XBAR_MASTER_ID_WIDTH = 4; // TODO
   localparam int unsigned AXI_XBAR_SLAVE_ID_WIDTH  = AXI_XBAR_MASTER_ID_WIDTH + $clog2(AXI_XBAR_NUM_INPUTS); 
 
   localparam int unsigned AXI_XBAR_COMBS           = AXI_XBAR_NUM_INPUTS * AXI_XBAR_NUM_OUTPUTS;
@@ -87,7 +100,7 @@ package cheshire_pkg;
   } regbus_periph_outputs_e;
 
   // Address map of the Regbus Demux
-  localparam address_rule_48_t [REGBUS_PERIPH_NUM_OUTPUTS-1:0] RegbusPeriphAddrmap = '{
+  localparam address_rule_48_t [REGBUS_PERIPH_NUM_OUTPUTS-1:0] regbus_periph_addrmap = '{
     '{ idx: REGBUS_PERIPH_OUT_BOOTROM,  start_addr: 48'h01000000, end_addr: 48'h01020000 },
     '{ idx: REGBUS_PERIPH_OUT_UART,     start_addr: 48'h02000000, end_addr: 48'h02001000 },  // UART
     '{ idx: REGBUS_PERIPH_OUT_I2C,      start_addr: 48'h02001000, end_addr: 48'h02002000 },  // I2C
@@ -118,6 +131,9 @@ package cheshire_pkg;
   // AXI bus with 48 bit address and 32 bit data
   `AXI_TYPEDEF_ALL(axi_a48_d32_slv_u0, logic [47:0], logic [AXI_XBAR_SLAVE_ID_WIDTH-1:0], logic [31:0], logic [3:0], logic [0:0])
 
+  // AXI Lite bus with 48 bit address and 64 bit data
+  `AXI_LITE_TYPEDEF_ALL(axi_lite_a48_d64, logic [47:0], logic [63:0], logic [7:0])
+
   // APB bus with 48 bit address and 32 bit data
   `APB_TYPEDEF_REQ_T(apb_a48_d32_req_t, logic [47:0], logic [31:0], logic [3:0])
   `APB_TYPEDEF_RESP_T(apb_a48_d32_rsp_t, logic [31:0])
@@ -132,7 +148,7 @@ package cheshire_pkg;
         64'h0, 64'h0100_0000
     },
     NonIdempotentLength: {
-        64'h0100_0000, 64'h2000_0000 // Maybe a bit too large but looks nice and doesn't hurt
+        64'h0100_0000, 64'h2000_0000 // TODO Maybe a bit too large but looks nice and doesn't hurt
     },
     NrExecuteRegionRules: 4,
     // DRAM, SPM, Boot ROM, Debug Module
@@ -157,5 +173,43 @@ package cheshire_pkg;
     DmBaseAddress: 64'h0,
     NrPMPEntries: 0
   };
+
+  // Interrupts
+  typedef struct packed {
+    logic uart;
+    logic spim_error;
+    logic spim_spi_event;
+    logic i2c_fmt_watermark;
+    logic i2c_rx_watermark;
+    logic i2c_fmt_overflow;
+    logic i2c_rx_overflow;
+    logic i2c_nak;
+    logic i2c_scl_interference;
+    logic i2c_sda_interference;
+    logic i2c_stretch_timeout;
+    logic i2c_sda_unstable;
+    logic i2c_trans_complete;
+    logic i2c_tx_empty;
+    logic i2c_tx_nonempty;
+    logic i2c_tx_overflow;
+    logic i2c_acq_overflow;
+    logic i2c_ack_stop;
+    logic i2c_host_timeout;
+    logic zero;
+  } cheshire_interrupt_t;
+
+  // SRAM cfg struct
+  typedef struct packed {
+    logic [2:0] ema;
+    logic [1:0] emaw;
+    logic [0:0] emas;
+  } sram_cfg_t;
+
+  // Debug Module
+  localparam logic [15:0] PartNum = 1012;
+  localparam logic [31:0] IDCode = (dm::DbgVersion013 << 28) | (PartNum << 12) | 32'h1;
+
+  localparam SPM_BASE = axi_xbar_addrmap[AXI_XBAR_OUT_SPM].start_addr;
+  localparam SCRATCH_REGS_BASE = regbus_periph_addrmap[REGBUS_PERIPH_OUT_CSR].start_addr;
 
 endpackage
