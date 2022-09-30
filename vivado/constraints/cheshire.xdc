@@ -5,9 +5,7 @@ create_clock -add -name sys_clk_pin -period 5.00 [get_ports sysclk_p]
 create_generated_clock -name soc_clk -divide_by 4 -source [get_pins i_sys_clk_div/CLK] [get_pins i_sys_clk_div/clk_o]
 
 # Avoid BUFG->BUFG problems
-set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets i_sys_clk_div/i_clk_mux/generated_clock]
 set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets i_cheshire_soc/i_axi_vga/i_pixel_clk_div/i_clk_mux/generated_clock]
-#set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets i_dram/u_xlnx_mig_7_ddr3_mig/u_ddr3_clk_ibuf/sys_clk_ibufg]
 
 # 10 MHz clock for JTAG
 create_clock -add -name jtag_clk -period 100.00 [get_ports jtag_tck_i]

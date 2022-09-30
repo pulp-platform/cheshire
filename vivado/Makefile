@@ -30,7 +30,6 @@ ips := xlnx_mig_7_ddr3.xci\
 
 #	   xlnx_ila.xci					\
 
-
 all: $(mcs)
 
 # Generate mcs from bitstream
@@ -41,7 +40,7 @@ $(bit) : $(ips)
 	@mkdir -p $(out)
 	$(VIVADOENV) $(VIVADO) vivado $(VIVADOFLAGS) -source scripts/run.tcl
 	cp $(PROJECT).runs/impl_1/$(PROJECT)* ./$(out)
-
+	
 $(ips):
 	@echo "Generating IP $(basename $@)"
 	cd $(ip-dir)/$(basename $@) && $(MAKE) clean && $(VIVADOENV) VIVADO=$(VIVADO) $(MAKE)
