@@ -4,6 +4,7 @@
 //
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
+// Axel Vanoni <axvanoni@student.ethz.ch>
 
 /dts-v1/;
 / {
@@ -21,12 +22,12 @@
   cpus {
     #address-cells = <1>;
     #size-cells = <0>;
-    timebase-frequency = <1000000>;
+    timebase-frequency = <1000000>; // 1 MHz
     CPU0: cpu@0 {
       device_type = "cpu";
       status = "okay";
       compatible = "riscv", "eth,ariane";
-      clock-frequency = <50000000>;
+      clock-frequency = <50000000>; // 50 MHz
       riscv,isa = "rv64imafdc";
       mmu-type = "riscv,sv39";
       tlb-split;
@@ -50,13 +51,50 @@
       reg-names = "control";
       reg = <0x0 0x0 0x0 0x1000>;
     };
-    serial@2002000 {
+    serial@2000000 {
       compatible = "lowrisc,serial";
-      clock-frequency = <50000000>;
+      clock-frequency = <50000000>; // 50 MHz
       current-speed = <115200>;
       interrupt-parent = <&PLIC0>;
       interrupts = <1>;
+      reg = <0x0 0x2000000 0x0 0x1000>;
+    };
+    i2c@2001000 {
+      compatible = "eth,i2c";
+      interrupt-parent = <&PLIC0>;
+      interrupts = <4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19>;
+      reg = <0x0 0x2001000 0x0 0x1000>;
+    };
+    fll: oscillator@2002000 {
+      compatible = "eth,fll";
       reg = <0x0 0x2002000 0x0 0x1000>;
+    };
+    pad_cfg: pinctrl@2003000 {
+      compatible = "eth,pad_cfg";
+      reg = <0x0 0x2003000 0x0 0x1000>;
+    };
+    spi@3000000 {
+      compatible = "lowrisc,spi";
+      interrupt-parent = <&PLIC0>;
+      interrupts = <2 3>;
+      reg = <0x0 0x3000000 0x0 0x20000>;
+
+      #address-cells = <1>;
+      #size-cells = <0>;
+
+      mmc@0 {
+        compatible = "mmc-spi-slot";
+        reg = <0>;
+        spi-max-frequency = <12500000>;
+        voltage-ranges = <3300 3300>;
+        disable-wp;
+      };
+    };
+    clint@4000000 {
+      compatible = "riscv,clint0";
+      interrupts-extended = <&CPU0_intc 3 &CPU0_intc 7>;
+      reg-names = "control";
+      reg = <0x0 0x4000000 0x0 0x100000>;
     };
     PLIC0: interrupt-controller@c000000 {
       compatible = "riscv,plic0";
@@ -68,11 +106,17 @@
       riscv,ndev = <30>;
       reg = <0x0 0xc000000 0x0 0x4000000>;
     };
-    clint@4000000 {
-      compatible = "riscv,clint0";
-      interrupts-extended = <&CPU0_intc 3 &CPU0_intc 7>;
-      reg-names = "control";
-      reg = <0x0 0x4000000 0x0 0x100000>;
+    ddr_link: memory-controller@20000000 {
+      compatible = "eth,ddr-link";
+      reg = <0x0 0x20000000 0x0 0x1000>;
+    };
+    rpc_dram: memory-controller@20001000 {
+      compatible = "eth,rpc-dram";
+      reg = <0x0 0x20001000 0x0 0x1000>;
+    };
+    vga@20002000 {
+      compatible = "eth,neo-vga";
+      reg = <0x0 0x20002000 0x0 0x1000>;
     };
   };
   htif {
