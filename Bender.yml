@@ -39,10 +39,10 @@ sources:
   - future/reg_to_apb.sv
   - future/mem_to_axi_lite.sv
   - src/cheshire_soc.sv
-  - src/bootrom/bootrom.sv
 
   - target: sim
     files:
+      - src/bootrom/bootrom.sv
       - test/models/spi/S25fs512s/model/s25fs512s.v
       - test/models/i2c/M24FC1025.v
       - test/models/uart_tb_rx.sv
@@ -50,3 +50,9 @@ sources:
       - future/jtag/jtag_intf.sv 
       - test/cheshire_soc_fixture.sv
       - test/tb_cheshire_soc.sv
+
+  - target: fpga
+    files:
+      - vivado/bootrom/bootrom.sv
+      - src/fan_ctrl.sv
+      - src/cheshire_top_xilinx.sv

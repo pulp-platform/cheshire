@@ -11,8 +11,8 @@ XILINX_PART ?= xc7k325tffg900-2
 XILINX_BOARD ?= digilentinc.com:genesys2:part0:1.1
 
 out := out
-bit := $(out)/cheshire.bit
-mcs := $(out)/cheshire.mcs
+bit := $(out)/cheshire_top_xilinx.bit
+mcs := $(out)/cheshire_top_xilinx.mcs
 
 
 VIVADOENV ?= 	PROJECT=$(PROJECT) 				\
@@ -40,7 +40,7 @@ $(bit) : $(ips)
 	@mkdir -p $(out)
 	$(VIVADOENV) $(VIVADO) vivado $(VIVADOFLAGS) -source scripts/run.tcl
 	cp $(PROJECT).runs/impl_1/$(PROJECT)* ./$(out)
-	
+
 $(ips):
 	@echo "Generating IP $(basename $@)"
 	cd $(ip-dir)/$(basename $@) && $(MAKE) clean && $(VIVADOENV) VIVADO=$(VIVADO) $(MAKE)

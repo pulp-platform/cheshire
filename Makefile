@@ -30,6 +30,7 @@ all: 	cheshire_regs\
 		update_i2c_regs \
 		update_spi_regs \
 		vsim/compile.tcl\
+		vivado
 
 ###############
 # Generate HW #
@@ -77,3 +78,10 @@ bender: Bender.yml
 vsim/compile.tcl: bender
 	$(BENDER) script vsim -t sim -t cv64a6_imafdc_sv39 -t test -t cva6 --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "../test/elfloader.cpp" -ccflags "-std=c++11"' >> $@
+
+#############
+# FPGA Flow #
+#############
+vivado: vivado/scripts/add_sources.tcl
+vivado/scripts/add_sources.tcl: bender
+	$(BENDER) script vivado -t fpga -t cv64a6_imafdc_sv39 -t cva6 > $@

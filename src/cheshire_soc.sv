@@ -170,11 +170,10 @@ module cheshire_soc
     .default_mst_port_i     ( '0                         )
   );
 
+
   /////////////
   //  Debug  //
   /////////////
-
-  // TODO: debug dbmodule and remove hacky solution
 
   logic dmi_rst_n;
   dm::dmi_req_t dmi_req;

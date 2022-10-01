@@ -414,16 +414,48 @@ module cheshire_top_xilinx
     .fan_pwm_o     ( fan_pwm    )
   );
 
+  /////////////////////////
+  // Regbus Error Slaves //
+  /////////////////////////
+
+  reg_a48_d32_req_t dram_conf_req, fll_conf_req, pad_conf_req;
+  reg_a48_d32_rsp_t dram_conf_rsp, fll_conf_rsp, pad_conf_rsp; 
+   
+  reg_err_slv #(
+    .DW       ( 32                 ),
+    .ERR_VAL  ( 32'hBADCAB1E       ),
+    .req_t    ( reg_a48_d32_req_t  ),
+    .rsp_t    ( reg_a48_d32_rsp_t  )
+  ) i_reg_err_slv_dram (
+    .req_i ( dram_conf_req  ),
+    .rsp_o ( dram_conf_rsp  )
+  );
+   
+  reg_err_slv #(
+    .DW       ( 32                 ),
+    .ERR_VAL  ( 32'hBADCAB1E       ),
+    .req_t    ( reg_a48_d32_req_t  ),
+    .rsp_t    ( reg_a48_d32_rsp_t  )
+  ) i_reg_err_slv_fll (
+    .req_i ( fll_conf_req  ),
+    .rsp_o ( fll_conf_rsp  )
+  );
+   
+  reg_err_slv #(
+    .DW       ( 32                 ),
+    .ERR_VAL  ( 32'hBADCAB1E       ),
+    .req_t    ( reg_a48_d32_req_t  ),
+    .rsp_t    ( reg_a48_d32_rsp_t  )
+  ) i_reg_err_slv_pad (
+    .req_i ( pad_conf_req  ),
+    .rsp_o ( pad_conf_rsp  )
+  );
+
   //////////////////
   // Cheshire SoC //
   //////////////////
 
-  cheshire_soc #(
-    .ENABLE_VGA       ( 1 ),
-    .VGA_RED_WIDTH    ( 5 ),
-    .VGA_GREEN_WIDTH  ( 6 ),
-    .VGA_BLUE_WIDTH   ( 5 )
-  ) i_cheshire_soc (
+  cheshire_soc i_cheshire_soc (
     .clk_i                ( soc_clk               ),
     .rst_ni               ( rst_n                 ),
 
@@ -433,10 +465,10 @@ module cheshire_top_xilinx
 
     .boot_addr_i          ( 64'h00000000_01000000 ),
 
-    .dram_filt_req_o      ( soc_req               ),
-    .dram_filt_resp_i     ( soc_resp              ),
-    .dram_conf_req_o      (                       ),
-    .dram_conf_rsp_i      ( '0                    ),
+    .dram_req_o           ( soc_req               ),
+    .dram_resp_i          ( soc_resp              ),
+    .dram_conf_req_o      ( dram_conf_req         ),
+    .dram_conf_rsp_i      ( dram_conf_rsp         ),
   
     .ddr_link_i           ( '0                    ),
     .ddr_link_o           (                       ),
@@ -461,12 +493,12 @@ module cheshire_top_xilinx
 
     .rtc_i                ( rtc_clk_q             ),
 
-    .fll_reg_req_o        (                       ),
-    .fll_reg_rsp_i        ( '0                    ),
+    .fll_reg_req_o        ( fll_conf_req          ),
+    .fll_reg_rsp_i        ( fll_conf_rsp          ),
     .fll_lock_i           ( 1'b1                  ),
 
-    .pad_config_req_o     (                       ),
-    .pad_config_rsp_i     ( '0                    ),
+    .pad_config_req_o     ( pad_conf_req          ),
+    .pad_config_rsp_i     ( pad_conf_rsp          ),
 
     .spim_sck_o           ( spi_sck_soc           ),
     .spim_sck_en_o        ( spi_sck_en            ),
@@ -476,11 +508,11 @@ module cheshire_top_xilinx
     .spim_sd_en_o         ( spi_sd_en             ),
     .spim_sd_i            ( spi_sd_soc_in         ),
 
-    .vga_hsync_o,
-    .vga_vsync_o,
-    .vga_red_o,
-    .vga_green_o,
-    .vga_blue_o
+    .vga_hsync_o          ( vga_hs                ),
+    .vga_vsync_o          ( vga_vs                ),
+    .vga_red_o            ( vga_r                 ),
+    .vga_green_o          ( vga_g                 ),
+    .vga_blue_o           ( vga_b                 )
   );
 
 endmodule
