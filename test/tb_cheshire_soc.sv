@@ -15,10 +15,9 @@ module tb_cheshire_soc;
 
   initial begin
 
-    fix.set_bootmode(0);
+    fix.set_bootmode(3);
     fix.set_testmode(0);
  
-     
     fix.wait_for_reset();
 
     // Load binaries into memory (if any)
@@ -35,9 +34,11 @@ module tb_cheshire_soc;
       entry = cheshire_pkg::SPM_BASE;
     end
 
-    fix.sl_preload();
-     
     fix.jtag_init();
+
+    fix.jtag_cfg_llc_spm();
+
+    fix.sl_preload();
 
     // Preload the sections from an ELF file
     //fix.jtag_preload();
@@ -49,8 +50,9 @@ module tb_cheshire_soc;
     fix.jtag_run(entry);
 
     // Wait for the application to write the return value to the first scratch register
-    fix.jtag_wait_for_eoc(cheshire_pkg::SCRATCH_REGS_BASE);
+    fix.jtag_wait_for_eoc(cheshire_pkg::SCRATCH_REGS_BASE + 64'h4);
 
     $finish;
   end
+
 endmodule
