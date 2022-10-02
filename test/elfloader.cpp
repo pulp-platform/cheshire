@@ -1,5 +1,14 @@
-#include <svdpi.h>
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Modified version of the RISC-V Frontend Server 
+// (https://github.com/riscvarchive/riscv-fesvr, e41cfc3001293b5625c25412bd9b26e6e4ab8f7e)
+//
+// Nicole Narr <narrn@student.ethz.ch>
+// Christopher Reinwardt <creinwar@student.ethz.ch>
 
+#include <svdpi.h>
 #include <cstring>
 #include <string>
 #include <sys/stat.h>

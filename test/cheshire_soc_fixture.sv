@@ -179,7 +179,6 @@ module cheshire_soc_fixture;
   task jtag_init;
     logic [31:0] idcode;
     logic [31:0] dmctrl;
-
     automatic dm::sbcs_t sbcs = jtag_init_sbcs;
 
     $display("[JTAG] Initializing debug module");
@@ -198,12 +197,12 @@ module cheshire_soc_fixture;
     riscv_dbg.write_dmi(dm::DMControl, 32'h0000_0001);
     
     // Check for the activation to complete
-    do riscv_dbg.read_dmi(dm::DMControl, dmctrl);
+    do riscv_dbg.read_dmi_exp_backoff(dm::DMControl, dmctrl);
     while (!(dmctrl & 32'h0000_0001));
     
     // Ensure the system bus is ready too
     riscv_dbg.write_dmi(dm::SBCS, sbcs);
-    do riscv_dbg.read_dmi(dm::SBCS, sbcs);
+    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
     while (sbcs.sbbusy);
 
   endtask
@@ -229,7 +228,7 @@ module cheshire_soc_fixture;
         riscv_dbg.write_dmi(dm::SBData0, memory[addr + i][0+:32]);
 
         // Wait for the write to complete
-        do riscv_dbg.read_dmi(dm::SBCS, sbcs);
+        do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
         while (sbcs.sbbusy);
       end
     end
@@ -256,8 +255,8 @@ module cheshire_soc_fixture;
         if (i % 20 == 0)
           $display(" - Word %0d/%0d (%0d%%)", i, sections[addr], i*100/(sections[addr] > 1 ? sections[addr]-1 : 1));
 
-        riscv_dbg.read_dmi(dm::SBData1, rdata[32 +: 32]);
-        riscv_dbg.read_dmi(dm::SBData0, rdata[ 0 +: 32]);
+        riscv_dbg.read_dmi_exp_backoff(dm::SBData1, rdata[32 +: 32]);
+        riscv_dbg.read_dmi_exp_backoff(dm::SBData0, rdata[ 0 +: 32]);
 
         if (rdata != memory[addr + i])
           $error("[JTAG] ERROR: Readback mismatch at 0x%x: act 0x%x != exp 0x%x", (addr + i) * 8, rdata, memory[addr + i]);
@@ -265,19 +264,77 @@ module cheshire_soc_fixture;
     end
   endtask
 
+  task jtag_cfg_llc_spm;
+    automatic dm::sbcs_t sbcs = jtag_init_sbcs;
+    automatic logic [31:0] data;
+
+    // Update SBCS
+    sbcs.sbreadonaddr = 0;
+    sbcs.sbreadondata = 0;
+    sbcs.sbautoincrement = 0;
+    sbcs.sbaccess = 3;
+
+    riscv_dbg.write_dmi(dm::SBCS, sbcs);
+    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+
+    $display("[JTAG] Configuring all of LLC to SPM");
+
+    data = 32'hff;
+
+    // cfg_spm_low = 0xff;
+    riscv_dbg.write_dmi(dm::SBAddress0, regbus_addrmap[REGBUS_OUT_LLC].start_addr[31:0]);
+    riscv_dbg.write_dmi(dm::SBData0, data);
+    // Wait for the write to complete
+    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+
+    if(sbcs.sberror) begin
+      sbcs.sberror = 1;
+      riscv_dbg.write_dmi(dm::SBCS, sbcs);
+      do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+      while (sbcs.sbbusy);
+    end
+
+    // commit_cfg = 0x1;
+    data = 32'h1;
+    riscv_dbg.write_dmi(dm::SBAddress0, regbus_addrmap[REGBUS_OUT_LLC].start_addr[31:0]+32'h10);
+    riscv_dbg.write_dmi(dm::SBData0, data);
+    // Wait for the write to complete
+    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+
+    if(sbcs.sberror) begin
+      sbcs.sberror = 1;
+      riscv_dbg.write_dmi(dm::SBCS, sbcs);
+      do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+      while (sbcs.sbbusy);
+    end
+
+    sbcs = jtag_init_sbcs;
+    // Ensure the system bus is ready again
+    riscv_dbg.write_dmi(dm::SBCS, sbcs);
+    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+  endtask
+
+
   // Run HART 0 from specified address
   task jtag_run(
     input logic [63:0] start_addr
   );
-
     logic [31:0] dm_data;
+
+    riscv_dbg.reset_dmi();
+
+    
     $display("[JTAG] halting hart 0");
     // Halt hart 0
     dm_data = 32'h8000_0001;
     riscv_dbg.write_dmi(dm::DMControl, dm_data);
     
     // Check that all selected harts have halted
-    do riscv_dbg.read_dmi(dm::DMStatus, dm_data);
+    do riscv_dbg.read_dmi_exp_backoff(dm::DMStatus, dm_data);
     while (!(dm_data & 32'h0000_0200));
 
 
@@ -297,7 +354,7 @@ module cheshire_soc_fixture;
     riscv_dbg.write_dmi(dm::Command, dm_data);
     
     // Wait until the abstract command has completed
-    do riscv_dbg.read_dmi(dm::AbstractCS, dm_data);
+    do riscv_dbg.read_dmi_exp_backoff(dm::AbstractCS, dm_data);
     while (dm_data & 32'h0000_1000);
 
     // Set resume request for hart 0
@@ -323,12 +380,13 @@ module cheshire_soc_fixture;
 
     // Wait for scratch register to be set to non-zero value
     $display("[JTAG] Waiting for completion");
+    $display("[JTAG] Polling address: 0x%x", poll_addr);
     riscv_dbg.write_dmi(dm::SBAddress1, poll_addr[63:32]);
     riscv_dbg.write_dmi(dm::SBAddress0, poll_addr[31:0]);
 
     do begin
       riscv_dbg.wait_idle(10);
-      riscv_dbg.read_dmi(dm::SBData0, scratch);
+      riscv_dbg.read_dmi_exp_backoff(dm::SBData0, scratch);
     end while (scratch[0] == 1'b0);
 
     // Report end of execution
@@ -641,14 +699,14 @@ module cheshire_soc_fixture;
   AXI_BUS_DV #(
     .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH  ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH  ),
-    .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH ),
+    .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH + 1 ),
     .AXI_USER_WIDTH ( AXI_USER_WIDTH  )
   ) axi_bus_dram2tb (
     .clk_i  ( clk_sys )
   );
 
-  axi_a48_d64_slv_u0_req_t  dram_req;
-  axi_a48_d64_slv_u0_resp_t dram_resp;
+  axi_a48_d64_mst_u0_llc_req_t  dram_req;
+  axi_a48_d64_mst_u0_llc_resp_t dram_resp;
    
   `AXI_ASSIGN_FROM_REQ(axi_bus_dram2tb, dram_req)
   `AXI_ASSIGN_TO_RESP(dram_resp, axi_bus_dram2tb)
@@ -657,7 +715,7 @@ module cheshire_soc_fixture;
   axi_test::axi_rand_slave #(
     .AW                   ( AXI_ADDR_WIDTH  ),
     .DW                   ( AXI_DATA_WIDTH  ),
-    .IW                   ( AXI_XBAR_SLAVE_ID_WIDTH ),
+    .IW                   ( AXI_XBAR_SLAVE_ID_WIDTH + 1 ),
     .UW                   ( AXI_USER_WIDTH  ),
     .MAPPED               ( 1'b1                          ),
     .TA                   ( TA                            ),
@@ -685,12 +743,15 @@ module cheshire_soc_fixture;
   wire spi_sck, spi_cs;
   wire [3:0] spi_io;
   wire spi_reset_n;
+  wire spi_wp_n;
   logic spi_sck_soc_out;
   logic spi_sck_en;
   logic [3:0] spi_sd_soc_out, spi_sd_soc_in;
   logic [1:0] spi_cs_soc_out;
   logic [1:0] spi_cs_en;
   logic [3:0] spi_sd_en;
+
+  assign spi_wp_n = 1'b1;
  
   assign spi_sck = spi_sck_en ? spi_sck_soc_out : 1'b0;
   assign spi_cs = spi_cs_en[0] ? spi_cs_soc_out[0] : 2'b1;
@@ -709,12 +770,12 @@ module cheshire_soc_fixture;
 
   s25fs512s i_spi_model (
     // Data IO
-    .SI       ( spi_io[0] ),
-    .SO       ( spi_io[1] ),
+    .SI       ( spi_io[0]   ),
+    .SO       ( spi_io[1]   ),
     // Controls
-    .SCK      ( spi_sck   ),
-    .CSNeg    ( spi_cs    ),
-    .WPNeg    ( 1'b1      ),
+    .SCK      ( spi_sck     ),
+    .CSNeg    ( spi_cs      ),
+    .WPNeg    ( spi_wp_n    ),
     .RESETNeg ( spi_reset_n )
   );
 
@@ -736,41 +797,22 @@ module cheshire_soc_fixture;
     .bite_evt  (                  )
   );
 
+
   /////////////////////////
   // Regbus Error Slaves //
   /////////////////////////
 
-  reg_a48_d32_req_t dram_conf_req, fll_conf_req, pad_conf_req;
-  reg_a48_d32_rsp_t dram_conf_rsp, fll_conf_rsp, pad_conf_rsp; 
+  reg_a48_d32_req_t external_reg_req;
+  reg_a48_d32_rsp_t external_reg_rsp; 
    
   reg_err_slv #(
     .DW       ( 32                 ),
     .ERR_VAL  ( 32'hBADCAB1E       ),
     .req_t    ( reg_a48_d32_req_t  ),
     .rsp_t    ( reg_a48_d32_rsp_t  )
-  ) i_reg_err_slv_dram (
-    .req_i ( dram_conf_req  ),
-    .rsp_o ( dram_conf_rsp  )
-  );
-   
-  reg_err_slv #(
-    .DW       ( 32                 ),
-    .ERR_VAL  ( 32'hBADCAB1E       ),
-    .req_t    ( reg_a48_d32_req_t  ),
-    .rsp_t    ( reg_a48_d32_rsp_t  )
-  ) i_reg_err_slv_fll (
-    .req_i ( fll_conf_req  ),
-    .rsp_o ( fll_conf_rsp  )
-  );
-   
-  reg_err_slv #(
-    .DW       ( 32                 ),
-    .ERR_VAL  ( 32'hBADCAB1E       ),
-    .req_t    ( reg_a48_d32_req_t  ),
-    .rsp_t    ( reg_a48_d32_rsp_t  )
-  ) i_reg_err_slv_pad (
-    .req_i ( pad_conf_req  ),
-    .rsp_o ( pad_conf_rsp  )
+  ) i_reg_err_slv_external_reg (
+    .req_i    ( external_reg_req   ),
+    .rsp_o    ( external_reg_rsp   )
   );
 
    
@@ -793,8 +835,6 @@ module cheshire_soc_fixture;
     // DRAM
     .dram_req_o       ( dram_req        ),
     .dram_resp_i      ( dram_resp       ),
-    .dram_conf_req_o  ( dram_conf_req   ),
-    .dram_conf_rsp_i  ( dram_conf_rsp   ),
                                    
     // DDR-Link
     .ddr_link_i       ( sl_ddr_data_i   ),
@@ -840,14 +880,12 @@ module cheshire_soc_fixture;
     // CLINT
     .rtc_i            ( clk_rtc         ),
 
-    // FLL
-    .fll_reg_req_o    ( fll_conf_req    ),
-    .fll_reg_rsp_i    ( fll_conf_rsp    ),
-    .fll_lock_i       ( 1'b0            ),
+    // CLK locked signal
+    .clk_locked_i     ( 1'b0            ),
 
-    // PAD CTRL
-    .pad_config_req_o ( pad_conf_req    ),
-    .pad_config_rsp_i ( pad_conf_rsp    )
+    // External Regbus
+    .external_reg_req_o ( external_reg_req ),
+    .external_reg_rsp_i ( external_reg_rsp )
   );
 
 endmodule

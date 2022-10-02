@@ -1,7 +1,10 @@
-// Copyright 2020 ETH Zurich and University of Bologna.
+// Copyright 2022 ETH Zurich and University of Bologna.
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 // Licensed under Solderpad Hardware License, Version 0.51, see LICENSE for details.
+//
+// Nicole Narr <narrn@student.ethz.ch>
+// Christopher Reinwardt <creinwar@student.ethz.ch>
 
 {
   name: "cheshire_register_file"
@@ -12,13 +15,13 @@
   regwidth: 32
   registers: [
     { name: "VERSION"
-      desc: "Version register, should read 1."
+      desc: "Version register, should read 2."
       swaccess: "ro"
       hwaccess: "none"
       fields: [
         {
           bits: "15:0"
-          resval: "1"
+          resval: "2"
           name: "VERSION"
           desc: '''
                 System version.
@@ -55,28 +58,143 @@
           name: "MODE"
           desc: "Selected boot mode."
           enum: [
-               { value: "0", name: "Idle_lock", desc: "Bootrom locks the FLL and waits for debugging." },
-               { value: "1", name: "SPI_unlock", desc: "Bootrom tries to boot via SPI with unlocked FLL." },
-               { value: "2", name: "SPI_lock", desc: "Bootrom locks the FLL and tries to boot from SPI." },
-               { value: "3", name: "I2C_lock", desc: "Bootrom locks the FLL and tries to boot from I2C." }
+               { value: "0", name: "SD Boot", desc: "Bootrom reads GPT header from SD Card and loads DT and FW from parts 1 and 2" },
+               { value: "1", name: "Reserved_1", desc: "Bootrom prints LLC config and halts." },
+               { value: "2", name: "Reserved_2", desc: "Bootrom prints LLC config and halts." },
+               { value: "3", name: "Reserved_3", desc: "Bootrom prints LLC config and halts." }
           ]
         }
       ]
     }
-    { name: "FLL_LOCK",
-      desc: "FLL frequency lock exposed as a register.",
+    { name: "STATUS",
+      desc: "Clock frequency lock exposed as a register.",
       swaccess: "ro",
       hwaccess: "hwo",
       hwqe:     "true",
       hwext:    "true",
       fields: [
         { bits: "0"
-          name: "FLL_LOCK"
-          desc: "FLL frequency lock."
+          name: "CLOCK_LOCK"
+          desc: "Clocl frequency lock exposed as a register."
           enum: [
-               { value: "0", name: "Unlocked", desc: "FLL is not locked onto reference frequency." },
-               { value: "1", name: "Locked", desc: "FLL is locked to reference frequency." },
+               { value: "0", name: "Unlocked", desc: "Clock is not locked to reference frequency." },
+               { value: "1", name: "Locked", desc: "Clock is locked to reference frequency." },
           ]
+        }
+        {
+          bits: "1"
+          name: "UART_PRESENT"
+          desc: "UART presence exposed as a register."
+          enum: [
+               { value: "0", name: "Not present", desc: "UART is not present" },
+               { value: "1", name: "Present", desc: "UART is present." },
+          ]
+        }
+        {
+          bits: "2"
+          name: "SPI_PRESENT"
+          desc: "SPI presence exposed as a register."
+          enum: [
+               { value: "0", name: "Not present", desc: "SPI is not present" },
+               { value: "1", name: "Present", desc: "SPI is present." },
+          ]
+        }
+        {
+          bits: "3"
+          name: "I2C_PRESENT"
+          desc: "I2C presence exposed as a register."
+          enum: [
+               { value: "0", name: "Not present", desc: "I2C is not present" },
+               { value: "1", name: "Present", desc: "I2C is present." },
+          ]
+        }
+        {
+          bits: "4"
+          name: "DMA_PRESENT"
+          desc: "DMA presence exposed as a register."
+          enum: [
+               { value: "0", name: "Not present", desc: "DMA is not present" },
+               { value: "1", name: "Present", desc: "DMA is present." },
+          ]
+        }
+        {
+          bits: "5"
+          name: "DDR_LINK_PRESENT"
+          desc: "DDR Link presence exposed as a register."
+          enum: [
+               { value: "0", name: "Not present", desc: "DDR Link is not present" },
+               { value: "1", name: "Present", desc: "DDR Link is present." },
+          ]
+        }
+        {
+          bits: "6"
+          name: "DRAM_PRESENT"
+          desc: "DRAM presence exposed as a register."
+          enum: [
+               { value: "0", name: "Not present", desc: "DRAM is not present" },
+               { value: "1", name: "Present", desc: "DRAM is present." },
+          ]
+        }
+        {
+          bits: "7"
+          name: "VGA_PRESENT"
+          desc: "VGA presence exposed as a register."
+          enum: [
+               { value: "0", name: "Not present", desc: "VGA is not present" },
+               { value: "1", name: "Present", desc: "VGA is present." },
+          ]
+        }
+      ]
+    }
+    { name: "VGA_RED_WIDTH",
+      desc: "Selected VGA red width exposed as a register.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwqe:     "true",
+      hwext:    "true",
+      fields: [
+        { bits: "31:0"
+          name: "VGA_RED_WIDTH"
+          desc: "Selected VGA red width."
+        }
+      ]
+    }
+    { name: "VGA_GREEN_WIDTH",
+      desc: "Selected VGA green width exposed as a register.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwqe:     "true",
+      hwext:    "true",
+      fields: [
+        { bits: "31:0"
+          name: "VGA_GREEN_WIDTH"
+          desc: "Selected VGA green width."
+        }
+      ]
+    }
+    { name: "VGA_BLUE_WIDTH",
+      desc: "Selected VGA blue width exposed as a register.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwqe:     "true",
+      hwext:    "true",
+      fields: [
+        { bits: "31:0"
+          name: "VGA_BLUE_WIDTH"
+          desc: "Selected VGA blue width."
+        }
+      ]
+    }
+    { name: "RESET_FREQ",
+      desc: "Clock frequency after coming out of reset.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwqe:     "true",
+      hwext:    "true",
+      fields: [
+        { bits: "31:0"
+          name: "RESET_FREQ"
+          desc: "Clock frequency after reset."
         }
       ]
     }
