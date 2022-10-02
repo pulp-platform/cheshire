@@ -1,3 +1,9 @@
+# Copyright 2018 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+#
+# Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+
 set partNumber $::env(XILINX_PART)
 set boardName  $::env(XILINX_BOARD)
 set boardNameShort $::env(BOARD)

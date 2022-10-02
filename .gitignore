@@ -1,13 +1,23 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Nicole Narr <narrn@student.ethz.ch>
+# Christopher Reinwardt <creinwar@student.ethz.ch>
+
+# Bender files
+.bender/
+
 # Makefile helper files
 .cheshire_regs
-
-# Generated files
-src/regs/cheshire_register_file*
-sw/include/cheshire_regs.h
 
 # Test models
 test/models
 
-# Bender files
-.bender/
-Bender.lock
+# VSIM generated files
+vsim/compile.tcl
+vsim/*.log
+vsim/modelsim.ini
+vsim/transcript
+vsim/vsim.wlf
+vsim/work/

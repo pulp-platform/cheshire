@@ -1,9 +1,0 @@
-src/*.o
-src/**/*.o
-*.bin
-*.dump
-*.rcf
-*.elf
-*.memh
-*.dtb
-
