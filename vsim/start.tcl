@@ -1,4 +1,3 @@
-set BINARY /home/sem22f5/neo/neo-chip/sw/micro_tests/uart_minimal.elf
 
 if {![info exists BINARY]} {
     puts "Set the \"BINARY\" variable before sourcing the start script"
@@ -14,5 +13,3 @@ set StdArithNoWarnings 1
 set NumericStdNoWarnings 1
 
 log -r *
-run 1ms
-

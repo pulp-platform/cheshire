@@ -95,14 +95,7 @@ module cheshire_soc
   reg_a48_d32_rsp_t [REGBUS_PERIPH_NUM_OUTPUTS-1:0] regbus_periph_out_rsp;
 
 
-  // Connect the external DRAM signals
-  // AXI first
-  assign dram_req_o = axi_xbar_mst_port_reqs[AXI_XBAR_OUT_RPC_DRAM];
-  assign axi_xbar_mst_port_rsps[AXI_XBAR_OUT_RPC_DRAM] = dram_resp_i;
 
-  // Then Regbus
-  assign dram_conf_req_o = regbus_periph_out_req[REGBUS_PERIPH_OUT_RPC_DRAM];
-  assign regbus_periph_out_rsp[REGBUS_PERIPH_OUT_RPC_DRAM] = dram_conf_rsp_i;
 
 
   // Machine timer and machine software interrupt pending.
@@ -503,18 +496,18 @@ module cheshire_soc
   );
 
   dma_core_wrap #(
-  .AXI_ADDR_WIDTH   ( 48                          ),
-  .AXI_DATA_WIDTH   ( 64                          ),
-  .AXI_USER_WIDTH   ( 1                           ),
-  .AXI_ID_WIDTH     ( AXI_XBAR_SLAVE_ID_WIDTH     ), // TODO
-  .AXI_SLV_ID_WIDTH ( AXI_XBAR_SLAVE_ID_WIDTH     )
+    .AXI_ADDR_WIDTH   ( 48                          ),
+    .AXI_DATA_WIDTH   ( 64                          ),
+    .AXI_USER_WIDTH   ( 1                           ),
+    .AXI_ID_WIDTH     ( AXI_XBAR_SLAVE_ID_WIDTH     ), // TODO
+    .AXI_SLV_ID_WIDTH ( AXI_XBAR_SLAVE_ID_WIDTH     )
   ) i_dma_core_wrap (
-  .clk_i,
-  .rst_ni,
-  .testmode_i,
-  .axi_master       ( dma_wrap_axi_xbar.Master    ),
-  .axi_slave        ( axi_atomics_dma_wrap.Slave  )
-);
+    .clk_i,
+    .rst_ni,
+    .testmode_i,
+    .axi_master       ( dma_wrap_axi_xbar.Master    ),
+    .axi_slave        ( axi_atomics_dma_wrap.Slave  )
+  );
 
 
 
@@ -577,6 +570,54 @@ module cheshire_soc
     .sram_cfg_i           ( '0              )
   );
 
+
+  //////////
+  // DRAM //
+  //////////
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH          ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH          ),
+    .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH          )
+  ) axi_xbar_atomics_dram();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH          ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH          ),
+    .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH          )
+  ) axi_dram_out();
+
+  `AXI_ASSIGN_FROM_REQ(axi_xbar_atomics_dram, axi_xbar_mst_port_reqs[AXI_XBAR_OUT_RPC_DRAM])
+  `AXI_ASSIGN_TO_RESP(axi_xbar_mst_port_rsps[AXI_XBAR_OUT_RPC_DRAM], axi_xbar_atomics_dram)
+
+  `AXI_ASSIGN_TO_REQ(dram_req_o, axi_dram_out)
+  `AXI_ASSIGN_FROM_RESP(axi_dram_out, dram_resp_i)   
+   
+  axi_riscv_atomics_wrap #(
+    .AXI_ADDR_WIDTH     ( 48                          ),
+    .AXI_DATA_WIDTH     ( 64                          ),
+    .AXI_ID_WIDTH       ( AXI_XBAR_SLAVE_ID_WIDTH     ),
+    .AXI_USER_WIDTH     ( 1                           ),
+    .AXI_MAX_READ_TXNS  ( 4                           ),
+    .AXI_MAX_WRITE_TXNS ( 4                           ),
+    .AXI_USER_AS_ID     ( 1'b1                        ),
+    .AXI_USER_ID_MSB    ( 0                           ),
+    .AXI_USER_ID_LSB    ( 0                           ),
+    .RISCV_WORD_WIDTH   ( 64                          )
+  ) i_axi_riscv_atomics_dram (
+    .clk_i,
+    .rst_ni,
+    .mst                ( axi_dram_out.Master ),
+    .slv                ( axi_xbar_atomics_dram.Slave  )
+  );
+
+  // Connect the external DRAM signals
+  // Regbus
+  assign dram_conf_req_o = regbus_periph_out_req[REGBUS_PERIPH_OUT_RPC_DRAM];
+  assign regbus_periph_out_rsp[REGBUS_PERIPH_OUT_RPC_DRAM] = dram_conf_rsp_i;
+   
   //////////////
   //  Regbus  //
   //////////////
