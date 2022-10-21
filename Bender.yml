@@ -14,7 +14,7 @@ package:
 
 dependencies:
   ariane: { path: ./cva6 }
-  axi: { git: "git@github.com:pulp-platform/axi.git", version: 0.37.0 }
+  axi: { git: "git@github.com:pulp-platform/axi.git", version: 0.39.0-beta }
   apb: { git: "git@github.com:pulp-platform/apb.git", version: 0.2.1 }
   register_interface: { git: "git@github.com:pulp-platform/register_interface.git", version: 0.3.3 }
   serial_link: { git: "git@github.com:pulp-platform/serial_link.git", rev: d4072df77065513d247862f7e9246a9c248fe43a }
@@ -29,7 +29,7 @@ dependencies:
   #iDMA: { git: "git@github.com:pulp-platform/iDMA.git", version: 0.2.3 } TODO
   iDMA: { path: ./future/iDMA }
   spm_interface: { path: ./future/spm_interface }
-  axi_riscv_atomics: { git: "git@github.com:pulp-platform/axi_riscv_atomics.git", version: 0.5.0 }
+  axi_riscv_atomics: { git: "git@github.com:pulp-platform/axi_riscv_atomics.git", version: 0.6.0 }
 
 sources:
   - src/cheshire_pkg.sv

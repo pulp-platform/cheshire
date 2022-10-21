@@ -48,10 +48,11 @@ package cheshire_pkg;
   localparam axi_pkg::xbar_cfg_t axi_xbar_cfg = '{
     NoSlvPorts:         AXI_XBAR_NUM_INPUTS,
     NoMstPorts:         AXI_XBAR_NUM_OUTPUTS,
-    MaxSlvTrans:        12,
     MaxMstTrans:        12,
+    MaxSlvTrans:        12,
     FallThrough:        0,
     LatencyMode:        axi_pkg::CUT_ALL_PORTS,
+    PipelineStages:     1,
     AxiIdWidthSlvPorts: AXI_XBAR_MASTER_ID_WIDTH,
     AxiIdUsedSlvPorts:  AXI_XBAR_MASTER_ID_WIDTH,
     UniqueIds:          0,
@@ -211,5 +212,32 @@ package cheshire_pkg;
 
   localparam SPM_BASE = axi_xbar_addrmap[AXI_XBAR_OUT_SPM].start_addr;
   localparam SCRATCH_REGS_BASE = regbus_periph_addrmap[REGBUS_PERIPH_OUT_CSR].start_addr;
+
+  // Cheshire Config
+  typedef struct packed {
+    bit UART;           // Set to 1 to include UART
+    bit SPI;            // Set to 1 to include SPI
+    bit I2C;            // Set to 1 to include I2C
+    bit DMA;            // Set to 1 to include DMA
+    bit DDR_LINK;       // Set to 1 to include DDR_LINK
+    bit RPC_DRAM;       // Set to 1 to include RPC_DRAM
+    bit VGA;            // Set to 1 to include VGA
+    int VGARedWidth;    // Ignored if VGA set to 0
+    int VGAGreenWidth;  // Ignored if VGA set to 0
+    int VGABlueWidth;   // Ignored if VGA set to 0
+  } cheshire_cfg_t;
+
+  localparam cheshire_cfg_t CheshireCfgDefault = '{
+    UART: 1'b1,
+    SPI: 1'b1,
+    I2C: 1'b1,
+    DMA: 1'b1,
+    DDR_LINK: 1'b1,
+    RPC_DRAM: 1'b1,
+    VGA: 1'b1,
+    VGARedWidth: 5,
+    VGAGreenWidth: 6,
+    VGABlueWidth: 5
+  };
 
 endpackage
