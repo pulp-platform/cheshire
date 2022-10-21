@@ -21,14 +21,15 @@ VIVADOENV ?= 	PROJECT=$(PROJECT) 				\
 				XILINX_BOARD=$(XILINX_BOARD) 	\
 				BIT=$(bit)
 
-VIVADO ?= vitis-2022.1
+#VIVADO ?= vitis-2022.1
+VIVADO ?= vitis-2020.2
 VIVADOFLAGS ?= -nojournal -mode batch -source scripts/prologue.tcl
 
 ip-dir := xilinx
-ips := xlnx_mig_7_ddr3.xci\
-			 xlnx_protocol_checker.xci
+ips := xlnx_mig_7_ddr3.xci
 
-#	   xlnx_ila.xci					\
+#xlnx_protocol_checker.xci
+#xlnx_ila.xci
 
 all: $(mcs)
 
@@ -47,7 +48,6 @@ $(ips):
 	cp $(ip-dir)/$(basename $@)/$(basename $@).srcs/sources_1/ip/$(basename $@)/$@ $@
 
 gui:
-	@mkdir -p $(out)
 	@echo "Starting $(vivado) GUI"
 	@$(VIVADOENV) $(VIVADO) vivado -nojournal -mode gui $(PROJECT).xpr &
 
@@ -56,7 +56,7 @@ program: $(bit)
 	$(VIVADOENV) $(VIVADO) vivado $(VIVADOFLAGS) -source scripts/program.tcl
 
 clean:
-	rm -rf *.log *.jou *.str *.mif *.xci *.xpr $(out) $(PROJECT).cache $(PROJECT).hw $(PROJECT).ip_user_files
+	rm -rf *.log *.jou *.str *.mif *.xci *.xpr .Xil/ $(out) $(PROJECT).cache $(PROJECT).hw $(PROJECT).ioplanning $(PROJECT).ip_user_files $(PROJECT).runs $(PROJECT).sim
 
 .PHONY:
 	clean

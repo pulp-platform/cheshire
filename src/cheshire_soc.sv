@@ -103,9 +103,10 @@ module cheshire_soc import cheshire_pkg::*; #(
   reg_a48_d32_rsp_t [REGBUS_PERIPH_NUM_OUTPUTS-1:0] regbus_periph_out_rsp;
 
 
-  // Machine timer and machine software interrupt pending.
-  logic [1:0] mtip, msip;
+  // Machine/Supervisor timer and machine/supervisor software interrupt pending.
+  logic [1:0] mstip, mssip;
 
+  // External interrupt pending (Machine/Supervisor context)
   logic [1:0] eip;
 
   cheshire_interrupt_t irq;
@@ -124,8 +125,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .boot_addr_i,
     .hart_id_i    ( 64'h0                                    ),
     .irq_i        ( eip                                      ),
-    .ipi_i        ( msip[0]                                  ),
-    .time_irq_i   ( mtip[0]                                  ),
+    .ipi_i        ( mssip[0]                                 ),
+    .time_irq_i   ( mstip[0]                                 ),
     .debug_req_i  ( debug_req                                ),
     .cvxif_req_o  (                                          ),
     .cvxif_resp_i ( '0                                       ),
@@ -164,7 +165,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .mst_ports_req_o        ( axi_xbar_mst_port_reqs     ),
     .mst_ports_resp_i       ( axi_xbar_mst_port_rsps     ),
     .addr_map_i             ( axi_xbar_addrmap           ),
-    .en_default_mst_port_i  ( '1                         ),
+    .en_default_mst_port_i  ( '0                         ),
     .default_mst_port_i     ( '0                         )
   );
 
@@ -1180,8 +1181,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .reg_req_i    ( regbus_periph_out_req[REGBUS_PERIPH_OUT_CLINT] ),
     .reg_rsp_o    ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_CLINT] ),
     .rtc_i        ( rtc_i             ),
-    .timer_irq_o  ( mtip              ), 
-    .ipi_o        ( msip              ) 
+    .timer_irq_o  ( mstip             ), 
+    .ipi_o        ( mssip             ) 
   );
 
   ///////////////

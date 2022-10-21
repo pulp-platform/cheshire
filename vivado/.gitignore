@@ -1,11 +1,16 @@
 *.log
 *.jou
+*.str
+*.mif
 *.xci
 *.Xil/
 scripts/add_sources.tcl
 cheshire.cache/
 cheshire.hw/
+cheshire.ioplanning/
+cheshire.ip_user_files/
 cheshire.runs/
+cheshire.sim/
 cheshire.xpr
 out/
 reports/

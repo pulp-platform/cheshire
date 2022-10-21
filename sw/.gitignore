@@ -1,0 +1,10 @@
+*.o
+*.bin
+*.dump
+*.elf
+lib/*.o
+lib/*.a
+tests/*.bin
+tests/*.dump
+tests/*.elf
+tests/*.o

@@ -28,6 +28,6 @@ SECTIONS
   __base_uart_sym     = 0x02000000;
   __base_i2c_sym      = 0x02001000;
   __base_spi_sym      = 0x03000000;
-  __base_neo_regs     = 0x02004000;
+  __base_cheshire_regs     = 0x02004000;
   __base_spm_sym      = ORIGIN(spm);
 }

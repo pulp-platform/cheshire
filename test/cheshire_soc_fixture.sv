@@ -323,6 +323,7 @@ module cheshire_soc_fixture;
 
     // Wait for scratch register to be set to non-zero value
     $display("[JTAG] Waiting for completion");
+    $display("[JTAG] Polling address: 0x%x", poll_addr);
     riscv_dbg.write_dmi(dm::SBAddress1, poll_addr[63:32]);
     riscv_dbg.write_dmi(dm::SBAddress0, poll_addr[31:0]);
 

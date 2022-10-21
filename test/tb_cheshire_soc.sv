@@ -49,7 +49,8 @@ module tb_cheshire_soc;
     fix.jtag_run(entry);
 
     // Wait for the application to write the return value to the first scratch register
-    fix.jtag_wait_for_eoc(cheshire_pkg::SCRATCH_REGS_BASE);
+    //fix.jtag_wait_for_eoc(cheshire_pkg::SCRATCH_REGS_BASE);
+    fix.jtag_wait_for_eoc(64'h00000000_02004004);
 
     $finish;
   end

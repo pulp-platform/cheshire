@@ -131,59 +131,59 @@ module cheshire_top_xilinx
   // Protocol Checker //
   //////////////////////
 
-  logic [159:0] pc_status;
-  logic pc_asserted;
-
-  xlnx_protocol_checker i_xlnx_protocol_checker (
-    .pc_status        ( pc_status           ),
-    .pc_asserted      ( pc_asserted         ),
-    .aclk             ( dram_clock_out      ),
-    .aresetn          ( rst_n               ),
-    .pc_axi_awid      ( dram_req.aw.id      ),
-    .pc_axi_awaddr    ( dram_req.aw.addr    ),
-    .pc_axi_awlen     ( dram_req.aw.len     ),
-    .pc_axi_awsize    ( dram_req.aw.size    ),
-    .pc_axi_awburst   ( dram_req.aw.burst   ),
-    .pc_axi_awlock    ( dram_req.aw.lock    ),
-    .pc_axi_awcache   ( dram_req.aw.cache   ),
-    .pc_axi_awprot    ( dram_req.aw.prot    ),
-    .pc_axi_awqos     ( dram_req.aw.qos     ),
-    .pc_axi_awregion  ( dram_req.aw.region  ),
-    .pc_axi_awuser    ( dram_req.aw.user    ),
-    .pc_axi_awvalid   ( dram_req.aw_valid   ),
-    .pc_axi_awready   ( dram_resp.aw_ready  ),
-    .pc_axi_wlast     ( dram_req.w.last     ),
-    .pc_axi_wdata     ( dram_req.w.data     ),
-    .pc_axi_wstrb     ( dram_req.w.strb     ),
-    .pc_axi_wuser     ( dram_req.w.user     ),
-    .pc_axi_wvalid    ( dram_req.w_valid    ),
-    .pc_axi_wready    ( dram_resp.w_ready   ),
-    .pc_axi_bid       ( dram_resp.b.id      ),
-    .pc_axi_bresp     ( dram_resp.b.resp    ),
-    .pc_axi_buser     ( dram_resp.b.user    ),
-    .pc_axi_bvalid    ( dram_resp.b_valid   ),
-    .pc_axi_bready    ( dram_req.b_ready    ),
-    .pc_axi_arid      ( dram_req.ar.id      ),
-    .pc_axi_araddr    ( dram_req.ar.addr    ),
-    .pc_axi_arlen     ( dram_req.ar.len     ),
-    .pc_axi_arsize    ( dram_req.ar.size    ),
-    .pc_axi_arburst   ( dram_req.ar.burst   ),
-    .pc_axi_arlock    ( dram_req.ar.lock    ),
-    .pc_axi_arcache   ( dram_req.ar.cache   ),
-    .pc_axi_arprot    ( dram_req.ar.prot    ),
-    .pc_axi_arqos     ( dram_req.ar.qos     ),
-    .pc_axi_arregion  ( dram_req.ar.region  ),
-    .pc_axi_aruser    ( dram_req.ar.user    ),
-    .pc_axi_arvalid   ( dram_req.ar_valid   ),
-    .pc_axi_arready   ( dram_resp.ar_ready  ),
-    .pc_axi_rid       ( dram_resp.r.id      ),
-    .pc_axi_rlast     ( dram_resp.r.last    ),
-    .pc_axi_rdata     ( dram_resp.r.data    ),
-    .pc_axi_rresp     ( dram_resp.r.resp    ),
-    .pc_axi_ruser     ( dram_resp.r.user    ),
-    .pc_axi_rvalid    ( dram_resp.r_valid   ),
-    .pc_axi_rready    ( dram_req.r_ready    )
-  );
+// logic [159:0] pc_status;
+// logic pc_asserted;
+//
+// xlnx_protocol_checker i_xlnx_protocol_checker (
+//   .pc_status        ( pc_status           ),
+//   .pc_asserted      ( pc_asserted         ),
+//   .aclk             ( dram_clock_out      ),
+//   .aresetn          ( rst_n               ),
+//   .pc_axi_awid      ( dram_req.aw.id      ),
+//   .pc_axi_awaddr    ( dram_req.aw.addr    ),
+//   .pc_axi_awlen     ( dram_req.aw.len     ),
+//   .pc_axi_awsize    ( dram_req.aw.size    ),
+//   .pc_axi_awburst   ( dram_req.aw.burst   ),
+//   .pc_axi_awlock    ( dram_req.aw.lock    ),
+//   .pc_axi_awcache   ( dram_req.aw.cache   ),
+//   .pc_axi_awprot    ( dram_req.aw.prot    ),
+//   .pc_axi_awqos     ( dram_req.aw.qos     ),
+//   .pc_axi_awregion  ( dram_req.aw.region  ),
+//   .pc_axi_awuser    ( dram_req.aw.user    ),
+//   .pc_axi_awvalid   ( dram_req.aw_valid   ),
+//   .pc_axi_awready   ( dram_resp.aw_ready  ),
+//   .pc_axi_wlast     ( dram_req.w.last     ),
+//   .pc_axi_wdata     ( dram_req.w.data     ),
+//   .pc_axi_wstrb     ( dram_req.w.strb     ),
+//   .pc_axi_wuser     ( dram_req.w.user     ),
+//   .pc_axi_wvalid    ( dram_req.w_valid    ),
+//   .pc_axi_wready    ( dram_resp.w_ready   ),
+//   .pc_axi_bid       ( dram_resp.b.id      ),
+//   .pc_axi_bresp     ( dram_resp.b.resp    ),
+//   .pc_axi_buser     ( dram_resp.b.user    ),
+//   .pc_axi_bvalid    ( dram_resp.b_valid   ),
+//   .pc_axi_bready    ( dram_req.b_ready    ),
+//   .pc_axi_arid      ( dram_req.ar.id      ),
+//   .pc_axi_araddr    ( dram_req.ar.addr    ),
+//   .pc_axi_arlen     ( dram_req.ar.len     ),
+//   .pc_axi_arsize    ( dram_req.ar.size    ),
+//   .pc_axi_arburst   ( dram_req.ar.burst   ),
+//   .pc_axi_arlock    ( dram_req.ar.lock    ),
+//   .pc_axi_arcache   ( dram_req.ar.cache   ),
+//   .pc_axi_arprot    ( dram_req.ar.prot    ),
+//   .pc_axi_arqos     ( dram_req.ar.qos     ),
+//   .pc_axi_arregion  ( dram_req.ar.region  ),
+//   .pc_axi_aruser    ( dram_req.ar.user    ),
+//   .pc_axi_arvalid   ( dram_req.ar_valid   ),
+//   .pc_axi_arready   ( dram_resp.ar_ready  ),
+//   .pc_axi_rid       ( dram_resp.r.id      ),
+//   .pc_axi_rlast     ( dram_resp.r.last    ),
+//   .pc_axi_rdata     ( dram_resp.r.data    ),
+//   .pc_axi_rresp     ( dram_resp.r.resp    ),
+//   .pc_axi_ruser     ( dram_resp.r.user    ),
+//   .pc_axi_rvalid    ( dram_resp.r_valid   ),
+//   .pc_axi_rready    ( dram_req.r_ready    )
+// );
 
   ///////////////////////////////////////////
   // AXI Clock Domain Crossing SoC -> DRAM //
@@ -393,14 +393,13 @@ module cheshire_top_xilinx
   // ILA Debugging //
   ///////////////////
 
-  //xlnx_ila i_xlnx_ila (
-  //  .clk (dram_clock_out),
-  //  .probe0(spi_sck_soc),
-  //  .probe1(spi_sd_soc_in),
-  //  .probe2(spi_sd_soc_out),
-  //  .probe3(spi_cs_soc[0]),
-  //  .probe4(spi_cs_soc[1])
-  //);
+// xlnx_ila i_xlnx_ila (
+//   .clk (dram_clock_out),
+//   .probe0(sd_sclk_o),
+//   .probe1(spi_sd_soc_out),
+//   .probe2(sd_d_io),
+//   .probe3(sd_cmd_o)
+// );
 
 
   /////////////////

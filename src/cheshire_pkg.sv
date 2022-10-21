@@ -144,12 +144,12 @@ package cheshire_pkg;
     BTBEntries: 32,
     BHTEntries: 128,
     // Default config
-    NrNonIdempotentRules: 2,
+    NrNonIdempotentRules: 1,
     NonIdempotentAddrBase: { 
-        64'h0, 64'h0100_0000
+        64'h0100_0000
     },
     NonIdempotentLength: {
-        64'h0100_0000, 64'h2000_0000 // TODO Maybe a bit too large but looks nice and doesn't hurt
+        64'h2000_0000 // TODO Maybe a bit too large but looks nice and doesn't hurt
     },
     NrExecuteRegionRules: 4,
     // DRAM, SPM, Boot ROM, Debug Module
@@ -178,24 +178,24 @@ package cheshire_pkg;
   // Interrupts
   typedef struct packed {
     logic uart;
-    logic spim_error;
     logic spim_spi_event;
-    logic i2c_fmt_watermark;
-    logic i2c_rx_watermark;
-    logic i2c_fmt_overflow;
-    logic i2c_rx_overflow;
-    logic i2c_nak;
-    logic i2c_scl_interference;
-    logic i2c_sda_interference;
-    logic i2c_stretch_timeout;
-    logic i2c_sda_unstable;
-    logic i2c_trans_complete;
-    logic i2c_tx_empty;
-    logic i2c_tx_nonempty;
-    logic i2c_tx_overflow;
-    logic i2c_acq_overflow;
-    logic i2c_ack_stop;
+    logic spim_error;
     logic i2c_host_timeout;
+    logic i2c_ack_stop;
+    logic i2c_acq_overflow;
+    logic i2c_tx_overflow;
+    logic i2c_tx_nonempty;
+    logic i2c_tx_empty;
+    logic i2c_trans_complete;
+    logic i2c_sda_unstable;
+    logic i2c_stretch_timeout;
+    logic i2c_sda_interference;
+    logic i2c_scl_interference;
+    logic i2c_nak;
+    logic i2c_rx_overflow;
+    logic i2c_fmt_overflow;
+    logic i2c_rx_watermark;
+    logic i2c_fmt_watermark;
     logic zero;
   } cheshire_interrupt_t;
 

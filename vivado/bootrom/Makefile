@@ -19,7 +19,7 @@ RISCV_OBJDUMP	?= riscv64-unknown-elf-objdump
 RISCV_STRIP   	?= riscv64-unknown-elf-strip
 
 
-all: bootrom.rcf bootrom.dump bootrom.sv
+all: bootrom.rcf bootrom.dump bootrom.sv cheshire-fpga.dtb
 
 %.dtb: %.dts
 	dtc $< -o $@
@@ -56,5 +56,5 @@ all: bootrom.rcf bootrom.dump bootrom.sv
 clean:
 	rm -f *.bin *.dump *.rcf *.elf src/*.o src/**/*.o *.dtb
 
-bootrom.elf: bootrom.S neo_bootrom.ld $(OBJS_C)
-	$(RISCV_CC)  $(INCLUDES) -Tneo_bootrom.ld  $(LD_FLAGS) $< $(OBJS_C) -o $@
+bootrom.elf: bootrom.S cheshire_bootrom.ld $(OBJS_C)
+	$(RISCV_CC)  $(INCLUDES) -Tcheshire_bootrom.ld  $(LD_FLAGS) $< $(OBJS_C) -o $@
