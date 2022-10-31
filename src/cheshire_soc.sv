@@ -231,7 +231,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .mem_rdata_i     ( dbg_rdata                 )
   );
 
-  //dbg_rvalid = #1 dbg_req
+  // dbg_rvalid = #1 dbg_req
   `FF(dbg_rvalid, dbg_req, 1'b0, clk_i, rst_ni)
 
   dm::hartinfo_t [0:0] hartinfo;
@@ -613,7 +613,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  Scratchpad memory  //
   /////////////////////////
 
-  logic spm_req, spm_gnt, spm_we, spm_rvalid;
+  logic spm_req, spm_we, spm_rvalid;
   logic [47:0] spm_addr;
   logic [63:0] spm_wdata, spm_rdata;
   logic [7:0]  spm_strb;
@@ -633,7 +633,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .axi_req_i    ( axi_xbar_mst_port_reqs[AXI_XBAR_OUT_SPM] ),
     .axi_resp_o   ( axi_xbar_mst_port_rsps[AXI_XBAR_OUT_SPM] ),
     .mem_req_o    ( spm_req                   ),
-    .mem_gnt_i    ( spm_gnt                   ),
+    .mem_gnt_i    ( spm_req                   ),
     .mem_addr_o   ( spm_addr                  ),
     .mem_wdata_o  ( spm_wdata                 ),
     .mem_strb_o   ( spm_strb                  ),
@@ -643,29 +643,26 @@ module cheshire_soc import cheshire_pkg::*; #(
     .mem_rdata_i  ( spm_rdata                 )
   );
 
-  // Scratch Pad Memory
-  spm_1p_adv #(
-    .NumWords             ( 16384           ),  // 128 KiB
-    .DataWidth            ( 64              ),
-    .ByteWidth            ( 8               ),
-    .EnableInputPipeline  ( 1               ),
-    .EnableOutputPipeline ( 1               ),
-    .EnableECC            ( 0               ),
-    .SimInit              ( "zeros"         ),
-    .sram_cfg_t           ( sram_cfg_t      )
+  // spm_rvalid = #1 spm_req
+  `FF(spm_rvalid, spm_req, 1'b0, clk_i, rst_ni)
+
+  tc_sram #(
+    .NumWords     ( 16384          ), // 128 KiB
+    .DataWidth    ( 64             ),
+    .ByteWidth    ( 8              ),
+    .NumPorts     ( 1              ),
+    .Latency      ( 1              ),
+    .SimInit      ( "zeros"        ),
+    .PrintSimCfg  ( 1'b0           )
   ) i_spm (
-    .clk_i,
-    .rst_ni,
-    .valid_i              ( spm_req         ),
-    .ready_o              ( spm_gnt         ),
-    .we_i                 ( spm_we          ),
-    .addr_i               ( spm_addr[16:3]  ),
-    .wdata_i              ( spm_wdata       ),
-    .be_i                 ( spm_strb        ),
-    .rdata_o              ( spm_rdata       ),
-    .rvalid_o             ( spm_rvalid      ),
-    .rerror_o             (                 ), // TODO
-    .sram_cfg_i           ( '0              )
+    .clk_i        ( clk_i          ),
+    .rst_ni       ( rst_ni         ),
+    .req_i        ( spm_req        ),
+    .we_i         ( spm_we         ),
+    .addr_i       ( spm_addr[16:3] ),
+    .wdata_i      ( spm_wdata      ),
+    .be_i         ( spm_strb       ),
+    .rdata_o      ( spm_rdata      )
   );
 
 

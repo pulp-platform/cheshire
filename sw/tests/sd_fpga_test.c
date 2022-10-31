@@ -8,12 +8,11 @@
 #include "opentitan_qspi.h"
 #include "printf.h"
 #include "sd.h"
+#include "gpt.h"
 #include "sleep.h"
 #include "uart.h"
 
-#define DT_LBA 0x800
 #define DT_LEN 0x8
-#define FW_LBA 0x40800
 #define FW_LEN 0x1800
 
 #define SD_SPEED 25000000
@@ -78,6 +77,9 @@ int main(void)
     opentitan_qspi_t spi;
     int ret = 0;
 
+    int dt_lba;
+    int fw_lba;
+
     init_uart(50000000, 115200);
     uart_initialized = 1;
 
@@ -98,13 +100,18 @@ int main(void)
 
     opentitan_qspi_set_speed(&spi, SD_SPEED);
 
+    // Print info of SD Card
+    gpt_info(&spi);
+
     // Copy Device Tree to high SPM
-    sd_copy_blocks(&spi, DT_LBA, (unsigned char *) 0x70010000, DT_LEN);
+    gpt_find_partition(&spi, 0, &dt_lba);
+    sd_copy_blocks(&spi, dt_lba, (unsigned char *) 0x70010000, DT_LEN);
 
     printf("Copied DT to 0x70010000\r\n");
 
     // Copy firmware to DRAM
-    sd_copy_blocks(&spi, FW_LBA, (unsigned char *) 0x80000000, FW_LEN);
+    gpt_find_partition(&spi, 1, &fw_lba);
+    sd_copy_blocks(&spi, fw_lba, (unsigned char *) 0x80000000, FW_LEN);
 
     printf("Copied FW to 0x80000000\r\n");
 
