@@ -10,20 +10,29 @@
 
 #define DEBUG 1
 
+
 #include <stddef.h>
 
-#include "opentitan_qspi.h"
 #include "printf.h"
 #include "sd.h"
 
-static int sd_cmd(opentitan_qspi_t *spi, unsigned long int cmd, unsigned char *resp, unsigned int resp_len)
+unsigned char const sd_resp_len[] = {
+  1,    // R1
+  1,    // R1b
+  2,    // R2
+  5,    // R3
+  0,    // R4 -- Unused
+  0,    // R5 -- Unused
+  0,    // Unused
+  5     // R7
+};
+
+static int sd_cmd(opentitan_qspi_t *spi, unsigned long int cmd, unsigned char *resp, sd_resp_t rtyp)
 {
+    unsigned int resp_len = (unsigned char) sd_resp_len[rtyp];
     unsigned int rcv_len = 4*((resp_len + 3)/4);
-    int rcv_left = (int) resp_len;
-    int ret = 0;
-    char txbuf[6];
-    char rxbuf[8];
-    char rcvd = 0;
+    int rcv_left = (int) resp_len, ret = 0;
+    char txbuf[6], rxbuf[8], rcvd = 0, r1_busy = 1, fst = 0;
 
     if(rcv_len > 8){
 #ifdef DEBUG
@@ -52,18 +61,44 @@ static int sd_cmd(opentitan_qspi_t *spi, unsigned long int cmd, unsigned char *r
             return ret;
 
         for(unsigned int i = 0; i < rcv_len; i++){
+	        // CMD12 -> Skip the first byte immediately following the command 
+	        if(!fst && txbuf[0] == 0x4C){
+	            fst = 1;
+	            continue;
+	        }
+
             if(!rcvd && !(rxbuf[i] & 0x80)){
                 rcvd = 1;
             }
 
-            if(rcvd && rcv_left > 0){
-                resp[resp_len - rcv_left--] = rxbuf[i];
-            }
+            if(rcvd){
+	            if (rcv_left > 0){
+                    resp[rcv_left-- - 1] = rxbuf[i];
+                } else if (rtyp == SD_RESP_R1b && r1_busy){
+		            r1_busy = (rxbuf[i] == 0);
+	            }
+	        }
 
 #ifdef DEBUG
             //printf("[sd] sd_cmd received 0x%x\r\n", rxbuf[i]);
             //printf("[sd] rcv_left = %d\r\n", rcv_left);
 #endif
+        }
+    }
+
+    if((rtyp == SD_RESP_R1b) && r1_busy){
+        for(int b = 0; b < SD_R1b_TIMEOUT; b++){
+	        ret = opentitan_qspi_xfer(spi, 4*8, NULL, rxbuf, 0);
+
+	        for(int i = 0; i < 4; i++){
+	            if(rxbuf[i]){
+	                r1_busy = 0;
+	                break;
+	            }
+	        }
+
+	        if(!r1_busy)
+	            break;
         }
     }
 
@@ -83,7 +118,7 @@ int sd_init(opentitan_qspi_t *spi)
     //--------------
     //    CMD0 - 0x400000000095
     //--------------
-    ret = sd_cmd(spi, 0x400000000095L, (unsigned char *) &buf, 1);
+    ret = sd_cmd(spi, 0x400000000095L, (unsigned char *) &buf, SD_RESP_R1);
 
     if(ret)
         return ret;
@@ -100,7 +135,7 @@ int sd_init(opentitan_qspi_t *spi)
     //--------------
     //    CMD8 - 0x48000001AA87
     //--------------
-    ret = sd_cmd(spi, 0x48000001AA87L, (unsigned char *) &buf, 5);
+    ret = sd_cmd(spi, 0x48000001AA87L, (unsigned char *) &buf, SD_RESP_R7);
 
     if(ret)
         return ret;
@@ -109,7 +144,7 @@ int sd_init(opentitan_qspi_t *spi)
     printf("[sd] CMD8 response: 0x%lx\r\n", buf);
 #endif
 
-    if((buf & 0xFFFFFFFFFFL) != 0xAA01000001)
+    if((buf & 0xFFFFFFFFFFL) != 0x01000001AA)
         return (buf & 0xFF);
 
     buf = 0;
@@ -117,7 +152,7 @@ int sd_init(opentitan_qspi_t *spi)
     //--------------
     //    CMD55 - 0x770000000065
     //--------------
-    ret = sd_cmd(spi, 0x770000000065, (unsigned char *) &buf, 1);
+    ret = sd_cmd(spi, 0x770000000065, (unsigned char *) &buf, SD_RESP_R1);
 
     if(ret)
         return ret;
@@ -131,7 +166,7 @@ int sd_init(opentitan_qspi_t *spi)
     //--------------
     //   ACMD41 - 0x694000000077
     //--------------
-    ret = sd_cmd(spi, 0x694000000077, (unsigned char *) &buf, 1);
+    ret = sd_cmd(spi, 0x694000000077, (unsigned char *) &buf, SD_RESP_R1);
 
     if(ret)
         return ret;
@@ -147,7 +182,7 @@ int sd_init(opentitan_qspi_t *spi)
         //--------------
         //    CMD55 - 0x770000000065
         //--------------
-        ret = sd_cmd(spi, 0x770000000065, (unsigned char *) &buf, 1);
+        ret = sd_cmd(spi, 0x770000000065, (unsigned char *) &buf, SD_RESP_R1);
 
         if(ret)
             return ret;
@@ -160,7 +195,7 @@ int sd_init(opentitan_qspi_t *spi)
         //--------------
         //   ACMD41 - 0x694000000077
         //--------------
-        ret = sd_cmd(spi, 0x694000000077, (unsigned char *) &buf, 1);
+        ret = sd_cmd(spi, 0x694000000077, (unsigned char *) &buf, SD_RESP_R1);
 
         if(ret)
             return ret;
@@ -175,7 +210,7 @@ int sd_init(opentitan_qspi_t *spi)
     //--------------
     //    CMD58 - 0x7A00000000FF
     //--------------
-    ret = sd_cmd(spi, 0x7A00000000FFL, (unsigned char *) &buf, 5);
+    ret = sd_cmd(spi, 0x7A00000000FFL, (unsigned char *) &buf, SD_RESP_R3);
 
     if(ret)
         return ret;    
@@ -189,7 +224,7 @@ int sd_init(opentitan_qspi_t *spi)
     //--------------
     //    CMD16 - 0x5000000200FF
     //--------------
-    ret = sd_cmd(spi, 0x5000000200FFL, (unsigned char *) &buf, 1);
+    ret = sd_cmd(spi, 0x5000000200FFL, (unsigned char *) &buf, SD_RESP_R1);
 
     if(ret)
         return ret;    
@@ -257,7 +292,7 @@ int sd_copy_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_a
                         if(!(rxbuf[b] & 0x80)){
                             cmd_stat = 1;
 #ifdef DEBUG
-                            printf("[sd] Got command response: 0x%x\r\n", rxbuf[b]);
+                            printf("[sd] Got block read command response: 0x%x\r\n", rxbuf[b]);
 #endif
                         }
                     } else {
@@ -303,7 +338,7 @@ int sd_copy_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_a
 
     if(num_blocks > 1){
         unsigned long int buf = 0;
-        ret = sd_cmd(spi, 0x4C0000000001L, (unsigned char *) &buf, 1);
+        ret = sd_cmd(spi, 0x4C0000000001L, (unsigned char *) &buf, SD_RESP_R1b);
 
 #ifdef DEBUG
         printf("[sd] CMD12 response: 0x%x\r\n", buf);

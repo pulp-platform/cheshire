@@ -15,6 +15,10 @@
   chosen {
     stdout-path = "/soc/serial@2000000:115200";
   };
+  //memory@70000000 {
+  //  device_type = "memory";
+  //  reg = <0x0 0x70000000 0x0 0x00020000>;
+  //};
   memory@80000000 {
     device_type = "memory";
     reg = <0x0 0x80000000 0x0 0x40000000>;
@@ -43,20 +47,19 @@
   soc: soc {
     #address-cells = <2>;
     #size-cells = <2>;
-    compatible = "eth,ariane-bare-soc", "simple-bus";
+    compatible = "eth,cheshire-bare-soc", "simple-bus";
     ranges;
     debug@0 {
       compatible = "riscv,debug-013";
-      interrupts-extended = <&CPU0_intc 65535>;
       reg-names = "control";
       reg = <0x0 0x0 0x0 0x1000>;
     };
     serial@2000000 {
-      compatible = "ns16750", "ns16550";
+      compatible = "ns16550";
       clock-frequency = <50000000>; // 50 MHz
       current-speed = <115200>;
       interrupt-parent = <&PLIC0>;
-      interrupts = <1>;
+      interrupts = <19>;
       reg = <0x0 0x2000000 0x0 0x1000>;
       reg-shift = <2>; // regs are spaced on 32 bit boundary
       reg-io-width = <4>; // only 32-bit access are supported
@@ -64,14 +67,16 @@
     i2c@2001000 {
       compatible = "eth,i2c";
       interrupt-parent = <&PLIC0>;
-      interrupts = <4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19>;
+      interrupts = <1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16>;
       reg = <0x0 0x2001000 0x0 0x1000>;
     };
     spi@3000000 {
-      compatible = "lowrisc,spi";
+      compatible = "opentitan,spi-host", "lowrisc,spi";
       interrupt-parent = <&PLIC0>;
-      interrupts = <2 3>;
+      interrupts = <17 18>;
       reg = <0x0 0x3000000 0x0 0x20000>;
+      clock-frequency = <50000000>;
+      max-frequency = <25000000>;
 
       #address-cells = <1>;
       #size-cells = <0>;
@@ -97,7 +102,7 @@
       interrupt-controller;
       interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9>;
       riscv,max-priority = <7>;
-      riscv,ndev = <30>;
+      riscv,ndev = <20>;
       reg = <0x0 0xc000000 0x0 0x4000000>;
     };
     ddr_link: memory-controller@20000000 {

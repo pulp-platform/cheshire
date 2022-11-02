@@ -102,7 +102,7 @@ static int opentitan_qspi_issue_dummy(opentitan_qspi_t *priv, unsigned int bitle
 		if(flags & SPI_XFER_END){
 			priv->cs_state = 0;
 			writel(OPENTITAN_QSPI_CS_UNUSED, priv->regs + REG_CSID);
-			opentitan_qspi_issue_dummy(priv, 1, 0);
+			opentitan_qspi_issue_dummy(priv, 8, 0);
 		}
 		return 0;
 	}
@@ -161,7 +161,7 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 		if(flags & SPI_XFER_END){
 			priv->cs_state = 0;
 			writel(OPENTITAN_QSPI_CS_UNUSED, priv->regs + REG_CSID);
-			opentitan_qspi_issue_dummy(priv, 1, 0);
+			opentitan_qspi_issue_dummy(priv, 8, 0);
 		}
 		return 0;
 	}
@@ -296,6 +296,7 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 							} else {
 								// We are in here so at least one byte remains
 								dst[0] = word & 0xFF;
+								bytes_rcvd++;
 
 								if((num_bytes - bytes_rcvd) >= 1){
 									dst[1] = (word >> 8) & 0xFF;
@@ -341,6 +342,7 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 				} else {
 					// We are in here so at least one byte remains
 					dst[0] = word & 0xFF;
+                    bytes_rcvd++;
 
 					if((num_bytes - bytes_rcvd) >= 1){
 						dst[1] = (word >> 8) & 0xFF;
@@ -417,7 +419,7 @@ int opentitan_qspi_xfer(opentitan_qspi_t *priv, unsigned int bitlen,
 
 int opentitan_qspi_set_speed(opentitan_qspi_t *priv, unsigned int speed)
 {
-	unsigned int clkdiv = 0;
+	unsigned long int clkdiv = 0;
 	unsigned int configopts = 0;
 
 	if(speed > priv->max_freq){
@@ -435,8 +437,8 @@ int opentitan_qspi_set_speed(opentitan_qspi_t *priv, unsigned int speed)
 	// SPI_CLK = SYS_CLK/(2*(clkdiv+1))
 	// clkdiv = SYS_CLK/(2*SPI_CLK) - 1
 
-	clkdiv = priv->clk_freq + 2*speed - 2;
-	clkdiv = clkdiv/(2*speed - 1);
+	clkdiv = priv->clk_freq + 2*speed - 1L;
+	clkdiv = clkdiv/(2*speed) - 1L;
 
 	if(clkdiv != (clkdiv & (~(-1 << 16)))){
 #ifdef DEBUG

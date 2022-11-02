@@ -10,10 +10,9 @@
 #include "printf.h"
 #include "sd.h"
 #include "uart.h"
+#include "gpt.h"
 
-#define DT_LBA 0x800
 #define DT_LEN 0x8
-#define FW_LBA 0x40800
 #define FW_LEN 0x1800
 
 #define CORE_FREQ_HZ 50000000
@@ -25,6 +24,7 @@ extern uint32_t __base_cheshire_regs;
 void sd_boot(void)
 {
     opentitan_qspi_t spi;
+    unsigned int dt_lba = 0, fw_lba = 0;
     int ret = 0;
 
     // Setup the SPI Host
@@ -45,21 +45,28 @@ void sd_boot(void)
 
     opentitan_qspi_set_speed(&spi, SPI_SCLK_TARGET);
 
+    // Print info of SD Card
+    gpt_info(&spi);
+
+    // Get the start LBAs of the first two partitions (DT and firmware)
+    gpt_find_partition(&spi, 0, &dt_lba);
+    gpt_find_partition(&spi, 1, &fw_lba);
+    
     // Copy Device Tree to SPM
-    sd_copy_blocks(&spi, DT_LBA, (unsigned char *) 0x70000000, DT_LEN);
+    sd_copy_blocks(&spi, dt_lba, (unsigned char *) 0x70000000, DT_LEN);
 
     printf("Copied device tree to 0x70000000\r\n");
 
     // Copy firmware to DRAM
-    sd_copy_blocks(&spi, FW_LBA, (unsigned char *) 0x80000000, FW_LEN);
+    sd_copy_blocks(&spi, fw_lba, (unsigned char *) 0x80000000, FW_LEN);
 
     printf("Copied firmware to 0x80000000\r\n");
 
-    void (*entry)(int,int,int) = (void (*)(int,int,int)) 0x80000000;
+    void (*cheshire_entry)(int,int,int) = (void (*)(int,int,int)) 0x80000000;
     
     asm volatile("fence.i\n" ::: "memory");
 
-    entry(0, 0x70000000, 0);  
+    cheshire_entry(0, 0x70000000, 0);  
 
     return;
 }
@@ -74,7 +81,7 @@ int main(void)
     // Decide what to do
     switch(*bootmode){
         // Normal boot over SD Card
-        case 0: printf_("Booting from SD Card\r\n");
+        case 0: printf_("Bootmode 0: Booting from SD Card\r\n");
                 sd_boot();
                 break; // We will never reach this
 

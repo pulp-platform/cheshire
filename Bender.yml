@@ -13,13 +13,13 @@ package:
     - "Christopher Reinwardt <creinwar@student.ethz.ch>"
 
 dependencies:
-  ariane: { git: "git@github.com:pulp-platform/cva6.git", rev: cheshire }
+  ariane: { git: "git@github.com:pulp-platform/cva6", rev: cheshire }
   axi: { git: "git@github.com:pulp-platform/axi.git", version: 0.39.0-beta.1 }
   apb: { git: "git@github.com:pulp-platform/apb.git", version: 0.2.1 }
   register_interface: { git: "git@github.com:pulp-platform/register_interface.git", version: 0.3.5 }
   serial_link: { git: "git@github.com:pulp-platform/serial_link.git", rev: d4072df77065513d247862f7e9246a9c248fe43a }
   apb_uart: { git: "git@github.com:pulp-platform/apb_uart.git", rev: b6145341df79137ac584c83e9c081f80a7a40440 }
-  opentitan_peripherals: { git: "git@github.com:pulp-platform/opentitan_peripherals.git", version: 0.1.0 }
+  opentitan_peripherals: { git: "git@github.com:pulp-platform/opentitan_peripherals.git", rev: fix/spi_host_non_word_reads }
   clint: { git: "git@github.com:pulp-platform/clint.git", version: 0.1.0 }
   tech_cells_generic: { git: "git@github.com:pulp-platform/tech_cells_generic.git", version: 0.2.9 }
   axi-vga: { git: "git@github.com:pulp-platform/axi_vga", rev: main }
@@ -32,6 +32,7 @@ sources:
   - src/cheshire_pkg.sv
   - src/regs/cheshire_register_file_reg_pkg.sv
   - src/regs/cheshire_register_file_reg_top.sv
+  - future/reg_to_apb.sv
   - src/cheshire_soc.sv
 
   - target: sim

@@ -16,6 +16,7 @@
 #define FW_LEN 0x1800
 
 #define SD_SPEED 25000000
+//#define SD_SPEED 400000
 
 char uart_initialized = 0;
 
@@ -77,8 +78,8 @@ int main(void)
     opentitan_qspi_t spi;
     int ret = 0;
 
-    int dt_lba;
-    int fw_lba;
+    unsigned int dt_lba = 0;
+    unsigned int fw_lba = 0;
 
     init_uart(50000000, 115200);
     uart_initialized = 1;

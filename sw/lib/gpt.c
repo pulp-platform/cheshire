@@ -34,7 +34,7 @@ int gpt_info(opentitan_qspi_t *spi)
     printf("\tsize partition entries:  \t %d\r\n", gpt_header->size_partition_entry);
 
     // Copy partition entries
-    ret = sd_copy(spi, gpt_header->partition_entry_lba, lba2_buf, 1);
+    ret = sd_copy_blocks(spi, gpt_header->partition_entry_lba, lba2_buf, 1);
 
     if (ret != 0){
         printf("SD card copy of partition entries failed!\r\n");
@@ -83,7 +83,7 @@ int gpt_find_partition(opentitan_qspi_t *spi, unsigned int part, unsigned int *s
     gpt_header_t *gpt_header = (gpt_header_t *)lba1_buf;
 
     // Copy partition entries
-    ret = sd_copy(spi, gpt_header->partition_entry_lba, lba2_buf, 1);
+    ret = sd_copy_blocks(spi, gpt_header->partition_entry_lba, lba2_buf, 1);
 
     if (ret != 0){
         printf("SD card copy of partition entries failed!\r\n");
