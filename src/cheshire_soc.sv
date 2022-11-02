@@ -280,44 +280,30 @@ module cheshire_soc import cheshire_pkg::*; #(
   axi_lite_a48_d64_resp_t dbg_axi_lite_to_axi_rsp;
 
   // From DM --> AXI Lite
-  mem_to_axi_lite #(
-    .MemAddrWidth    ( 48                      ),
-    .AxiAddrWidth    ( AXI_ADDR_WIDTH          ),
-    .DataWidth       ( 64                      ),
-    .MaxRequests     ( 2                       ),
-    .AxiProt         ( '0                      ),
-    .axi_req_t       ( axi_lite_a48_d64_req_t  ),
-    .axi_rsp_t       ( axi_lite_a48_d64_resp_t )
-  ) i_mem_to_axi_lite_dbg (
+  axi_from_mem #(
+    .MemAddrWidth    ( 48                        ),
+    .AxiAddrWidth    ( AXI_ADDR_WIDTH            ),
+    .DataWidth       ( 64                        ),
+    .MaxRequests     ( 2                         ),
+    .AxiProt         ( '0                        ),
+    .axi_req_t       ( axi_a48_d64_mst_u0_req_t  ),
+    .axi_rsp_t       ( axi_a48_d64_mst_u0_resp_t )
+  ) i_axi_from_mem_dbg (
     .clk_i,
     .rst_ni,
-    .mem_req_i       ( sba_req                 ),
-    .mem_addr_i      ( sba_addr                ),
-    .mem_we_i        ( sba_we                  ),
-    .mem_wdata_i     ( sba_wdata               ),
-    .mem_be_i        ( sba_strb                ),
-    .mem_gnt_o       ( sba_gnt                 ),
-    .mem_rsp_valid_o ( sba_rvalid              ),
-    .mem_rsp_rdata_o ( sba_rdata               ),
-    .mem_rsp_error_o ( sba_err                 ),
-    .axi_req_o       ( dbg_axi_lite_to_axi_req ),
-    .axi_rsp_i       ( dbg_axi_lite_to_axi_rsp )
-  );
-
-  // AXI Lite --> AXI crossbar
-  axi_lite_to_axi #(
-    .AxiDataWidth    ( AXI_DATA_WIDTH            ),
-    .req_lite_t      ( axi_lite_a48_d64_req_t    ),
-    .resp_lite_t     ( axi_lite_a48_d64_resp_t   ),
-    .axi_req_t       ( axi_a48_d64_mst_u0_req_t  ),
-    .axi_resp_t      ( axi_a48_d64_mst_u0_resp_t )
-  ) i_axi_lite_to_axi_dbg (
-    .slv_req_lite_i  ( dbg_axi_lite_to_axi_req   ),
-    .slv_resp_lite_o ( dbg_axi_lite_to_axi_rsp   ),
+    .mem_req_i       ( sba_req                   ),
+    .mem_addr_i      ( sba_addr                  ),
+    .mem_we_i        ( sba_we                    ),
+    .mem_wdata_i     ( sba_wdata                 ),
+    .mem_be_i        ( sba_strb                  ),
+    .mem_gnt_o       ( sba_gnt                   ),
+    .mem_rsp_valid_o ( sba_rvalid                ),
+    .mem_rsp_rdata_o ( sba_rdata                 ),
+    .mem_rsp_error_o ( sba_err                   ),
     .slv_aw_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
     .slv_ar_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
-    .mst_req_o       ( axi_xbar_slv_port_reqs[AXI_XBAR_IN_DEBUG] ),
-    .mst_resp_i      ( axi_xbar_slv_port_rsps[AXI_XBAR_IN_DEBUG] )
+    .axi_req_o       ( axi_xbar_slv_port_reqs[AXI_XBAR_IN_DEBUG] ),
+    .axi_rsp_i       ( axi_xbar_slv_port_rsps[AXI_XBAR_IN_DEBUG] )
   );
 
   // Debug Transfer Module + Debug Module Interface
