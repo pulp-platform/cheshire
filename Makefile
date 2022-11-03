@@ -40,6 +40,7 @@ cheshire_regs: .cheshire_regs
 .cheshire_regs:
 	$(REGGEN) -r src/regs/cheshire_regs.hjson --outdir src/regs
 	$(REGGEN) --cdefines --outfile sw/include/cheshire_regs.h src/regs/cheshire_regs.hjson
+	cp sw/include/cheshire_regs.h vivado/bootrom/src/cheshire_regs.h
 	@touch .cheshire_regs
 
 #################

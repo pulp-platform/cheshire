@@ -50,9 +50,6 @@ all: bootrom.rcf bootrom.dump bootrom.sv cheshire-fpga.dtb
 %.sv: %.bin
 	../../util/gen_bootrom.py --sv-module $* -p 65536 $< > $@
 
-
-
-# Do not remove the final .rcf; depends on the correctly change-tracked .elf
 clean:
 	rm -f *.bin *.dump *.rcf *.elf src/*.o src/**/*.o *.dtb
 
