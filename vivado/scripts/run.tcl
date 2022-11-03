@@ -28,7 +28,6 @@ if {$::env(BOARD) eq "genesys2"} {
 
 read_ip { \
       "xilinx/xlnx_mig_7_ddr3/xlnx_mig_7_ddr3.srcs/sources_1/ip/xlnx_mig_7_ddr3/xlnx_mig_7_ddr3.xci" \
-      "xilinx/xlnx_protocol_checker/xlnx_protocol_checker.srcs/sources_1/ip/xlnx_protocol_checker/xlnx_protocol_checker.xci" \
 }
 #      "xilinx/xlnx_ila/xlnx_ila.srcs/sources_1/ip/xlnx_ila/xlnx_ila.xci" \
 #      "xilinx/xlnx_protocol_checker/xlnx_protocol_checker.srcs/sources_1/ip/xlnx_protocol_checker/xlnx_protocol_checker.xci" \
