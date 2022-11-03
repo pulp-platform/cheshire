@@ -47,7 +47,7 @@ cheshire_regs: .cheshire_regs
 #################
 
 update_serial_link:
-	cp future/serial_link_single_channel.hjson $(shell $(BENDER) path serial_link)/src/regs/serial_link_single_channel.hjson
+	cp serial_link_single_channel.hjson $(shell $(BENDER) path serial_link)/src/regs/serial_link_single_channel.hjson
 	$(MAKE) -C $(shell $(BENDER) path serial_link) update-regs
 
 ####################

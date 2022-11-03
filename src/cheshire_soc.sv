@@ -875,31 +875,15 @@ module cheshire_soc import cheshire_pkg::*; #(
   generate
     if(CheshireCfg.UART) begin
 
-      apb_a48_d32_req_t uart_apb_req;
-      apb_a48_d32_rsp_t uart_apb_rsp;
-
-      reg_to_apb #(
+      reg_uart_wrap #(
+        .AddrWidth  ( AXI_ADDR_WIDTH    ), 
         .reg_req_t  ( reg_a48_d32_req_t ),
-        .reg_rsp_t  ( reg_a48_d32_rsp_t ),
-        .apb_req_t  ( apb_a48_d32_req_t ),
-        .apb_rsp_t  ( apb_a48_d32_rsp_t )
-      ) i_reg_to_apb_uart (
+        .reg_rsp_t  ( reg_a48_d32_rsp_t )
+      ) i_uart (
         .clk_i,
         .rst_ni,
         .reg_req_i  ( regbus_periph_out_req[REGBUS_PERIPH_OUT_UART] ),
         .reg_rsp_o  ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_UART] ),
-        .apb_req_o  ( uart_apb_req      ),
-        .apb_rsp_i  ( uart_apb_rsp      )
-      );
-
-      apb_uart_wrap #(
-        .apb_req_t  ( apb_a48_d32_req_t ),
-        .apb_rsp_t  ( apb_a48_d32_rsp_t )
-      ) i_uart (
-        .clk_i,
-        .rst_ni,
-        .apb_req_i  ( uart_apb_req      ),
-        .apb_rsp_o  ( uart_apb_rsp      ),
         .intr_o     ( irq.uart          ),
         .out2_no    (                   ),  // keep open
         .out1_no    (                   ),  // keep open

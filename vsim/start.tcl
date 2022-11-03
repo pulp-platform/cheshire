@@ -4,8 +4,6 @@ if {![info exists BINARY]} {
     set BINARY ""
 }
 
-# vsim ${TESTBENCH} -t 1ps -voptargs=+acc +BINARY=$BINARY
-#vsim cheshire -t 1ps -voptargs=+acc
 # Suppress error of modules not having time specification
 vsim tb_cheshire_soc -t 1ps -voptargs=+acc +BINARY=$BINARY -permissive -suppress 3009
 

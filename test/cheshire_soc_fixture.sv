@@ -179,7 +179,6 @@ module cheshire_soc_fixture;
   task jtag_init;
     logic [31:0] idcode;
     logic [31:0] dmctrl;
-
     automatic dm::sbcs_t sbcs = jtag_init_sbcs;
 
     $display("[JTAG] Initializing debug module");
@@ -198,12 +197,12 @@ module cheshire_soc_fixture;
     riscv_dbg.write_dmi(dm::DMControl, 32'h0000_0001);
     
     // Check for the activation to complete
-    do riscv_dbg.read_dmi(dm::DMControl, dmctrl);
+    do riscv_dbg.read_dmi_exp_backoff(dm::DMControl, dmctrl);
     while (!(dmctrl & 32'h0000_0001));
     
     // Ensure the system bus is ready too
     riscv_dbg.write_dmi(dm::SBCS, sbcs);
-    do riscv_dbg.read_dmi(dm::SBCS, sbcs);
+    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
     while (sbcs.sbbusy);
 
   endtask
@@ -229,7 +228,7 @@ module cheshire_soc_fixture;
         riscv_dbg.write_dmi(dm::SBData0, memory[addr + i][0+:32]);
 
         // Wait for the write to complete
-        do riscv_dbg.read_dmi(dm::SBCS, sbcs);
+        do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
         while (sbcs.sbbusy);
       end
     end
@@ -256,8 +255,8 @@ module cheshire_soc_fixture;
         if (i % 20 == 0)
           $display(" - Word %0d/%0d (%0d%%)", i, sections[addr], i*100/(sections[addr] > 1 ? sections[addr]-1 : 1));
 
-        riscv_dbg.read_dmi(dm::SBData1, rdata[32 +: 32]);
-        riscv_dbg.read_dmi(dm::SBData0, rdata[ 0 +: 32]);
+        riscv_dbg.read_dmi_exp_backoff(dm::SBData1, rdata[32 +: 32]);
+        riscv_dbg.read_dmi_exp_backoff(dm::SBData0, rdata[ 0 +: 32]);
 
         if (rdata != memory[addr + i])
           $error("[JTAG] ERROR: Readback mismatch at 0x%x: act 0x%x != exp 0x%x", (addr + i) * 8, rdata, memory[addr + i]);
@@ -277,7 +276,7 @@ module cheshire_soc_fixture;
     riscv_dbg.write_dmi(dm::DMControl, dm_data);
     
     // Check that all selected harts have halted
-    do riscv_dbg.read_dmi(dm::DMStatus, dm_data);
+    do riscv_dbg.read_dmi_exp_backoff(dm::DMStatus, dm_data);
     while (!(dm_data & 32'h0000_0200));
 
 
@@ -297,7 +296,7 @@ module cheshire_soc_fixture;
     riscv_dbg.write_dmi(dm::Command, dm_data);
     
     // Wait until the abstract command has completed
-    do riscv_dbg.read_dmi(dm::AbstractCS, dm_data);
+    do riscv_dbg.read_dmi_exp_backoff(dm::AbstractCS, dm_data);
     while (dm_data & 32'h0000_1000);
 
     // Set resume request for hart 0
@@ -329,7 +328,7 @@ module cheshire_soc_fixture;
 
     do begin
       riscv_dbg.wait_idle(10);
-      riscv_dbg.read_dmi(dm::SBData0, scratch);
+      riscv_dbg.read_dmi_exp_backoff(dm::SBData0, scratch);
     end while (scratch[0] == 1'b0);
 
     // Report end of execution
@@ -686,12 +685,15 @@ module cheshire_soc_fixture;
   wire spi_sck, spi_cs;
   wire [3:0] spi_io;
   wire spi_reset_n;
+  wire spi_wp_n;
   logic spi_sck_soc_out;
   logic spi_sck_en;
   logic [3:0] spi_sd_soc_out, spi_sd_soc_in;
   logic [1:0] spi_cs_soc_out;
   logic [1:0] spi_cs_en;
   logic [3:0] spi_sd_en;
+
+  assign spi_wp_n = 1'b1;
  
   assign spi_sck = spi_sck_en ? spi_sck_soc_out : 1'b0;
   assign spi_cs = spi_cs_en[0] ? spi_cs_soc_out[0] : 2'b1;
@@ -710,12 +712,12 @@ module cheshire_soc_fixture;
 
   s25fs512s i_spi_model (
     // Data IO
-    .SI       ( spi_io[0] ),
-    .SO       ( spi_io[1] ),
+    .SI       ( spi_io[0]   ),
+    .SO       ( spi_io[1]   ),
     // Controls
-    .SCK      ( spi_sck   ),
-    .CSNeg    ( spi_cs    ),
-    .WPNeg    ( 1'b1      ),
+    .SCK      ( spi_sck     ),
+    .CSNeg    ( spi_cs      ),
+    .WPNeg    ( spi_wp_n    ),
     .RESETNeg ( spi_reset_n )
   );
 
