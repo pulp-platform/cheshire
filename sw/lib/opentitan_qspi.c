@@ -15,15 +15,12 @@
 
 static inline void writel(unsigned int val, volatile unsigned int *addr)
 {
-	asm volatile ("fence.i" ::: "memory");
 	*addr = val;
 }
 
 static inline unsigned int readl(volatile unsigned int *addr)
 {
-	unsigned int rsp = *addr;
-	asm volatile ("fence.i" ::: "memory");
-	return rsp;
+	return *addr;
 }
 
 int opentitan_qspi_init(volatile unsigned int *qspi, unsigned int clk_freq,
@@ -109,8 +106,22 @@ static int opentitan_qspi_issue_dummy(opentitan_qspi_t *priv, unsigned int bitle
 		}
 		return 0;
 	}
+  
+    // Wait for the SPI host to be ready
+    unsigned int ready_timeout = OPENTITAN_QSPI_READY_TIMEOUT;
+    unsigned int status = 0;
+    do {
+        status = readl((volatile unsigned int *) (priv->regs + REG_STATUS));
+        ready_timeout--;
+    } while(!(status >> 31) && ready_timeout > 0);
 
-	unsigned int status = 0;
+    if(ready_timeout == 0 && !(status >> 31)){
+#ifdef DEBUG
+        printf("[opentitan_qspi] Error: Ready did not assert. Aborting\r\n");
+#endif
+        return -1;
+    }
+
 	unsigned int command = ((bitlen & 0x1FF) - 1) | ((csaat & 0x1) << 9);
 	writel(command, priv->regs + REG_COMMAND);
 
@@ -170,9 +181,10 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 	}
 
 	unsigned int command = 0;
-	unsigned int i = 0;
-		
+    unsigned int status  = 0;
+
 	if(dir >> 1){
+	    unsigned int i = 0;
 		// Take care of the word aligned part
 		for(; i < num_bytes/4; i++){
 			unsigned char tmp[4];
@@ -234,12 +246,26 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 	// Set the correct transfer mode
 	command = ((num_bytes & 0x1FF) - 1) | ((csaat & 0x1) << 9) | (dir << 12);
 
+    // Wait for the SPI host to be ready
+    unsigned int ready_timeout = OPENTITAN_QSPI_READY_TIMEOUT;
+    do {
+        status = readl((volatile unsigned int *) (priv->regs + REG_STATUS));
+        ready_timeout--;
+    } while(!(status >> 31) && ready_timeout > 0);
+
+    if(ready_timeout == 0 && !(status >> 31)){
+#ifdef DEBUG
+        printf("[opentitan_qspi] Error: Ready did not assert. Aborting\r\n");
+#endif
+        return -1;
+    }
+
 	// Start transaction by writing to the command register
 	writel(command, priv->regs + REG_COMMAND);
 
 	// Wait for the FIFOs to be empty (full) if we had an actual data transfer
 	if(priv->cs_state && dir > 0){
-		unsigned int status = 0;
+		status = 0;
 
 		// RX only or RX/TX
 		if(dir == 1 || dir == 3) {
@@ -247,7 +273,7 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 			do {
 				status = readl((volatile unsigned int *) (priv->regs + REG_STATUS));
 
-				if(((status >> 8) & 0xFF) > 0){
+				if(((status >> 8) & 0xFF)){
 					if(bytes_rcvd < num_bytes){
 						unsigned char *dst = (unsigned char *) din;
 						unsigned int word = readl((volatile unsigned int *) (priv->regs + REG_DATA));
@@ -321,11 +347,25 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 #endif
 					}
 				}
-			} while((((status >> 8) & 0xFF) > 0) || (status >> 30) & 0x1);
+			} while(((status >> 8) & 0xFF) || ((status >> 30) & 0x1));
 
-			if(bytes_rcvd < num_bytes){
+            // Wait for the last bytes of the transfer
+			if(bytes_rcvd < num_bytes){ 
+                unsigned int read_timeout = OPENTITAN_QSPI_READ_TIMEOUT;
+                do {
+                    status = readl((volatile unsigned int *) (priv->regs + REG_STATUS));
+                    read_timeout--;
+                } while(!((status >> 8) & 0xFF) && read_timeout > 0);
+
+                if(read_timeout == 0 && !((status >> 8) & 0xFF)){
+#ifdef DEBUG
+                    printf("[opentitan_qspi] Error: RX queue did not notify us about the last bytes\r\n");
+#endif
+                    return -1;
+                }
+        
 				unsigned int word = readl((volatile unsigned int *) (priv->regs + REG_DATA));
-				unsigned char *dst = (unsigned char *) (din + bytes_rcvd);
+				unsigned char *dst = (unsigned char *) din;
 
 #ifdef DEBUG
                 printf("[opentitan_qspi] Leftover read data: %d\r\n", num_bytes - bytes_rcvd);
@@ -342,10 +382,15 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 						bytes_rcvd++;
 					}
 
-					if((num_bytes - bytes_rcvd) == 1){
+					if((num_bytes - bytes_rcvd) >= 1){
 						dst[2] = (word >> 8) & 0xFF;
 						bytes_rcvd++;
 					}
+
+                    if((num_bytes - bytes_rcvd) == 1){
+                        dst[3] = word & 0xFF;
+                        bytes_rcvd++;
+                    }
 
 				} else {
 					// We are in here so at least one byte remains
@@ -357,10 +402,15 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 						bytes_rcvd++;
 					}
 
-					if((num_bytes - bytes_rcvd) == 1){
+					if((num_bytes - bytes_rcvd) >= 1){
 						dst[2] = (word >> 16) & 0xFF;
 						bytes_rcvd++;
 					}
+
+                    if((num_bytes - bytes_rcvd) == 1){
+                        dst[3] = (word >> 24) & 0xFF;
+                        bytes_rcvd++;
+                    }
 				}
 			}
 
@@ -368,7 +418,7 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 		} else if(dir == 2) {
 			do {
 				status = readl((volatile unsigned int *) (priv->regs + REG_STATUS));
-			} while((status & 0xFF) > 0);
+			} while((status >> 30) & 0x1);
  		
 		// What mode is this??
 		} else {
