@@ -80,13 +80,18 @@ int main(void)
 
     opentitan_qspi_probe(&spi);
 
-    opentitan_qspi_set_speed(&spi, 12500000);
+    opentitan_qspi_set_speed(&spi, 1600000);
 
     opentitan_qspi_set_mode(&spi, 0);
 
     opentitan_qspi_xfer(&spi, 5*8, txbuf, NULL, SPI_XFER_BEGIN);
 
-    opentitan_qspi_xfer(&spi, 8*8, NULL, rxbuf, SPI_XFER_END);
+    opentitan_qspi_xfer(&spi, 1*8, NULL, rxbuf, 0);
+    opentitan_qspi_xfer(&spi, 2*8, NULL, rxbuf+1, 0);
+    opentitan_qspi_xfer(&spi, 2*8, NULL, rxbuf+3, 0);
+    opentitan_qspi_xfer(&spi, 3*8, NULL, rxbuf+5, 0);
+
+    opentitan_qspi_xfer(&spi, 0, NULL, NULL, SPI_XFER_END);
 
     return (*((unsigned long int *) rxbuf) != 0xb50000b0efbeadde);
 }

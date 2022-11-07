@@ -16,7 +16,7 @@ dependencies:
   ariane: { git: "git@github.com:pulp-platform/cva6", rev: cheshire }
   axi: { git: "git@github.com:pulp-platform/axi.git", version: 0.39.0-beta.1 }
   apb: { git: "git@github.com:pulp-platform/apb.git", version: 0.2.1 }
-  register_interface: { git: "git@github.com:pulp-platform/register_interface.git", rev: feature/reg_to_apb }
+  register_interface: { git: "git@github.com:pulp-platform/register_interface.git", rev: 8aab37d575d3ca29b640fa0058dd1811bab68876 }
   serial_link: { git: "git@github.com:pulp-platform/serial_link.git", rev: d4072df77065513d247862f7e9246a9c248fe43a }
   apb_uart: { git: "git@github.com:pulp-platform/apb_uart.git", rev: feature/reg_uart_wrap }
   opentitan_peripherals: { git: "git@github.com:pulp-platform/opentitan_peripherals.git", rev: fix/spi_host_non_word_reads }

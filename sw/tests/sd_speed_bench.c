@@ -15,6 +15,9 @@
 #define BENCH_LEN 0x1800
 
 unsigned int speeds[] = {
+      100000,
+      200000,
+      300000,
       400000,
      1000000,
      2000000,
@@ -23,6 +26,16 @@ unsigned int speeds[] = {
     12500000,
     25000000
 };
+
+/*unsigned int speeds[] = {
+    25000000,
+    12500000,
+    10000000,
+     5000000,
+     2000000,
+     1000000,
+      400000
+};*/
 
 char uart_initialized = 0;
 
@@ -94,7 +107,7 @@ int main(void)
 
     opentitan_qspi_probe(&spi);
 
-    opentitan_qspi_set_speed(&spi, 400000);
+    opentitan_qspi_set_speed(&spi, 200000);
 
     opentitan_qspi_set_mode(&spi, 0);
 
@@ -108,20 +121,20 @@ int main(void)
     for(int i = 0; i < (sizeof(speeds)/sizeof(unsigned int)); i++){
         unsigned long int mismatches = 0;
 
-	printf("--- Zeroing the memory region ---\r\n");
-	for(int x = 0; x < BENCH_LEN*512/8; x++){
-	  dram[x] = 0L;
-	}
+	    printf("--- Zeroing the memory region ---\r\n");
+	    for(int x = 0; x < BENCH_LEN*512/8; x++){
+	        dram[x] = 0L;
+	    }
 	
         printf("--- Testing %d Hz ---\r\n", speeds[i]);
         opentitan_qspi_set_speed(&spi, speeds[i]);
 
-	//for(int b = 0; b < BENCH_LEN; b++){
-	//  ret = sd_copy_blocks(&spi, BENCH_LBA + b, (unsigned char *) (0x80000000 + b*512), 1);
-	//}
+	    //for(int b = 0; b < BENCH_LEN; b++){
+	    //  ret = sd_copy_blocks(&spi, BENCH_LBA + b, (unsigned char *) (0x80000000 + b*512), 1);
+	    //}
 	
         // Copy check pattern to DRAM
-	ret = sd_copy_blocks(&spi, BENCH_LBA, (unsigned char *) 0x80000000, BENCH_LEN);
+	    ret = sd_copy_blocks(&spi, BENCH_LBA, (unsigned char *) 0x80000000, BENCH_LEN);
 	
         printf("----- Check pattern copied with return value %d. Verifying... -----\r\n", ret);
 
@@ -129,7 +142,7 @@ int main(void)
             unsigned long int expected = ((4*j) & 0xFFFFL) | (((4*j+1) & 0xFFFFL) << 16) | (((4*j+2) & 0xFFFFL) << 32) | (((4*j+3) & 0xFFFFL) << 48);
             
             if(expected != dram[j]){
-                printf("!!! Mismatch @ 0x%x: Expected: 0x%lx <-> Actual: 0x%lx !!!\r\n", (unsigned int) 0x80000000 + j*8, expected, dram[j]);
+                printf("!!! Mismatch @ 0x%x: Expected: 0x%lx <-> Actual: 0x%lx !!!\r\n", (unsigned long int) &dram[j], expected, dram[j]);
                 mismatches++;
             }
         }

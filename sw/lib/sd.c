@@ -10,7 +10,6 @@
 
 #define DEBUG 1
 
-
 #include <stddef.h>
 
 #include "printf.h"
@@ -61,6 +60,11 @@ static int sd_cmd(opentitan_qspi_t *spi, unsigned long int cmd, unsigned char *r
             return ret;
 
         for(unsigned int i = 0; i < rcv_len; i++){
+#ifdef DEBUG
+            printf("[sd] sd_cmd %d received 0x%x\r\n", txbuf[0] & 0x3F, rxbuf[i]);
+            printf("[sd] rcv_left = %d\r\n", rcv_left);
+#endif
+
 	        // CMD12 -> Skip the first byte immediately following the command 
 	        if(!fst && txbuf[0] == 0x4C){
 	            fst = 1;
@@ -78,11 +82,6 @@ static int sd_cmd(opentitan_qspi_t *spi, unsigned long int cmd, unsigned char *r
 		            r1_busy = (rxbuf[i] == 0);
 	            }
 	        }
-
-#ifdef DEBUG
-            //printf("[sd] sd_cmd received 0x%x\r\n", rxbuf[i]);
-            //printf("[sd] rcv_left = %d\r\n", rcv_left);
-#endif
         }
     }
 
@@ -100,6 +99,9 @@ static int sd_cmd(opentitan_qspi_t *spi, unsigned long int cmd, unsigned char *r
 	        if(!r1_busy)
 	            break;
         }
+#ifdef DEBUG
+        printf("[sd] ERROR: Timed out waiting for R1b busy to clear\r\n");
+#endif
     }
 
     return opentitan_qspi_xfer(spi, 0, NULL, NULL, SPI_XFER_END);
@@ -145,7 +147,7 @@ int sd_init(opentitan_qspi_t *spi)
 #endif
 
     if((buf & 0xFFFFFFFFFFL) != 0x01000001AA)
-        return (buf & 0xFF);
+        return (buf >> 32) & 0xFF;
 
     buf = 0;
  
@@ -269,6 +271,7 @@ int sd_copy_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_a
     txbuf[4] = (cmd >>  8) & 0xFFL;
     txbuf[5] =  cmd        & 0xFFL;
 
+
     // Send the command to the SD Card
     ret = opentitan_qspi_xfer(spi, 6*8, txbuf, NULL, SPI_XFER_BEGIN);
     if(ret)
@@ -284,6 +287,9 @@ int sd_copy_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_a
             ret = opentitan_qspi_xfer(spi, 4*8, NULL, rxbuf, 0);
             if(ret)
                 return ret;
+#ifdef DEBUG
+            //printf("[sd] Wait block start. Got: 0x%x\r\n", *((unsigned int *) rxbuf));
+#endif
 
             // Scan 
             for(int b = 0; b < 4; b++){

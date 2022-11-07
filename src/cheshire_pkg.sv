@@ -149,7 +149,7 @@ package cheshire_pkg;
         64'h0100_0000
     },
     NonIdempotentLength: {
-        64'h2000_0000 // TODO Maybe a bit too large but looks nice and doesn't hurt
+        64'h3000_0000
     },
     NrExecuteRegionRules: 4,
     // DRAM, SPM, Boot ROM, Debug Module

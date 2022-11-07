@@ -13,14 +13,17 @@
 
 //#define DEBUG
 
-static void writel(unsigned int val, volatile unsigned int *addr)
+static inline void writel(unsigned int val, volatile unsigned int *addr)
 {
+	asm volatile ("fence.i" ::: "memory");
 	*addr = val;
 }
 
-static unsigned int readl(volatile unsigned int *addr)
+static inline unsigned int readl(volatile unsigned int *addr)
 {
-	return *addr;
+	unsigned int rsp = *addr;
+	asm volatile ("fence.i" ::: "memory");
+	return rsp;
 }
 
 int opentitan_qspi_init(volatile unsigned int *qspi, unsigned int clk_freq,
@@ -65,7 +68,7 @@ int opentitan_qspi_probe(opentitan_qspi_t *priv)
 
 	// Wait until the FIFOs are drained
 	do {
-		status = (int) readl(priv->regs + REG_STATUS);
+		status = (int) readl((volatile unsigned int *) (priv->regs + REG_STATUS));
 		loop_count++;
 
 		if(loop_count >= 1000000){
@@ -82,7 +85,7 @@ int opentitan_qspi_probe(opentitan_qspi_t *priv)
 	writel(OPENTITAN_QSPI_CS_UNUSED, priv->regs + REG_CSID);
 
 	// Read the byte order
-	status = readl(priv->regs + REG_STATUS);
+	status = readl((volatile unsigned int *) (priv->regs + REG_STATUS));
 	priv->byte_order = (status >> 22) & 0x1;
 
 	return 0;
@@ -112,7 +115,7 @@ static int opentitan_qspi_issue_dummy(opentitan_qspi_t *priv, unsigned int bitle
 	writel(command, priv->regs + REG_COMMAND);
 
 	do {
-		status = readl(priv->regs + REG_STATUS);
+		status = readl((volatile unsigned int *) (priv->regs + REG_STATUS));
 	} while((status >> 30) & 0x1);
 
 	
@@ -242,12 +245,12 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 		if(dir == 1 || dir == 3) {
 			unsigned int bytes_rcvd = 0;
 			do {
-				status = readl(priv->regs + REG_STATUS);
+				status = readl((volatile unsigned int *) (priv->regs + REG_STATUS));
 
 				if(((status >> 8) & 0xFF) > 0){
 					if(bytes_rcvd < num_bytes){
 						unsigned char *dst = (unsigned char *) din;
-						unsigned int word = readl(priv->regs + REG_DATA);
+						unsigned int word = readl((volatile unsigned int *) (priv->regs + REG_DATA));
 
 						if((num_bytes - bytes_rcvd) >= 4){
 							if(!priv->byte_order){
@@ -312,7 +315,7 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 
 					// Somehow we have too much data??
 					} else {
-						(void) readl(priv->regs + REG_DATA);
+						(void) readl((volatile unsigned int *) (priv->regs + REG_DATA));
 #ifdef DEBUG
 						printf("[opentitan_qspi] Device returned more data than we requested\r\n");
 #endif
@@ -320,10 +323,15 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 				}
 			} while((((status >> 8) & 0xFF) > 0) || (status >> 30) & 0x1);
 
-			// TODO: take care of non 32-bit read transactions...
 			if(bytes_rcvd < num_bytes){
-				unsigned int word = readl(priv->regs + REG_DATA);
+				unsigned int word = readl((volatile unsigned int *) (priv->regs + REG_DATA));
 				unsigned char *dst = (unsigned char *) (din + bytes_rcvd);
+
+#ifdef DEBUG
+                printf("[opentitan_qspi] Leftover read data: %d\r\n", num_bytes - bytes_rcvd);
+                printf("[opentitan_qspi] Word = 0x%x\r\n", word);
+#endif
+
 				if(!priv->byte_order){
 					// We are in here so at least one byte remains
 					dst[0] = (word >> 24) & 0xFF;
@@ -359,7 +367,7 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 		// TX Only
 		} else if(dir == 2) {
 			do {
-				status = readl(priv->regs + REG_STATUS);
+				status = readl((volatile unsigned int *) (priv->regs + REG_STATUS));
 			} while((status & 0xFF) > 0);
  		
 		// What mode is this??
@@ -447,7 +455,7 @@ int opentitan_qspi_set_speed(opentitan_qspi_t *priv, unsigned int speed)
 		clkdiv = ~(-1 << 16);
 	}
 
-	configopts = (unsigned int) readl(priv->regs + REG_CONFIGOPTS_0 + OPENTITAN_QSPI_CS_USED);
+	configopts = (unsigned int) readl((volatile unsigned int *) (priv->regs + REG_CONFIGOPTS_0 + OPENTITAN_QSPI_CS_USED));
 	configopts = (configopts & (-1 << 16)) | (clkdiv & ~(-1 << 16));
 	writel(configopts, priv->regs + REG_CONFIGOPTS_0 + OPENTITAN_QSPI_CS_USED);
 
@@ -462,7 +470,7 @@ int opentitan_qspi_set_mode(opentitan_qspi_t *priv, unsigned int mode)
 {
 	unsigned int configopts = 0;
 
-	configopts = (unsigned int) readl(priv->regs + REG_CONFIGOPTS_0 + OPENTITAN_QSPI_CS_USED);
+	configopts = (unsigned int) readl((volatile unsigned int *) (priv->regs + REG_CONFIGOPTS_0 + OPENTITAN_QSPI_CS_USED));
 	configopts = (configopts & 0xFFFF) | (0xFFF << 16) | ((mode & 0x3) << 30);
 	writel(configopts, priv->regs + REG_CONFIGOPTS_0 + OPENTITAN_QSPI_CS_USED);
 	writel(configopts, priv->regs + REG_CONFIGOPTS_0 + OPENTITAN_QSPI_CS_UNUSED);

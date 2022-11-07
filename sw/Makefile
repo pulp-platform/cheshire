@@ -2,7 +2,7 @@ RISCV_AR		= riscv64-unknown-elf-ar
 RISCV_CC 		= riscv64-unknown-elf-gcc
 RISCV_LD 	 	= riscv64-unknown-elf-ld
 RISCV_OBJDUMP   = riscv64-unknown-elf-objdump
-RISCV_CCFLAGS   = $(BASE_FLAGS) -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
+RISCV_CCFLAGS   = $(BASE_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
 
 BASE_FLAGS 		= -march=rv64gc -mabi=lp64d -O2 -Wall -static #-flto -fwhole-program
 
