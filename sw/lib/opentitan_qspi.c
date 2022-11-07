@@ -33,7 +33,7 @@ int opentitan_qspi_init(volatile unsigned int *qspi, unsigned int clk_freq,
 	if (!priv->regs)
 		return -1;
 
-    priv->clk_freq = clk_freq;
+    	priv->clk_freq = clk_freq;
 	if (!priv->clk_freq)
 		return -1;
   
@@ -107,20 +107,20 @@ static int opentitan_qspi_issue_dummy(opentitan_qspi_t *priv, unsigned int bitle
 		return 0;
 	}
   
-    // Wait for the SPI host to be ready
-    unsigned int ready_timeout = OPENTITAN_QSPI_READY_TIMEOUT;
-    unsigned int status = 0;
-    do {
-        status = readl((volatile unsigned int *) (priv->regs + REG_STATUS));
-        ready_timeout--;
-    } while(!(status >> 31) && ready_timeout > 0);
+    	// Wait for the SPI host to be ready
+    	unsigned int ready_timeout = OPENTITAN_QSPI_READY_TIMEOUT;
+    	unsigned int status = 0;
+    	do {
+        	status = readl((volatile unsigned int *) (priv->regs + REG_STATUS));
+        	ready_timeout--;
+    	} while(!(status >> 31) && ready_timeout > 0);
 
-    if(ready_timeout == 0 && !(status >> 31)){
+    	if(ready_timeout == 0 && !(status >> 31)){
 #ifdef DEBUG
-        printf("[opentitan_qspi] Error: Ready did not assert. Aborting\r\n");
+        	printf("[opentitan_qspi] Error: Ready did not assert. Aborting\r\n");
 #endif
-        return -1;
-    }
+        	return -1;
+    	}
 
 	unsigned int command = ((bitlen & 0x1FF) - 1) | ((csaat & 0x1) << 9);
 	writel(command, priv->regs + REG_COMMAND);
@@ -143,7 +143,7 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 							   const void *dout, void *din, unsigned long flags)
 {
 #ifdef DEBUG
-  //  	printf("[opentitan_qspi] Transfer: Bitlen = 0x%lx, TX: 0x%lx RX: 0x%lx, Flags: 0x%lx\r\n", bitlen, dout, din, flags);
+  	//printf("[opentitan_qspi] Transfer: Bitlen = 0x%lx, TX: 0x%lx RX: 0x%lx, Flags: 0x%lx\r\n", bitlen, dout, din, flags);
 #endif
 
 	if(!dout && !din)
@@ -181,7 +181,7 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 	}
 
 	unsigned int command = 0;
-    unsigned int status  = 0;
+    	unsigned int status  = 0;
 
 	if(dir >> 1){
 	    unsigned int i = 0;
@@ -246,19 +246,19 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 	// Set the correct transfer mode
 	command = ((num_bytes & 0x1FF) - 1) | ((csaat & 0x1) << 9) | (dir << 12);
 
-    // Wait for the SPI host to be ready
-    unsigned int ready_timeout = OPENTITAN_QSPI_READY_TIMEOUT;
-    do {
-        status = readl((volatile unsigned int *) (priv->regs + REG_STATUS));
-        ready_timeout--;
-    } while(!(status >> 31) && ready_timeout > 0);
+    	// Wait for the SPI host to be ready
+    	unsigned int ready_timeout = OPENTITAN_QSPI_READY_TIMEOUT;
+    	do {
+        	status = readl((volatile unsigned int *) (priv->regs + REG_STATUS));
+        	ready_timeout--;
+    	} while(!(status >> 31) && ready_timeout > 0);
 
-    if(ready_timeout == 0 && !(status >> 31)){
+    	if(ready_timeout == 0 && !(status >> 31)){
 #ifdef DEBUG
-        printf("[opentitan_qspi] Error: Ready did not assert. Aborting\r\n");
+        	printf("[opentitan_qspi] Error: Ready did not assert. Aborting\r\n");
 #endif
-        return -1;
-    }
+        	return -1;
+    	}
 
 	// Start transaction by writing to the command register
 	writel(command, priv->regs + REG_COMMAND);
@@ -292,7 +292,7 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 
 								// 2 byte
 								} else if (!((long int) din & 0x1L)) {
-									*((unsigned short *) din)   =  word        & 0xFFFF;
+									*((unsigned short *) din)     =  word        & 0xFFFF;
 									*((unsigned short *) (din+2)) = (word >> 16) & 0xFFFF;
 
 								// 1 byte
@@ -349,27 +349,27 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 				}
 			} while(((status >> 8) & 0xFF) || ((status >> 30) & 0x1));
 
-            // Wait for the last bytes of the transfer
+            		// Wait for the last bytes of the transfer
 			if(bytes_rcvd < num_bytes){ 
-                unsigned int read_timeout = OPENTITAN_QSPI_READ_TIMEOUT;
-                do {
-                    status = readl((volatile unsigned int *) (priv->regs + REG_STATUS));
-                    read_timeout--;
-                } while(!((status >> 8) & 0xFF) && read_timeout > 0);
+                		unsigned int read_timeout = OPENTITAN_QSPI_READ_TIMEOUT;
+                		do {
+                    			status = readl((volatile unsigned int *) (priv->regs + REG_STATUS));
+                    			read_timeout--;
+                		} while(!((status >> 8) & 0xFF) && read_timeout > 0);
 
-                if(read_timeout == 0 && !((status >> 8) & 0xFF)){
+                		if(read_timeout == 0 && !((status >> 8) & 0xFF)){
 #ifdef DEBUG
-                    printf("[opentitan_qspi] Error: RX queue did not notify us about the last bytes\r\n");
+                    			printf("[opentitan_qspi] Error: RX queue did not notify us about the last bytes\r\n");
 #endif
-                    return -1;
-                }
+                    			return -1;
+                		}
         
 				unsigned int word = readl((volatile unsigned int *) (priv->regs + REG_DATA));
 				unsigned char *dst = (unsigned char *) din;
 
 #ifdef DEBUG
-                printf("[opentitan_qspi] Leftover read data: %d\r\n", num_bytes - bytes_rcvd);
-                printf("[opentitan_qspi] Word = 0x%x\r\n", word);
+                		printf("[opentitan_qspi] Leftover read data: %d\r\n", num_bytes - bytes_rcvd);
+                		printf("[opentitan_qspi] Word = 0x%x\r\n", word);
 #endif
 
 				if(!priv->byte_order){
@@ -387,15 +387,15 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 						bytes_rcvd++;
 					}
 
-                    if((num_bytes - bytes_rcvd) == 1){
-                        dst[3] = word & 0xFF;
-                        bytes_rcvd++;
-                    }
+                    			if((num_bytes - bytes_rcvd) == 1){
+                        			dst[3] = word & 0xFF;
+                        			bytes_rcvd++;
+                    			}
 
 				} else {
 					// We are in here so at least one byte remains
 					dst[0] = word & 0xFF;
-                    bytes_rcvd++;
+                    			bytes_rcvd++;
 
 					if((num_bytes - bytes_rcvd) >= 1){
 						dst[1] = (word >> 8) & 0xFF;
@@ -407,10 +407,10 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 						bytes_rcvd++;
 					}
 
-                    if((num_bytes - bytes_rcvd) == 1){
-                        dst[3] = (word >> 24) & 0xFF;
-                        bytes_rcvd++;
-                    }
+                    			if((num_bytes - bytes_rcvd) == 1){
+                        			dst[3] = (word >> 24) & 0xFF;
+                        			bytes_rcvd++;
+                    			}
 				}
 			}
 
@@ -438,7 +438,7 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 }
 
 int opentitan_qspi_xfer(opentitan_qspi_t *priv, unsigned int bitlen,
-							   const void *dout, void *din, unsigned long flags)
+			const void *dout, void *din, unsigned long flags)
 {
 	// Yay a single transaction
 	if(bitlen <= OPENTITAN_QSPI_FIFO_DEPTH*8){
@@ -451,11 +451,11 @@ int opentitan_qspi_xfer(opentitan_qspi_t *priv, unsigned int bitlen,
 		unsigned int  num_txns    = (bitlen + OPENTITAN_QSPI_FIFO_DEPTH*8 - 1)/(OPENTITAN_QSPI_FIFO_DEPTH*8);
 		
 		for(unsigned int i = 0; i < num_txns; i++){
-			unsigned long flags = (i == 0) 			? first_flags :
-								  (i == num_txns-1) ? last_flags  : 0;
+			unsigned long flags = (i == 0) ? first_flags :
+					      (i == num_txns-1) ? last_flags  : 0;
 			unsigned int ret = 0;
 			unsigned int len = ((bitlen - i*OPENTITAN_QSPI_FIFO_DEPTH*8) < OPENTITAN_QSPI_FIFO_DEPTH*8) ?
-								(bitlen - i*OPENTITAN_QSPI_FIFO_DEPTH*8) : OPENTITAN_QSPI_FIFO_DEPTH*8;
+					    (bitlen - i*OPENTITAN_QSPI_FIFO_DEPTH*8) : OPENTITAN_QSPI_FIFO_DEPTH*8;
 			void const *out = NULL;
 			void *in  = NULL;
 
