@@ -7,7 +7,7 @@ packages:
     dependencies:
     - common_cells
   apb_uart:
-    revision: cd2aed95e2daaaa4215b13c7f4fb97e47cd46b39
+    revision: ee0d63976fb158d6394ad89a29463b0d44bf953a
     version: null
     source:
       Git: git@github.com:pulp-platform/apb_uart.git
@@ -62,8 +62,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: b59eca3c1747b28022573e37aa91a151808d1db5
-    version: 1.26.0
+    revision: 16c5bcac796f055d661b4820152398ecc27fa4fe
+    version: 1.25.0
     source:
       Git: git@github.com:pulp-platform/common_cells
     dependencies:
@@ -94,8 +94,8 @@ packages:
     - common_cells
     - register_interface
   register_interface:
-    revision: 6902fc12479334fdaf92c7b48280c7c3413a2f54
-    version: null
+    revision: 9fc63015615acb11111e4bc3e858381e3e72405d
+    version: 0.3.6
     source:
       Git: git@github.com:pulp-platform/register_interface.git
     dependencies:

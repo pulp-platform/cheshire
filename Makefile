@@ -19,9 +19,6 @@ PLICOPT      = -s 20 -t 2 -p 7 # TODO
 
 #VLOG_ARGS    = 
 
-include $(OT_PERI)/otp.mk
-
-
 .PHONY: all 
 
 all: 	cheshire_regs\
@@ -31,6 +28,13 @@ all: 	cheshire_regs\
 		update_spi_regs \
 		vsim/compile.tcl\
 		vivado
+
+
+##################################
+# OpenTitan Peripherals Makefile #
+##################################
+
+include $(OT_PERI)/otp.mk
 
 ###############
 # Generate HW #
