@@ -16,13 +16,13 @@ dependencies:
   axi:                      { git: "git@github.com:pulp-platform/axi.git",                   version: =0.39.0-beta.1 }
   axi_riscv_atomics:        { git: "git@github.com:pulp-platform/axi_riscv_atomics.git",     version: =0.6.0 }
   apb:                      { git: "git@github.com:pulp-platform/apb.git",                   version: =0.2.1 }
+  apb_uart:                 { git: "git@github.com:pulp-platform/apb_uart.git",              version: =0.2.0 }
   clint:                    { git: "git@github.com:pulp-platform/clint.git",                 version: =0.1.0 }
   common_cells:             { git: "git@github.com:pulp-platform/common_cells",              version: =1.25.0 }
   iDMA:                     { git: "git@github.com:pulp-platform/iDMA.git",                  version: =0.3.1 }
   register_interface:       { git: "git@github.com:pulp-platform/register_interface.git",    version: =0.3.6 }
   riscv-dbg:                { git: "git@github.com:pulp-platform/riscv-dbg.git",             version: =0.7.0 }
   ariane:                   { git: "git@github.com:pulp-platform/cva6",                      rev: cheshire }
-  apb_uart:                 { git: "git@github.com:pulp-platform/apb_uart.git",              rev: feature/reg_uart_wrap }
   opentitan_peripherals:    { git: "git@github.com:pulp-platform/opentitan_peripherals.git", rev: fix/spi_host_non_word_reads }
   serial_link:              { git: "git@github.com:pulp-platform/serial_link.git",           rev: d4072df77065513d247862f7e9246a9c248fe43a }
   tech_cells_generic:       { git: "git@github.com:pulp-platform/tech_cells_generic.git",    rev: master }

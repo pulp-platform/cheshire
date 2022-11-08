@@ -7,8 +7,8 @@ packages:
     dependencies:
     - common_cells
   apb_uart:
-    revision: ee0d63976fb158d6394ad89a29463b0d44bf953a
-    version: null
+    revision: d573a8ee474df3760e64c8983fcd315731c67b0a
+    version: 0.2.0
     source:
       Git: git@github.com:pulp-platform/apb_uart.git
     dependencies:
