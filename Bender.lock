@@ -62,8 +62,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: 16c5bcac796f055d661b4820152398ecc27fa4fe
-    version: 1.25.0
+    revision: b59eca3c1747b28022573e37aa91a151808d1db5
+    version: 1.26.0
     source:
       Git: git@github.com:pulp-platform/common_cells
     dependencies:
@@ -86,7 +86,7 @@ packages:
     - common_verification
     - register_interface
   opentitan_peripherals:
-    revision: b8870ec5a85109280258d83e9e1a7316cb3ca8b1
+    revision: c190bd3f37a57973ebf43b673f4154502036d15e
     version: null
     source:
       Git: git@github.com:pulp-platform/opentitan_peripherals.git
