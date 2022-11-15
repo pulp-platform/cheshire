@@ -15,9 +15,9 @@ REGGEN	     = $(PYTHON) $(REGGEN_PATH)
 OT_PERI 	 = $(shell $(BENDER) path opentitan_peripherals)
 
 # Alternative PLIC parameters
-PLICOPT      = -s 20 -t 2 -p 7 # TODO
+PLICOPT      = -s 20 -t 2 -p 7
 
-#VLOG_ARGS    = 
+VLOG_ARGS    ?= "" 
 
 .PHONY: all 
 
@@ -45,6 +45,7 @@ cheshire_regs: .cheshire_regs
 	$(REGGEN) -r src/regs/cheshire_regs.hjson --outdir src/regs
 	$(REGGEN) --cdefines --outfile sw/include/cheshire_regs.h src/regs/cheshire_regs.hjson
 	cp sw/include/cheshire_regs.h vivado/bootrom/src/cheshire_regs.h
+	$(MAKE) -C vivado/bootrom all
 	@touch .cheshire_regs
 
 #################

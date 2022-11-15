@@ -15,10 +15,6 @@
   chosen {
     stdout-path = "/soc/serial@2000000:115200";
   };
-  //memory@70000000 {
-  //  device_type = "memory";
-  //  reg = <0x0 0x70000000 0x0 0x00020000>;
-  //};
   memory@80000000 {
     device_type = "memory";
     reg = <0x0 0x80000000 0x0 0x40000000>;
@@ -77,10 +73,8 @@
       reg = <0x0 0x3000000 0x0 0x20000>;
       clock-frequency = <50000000>;
       max-frequency = <25000000>;
-
       #address-cells = <1>;
       #size-cells = <0>;
-
       mmc@0 {
         compatible = "mmc-spi-slot";
         reg = <0>;
@@ -102,7 +96,7 @@
       interrupt-controller;
       interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9>;
       riscv,max-priority = <7>;
-      riscv,ndev = <20>;
+      riscv,ndev = <19>;
       reg = <0x0 0xc000000 0x0 0x4000000>;
     };
     ddr_link: memory-controller@20000000 {
