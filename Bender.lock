@@ -45,7 +45,7 @@ packages:
     - common_cells
     - register_interface
   axi_llc:
-    revision: 09f214bfff59bdfd3b587c61aad69a20c7cbc467
+    revision: 3228b8a1cb7997765c021bbeb9bae56d4c4974fa
     version: null
     source:
       Git: git@github.com:pulp-platform/axi_llc.git

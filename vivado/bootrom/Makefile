@@ -5,13 +5,15 @@
 # Nicole Narr <narrn@student.ethz.ch>
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 
-SRCS_C 		= $(wildcard src/*.c src/**/*.c)
-OBJS_C 		= $(SRCS_C:.c=.o)
-INCLUDES 	= -I./ -I./src
+BENDER 	     	?= bender
 
-BASE_FLAGS 	?= -march=rv64gc -mabi=lp64d -O2 -flto -fwhole-program -Wall
-C_FLAGS 	?= $(BASE_FLAGS) -mcmodel=medany -mexplicit-relocs -fno-builtin
-LD_FLAGS 	?= $(BASE_FLAGS) -static -nostartfiles -Wl,--gc-sections
+SRCS_C 			= $(wildcard src/*.c src/**/*.c) $(wildcard $(shell $(BENDER) path axi_llc)/sw/lib/*.c)
+OBJS_C 			= $(SRCS_C:.c=.o)
+INCLUDES 		= -I./src -I$(shell $(BENDER) path axi_llc)/sw/include
+
+BASE_FLAGS 		?= -march=rv64gc -mabi=lp64d -O2 -flto -fwhole-program -Wall
+C_FLAGS 		?= $(BASE_FLAGS) -mcmodel=medany -mexplicit-relocs -fno-builtin
+LD_FLAGS 		?= $(BASE_FLAGS) -static -nostartfiles -Wl,--gc-sections
 
 RISCV_CC 		?= riscv64-unknown-elf-gcc
 RISCV_OBJCOPY	?= riscv64-unknown-elf-objcopy

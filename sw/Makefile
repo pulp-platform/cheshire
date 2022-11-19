@@ -1,3 +1,12 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+#
+# Nicole Narr <narrn@student.ethz.ch>
+# Christopher Reinwardt <creinwar@student.ethz.ch>
+
+BENDER 	    	?= bender
+
 RISCV_AR		= riscv64-unknown-elf-ar
 RISCV_CC 		= riscv64-unknown-elf-gcc
 RISCV_LD 	 	= riscv64-unknown-elf-ld
@@ -12,10 +21,10 @@ LD_FILE 		?= $(SPM_LD_FILE)
 LD_FLAGS 		= $(BASE_FLAGS) -nostartfiles -Wl,--gc-sections
 LD_LIBS			= lib/libcheshire.a
 
-INCLUDES		= -Iinclude
+INCLUDES		= -Iinclude -I$(shell $(BENDER) path axi_llc)/sw/include
 SRCS			= $(wildcard src/*.c)
 LIB_SRCS_S      = $(wildcard lib/*.S)
-LIB_SRCS_C      = $(wildcard lib/*.c)
+LIB_SRCS_C      = $(wildcard lib/*.c) $(wildcard $(shell $(BENDER) path axi_llc)/sw/lib/*.c)
 LIB_SRCS_O		= $(LIB_SRCS_S:.S=.o) $(LIB_SRCS_C:.c=.o)
 
 .PHONY: clean tests

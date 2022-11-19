@@ -5,10 +5,11 @@
 # Nicole Narr <narrn@student.ethz.ch>
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 
+BENDER 	      ?= bender
 
-SRCS_C 		  = $(wildcard src/*.c src/**/*.c)
+SRCS_C 		  = $(wildcard src/*.c src/**/*.c) $(wildcard $(shell $(BENDER) path axi_llc)/sw/lib/*.c)
 OBJS_C 		  = $(SRCS_C:.c=.o)
-INCLUDES 	  = -I./ -I./src -I../../sw/include
+INCLUDES 	  = -I./src -I../../sw/include -I$(shell $(BENDER) path axi_llc)/sw/include
 
 BASE_FLAGS    ?= -march=rv64gc -mabi=lp64d -O2 -flto -fwhole-program -Wall
 C_FLAGS 	  ?= $(BASE_FLAGS) -mcmodel=medany -mexplicit-relocs -fno-builtin
@@ -46,10 +47,10 @@ all: bootrom.rcf bootrom.dump bootrom.sv
 	cat $< | tr " " "\n" | sed 's/@7/@0/g' > $@
 
 %.rcf: %.bin
-	gen_bootrom.py $< --arm-rom -p 65536 > $@
+	../../util/gen_bootrom.py $< --arm-rom -p 65536 > $@
 
 %.sv: %.bin
-	gen_bootrom.py --sv-module $* -p 65536 $< > $@
+	../../util/gen_bootrom.py --sv-module $* -p 65536 $< > $@
 
 # Do not remove the final .rcf; depends on the correctly change-tracked .elf
 clean:

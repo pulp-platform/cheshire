@@ -264,11 +264,11 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 	writel(command, priv->regs + REG_COMMAND);
 
 	// Wait for the FIFOs to be empty (full) if we had an actual data transfer
-	if(priv->cs_state && dir > 0){
+	if(dir > 0){
 		status = 0;
 
 		// RX only or RX/TX
-		if(dir == 1 || dir == 3) {
+		if(dir & 0x1) {
 			unsigned int bytes_rcvd = 0;
 			do {
 				status = readl((volatile unsigned int *) (priv->regs + REG_STATUS));

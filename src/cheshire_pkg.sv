@@ -28,8 +28,7 @@ package cheshire_pkg;
     AXI_XBAR_OUT_DEBUG,
     AXI_XBAR_OUT_REGBUS_PERIPH,
     AXI_XBAR_OUT_DMA_CONF,
-    AXI_XBAR_OUT_SPM,
-    AXI_XBAR_OUT_RPC_DRAM,
+    AXI_XBAR_OUT_LLC,
     AXI_XBAR_OUT_DDR_LINK,
     AXI_XBAR_NUM_OUTPUTS
   } axi_xbar_outputs_e;
@@ -67,11 +66,11 @@ package cheshire_pkg;
     logic [47:0] end_addr;
   } address_rule_48_t;
 
-  // Address map of the AXI X-Bar
-  localparam address_rule_48_t [AXI_XBAR_NUM_OUTPUTS-1:0] axi_xbar_addrmap = '{
+  // Address map of the AXI X-Bar - NUM_OUTPUT rules + 1 additional for LLC
+  localparam address_rule_48_t [AXI_XBAR_NUM_OUTPUTS:0] axi_xbar_addrmap = '{
     '{ idx: AXI_XBAR_OUT_DDR_LINK,      start_addr: 48'h100000000000, end_addr: 48'h200000000000},
-    '{ idx: AXI_XBAR_OUT_RPC_DRAM,      start_addr: 48'h000080000000, end_addr: 48'h000100000000},
-    '{ idx: AXI_XBAR_OUT_RPC_DRAM,      start_addr: 48'h000070000000, end_addr: 48'h000070020000},
+    '{ idx: AXI_XBAR_OUT_LLC,           start_addr: 48'h000080000000, end_addr: 48'h000100000000},
+    '{ idx: AXI_XBAR_OUT_LLC,           start_addr: 48'h000070000000, end_addr: 48'h000070020000},
     '{ idx: AXI_XBAR_OUT_DMA_CONF,      start_addr: 48'h000040000000, end_addr: 48'h000040001000},
     '{ idx: AXI_XBAR_OUT_REGBUS_PERIPH, start_addr: 48'h000001000000, end_addr: 48'h000030000000},
     '{ idx: AXI_XBAR_OUT_DEBUG,         start_addr: 48'h000000000000, end_addr: 48'h000000001000}
@@ -215,7 +214,7 @@ package cheshire_pkg;
   localparam logic [15:0] PartNum = 1012;
   localparam logic [31:0] IDCode = (dm::DbgVersion013 << 28) | (PartNum << 12) | 32'h1;
 
-  localparam SPM_BASE = axi_xbar_addrmap[AXI_XBAR_OUT_SPM].start_addr;
+  localparam SPM_BASE = axi_xbar_addrmap[AXI_XBAR_OUT_LLC].start_addr;
   localparam SCRATCH_REGS_BASE = regbus_periph_addrmap[REGBUS_PERIPH_OUT_CSR].start_addr;
 
   // Cheshire Config

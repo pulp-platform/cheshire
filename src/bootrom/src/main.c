@@ -1,6 +1,6 @@
 #include "main.h"
 #include "cheshire_regs.h"
-#include "neo_uart.h"
+#include "uart.h"
 #include "spi.h"
 #include "dif_i2c.h"
 #include "i2c_regs.h"

@@ -612,8 +612,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AXI_USER_WIDTH ( AXI_USER_WIDTH          )
   ) axi_dram_out();
 
-  `AXI_ASSIGN_FROM_REQ(axi_xbar_atomics_dram, axi_xbar_mst_port_reqs[AXI_XBAR_OUT_RPC_DRAM])
-  `AXI_ASSIGN_TO_RESP(axi_xbar_mst_port_rsps[AXI_XBAR_OUT_RPC_DRAM], axi_xbar_atomics_dram)
+  `AXI_ASSIGN_FROM_REQ(axi_xbar_atomics_dram, axi_xbar_mst_port_reqs[AXI_XBAR_OUT_LLC])
+  `AXI_ASSIGN_TO_RESP(axi_xbar_mst_port_rsps[AXI_XBAR_OUT_LLC], axi_xbar_atomics_dram)
 
   `AXI_ASSIGN_TO_REQ(axi_atomics_to_llc_req, axi_dram_out)
   `AXI_ASSIGN_FROM_RESP(axi_dram_out, axi_atomics_to_llc_rsp)  
@@ -667,9 +667,9 @@ module cheshire_soc import cheshire_pkg::*; #(
     .mst_resp_i          ( llc_to_dram_rsp ),
     .conf_req_i          ( regbus_periph_out_req[REGBUS_PERIPH_OUT_LLC] ),
     .conf_resp_o         ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_LLC] ),
-    .cached_start_addr_i ( axi_xbar_addrmap[AXI_XBAR_OUT_RPC_DRAM].start_addr ),
-    .cached_end_addr_i   ( axi_xbar_addrmap[AXI_XBAR_OUT_RPC_DRAM].end_addr   ),
-    .spm_start_addr_i    ( axi_xbar_addrmap[AXI_XBAR_OUT_SPM].start_addr   )
+    .cached_start_addr_i ( axi_xbar_addrmap[AXI_XBAR_OUT_LLC+1].start_addr ),
+    .cached_end_addr_i   ( axi_xbar_addrmap[AXI_XBAR_OUT_LLC+1].end_addr   ),
+    .spm_start_addr_i    ( axi_xbar_addrmap[AXI_XBAR_OUT_LLC].start_addr   )
   );
 
 

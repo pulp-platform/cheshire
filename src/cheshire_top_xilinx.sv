@@ -22,7 +22,7 @@ module cheshire_top_xilinx
   inout wire          i2c_sda_io,
 
   input logic         sd_cd_i,
-  output logic        sd_cmd_o,     
+  output logic        sd_cmd_o,
   inout wire  [3:0]   sd_d_io,
   output logic        sd_reset_o,
   output logic        sd_sclk_o,
@@ -62,8 +62,8 @@ module cheshire_top_xilinx
 
   logic rst_n;
 
-  axi_a48_d64_slv_u0_req_t soc_req, dram_req;
-  axi_a48_d64_slv_u0_resp_t soc_resp, dram_resp;
+  axi_a48_d64_mst_u0_llc_req_t soc_req, dram_req;
+  axi_a48_d64_mst_u0_llc_resp_t soc_resp, dram_resp;
 
   // Statically assign the response user signals
   // B Channel user
