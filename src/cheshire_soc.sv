@@ -24,8 +24,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   input   logic [63:0]                boot_addr_i,
 
   // DRAM AXI interface
-  output  axi_a48_d64_slv_u0_req_t    dram_req_o,
-  input   axi_a48_d64_slv_u0_resp_t   dram_resp_i,
+  output  axi_a48_d64_mst_u0_llc_req_t    dram_req_o,
+  input   axi_a48_d64_mst_u0_llc_resp_t   dram_resp_i,
 
   // DRAM Regbus interface
   output  reg_a48_d32_req_t           dram_conf_req_o,
@@ -594,61 +594,82 @@ module cheshire_soc import cheshire_pkg::*; #(
   endgenerate
 
 
+  /////////
+  // LLC //
+  /////////
 
-  /////////////////////////
-  //  Scratchpad memory  //
-  /////////////////////////
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH          ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH          ),
+    .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH          )
+  ) axi_xbar_atomics_dram();
 
-  logic spm_req, spm_we, spm_rvalid;
-  logic [47:0] spm_addr;
-  logic [63:0] spm_wdata, spm_rdata;
-  logic [7:0]  spm_strb;
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH          ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH          ),
+    .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH          )
+  ) axi_dram_out();
 
-  axi_to_mem_interleaved #(
-    .axi_req_t    ( axi_a48_d64_slv_u0_req_t  ),
-    .axi_resp_t   ( axi_a48_d64_slv_u0_resp_t ),
-    .AddrWidth    ( 48                        ),
-    .DataWidth    ( 64                        ),
-    .IdWidth      ( AXI_XBAR_SLAVE_ID_WIDTH   ),
-    .NumBanks     ( 1                         ),
-    .BufDepth     ( 3                         )
-  ) i_axi_to_mem_spm (
+  `AXI_ASSIGN_FROM_REQ(axi_xbar_atomics_dram, axi_xbar_mst_port_reqs[AXI_XBAR_OUT_RPC_DRAM])
+  `AXI_ASSIGN_TO_RESP(axi_xbar_mst_port_rsps[AXI_XBAR_OUT_RPC_DRAM], axi_xbar_atomics_dram)
+
+  `AXI_ASSIGN_TO_REQ(axi_atomics_to_llc_req, axi_dram_out)
+  `AXI_ASSIGN_FROM_RESP(axi_dram_out, axi_atomics_to_llc_rsp)  
+
+  axi_a48_d64_slv_u0_req_t  axi_atomics_to_llc_req;
+  axi_a48_d64_slv_u0_resp_t axi_atomics_to_llc_rsp;
+
+  axi_a48_d64_mst_u0_llc_req_t  llc_to_dram_req;
+  axi_a48_d64_mst_u0_llc_resp_t llc_to_dram_rsp;
+   
+  axi_riscv_atomics_wrap #(
+    .AXI_ADDR_WIDTH     ( AXI_ADDR_WIDTH              ),
+    .AXI_DATA_WIDTH     ( AXI_DATA_WIDTH              ),
+    .AXI_ID_WIDTH       ( AXI_XBAR_SLAVE_ID_WIDTH     ),
+    .AXI_USER_WIDTH     ( AXI_USER_WIDTH              ),
+    .AXI_MAX_READ_TXNS  ( 4                           ),
+    .AXI_MAX_WRITE_TXNS ( 4                           ),
+    .AXI_USER_AS_ID     ( 1'b0                        ), // TODO
+    .AXI_USER_ID_MSB    ( 0                           ),
+    .AXI_USER_ID_LSB    ( 0                           ),
+    .RISCV_WORD_WIDTH   ( 64                          )
+  ) i_axi_riscv_atomics_dram (
     .clk_i,
     .rst_ni,
-    .busy_o       (                           ),
-    .axi_req_i    ( axi_xbar_mst_port_reqs[AXI_XBAR_OUT_SPM] ),
-    .axi_resp_o   ( axi_xbar_mst_port_rsps[AXI_XBAR_OUT_SPM] ),
-    .mem_req_o    ( spm_req                   ),
-    .mem_gnt_i    ( spm_req                   ),
-    .mem_addr_o   ( spm_addr                  ),
-    .mem_wdata_o  ( spm_wdata                 ),
-    .mem_strb_o   ( spm_strb                  ),
-    .mem_atop_o   (                           ),
-    .mem_we_o     ( spm_we                    ),
-    .mem_rvalid_i ( spm_rvalid                ),
-    .mem_rdata_i  ( spm_rdata                 )
+    .mst                ( axi_dram_out.Master ),
+    .slv                ( axi_xbar_atomics_dram.Slave  )
   );
 
-  // spm_rvalid = #1 spm_req
-  `FF(spm_rvalid, spm_req, 1'b0, clk_i, rst_ni)
-
-  tc_sram #(
-    .NumWords     ( 16384          ), // 128 KiB
-    .DataWidth    ( 64             ),
-    .ByteWidth    ( 8              ),
-    .NumPorts     ( 1              ),
-    .Latency      ( 1              ),
-    .SimInit      ( "zeros"        ),
-    .PrintSimCfg  ( 1'b0           )
-  ) i_spm (
-    .clk_i        ( clk_i          ),
-    .rst_ni       ( rst_ni         ),
-    .req_i        ( spm_req        ),
-    .we_i         ( spm_we         ),
-    .addr_i       ( spm_addr[16:3] ),
-    .wdata_i      ( spm_wdata      ),
-    .be_i         ( spm_strb       ),
-    .rdata_o      ( spm_rdata      )
+  axi_llc_reg_wrap #(
+    .SetAssociativity    ( 8 ),
+    .NumLines            ( 256 ),
+    .NumBlocks           ( 8 ),
+    .AxiIdWidth          ( AXI_XBAR_SLAVE_ID_WIDTH ),
+    .AxiAddrWidth        ( AXI_ADDR_WIDTH ),
+    .AxiDataWidth        ( AXI_DATA_WIDTH ),
+    .AxiUserWidth        ( AXI_USER_WIDTH ),
+    .slv_req_t           ( axi_a48_d64_slv_u0_req_t ),
+    .slv_resp_t          ( axi_a48_d64_slv_u0_resp_t ),
+    .mst_req_t           ( axi_a48_d64_mst_u0_llc_req_t ),
+    .mst_resp_t          ( axi_a48_d64_mst_u0_llc_resp_t ),
+    .reg_req_t           ( reg_a48_d32_req_t ),
+    .reg_resp_t          ( reg_a48_d32_rsp_t ),
+    .rule_full_t         ( address_rule_48_t )
+  ) i_axi_llc_top (
+    .clk_i,
+    .rst_ni,
+    .test_i              ( testmode_i ),
+    .slv_req_i           ( axi_atomics_to_llc_req ),
+    .slv_resp_o          ( axi_atomics_to_llc_rsp ),
+    .mst_req_o           ( llc_to_dram_req ),
+    .mst_resp_i          ( llc_to_dram_rsp ),
+    .conf_req_i          ( regbus_periph_out_req[REGBUS_PERIPH_OUT_LLC] ),
+    .conf_resp_o         ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_LLC] ),
+    .cached_start_addr_i ( axi_xbar_addrmap[AXI_XBAR_OUT_RPC_DRAM].start_addr ),
+    .cached_end_addr_i   ( axi_xbar_addrmap[AXI_XBAR_OUT_RPC_DRAM].end_addr   ),
+    .spm_start_addr_i    ( axi_xbar_addrmap[AXI_XBAR_OUT_SPM].start_addr   )
   );
 
 
@@ -659,46 +680,9 @@ module cheshire_soc import cheshire_pkg::*; #(
   generate
     if(CheshireCfg.RPC_DRAM) begin
       
-      AXI_BUS #(
-        .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH          ),
-        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH          ),
-        .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH          )
-      ) axi_xbar_atomics_dram();
-
-      AXI_BUS #(
-        .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH          ),
-        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH          ),
-        .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH          )
-      ) axi_dram_out();
-
-      `AXI_ASSIGN_FROM_REQ(axi_xbar_atomics_dram, axi_xbar_mst_port_reqs[AXI_XBAR_OUT_RPC_DRAM])
-      `AXI_ASSIGN_TO_RESP(axi_xbar_mst_port_rsps[AXI_XBAR_OUT_RPC_DRAM], axi_xbar_atomics_dram)
-
-      `AXI_ASSIGN_TO_REQ(dram_req_o, axi_dram_out)
-      `AXI_ASSIGN_FROM_RESP(axi_dram_out, dram_resp_i)   
-   
-      axi_riscv_atomics_wrap #(
-        .AXI_ADDR_WIDTH     ( AXI_ADDR_WIDTH              ),
-        .AXI_DATA_WIDTH     ( AXI_DATA_WIDTH              ),
-        .AXI_ID_WIDTH       ( AXI_XBAR_SLAVE_ID_WIDTH     ),
-        .AXI_USER_WIDTH     ( AXI_USER_WIDTH              ),
-        .AXI_MAX_READ_TXNS  ( 4                           ),
-        .AXI_MAX_WRITE_TXNS ( 4                           ),
-        .AXI_USER_AS_ID     ( 1'b1                        ),
-        .AXI_USER_ID_MSB    ( 0                           ),
-        .AXI_USER_ID_LSB    ( 0                           ),
-        .RISCV_WORD_WIDTH   ( 64                          )
-      ) i_axi_riscv_atomics_dram (
-        .clk_i,
-        .rst_ni,
-        .mst                ( axi_dram_out.Master ),
-        .slv                ( axi_xbar_atomics_dram.Slave  )
-      );
-
       // Connect the external DRAM signals
-      // Regbus
+      assign dram_req_o = llc_to_dram_req;
+      assign llc_to_dram_rsp = dram_resp_i;
       assign dram_conf_req_o = regbus_periph_out_req[REGBUS_PERIPH_OUT_RPC_DRAM];
       assign regbus_periph_out_rsp[REGBUS_PERIPH_OUT_RPC_DRAM] = dram_conf_rsp_i;
   
@@ -706,8 +690,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       
       axi_err_slv #(
         .AxiIdWidth ( AXI_XBAR_SLAVE_ID_WIDTH   ),
-        .axi_req_t  ( axi_a48_d64_slv_u0_req_t  ),
-        .axi_resp_t ( axi_a48_d64_slv_u0_resp_t ),
+        .axi_req_t  ( axi_a48_d64_mst_u0_llc_req_t  ),
+        .axi_resp_t ( axi_a48_d64_mst_u0_llc_resp_t ),
         .RespWidth  ( 64                        ),
         .RespData   ( 64'hCA11AB1EBADCAB1E      ),
         .ATOPs      ( 1'b1                      ),
@@ -716,8 +700,8 @@ module cheshire_soc import cheshire_pkg::*; #(
         .clk_i,
         .rst_ni,
         .test_i     ( testmode_i                ),
-        .slv_req_i  ( axi_xbar_mst_port_reqs[AXI_XBAR_OUT_RPC_DRAM] ),
-        .slv_resp_o ( axi_xbar_mst_port_rsps[AXI_XBAR_OUT_RPC_DRAM] )
+        .slv_req_i  ( llc_to_dram_req ),
+        .slv_resp_o ( llc_to_dram_rsp )
       );
 
       reg_err_slv #(

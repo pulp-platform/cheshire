@@ -44,6 +44,17 @@ packages:
     - axi
     - common_cells
     - register_interface
+  axi_llc:
+    revision: 09f214bfff59bdfd3b587c61aad69a20c7cbc467
+    version: null
+    source:
+      Git: git@github.com:pulp-platform/axi_llc.git
+    dependencies:
+    - axi
+    - common_cells
+    - common_verification
+    - register_interface
+    - tech_cells_generic
   axi_riscv_atomics:
     revision: 430838a10a9bdf1e381d4fcb33907428f3273420
     version: 0.6.0

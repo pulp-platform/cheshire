@@ -264,6 +264,55 @@ module cheshire_soc_fixture;
     end
   endtask
 
+  task jtag_cfg_llc_spm;
+    automatic dm::sbcs_t sbcs = jtag_init_sbcs;
+    automatic logic [31:0] data;
+
+    // Update SBCS
+    sbcs.sbreadonaddr = 0;
+    sbcs.sbreadondata = 0;
+    sbcs.sbautoincrement = 0;
+    sbcs.sbaccess = 3;
+
+    riscv_dbg.write_dmi(dm::SBCS, sbcs);
+    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+
+    $display("[JTAG] Configuring all of LLC to SPM");
+
+    data = 32'hff;
+
+    // cfg_spm_low = 0xff;
+    riscv_dbg.write_dmi(dm::SBAddress0, regbus_periph_addrmap[REGBUS_PERIPH_OUT_LLC].start_addr[31:0]);
+    riscv_dbg.write_dmi(dm::SBData0, data);
+    // Wait for the write to complete
+    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+
+    if(sbcs.sberror) begin
+      sbcs.sberror = 1;
+      riscv_dbg.write_dmi(dm::SBCS, sbcs);
+      do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+      while (sbcs.sbbusy);
+    end
+
+    // commit_cfg = 0x1;
+    data = 32'h1;
+    riscv_dbg.write_dmi(dm::SBAddress0, regbus_periph_addrmap[REGBUS_PERIPH_OUT_LLC].start_addr[31:0]+32'h10);
+    riscv_dbg.write_dmi(dm::SBData0, data);
+    // Wait for the write to complete
+    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+
+    if(sbcs.sberror) begin
+      sbcs.sberror = 1;
+      riscv_dbg.write_dmi(dm::SBCS, sbcs);
+      do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+      while (sbcs.sbbusy);
+    end
+  endtask
+
+
   // Run HART 0 from specified address
   task jtag_run(
     input logic [63:0] start_addr
@@ -641,14 +690,14 @@ module cheshire_soc_fixture;
   AXI_BUS_DV #(
     .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH  ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH  ),
-    .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH ),
+    .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH + 1 ),
     .AXI_USER_WIDTH ( AXI_USER_WIDTH  )
   ) axi_bus_dram2tb (
     .clk_i  ( clk_sys )
   );
 
-  axi_a48_d64_slv_u0_req_t  dram_req;
-  axi_a48_d64_slv_u0_resp_t dram_resp;
+  axi_a48_d64_mst_u0_llc_req_t  dram_req;
+  axi_a48_d64_mst_u0_llc_resp_t dram_resp;
    
   `AXI_ASSIGN_FROM_REQ(axi_bus_dram2tb, dram_req)
   `AXI_ASSIGN_TO_RESP(dram_resp, axi_bus_dram2tb)
@@ -657,7 +706,7 @@ module cheshire_soc_fixture;
   axi_test::axi_rand_slave #(
     .AW                   ( AXI_ADDR_WIDTH  ),
     .DW                   ( AXI_DATA_WIDTH  ),
-    .IW                   ( AXI_XBAR_SLAVE_ID_WIDTH ),
+    .IW                   ( AXI_XBAR_SLAVE_ID_WIDTH + 1 ),
     .UW                   ( AXI_USER_WIDTH  ),
     .MAPPED               ( 1'b1                          ),
     .TA                   ( TA                            ),

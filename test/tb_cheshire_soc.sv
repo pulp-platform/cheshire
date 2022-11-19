@@ -35,9 +35,11 @@ module tb_cheshire_soc;
       entry = cheshire_pkg::SPM_BASE;
     end
 
-    fix.sl_preload();
-     
     fix.jtag_init();
+
+    fix.jtag_cfg_llc_spm();
+    
+    fix.sl_preload();
 
     // Preload the sections from an ELF file
     //fix.jtag_preload();

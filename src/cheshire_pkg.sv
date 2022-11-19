@@ -69,12 +69,12 @@ package cheshire_pkg;
 
   // Address map of the AXI X-Bar
   localparam address_rule_48_t [AXI_XBAR_NUM_OUTPUTS-1:0] axi_xbar_addrmap = '{
-    '{ idx: AXI_XBAR_OUT_DEBUG,         start_addr: 48'h000000000000, end_addr: 48'h000000001000},
-    '{ idx: AXI_XBAR_OUT_REGBUS_PERIPH, start_addr: 48'h000001000000, end_addr: 48'h000030000000},
-    '{ idx: AXI_XBAR_OUT_DMA_CONF,      start_addr: 48'h000040000000, end_addr: 48'h000040001000},
-    '{ idx: AXI_XBAR_OUT_SPM,           start_addr: 48'h000070000000, end_addr: 48'h000070020000},
+    '{ idx: AXI_XBAR_OUT_DDR_LINK,      start_addr: 48'h100000000000, end_addr: 48'h200000000000},
     '{ idx: AXI_XBAR_OUT_RPC_DRAM,      start_addr: 48'h000080000000, end_addr: 48'h000100000000},
-    '{ idx: AXI_XBAR_OUT_DDR_LINK,      start_addr: 48'h100000000000, end_addr: 48'h200000000000}
+    '{ idx: AXI_XBAR_OUT_RPC_DRAM,      start_addr: 48'h000070000000, end_addr: 48'h000070020000},
+    '{ idx: AXI_XBAR_OUT_DMA_CONF,      start_addr: 48'h000040000000, end_addr: 48'h000040001000},
+    '{ idx: AXI_XBAR_OUT_REGBUS_PERIPH, start_addr: 48'h000001000000, end_addr: 48'h000030000000},
+    '{ idx: AXI_XBAR_OUT_DEBUG,         start_addr: 48'h000000000000, end_addr: 48'h000000001000}
   };
 
   // Inputs of the Regbus Demux
@@ -96,24 +96,26 @@ package cheshire_pkg;
     REGBUS_PERIPH_OUT_PLIC,
     REGBUS_PERIPH_OUT_DDR_LINK,
     REGBUS_PERIPH_OUT_RPC_DRAM,
+    REGBUS_PERIPH_OUT_LLC,
     REGBUS_PERIPH_OUT_VGA,
     REGBUS_PERIPH_NUM_OUTPUTS
   } regbus_periph_outputs_e;
 
   // Address map of the Regbus Demux
   localparam address_rule_48_t [REGBUS_PERIPH_NUM_OUTPUTS-1:0] regbus_periph_addrmap = '{
-    '{ idx: REGBUS_PERIPH_OUT_BOOTROM,  start_addr: 48'h01000000, end_addr: 48'h01020000 },
-    '{ idx: REGBUS_PERIPH_OUT_UART,     start_addr: 48'h02000000, end_addr: 48'h02001000 },  // UART
-    '{ idx: REGBUS_PERIPH_OUT_I2C,      start_addr: 48'h02001000, end_addr: 48'h02002000 },  // I2C
-    '{ idx: REGBUS_PERIPH_OUT_FLL,      start_addr: 48'h02002000, end_addr: 48'h02003000 },  // FLL
-    '{ idx: REGBUS_PERIPH_OUT_PAD_CTRL, start_addr: 48'h02003000, end_addr: 48'h02004000 },  // PAD CTRL
-    '{ idx: REGBUS_PERIPH_OUT_CSR,      start_addr: 48'h02004000, end_addr: 48'h02005000 },  // CSR
-    '{ idx: REGBUS_PERIPH_OUT_SPIM,     start_addr: 48'h03000000, end_addr: 48'h03020000 },  // SPIM
-    '{ idx: REGBUS_PERIPH_OUT_CLINT,    start_addr: 48'h04000000, end_addr: 48'h04100000 },  // CLINT
-    '{ idx: REGBUS_PERIPH_OUT_PLIC,     start_addr: 48'h0c000000, end_addr: 48'h10000000 },  // PLIC
+    '{ idx: REGBUS_PERIPH_OUT_VGA,      start_addr: 48'h20003000, end_addr: 48'h20004000 },  // VGA
+    '{ idx: REGBUS_PERIPH_OUT_LLC,      start_addr: 48'h20002000, end_addr: 48'h20003000 },  // LLC
+    '{ idx: REGBUS_PERIPH_OUT_RPC_DRAM, start_addr: 48'h20001000, end_addr: 48'h20002000 },  // RPC DRAM
     '{ idx: REGBUS_PERIPH_OUT_DDR_LINK, start_addr: 48'h20000000, end_addr: 48'h20001000 },  // DDR Link
-    '{ idx: REGBUS_PERIPH_OUT_RPC_DRAM, start_addr: 48'h20001000, end_addr: 48'h20002000 }, // RPC DRAM
-    '{ idx: REGBUS_PERIPH_OUT_VGA,      start_addr: 48'h20002000, end_addr: 48'h20003000 }  // VGA
+    '{ idx: REGBUS_PERIPH_OUT_PLIC,     start_addr: 48'h0c000000, end_addr: 48'h10000000 },  // PLIC
+    '{ idx: REGBUS_PERIPH_OUT_CLINT,    start_addr: 48'h04000000, end_addr: 48'h04100000 },  // CLINT
+    '{ idx: REGBUS_PERIPH_OUT_SPIM,     start_addr: 48'h03000000, end_addr: 48'h03020000 },  // SPIM
+    '{ idx: REGBUS_PERIPH_OUT_CSR,      start_addr: 48'h02004000, end_addr: 48'h02005000 },  // CSR
+    '{ idx: REGBUS_PERIPH_OUT_PAD_CTRL, start_addr: 48'h02003000, end_addr: 48'h02004000 },  // PAD CTRL
+    '{ idx: REGBUS_PERIPH_OUT_FLL,      start_addr: 48'h02002000, end_addr: 48'h02003000 },  // FLL
+    '{ idx: REGBUS_PERIPH_OUT_I2C,      start_addr: 48'h02001000, end_addr: 48'h02002000 },  // I2C
+    '{ idx: REGBUS_PERIPH_OUT_UART,     start_addr: 48'h02000000, end_addr: 48'h02001000 },  // UART
+    '{ idx: REGBUS_PERIPH_OUT_BOOTROM,  start_addr: 48'h01000000, end_addr: 48'h01020000 }
   };
 
 
@@ -128,6 +130,9 @@ package cheshire_pkg;
   // AXI bus with 48 bit address and 64 bit data
   `AXI_TYPEDEF_ALL(axi_a48_d64_mst_u0, logic [47:0], logic [AXI_XBAR_MASTER_ID_WIDTH-1:0], logic [63:0], logic [7:0], logic [0:0])
   `AXI_TYPEDEF_ALL(axi_a48_d64_slv_u0, logic [47:0], logic [AXI_XBAR_SLAVE_ID_WIDTH-1:0], logic [63:0], logic [7:0], logic [0:0])
+  
+  // AXI bus for LLC (one additional ID bit)
+  `AXI_TYPEDEF_ALL(axi_a48_d64_mst_u0_llc, logic [47:0], logic [AXI_XBAR_SLAVE_ID_WIDTH:0], logic [63:0], logic [7:0], logic [0:0])
   
   // AXI bus with 48 bit address and 32 bit data
   `AXI_TYPEDEF_ALL(axi_a48_d32_slv_u0, logic [47:0], logic [AXI_XBAR_SLAVE_ID_WIDTH-1:0], logic [31:0], logic [3:0], logic [0:0])
