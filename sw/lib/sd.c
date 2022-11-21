@@ -8,7 +8,7 @@
 #ifndef SD_C_
 #define SD_C_
 
-#define DEBUG 1
+//#define DEBUG 1
 
 #include <stddef.h>
 

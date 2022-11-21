@@ -12,87 +12,87 @@
 module cheshire_soc import cheshire_pkg::*; #(
   parameter cheshire_cfg_t CheshireCfg = CheshireCfgDefault
 ) (
-  input   logic                       clk_i,
-  input   logic                       rst_ni,
+  input   logic                                   clk_i,
+  input   logic                                   rst_ni,
 
-  input   logic                       testmode_i,
+  input   logic                                   testmode_i,
 
   // Boot mode selection
-  input   logic [1:0]                 boot_mode_i,
+  input   logic [1:0]                             boot_mode_i,
 
   // Boot address for CVA6
-  input   logic [63:0]                boot_addr_i,
+  input   logic [63:0]                            boot_addr_i,
 
   // DRAM AXI interface
-  output  axi_a48_d64_mst_u0_llc_req_t    dram_req_o,
-  input   axi_a48_d64_mst_u0_llc_resp_t   dram_resp_i,
+  output  axi_a48_d64_mst_u0_llc_req_t            dram_req_o,
+  input   axi_a48_d64_mst_u0_llc_resp_t           dram_resp_i,
 
   // DRAM Regbus interface
-  output  reg_a48_d32_req_t           dram_conf_req_o,
-  input   reg_a48_d32_rsp_t           dram_conf_rsp_i,
+  output  reg_a48_d32_req_t                       dram_conf_req_o,
+  input   reg_a48_d32_rsp_t                       dram_conf_rsp_i,
 
   // DDR-Link
-  input   logic [3:0]                 ddr_link_i,
-  output  logic [3:0]                 ddr_link_o,
+  input   logic [3:0]                             ddr_link_i,
+  output  logic [3:0]                             ddr_link_o,
 
-  input   logic                       ddr_link_clk_i,
-  output  logic                       ddr_link_clk_o,
+  input   logic                                   ddr_link_clk_i,
+  output  logic                                   ddr_link_clk_o,
 
   // VGA Controller
-  output  logic                       vga_hsync_o,
-  output  logic                       vga_vsync_o,
-  output  logic [CheshireCfg.VGARedWidth-1:0]    vga_red_o,
-  output  logic [CheshireCfg.VGAGreenWidth-1:0]  vga_green_o,
-  output  logic [CheshireCfg.VGABlueWidth-1:0]   vga_blue_o,
+  output  logic                                   vga_hsync_o,
+  output  logic                                   vga_vsync_o,
+  output  logic [CheshireCfg.VGARedWidth-1:0]     vga_red_o,
+  output  logic [CheshireCfg.VGAGreenWidth-1:0]   vga_green_o,
+  output  logic [CheshireCfg.VGABlueWidth-1:0]    vga_blue_o,
 
   // JTAG Interface
-  input   logic                       jtag_tck_i,
-  input   logic                       jtag_trst_ni,
-  input   logic                       jtag_tms_i,
-  input   logic                       jtag_tdi_i,
-  output  logic                       jtag_tdo_o,
+  input   logic                                   jtag_tck_i,
+  input   logic                                   jtag_trst_ni,
+  input   logic                                   jtag_tms_i,
+  input   logic                                   jtag_tdi_i,
+  output  logic                                   jtag_tdo_o,
 
   // UART Interface
-  output logic                        uart_tx_o,
-  input  logic                        uart_rx_i,
+  output logic                                    uart_tx_o,
+  input  logic                                    uart_rx_i,
 
   // I2C Interface
-  output logic                        i2c_sda_o,
-  input  logic                        i2c_sda_i,
-  output logic                        i2c_sda_en_o,
-  output logic                        i2c_scl_o,
-  input  logic                        i2c_scl_i,
-  output logic                        i2c_scl_en_o,
+  output logic                                    i2c_sda_o,
+  input  logic                                    i2c_sda_i,
+  output logic                                    i2c_sda_en_o,
+  output logic                                    i2c_scl_o,
+  input  logic                                    i2c_scl_i,
+  output logic                                    i2c_scl_en_o,
 
   // SPI Host Interface
-  output logic                        spim_sck_o,
-  output logic                        spim_sck_en_o,
-  output logic [ 1:0]                 spim_csb_o,
-  output logic [ 1:0]                 spim_csb_en_o,
-  output logic [ 3:0]                 spim_sd_o,
-  output logic [ 3:0]                 spim_sd_en_o,
-  input  logic [ 3:0]                 spim_sd_i,
+  output logic                                    spim_sck_o,
+  output logic                                    spim_sck_en_o,
+  output logic [ 1:0]                             spim_csb_o,
+  output logic [ 1:0]                             spim_csb_en_o,
+  output logic [ 3:0]                             spim_sd_o,
+  output logic [ 3:0]                             spim_sd_en_o,
+  input  logic [ 3:0]                             spim_sd_i,
 
   // CLINT
-  input  logic                        rtc_i,
+  input  logic                                    rtc_i,
 
   // FLL
-  output reg_a48_d32_req_t            fll_reg_req_o,
-  input  reg_a48_d32_rsp_t            fll_reg_rsp_i,
-  input  logic                        fll_lock_i,
+  output reg_a48_d32_req_t                        fll_reg_req_o,
+  input  reg_a48_d32_rsp_t                        fll_reg_rsp_i,
+  input  logic                                    fll_lock_i,
 
   // PAD CTRL
-  output  reg_a48_d32_req_t           pad_config_req_o,
-  input   reg_a48_d32_rsp_t           pad_config_rsp_i
+  output  reg_a48_d32_req_t                       pad_config_req_o,
+  input   reg_a48_d32_rsp_t                       pad_config_rsp_i
 
 );
 
   // X-Bar 
-  axi_a48_d64_slv_u0_req_t [AXI_XBAR_NUM_OUTPUTS-1:0] axi_xbar_mst_port_reqs;
-  axi_a48_d64_slv_u0_resp_t [AXI_XBAR_NUM_OUTPUTS-1:0] axi_xbar_mst_port_rsps;
+  axi_a48_d64_slv_u0_req_t  [AXI_XBAR_NUM_OUTPUTS-1:0]  axi_xbar_mst_port_reqs;
+  axi_a48_d64_slv_u0_resp_t [AXI_XBAR_NUM_OUTPUTS-1:0]  axi_xbar_mst_port_rsps;
 
-  axi_a48_d64_mst_u0_req_t [AXI_XBAR_NUM_INPUTS-1:0] axi_xbar_slv_port_reqs;
-  axi_a48_d64_mst_u0_resp_t [AXI_XBAR_NUM_INPUTS-1:0] axi_xbar_slv_port_rsps;
+  axi_a48_d64_mst_u0_req_t  [AXI_XBAR_NUM_INPUTS-1:0]   axi_xbar_slv_port_reqs;
+  axi_a48_d64_mst_u0_resp_t [AXI_XBAR_NUM_INPUTS-1:0]   axi_xbar_slv_port_rsps;
 
 
   // Regbus Peripherals 
@@ -109,8 +109,10 @@ module cheshire_soc import cheshire_pkg::*; #(
   // External interrupt pending (Machine/Supervisor context)
   logic [1:0] eip;
 
+  // Interrupt vector
   cheshire_interrupt_t irq;
 
+  // Debug Module debug request signal for CVA6
   logic debug_req;
   
   ////////////
@@ -174,6 +176,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  Debug  //
   /////////////
 
+  // DMI signals for JTAG DMI <-> DM communication
   logic dmi_rst_n;
   dm::dmi_req_t dmi_req;
   logic dmi_req_ready;
@@ -182,6 +185,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   logic dmi_resp_ready;
   logic dmi_resp_valid;
 
+  // Slave side of the debug module
   logic           dbg_req;
   logic   [47:0]  dbg_addr;
   logic           dbg_we;
@@ -190,7 +194,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   logic   [63:0]  dbg_rdata;
   logic           dbg_rvalid;
     
-  
+  // System Bus Access for the debug module
   logic           sba_req;
   logic   [47:0]  sba_addr;
   logic   [63:0]  sba_addr_long;
@@ -276,10 +280,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .dmi_resp_o           ( dmi_resp          )
   );
 
-  axi_lite_a48_d64_req_t dbg_axi_lite_to_axi_req;
-  axi_lite_a48_d64_resp_t dbg_axi_lite_to_axi_rsp;
-
-  // From DM --> AXI Lite
+  // From DM --> AXI X-Bar
   axi_from_mem #(
     .MemAddrWidth    ( 48                        ),
     .AxiAddrWidth    ( AXI_ADDR_WIDTH            ),
@@ -381,7 +382,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .rst_sl_ni      ( rst_ni                ),
         .clk_reg_i      ( clk_i                 ),
         .rst_reg_ni     ( rst_ni                ),
-        .testmode_i     ( testmode_i            ),
+        .testmode_i,
         .axi_in_req_i   ( ddr_link_axi_in_req   ),
         .axi_in_rsp_o   ( ddr_link_axi_in_rsp   ),
         .axi_out_req_o  ( axi_xbar_slv_port_reqs[AXI_XBAR_IN_DDR_LINK]      ),

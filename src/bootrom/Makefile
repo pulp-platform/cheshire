@@ -13,7 +13,7 @@ INCLUDES 	  = -I./src -I../../sw/include -I$(shell $(BENDER) path axi_llc)/sw/in
 
 BASE_FLAGS    ?= -march=rv64gc -mabi=lp64d -O2 -flto -fwhole-program -Wall
 C_FLAGS 	  ?= $(BASE_FLAGS) -mcmodel=medany -mexplicit-relocs -fno-builtin
-LD_FLAGS 	  ?= $(BASE_FLAGS) -static -nostartfiles #-Wl,--gc-sections
+LD_FLAGS 	  ?= $(BASE_FLAGS) -static -nostartfiles -Wl,--gc-sections
 
 RISCV_CC      ?= riscv64-unknown-elf-gcc
 RISCV_OBJCOPY ?= riscv64-unknown-elf-objcopy

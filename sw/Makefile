@@ -34,6 +34,7 @@ all: cheshire-lib\
 
 
 tests:  tests/addressing_test.dump\
+		tests/axi_llc_test.dump\
 		tests/sd_fpga_test.dump\
 		tests/sd_speed_bench.dump\
 		tests/spi_test.dump\
@@ -44,6 +45,10 @@ clean:
 	rm -f tests/*.{dump,elf,o}
 
 tests/addressing_test.elf: tests/addressing_test.o cheshire-lib
+	$(RISCV_CC) $(INCLUDES) -T$(LD_FILE) $(LD_FLAGS) -o $@ $< ${LD_LIBS}
+	@echo "LD $<"
+
+tests/axi_llc_test.elf: tests/axi_llc_test.o cheshire-lib
 	$(RISCV_CC) $(INCLUDES) -T$(LD_FILE) $(LD_FLAGS) -o $@ $< ${LD_LIBS}
 	@echo "LD $<"
 

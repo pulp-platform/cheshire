@@ -117,7 +117,6 @@ package cheshire_pkg;
     '{ idx: REGBUS_PERIPH_OUT_BOOTROM,  start_addr: 48'h01000000, end_addr: 48'h01020000 }
   };
 
-
   // Type definitions
 
   // Register bus with 48 bit address and 32 bit data
@@ -135,13 +134,6 @@ package cheshire_pkg;
   
   // AXI bus with 48 bit address and 32 bit data
   `AXI_TYPEDEF_ALL(axi_a48_d32_slv_u0, logic [47:0], logic [AXI_XBAR_SLAVE_ID_WIDTH-1:0], logic [31:0], logic [3:0], logic [0:0])
-
-  // AXI Lite bus with 48 bit address and 64 bit data
-  `AXI_LITE_TYPEDEF_ALL(axi_lite_a48_d64, logic [47:0], logic [63:0], logic [7:0])
-
-  // APB bus with 48 bit address and 32 bit data
-  `APB_TYPEDEF_REQ_T(apb_a48_d32_req_t, logic [47:0], logic [31:0], logic [3:0])
-  `APB_TYPEDEF_RESP_T(apb_a48_d32_rsp_t, logic [31:0])
 
   localparam ariane_pkg::ariane_cfg_t CheshireArianeConfig = '{
     RASDepth: 2,

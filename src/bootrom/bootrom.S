@@ -1,5 +1,5 @@
 .section .text._start
-// TODO
+
 // Minimal bootrom crt0
 .global _start
 .global _exit

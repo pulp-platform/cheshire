@@ -190,15 +190,15 @@ module cheshire_top_xilinx
   ///////////////////////////////////////////
 
   axi_cdc #(
-    .aw_chan_t  ( axi_a48_d64_slv_u0_aw_chan_t    ), // AW Channel Type
-    .w_chan_t   ( axi_a48_d64_slv_u0_w_chan_t     ), //  W Channel Type
-    .b_chan_t   ( axi_a48_d64_slv_u0_b_chan_t     ), //  B Channel Type
-    .ar_chan_t  ( axi_a48_d64_slv_u0_ar_chan_t    ), // AR Channel Type
-    .r_chan_t   ( axi_a48_d64_slv_u0_r_chan_t     ), //  R Channel Type
-    .axi_req_t  ( axi_a48_d64_slv_u0_req_t        ), // encapsulates request channels
-    .axi_resp_t ( axi_a48_d64_slv_u0_resp_t       ), // encapsulates request channels
+    .aw_chan_t  ( axi_a48_d64_mst_u0_llc_aw_chan_t    ), // AW Channel Type
+    .w_chan_t   ( axi_a48_d64_mst_u0_llc_w_chan_t     ), //  W Channel Type
+    .b_chan_t   ( axi_a48_d64_mst_u0_llc_b_chan_t     ), //  B Channel Type
+    .ar_chan_t  ( axi_a48_d64_mst_u0_llc_ar_chan_t    ), // AR Channel Type
+    .r_chan_t   ( axi_a48_d64_mst_u0_llc_r_chan_t     ), //  R Channel Type
+    .axi_req_t  ( axi_a48_d64_mst_u0_llc_req_t        ), // encapsulates request channels
+    .axi_resp_t ( axi_a48_d64_mst_u0_llc_resp_t       ), // encapsulates request channels
     /// Depth of the FIFO crossing the clock domain, given as 2**LOG_DEPTH.
-    .LogDepth   ( 1                               )
+    .LogDepth   ( 1                                   )
   ) i_axi_cdc_mig (
     // slave side - clocked by `src_clk_i`
     .src_clk_i    ( soc_clk           ),
@@ -458,7 +458,7 @@ module cheshire_top_xilinx
     .clk_i                ( soc_clk               ),
     .rst_ni               ( rst_n                 ),
 
-    .testmode_i           ( testmode_i            ),
+    .testmode_i,
 
     .boot_mode_i,
 

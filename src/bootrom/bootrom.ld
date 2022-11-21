@@ -19,7 +19,7 @@ SECTIONS
   /* Further addresses */
   __clint_mtime               = 0x0400bff8; 
   __base_app_sym              = ORIGIN(spm);
-  __base_dtb_sym              = ORIGIN(spm); /* Should be something else probably */
+  __base_dtb_sym              = ORIGIN(spm);
   __base_fll_sym              = 0x02002000;
   __base_i2c_sym              = 0x02001000;
   __base_padring_sym          = 0x02003000;
