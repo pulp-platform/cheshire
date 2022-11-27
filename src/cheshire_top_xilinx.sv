@@ -389,19 +389,6 @@ module cheshire_top_xilinx
     end
   end
 
-  ///////////////////
-  // ILA Debugging //
-  ///////////////////
-
-// xlnx_ila i_xlnx_ila (
-//   .clk (dram_clock_out),
-//   .probe0(sd_sclk_o),
-//   .probe1(spi_sd_soc_out),
-//   .probe2(sd_d_io),
-//   .probe3(sd_cmd_o)
-// );
-
-
   /////////////////
   // Fan Control //
   /////////////////

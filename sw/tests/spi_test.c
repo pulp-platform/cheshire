@@ -69,7 +69,8 @@ int main(void)
 {
     opentitan_qspi_t spi;
 
-    char txbuf[5], rxbuf[8];
+    char txbuf[5] = {0};
+    char rxbuf[8] = {0};
     txbuf[0] = 0x13;
 
     init_uart(200000000, 115200);

@@ -5,27 +5,30 @@
 # Nicole Narr <narrn@student.ethz.ch>
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 
-BENDER 	    	?= bender
+BENDER          ?= bender
 
-RISCV_AR		= riscv64-unknown-elf-ar
-RISCV_CC 		= riscv64-unknown-elf-gcc
-RISCV_LD 	 	= riscv64-unknown-elf-ld
+RISCV_AS        = riscv64-unknown-elf-ar
+RISCV_CC        = riscv64-unknown-elf-gcc
+RISCV_LD        = riscv64-unknown-elf-ld
 RISCV_OBJDUMP   = riscv64-unknown-elf-objdump
 RISCV_CCFLAGS   = $(BASE_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
 
-BASE_FLAGS 		= -march=rv64gc -mabi=lp64d -O2 -Wall -static #-flto -fwhole-program
+BASE_FLAGS      = -march=rv64gc -mabi=lp64d -O2 -Wall -static #-flto -fwhole-program
 
-SPM_LD_FILE 	= cheshire_spmlink.ld 
+SPM_LD_FILE     = cheshire_spmlink.ld 
 DRAM_LD_FILE    = cheshire_dramlink.ld
-LD_FILE 		?= $(SPM_LD_FILE)
-LD_FLAGS 		= $(BASE_FLAGS) -nostartfiles -Wl,--gc-sections
-LD_LIBS			= lib/libcheshire.a
+LD_FILE         ?= $(SPM_LD_FILE)
+LD_FLAGS        = $(BASE_FLAGS) -nostartfiles -Wl,--gc-sections
+LD_LIBS         = lib/libcheshire.a
 
-INCLUDES		= -Iinclude -I$(shell $(BENDER) path axi_llc)/sw/include
-SRCS			= $(wildcard src/*.c)
+SUBMODULE_INCS  = -I$(shell $(BENDER) path axi_llc)/sw/include -Isubmodules/printf
+SUBMODULE_SRCS  = $(wildcard $(shell $(BENDER) path axi_llc)/sw/lib/*.c) $(wildcard submodules/printf/*.c)
+
+INCLUDES        = -Iinclude $(SUBMODULE_INCS)
+SRCS            = $(wildcard src/*.c)
 LIB_SRCS_S      = $(wildcard lib/*.S)
-LIB_SRCS_C      = $(wildcard lib/*.c) $(wildcard $(shell $(BENDER) path axi_llc)/sw/lib/*.c)
-LIB_SRCS_O		= $(LIB_SRCS_S:.S=.o) $(LIB_SRCS_C:.c=.o)
+LIB_SRCS_C      = $(wildcard lib/*.c)
+LIB_SRCS_O      = $(LIB_SRCS_S:.S=.o) $(LIB_SRCS_C:.c=.o) $(SUBMODULE_SRCS:.c=.o)
 
 .PHONY: clean tests
 

@@ -33,4 +33,6 @@ void print_uart_byte(uint8_t byte);
 
 void write_serial(char a);
 
+void _putchar(char a);
+
 char read_serial();

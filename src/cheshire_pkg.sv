@@ -38,7 +38,7 @@ package cheshire_pkg;
   localparam int unsigned AXI_USER_WIDTH           = 1;
   localparam int unsigned AXI_STRB_WIDTH           = $clog2(AXI_DATA_WIDTH);
 
-  localparam int unsigned AXI_XBAR_MASTER_ID_WIDTH = 4; // TODO
+  localparam int unsigned AXI_XBAR_MASTER_ID_WIDTH = 2;
   localparam int unsigned AXI_XBAR_SLAVE_ID_WIDTH  = AXI_XBAR_MASTER_ID_WIDTH + $clog2(AXI_XBAR_NUM_INPUTS); 
 
   localparam int unsigned AXI_XBAR_COMBS           = AXI_XBAR_NUM_INPUTS * AXI_XBAR_NUM_OUTPUTS;
@@ -129,11 +129,16 @@ package cheshire_pkg;
   `AXI_TYPEDEF_ALL(axi_a48_d64_mst_u0, logic [47:0], logic [AXI_XBAR_MASTER_ID_WIDTH-1:0], logic [63:0], logic [7:0], logic [0:0])
   `AXI_TYPEDEF_ALL(axi_a48_d64_slv_u0, logic [47:0], logic [AXI_XBAR_SLAVE_ID_WIDTH-1:0], logic [63:0], logic [7:0], logic [0:0])
   
+  // Same AXI bus with 48 bit address and 32 bit data but with CVA6s 4 bit ID
+  `AXI_TYPEDEF_ALL(axi_cva6, logic [47:0], logic [3:0], logic [63:0], logic [7:0], logic [0:0])
+
   // AXI bus for LLC (one additional ID bit)
   `AXI_TYPEDEF_ALL(axi_a48_d64_mst_u0_llc, logic [47:0], logic [AXI_XBAR_SLAVE_ID_WIDTH:0], logic [63:0], logic [7:0], logic [0:0])
   
   // AXI bus with 48 bit address and 32 bit data
   `AXI_TYPEDEF_ALL(axi_a48_d32_slv_u0, logic [47:0], logic [AXI_XBAR_SLAVE_ID_WIDTH-1:0], logic [31:0], logic [3:0], logic [0:0])
+
+  localparam logic [0:0] CVA6_IDENTIFIER = 1'b1;
 
   localparam ariane_pkg::ariane_cfg_t CheshireArianeConfig = '{
     RASDepth: 2,

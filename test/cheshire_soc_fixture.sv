@@ -310,6 +310,12 @@ module cheshire_soc_fixture;
       do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
       while (sbcs.sbbusy);
     end
+
+    sbcs = jtag_init_sbcs;
+    // Ensure the system bus is ready again
+    riscv_dbg.write_dmi(dm::SBCS, sbcs);
+    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
   endtask
 
 
@@ -317,8 +323,11 @@ module cheshire_soc_fixture;
   task jtag_run(
     input logic [63:0] start_addr
   );
-
     logic [31:0] dm_data;
+
+    riscv_dbg.reset_dmi();
+
+    
     $display("[JTAG] halting hart 0");
     // Halt hart 0
     dm_data = 32'h8000_0001;

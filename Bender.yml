@@ -1,10 +1,6 @@
 # Copyright 2022 ETH Zurich and University of Bologna.
 # Solderpad Hardware License, Version 0.51, see LICENSE for details.
 # SPDX-License-Identifier: SHL-0.51
-#
-# Nicole Narr <narrn@student.ethz.ch>
-# Christopher Reinwardt <creinwar@student.ethz.ch>
-
 
 package:
   name: cheshire
@@ -13,7 +9,9 @@ package:
     - "Christopher Reinwardt <creinwar@student.ethz.ch>"
 
 dependencies:
-  axi:                      { git: "git@github.com:pulp-platform/axi.git",                   version: =0.39.0-beta.1 }
+  axi:                      { git: "git@github.com:pulp-platform/axi.git",                   version: =0.39.0-beta.2 }
+  axi_llc:                  { git: "git@github.com:pulp-platform/axi_llc.git",               version: =0.2.0 }
+  axi-vga:                  { git: "git@github.com:pulp-platform/axi_vga",                   version: =0.0.1 }
   axi_riscv_atomics:        { git: "git@github.com:pulp-platform/axi_riscv_atomics.git",     version: =0.6.0 }
   apb:                      { git: "git@github.com:pulp-platform/apb.git",                   version: =0.2.1 }
   apb_uart:                 { git: "git@github.com:pulp-platform/apb_uart.git",              version: =0.2.0 }
@@ -22,12 +20,11 @@ dependencies:
   iDMA:                     { git: "git@github.com:pulp-platform/iDMA.git",                  version: =0.3.1 }
   register_interface:       { git: "git@github.com:pulp-platform/register_interface.git",    version: =0.3.6 }
   riscv-dbg:                { git: "git@github.com:pulp-platform/riscv-dbg.git",             version: =0.7.0 }
+  tech_cells_generic:       { git: "git@github.com:pulp-platform/tech_cells_generic.git",    version: =0.2.10 }
   ariane:                   { git: "git@github.com:pulp-platform/cva6",                      rev: cheshire }
-  axi_llc:                  { git: "git@github.com:pulp-platform/axi_llc.git",               rev: feature/generic-regs }
-  axi-vga:                  { git: "git@github.com:pulp-platform/axi_vga",                   rev: main }
   opentitan_peripherals:    { git: "git@github.com:pulp-platform/opentitan_peripherals.git", rev: fix/spi_host_non_word_reads }
   serial_link:              { git: "git@github.com:pulp-platform/serial_link.git",           rev: d4072df77065513d247862f7e9246a9c248fe43a }
-  tech_cells_generic:       { git: "git@github.com:pulp-platform/tech_cells_generic.git",    rev: 325ece6ba8831ad190676de2f68345da7aa2816b }
+  
 
 sources:
   - src/cheshire_pkg.sv

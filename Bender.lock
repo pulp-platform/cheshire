@@ -27,8 +27,8 @@ packages:
     - riscv-dbg
     - tech_cells_generic
   axi:
-    revision: 378106001437f685af411106aaca38bc7ab6028c
-    version: 0.39.0-beta.1
+    revision: af8b0ce2653997301b1b792c4c6d207b95f63a56
+    version: 0.39.0-beta.2
     source:
       Git: git@github.com:pulp-platform/axi.git
     dependencies:
@@ -37,7 +37,7 @@ packages:
     - tech_cells_generic
   axi-vga:
     revision: 4ab2490445c8f70a6abd0bd46e5b87bdab78ba1c
-    version: null
+    version: 0.0.1
     source:
       Git: git@github.com:pulp-platform/axi_vga
     dependencies:
@@ -45,8 +45,8 @@ packages:
     - common_cells
     - register_interface
   axi_llc:
-    revision: 3228b8a1cb7997765c021bbeb9bae56d4c4974fa
-    version: null
+    revision: 44097b690ddab8b7881dd7b73befbc8a68b5f7d4
+    version: 0.2.0
     source:
       Git: git@github.com:pulp-platform/axi_llc.git
     dependencies:
@@ -122,7 +122,7 @@ packages:
     - tech_cells_generic
   serial_link:
     revision: d4072df77065513d247862f7e9246a9c248fe43a
-    version: null
+    version: 0.1.0
     source:
       Git: git@github.com:pulp-platform/serial_link.git
     dependencies:
@@ -130,8 +130,8 @@ packages:
     - common_cells
     - register_interface
   tech_cells_generic:
-    revision: 325ece6ba8831ad190676de2f68345da7aa2816b
-    version: null
+    revision: aef525b2dc7670525fc293dfc55f167e371b8c35
+    version: 0.2.10
     source:
       Git: git@github.com:pulp-platform/tech_cells_generic.git
     dependencies:

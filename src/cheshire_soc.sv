@@ -119,22 +119,89 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  CVA6  //
   ////////////
 
+  axi_cva6_req_t  cva6_out_req, cva6_user_id_req;
+  axi_cva6_resp_t cva6_out_resp, cva6_user_id_resp;
+
+  // Patch the requests coming from ariane to issue the right user signal
+  // AW
+  assign cva6_user_id_req.aw.id     = cva6_out_req.aw.id;
+  assign cva6_user_id_req.aw.addr   = cva6_out_req.aw.addr;
+  assign cva6_user_id_req.aw.len    = cva6_out_req.aw.len;
+  assign cva6_user_id_req.aw.size   = cva6_out_req.aw.size;
+  assign cva6_user_id_req.aw.burst  = cva6_out_req.aw.burst;
+  assign cva6_user_id_req.aw.lock   = cva6_out_req.aw.lock;
+  assign cva6_user_id_req.aw.cache  = cva6_out_req.aw.cache;
+  assign cva6_user_id_req.aw.prot   = cva6_out_req.aw.prot;
+  assign cva6_user_id_req.aw.qos    = cva6_out_req.aw.qos;
+  assign cva6_user_id_req.aw.region = cva6_out_req.aw.region;
+  assign cva6_user_id_req.aw.atop   = cva6_out_req.aw.atop;
+  assign cva6_user_id_req.aw.user   = CVA6_IDENTIFIER;
+  assign cva6_user_id_req.aw_valid  = cva6_out_req.aw_valid;
+    
+  // W
+  assign cva6_user_id_req.w.data    = cva6_out_req.w.data;
+  assign cva6_user_id_req.w.strb    = cva6_out_req.w.strb;
+  assign cva6_user_id_req.w.last    = cva6_out_req.w.last;
+  assign cva6_user_id_req.w.user    = CVA6_IDENTIFIER;
+  assign cva6_user_id_req.w_valid   = cva6_out_req.w_valid;
+
+  // AR
+  assign cva6_user_id_req.ar.id     = cva6_out_req.ar.id;
+  assign cva6_user_id_req.ar.addr   = cva6_out_req.ar.addr;
+  assign cva6_user_id_req.ar.len    = cva6_out_req.ar.len;
+  assign cva6_user_id_req.ar.size   = cva6_out_req.ar.size;
+  assign cva6_user_id_req.ar.burst  = cva6_out_req.ar.burst;
+  assign cva6_user_id_req.ar.lock   = cva6_out_req.ar.lock;
+  assign cva6_user_id_req.ar.cache  = cva6_out_req.ar.cache;
+  assign cva6_user_id_req.ar.prot   = cva6_out_req.ar.prot;
+  assign cva6_user_id_req.ar.qos    = cva6_out_req.ar.qos;
+  assign cva6_user_id_req.ar.region = cva6_out_req.ar.region;
+  assign cva6_user_id_req.ar.user   = CVA6_IDENTIFIER;
+  assign cva6_user_id_req.ar_valid  = cva6_out_req.ar_valid;
+
+  // Ready signals
+  assign cva6_user_id_req.b_ready   = cva6_out_req.b_ready;
+  assign cva6_user_id_req.r_ready   = cva6_out_req.r_ready;
+
+  // Responses are handed right through
+  assign cva6_out_resp = cva6_user_id_resp;
+
   cva6 #(
-    .ArianeCfg    ( CheshireArianeConfig                     )
+    .ArianeCfg    ( CheshireArianeConfig  )
   ) i_cva6 (
     .clk_i,
     .rst_ni,
     .boot_addr_i,
-    .hart_id_i    ( 64'h0                                    ),
-    .irq_i        ( eip                                      ),
-    .ipi_i        ( mssip[0]                                 ),
-    .time_irq_i   ( mstip[0]                                 ),
-    .debug_req_i  ( debug_req                                ),
-    .cvxif_req_o  (                                          ),
-    .cvxif_resp_i ( '0                                       ),
-    .axi_req_o    ( axi_xbar_slv_port_reqs[AXI_XBAR_IN_CVA6] ),
-    .axi_resp_i   ( axi_xbar_slv_port_rsps[AXI_XBAR_IN_CVA6] )
+    .hart_id_i    ( 64'h0         ),
+    .irq_i        ( eip           ),
+    .ipi_i        ( mssip[0]      ),
+    .time_irq_i   ( mstip[0]      ),
+    .debug_req_i  ( debug_req     ),
+    .cvxif_req_o  (               ),
+    .cvxif_resp_i ( '0            ),
+    .axi_req_o    ( cva6_out_req  ),
+    .axi_resp_i   ( cva6_out_resp )
   );
+
+  // Remap CVA6s 4 id bits to the system width
+  axi_id_remap #(
+    .AxiSlvPortIdWidth      ( 4                         ),
+    .AxiSlvPortMaxUniqIds   ( 4                         ),
+    .AxiMaxTxnsPerId        ( 1                         ),
+    .AxiMstPortIdWidth      ( AXI_XBAR_MASTER_ID_WIDTH  ),
+    .slv_req_t              ( axi_cva6_req_t            ),
+    .slv_resp_t             ( axi_cva6_resp_t           ),
+    .mst_req_t              ( axi_a48_d64_mst_u0_req_t  ),
+    .mst_resp_t             ( axi_a48_d64_mst_u0_resp_t )
+  ) i_axi_id_remap_cva6 (
+    .clk_i,
+    .rst_ni,
+    .slv_req_i              ( cva6_user_id_req                          ),
+    .slv_resp_o             ( cva6_user_id_resp                         ),
+    .mst_req_o              ( axi_xbar_slv_port_reqs[AXI_XBAR_IN_CVA6]  ),
+    .mst_resp_i             ( axi_xbar_slv_port_rsps[AXI_XBAR_IN_CVA6]  )
+  );
+
 
   /////////////////
   //  AXI X-Bar  //
@@ -334,18 +401,16 @@ module cheshire_soc import cheshire_pkg::*; #(
   ///////////////////
 
   generate
-    if(CheshireCfg.DDR_LINK) begin
+    if(CheshireCfg.DDR_LINK) begin : gen_serial_link
 
-      // TODO: maybe axi multicut needed?
-  
       axi_a48_d64_mst_u0_req_t ddr_link_axi_in_req;
       axi_a48_d64_mst_u0_resp_t ddr_link_axi_in_rsp;
 
       // Remap wider ID to smaller ID
       axi_id_remap #(
         .AxiSlvPortIdWidth      ( AXI_XBAR_SLAVE_ID_WIDTH       ),
-        .AxiSlvPortMaxUniqIds   ( 2**AXI_XBAR_MASTER_ID_WIDTH   ),   // TODO
-        .AxiMaxTxnsPerId        ( 1                             ),   // TODO?
+        .AxiSlvPortMaxUniqIds   ( 2**AXI_XBAR_MASTER_ID_WIDTH   ),
+        .AxiMaxTxnsPerId        ( 1                             ),
         .AxiMstPortIdWidth      ( AXI_XBAR_MASTER_ID_WIDTH      ),
         .slv_req_t              ( axi_a48_d64_slv_u0_req_t      ),
         .slv_resp_t             ( axi_a48_d64_slv_u0_resp_t     ),
@@ -399,7 +464,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .reset_no       (                       )
       );
 
-    end else begin
+    end : gen_serial_link else begin : gen_serial_link_dummy
       
       assign ddr_link_clk_o = '1;
       assign ddr_link_o = '0;
@@ -430,7 +495,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .rsp_o   ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_DDR_LINK] )
       );
 
-    end
+    end : gen_serial_link_dummy
   endgenerate
 
   //////////////////////
@@ -438,7 +503,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   //////////////////////
 
   generate
-    if(CheshireCfg.VGA) begin
+    if(CheshireCfg.VGA) begin : gen_vga
 
       axi_vga #(
         .RedWidth       ( CheshireCfg.VGARedWidth   ),
@@ -468,9 +533,9 @@ module cheshire_soc import cheshire_pkg::*; #(
         .blue_o         ( vga_blue_o                )
       );
     
-    end else begin
+    end : gen_vga else begin : gen_vga_dummy
 
-      assign axi_xbar_slv_port_reqs[AXI_XBAR_IN_VGA] = '0; // TODO
+      assign axi_xbar_slv_port_reqs[AXI_XBAR_IN_VGA] = '0;
 
       assign vga_hsync_o = '0;
       assign vga_vsync_o = '0;
@@ -488,7 +553,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .rsp_o   ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_VGA] )
       );
 
-    end
+    end : gen_vga_dummy
   endgenerate
 
   //////////////////////
@@ -496,7 +561,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   //////////////////////
 
   generate
-    if(CheshireCfg.DMA) begin
+    if(CheshireCfg.DMA) begin : gen_dma
 
       AXI_BUS #(
         .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH            ),
@@ -561,7 +626,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .AXI_ADDR_WIDTH   ( AXI_ADDR_WIDTH              ),
         .AXI_DATA_WIDTH   ( AXI_DATA_WIDTH              ),
         .AXI_USER_WIDTH   ( AXI_USER_WIDTH              ),
-        .AXI_ID_WIDTH     ( AXI_XBAR_SLAVE_ID_WIDTH     ), // TODO
+        .AXI_ID_WIDTH     ( AXI_XBAR_MASTER_ID_WIDTH    ),
         .AXI_SLV_ID_WIDTH ( AXI_XBAR_SLAVE_ID_WIDTH     )
       ) i_dma_core_wrap (
         .clk_i,
@@ -571,7 +636,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .axi_slave        ( axi_atomics_dma_wrap.Slave  )
       );
     
-    end else begin
+    end : gen_dma else begin : gen_dma_dummy
 
       assign axi_xbar_slv_port_reqs[AXI_XBAR_IN_DMA] = '0;
 
@@ -591,7 +656,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .slv_resp_o ( axi_xbar_mst_port_rsps[AXI_XBAR_OUT_DMA_CONF] )
       );
 
-    end
+    end : gen_dma_dummy
   endgenerate
 
 
@@ -632,7 +697,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AXI_USER_WIDTH     ( AXI_USER_WIDTH              ),
     .AXI_MAX_READ_TXNS  ( 4                           ),
     .AXI_MAX_WRITE_TXNS ( 4                           ),
-    .AXI_USER_AS_ID     ( 1'b0                        ), // TODO
+    .AXI_USER_AS_ID     ( 1'b1                        ),
     .AXI_USER_ID_MSB    ( 0                           ),
     .AXI_USER_ID_LSB    ( 0                           ),
     .RISCV_WORD_WIDTH   ( 64                          )
@@ -679,7 +744,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   //////////////
 
   generate
-    if(CheshireCfg.RPC_DRAM) begin
+    if(CheshireCfg.RPC_DRAM) begin : gen_dram
       
       // Connect the external DRAM signals
       assign dram_req_o = llc_to_dram_req;
@@ -687,7 +752,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       assign dram_conf_req_o = regbus_periph_out_req[REGBUS_PERIPH_OUT_RPC_DRAM];
       assign regbus_periph_out_rsp[REGBUS_PERIPH_OUT_RPC_DRAM] = dram_conf_rsp_i;
   
-    end else begin
+    end : gen_dram else begin : gen_dram_dummy
       
       axi_err_slv #(
         .AxiIdWidth ( AXI_XBAR_SLAVE_ID_WIDTH   ),
@@ -715,15 +780,14 @@ module cheshire_soc import cheshire_pkg::*; #(
         .rsp_o   ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_RPC_DRAM] )
       );
 
-
-    end
+    end : gen_dram_dummy
   endgenerate
    
   //////////////
   //  Regbus  //
   //////////////
 
-  logic [cf_math_pkg::idx_width(REGBUS_PERIPH_NUM_OUTPUTS)-1:0] regbus_periph_select; // TODO
+  logic [cf_math_pkg::idx_width(REGBUS_PERIPH_NUM_OUTPUTS)-1:0] regbus_periph_select;
 
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH          ),
@@ -858,7 +922,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   ////////////
 
   generate
-    if(CheshireCfg.UART) begin
+    if(CheshireCfg.UART) begin : gen_uart
 
       reg_uart_wrap #(
         .AddrWidth  ( AXI_ADDR_WIDTH    ), 
@@ -882,7 +946,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .sout_o     ( uart_tx_o         )
       );
     
-    end else begin
+    end : gen_uart else begin : gen_uart_dummy
 
       assign uart_tx_o = '0;
 
@@ -898,7 +962,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .rsp_o   ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_UART] )
       );
     
-    end
+    end : gen_uart_dummy
   endgenerate
 
   ///////////
@@ -906,7 +970,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   ///////////
 
   generate
-    if(CheshireCfg.I2C) begin
+    if(CheshireCfg.I2C) begin : gen_i2c
 
       i2c #(
         .reg_req_t                ( reg_a48_d32_req_t        ),
@@ -940,7 +1004,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .intr_host_timeout_o      ( irq.i2c_host_timeout     )
       );
     
-    end else begin
+    end : gen_i2c else begin : gen_i2c_dummy
 
       assign i2c_scl_o = '0;
       assign i2c_scl_en_o = '0;
@@ -974,7 +1038,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .rsp_o   ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_I2C] )
       );
 
-    end
+    end : gen_i2c_dummy
   endgenerate
 
   ////////////
@@ -982,7 +1046,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   ////////////
 
   generate
-    if(CheshireCfg.SPI) begin
+    if(CheshireCfg.SPI) begin : gen_spi
 
       spi_host #(
         .reg_req_t        ( reg_a48_d32_req_t  ),
@@ -1005,11 +1069,11 @@ module cheshire_soc import cheshire_pkg::*; #(
         .intr_spi_event_o ( irq.spim_spi_event ) 
       );
 
-    end else begin
+    end : gen_spi else begin : gen_spi_dummy
 
       assign spi_sck_o = '0;
       assign spim_sck_en_o = '0;
-      assign spim_csb = '0;
+      assign spim_csb = '1;
       assign spim_csb_en_o = '0;
       assign spim_sd_o = '0;
       assign spim_sd_en_o = '0;
@@ -1027,7 +1091,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .rsp_o   ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_SPIM] )
       );
 
-    end
+    end : gen_spi_dummy
   endgenerate
 
   /////////////////////
@@ -1039,7 +1103,6 @@ module cheshire_soc import cheshire_pkg::*; #(
   assign reg_file_in.boot_mode.d = boot_mode_i;
   assign reg_file_in.fll_lock.d  = fll_lock_i;
   
-
   cheshire_register_file_reg_top #(
     .reg_req_t  ( reg_a48_d32_req_t ),
     .reg_rsp_t  ( reg_a48_d32_rsp_t )
@@ -1049,7 +1112,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .reg_req_i  ( regbus_periph_out_req[REGBUS_PERIPH_OUT_CSR] ),
     .reg_rsp_o  ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_CSR] ),
     .hw2reg     ( reg_file_in       ),
-    .devmode_i  ( 1'b1              )     // TODO
+    .devmode_i  ( 1'b1              )
   );
 
   ///////////////

@@ -22,6 +22,11 @@ void write_serial(char a) {
     write_reg_u8(UART_THR, a);
 }
 
+void _putchar(char a)
+{
+    write_serial(a);
+}
+
 char read_serial()
 {
     while (!is_read_full()) {}
