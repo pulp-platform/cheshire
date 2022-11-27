@@ -7,7 +7,7 @@
 
 BENDER          ?= bender
 
-RISCV_AS        = riscv64-unknown-elf-ar
+RISCV_AR        = riscv64-unknown-elf-ar
 RISCV_CC        = riscv64-unknown-elf-gcc
 RISCV_LD        = riscv64-unknown-elf-ld
 RISCV_OBJDUMP   = riscv64-unknown-elf-objdump
