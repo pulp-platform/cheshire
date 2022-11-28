@@ -21,8 +21,13 @@ VIVADOENV ?= 	PROJECT=$(PROJECT)            \
               XILINX_BOARD=$(XILINX_BOARD)  \
               BIT=$(bit)
 
-#VIVADO ?= vitis-2022.1
-VIVADO ?= vitis-2020.2
+# select IIS-internal tool commands if we run on IIS machines
+ifneq (,$(wildcard /etc/iis.version))
+	VIVADO ?= vitis-2020.2 vivado
+else
+	VIVADO ?= vivado
+endif
+
 VIVADOFLAGS ?= -nojournal -mode batch -source scripts/prologue.tcl
 
 ip-dir  := xilinx
@@ -33,11 +38,11 @@ all: $(mcs)
 
 # Generate mcs from bitstream
 $(mcs) : $(bit)
-  $(VIVADOENV) $(VIVADO) vivado $(VIVADOFLAGS) -source scripts/write_cfgmem.tcl -tclargs $@ $^
+  $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/write_cfgmem.tcl -tclargs $@ $^
 
 $(bit) : $(ips)
   @mkdir -p $(out)
-  $(VIVADOENV) $(VIVADO) vivado $(VIVADOFLAGS) -source scripts/run.tcl
+  $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/run.tcl
   cp $(PROJECT).runs/impl_1/$(PROJECT)* ./$(out)
 
 $(ips):
@@ -47,11 +52,11 @@ $(ips):
 
 gui:
   @echo "Starting $(vivado) GUI"
-  @$(VIVADOENV) $(VIVADO) vivado -nojournal -mode gui $(PROJECT).xpr &
+  @$(VIVADOENV) $(VIVADO) -nojournal -mode gui $(PROJECT).xpr &
 
 program: $(bit)
   @echo "Programming board $(BOARD) ($(XILINX_PART))"
-  $(VIVADOENV) $(VIVADO) vivado $(VIVADOFLAGS) -source scripts/program.tcl
+  $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/program.tcl
 
 clean:
   rm -rf *.log *.jou *.str *.mif *.xci *.xpr .Xil/ $(out) $(PROJECT).cache $(PROJECT).hw $(PROJECT).ioplanning $(PROJECT).ip_user_files $(PROJECT).runs $(PROJECT).sim

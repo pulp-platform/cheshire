@@ -23,15 +23,13 @@
 extern uint32_t __base_cheshire_regs;
 extern uint32_t __base_cheshire_axi_llc;
 
-void init_llc(void *base)
+void llc_info(void *base)
 {
     printf("[axi_llc] AXI LLC Version   :       0x%x\r\n", axi_llc_reg32_get_version(base));
     printf("[axi_llc] Set Associativity :       %d\r\n", axi_llc_reg32_get_set_asso(base));
     printf("[axi_llc] Num Blocks        :       %d\r\n", axi_llc_reg32_get_num_blocks(base));
     printf("[axi_llc] Num Lines         :       %d\r\n", axi_llc_reg32_get_num_lines(base));
     printf("[axi_llc] BIST Outcome      :       %d\r\n", axi_llc_reg32_get_bist_out(base));
-
-    axi_llc_reg32_all_spm(base);
 }
 
 void sd_boot(void)
@@ -91,8 +89,8 @@ int main(void)
     // Initiate our window to the world around us
     init_uart(CORE_FREQ_HZ, 115200);
 
-    // Print AXI LLC status and configure to all SPM
-    init_llc((void *) &__base_cheshire_axi_llc);
+    // Print AXI LLC status
+    llc_info((void *) &__base_cheshire_axi_llc);
 
     // Decide what to do
     switch(*bootmode){

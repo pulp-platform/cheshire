@@ -16,8 +16,9 @@ create_generated_clock -name spi_clk -divide_by 2 -source [get_pins i_sys_clk_di
 set_clock_groups -name jtag_async -asynchronous -group [get_clocks jtag_clk]
 
 # Accept suboptimal BUFG-BUFG cascades
+#set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets i_dram/u_xlnx_mig_7_ddr3_mig/u_ddr3_clk_ibuf/sys_clk_ibufg]
 set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets i_sys_clk_div/i_clk_mux/generated_clock]
-set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets i_cheshire_soc/i_axi_vga/i_pixel_clk_div/i_clk_mux/generated_clock]
+set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets i_cheshire_soc/gen_vga.i_axi_vga/i_pixel_clk_div/i_clk_mux/generated_clock]
 
 # Set conservative input/output delays for SPI
 set_input_delay  -clock soc_clk 10 [get_ports sd_d_io*]

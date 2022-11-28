@@ -48,6 +48,16 @@ _start:
     li x29, 0
     li x30, 0
 
+    // Configure the LLC to all SPM
+    li t0, 0x20002000
+    li t1, -1
+    sw t1, 0(t1)    // CFG_SPM_LOW  = 0xFFFFFFFF
+    sw t1, 4(t1)    // CFG_SPM_HIGH = 0xFFFFFFFF
+    li t1, 1
+    sw t1, 16(t1)   // COMMIT_CFG = 0x1
+    li t0, 0
+    li t1, 0
+
     // Boldly flush everything
     fence.i
 

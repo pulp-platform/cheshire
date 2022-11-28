@@ -1,10 +1,15 @@
-VIVADO ?= vivado
+# select IIS-internal tool commands if we run on IIS machines
+ifneq (,$(wildcard /etc/iis.version))
+	VIVADO ?= vitis-2020.2 vivado
+else
+	VIVADO ?= vivado
+endif
 
 all:
-	$(VIVADO) vivado -mode batch -source tcl/run.tcl
+	$(VIVADO) -mode batch -source tcl/run.tcl
 
 gui:
-	$(VIVADO) vivado -mode gui -source tcl/run.tcl &
+	$(VIVADO) -mode gui -source tcl/run.tcl &
 
 clean:
 	rm -rf ip/*
