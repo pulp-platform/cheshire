@@ -38,7 +38,7 @@ module tb_cheshire_soc;
     fix.jtag_init();
 
     fix.jtag_cfg_llc_spm();
-    
+
     fix.sl_preload();
 
     // Preload the sections from an ELF file
@@ -56,4 +56,5 @@ module tb_cheshire_soc;
 
     $finish;
   end
+
 endmodule

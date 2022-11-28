@@ -6,4 +6,3 @@ src/**/*.o
 *.elf
 *.memh
 *.dtb
-

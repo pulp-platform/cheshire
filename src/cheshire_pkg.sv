@@ -5,7 +5,7 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 
-
+/// Contains the structs and configurations necessary for the Cheshire Platform
 package cheshire_pkg;
 
   `include "axi/typedef.svh"
@@ -13,7 +13,7 @@ package cheshire_pkg;
   `include "register_interface/typedef.svh"
   `include "apb/typedef.svh"
 
-  // Inputs of X-Bar
+  /// Inputs of X-Bar
   typedef enum int {
     AXI_XBAR_IN_CVA6,
     AXI_XBAR_IN_DEBUG,
@@ -23,7 +23,7 @@ package cheshire_pkg;
     AXI_XBAR_NUM_INPUTS
   } axi_xbar_inputs_e;
 
-  // Outputs of X-Bar
+  /// Outputs of X-Bar
   typedef enum int {
     AXI_XBAR_OUT_DEBUG,
     AXI_XBAR_OUT_REGBUS_PERIPH,
@@ -33,6 +33,7 @@ package cheshire_pkg;
     AXI_XBAR_NUM_OUTPUTS
   } axi_xbar_outputs_e;
 
+  /// Parameters for AXI types
   localparam int unsigned AXI_ADDR_WIDTH           = 48;
   localparam int unsigned AXI_DATA_WIDTH           = 64;
   localparam int unsigned AXI_USER_WIDTH           = 1;
@@ -44,6 +45,7 @@ package cheshire_pkg;
   localparam int unsigned AXI_XBAR_COMBS           = AXI_XBAR_NUM_INPUTS * AXI_XBAR_NUM_OUTPUTS;
   localparam logic [AXI_XBAR_COMBS-1:0] AXI_XBAR_CONNECTIVITY = {AXI_XBAR_COMBS{1'b1}};
 
+  /// Configuration struct of X-Bar
   localparam axi_pkg::xbar_cfg_t axi_xbar_cfg = '{
     NoSlvPorts:         AXI_XBAR_NUM_INPUTS,
     NoMstPorts:         AXI_XBAR_NUM_OUTPUTS,
@@ -60,13 +62,15 @@ package cheshire_pkg;
     NoAddrRules:        6
   };
 
+  /// Address rule struct
   typedef struct packed {
     logic [31:0] idx;
     logic [47:0] start_addr;
     logic [47:0] end_addr;
   } address_rule_48_t;
 
-  // Address map of the AXI X-Bar - NUM_OUTPUT rules + 1 additional for LLC
+  /// Address map of the AXI X-Bar
+  /// NUM_OUTPUT rules + 1 additional for LLC (SPM and DRAM)
   localparam address_rule_48_t [AXI_XBAR_NUM_OUTPUTS:0] axi_xbar_addrmap = '{
     '{ idx: AXI_XBAR_OUT_DDR_LINK,      start_addr: 48'h100000000000, end_addr: 48'h200000000000},
     '{ idx: AXI_XBAR_OUT_LLC,           start_addr: 48'h000080000000, end_addr: 48'h000100000000},
@@ -76,13 +80,13 @@ package cheshire_pkg;
     '{ idx: AXI_XBAR_OUT_DEBUG,         start_addr: 48'h000000000000, end_addr: 48'h000000001000}
   };
 
-  // Inputs of the Regbus Demux
+  /// Inputs of the Regbus Demux
   typedef enum int {
     REGBUS_PERIPH_IN_XBAR,
     REGBUS_PERIPH_NUM_INPUTS
   } regbus_periph_inputs_e;
 
-  // Outputs of the Regbus Demux
+  /// Outputs of the Regbus Demux
   typedef enum int {
     REGBUS_PERIPH_OUT_BOOTROM,
     REGBUS_PERIPH_OUT_UART,
@@ -100,7 +104,7 @@ package cheshire_pkg;
     REGBUS_PERIPH_NUM_OUTPUTS
   } regbus_periph_outputs_e;
 
-  // Address map of the Regbus Demux
+  /// Address map of the Regbus Demux
   localparam address_rule_48_t [REGBUS_PERIPH_NUM_OUTPUTS-1:0] regbus_periph_addrmap = '{
     '{ idx: REGBUS_PERIPH_OUT_VGA,      start_addr: 48'h20003000, end_addr: 48'h20004000 },  // VGA
     '{ idx: REGBUS_PERIPH_OUT_LLC,      start_addr: 48'h20002000, end_addr: 48'h20003000 },  // LLC
@@ -117,34 +121,37 @@ package cheshire_pkg;
     '{ idx: REGBUS_PERIPH_OUT_BOOTROM,  start_addr: 48'h01000000, end_addr: 48'h01020000 }
   };
 
-  // Type definitions
-
-  // Register bus with 48 bit address and 32 bit data
+  /// Type definitions
+  ///
+  /// Register bus with 48 bit address and 32 bit data
   `REG_BUS_TYPEDEF_ALL(reg_a48_d32, logic [47:0], logic [31:0], logic [3:0])
 
-  // Register bus with 48 bit address and 64 bit data
+  /// Register bus with 48 bit address and 64 bit data
   `REG_BUS_TYPEDEF_ALL(reg_a48_d64, logic [47:0], logic [63:0], logic [7:0])
 
-  // AXI bus with 48 bit address and 64 bit data
+  /// AXI bus with 48 bit address and 64 bit data
   `AXI_TYPEDEF_ALL(axi_a48_d64_mst_u0, logic [47:0], logic [AXI_XBAR_MASTER_ID_WIDTH-1:0], logic [63:0], logic [7:0], logic [0:0])
   `AXI_TYPEDEF_ALL(axi_a48_d64_slv_u0, logic [47:0], logic [AXI_XBAR_SLAVE_ID_WIDTH-1:0], logic [63:0], logic [7:0], logic [0:0])
   
-  // Same AXI bus with 48 bit address and 32 bit data but with CVA6s 4 bit ID
+  /// Same AXI bus with 48 bit address and 64 bit data but with CVA6s 4 bit ID
   `AXI_TYPEDEF_ALL(axi_cva6, logic [47:0], logic [3:0], logic [63:0], logic [7:0], logic [0:0])
 
-  // AXI bus for LLC (one additional ID bit)
+  /// AXI bus for LLC (one additional ID bit)
   `AXI_TYPEDEF_ALL(axi_a48_d64_mst_u0_llc, logic [47:0], logic [AXI_XBAR_SLAVE_ID_WIDTH:0], logic [63:0], logic [7:0], logic [0:0])
   
-  // AXI bus with 48 bit address and 32 bit data
+  /// AXI bus with 48 bit address and 32 bit data
   `AXI_TYPEDEF_ALL(axi_a48_d32_slv_u0, logic [47:0], logic [AXI_XBAR_SLAVE_ID_WIDTH-1:0], logic [31:0], logic [3:0], logic [0:0])
 
+  /// Identifier used for user-signal based ATOPs by CVA6
   localparam logic [0:0] CVA6_IDENTIFIER = 1'b1;
 
+  /// CVA6 Configuration struct
   localparam ariane_pkg::ariane_cfg_t CheshireArianeConfig = '{
+    /// Default config
     RASDepth: 2,
     BTBEntries: 32,
     BHTEntries: 128,
-    // Default config
+    /// Non indempotent regions
     NrNonIdempotentRules: 1,
     NonIdempotentAddrBase: { 
         64'h0100_0000
@@ -152,15 +159,15 @@ package cheshire_pkg;
     NonIdempotentLength: {
         64'h3000_0000
     },
+    /// DRAM, SPM, Boot ROM, Debug Module
     NrExecuteRegionRules: 4,
-    // DRAM, SPM, Boot ROM, Debug Module
     ExecuteRegionAddrBase: {
         64'h8000_0000, 64'h7000_0000, 64'h0100_0000, 64'h0
     },
     ExecuteRegionLength: {
         64'h8000_0000, 64'h0002_0000, 64'h0002_0000, 64'h1000
     },
-    // Cached region
+    /// Cached regions: DRAM, Upper half of SPM
     NrCachedRegionRules: 2,
     CachedRegionAddrBase: {
         64'h8000_0000, 64'h7001_0000
@@ -168,15 +175,14 @@ package cheshire_pkg;
     CachedRegionLength: {
         64'h8000_0000, 64'h0001_0000
     },
-    // Cache config
     Axi64BitCompliant: 1'b1,
     SwapEndianess: 1'b0,
-    // Debug
+    /// Debug
     DmBaseAddress: 64'h0,
     NrPMPEntries: 0
   };
 
-  // Interrupts
+  /// Interrupts
   typedef struct packed {
     logic uart;
     logic spim_spi_event;
@@ -200,34 +206,33 @@ package cheshire_pkg;
     logic zero;
   } cheshire_interrupt_t;
 
-  // SRAM cfg struct
-  typedef struct packed {
-    logic [2:0] ema;
-    logic [1:0] emaw;
-    logic [0:0] emas;
-  } sram_cfg_t;
-
-  // Debug Module
+  /// Debug Module parameter
   localparam logic [15:0] PartNum = 1012;
   localparam logic [31:0] IDCode = (dm::DbgVersion013 << 28) | (PartNum << 12) | 32'h1;
 
+  /// Testbench start adresses
   localparam SPM_BASE = axi_xbar_addrmap[AXI_XBAR_OUT_LLC].start_addr;
   localparam SCRATCH_REGS_BASE = regbus_periph_addrmap[REGBUS_PERIPH_OUT_CSR].start_addr;
 
-  // Cheshire Config
+  /// Cheshire Config
+  /// Can be used to exclude parts of the system
   typedef struct packed {
-    bit UART;           // Set to 1 to include UART
-    bit SPI;            // Set to 1 to include SPI
-    bit I2C;            // Set to 1 to include I2C
-    bit DMA;            // Set to 1 to include DMA
-    bit DDR_LINK;       // Set to 1 to include DDR_LINK
-    bit RPC_DRAM;       // Set to 1 to include RPC_DRAM
-    bit VGA;            // Set to 1 to include VGA
-    int VGARedWidth;    // Ignored if VGA set to 0
-    int VGAGreenWidth;  // Ignored if VGA set to 0
-    int VGABlueWidth;   // Ignored if VGA set to 0
+    bit UART;
+    bit SPI;
+    bit I2C;
+    bit DMA;
+    bit DDR_LINK;
+    bit RPC_DRAM;
+    bit VGA;
+    /// Width of the VGA red channel, ignored if VGA set to 0
+    logic [31:0] VGARedWidth;
+    /// Width of the VGA green channel, ignored if VGA set to 0
+    logic [31:0] VGAGreenWidth;
+    /// Width of the VGA blue channel, ignored if VGA set to 0
+    logic [31:0] VGABlueWidth;
   } cheshire_cfg_t;
 
+  /// Default config for Cheshire Platform
   localparam cheshire_cfg_t CheshireCfgDefault = '{
     UART: 1'b1,
     SPI: 1'b1,
@@ -236,9 +241,9 @@ package cheshire_pkg;
     DDR_LINK: 1'b1,
     RPC_DRAM: 1'b1,
     VGA: 1'b1,
-    VGARedWidth: 5,
-    VGAGreenWidth: 6,
-    VGABlueWidth: 5
+    VGARedWidth: 32'd5,
+    VGAGreenWidth: 32'd6,
+    VGABlueWidth: 32'd5
   };
 
 endpackage

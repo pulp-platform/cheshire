@@ -124,7 +124,7 @@ void spi_boot(uint64_t core_freq)
             spi_read_chunk_32B(&spi, code_dst + 8*k);
         }
 
-        //256 bytes == 64 32 bit words
+        // 256 bytes == 64 32 bit words
         code_dst += 64;
     }
 

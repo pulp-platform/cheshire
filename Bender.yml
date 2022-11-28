@@ -11,7 +11,7 @@ package:
 dependencies:
   axi:                      { git: "git@github.com:pulp-platform/axi.git",                   version: =0.39.0-beta.2 }
   axi_llc:                  { git: "git@github.com:pulp-platform/axi_llc.git",               version: =0.2.0 }
-  axi-vga:                  { git: "git@github.com:pulp-platform/axi_vga",                   version: =0.0.1 }
+  axi_vga:                  { git: "git@github.com:pulp-platform/axi_vga",                   version: =0.0.1 }
   axi_riscv_atomics:        { git: "git@github.com:pulp-platform/axi_riscv_atomics.git",     version: =0.6.0 }
   apb:                      { git: "git@github.com:pulp-platform/apb.git",                   version: =0.2.1 }
   apb_uart:                 { git: "git@github.com:pulp-platform/apb_uart.git",              version: =0.2.0 }

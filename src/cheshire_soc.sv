@@ -5,38 +5,37 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 
-
 `include "axi/assign.svh"
 `include "common_cells/registers.svh"
 
 module cheshire_soc import cheshire_pkg::*; #(
   parameter cheshire_cfg_t CheshireCfg = CheshireCfgDefault
 ) (
-  input   logic                                   clk_i,
-  input   logic                                   rst_ni,
+  input   logic               clk_i,
+  input   logic               rst_ni,
 
-  input   logic                                   testmode_i,
+  input   logic               testmode_i,
 
   // Boot mode selection
-  input   logic [1:0]                             boot_mode_i,
+  input   logic [1:0]         boot_mode_i,
 
   // Boot address for CVA6
-  input   logic [63:0]                            boot_addr_i,
+  input   logic [63:0]        boot_addr_i,
 
   // DRAM AXI interface
-  output  axi_a48_d64_mst_u0_llc_req_t            dram_req_o,
-  input   axi_a48_d64_mst_u0_llc_resp_t           dram_resp_i,
+  output  axi_a48_d64_mst_u0_llc_req_t    dram_req_o,
+  input   axi_a48_d64_mst_u0_llc_resp_t   dram_resp_i,
 
   // DRAM Regbus interface
-  output  reg_a48_d32_req_t                       dram_conf_req_o,
-  input   reg_a48_d32_rsp_t                       dram_conf_rsp_i,
+  output  reg_a48_d32_req_t   dram_conf_req_o,
+  input   reg_a48_d32_rsp_t   dram_conf_rsp_i,
 
   // DDR-Link
-  input   logic [3:0]                             ddr_link_i,
-  output  logic [3:0]                             ddr_link_o,
+  input   logic [3:0]         ddr_link_i,
+  output  logic [3:0]         ddr_link_o,
 
-  input   logic                                   ddr_link_clk_i,
-  output  logic                                   ddr_link_clk_o,
+  input   logic               ddr_link_clk_i,
+  output  logic               ddr_link_clk_o,
 
   // VGA Controller
   output  logic                                   vga_hsync_o,
@@ -46,44 +45,44 @@ module cheshire_soc import cheshire_pkg::*; #(
   output  logic [CheshireCfg.VGABlueWidth-1:0]    vga_blue_o,
 
   // JTAG Interface
-  input   logic                                   jtag_tck_i,
-  input   logic                                   jtag_trst_ni,
-  input   logic                                   jtag_tms_i,
-  input   logic                                   jtag_tdi_i,
-  output  logic                                   jtag_tdo_o,
+  input   logic               jtag_tck_i,
+  input   logic               jtag_trst_ni,
+  input   logic               jtag_tms_i,
+  input   logic               jtag_tdi_i,
+  output  logic               jtag_tdo_o,
 
   // UART Interface
-  output logic                                    uart_tx_o,
-  input  logic                                    uart_rx_i,
+  output logic                uart_tx_o,
+  input  logic                uart_rx_i,
 
   // I2C Interface
-  output logic                                    i2c_sda_o,
-  input  logic                                    i2c_sda_i,
-  output logic                                    i2c_sda_en_o,
-  output logic                                    i2c_scl_o,
-  input  logic                                    i2c_scl_i,
-  output logic                                    i2c_scl_en_o,
+  output logic                i2c_sda_o,
+  input  logic                i2c_sda_i,
+  output logic                i2c_sda_en_o,
+  output logic                i2c_scl_o,
+  input  logic                i2c_scl_i,
+  output logic                i2c_scl_en_o,
 
   // SPI Host Interface
-  output logic                                    spim_sck_o,
-  output logic                                    spim_sck_en_o,
-  output logic [ 1:0]                             spim_csb_o,
-  output logic [ 1:0]                             spim_csb_en_o,
-  output logic [ 3:0]                             spim_sd_o,
-  output logic [ 3:0]                             spim_sd_en_o,
-  input  logic [ 3:0]                             spim_sd_i,
+  output logic                spim_sck_o,
+  output logic                spim_sck_en_o,
+  output logic [ 1:0]         spim_csb_o,
+  output logic [ 1:0]         spim_csb_en_o,
+  output logic [ 3:0]         spim_sd_o,
+  output logic [ 3:0]         spim_sd_en_o,
+  input  logic [ 3:0]         spim_sd_i,
 
   // CLINT
-  input  logic                                    rtc_i,
+  input  logic                rtc_i,
 
   // FLL
-  output reg_a48_d32_req_t                        fll_reg_req_o,
-  input  reg_a48_d32_rsp_t                        fll_reg_rsp_i,
-  input  logic                                    fll_lock_i,
+  output reg_a48_d32_req_t    fll_reg_req_o,
+  input  reg_a48_d32_rsp_t    fll_reg_rsp_i,
+  input  logic                fll_lock_i,
 
   // PAD CTRL
-  output  reg_a48_d32_req_t                       pad_config_req_o,
-  input   reg_a48_d32_rsp_t                       pad_config_rsp_i
+  output reg_a48_d32_req_t    pad_config_req_o,
+  input  reg_a48_d32_rsp_t    pad_config_rsp_i
 
 );
 
@@ -376,7 +375,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   // Debug Transfer Module + Debug Module Interface
   dmi_jtag #(
-    .IdcodeValue      ( cheshire_pkg::IDCode )
+    .IdcodeValue      ( IDCode )
   ) i_dmi_jtag (
     .clk_i,
     .rst_ni,

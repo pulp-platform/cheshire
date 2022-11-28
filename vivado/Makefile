@@ -5,9 +5,9 @@
 # Nicole Narr <narrn@student.ethz.ch>
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 
-PROJECT ?= cheshire
-BOARD ?= genesys2
-XILINX_PART ?= xc7k325tffg900-2
+PROJECT      ?= cheshire
+BOARD        ?= genesys2
+XILINX_PART  ?= xc7k325tffg900-2
 XILINX_BOARD ?= digilentinc.com:genesys2:part0:1.1
 
 out := out
@@ -15,48 +15,46 @@ bit := $(out)/cheshire_top_xilinx.bit
 mcs := $(out)/cheshire_top_xilinx.mcs
 
 
-VIVADOENV ?= 	PROJECT=$(PROJECT) 				\
-				BOARD=$(BOARD) 					\
-				XILINX_PART=$(XILINX_PART) 		\
-				XILINX_BOARD=$(XILINX_BOARD) 	\
-				BIT=$(bit)
+VIVADOENV ?= 	PROJECT=$(PROJECT)            \
+              BOARD=$(BOARD)                \
+              XILINX_PART=$(XILINX_PART)    \
+              XILINX_BOARD=$(XILINX_BOARD)  \
+              BIT=$(bit)
 
 #VIVADO ?= vitis-2022.1
 VIVADO ?= vitis-2020.2
 VIVADOFLAGS ?= -nojournal -mode batch -source scripts/prologue.tcl
 
-ip-dir := xilinx
-ips := xlnx_mig_7_ddr3.xci
-
-#xlnx_protocol_checker.xci
-#xlnx_ila.xci
+ip-dir  := xilinx
+ips     :=  xlnx_mig_7_ddr3.xci \
+            xlnx_protocol_checker.xci
 
 all: $(mcs)
 
 # Generate mcs from bitstream
 $(mcs) : $(bit)
-	$(VIVADOENV) $(VIVADO) vivado $(VIVADOFLAGS) -source scripts/write_cfgmem.tcl -tclargs $@ $^
+  $(VIVADOENV) $(VIVADO) vivado $(VIVADOFLAGS) -source scripts/write_cfgmem.tcl -tclargs $@ $^
 
 $(bit) : $(ips)
-	@mkdir -p $(out)
-	$(VIVADOENV) $(VIVADO) vivado $(VIVADOFLAGS) -source scripts/run.tcl
-	cp $(PROJECT).runs/impl_1/$(PROJECT)* ./$(out)
+  @mkdir -p $(out)
+  $(VIVADOENV) $(VIVADO) vivado $(VIVADOFLAGS) -source scripts/run.tcl
+  cp $(PROJECT).runs/impl_1/$(PROJECT)* ./$(out)
 
 $(ips):
-	@echo "Generating IP $(basename $@)"
-	cd $(ip-dir)/$(basename $@) && $(MAKE) clean && $(VIVADOENV) VIVADO=$(VIVADO) $(MAKE)
-	cp $(ip-dir)/$(basename $@)/$(basename $@).srcs/sources_1/ip/$(basename $@)/$@ $@
+  @echo "Generating IP $(basename $@)"
+  cd $(ip-dir)/$(basename $@) && $(MAKE) clean && $(VIVADOENV) VIVADO=$(VIVADO) $(MAKE)
+  cp $(ip-dir)/$(basename $@)/$(basename $@).srcs/sources_1/ip/$(basename $@)/$@ $@
 
 gui:
-	@echo "Starting $(vivado) GUI"
-	@$(VIVADOENV) $(VIVADO) vivado -nojournal -mode gui $(PROJECT).xpr &
+  @echo "Starting $(vivado) GUI"
+  @$(VIVADOENV) $(VIVADO) vivado -nojournal -mode gui $(PROJECT).xpr &
 
 program: $(bit)
-	@echo "Programming board $(BOARD) ($(XILINX_PART))"
-	$(VIVADOENV) $(VIVADO) vivado $(VIVADOFLAGS) -source scripts/program.tcl
+  @echo "Programming board $(BOARD) ($(XILINX_PART))"
+  $(VIVADOENV) $(VIVADO) vivado $(VIVADOFLAGS) -source scripts/program.tcl
 
 clean:
-	rm -rf *.log *.jou *.str *.mif *.xci *.xpr .Xil/ $(out) $(PROJECT).cache $(PROJECT).hw $(PROJECT).ioplanning $(PROJECT).ip_user_files $(PROJECT).runs $(PROJECT).sim
+  rm -rf *.log *.jou *.str *.mif *.xci *.xpr .Xil/ $(out) $(PROJECT).cache $(PROJECT).hw $(PROJECT).ioplanning $(PROJECT).ip_user_files $(PROJECT).runs $(PROJECT).sim
 
 .PHONY:
-	clean
+  clean
