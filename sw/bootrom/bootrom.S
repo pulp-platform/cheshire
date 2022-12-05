@@ -1,6 +1,6 @@
 // Copyright 2022 ETH Zurich and University of Bologna.
-// Solderpad Hardware License, Version 0.51, see LICENSE for details.
-// SPDX-License-Identifier: SHL-0.51
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
 //
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
@@ -51,10 +51,10 @@ _start:
     // Configure the LLC to all SPM
     li t0, 0x20002000
     li t1, -1
-    sw t1, 0(t1)    // CFG_SPM_LOW  = 0xFFFFFFFF
-    sw t1, 4(t1)    // CFG_SPM_HIGH = 0xFFFFFFFF
+    sw t1, 0(t0)    // CFG_SPM_LOW  = 0xFFFFFFFF
+    sw t1, 4(t0)    // CFG_SPM_HIGH = 0xFFFFFFFF
     li t1, 1
-    sw t1, 16(t1)   // COMMIT_CFG = 0x1
+    sw t1, 16(t0)   // COMMIT_CFG = 0x1
     li t0, 0
     li t1, 0
 

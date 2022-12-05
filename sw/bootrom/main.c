@@ -1,6 +1,6 @@
 // Copyright 2022 ETH Zurich and University of Bologna.
-// Solderpad Hardware License, Version 0.51, see LICENSE for details.
-// SPDX-License-Identifier: SHL-0.51
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
 //
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
@@ -13,6 +13,8 @@
 #include "gpt.h"
 #include "axi_llc_reg32.h"
 
+#ifdef BOOTROM_ASIC
+
 #define DT_LEN 0x8
 #define FW_LEN 0x1800
 
@@ -20,12 +22,25 @@
 
 #define SPI_SCLK_TARGET 12500000
 
+#endif
+
+#ifdef BOOTROM_FPGA
+
+#define DT_LEN 0x8
+#define FW_LEN 0x1800
+
+#define CORE_FREQ_HZ 50000000
+
+#define SPI_SCLK_TARGET 12500000
+
+#endif
+
 extern uint32_t __base_cheshire_regs;
 extern uint32_t __base_cheshire_axi_llc;
 
 void llc_info(void *base)
 {
-    printf("[axi_llc] AXI LLC Version   :       0x%x\r\n", axi_llc_reg32_get_version(base));
+    printf("[axi_llc] AXI LLC Version   :       0x%lx\r\n", axi_llc_reg32_get_version(base));
     printf("[axi_llc] Set Associativity :       %d\r\n", axi_llc_reg32_get_set_asso(base));
     printf("[axi_llc] Num Blocks        :       %d\r\n", axi_llc_reg32_get_num_blocks(base));
     printf("[axi_llc] Num Lines         :       %d\r\n", axi_llc_reg32_get_num_lines(base));

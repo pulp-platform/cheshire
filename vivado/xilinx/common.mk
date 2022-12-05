@@ -1,3 +1,7 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
 # select IIS-internal tool commands if we run on IIS machines
 ifneq (,$(wildcard /etc/iis.version))
 	VIVADO ?= vitis-2020.2 vivado

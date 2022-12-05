@@ -1,6 +1,6 @@
 # Copyright 2022 ETH Zurich and University of Bologna.
-# Solderpad Hardware License, Version 0.51, see LICENSE for details.
-# SPDX-License-Identifier: SHL-0.51
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # Nicole Narr <narrn@student.ethz.ch>
 # Christopher Reinwardt <creinwar@student.ethz.ch>
@@ -37,29 +37,29 @@ ips     :=  xlnx_mig_7_ddr3.xci \
 all: $(mcs)
 
 # Generate mcs from bitstream
-$(mcs) : $(bit)
-  $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/write_cfgmem.tcl -tclargs $@ $^
+$(mcs): $(bit)
+	$(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/write_cfgmem.tcl -tclargs $@ $^
 
-$(bit) : $(ips)
-  @mkdir -p $(out)
-  $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/run.tcl
-  cp $(PROJECT).runs/impl_1/$(PROJECT)* ./$(out)
+$(bit): $(ips)
+	@mkdir -p $(out)
+	$(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/run.tcl
+	cp $(PROJECT).runs/impl_1/$(PROJECT)* ./$(out)
 
 $(ips):
-  @echo "Generating IP $(basename $@)"
-  cd $(ip-dir)/$(basename $@) && $(MAKE) clean && $(VIVADOENV) VIVADO="$(VIVADO)" $(MAKE)
-  cp $(ip-dir)/$(basename $@)/$(basename $@).srcs/sources_1/ip/$(basename $@)/$@ $@
+	@echo "Generating IP $(basename $@)"
+	cd $(ip-dir)/$(basename $@) && $(MAKE) clean && $(VIVADOENV) VIVADO="$(VIVADO)" $(MAKE)
+	cp $(ip-dir)/$(basename $@)/$(basename $@).srcs/sources_1/ip/$(basename $@)/$@ $@
 
 gui:
-  @echo "Starting $(vivado) GUI"
-  @$(VIVADOENV) $(VIVADO) -nojournal -mode gui $(PROJECT).xpr &
+	@echo "Starting $(vivado) GUI"
+	@$(VIVADOENV) $(VIVADO) -nojournal -mode gui $(PROJECT).xpr &
 
 program: $(bit)
-  @echo "Programming board $(BOARD) ($(XILINX_PART))"
-  $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/program.tcl
+	@echo "Programming board $(BOARD) ($(XILINX_PART))"
+	$(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/program.tcl
 
 clean:
-  rm -rf *.log *.jou *.str *.mif *.xci *.xpr .Xil/ $(out) $(PROJECT).cache $(PROJECT).hw $(PROJECT).ioplanning $(PROJECT).ip_user_files $(PROJECT).runs $(PROJECT).sim
+	rm -rf *.log *.jou *.str *.mif *.xci *.xpr .Xil/ $(out) $(PROJECT).cache $(PROJECT).hw $(PROJECT).ioplanning $(PROJECT).ip_user_files $(PROJECT).runs $(PROJECT).sim
 
 .PHONY:
-  clean
+	clean

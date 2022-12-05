@@ -1,3 +1,12 @@
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Authors:
+// - Nicole Narr <narrn@ethz.ch>
+// - Christopher Reinwardt <creinwar@ethz.ch>
+// Date:   05.12.2022
+
 #include "uart.h"
 #include "printf.h"
 #include "addr_specs.h"

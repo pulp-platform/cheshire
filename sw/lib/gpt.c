@@ -1,9 +1,11 @@
 // Copyright 2022 ETH Zurich and University of Bologna.
-// Solderpad Hardware License, Version 0.51, see LICENSE for details.
-// SPDX-License-Identifier: SHL-0.51
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
 //
-// Nicole Narr <narrn@student.ethz.ch>
-// Christopher Reinwardt <creinwar@student.ethz.ch>
+// Authors:
+// - Nicole Narr <narrn@ethz.ch>
+// - Christopher Reinwardt <creinwar@ethz.ch>
+// Date:   05.12.2022
 
 #include <stddef.h>
 
@@ -51,22 +53,13 @@ int gpt_info(opentitan_qspi_t *spi)
     for (int i = 0; i < 4; i++){
         partition_entry_t *part_entry = (partition_entry_t *)(lba2_buf + (i * 128));
         printf("GPT partition entry %d\r\n", i);
-        printf("\tpartition guid:     \t");
-        for (int j = 0; j < 4; j++)
-          printf("%x", part_entry->partition_guid[j]);
-          printf("-");
-        for (int j = 0; j < 2; j++)
-          printf("%x", part_entry->partition_guid[j+4]);
-          printf("-");
-        for (int j = 0; j < 2; j++)
-          printf("%x", part_entry->partition_guid[j+6]);
-          printf("-");
-        for (int j = 0; j < 2; j++)
-          printf("%x", part_entry->partition_guid[j+8]);
-          printf("-");
-        for (int j = 0; j < 6; j++)
-          printf("%x", part_entry->partition_guid[j+10]);
-          printf("\r\n");
+        //printf("\tpartition type guid:\t");
+        //for (int j = 0; j < 16; j++)
+        //    printf("%i", part_entry->partition_type_guid[j]);
+        //printf("\r\n");
+        //printf("\tpartition guid:     \t");
+        //for (int j = 0; j < 16; j++)
+        //    printf("%", part_entry->partition_guid[j]);
         printf("\tfirst lba:\t 0x%lx\r\n", part_entry->starting_lba);
         printf("\tlast lba:\t 0x%lx\r\n", part_entry->ending_lba);
         printf("\tattributes:\t 0x%lx\r\n", part_entry->attributes);

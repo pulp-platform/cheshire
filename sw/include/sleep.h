@@ -1,6 +1,6 @@
 // Copyright 2022 ETH Zurich and University of Bologna.
-// Solderpad Hardware License, Version 0.51, see LICENSE for details.
-// SPDX-License-Identifier: SHL-0.51
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
 //
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
@@ -10,8 +10,9 @@
 
 #define RTC_CLK_PER_US 1
 
+extern unsigned int __base_clint;
 
-#define CLINT(offset) *((volatile unsigned int *) (0x04000000 + (offset)))
+#define CLINT(offset) *((volatile unsigned long int *) (((unsigned long int) &__base_clint) + (offset)))
 
 // Setup a timer interrupt and enter sleep mode until it expires
 void sleep(unsigned long int us);

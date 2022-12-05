@@ -34,7 +34,7 @@ sources:
 
   - target: sim
     files:
-      - src/bootrom/bootrom.sv
+      - src/bootrom_asic.sv
       - test/models/spi/S25fs512s/model/s25fs512s.v
       - test/models/i2c/M24FC1025.v
       - test/models/uart_tb_rx.sv
@@ -43,6 +43,6 @@ sources:
 
   - target: fpga
     files:
-      - vivado/bootrom/bootrom.sv
+      - src/bootrom_fpga.sv
       - src/fan_ctrl.sv
       - src/cheshire_top_xilinx.sv

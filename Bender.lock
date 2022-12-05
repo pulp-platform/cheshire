@@ -35,15 +35,6 @@ packages:
     - common_cells
     - common_verification
     - tech_cells_generic
-  axi-vga:
-    revision: 4ab2490445c8f70a6abd0bd46e5b87bdab78ba1c
-    version: 0.0.1
-    source:
-      Git: git@github.com:pulp-platform/axi_vga
-    dependencies:
-    - axi
-    - common_cells
-    - register_interface
   axi_llc:
     revision: 44097b690ddab8b7881dd7b73befbc8a68b5f7d4
     version: 0.2.0
@@ -64,6 +55,15 @@ packages:
     - axi
     - common_cells
     - common_verification
+  axi_vga:
+    revision: 4ab2490445c8f70a6abd0bd46e5b87bdab78ba1c
+    version: 0.0.1
+    source:
+      Git: git@github.com:pulp-platform/axi_vga
+    dependencies:
+    - axi
+    - common_cells
+    - register_interface
   clint:
     revision: e1357c1d0edddde458aec58363473605f51e539e
     version: 0.1.0
