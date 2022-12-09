@@ -15,7 +15,7 @@ module tb_cheshire_soc;
 
   initial begin
 
-    fix.set_bootmode(0);
+    fix.set_bootmode(3);
     fix.set_testmode(0);
  
      

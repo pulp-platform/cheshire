@@ -10,7 +10,7 @@
 module cheshire_register_file_reg_top #(
     parameter type reg_req_t = logic,
     parameter type reg_rsp_t = logic,
-    parameter int AW = 5
+    parameter int AW = 6
 ) (
   input clk_i,
   input rst_ni,
@@ -82,8 +82,28 @@ module cheshire_register_file_reg_top #(
   logic scratch_3_we;
   logic [1:0] boot_mode_qs;
   logic boot_mode_re;
-  logic fll_lock_qs;
-  logic fll_lock_re;
+  logic status_clock_lock_qs;
+  logic status_clock_lock_re;
+  logic status_uart_present_qs;
+  logic status_uart_present_re;
+  logic status_spi_present_qs;
+  logic status_spi_present_re;
+  logic status_i2c_present_qs;
+  logic status_i2c_present_re;
+  logic status_dma_present_qs;
+  logic status_dma_present_re;
+  logic status_ddr_link_present_qs;
+  logic status_ddr_link_present_re;
+  logic status_rpc_dram_present_qs;
+  logic status_rpc_dram_present_re;
+  logic status_vga_present_qs;
+  logic status_vga_present_re;
+  logic [31:0] vga_red_width_qs;
+  logic vga_red_width_re;
+  logic [31:0] vga_green_width_qs;
+  logic vga_green_width_re;
+  logic [31:0] vga_blue_width_qs;
+  logic vga_blue_width_re;
 
   // Register instances
   // R[version]: V(False)
@@ -218,25 +238,179 @@ module cheshire_register_file_reg_top #(
   );
 
 
-  // R[fll_lock]: V(True)
+  // R[status]: V(True)
 
+  //   F[clock_lock]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_fll_lock (
-    .re     (fll_lock_re),
+  ) u_status_clock_lock (
+    .re     (status_clock_lock_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.fll_lock.d),
+    .d      (hw2reg.status.clock_lock.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (fll_lock_qs)
+    .qs     (status_clock_lock_qs)
+  );
+
+
+  //   F[uart_present]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_uart_present (
+    .re     (status_uart_present_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.uart_present.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_uart_present_qs)
+  );
+
+
+  //   F[spi_present]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_spi_present (
+    .re     (status_spi_present_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.spi_present.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_spi_present_qs)
+  );
+
+
+  //   F[i2c_present]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_i2c_present (
+    .re     (status_i2c_present_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.i2c_present.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_i2c_present_qs)
+  );
+
+
+  //   F[dma_present]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_dma_present (
+    .re     (status_dma_present_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.dma_present.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_dma_present_qs)
+  );
+
+
+  //   F[ddr_link_present]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_ddr_link_present (
+    .re     (status_ddr_link_present_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.ddr_link_present.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_ddr_link_present_qs)
+  );
+
+
+  //   F[rpc_dram_present]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_rpc_dram_present (
+    .re     (status_rpc_dram_present_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.rpc_dram_present.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_rpc_dram_present_qs)
+  );
+
+
+  //   F[vga_present]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_vga_present (
+    .re     (status_vga_present_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.vga_present.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_vga_present_qs)
+  );
+
+
+  // R[vga_red_width]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_vga_red_width (
+    .re     (vga_red_width_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.vga_red_width.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (vga_red_width_qs)
+  );
+
+
+  // R[vga_green_width]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_vga_green_width (
+    .re     (vga_green_width_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.vga_green_width.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (vga_green_width_qs)
+  );
+
+
+  // R[vga_blue_width]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_vga_blue_width (
+    .re     (vga_blue_width_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.vga_blue_width.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (vga_blue_width_qs)
   );
 
 
 
 
-  logic [6:0] addr_hit;
+  logic [9:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == CHESHIRE_REGISTER_FILE_VERSION_OFFSET);
@@ -245,7 +419,10 @@ module cheshire_register_file_reg_top #(
     addr_hit[3] = (reg_addr == CHESHIRE_REGISTER_FILE_SCRATCH_2_OFFSET);
     addr_hit[4] = (reg_addr == CHESHIRE_REGISTER_FILE_SCRATCH_3_OFFSET);
     addr_hit[5] = (reg_addr == CHESHIRE_REGISTER_FILE_BOOT_MODE_OFFSET);
-    addr_hit[6] = (reg_addr == CHESHIRE_REGISTER_FILE_FLL_LOCK_OFFSET);
+    addr_hit[6] = (reg_addr == CHESHIRE_REGISTER_FILE_STATUS_OFFSET);
+    addr_hit[7] = (reg_addr == CHESHIRE_REGISTER_FILE_VGA_RED_WIDTH_OFFSET);
+    addr_hit[8] = (reg_addr == CHESHIRE_REGISTER_FILE_VGA_GREEN_WIDTH_OFFSET);
+    addr_hit[9] = (reg_addr == CHESHIRE_REGISTER_FILE_VGA_BLUE_WIDTH_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -259,7 +436,10 @@ module cheshire_register_file_reg_top #(
                (addr_hit[3] & (|(CHESHIRE_REGISTER_FILE_PERMIT[3] & ~reg_be))) |
                (addr_hit[4] & (|(CHESHIRE_REGISTER_FILE_PERMIT[4] & ~reg_be))) |
                (addr_hit[5] & (|(CHESHIRE_REGISTER_FILE_PERMIT[5] & ~reg_be))) |
-               (addr_hit[6] & (|(CHESHIRE_REGISTER_FILE_PERMIT[6] & ~reg_be)))));
+               (addr_hit[6] & (|(CHESHIRE_REGISTER_FILE_PERMIT[6] & ~reg_be))) |
+               (addr_hit[7] & (|(CHESHIRE_REGISTER_FILE_PERMIT[7] & ~reg_be))) |
+               (addr_hit[8] & (|(CHESHIRE_REGISTER_FILE_PERMIT[8] & ~reg_be))) |
+               (addr_hit[9] & (|(CHESHIRE_REGISTER_FILE_PERMIT[9] & ~reg_be)))));
   end
 
   assign scratch_0_we = addr_hit[1] & reg_we & !reg_error;
@@ -276,7 +456,27 @@ module cheshire_register_file_reg_top #(
 
   assign boot_mode_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign fll_lock_re = addr_hit[6] & reg_re & !reg_error;
+  assign status_clock_lock_re = addr_hit[6] & reg_re & !reg_error;
+
+  assign status_uart_present_re = addr_hit[6] & reg_re & !reg_error;
+
+  assign status_spi_present_re = addr_hit[6] & reg_re & !reg_error;
+
+  assign status_i2c_present_re = addr_hit[6] & reg_re & !reg_error;
+
+  assign status_dma_present_re = addr_hit[6] & reg_re & !reg_error;
+
+  assign status_ddr_link_present_re = addr_hit[6] & reg_re & !reg_error;
+
+  assign status_rpc_dram_present_re = addr_hit[6] & reg_re & !reg_error;
+
+  assign status_vga_present_re = addr_hit[6] & reg_re & !reg_error;
+
+  assign vga_red_width_re = addr_hit[7] & reg_re & !reg_error;
+
+  assign vga_green_width_re = addr_hit[8] & reg_re & !reg_error;
+
+  assign vga_blue_width_re = addr_hit[9] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -307,7 +507,26 @@ module cheshire_register_file_reg_top #(
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[0] = fll_lock_qs;
+        reg_rdata_next[0] = status_clock_lock_qs;
+        reg_rdata_next[1] = status_uart_present_qs;
+        reg_rdata_next[2] = status_spi_present_qs;
+        reg_rdata_next[3] = status_i2c_present_qs;
+        reg_rdata_next[4] = status_dma_present_qs;
+        reg_rdata_next[5] = status_ddr_link_present_qs;
+        reg_rdata_next[6] = status_rpc_dram_present_qs;
+        reg_rdata_next[7] = status_vga_present_qs;
+      end
+
+      addr_hit[7]: begin
+        reg_rdata_next[31:0] = vga_red_width_qs;
+      end
+
+      addr_hit[8]: begin
+        reg_rdata_next[31:0] = vga_green_width_qs;
+      end
+
+      addr_hit[9]: begin
+        reg_rdata_next[31:0] = vga_blue_width_qs;
       end
 
       default: begin

@@ -27,8 +27,8 @@ packages:
     - riscv-dbg
     - tech_cells_generic
   axi:
-    revision: af8b0ce2653997301b1b792c4c6d207b95f63a56
-    version: 0.39.0-beta.2
+    revision: 378106001437f685af411106aaca38bc7ab6028c
+    version: 0.39.0-beta.1
     source:
       Git: git@github.com:pulp-platform/axi.git
     dependencies:
@@ -56,8 +56,8 @@ packages:
     - common_cells
     - common_verification
   axi_vga:
-    revision: 4ab2490445c8f70a6abd0bd46e5b87bdab78ba1c
-    version: 0.0.1
+    revision: faea82ee958731d84f68fc42fbd729dfce719aca
+    version: 0.0.2
     source:
       Git: git@github.com:pulp-platform/axi_vga
     dependencies:
@@ -130,8 +130,8 @@ packages:
     - common_cells
     - register_interface
   tech_cells_generic:
-    revision: aef525b2dc7670525fc293dfc55f167e371b8c35
-    version: 0.2.10
+    revision: 325ece6ba8831ad190676de2f68345da7aa2816b
+    version: null
     source:
       Git: git@github.com:pulp-platform/tech_cells_generic.git
     dependencies:

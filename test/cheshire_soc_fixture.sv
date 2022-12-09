@@ -797,41 +797,22 @@ module cheshire_soc_fixture;
     .bite_evt  (                  )
   );
 
+
   /////////////////////////
   // Regbus Error Slaves //
   /////////////////////////
 
-  reg_a48_d32_req_t dram_conf_req, fll_conf_req, pad_conf_req;
-  reg_a48_d32_rsp_t dram_conf_rsp, fll_conf_rsp, pad_conf_rsp; 
+  reg_a48_d32_req_t external_reg_req;
+  reg_a48_d32_rsp_t external_reg_rsp; 
    
   reg_err_slv #(
     .DW       ( 32                 ),
     .ERR_VAL  ( 32'hBADCAB1E       ),
     .req_t    ( reg_a48_d32_req_t  ),
     .rsp_t    ( reg_a48_d32_rsp_t  )
-  ) i_reg_err_slv_dram (
-    .req_i ( dram_conf_req  ),
-    .rsp_o ( dram_conf_rsp  )
-  );
-   
-  reg_err_slv #(
-    .DW       ( 32                 ),
-    .ERR_VAL  ( 32'hBADCAB1E       ),
-    .req_t    ( reg_a48_d32_req_t  ),
-    .rsp_t    ( reg_a48_d32_rsp_t  )
-  ) i_reg_err_slv_fll (
-    .req_i ( fll_conf_req  ),
-    .rsp_o ( fll_conf_rsp  )
-  );
-   
-  reg_err_slv #(
-    .DW       ( 32                 ),
-    .ERR_VAL  ( 32'hBADCAB1E       ),
-    .req_t    ( reg_a48_d32_req_t  ),
-    .rsp_t    ( reg_a48_d32_rsp_t  )
-  ) i_reg_err_slv_pad (
-    .req_i ( pad_conf_req  ),
-    .rsp_o ( pad_conf_rsp  )
+  ) i_reg_err_slv_external_reg (
+    .req_i    ( external_reg_req   ),
+    .rsp_o    ( external_reg_rsp   )
   );
 
    
@@ -854,8 +835,6 @@ module cheshire_soc_fixture;
     // DRAM
     .dram_req_o       ( dram_req        ),
     .dram_resp_i      ( dram_resp       ),
-    .dram_conf_req_o  ( dram_conf_req   ),
-    .dram_conf_rsp_i  ( dram_conf_rsp   ),
                                    
     // DDR-Link
     .ddr_link_i       ( sl_ddr_data_i   ),
@@ -901,14 +880,12 @@ module cheshire_soc_fixture;
     // CLINT
     .rtc_i            ( clk_rtc         ),
 
-    // FLL
-    .fll_reg_req_o    ( fll_conf_req    ),
-    .fll_reg_rsp_i    ( fll_conf_rsp    ),
-    .fll_lock_i       ( 1'b0            ),
+    // CLK locked signal
+    .clk_locked_i     ( 1'b0            ),
 
-    // PAD CTRL
-    .pad_config_req_o ( pad_conf_req    ),
-    .pad_config_rsp_i ( pad_conf_rsp    )
+    // External Regbus
+    .external_reg_req_o ( external_reg_req ),
+    .external_reg_rsp_i ( external_reg_rsp )
   );
 
 endmodule

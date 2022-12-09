@@ -1,7 +1,7 @@
 // Generated register defines for cheshire_register_file
 
 // Copyright information found in source file:
-// Copyright 2020 ETH Zurich and University of Bologna.
+// Copyright 2022 ETH Zurich and University of Bologna.
 
 // Licensing information found in source file:
 // Licensed under Solderpad Hardware License, Version 0.51, see LICENSE for details.
@@ -51,9 +51,25 @@ extern "C" {
 #define CHESHIRE_REGISTER_FILE_BOOT_MODE_MODE_VALUE_SPI_LOCK 0x2
 #define CHESHIRE_REGISTER_FILE_BOOT_MODE_MODE_VALUE_I2C_LOCK 0x3
 
-// FLL frequency lock exposed as a register.
-#define CHESHIRE_REGISTER_FILE_FLL_LOCK_REG_OFFSET 0x18
-#define CHESHIRE_REGISTER_FILE_FLL_LOCK_FLL_LOCK_BIT 0
+// Clock frequency lock exposed as a register.
+#define CHESHIRE_REGISTER_FILE_STATUS_REG_OFFSET 0x18
+#define CHESHIRE_REGISTER_FILE_STATUS_CLOCK_LOCK_BIT 0
+#define CHESHIRE_REGISTER_FILE_STATUS_UART_PRESENT_BIT 1
+#define CHESHIRE_REGISTER_FILE_STATUS_SPI_PRESENT_BIT 2
+#define CHESHIRE_REGISTER_FILE_STATUS_I2C_PRESENT_BIT 3
+#define CHESHIRE_REGISTER_FILE_STATUS_DMA_PRESENT_BIT 4
+#define CHESHIRE_REGISTER_FILE_STATUS_DDR_LINK_PRESENT_BIT 5
+#define CHESHIRE_REGISTER_FILE_STATUS_RPC_DRAM_PRESENT_BIT 6
+#define CHESHIRE_REGISTER_FILE_STATUS_VGA_PRESENT_BIT 7
+
+// Selected VGA red width exposed as a register.
+#define CHESHIRE_REGISTER_FILE_VGA_RED_WIDTH_REG_OFFSET 0x1c
+
+// Selected VGA green width exposed as a register.
+#define CHESHIRE_REGISTER_FILE_VGA_GREEN_WIDTH_REG_OFFSET 0x20
+
+// Selected VGA blue width exposed as a register.
+#define CHESHIRE_REGISTER_FILE_VGA_BLUE_WIDTH_REG_OFFSET 0x24
 
 #ifdef __cplusplus
 }  // extern "C"

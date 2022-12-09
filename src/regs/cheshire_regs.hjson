@@ -66,20 +66,122 @@
         }
       ]
     }
-    { name: "FLL_LOCK",
-      desc: "FLL frequency lock exposed as a register.",
+    { name: "STATUS",
+      desc: "Clock frequency lock exposed as a register.",
       swaccess: "ro",
       hwaccess: "hwo",
       hwqe:     "true",
       hwext:    "true",
       fields: [
         { bits: "0"
-          name: "FLL_LOCK"
-          desc: "FLL frequency lock."
+          name: "CLOCK_LOCK"
+          desc: "Clocl frequency lock exposed as a register."
           enum: [
-               { value: "0", name: "Unlocked", desc: "FLL is not locked onto reference frequency." },
-               { value: "1", name: "Locked", desc: "FLL is locked to reference frequency." },
+               { value: "0", name: "Unlocked", desc: "Clock is not locked to reference frequency." },
+               { value: "1", name: "Locked", desc: "Clock is locked to reference frequency." },
           ]
+        }
+        {
+          bits: "1"
+          name: "UART_PRESENT"
+          desc: "UART presence exposed as a register."
+          enum: [
+               { value: "0", name: "Not present", desc: "UART is not present" },
+               { value: "1", name: "Present", desc: "UART is present." },
+          ]
+        }
+        {
+          bits: "2"
+          name: "SPI_PRESENT"
+          desc: "SPI presence exposed as a register."
+          enum: [
+               { value: "0", name: "Not present", desc: "SPI is not present" },
+               { value: "1", name: "Present", desc: "SPI is present." },
+          ]
+        }
+        {
+          bits: "3"
+          name: "I2C_PRESENT"
+          desc: "I2C presence exposed as a register."
+          enum: [
+               { value: "0", name: "Not present", desc: "I2C is not present" },
+               { value: "1", name: "Present", desc: "I2C is present." },
+          ]
+        }
+        {
+          bits: "4"
+          name: "DMA_PRESENT"
+          desc: "DMA presence exposed as a register."
+          enum: [
+               { value: "0", name: "Not present", desc: "DMA is not present" },
+               { value: "1", name: "Present", desc: "DMA is present." },
+          ]
+        }
+        {
+          bits: "5"
+          name: "DDR_LINK_PRESENT"
+          desc: "DDR Link presence exposed as a register."
+          enum: [
+               { value: "0", name: "Not present", desc: "DDR Link is not present" },
+               { value: "1", name: "Present", desc: "DDR Link is present." },
+          ]
+        }
+        {
+          bits: "6"
+          name: "RPC_DRAM_PRESENT"
+          desc: "RPC DRAM presence exposed as a register."
+          enum: [
+               { value: "0", name: "Not present", desc: "RPC DRAM is not present" },
+               { value: "1", name: "Present", desc: "RPC DRAM is present." },
+          ]
+        }
+        {
+          bits: "7"
+          name: "VGA_PRESENT"
+          desc: "VGA presence exposed as a register."
+          enum: [
+               { value: "0", name: "Not present", desc: "VGA is not present" },
+               { value: "1", name: "Present", desc: "VGA is present." },
+          ]
+        }
+      ]
+    }
+    { name: "VGA_RED_WIDTH",
+      desc: "Selected VGA red width exposed as a register.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwqe:     "true",
+      hwext:    "true",
+      fields: [
+        { bits: "31:0"
+          name: "VGA_RED_WIDTH"
+          desc: "Selected VGA red width."
+        }
+      ]
+    }
+    { name: "VGA_GREEN_WIDTH",
+      desc: "Selected VGA green width exposed as a register.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwqe:     "true",
+      hwext:    "true",
+      fields: [
+        { bits: "31:0"
+          name: "VGA_GREEN_WIDTH"
+          desc: "Selected VGA green width."
+        }
+      ]
+    }
+    { name: "VGA_BLUE_WIDTH",
+      desc: "Selected VGA blue width exposed as a register.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwqe:     "true",
+      hwext:    "true",
+      fields: [
+        { bits: "31:0"
+          name: "VGA_BLUE_WIDTH"
+          desc: "Selected VGA blue width."
         }
       ]
     }

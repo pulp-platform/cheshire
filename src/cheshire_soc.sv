@@ -26,10 +26,6 @@ module cheshire_soc import cheshire_pkg::*; #(
   output  axi_a48_d64_mst_u0_llc_req_t    dram_req_o,
   input   axi_a48_d64_mst_u0_llc_resp_t   dram_resp_i,
 
-  // DRAM Regbus interface
-  output  reg_a48_d32_req_t   dram_conf_req_o,
-  input   reg_a48_d32_rsp_t   dram_conf_rsp_i,
-
   // DDR-Link
   input   logic [3:0]         ddr_link_i,
   output  logic [3:0]         ddr_link_o,
@@ -75,14 +71,12 @@ module cheshire_soc import cheshire_pkg::*; #(
   // CLINT
   input  logic                rtc_i,
 
-  // FLL
-  output reg_a48_d32_req_t    fll_reg_req_o,
-  input  reg_a48_d32_rsp_t    fll_reg_rsp_i,
-  input  logic                fll_lock_i,
+  // CLK locked signal
+  input  logic                clk_locked_i,
 
-  // PAD CTRL
-  output reg_a48_d32_req_t    pad_config_req_o,
-  input  reg_a48_d32_rsp_t    pad_config_rsp_i
+  // External Regbus
+  output reg_a48_d32_req_t    external_reg_req_o,
+  input  reg_a48_d32_rsp_t    external_reg_rsp_i
 
 );
 
@@ -113,6 +107,10 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   // Debug Module debug request signal for CVA6
   logic debug_req;
+
+  // External Regbus sinals
+  assign external_reg_req_o = regbus_periph_out_req[REGBUS_PERIPH_OUT_EXTERNAL];
+  assign regbus_periph_out_rsp[REGBUS_PERIPH_OUT_EXTERNAL] = external_reg_rsp_i;
   
   ////////////
   //  CVA6  //
@@ -748,8 +746,6 @@ module cheshire_soc import cheshire_pkg::*; #(
       // Connect the external DRAM signals
       assign dram_req_o = llc_to_dram_req;
       assign llc_to_dram_rsp = dram_resp_i;
-      assign dram_conf_req_o = regbus_periph_out_req[REGBUS_PERIPH_OUT_RPC_DRAM];
-      assign regbus_periph_out_rsp[REGBUS_PERIPH_OUT_RPC_DRAM] = dram_conf_rsp_i;
   
     end : gen_dram else begin : gen_dram_dummy
       
@@ -767,16 +763,6 @@ module cheshire_soc import cheshire_pkg::*; #(
         .test_i     ( testmode_i                ),
         .slv_req_i  ( llc_to_dram_req ),
         .slv_resp_o ( llc_to_dram_rsp )
-      );
-
-      reg_err_slv #(
-        .DW      ( 32 ),
-        .ERR_VAL ( 32'hBADCAB1E ),
-        .req_t   ( reg_a48_d32_req_t ),
-        .rsp_t   ( reg_a48_d32_rsp_t )
-      ) i_reg_err_slv_rpc_dram (
-        .req_i   ( regbus_periph_out_req[REGBUS_PERIPH_OUT_RPC_DRAM] ),
-        .rsp_o   ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_RPC_DRAM] )
       );
 
     end : gen_dram_dummy
@@ -1099,9 +1085,19 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   cheshire_register_file_reg_pkg::cheshire_register_file_hw2reg_t reg_file_in;
 
-  assign reg_file_in.boot_mode.d = boot_mode_i;
-  assign reg_file_in.fll_lock.d  = fll_lock_i;
-  
+  assign reg_file_in.boot_mode.d               = boot_mode_i;
+  assign reg_file_in.status.clock_lock.d       = clk_locked_i;
+  assign reg_file_in.status.uart_present.d     = CheshireCfg.UART;
+  assign reg_file_in.status.spi_present.d      = CheshireCfg.SPI;
+  assign reg_file_in.status.i2c_present.d      = CheshireCfg.I2C;
+  assign reg_file_in.status.dma_present.d      = CheshireCfg.DMA;
+  assign reg_file_in.status.ddr_link_present.d = CheshireCfg.DDR_LINK;
+  assign reg_file_in.status.rpc_dram_present.d = CheshireCfg.RPC_DRAM;
+  assign reg_file_in.status.vga_present.d      = CheshireCfg.VGA;
+  assign reg_file_in.vga_red_width.d           = CheshireCfg.VGARedWidth;
+  assign reg_file_in.vga_green_width.d         = CheshireCfg.VGAGreenWidth;
+  assign reg_file_in.vga_blue_width.d          = CheshireCfg.VGABlueWidth;
+
   cheshire_register_file_reg_top #(
     .reg_req_t  ( reg_a48_d32_req_t ),
     .reg_rsp_t  ( reg_a48_d32_rsp_t )
@@ -1198,19 +1194,5 @@ module cheshire_soc import cheshire_pkg::*; #(
     .timer_irq_o  ( mstip             ), 
     .ipi_o        ( mssip             ) 
   );
-
-  ///////////////
-  //  FLL CFG  //
-  ///////////////
-
-  assign fll_reg_req_o = regbus_periph_out_req[REGBUS_PERIPH_OUT_FLL];
-  assign regbus_periph_out_rsp[REGBUS_PERIPH_OUT_FLL] = fll_reg_rsp_i;
-
-  ////////////////////
-  //  Pad CTRL CFG  //
-  ////////////////////
-
-  assign pad_config_req_o = regbus_periph_out_req[REGBUS_PERIPH_OUT_PAD_CTRL];
-  assign regbus_periph_out_rsp[REGBUS_PERIPH_OUT_PAD_CTRL] = pad_config_rsp_i;
 
 endmodule

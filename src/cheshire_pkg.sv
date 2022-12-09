@@ -91,14 +91,12 @@ package cheshire_pkg;
     REGBUS_PERIPH_OUT_BOOTROM,
     REGBUS_PERIPH_OUT_UART,
     REGBUS_PERIPH_OUT_I2C,
-    REGBUS_PERIPH_OUT_FLL,
-    REGBUS_PERIPH_OUT_PAD_CTRL,
     REGBUS_PERIPH_OUT_CSR,
+    REGBUS_PERIPH_OUT_EXTERNAL,
     REGBUS_PERIPH_OUT_SPIM,
     REGBUS_PERIPH_OUT_CLINT,
     REGBUS_PERIPH_OUT_PLIC,
     REGBUS_PERIPH_OUT_DDR_LINK,
-    REGBUS_PERIPH_OUT_RPC_DRAM,
     REGBUS_PERIPH_OUT_LLC,
     REGBUS_PERIPH_OUT_VGA,
     REGBUS_PERIPH_NUM_OUTPUTS
@@ -108,14 +106,12 @@ package cheshire_pkg;
   localparam address_rule_48_t [REGBUS_PERIPH_NUM_OUTPUTS-1:0] regbus_periph_addrmap = '{
     '{ idx: REGBUS_PERIPH_OUT_VGA,      start_addr: 48'h20003000, end_addr: 48'h20004000 },  // VGA
     '{ idx: REGBUS_PERIPH_OUT_LLC,      start_addr: 48'h20002000, end_addr: 48'h20003000 },  // LLC
-    '{ idx: REGBUS_PERIPH_OUT_RPC_DRAM, start_addr: 48'h20001000, end_addr: 48'h20002000 },  // RPC DRAM
     '{ idx: REGBUS_PERIPH_OUT_DDR_LINK, start_addr: 48'h20000000, end_addr: 48'h20001000 },  // DDR Link
     '{ idx: REGBUS_PERIPH_OUT_PLIC,     start_addr: 48'h0c000000, end_addr: 48'h10000000 },  // PLIC
     '{ idx: REGBUS_PERIPH_OUT_CLINT,    start_addr: 48'h04000000, end_addr: 48'h04100000 },  // CLINT
     '{ idx: REGBUS_PERIPH_OUT_SPIM,     start_addr: 48'h03000000, end_addr: 48'h03020000 },  // SPIM
+    '{ idx: REGBUS_PERIPH_OUT_EXTERNAL, start_addr: 48'h02005000, end_addr: 48'h02010000 },  // EXTERNAL
     '{ idx: REGBUS_PERIPH_OUT_CSR,      start_addr: 48'h02004000, end_addr: 48'h02005000 },  // CSR
-    '{ idx: REGBUS_PERIPH_OUT_PAD_CTRL, start_addr: 48'h02003000, end_addr: 48'h02004000 },  // PAD CTRL
-    '{ idx: REGBUS_PERIPH_OUT_FLL,      start_addr: 48'h02002000, end_addr: 48'h02003000 },  // FLL
     '{ idx: REGBUS_PERIPH_OUT_I2C,      start_addr: 48'h02001000, end_addr: 48'h02002000 },  // I2C
     '{ idx: REGBUS_PERIPH_OUT_UART,     start_addr: 48'h02000000, end_addr: 48'h02001000 },  // UART
     '{ idx: REGBUS_PERIPH_OUT_BOOTROM,  start_addr: 48'h01000000, end_addr: 48'h01020000 }
