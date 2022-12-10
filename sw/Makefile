@@ -6,9 +6,9 @@
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 
 BENDER         ?= bender
-DTC		       ?= dtc
+DTC            ?= dtc
 
-BASE_FLAGS      = -march=rv64gc -mabi=lp64d -O2 -Wall -static #-flto -fwhole-program
+BASE_FLAGS      = -march=rv64gc -mabi=lp64d -O2 -Wall -static -ffunction-sections -fdata-sections #-flto -fwhole-program
 
 RISCV_AR        = riscv64-unknown-elf-ar
 RISCV_CC        = riscv64-unknown-elf-gcc
@@ -24,8 +24,15 @@ DRAM_LD_FILE    = scripts/cheshire_dramlink.ld
 LD_FILE        ?= $(SPM_LD_FILE)
 LD_FLAGS        = $(BASE_FLAGS) -nostartfiles -Wl,--gc-sections
 
-SUBMODULE_INCS  = -I$(shell $(BENDER) path axi_llc)/sw/include -Isubmodules/printf
-SUBMODULE_SRCS  = $(wildcard $(shell $(BENDER) path axi_llc)/sw/lib/*.c) $(wildcard submodules/printf/*.c)
+SUBMODULE_INCS  = -I$(shell $(BENDER) path axi_llc)/sw/include
+SUBMODULE_INCS += -Isubmodules/opentitan
+SUBMODULE_INCS += -Isubmodules/printf
+SUBMODULE_SRCS  = $(wildcard $(shell $(BENDER) path axi_llc)/sw/lib/*.c)
+SUBMODULE_SRCS += submodules/opentitan/sw/device/lib/base/bitfield.c
+SUBMODULE_SRCS += submodules/opentitan/sw/device/lib/base/memory.c
+SUBMODULE_SRCS += submodules/opentitan/sw/device/lib/base/mmio.c
+SUBMODULE_SRCS += submodules/opentitan/sw/device/lib/dif/dif_i2c.c
+SUBMODULE_SRCS += $(wildcard submodules/printf/*.c)
 
 INCLUDES        = -Iinclude $(SUBMODULE_INCS)
 
@@ -40,10 +47,11 @@ TEST_SRCS_DUMP  = $(TEST_SRCS_S:.S=.dump) $(TEST_SRCS_C:.c=.dump)
 
 LIBS            = lib/libcheshire.a
 
-.PHONY: clean
+.PHONY: clean patches
 .PRECIOUS: %.elf %.dtb
 
-all: cheshire-lib\
+all: patches\
+	 cheshire-lib\
 	 bootrom\
 	 tests\
 	 device-tree
@@ -55,6 +63,11 @@ clean:
 	rm -f device-tree/*.dtb{,.elf}
 
 tests:  $(TEST_SRCS_DUMP)
+
+patches: .patched
+.patched: $(wildcard patches/*.patch)
+	@patch ./submodules/opentitan/sw/device/lib/dif/dif_i2c.c ./patches/dif_i2c.c.patch
+	@touch .patched
 
 cheshire-lib: lib/libcheshire.a
 lib/libcheshire.a: $(LIB_SRCS_O)

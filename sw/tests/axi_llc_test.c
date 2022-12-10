@@ -13,6 +13,8 @@
 
 char uart_initialized = 0;
 
+extern void *__base_axi_llc;
+
 void __attribute__((aligned(4))) trap_vector(void)
 {
     long int mcause = 0, mepc = 0, mip = 0, mie = 0, mstatus = 0, mtval = 0;
@@ -83,7 +85,7 @@ int main(void)
 
     uart_initialized = 1;
     
-    init_llc((void *) 0x20002000);
+    init_llc((void *) &__base_axi_llc);
 
 }
 

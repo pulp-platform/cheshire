@@ -9,7 +9,6 @@
 
 // Minimal crt0
 .global _start
-.global _exit
 _start:
     // Globally disable Machine and Supervisor interrupts
     csrrc x0, mstatus, 10
@@ -116,10 +115,11 @@ trap_vector:
 // If main returns we end up here
 // Save the return value to the scratch register 0
 // and wait forever
+.global _exit
 _exit:
     slli a0, a0, 1
     ori  a0, a0, 1
-    li t0, 0x02004000
+    la t0, __base_cheshire_regs
     sw a0, 4(t0)
 
 _exit_wait_loop:

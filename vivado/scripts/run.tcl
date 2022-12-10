@@ -29,6 +29,10 @@ update_compile_order -fileset sources_1
 
 add_files -fileset constrs_1 -norecurse constraints/$project.xdc
 
+# Optimize routability in synthesis and try to minimize congestion in implementation
+set_property strategy Flow_AlternateRoutability [get_runs synth_1]
+set_property strategy Congestion_SSI_SpreadLogic_high [get_runs impl_1]
+
 synth_design -rtl -name rtl_1
 
 set_property STEPS.SYNTH_DESIGN.ARGS.RETIMING true [get_runs synth_1]
@@ -46,10 +50,6 @@ report_timing -nworst 1 -delay_type max -sort_by group                  -file re
 report_utilization -hierarchical                                        -file reports/$project.utilization.rpt
 report_cdc                                                              -file reports/$project.cdc.rpt
 report_clock_interaction                                                -file reports/$project.clock_interaction.rpt
-
-# set for RuntimeOptimized implementation
-set_property "steps.place_design.args.directive" "RuntimeOptimized" [get_runs impl_1]
-set_property "steps.route_design.args.directive" "RuntimeOptimized" [get_runs impl_1]
 
 launch_runs impl_1
 wait_on_run impl_1
@@ -69,4 +69,3 @@ check_timing                                                              -file 
 report_timing -max_paths 100 -nworst 100 -delay_type max -sort_by slack   -file reports/${project}.timing_WORST_100.rpt
 report_timing -nworst 1 -delay_type max -sort_by group                    -file reports/${project}.timing.rpt
 report_utilization -hierarchical                                          -file reports/${project}.utilization.rpt
-

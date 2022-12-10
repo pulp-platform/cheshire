@@ -10,7 +10,6 @@
 #include "uart.h"
 #include "printf.h"
 #include "addr_specs.h"
-#include "sleep.h"
 
 char uart_initialized = 0;
 

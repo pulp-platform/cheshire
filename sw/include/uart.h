@@ -6,8 +6,8 @@
 
 #include <stdint.h>
 
-extern volatile uint8_t __base_uart_sym;
-#define UART_BASE ((uintptr_t)(void*) &__base_uart_sym)
+extern volatile uint8_t __base_uart;
+#define UART_BASE ((uintptr_t)(void*) &__base_uart)
 
 #define UART_RBR UART_BASE + 0
 #define UART_THR UART_BASE + 0

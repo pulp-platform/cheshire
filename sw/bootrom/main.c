@@ -18,7 +18,7 @@
 #define DT_LEN 0x8
 #define FW_LEN 0x1800
 
-#define CORE_FREQ_HZ 50000000
+#define CORE_FREQ_HZ 200000000
 
 #define SPI_SCLK_TARGET 12500000
 
@@ -35,8 +35,8 @@
 
 #endif
 
-extern uint32_t __base_cheshire_regs;
-extern uint32_t __base_cheshire_axi_llc;
+extern void *__base_cheshire_regs;
+extern void *__base_axi_llc;
 
 void llc_info(void *base)
 {
@@ -105,7 +105,7 @@ int main(void)
     init_uart(CORE_FREQ_HZ, 115200);
 
     // Print AXI LLC status
-    llc_info((void *) &__base_cheshire_axi_llc);
+    llc_info((void *) &__base_axi_llc);
 
     // Decide what to do
     switch(*bootmode){

@@ -49,7 +49,7 @@ _start:
     li x30, 0
 
     // Configure the LLC to all SPM
-    li t0, 0x20002000
+    la t0, __base_axi_llc
     li t1, -1
     sw t1, 0(t0)    // CFG_SPM_LOW  = 0xFFFFFFFF
     sw t1, 4(t0)    // CFG_SPM_HIGH = 0xFFFFFFFF
@@ -72,7 +72,7 @@ _start:
 _exit:
     slli a0, a0, 1
     ori  a0, a0, 1
-    li t0, 0x02004000
+    la t0, __base_cheshire_regs
     sw a0, 4(t0)
 
 _exit_wait_loop:

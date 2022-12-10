@@ -20,6 +20,8 @@
 
 char uart_initialized = 0;
 
+extern void *__base_spim;
+
 void __attribute__((aligned(4))) trap_vector(void)
 {
     long int mcause = 0, mepc = 0, mip = 0, mie = 0, mstatus = 0, mtval = 0;
@@ -85,7 +87,7 @@ int main(void)
     uart_initialized = 1;
 
     // Setup the SPI Host
-    opentitan_qspi_init((volatile unsigned int *) 0x03000000, 50000000,
+    opentitan_qspi_init((volatile unsigned int *) &__base_spim, 50000000,
                         25000000, &spi);
 
     opentitan_qspi_probe(&spi);
