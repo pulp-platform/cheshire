@@ -13,11 +13,13 @@
     match_regex: 'true',
     exclude_paths: [
         # Exclude anything in vendored directories and anything generated
-        'util/gen_bootrom.py',
-        'util/lowrisc_misc-linters/*',
         'sw/include/cheshire_regs.h',
         'sw/include/i2c_regs.h',
         'sw/include/spi_regs.h',
+        'src/bootrom_asic.sv',
+        'src/bootrom_fpga.sv',
+        'util/gen_bootrom.py',
+        'util/lowrisc_misc-linters/*',
         'vivado/scripts/add_sources.tcl'
     ],
 }

@@ -8,35 +8,51 @@
 typedef struct {
     void *addr;    // 64 bit address
     int length;    // Length of "memory" region in bytes
-    int width;     // Access width (e.g. 64, 32 bit) in bits
+    int width;     // Maximum supported access width (e.g. 64, 32 bit) in bits
     int alignment; // Required access alignment in bits
     char access;   // Access rights encoded in lower two bits
                    // access[1] = r, access[0] = w
 } test_addr_t;
 
+extern void *__base_bootrom;
+extern void *__base_cheshire_regs;
+extern void *__base_axi_llc;
+extern void *__base_ddr_link;
+extern void *__base_uart;
+extern void *__base_i2c;
+extern void *__base_spim;
+extern void *__base_vga;
+extern void *__base_clint;
+extern void *__base_plic;
+extern void *__base_dma_conf;
+extern void *__base_spm;
+extern void *__base_dram;
+
 test_addr_t test_addresses[] = {
-   {(void *) 0x01000000, 16, 64, 8, 2},            // Boot Rom lower 16 bytes
-   {(void *) 0x0101FFF0, 16, 64, 8, 2},            // Boot Rom upper 16 bytes
-   {(void *) 0x0200001C, 1, 8, 8, 3},              // UART Scratch register
-   {(void *) 0x02001000, 92, 32, 32, 2},           // I2C Master
-   //{(void *) 0x02003000, 4, 32, 32, 3},            // Padring config dummy pad CFG register
-   //{(void *) 0x02003004, 4, 32, 32, 2},            // Padring config dummy pad MUX SEL register
-   {(void *) 0x02004000, 4, 32, 32, 2},            // Version register
-   {(void *) 0x02004004, 4, 32, 32, 2},            // Scratch register 0 - Polled by TB to signal completion
-   {(void *) 0x02004008, 4, 32, 32, 3},            // Scratch register 1
-   {(void *) 0x0200400C, 4, 32, 32, 3},            // Scratch register 2
-   {(void *) 0x02004010, 4, 32, 32, 3},            // Scratch register 3
-   {(void *) 0x02004014, 4, 32, 32, 2},            // Bootmode register
-   {(void *) 0x20000000, 4, 32, 32, 2},            // DDR Link config regbus (Status Register)
-   {(void *) 0x20000008, 4, 32, 32, 2},            // DDR Link config regbus (Training Mask Register)
-   {(void *) 0x20000010, 4, 32, 32, 2},            // DDR Link config regbus (Delay Register)
-   //{(void *) 0x20001000, 32, 64, 8, 2},            // RPC DRAM regbus port
-   //{(void *) 0x70000000, 16, 64, 8, 3},            // SPM lower 16 bytes
-   //{(void *) 0x7001FFF0, 16, 64, 8, 3},            // SPM upper 16 bytes
-   //{(void *) 0x80000000, 16, 64, 8, 3},            // RPC DRAM lower 16 bytes
-   //{(void *) 0x8FFFFFF0, 16, 64, 8, 3},            // RPC DRAM upper 16 bytes (from 256 Mb model)
-   {(void *) 0x80000000, 0x1000000, 64, 8, 3},      // FPGA 1 GiB DRAM
-   //{(void *) 0x100000000000L, 16, 64, 8, 3}        // DDR Link (connected to memory in fixture)
+   {(void *) &__base_bootrom        + 0x00000000, 16, 64,  8, 2}, // Boot Rom lower 16 bytes
+   {(void *) &__base_bootrom        + 0x0001FFF0, 16, 64,  8, 2}, // Boot Rom upper 16 bytes
+   {(void *) &__base_cheshire_regs  + 0x00000000,  4, 32, 32, 2}, // Version register
+   {(void *) &__base_cheshire_regs  + 0x00000004,  4, 32, 32, 2}, // Scratch register 0 - Polled by TB to signal completion
+   {(void *) &__base_cheshire_regs  + 0x00000008,  4, 32, 32, 3}, // Scratch register 1
+   {(void *) &__base_cheshire_regs  + 0x0000000C,  4, 32, 32, 3}, // Scratch register 2
+   {(void *) &__base_cheshire_regs  + 0x00000010,  4, 32, 32, 3}, // Scratch register 3
+   {(void *) &__base_cheshire_regs  + 0x00000014,  4, 32, 32, 2}, // Bootmode register
+   {(void *) &__base_cheshire_regs  + 0x00000018,  4, 32, 32, 2}, // Status register
+   {(void *) &__base_cheshire_regs  + 0x0000001C,  4, 32, 32, 2}, // VGA Red width register
+   {(void *) &__base_cheshire_regs  + 0x00000020,  4, 32, 32, 2}, // VGA Green width register
+   {(void *) &__base_cheshire_regs  + 0x00000024,  4, 32, 32, 2}, // VGA Blue width register
+   {(void *) &__base_axi_llc        + 0x00000040,  4, 32, 32, 2}, // AXI LLC version low register
+   {(void *) &__base_ddr_link       + 0x00000000,  4, 32, 32, 2}, // DDR Link control register
+   {(void *) &__base_uart           + 0x0000001C,  1,  8,  8, 3}, // UART Scratch register
+   {(void *) &__base_i2c            + 0x00000014,  4, 32, 32, 2}, // I2C Master status register
+   {(void *) &__base_spim           + 0x00000014,  4, 32, 32, 2}, // SPI Host status register
+   {(void *) &__base_vga            + 0x00000000,  4, 32, 32, 2}, // VGA control register
+   {(void *) &__base_clint          + 0x0000bff8,  4, 32, 32, 2}, // CLINT MTIME register
+   {(void *) &__base_plic           + 0x00001000,  4, 32, 32, 2}, // PLIC IP register
+   {(void *) &__base_dma_conf       + 0x00000020,  8, 64, 64, 2}, // DMA status register
+   {(void *) &__base_spm            + 0x00000000, 16, 64,  8, 3}, // SPM lower 16 bytes
+   {(void *) &__base_spm            + 0x0001FFF0, 16, 64,  8, 3}, // SPM upper 16 bytes
+   {(void *) &__base_dram           + 0x00000000, 0x1000000, 64, 8, 3}, // FPGA 1 GiB DRAM
 };
 
 unsigned int test_addresses_length = sizeof(test_addresses)/sizeof(test_addr_t);

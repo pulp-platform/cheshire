@@ -10,7 +10,7 @@
 
 #define RTC_CLK_PER_US 1
 
-extern unsigned int __base_clint;
+extern void *__base_clint;
 
 #define CLINT(offset) *((volatile unsigned long int *) (((unsigned long int) &__base_clint) + (offset)))
 

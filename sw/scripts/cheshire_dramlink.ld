@@ -59,6 +59,6 @@ SECTIONS
   __base_clint_mtime    = 0x0400bff8;
   __base_plic           = 0x0c000000;
   __base_dma_conf       = 0x60000000;
-  __base_spm_sym        = ORIGIN(spm);
-  __base_dram_sym       = ORIGIN(dram);
+  __base_spm            = ORIGIN(spm);
+  __base_dram           = ORIGIN(dram);
 }

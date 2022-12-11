@@ -147,13 +147,14 @@ package cheshire_pkg;
     RASDepth: 2,
     BTBEntries: 32,
     BHTEntries: 128,
-    /// Non indempotent regions
+    /// Non idempotent regions
     NrNonIdempotentRules: 1,
     NonIdempotentAddrBase: { 
         64'h0100_0000
     },
+    // Everything up until the SPM is assumed non idempotent
     NonIdempotentLength: {
-        64'h3000_0000
+        64'h6F00_0000
     },
     /// DRAM, SPM, Boot ROM, Debug Module
     NrExecuteRegionRules: 4,
