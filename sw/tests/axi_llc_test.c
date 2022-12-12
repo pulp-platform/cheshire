@@ -70,7 +70,7 @@ void __attribute__((aligned(4))) trap_vector(void)
 
 void init_llc(void *base)
 {
-    printf("[axi_llc] AXI LLC Version   :       0x%x\r\n", axi_llc_reg32_get_version(base));
+    printf("[axi_llc] AXI LLC Version   :       0x%lx\r\n", axi_llc_reg32_get_version(base));
     printf("[axi_llc] Set Associativity :       %d\r\n", axi_llc_reg32_get_set_asso(base));
     printf("[axi_llc] Num Blocks        :       %d\r\n", axi_llc_reg32_get_num_blocks(base));
     printf("[axi_llc] Num Lines         :       %d\r\n", axi_llc_reg32_get_num_lines(base));
@@ -81,7 +81,8 @@ void init_llc(void *base)
 
 int main(void)
 {
-    init_uart(200000000, 115200);
+    //init_uart(200000000, 115200);
+    init_uart(50000000, 115200);
 
     uart_initialized = 1;
     

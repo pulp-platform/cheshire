@@ -1,7 +1,15 @@
-*.o
 *.bin
 *.dump
 *.elf
+*.o
+.patched
+bootrom/*.bin
+bootrom/*.dump
+bootrom/*.elf
+bootrom/*.o
+bootrom/*.sv
+device-tree/*.dtb
+device-tree/*.dtb.elf
 lib/*.o
 lib/*.a
 tests/*.bin

@@ -50,8 +50,7 @@ test_addr_t test_addresses[] = {
    {(void *) &__base_clint          + 0x0000bff8,  4, 32, 32, 2}, // CLINT MTIME register
    {(void *) &__base_plic           + 0x00001000,  4, 32, 32, 2}, // PLIC IP register
    {(void *) &__base_dma_conf       + 0x00000020,  8, 64, 64, 2}, // DMA status register
-   {(void *) &__base_spm            + 0x00000000, 16, 64,  8, 3}, // SPM lower 16 bytes
-   {(void *) &__base_spm            + 0x0001FFF0, 16, 64,  8, 3}, // SPM upper 16 bytes
+   {(void *) &__base_spm            + 0x0000FFF0, 16, 64,  8, 3}, // SPM middle 16 bytes - hopefully out of the way of the stack and the code
    {(void *) &__base_dram           + 0x00000000, 0x1000000, 64, 8, 3}, // FPGA 1 GiB DRAM
 };
 

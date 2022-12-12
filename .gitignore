@@ -1,8 +1,16 @@
+# Bender files
+.bender/
+
 # Makefile helper files
 .cheshire_regs
 
 # Test models
 test/models
 
-# Bender files
-.bender/
+# VSIM generated files
+vsim/compile.tcl
+vsim/*.log
+vsim/modelsim.ini
+vsim/transcript
+vsim/vsim.wlf
+vsim/work/

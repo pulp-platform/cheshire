@@ -109,7 +109,7 @@ module cheshire_register_file_reg_top #(
   // R[version]: V(False)
 
   // constant-only read
-  assign version_qs = 16'h1;
+  assign version_qs = 16'h2;
 
 
 

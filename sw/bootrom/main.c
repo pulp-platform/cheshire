@@ -13,6 +13,8 @@
 #include "gpt.h"
 #include "axi_llc_reg32.h"
 
+#define DRAM 0x80000000
+
 #ifdef BOOTROM_ASIC
 
 #define DT_LEN 0x8
@@ -37,6 +39,8 @@
 
 extern void *__base_cheshire_regs;
 extern void *__base_axi_llc;
+extern void *__base_spim;
+extern void *__base_spm;
 
 void llc_info(void *base)
 {
@@ -54,7 +58,7 @@ void sd_boot(void)
     int ret = 0;
 
     // Setup the SPI Host
-    opentitan_qspi_init((volatile unsigned int *) 0x03000000, CORE_FREQ_HZ,
+    opentitan_qspi_init((volatile unsigned int *) &__base_spim, CORE_FREQ_HZ,
                         CORE_FREQ_HZ/2, &spi);
 
     opentitan_qspi_probe(&spi);
@@ -79,20 +83,21 @@ void sd_boot(void)
     gpt_find_partition(&spi, 1, &fw_lba);
     
     // Copy Device Tree to SPM
-    sd_copy_blocks(&spi, dt_lba, (unsigned char *) 0x70000000, DT_LEN);
+    sd_copy_blocks(&spi, dt_lba, (unsigned char *) &__base_spm, DT_LEN);
 
-    printf("Copied device tree to 0x70000000\r\n");
+    printf("Copied device tree to 0x%lx\r\n", (unsigned long int) &__base_spm);
 
     // Copy firmware to DRAM
-    sd_copy_blocks(&spi, fw_lba, (unsigned char *) 0x80000000, FW_LEN);
+    sd_copy_blocks(&spi, fw_lba, (unsigned char *) DRAM, FW_LEN);
 
-    printf("Copied firmware to 0x80000000\r\n");
+    printf("Copied firmware to 0x%lx\r\n", (unsigned long int) DRAM);
 
-    void (*cheshire_entry)(int,int,int) = (void (*)(int,int,int)) 0x80000000;
+    void (*cheshire_entry)(unsigned long int,unsigned long int,unsigned long int) =
+                          (void (*)(unsigned long int,unsigned long int,unsigned long int)) DRAM;
     
     asm volatile("fence.i\n" ::: "memory");
 
-    cheshire_entry(0, 0x70000000, 0);  
+    cheshire_entry(0, (unsigned long int) &__base_spm, 0);
 
     return;
 }
