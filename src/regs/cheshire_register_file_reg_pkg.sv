@@ -38,7 +38,7 @@ package cheshire_register_file_reg_pkg;
     } ddr_link_present;
     struct packed {
       logic        d;
-    } rpc_dram_present;
+    } dram_present;
     struct packed {
       logic        d;
     } vga_present;

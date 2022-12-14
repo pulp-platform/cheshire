@@ -94,8 +94,8 @@ module cheshire_register_file_reg_top #(
   logic status_dma_present_re;
   logic status_ddr_link_present_qs;
   logic status_ddr_link_present_re;
-  logic status_rpc_dram_present_qs;
-  logic status_rpc_dram_present_re;
+  logic status_dram_present_qs;
+  logic status_dram_present_re;
   logic status_vga_present_qs;
   logic status_vga_present_re;
   logic [31:0] vga_red_width_qs;
@@ -330,18 +330,18 @@ module cheshire_register_file_reg_top #(
   );
 
 
-  //   F[rpc_dram_present]: 6:6
+  //   F[dram_present]: 6:6
   prim_subreg_ext #(
     .DW    (1)
-  ) u_status_rpc_dram_present (
-    .re     (status_rpc_dram_present_re),
+  ) u_status_dram_present (
+    .re     (status_dram_present_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.status.rpc_dram_present.d),
+    .d      (hw2reg.status.dram_present.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (status_rpc_dram_present_qs)
+    .qs     (status_dram_present_qs)
   );
 
 
@@ -468,7 +468,7 @@ module cheshire_register_file_reg_top #(
 
   assign status_ddr_link_present_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign status_rpc_dram_present_re = addr_hit[6] & reg_re & !reg_error;
+  assign status_dram_present_re = addr_hit[6] & reg_re & !reg_error;
 
   assign status_vga_present_re = addr_hit[6] & reg_re & !reg_error;
 
@@ -513,7 +513,7 @@ module cheshire_register_file_reg_top #(
         reg_rdata_next[3] = status_i2c_present_qs;
         reg_rdata_next[4] = status_dma_present_qs;
         reg_rdata_next[5] = status_ddr_link_present_qs;
-        reg_rdata_next[6] = status_rpc_dram_present_qs;
+        reg_rdata_next[6] = status_dram_present_qs;
         reg_rdata_next[7] = status_vga_present_qs;
       end
 

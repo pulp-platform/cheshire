@@ -86,7 +86,6 @@ module cheshire_top_xilinx
   ///////////////////
 
   clk_int_div #(
-    /// The with
     .DIV_VALUE_WIDTH          ( 4             ),
     .DEFAULT_DIV_VALUE        ( 4'h4          ),
     .ENABLE_CLOCK_IN_RESET    ( 1'b0          )
@@ -176,6 +175,9 @@ module cheshire_top_xilinx
   // AXI Clock Domain Crossing SoC -> DRAM //
   ///////////////////////////////////////////
 
+  axi_a48_d64_mst_u0_llc_req_t dram_req_cdc;
+  axi_a48_d64_mst_u0_llc_resp_t dram_resp_cdc;
+
   axi_cdc #(
     .aw_chan_t  ( axi_a48_d64_mst_u0_llc_aw_chan_t    ),
     .w_chan_t   ( axi_a48_d64_mst_u0_llc_w_chan_t     ),
@@ -192,8 +194,30 @@ module cheshire_top_xilinx
     .src_resp_o   ( soc_resp          ),
     .dst_clk_i    ( dram_clock_out    ),
     .dst_rst_ni   ( rst_n             ),
-    .dst_req_o    ( dram_req          ),
-    .dst_resp_i   ( dram_resp         )
+    .dst_req_o    ( dram_req_cdc      ),
+    .dst_resp_i   ( dram_resp_cdc     )
+  );
+
+  // AXI CUT (spill register) between the AXI CDC and the MIG to
+  // reduce timing pressure
+  axi_cut #(
+    .Bypass     ( 1'b0  ),
+    .aw_chan_t  ( axi_a48_d64_mst_u0_llc_aw_chan_t  ),
+    .w_chan_t   ( axi_a48_d64_mst_u0_llc_w_chan_t   ),
+    .b_chan_t   ( axi_a48_d64_mst_u0_llc_b_chan_t   ),
+    .ar_chan_t  ( axi_a48_d64_mst_u0_llc_ar_chan_t  ),
+    .r_chan_t   ( axi_a48_d64_mst_u0_llc_r_chan_t   ),
+    .axi_req_t  ( axi_a48_d64_mst_u0_llc_req_t      ),
+    .axi_resp_t ( axi_a48_d64_mst_u0_llc_resp_t     )
+  ) i_axi_cut_soc_dram (
+    .clk_i      ( dram_clock_out  ),
+    .rst_ni     ( rst_n           ),
+
+    .slv_req_i  ( dram_req_cdc    ),
+    .slv_resp_o ( dram_resp_cdc   ),
+
+    .mst_req_o  ( dram_req        ),
+    .mst_resp_i ( dram_resp       )
   );
 
   //////////////
@@ -326,31 +350,32 @@ module cheshire_top_xilinx
   assign sd_reset_o       = 1'b0;
 
   // SCK  - SD CLK signal
-  assign sd_sclk_o        = spi_sck_en ? spi_sck_soc : 1'b1;
+  assign sd_sclk_o        = spi_sck_en    ? spi_sck_soc       : 1'b1;
 
   // CS   - SD DAT3 signal
-  assign sd_d_io[3]       = spi_cs_en[0] ? spi_cs_soc[0] : 1'b1;
+  assign sd_d_io[3]       = spi_cs_en[0]  ? spi_cs_soc[0]     : 1'b1;
 
   // MOSI - SD CMD signal
-  assign sd_cmd_o         = spi_sd_en[0] ? spi_sd_soc_out[0] : 1'b1;
+  assign sd_cmd_o         = spi_sd_en[0]  ? spi_sd_soc_out[0] : 1'b1;
 
   // MISO - SD DAT0 signal
   assign spi_sd_soc_in[1] = sd_d_io[0];
 
   // SD DAT1 and DAT2 signal tie-off - Not used for SPI mode
-  assign sd_d_io[2:1] = 2'b11;
+  assign sd_d_io[2:1]     = 2'b11;
 
   // Bind input side of SoC low for output signals
   assign spi_sd_soc_in[0] = 1'b0;
   assign spi_sd_soc_in[2] = 1'b0;
   assign spi_sd_soc_in[3] = 1'b0;
 
+
   /////////////////////////
   // "RTC" Clock Divider //
   /////////////////////////
 
   logic rtc_clk_d, rtc_clk_q;
-  logic [5:0] counter_d, counter_q;
+  logic [4:0] counter_d, counter_q;
 
   // Divide soc_clk (50 MHz) by 50 => 1 MHz RTC Clock
   always_comb begin
@@ -358,20 +383,21 @@ module cheshire_top_xilinx
     rtc_clk_d = rtc_clk_q;
 
     if(counter_q == 24) begin
-      counter_d = 2'b0;
+      counter_d = 5'b0;
       rtc_clk_d = ~rtc_clk_q;
     end
   end
 
   always_ff @(posedge soc_clk, negedge rst_n) begin
     if(~rst_n) begin
-      counter_q <= 2'b0;
+      counter_q <= 5'b0;
       rtc_clk_q <= 0;
     end else begin
       counter_q <= counter_d;
       rtc_clk_q <= rtc_clk_d;
     end
   end
+
 
   /////////////////
   // Fan Control //
@@ -384,9 +410,10 @@ module cheshire_top_xilinx
     .fan_pwm_o     ( fan_pwm    )
   );
 
-  /////////////////////////
-  // Regbus Error Slaves //
-  /////////////////////////
+
+  ////////////////////////
+  // Regbus Error Slave //
+  ////////////////////////
 
   reg_a48_d32_req_t ext_req;
   reg_a48_d32_rsp_t ext_rsp; 
@@ -400,6 +427,7 @@ module cheshire_top_xilinx
     .req_i ( ext_req  ),
     .rsp_o ( ext_rsp  )
   );
+
 
   //////////////////
   // Cheshire SoC //

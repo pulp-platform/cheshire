@@ -128,11 +128,11 @@
         }
         {
           bits: "6"
-          name: "RPC_DRAM_PRESENT"
-          desc: "RPC DRAM presence exposed as a register."
+          name: "DRAM_PRESENT"
+          desc: "DRAM presence exposed as a register."
           enum: [
-               { value: "0", name: "Not present", desc: "RPC DRAM is not present" },
-               { value: "1", name: "Present", desc: "RPC DRAM is present." },
+               { value: "0", name: "Not present", desc: "DRAM is not present" },
+               { value: "1", name: "Present", desc: "DRAM is present." },
           ]
         }
         {

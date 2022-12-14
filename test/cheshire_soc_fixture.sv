@@ -283,7 +283,7 @@ module cheshire_soc_fixture;
     data = 32'hff;
 
     // cfg_spm_low = 0xff;
-    riscv_dbg.write_dmi(dm::SBAddress0, regbus_periph_addrmap[REGBUS_PERIPH_OUT_LLC].start_addr[31:0]);
+    riscv_dbg.write_dmi(dm::SBAddress0, regbus_addrmap[REGBUS_OUT_LLC].start_addr[31:0]);
     riscv_dbg.write_dmi(dm::SBData0, data);
     // Wait for the write to complete
     do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
@@ -298,7 +298,7 @@ module cheshire_soc_fixture;
 
     // commit_cfg = 0x1;
     data = 32'h1;
-    riscv_dbg.write_dmi(dm::SBAddress0, regbus_periph_addrmap[REGBUS_PERIPH_OUT_LLC].start_addr[31:0]+32'h10);
+    riscv_dbg.write_dmi(dm::SBAddress0, regbus_addrmap[REGBUS_OUT_LLC].start_addr[31:0]+32'h10);
     riscv_dbg.write_dmi(dm::SBData0, data);
     // Wait for the write to complete
     do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);

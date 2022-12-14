@@ -89,11 +89,8 @@ module cheshire_soc import cheshire_pkg::*; #(
 
 
   // Regbus Peripherals 
-  reg_a48_d32_req_t  regbus_periph_in_req;
-  reg_a48_d32_rsp_t  regbus_periph_in_rsp;
-
-  reg_a48_d32_req_t [REGBUS_PERIPH_NUM_OUTPUTS-1:0] regbus_periph_out_req;
-  reg_a48_d32_rsp_t [REGBUS_PERIPH_NUM_OUTPUTS-1:0] regbus_periph_out_rsp;
+  reg_a48_d32_req_t [REGBUS_NUM_OUTPUTS-1:0] regbus_out_req;
+  reg_a48_d32_rsp_t [REGBUS_NUM_OUTPUTS-1:0] regbus_out_rsp;
 
 
   // Machine/Supervisor timer and machine/supervisor software interrupt pending.
@@ -109,8 +106,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   logic debug_req;
 
   // External Regbus sinals
-  assign external_reg_req_o = regbus_periph_out_req[REGBUS_PERIPH_OUT_EXTERNAL];
-  assign regbus_periph_out_rsp[REGBUS_PERIPH_OUT_EXTERNAL] = external_reg_rsp_i;
+  assign external_reg_req_o = regbus_out_req[REGBUS_OUT_EXTERNAL];
+  assign regbus_out_rsp[REGBUS_OUT_EXTERNAL] = external_reg_rsp_i;
   
   ////////////
   //  CVA6  //
@@ -447,10 +444,10 @@ module cheshire_soc import cheshire_pkg::*; #(
         .testmode_i,
         .axi_in_req_i   ( ddr_link_axi_in_req   ),
         .axi_in_rsp_o   ( ddr_link_axi_in_rsp   ),
-        .axi_out_req_o  ( axi_xbar_slv_port_reqs[AXI_XBAR_IN_DDR_LINK]      ),
-        .axi_out_rsp_i  ( axi_xbar_slv_port_rsps[AXI_XBAR_IN_DDR_LINK]      ),
-        .cfg_req_i      ( regbus_periph_out_req[REGBUS_PERIPH_OUT_DDR_LINK] ),
-        .cfg_rsp_o      ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_DDR_LINK] ),
+        .axi_out_req_o  ( axi_xbar_slv_port_reqs[AXI_XBAR_IN_DDR_LINK]  ),
+        .axi_out_rsp_i  ( axi_xbar_slv_port_rsps[AXI_XBAR_IN_DDR_LINK]  ),
+        .cfg_req_i      ( regbus_out_req[REGBUS_OUT_DDR_LINK] ),
+        .cfg_rsp_o      ( regbus_out_rsp[REGBUS_OUT_DDR_LINK] ),
         .ddr_rcv_clk_i  ( ddr_link_clk_i        ),
         .ddr_rcv_clk_o  ( ddr_link_clk_o        ),
         .ddr_i          ( ddr_link_i            ),
@@ -483,13 +480,13 @@ module cheshire_soc import cheshire_pkg::*; #(
       );
 
       reg_err_slv #(
-        .DW      ( 32 ),
-        .ERR_VAL ( 32'hBADCAB1E ),
-        .req_t   ( reg_a48_d32_req_t ),
-        .rsp_t   ( reg_a48_d32_rsp_t )
+        .DW      ( 32                 ),
+        .ERR_VAL ( 32'hBADCAB1E       ),
+        .req_t   ( reg_a48_d32_req_t  ),
+        .rsp_t   ( reg_a48_d32_rsp_t  )
       ) i_reg_err_slv_ddr_link (
-        .req_i   ( regbus_periph_out_req[REGBUS_PERIPH_OUT_DDR_LINK] ),
-        .rsp_o   ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_DDR_LINK] )
+        .req_i   ( regbus_out_req[REGBUS_OUT_DDR_LINK] ),
+        .rsp_o   ( regbus_out_rsp[REGBUS_OUT_DDR_LINK] )
       );
 
     end : gen_serial_link_dummy
@@ -518,36 +515,36 @@ module cheshire_soc import cheshire_pkg::*; #(
       ) i_axi_vga (
         .clk_i,
         .rst_ni,
-        .test_mode_en_i ( testmode_i                ),
-        .reg_req_i      ( regbus_periph_out_req[REGBUS_PERIPH_OUT_VGA] ),
-        .reg_rsp_o      ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_VGA] ),
-        .axi_req_o      ( axi_xbar_slv_port_reqs[AXI_XBAR_IN_VGA]      ),
-        .axi_resp_i     ( axi_xbar_slv_port_rsps[AXI_XBAR_IN_VGA]      ),
-        .hsync_o        ( vga_hsync_o               ),
-        .vsync_o        ( vga_vsync_o               ),
-        .red_o          ( vga_red_o                 ),
-        .green_o        ( vga_green_o               ),
-        .blue_o         ( vga_blue_o                )
+        .test_mode_en_i ( testmode_i                      ),
+        .reg_req_i      ( regbus_out_req[REGBUS_OUT_VGA]  ),
+        .reg_rsp_o      ( regbus_out_rsp[REGBUS_OUT_VGA]  ),
+        .axi_req_o      ( axi_xbar_slv_port_reqs[AXI_XBAR_IN_VGA] ),
+        .axi_resp_i     ( axi_xbar_slv_port_rsps[AXI_XBAR_IN_VGA] ),
+        .hsync_o        ( vga_hsync_o                     ),
+        .vsync_o        ( vga_vsync_o                     ),
+        .red_o          ( vga_red_o                       ),
+        .green_o        ( vga_green_o                     ),
+        .blue_o         ( vga_blue_o                      )
       );
     
     end : gen_vga else begin : gen_vga_dummy
 
       assign axi_xbar_slv_port_reqs[AXI_XBAR_IN_VGA] = '0;
 
-      assign vga_hsync_o = '0;
-      assign vga_vsync_o = '0;
-      assign vga_red_o = '0;
-      assign vga_green_o = '0;
-      assign vga_blue_o = '0;
+      assign vga_hsync_o  = '0;
+      assign vga_vsync_o  = '0;
+      assign vga_red_o    = '0;
+      assign vga_green_o  = '0;
+      assign vga_blue_o   = '0;
 
       reg_err_slv #(
-        .DW      ( 32 ),
-        .ERR_VAL ( 32'hBADCAB1E ),
-        .req_t   ( reg_a48_d32_req_t ),
-        .rsp_t   ( reg_a48_d32_rsp_t )
+        .DW      ( 32                 ),
+        .ERR_VAL ( 32'hBADCAB1E       ),
+        .req_t   ( reg_a48_d32_req_t  ),
+        .rsp_t   ( reg_a48_d32_rsp_t  )
       ) i_reg_err_slv_vga (
-        .req_i   ( regbus_periph_out_req[REGBUS_PERIPH_OUT_VGA] ),
-        .rsp_o   ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_VGA] )
+        .req_i   ( regbus_out_req[REGBUS_OUT_VGA] ),
+        .rsp_o   ( regbus_out_rsp[REGBUS_OUT_VGA] )
       );
 
     end : gen_vga_dummy
@@ -561,17 +558,17 @@ module cheshire_soc import cheshire_pkg::*; #(
     if(CheshireCfg.DMA) begin : gen_dma
 
       AXI_BUS #(
-        .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH            ),
-        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH            ),
-        .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH  ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH            )
+        .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH          ),
+        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH          ),
+        .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH ),
+        .AXI_USER_WIDTH ( AXI_USER_WIDTH          )
       ) axi_xbar_atomics_dma ();
 
       AXI_BUS #(
-        .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH           ),
-        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+        .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH          ),
+        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH          ),
         .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+        .AXI_USER_WIDTH ( AXI_USER_WIDTH          )
       ) axi_atomics_dma_wrap ();
 
       AXI_BUS #(
@@ -701,66 +698,68 @@ module cheshire_soc import cheshire_pkg::*; #(
   ) i_axi_riscv_atomics_dram (
     .clk_i,
     .rst_ni,
-    .mst                ( axi_dram_out.Master ),
-    .slv                ( axi_xbar_atomics_dram.Slave  )
+    .mst                ( axi_dram_out.Master         ),
+    .slv                ( axi_xbar_atomics_dram.Slave )
   );
 
   axi_llc_reg_wrap #(
-    .SetAssociativity    ( 8 ),
-    .NumLines            ( 256 ),
-    .NumBlocks           ( 8 ),
-    .AxiIdWidth          ( AXI_XBAR_SLAVE_ID_WIDTH ),
-    .AxiAddrWidth        ( AXI_ADDR_WIDTH ),
-    .AxiDataWidth        ( AXI_DATA_WIDTH ),
-    .AxiUserWidth        ( AXI_USER_WIDTH ),
-    .slv_req_t           ( axi_a48_d64_slv_u0_req_t ),
-    .slv_resp_t          ( axi_a48_d64_slv_u0_resp_t ),
-    .mst_req_t           ( axi_a48_d64_mst_u0_llc_req_t ),
-    .mst_resp_t          ( axi_a48_d64_mst_u0_llc_resp_t ),
-    .reg_req_t           ( reg_a48_d32_req_t ),
-    .reg_resp_t          ( reg_a48_d32_rsp_t ),
-    .rule_full_t         ( address_rule_48_t )
-  ) i_axi_llc_top (
+    .SetAssociativity    ( 8                              ),
+    .NumLines            ( 256                            ),
+    .NumBlocks           ( 8                              ),
+    .AxiIdWidth          ( AXI_XBAR_SLAVE_ID_WIDTH        ),
+    .AxiAddrWidth        ( AXI_ADDR_WIDTH                 ),
+    .AxiDataWidth        ( AXI_DATA_WIDTH                 ),
+    .AxiUserWidth        ( AXI_USER_WIDTH                 ),
+    .slv_req_t           ( axi_a48_d64_slv_u0_req_t       ),
+    .slv_resp_t          ( axi_a48_d64_slv_u0_resp_t      ),
+    .mst_req_t           ( axi_a48_d64_mst_u0_llc_req_t   ),
+    .mst_resp_t          ( axi_a48_d64_mst_u0_llc_resp_t  ),
+    .reg_req_t           ( reg_a48_d32_req_t              ),
+    .reg_resp_t          ( reg_a48_d32_rsp_t              ),
+    .rule_full_t         ( address_rule_48_t              )
+  ) i_axi_llc_reg_wrap (
     .clk_i,
     .rst_ni,
-    .test_i              ( testmode_i ),
-    .slv_req_i           ( axi_atomics_to_llc_req ),
-    .slv_resp_o          ( axi_atomics_to_llc_rsp ),
-    .mst_req_o           ( llc_to_dram_req ),
-    .mst_resp_i          ( llc_to_dram_rsp ),
-    .conf_req_i          ( regbus_periph_out_req[REGBUS_PERIPH_OUT_LLC] ),
-    .conf_resp_o         ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_LLC] ),
-    .cached_start_addr_i ( axi_xbar_addrmap[AXI_XBAR_OUT_LLC+1].start_addr ),
-    .cached_end_addr_i   ( axi_xbar_addrmap[AXI_XBAR_OUT_LLC+1].end_addr   ),
-    .spm_start_addr_i    ( axi_xbar_addrmap[AXI_XBAR_OUT_LLC].start_addr   )
+    .test_i              ( testmode_i                                       ),
+    .slv_req_i           ( axi_atomics_to_llc_req                           ),
+    .slv_resp_o          ( axi_atomics_to_llc_rsp                           ),
+    .mst_req_o           ( llc_to_dram_req                                  ),
+    .mst_resp_i          ( llc_to_dram_rsp                                  ),
+    .conf_req_i          ( regbus_out_req[REGBUS_OUT_LLC]                   ),
+    .conf_resp_o         ( regbus_out_rsp[REGBUS_OUT_LLC]                   ),
+    .cached_start_addr_i ( axi_xbar_addrmap[AXI_XBAR_OUT_LLC+1].start_addr  ),
+    .cached_end_addr_i   ( axi_xbar_addrmap[AXI_XBAR_OUT_LLC+1].end_addr    ),
+    .spm_start_addr_i    ( axi_xbar_addrmap[AXI_XBAR_OUT_LLC].start_addr    )
   );
 
 
-  //////////////
-  // RPC DRAM //
-  //////////////
+  //////////
+  // DRAM //
+  //////////
 
   generate
-    if(CheshireCfg.RPC_DRAM) begin : gen_dram
+    if(CheshireCfg.DRAM) begin : gen_dram
       
       // Connect the external DRAM signals
       assign dram_req_o = llc_to_dram_req;
       assign llc_to_dram_rsp = dram_resp_i;
   
     end : gen_dram else begin : gen_dram_dummy
+
+      assign dram_req_o = '0;
       
       axi_err_slv #(
-        .AxiIdWidth ( AXI_XBAR_SLAVE_ID_WIDTH   ),
+        .AxiIdWidth ( AXI_XBAR_SLAVE_ID_WIDTH       ),
         .axi_req_t  ( axi_a48_d64_mst_u0_llc_req_t  ),
         .axi_resp_t ( axi_a48_d64_mst_u0_llc_resp_t ),
-        .RespWidth  ( 64                        ),
-        .RespData   ( 64'hCA11AB1EBADCAB1E      ),
-        .ATOPs      ( 1'b1                      ),
-        .MaxTrans   ( 1                         )
-      ) i_axi_err_slv_rpc_dram (
+        .RespWidth  ( 64                            ),
+        .RespData   ( 64'hCA11AB1EBADCAB1E          ),
+        .ATOPs      ( 1'b1                          ),
+        .MaxTrans   ( 1                             )
+      ) i_axi_err_slv_dram (
         .clk_i,
         .rst_ni,
-        .test_i     ( testmode_i                ),
+        .test_i     ( testmode_i      ),
         .slv_req_i  ( llc_to_dram_req ),
         .slv_resp_o ( llc_to_dram_rsp )
       );
@@ -772,7 +771,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  Regbus  //
   //////////////
 
-  logic [cf_math_pkg::idx_width(REGBUS_PERIPH_NUM_OUTPUTS)-1:0] regbus_periph_select;
+  logic [cf_math_pkg::idx_width(REGBUS_NUM_OUTPUTS)-1:0] regbus_select;
 
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH          ),
@@ -797,6 +796,9 @@ module cheshire_soc import cheshire_pkg::*; #(
   axi_a48_d32_slv_u0_req_t axi_dw_conv_to_req;
   axi_a48_d32_slv_u0_resp_t axi_dw_conv_to_rsp;
 
+  reg_a48_d32_req_t  regbus_in_req;
+  reg_a48_d32_rsp_t  regbus_in_rsp;
+
   // From XBar to Atomics Wrap
   `AXI_ASSIGN_FROM_REQ(axi_xbar_atomics_regbus, axi_xbar_atomics_req)
   `AXI_ASSIGN_TO_RESP(axi_xbar_atomics_rsp, axi_xbar_atomics_regbus)
@@ -805,8 +807,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   `AXI_ASSIGN_TO_REQ(axi_atomics_dw_conv_req, axi_atomics_dw_conv)
   `AXI_ASSIGN_FROM_RESP(axi_atomics_dw_conv, axi_atomics_dw_conv_rsp)
 
-  assign axi_xbar_atomics_req = axi_xbar_mst_port_reqs[AXI_XBAR_OUT_REGBUS_PERIPH];
-  assign axi_xbar_mst_port_rsps[AXI_XBAR_OUT_REGBUS_PERIPH] = axi_xbar_atomics_rsp;
+  assign axi_xbar_atomics_req = axi_xbar_mst_port_reqs[AXI_XBAR_OUT_REGBUS];
+  assign axi_xbar_mst_port_rsps[AXI_XBAR_OUT_REGBUS] = axi_xbar_atomics_rsp;
 
   axi_riscv_atomics_wrap #(
     .AXI_ADDR_WIDTH     ( AXI_ADDR_WIDTH             ),
@@ -842,7 +844,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .axi_mst_resp_t       ( axi_a48_d32_slv_u0_resp_t    ),
     .axi_slv_req_t        ( axi_a48_d64_slv_u0_req_t     ),
 	  .axi_slv_resp_t       ( axi_a48_d64_slv_u0_resp_t    )
-  ) i_axi_dw_converter (
+  ) i_axi_dw_converter_regbus (
 	  .clk_i,
 	  .rst_ni,
 	  .slv_req_i            ( axi_atomics_dw_conv_req      ),
@@ -867,39 +869,39 @@ module cheshire_soc import cheshire_pkg::*; #(
 	  .clk_i,
 	  .rst_ni,
 	  .testmode_i,
-	  .axi_req_i          ( axi_dw_conv_to_req        ), 
-	  .axi_rsp_o          ( axi_dw_conv_to_rsp        ), 
-	  .reg_req_o          ( regbus_periph_in_req      ),
-	  .reg_rsp_i          ( regbus_periph_in_rsp      )
+	  .axi_req_i          ( axi_dw_conv_to_req  ), 
+	  .axi_rsp_o          ( axi_dw_conv_to_rsp  ), 
+	  .reg_req_o          ( regbus_in_req       ),
+	  .reg_rsp_i          ( regbus_in_rsp       )
   );
 
   addr_decode #(
-    .NoIndices        ( REGBUS_PERIPH_NUM_OUTPUTS ),
-    .NoRules          ( REGBUS_PERIPH_NUM_OUTPUTS ), // Assume one rule per peripheral
-    .addr_t           ( logic [47:0]              ), 
-    .rule_t           ( address_rule_48_t         )
-  ) i_addr_decode_regbus_periph (
-    .addr_i           ( regbus_periph_in_req.addr ),
-    .addr_map_i       ( regbus_periph_addrmap     ),
-    .idx_o            ( regbus_periph_select      ),
-    .dec_valid_o      (                           ),
-    .dec_error_o      (                           ),
-    .en_default_idx_i ( '0                        ),
-    .default_idx_i    ( '0                        )
+    .NoIndices        ( REGBUS_NUM_OUTPUTS  ),
+    .NoRules          ( REGBUS_NUM_OUTPUTS  ), // Assume one rule per peripheral
+    .addr_t           ( logic [47:0]        ), 
+    .rule_t           ( address_rule_48_t   )
+  ) i_addr_decode_regbus (
+    .addr_i           ( regbus_in_req.addr  ),
+    .addr_map_i       ( regbus_addrmap      ),
+    .idx_o            ( regbus_select       ),
+    .dec_valid_o      (                     ),
+    .dec_error_o      (                     ),
+    .en_default_idx_i ( '0                  ),
+    .default_idx_i    ( '0                  )
   );
 
   reg_demux #(
-  	.NoPorts      ( REGBUS_PERIPH_NUM_OUTPUTS ),
-    .req_t        ( reg_a48_d32_req_t         ),
-    .rsp_t        ( reg_a48_d32_rsp_t         )
-  ) i_soc_regbus_periph (
+    .NoPorts      ( REGBUS_NUM_OUTPUTS  ),
+    .req_t        ( reg_a48_d32_req_t   ),
+    .rsp_t        ( reg_a48_d32_rsp_t   )
+  ) i_soc_regbus (
     .clk_i,
     .rst_ni,
-    .in_select_i  ( regbus_periph_select      ),
-    .in_req_i     ( regbus_periph_in_req      ),
-    .in_rsp_o     ( regbus_periph_in_rsp      ),
-    .out_req_o    ( regbus_periph_out_req     ),
-    .out_rsp_i    ( regbus_periph_out_rsp     )
+    .in_select_i  ( regbus_select  ),
+    .in_req_i     ( regbus_in_req  ),
+    .in_rsp_o     ( regbus_in_rsp  ),
+    .out_req_o    ( regbus_out_req ),
+    .out_rsp_i    ( regbus_out_rsp )
   );
 
   ////////////
@@ -916,8 +918,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       ) i_uart (
         .clk_i,
         .rst_ni,
-        .reg_req_i  ( regbus_periph_out_req[REGBUS_PERIPH_OUT_UART] ),
-        .reg_rsp_o  ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_UART] ),
+        .reg_req_i  ( regbus_out_req[REGBUS_OUT_UART] ),
+        .reg_rsp_o  ( regbus_out_rsp[REGBUS_OUT_UART] ),
         .intr_o     ( irq.uart          ),
         .out2_no    (                   ),  // keep open
         .out1_no    (                   ),  // keep open
@@ -933,18 +935,20 @@ module cheshire_soc import cheshire_pkg::*; #(
     
     end : gen_uart else begin : gen_uart_dummy
 
-      assign uart_tx_o = '0;
+      // Bind UART output to 0
+      assign uart_tx_o  = '0;
 
-      assign irq.uart = '0;
+      // Bind UART interrupt to 0
+      assign irq.uart   = '0;
 
       reg_err_slv #(
-        .DW      ( 32 ),
-        .ERR_VAL ( 32'hBADCAB1E ),
-        .req_t   ( reg_a48_d32_req_t ),
-        .rsp_t   ( reg_a48_d32_rsp_t )
+        .DW      ( 32                 ),
+        .ERR_VAL ( 32'hBADCAB1E       ),
+        .req_t   ( reg_a48_d32_req_t  ),
+        .rsp_t   ( reg_a48_d32_rsp_t  )
       ) i_reg_err_slv_uart (
-        .req_i   ( regbus_periph_out_req[REGBUS_PERIPH_OUT_UART] ),
-        .rsp_o   ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_UART] )
+        .req_i   ( regbus_out_req[REGBUS_OUT_UART] ),
+        .rsp_o   ( regbus_out_rsp[REGBUS_OUT_UART] )
       );
     
     end : gen_uart_dummy
@@ -963,8 +967,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       ) i_i2c (
         .clk_i,
         .rst_ni,
-        .reg_req_i                ( regbus_periph_out_req[REGBUS_PERIPH_OUT_I2C] ),
-        .reg_rsp_o                ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_I2C] ),
+        .reg_req_i                ( regbus_out_req[REGBUS_OUT_I2C] ),
+        .reg_rsp_o                ( regbus_out_rsp[REGBUS_OUT_I2C] ),
         .cio_scl_i                ( i2c_scl_i                ),
         .cio_scl_o                ( i2c_scl_o                ),
         .cio_scl_en_o             ( i2c_scl_en_o             ),
@@ -991,36 +995,38 @@ module cheshire_soc import cheshire_pkg::*; #(
     
     end : gen_i2c else begin : gen_i2c_dummy
 
-      assign i2c_scl_o = '0;
+      // Bind I2C outputs to 0
+      assign i2c_scl_o    = '0;
       assign i2c_scl_en_o = '0;
-      assign i2c_sda_o = '0;
+      assign i2c_sda_o    = '0;
       assign i2c_sda_en_o = '0;
 
-      assign irq.i2c_fmt_watermark = '0;
-      assign irq.i2c_rx_watermark = '0;
-      assign irq.i2c_fmt_overflow = '0;
-      assign irq.i2c_rx_overflow = '0;
-      assign irq.i2c_nak = '0;
+      // Bind I2C interrupts to 0
+      assign irq.i2c_fmt_watermark    = '0;
+      assign irq.i2c_rx_watermark     = '0;
+      assign irq.i2c_fmt_overflow     = '0;
+      assign irq.i2c_rx_overflow      = '0;
+      assign irq.i2c_nak              = '0;
       assign irq.i2c_scl_interference = '0;
       assign irq.i2c_sda_interference = '0;
-      assign irq.i2c_stretch_timeout = '0;
-      assign irq.i2c_sda_unstable = '0;
-      assign irq.i2c_trans_complete = '0;
-      assign irq.i2c_tx_empty = '0;
-      assign irq.i2c_tx_nonempty = '0;
-      assign irq.i2c_tx_overflow = '0;
-      assign irq.i2c_acq_overflow = '0;
-      assign irq.i2c_ack_stop = '0;
-      assign irq.i2c_host_timeout = '0;
+      assign irq.i2c_stretch_timeout  = '0;
+      assign irq.i2c_sda_unstable     = '0;
+      assign irq.i2c_trans_complete   = '0;
+      assign irq.i2c_tx_empty         = '0;
+      assign irq.i2c_tx_nonempty      = '0;
+      assign irq.i2c_tx_overflow      = '0;
+      assign irq.i2c_acq_overflow     = '0;
+      assign irq.i2c_ack_stop         = '0;
+      assign irq.i2c_host_timeout     = '0;
 
       reg_err_slv #(
-        .DW      ( 32 ),
-        .ERR_VAL ( 32'hBADCAB1E ),
-        .req_t   ( reg_a48_d32_req_t ),
-        .rsp_t   ( reg_a48_d32_rsp_t )
+        .DW      ( 32                 ),
+        .ERR_VAL ( 32'hBADCAB1E       ),
+        .req_t   ( reg_a48_d32_req_t  ),
+        .rsp_t   ( reg_a48_d32_rsp_t  )
       ) i_reg_err_slv_i2c (
-        .req_i   ( regbus_periph_out_req[REGBUS_PERIPH_OUT_I2C] ),
-        .rsp_o   ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_I2C] )
+        .req_i   ( regbus_out_req[REGBUS_OUT_I2C] ),
+        .rsp_o   ( regbus_out_rsp[REGBUS_OUT_I2C] )
       );
 
     end : gen_i2c_dummy
@@ -1041,8 +1047,8 @@ module cheshire_soc import cheshire_pkg::*; #(
         .rst_ni,
         .clk_core_i       ( clk_i              ),
         .rst_core_ni      ( rst_ni             ),
-        .reg_req_i        ( regbus_periph_out_req[REGBUS_PERIPH_OUT_SPIM] ),
-        .reg_rsp_o        ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_SPIM] ),
+        .reg_req_i        ( regbus_out_req[REGBUS_OUT_SPIM] ),
+        .reg_rsp_o        ( regbus_out_rsp[REGBUS_OUT_SPIM] ),
         .cio_sck_o        ( spim_sck_o         ),
         .cio_sck_en_o     ( spim_sck_en_o      ),
         .cio_csb_o        ( spim_csb_o         ),
@@ -1056,24 +1062,26 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     end : gen_spi else begin : gen_spi_dummy
 
-      assign spi_sck_o = '0;
-      assign spim_sck_en_o = '0;
-      assign spim_csb = '1;
-      assign spim_csb_en_o = '0;
-      assign spim_sd_o = '0;
-      assign spim_sd_en_o = '0;
+      // Bind SPI outputs to 0
+      assign spi_sck_o      = '0;
+      assign spim_sck_en_o  = '0;
+      assign spim_csb       = '1;
+      assign spim_csb_en_o  = '0;
+      assign spim_sd_o      = '0;
+      assign spim_sd_en_o   = '0;
 
-      assign irq.spim_error = '0;
+      // Bind SPI interrupts to 0
+      assign irq.spim_error     = '0;
       assign irq.spim_spi_event = '0;
 
       reg_err_slv #(
-        .DW      ( 32 ),
-        .ERR_VAL ( 32'hBADCAB1E ),
-        .req_t   ( reg_a48_d32_req_t ),
-        .rsp_t   ( reg_a48_d32_rsp_t )
+        .DW      ( 32                 ),
+        .ERR_VAL ( 32'hBADCAB1E       ),
+        .req_t   ( reg_a48_d32_req_t  ),
+        .rsp_t   ( reg_a48_d32_rsp_t  )
       ) i_reg_err_slv_spim (
-        .req_i   ( regbus_periph_out_req[REGBUS_PERIPH_OUT_SPIM] ),
-        .rsp_o   ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_SPIM] )
+        .req_i   ( regbus_out_req[REGBUS_OUT_SPIM] ),
+        .rsp_o   ( regbus_out_rsp[REGBUS_OUT_SPIM] )
       );
 
     end : gen_spi_dummy
@@ -1092,7 +1100,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   assign reg_file_in.status.i2c_present.d      = CheshireCfg.I2C;
   assign reg_file_in.status.dma_present.d      = CheshireCfg.DMA;
   assign reg_file_in.status.ddr_link_present.d = CheshireCfg.DDR_LINK;
-  assign reg_file_in.status.rpc_dram_present.d = CheshireCfg.RPC_DRAM;
+  assign reg_file_in.status.dram_present.d     = CheshireCfg.DRAM;
   assign reg_file_in.status.vga_present.d      = CheshireCfg.VGA;
   assign reg_file_in.vga_red_width.d           = CheshireCfg.VGARedWidth;
   assign reg_file_in.vga_green_width.d         = CheshireCfg.VGAGreenWidth;
@@ -1101,11 +1109,11 @@ module cheshire_soc import cheshire_pkg::*; #(
   cheshire_register_file_reg_top #(
     .reg_req_t  ( reg_a48_d32_req_t ),
     .reg_rsp_t  ( reg_a48_d32_rsp_t )
-  ) i_register_file (
+  ) i_cheshire_reg_file (
     .clk_i,
     .rst_ni,
-    .reg_req_i  ( regbus_periph_out_req[REGBUS_PERIPH_OUT_CSR] ),
-    .reg_rsp_o  ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_CSR] ),
+    .reg_req_i  ( regbus_out_req[REGBUS_OUT_CSR] ),
+    .reg_rsp_o  ( regbus_out_rsp[REGBUS_OUT_CSR] ),
     .hw2reg     ( reg_file_in       ),
     .devmode_i  ( 1'b1              )
   );
@@ -1126,8 +1134,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   ) i_reg_to_rom (
     .clk_i,
     .rst_ni,
-    .reg_req_i  ( regbus_periph_out_req[REGBUS_PERIPH_OUT_BOOTROM] ),
-    .reg_rsp_o  ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_BOOTROM] ),
+    .reg_req_i  ( regbus_out_req[REGBUS_OUT_BOOTROM] ),
+    .reg_rsp_o  ( regbus_out_rsp[REGBUS_OUT_BOOTROM] ),
     .req_o      ( rom_req           ),
     .gnt_i      ( rom_req           ),
     .we_o       (                   ),
@@ -1153,7 +1161,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Data register
   `FF(rom_data_q, rom_data_d, '0, clk_i, rst_ni)
 
-  // As the bootrom can answer in one clock cycle the valid signal is
+  // As the bootrom can answer in the same clock cycle the valid signal is
   // just the one clock cycle delayed version of the request signal
   `FF(rom_rvalid, rom_req, '0, clk_i, rst_ni)
    
@@ -1164,17 +1172,18 @@ module cheshire_soc import cheshire_pkg::*; #(
   rv_plic #(
       .reg_req_t  ( reg_a48_d32_req_t ),
       .reg_rsp_t  ( reg_a48_d32_rsp_t )
-  ) i_rv_plic (
+  ) i_plic (
       .clk_i,
       .rst_ni,
-      .reg_req_i  ( regbus_periph_out_req[REGBUS_PERIPH_OUT_PLIC] ),
-      .reg_rsp_o  ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_PLIC] ),
+      .reg_req_i  ( regbus_out_req[REGBUS_OUT_PLIC] ),
+      .reg_rsp_o  ( regbus_out_rsp[REGBUS_OUT_PLIC] ),
       .intr_src_i ( irq               ), 
       .irq_o      ( eip               ), 
       .irq_id_o   (                   ),
       .msip_o     (                   )
   );
 
+  // Interrupt ID 0 is a dummy interrupt meaning "no interrupt"
   assign irq.zero = 1'b0;
 
   /////////////
@@ -1188,8 +1197,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .clk_i,
     .rst_ni,
     .testmode_i,
-    .reg_req_i    ( regbus_periph_out_req[REGBUS_PERIPH_OUT_CLINT] ),
-    .reg_rsp_o    ( regbus_periph_out_rsp[REGBUS_PERIPH_OUT_CLINT] ),
+    .reg_req_i    ( regbus_out_req[REGBUS_OUT_CLINT] ),
+    .reg_rsp_o    ( regbus_out_rsp[REGBUS_OUT_CLINT] ),
     .rtc_i        ( rtc_i             ),
     .timer_irq_o  ( mstip             ), 
     .ipi_o        ( mssip             ) 

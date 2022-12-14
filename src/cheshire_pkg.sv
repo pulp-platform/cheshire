@@ -26,7 +26,7 @@ package cheshire_pkg;
   /// Outputs of X-Bar
   typedef enum int {
     AXI_XBAR_OUT_DEBUG,
-    AXI_XBAR_OUT_REGBUS_PERIPH,
+    AXI_XBAR_OUT_REGBUS,
     AXI_XBAR_OUT_DMA_CONF,
     AXI_XBAR_OUT_LLC,
     AXI_XBAR_OUT_DDR_LINK,
@@ -76,45 +76,45 @@ package cheshire_pkg;
     '{ idx: AXI_XBAR_OUT_LLC,           start_addr: 48'h000080000000, end_addr: 48'h000100000000},
     '{ idx: AXI_XBAR_OUT_LLC,           start_addr: 48'h000070000000, end_addr: 48'h000070020000},
     '{ idx: AXI_XBAR_OUT_DMA_CONF,      start_addr: 48'h000060000000, end_addr: 48'h000060001000},
-    '{ idx: AXI_XBAR_OUT_REGBUS_PERIPH, start_addr: 48'h000001000000, end_addr: 48'h000060000000},
+    '{ idx: AXI_XBAR_OUT_REGBUS,        start_addr: 48'h000001000000, end_addr: 48'h000060000000},
     '{ idx: AXI_XBAR_OUT_DEBUG,         start_addr: 48'h000000000000, end_addr: 48'h000000001000}
   };
 
   /// Inputs of the Regbus Demux
   typedef enum int {
-    REGBUS_PERIPH_IN_XBAR,
-    REGBUS_PERIPH_NUM_INPUTS
-  } regbus_periph_inputs_e;
+    REGBUS_IN_XBAR,
+    REGBUS_NUM_INPUTS
+  } regbus_inputs_e;
 
   /// Outputs of the Regbus Demux
   typedef enum int {
-    REGBUS_PERIPH_OUT_BOOTROM,
-    REGBUS_PERIPH_OUT_CSR,
-    REGBUS_PERIPH_OUT_LLC,
-    REGBUS_PERIPH_OUT_DDR_LINK,
-    REGBUS_PERIPH_OUT_UART,
-    REGBUS_PERIPH_OUT_I2C,
-    REGBUS_PERIPH_OUT_SPIM,
-    REGBUS_PERIPH_OUT_VGA,
-    REGBUS_PERIPH_OUT_CLINT,
-    REGBUS_PERIPH_OUT_PLIC,
-    REGBUS_PERIPH_OUT_EXTERNAL,
-    REGBUS_PERIPH_NUM_OUTPUTS
-  } regbus_periph_outputs_e;
+    REGBUS_OUT_BOOTROM,
+    REGBUS_OUT_CSR,
+    REGBUS_OUT_LLC,
+    REGBUS_OUT_DDR_LINK,
+    REGBUS_OUT_UART,
+    REGBUS_OUT_I2C,
+    REGBUS_OUT_SPIM,
+    REGBUS_OUT_VGA,
+    REGBUS_OUT_CLINT,
+    REGBUS_OUT_PLIC,
+    REGBUS_OUT_EXTERNAL,
+    REGBUS_NUM_OUTPUTS
+  } regbus_outputs_e;
 
   /// Address map of the Regbus Demux
-  localparam address_rule_48_t [REGBUS_PERIPH_NUM_OUTPUTS-1:0] regbus_periph_addrmap = '{
-    '{ idx: REGBUS_PERIPH_OUT_EXTERNAL, start_addr: 48'h10000000, end_addr: 48'h60000000 },  // EXTERNAL  -1.25 GiB
-    '{ idx: REGBUS_PERIPH_OUT_PLIC,     start_addr: 48'h0c000000, end_addr: 48'h10000000 },  // PLIC      -  64 MiB 
-    '{ idx: REGBUS_PERIPH_OUT_CLINT,    start_addr: 48'h04000000, end_addr: 48'h04100000 },  // CLINT     -   1 MiB
-    '{ idx: REGBUS_PERIPH_OUT_VGA,      start_addr: 48'h02006000, end_addr: 48'h02007000 },  // VGA       -   4 KiB
-    '{ idx: REGBUS_PERIPH_OUT_SPIM,     start_addr: 48'h02005000, end_addr: 48'h02006000 },  // SPIM      -   4 KiB
-    '{ idx: REGBUS_PERIPH_OUT_I2C,      start_addr: 48'h02004000, end_addr: 48'h02005000 },  // I2C       -   4 KiB
-    '{ idx: REGBUS_PERIPH_OUT_UART,     start_addr: 48'h02003000, end_addr: 48'h02004000 },  // UART      -   4 KiB
-    '{ idx: REGBUS_PERIPH_OUT_DDR_LINK, start_addr: 48'h02002000, end_addr: 48'h02003000 },  // DDR Link  -   4 KiB
-    '{ idx: REGBUS_PERIPH_OUT_LLC,      start_addr: 48'h02001000, end_addr: 48'h02002000 },  // LLC       -   4 KiB
-    '{ idx: REGBUS_PERIPH_OUT_CSR,      start_addr: 48'h02000000, end_addr: 48'h02001000 },  // CSR       -   4 KiB
-    '{ idx: REGBUS_PERIPH_OUT_BOOTROM,  start_addr: 48'h01000000, end_addr: 48'h01020000 }   // Bootrom   - 128 KiB
+  localparam address_rule_48_t [REGBUS_NUM_OUTPUTS-1:0] regbus_addrmap = '{
+    '{ idx: REGBUS_OUT_EXTERNAL, start_addr: 48'h10000000, end_addr: 48'h60000000 },  // EXTERNAL  - 1.25 GiB
+    '{ idx: REGBUS_OUT_PLIC,     start_addr: 48'h0c000000, end_addr: 48'h10000000 },  // PLIC      -   64 MiB 
+    '{ idx: REGBUS_OUT_CLINT,    start_addr: 48'h04000000, end_addr: 48'h04100000 },  // CLINT     -    1 MiB
+    '{ idx: REGBUS_OUT_VGA,      start_addr: 48'h02006000, end_addr: 48'h02007000 },  // VGA       -    4 KiB
+    '{ idx: REGBUS_OUT_SPIM,     start_addr: 48'h02005000, end_addr: 48'h02006000 },  // SPIM      -    4 KiB
+    '{ idx: REGBUS_OUT_I2C,      start_addr: 48'h02004000, end_addr: 48'h02005000 },  // I2C       -    4 KiB
+    '{ idx: REGBUS_OUT_UART,     start_addr: 48'h02003000, end_addr: 48'h02004000 },  // UART      -    4 KiB
+    '{ idx: REGBUS_OUT_DDR_LINK, start_addr: 48'h02002000, end_addr: 48'h02003000 },  // DDR Link  -    4 KiB
+    '{ idx: REGBUS_OUT_LLC,      start_addr: 48'h02001000, end_addr: 48'h02002000 },  // LLC       -    4 KiB
+    '{ idx: REGBUS_OUT_CSR,      start_addr: 48'h02000000, end_addr: 48'h02001000 },  // CSR       -    4 KiB
+    '{ idx: REGBUS_OUT_BOOTROM,  start_addr: 48'h01000000, end_addr: 48'h01020000 }   // Bootrom   -  128 KiB
   };
 
   /// Type definitions
@@ -209,7 +209,7 @@ package cheshire_pkg;
 
   /// Testbench start adresses
   localparam SPM_BASE = axi_xbar_addrmap[AXI_XBAR_OUT_LLC].start_addr;
-  localparam SCRATCH_REGS_BASE = regbus_periph_addrmap[REGBUS_PERIPH_OUT_CSR].start_addr;
+  localparam SCRATCH_REGS_BASE = regbus_addrmap[REGBUS_OUT_CSR].start_addr;
 
   /// Cheshire Config
   /// Can be used to exclude parts of the system
@@ -219,7 +219,7 @@ package cheshire_pkg;
     bit I2C;
     bit DMA;
     bit DDR_LINK;
-    bit RPC_DRAM;
+    bit DRAM;
     bit VGA;
     /// Width of the VGA red channel, ignored if VGA set to 0
     logic [31:0] VGARedWidth;
@@ -236,7 +236,7 @@ package cheshire_pkg;
     I2C: 1'b1,
     DMA: 1'b1,
     DDR_LINK: 1'b1,
-    RPC_DRAM: 1'b1,
+    DRAM: 1'b1,
     VGA: 1'b1,
     VGARedWidth: 32'd5,
     VGAGreenWidth: 32'd6,
