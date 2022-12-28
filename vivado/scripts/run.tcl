@@ -29,9 +29,8 @@ update_compile_order -fileset sources_1
 
 add_files -fileset constrs_1 -norecurse constraints/$project.xdc
 
-# Optimize routability in synthesis and try to minimize congestion in implementation
-set_property strategy Flow_AlternateRoutability [get_runs synth_1]
-set_property strategy Congestion_SpreadLogic_high [get_runs impl_1]
+set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
+set_property strategy Performance_ExtraTimingOpt [get_runs impl_1]
 
 synth_design -rtl -name rtl_1
 

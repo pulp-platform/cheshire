@@ -235,7 +235,7 @@ package cheshire_pkg;
     SPI: 1'b1,
     I2C: 1'b1,
     DMA: 1'b1,
-    DDR_LINK: 1'b1,
+    DDR_LINK: 1'b0,
     DRAM: 1'b1,
     VGA: 1'b1,
     VGARedWidth: 32'd5,

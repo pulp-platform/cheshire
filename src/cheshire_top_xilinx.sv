@@ -93,9 +93,9 @@ module cheshire_top_xilinx
     .clk_i                ( dram_clock_out    ),
     .rst_ni               ( ~dram_sync_reset  ),
     .en_i                 ( 1'b1              ),
-    .test_mode_en_i       ( 1'b0              ),
+    .test_mode_en_i       ( testmode_i        ),
     .div_i                ( 4'h4              ),
-    .div_valid_i          ( 1'b1              ),
+    .div_valid_i          ( 1'b0              ),
     .div_ready_o          (                   ),
     .clk_o                ( soc_clk           ),
     .cycl_count_o         (                   )
