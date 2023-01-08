@@ -104,6 +104,8 @@ module cheshire_register_file_reg_top #(
   logic vga_green_width_re;
   logic [31:0] vga_blue_width_qs;
   logic vga_blue_width_re;
+  logic [31:0] reset_freq_qs;
+  logic reset_freq_re;
 
   // Register instances
   // R[version]: V(False)
@@ -408,21 +410,38 @@ module cheshire_register_file_reg_top #(
   );
 
 
+  // R[reset_freq]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_reset_freq (
+    .re     (reset_freq_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.reset_freq.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (reset_freq_qs)
+  );
 
 
-  logic [9:0] addr_hit;
+
+
+  logic [10:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == CHESHIRE_REGISTER_FILE_VERSION_OFFSET);
-    addr_hit[1] = (reg_addr == CHESHIRE_REGISTER_FILE_SCRATCH_0_OFFSET);
-    addr_hit[2] = (reg_addr == CHESHIRE_REGISTER_FILE_SCRATCH_1_OFFSET);
-    addr_hit[3] = (reg_addr == CHESHIRE_REGISTER_FILE_SCRATCH_2_OFFSET);
-    addr_hit[4] = (reg_addr == CHESHIRE_REGISTER_FILE_SCRATCH_3_OFFSET);
-    addr_hit[5] = (reg_addr == CHESHIRE_REGISTER_FILE_BOOT_MODE_OFFSET);
-    addr_hit[6] = (reg_addr == CHESHIRE_REGISTER_FILE_STATUS_OFFSET);
-    addr_hit[7] = (reg_addr == CHESHIRE_REGISTER_FILE_VGA_RED_WIDTH_OFFSET);
-    addr_hit[8] = (reg_addr == CHESHIRE_REGISTER_FILE_VGA_GREEN_WIDTH_OFFSET);
-    addr_hit[9] = (reg_addr == CHESHIRE_REGISTER_FILE_VGA_BLUE_WIDTH_OFFSET);
+    addr_hit[ 0] = (reg_addr == CHESHIRE_REGISTER_FILE_VERSION_OFFSET);
+    addr_hit[ 1] = (reg_addr == CHESHIRE_REGISTER_FILE_SCRATCH_0_OFFSET);
+    addr_hit[ 2] = (reg_addr == CHESHIRE_REGISTER_FILE_SCRATCH_1_OFFSET);
+    addr_hit[ 3] = (reg_addr == CHESHIRE_REGISTER_FILE_SCRATCH_2_OFFSET);
+    addr_hit[ 4] = (reg_addr == CHESHIRE_REGISTER_FILE_SCRATCH_3_OFFSET);
+    addr_hit[ 5] = (reg_addr == CHESHIRE_REGISTER_FILE_BOOT_MODE_OFFSET);
+    addr_hit[ 6] = (reg_addr == CHESHIRE_REGISTER_FILE_STATUS_OFFSET);
+    addr_hit[ 7] = (reg_addr == CHESHIRE_REGISTER_FILE_VGA_RED_WIDTH_OFFSET);
+    addr_hit[ 8] = (reg_addr == CHESHIRE_REGISTER_FILE_VGA_GREEN_WIDTH_OFFSET);
+    addr_hit[ 9] = (reg_addr == CHESHIRE_REGISTER_FILE_VGA_BLUE_WIDTH_OFFSET);
+    addr_hit[10] = (reg_addr == CHESHIRE_REGISTER_FILE_RESET_FREQ_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -430,16 +449,17 @@ module cheshire_register_file_reg_top #(
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[0] & (|(CHESHIRE_REGISTER_FILE_PERMIT[0] & ~reg_be))) |
-               (addr_hit[1] & (|(CHESHIRE_REGISTER_FILE_PERMIT[1] & ~reg_be))) |
-               (addr_hit[2] & (|(CHESHIRE_REGISTER_FILE_PERMIT[2] & ~reg_be))) |
-               (addr_hit[3] & (|(CHESHIRE_REGISTER_FILE_PERMIT[3] & ~reg_be))) |
-               (addr_hit[4] & (|(CHESHIRE_REGISTER_FILE_PERMIT[4] & ~reg_be))) |
-               (addr_hit[5] & (|(CHESHIRE_REGISTER_FILE_PERMIT[5] & ~reg_be))) |
-               (addr_hit[6] & (|(CHESHIRE_REGISTER_FILE_PERMIT[6] & ~reg_be))) |
-               (addr_hit[7] & (|(CHESHIRE_REGISTER_FILE_PERMIT[7] & ~reg_be))) |
-               (addr_hit[8] & (|(CHESHIRE_REGISTER_FILE_PERMIT[8] & ~reg_be))) |
-               (addr_hit[9] & (|(CHESHIRE_REGISTER_FILE_PERMIT[9] & ~reg_be)))));
+              ((addr_hit[ 0] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(CHESHIRE_REGISTER_FILE_PERMIT[10] & ~reg_be)))));
   end
 
   assign scratch_0_we = addr_hit[1] & reg_we & !reg_error;
@@ -477,6 +497,8 @@ module cheshire_register_file_reg_top #(
   assign vga_green_width_re = addr_hit[8] & reg_re & !reg_error;
 
   assign vga_blue_width_re = addr_hit[9] & reg_re & !reg_error;
+
+  assign reset_freq_re = addr_hit[10] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -527,6 +549,10 @@ module cheshire_register_file_reg_top #(
 
       addr_hit[9]: begin
         reg_rdata_next[31:0] = vga_blue_width_qs;
+      end
+
+      addr_hit[10]: begin
+        reg_rdata_next[31:0] = reset_freq_qs;
       end
 
       default: begin

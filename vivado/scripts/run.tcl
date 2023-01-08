@@ -18,7 +18,6 @@ if {$::env(BOARD) eq "genesys2"} {
 
 read_ip { \
       "xilinx/xlnx_mig_7_ddr3/xlnx_mig_7_ddr3.srcs/sources_1/ip/xlnx_mig_7_ddr3/xlnx_mig_7_ddr3.xci" \
-      "xilinx/xlnx_protocol_checker/xlnx_protocol_checker.srcs/sources_1/ip/xlnx_protocol_checker/xlnx_protocol_checker.xci" \
 }
 
 source scripts/add_sources.tcl
@@ -31,6 +30,8 @@ add_files -fileset constrs_1 -norecurse constraints/$project.xdc
 
 set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
 set_property strategy Performance_ExtraTimingOpt [get_runs impl_1]
+
+set_property XPM_LIBRARIES XPM_MEMORY [current_project]
 
 synth_design -rtl -name rtl_1
 

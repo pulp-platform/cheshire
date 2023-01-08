@@ -74,20 +74,15 @@ lib/libcheshire.a: $(LIB_SRCS_O)
 	@$(RISCV_AR) -rcsv $@ $^
 	@echo "AR   $@"
 
-bootrom: bootrom/bootrom_asic.sv bootrom/bootrom_asic.dump\
-		 bootrom/bootrom_fpga.sv bootrom/bootrom_fpga.dump
-	@cp bootrom/bootrom_{asic,fpga}.sv ../src
-	@echo "INSTALL bootrom_asic.sv"
-	@echo "INSTALL bootrom_fpga.sv"
+bootrom: ../src/bootrom.sv
+../src/bootrom.sv: bootrom/bootrom.sv bootrom/bootrom.dump
+	@cp bootrom/bootrom.sv ../src
+	@echo "INSTALL bootrom.sv"
 
 device-tree: device-tree/cheshire-fpga.dtb.elf
 
-bootrom/bootrom_asic.elf: $(BOOT_SRCS_S) $(BOOT_SRCS_C) $(SUBMODULE_SRCS) $(LIBS)
-	@$(RISCV_CC) $(INCLUDES) -T$(BOOT_LD_FILE) $(LD_FLAGS) -DBOOTROM_ASIC -o $@ $^
-	@echo "CC/LD	$<"
-
-bootrom/bootrom_fpga.elf: $(BOOT_SRCS_S) $(BOOT_SRCS_C) $(SUBMODULE_SRCS) $(LIBS)
-	@$(RISCV_CC) $(INCLUDES) -T$(BOOT_LD_FILE) $(LD_FLAGS) -DBOOTROM_FPGA -o $@ $^
+bootrom/bootrom.elf: $(BOOT_SRCS_S) $(BOOT_SRCS_C) $(SUBMODULE_SRCS) $(LIBS)
+	@$(RISCV_CC) $(INCLUDES) -T$(BOOT_LD_FILE) $(LD_FLAGS) -o $@ $^
 	@echo "CC/LD	$<"
 
 %.o: %.c
@@ -110,7 +105,7 @@ bootrom/bootrom_fpga.elf: $(BOOT_SRCS_S) $(BOOT_SRCS_C) $(SUBMODULE_SRCS) $(LIBS
 	@$(RISCV_OBJCOPY) -O binary $< $@
 	@echo "OBJCOPY $< -> $@"
 
-bootrom_%.sv: bootrom_%.bin
+bootrom/bootrom.sv: bootrom/bootrom.bin
 	@../util/gen_bootrom.py --sv-module bootrom -p 65536 $< > $@
 	@echo "GEN_BOOTROM $<"
 

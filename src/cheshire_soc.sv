@@ -9,7 +9,7 @@
 `include "common_cells/registers.svh"
 
 module cheshire_soc import cheshire_pkg::*; #(
-  parameter cheshire_cfg_t CheshireCfg = CheshireCfgDefault
+  parameter cheshire_cfg_t CheshireCfg = CheshireCfgASICDefault
 ) (
   input   logic               clk_i,
   input   logic               rst_ni,
@@ -1105,6 +1105,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   assign reg_file_in.vga_red_width.d           = CheshireCfg.VGARedWidth;
   assign reg_file_in.vga_green_width.d         = CheshireCfg.VGAGreenWidth;
   assign reg_file_in.vga_blue_width.d          = CheshireCfg.VGABlueWidth;
+  assign reg_file_in.reset_freq.d              = CheshireCfg.ResetFreq;
 
   cheshire_register_file_reg_top #(
     .reg_req_t  ( reg_a48_d32_req_t ),

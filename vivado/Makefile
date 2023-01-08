@@ -23,7 +23,7 @@ VIVADOENV ?= 	PROJECT=$(PROJECT)            \
 
 # select IIS-internal tool commands if we run on IIS machines
 ifneq (,$(wildcard /etc/iis.version))
-	VIVADO ?= vitis-2020.2 vivado
+	VIVADO ?= vitis-2022.1 vivado
 else
 	VIVADO ?= vivado
 endif
@@ -31,8 +31,7 @@ endif
 VIVADOFLAGS ?= -nojournal -mode batch -source scripts/prologue.tcl
 
 ip-dir  := xilinx
-ips     :=  xlnx_mig_7_ddr3.xci \
-            xlnx_protocol_checker.xci
+ips     :=  xlnx_mig_7_ddr3.xci
 
 all: $(mcs)
 

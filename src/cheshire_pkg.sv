@@ -37,7 +37,7 @@ package cheshire_pkg;
   localparam int unsigned AXI_ADDR_WIDTH           = 48;
   localparam int unsigned AXI_DATA_WIDTH           = 64;
   localparam int unsigned AXI_USER_WIDTH           = 1;
-  localparam int unsigned AXI_STRB_WIDTH           = $clog2(AXI_DATA_WIDTH);
+  localparam int unsigned AXI_STRB_WIDTH           = AXI_DATA_WIDTH/8;  // Using byte strobes
 
   localparam int unsigned AXI_XBAR_MASTER_ID_WIDTH = 2;
   localparam int unsigned AXI_XBAR_SLAVE_ID_WIDTH  = AXI_XBAR_MASTER_ID_WIDTH + $clog2(AXI_XBAR_NUM_INPUTS); 
@@ -227,10 +227,12 @@ package cheshire_pkg;
     logic [31:0] VGAGreenWidth;
     /// Width of the VGA blue channel, ignored if VGA set to 0
     logic [31:0] VGABlueWidth;
+    /// The Clock frequency after coming out of reset
+    logic [31:0] ResetFreq;
   } cheshire_cfg_t;
 
-  /// Default config for Cheshire Platform
-  localparam cheshire_cfg_t CheshireCfgDefault = '{
+  /// Default FPGA config for Cheshire Platform
+  localparam cheshire_cfg_t CheshireCfgFPGADefault = '{
     UART: 1'b1,
     SPI: 1'b1,
     I2C: 1'b1,
@@ -240,7 +242,23 @@ package cheshire_pkg;
     VGA: 1'b1,
     VGARedWidth: 32'd5,
     VGAGreenWidth: 32'd6,
-    VGABlueWidth: 32'd5
+    VGABlueWidth: 32'd5,
+    ResetFreq: 32'd50000000
+  };
+
+  /// Default ASIC config for Cheshire Platform
+  localparam cheshire_cfg_t CheshireCfgASICDefault = '{
+    UART: 1'b1,
+    SPI: 1'b1,
+    I2C: 1'b1,
+    DMA: 1'b1,
+    DDR_LINK: 1'b1,
+    DRAM: 1'b1,
+    VGA: 1'b1,
+    VGARedWidth: 32'd2,
+    VGAGreenWidth: 32'd3,
+    VGABlueWidth: 32'd3,
+    ResetFreq: 32'd200000000
   };
 
 endpackage

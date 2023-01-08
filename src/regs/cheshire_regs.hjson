@@ -185,5 +185,18 @@
         }
       ]
     }
+    { name: "RESET_FREQ",
+      desc: "Clock frequency after coming out of reset.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwqe:     "true",
+      hwext:    "true",
+      fields: [
+        { bits: "31:0"
+          name: "RESET_FREQ"
+          desc: "Clock frequency after reset."
+        }
+      ]
+    }
   ]
 }

@@ -15,27 +15,12 @@
 
 #define DRAM 0x80000000
 
-#ifdef BOOTROM_ASIC
-
 #define DT_LEN 0x8
 #define FW_LEN 0x1800
 
-#define CORE_FREQ_HZ 200000000
-
 #define SPI_SCLK_TARGET 12500000
 
-#endif
-
-#ifdef BOOTROM_FPGA
-
-#define DT_LEN 0x8
-#define FW_LEN 0x1800
-
-#define CORE_FREQ_HZ 50000000
-
-#define SPI_SCLK_TARGET 12500000
-
-#endif
+#define UART_BAUD 115200
 
 extern void *__base_cheshire_regs;
 extern void *__base_axi_llc;
@@ -51,15 +36,15 @@ void llc_info(void *base)
     printf("[axi_llc] BIST Outcome      :       %d\r\n", axi_llc_reg32_get_bist_out(base));
 }
 
-void sd_boot(void)
+void sd_boot(unsigned int core_freq)
 {
     opentitan_qspi_t spi;
     unsigned int dt_lba = 0, fw_lba = 0;
     int ret = 0;
 
     // Setup the SPI Host
-    opentitan_qspi_init((volatile unsigned int *) &__base_spim, CORE_FREQ_HZ,
-                        CORE_FREQ_HZ/2, &spi);
+    opentitan_qspi_init((volatile unsigned int *) &__base_spim, core_freq,
+                        core_freq/2, &spi);
 
     opentitan_qspi_probe(&spi);
 
@@ -104,10 +89,11 @@ void sd_boot(void)
 
 int main(void)
 {
-    volatile uint32_t *bootmode = (uint32_t *) (((uint64_t)&__base_cheshire_regs) + CHESHIRE_REGISTER_FILE_BOOT_MODE_REG_OFFSET);
+    volatile uint32_t *bootmode   = (uint32_t *) (((uint64_t)&__base_cheshire_regs) + CHESHIRE_REGISTER_FILE_BOOT_MODE_REG_OFFSET);
+    volatile uint32_t *reset_freq = (uint32_t *) (((uint64_t)&__base_cheshire_regs) + CHESHIRE_REGISTER_FILE_RESET_FREQ_REG_OFFSET);
 
     // Initiate our window to the world around us
-    init_uart(CORE_FREQ_HZ, 115200);
+    init_uart(*reset_freq, UART_BAUD);
 
     // Print AXI LLC status
     llc_info((void *) &__base_axi_llc);
@@ -116,7 +102,7 @@ int main(void)
     switch(*bootmode){
         // Normal boot over SD Card
         case 0: printf_("Bootmode 0: Booting from SD Card\r\n");
-                sd_boot();
+                sd_boot(*reset_freq);
                 break; // We will never reach this
 
         case 1: printf_("Bootmode 1: Doing nothing :)\r\n");

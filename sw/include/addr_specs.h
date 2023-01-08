@@ -41,6 +41,7 @@ test_addr_t test_addresses[] = {
    {(void *) &__base_cheshire_regs  + 0x0000001C,  4, 32, 32, 2}, // VGA Red width register
    {(void *) &__base_cheshire_regs  + 0x00000020,  4, 32, 32, 2}, // VGA Green width register
    {(void *) &__base_cheshire_regs  + 0x00000024,  4, 32, 32, 2}, // VGA Blue width register
+   {(void *) &__base_cheshire_regs  + 0x00000028,  4, 32, 32, 2}, // Reset clock frequency register
    {(void *) &__base_axi_llc        + 0x00000040,  4, 32, 32, 2}, // AXI LLC version low register
    {(void *) &__base_ddr_link       + 0x00000000,  4, 32, 32, 2}, // DDR Link control register
    {(void *) &__base_uart           + 0x0000001C,  1,  8,  8, 3}, // UART Scratch register

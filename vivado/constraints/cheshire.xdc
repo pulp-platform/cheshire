@@ -12,11 +12,11 @@
 # Testmode is set to 0 during normal use
 set_case_analysis 0 [get_ports testmode_i]
 
-# Preserve the output mux of the main clock divider
+# Preserve the output mux of the clock divider
 set_property DONT_TOUCH TRUE [get_cells i_sys_clk_div/i_clk_bypass_mux]
 
-# The pin we get the 200 MHz single ended clock from the MIG
-set MIG_CLK_SRC {i_dram/u_xlnx_mig_7_ddr3_mig/u_ddr3_infrastructure/gen_mmcm.mmcm_i/CLKFBOUT}
+# The pin of which we get the 200 MHz single ended clock from the MIG
+set MIG_CLK_SRC {i_dram/ui_clk}
 
 #####################
 # Timing Parameters #
@@ -28,8 +28,8 @@ set FPGA_TCK 5.0
 # 50 MHz SoC clock
 set SOC_TCK 20.0
 
-# 8.3 MHz JTAG clock
-set JTAG_TCK 120.0
+# 10 MHz JTAG clock
+set JTAG_TCK 100.0
 
 # I2C High-speed mode is 3.2 Mb/s
 set I2C_IO_SPEED 312.5
@@ -42,10 +42,10 @@ set UART_IO_SPEED 200.0
 # Clocks #
 ##########
 
-# 50 MHz system Clock
+# System Clock
 create_generated_clock -name clk_soc -source [get_pins $MIG_CLK_SRC] -divide_by 4 [get_pins i_sys_clk_div/i_clk_bypass_mux/i_BUFGMUX/O]
 
-# 10 MHz clock for JTAG
+# JTAG Clock
 create_clock -period $JTAG_TCK -name clk_jtag [get_ports jtag_tck_i]
 set_input_jitter clk_jtag 1.000
 
@@ -57,20 +57,12 @@ set_input_jitter clk_jtag 1.000
 # JTAG Clock is asynchronous to all other clocks
 set_clock_groups -name jtag_async -asynchronous -group [get_clocks clk_jtag]
 
-# The SoC clock will never come in contact with any other clock (except in CDCs)
-set_clock_groups -name soc_phys_excl -physically_exclusive -group [get_clocks clk_soc]
-
 
 #######################
 # Placement Overrides #
 #######################
 
 # Accept suboptimal BUFG-BUFG cascades
-#set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets i_dram/u_xlnx_mig_7_ddr3_mig/u_ddr3_clk_ibuf/sys_clk_ibufg]
-set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets i_sys_clk_div/i_clk_mux/generated_clock]
-set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets i_cheshire_soc/gen_vga.i_axi_vga/i_pixel_clk_div/i_clk_mux/generated_clock]
-set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets i_cheshire_soc/gen_vga.i_axi_vga/i_pixel_clk_div/i_clk_mux/clk_o]
-set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets i_sys_clk_div/i_clk_mux/clk_o]
 set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets i_sys_clk_div/i_clk_mux/clk0_i]
 
 
@@ -159,9 +151,14 @@ set_max_delay -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_
 set_min_delay -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_src]] -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_dst]] 5
 set_false_path -hold -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_src]] -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_dst]]
 
+# cdc_fifo_gray syncs
+set_property KEEP_HIERARCHY SOFT [get_cells i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*i_sync]
+set_max_delay -through [get_pins i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*i_sync/serial_i] $FPGA_TCK 
+set_false_path -hold    -through [get_pins i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*i_sync/serial_i]
+
 ###################
 # Reset Generator #
 ###################
 
-set_max_delay -from [get_pins {i_rstgen_main/i_rstgen_bypass/synch_regs_q_reg[3]/C}] $FPGA_TCK
+set_max_delay -from [get_pins {i_rstgen_main/i_rstgen_bypass/synch_regs_q_reg[3]/C}] $SOC_TCK
 set_false_path -hold -from [get_pins {i_rstgen_main/i_rstgen_bypass/synch_regs_q_reg[3]/C}]

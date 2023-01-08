@@ -71,6 +71,9 @@ extern "C" {
 // Selected VGA blue width exposed as a register.
 #define CHESHIRE_REGISTER_FILE_VGA_BLUE_WIDTH_REG_OFFSET 0x24
 
+// Clock frequency after coming out of reset.
+#define CHESHIRE_REGISTER_FILE_RESET_FREQ_REG_OFFSET 0x28
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

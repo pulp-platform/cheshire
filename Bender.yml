@@ -30,11 +30,11 @@ sources:
   - src/cheshire_pkg.sv
   - src/regs/cheshire_register_file_reg_pkg.sv
   - src/regs/cheshire_register_file_reg_top.sv
+  - src/bootrom.sv
   - src/cheshire_soc.sv
 
   - target: sim
     files:
-      - src/bootrom_asic.sv
       - test/models/spi/S25fs512s/model/s25fs512s.v
       - test/models/i2c/M24FC1025.v
       - test/models/uart_tb_rx.sv
@@ -43,6 +43,5 @@ sources:
 
   - target: fpga
     files:
-      - src/bootrom_fpga.sv
       - src/fan_ctrl.sv
       - src/cheshire_top_xilinx.sv

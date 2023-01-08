@@ -56,13 +56,18 @@ package cheshire_register_file_reg_pkg;
     logic [31:0] d;
   } cheshire_register_file_hw2reg_vga_blue_width_reg_t;
 
+  typedef struct packed {
+    logic [31:0] d;
+  } cheshire_register_file_hw2reg_reset_freq_reg_t;
+
   // HW -> register type
   typedef struct packed {
-    cheshire_register_file_hw2reg_boot_mode_reg_t boot_mode; // [105:104]
-    cheshire_register_file_hw2reg_status_reg_t status; // [103:96]
-    cheshire_register_file_hw2reg_vga_red_width_reg_t vga_red_width; // [95:64]
-    cheshire_register_file_hw2reg_vga_green_width_reg_t vga_green_width; // [63:32]
-    cheshire_register_file_hw2reg_vga_blue_width_reg_t vga_blue_width; // [31:0]
+    cheshire_register_file_hw2reg_boot_mode_reg_t boot_mode; // [137:136]
+    cheshire_register_file_hw2reg_status_reg_t status; // [135:128]
+    cheshire_register_file_hw2reg_vga_red_width_reg_t vga_red_width; // [127:96]
+    cheshire_register_file_hw2reg_vga_green_width_reg_t vga_green_width; // [95:64]
+    cheshire_register_file_hw2reg_vga_blue_width_reg_t vga_blue_width; // [63:32]
+    cheshire_register_file_hw2reg_reset_freq_reg_t reset_freq; // [31:0]
   } cheshire_register_file_hw2reg_t;
 
   // Register offsets
@@ -76,6 +81,7 @@ package cheshire_register_file_reg_pkg;
   parameter logic [BlockAw-1:0] CHESHIRE_REGISTER_FILE_VGA_RED_WIDTH_OFFSET = 6'h 1c;
   parameter logic [BlockAw-1:0] CHESHIRE_REGISTER_FILE_VGA_GREEN_WIDTH_OFFSET = 6'h 20;
   parameter logic [BlockAw-1:0] CHESHIRE_REGISTER_FILE_VGA_BLUE_WIDTH_OFFSET = 6'h 24;
+  parameter logic [BlockAw-1:0] CHESHIRE_REGISTER_FILE_RESET_FREQ_OFFSET = 6'h 28;
 
   // Reset values for hwext registers and their fields
   parameter logic [1:0] CHESHIRE_REGISTER_FILE_BOOT_MODE_RESVAL = 2'h 0;
@@ -83,6 +89,7 @@ package cheshire_register_file_reg_pkg;
   parameter logic [31:0] CHESHIRE_REGISTER_FILE_VGA_RED_WIDTH_RESVAL = 32'h 0;
   parameter logic [31:0] CHESHIRE_REGISTER_FILE_VGA_GREEN_WIDTH_RESVAL = 32'h 0;
   parameter logic [31:0] CHESHIRE_REGISTER_FILE_VGA_BLUE_WIDTH_RESVAL = 32'h 0;
+  parameter logic [31:0] CHESHIRE_REGISTER_FILE_RESET_FREQ_RESVAL = 32'h 0;
 
   // Register index
   typedef enum int {
@@ -95,21 +102,23 @@ package cheshire_register_file_reg_pkg;
     CHESHIRE_REGISTER_FILE_STATUS,
     CHESHIRE_REGISTER_FILE_VGA_RED_WIDTH,
     CHESHIRE_REGISTER_FILE_VGA_GREEN_WIDTH,
-    CHESHIRE_REGISTER_FILE_VGA_BLUE_WIDTH
+    CHESHIRE_REGISTER_FILE_VGA_BLUE_WIDTH,
+    CHESHIRE_REGISTER_FILE_RESET_FREQ
   } cheshire_register_file_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] CHESHIRE_REGISTER_FILE_PERMIT [10] = '{
-    4'b 0011, // index[0] CHESHIRE_REGISTER_FILE_VERSION
-    4'b 1111, // index[1] CHESHIRE_REGISTER_FILE_SCRATCH_0
-    4'b 1111, // index[2] CHESHIRE_REGISTER_FILE_SCRATCH_1
-    4'b 1111, // index[3] CHESHIRE_REGISTER_FILE_SCRATCH_2
-    4'b 1111, // index[4] CHESHIRE_REGISTER_FILE_SCRATCH_3
-    4'b 0001, // index[5] CHESHIRE_REGISTER_FILE_BOOT_MODE
-    4'b 0001, // index[6] CHESHIRE_REGISTER_FILE_STATUS
-    4'b 1111, // index[7] CHESHIRE_REGISTER_FILE_VGA_RED_WIDTH
-    4'b 1111, // index[8] CHESHIRE_REGISTER_FILE_VGA_GREEN_WIDTH
-    4'b 1111  // index[9] CHESHIRE_REGISTER_FILE_VGA_BLUE_WIDTH
+  parameter logic [3:0] CHESHIRE_REGISTER_FILE_PERMIT [11] = '{
+    4'b 0011, // index[ 0] CHESHIRE_REGISTER_FILE_VERSION
+    4'b 1111, // index[ 1] CHESHIRE_REGISTER_FILE_SCRATCH_0
+    4'b 1111, // index[ 2] CHESHIRE_REGISTER_FILE_SCRATCH_1
+    4'b 1111, // index[ 3] CHESHIRE_REGISTER_FILE_SCRATCH_2
+    4'b 1111, // index[ 4] CHESHIRE_REGISTER_FILE_SCRATCH_3
+    4'b 0001, // index[ 5] CHESHIRE_REGISTER_FILE_BOOT_MODE
+    4'b 0001, // index[ 6] CHESHIRE_REGISTER_FILE_STATUS
+    4'b 1111, // index[ 7] CHESHIRE_REGISTER_FILE_VGA_RED_WIDTH
+    4'b 1111, // index[ 8] CHESHIRE_REGISTER_FILE_VGA_GREEN_WIDTH
+    4'b 1111, // index[ 9] CHESHIRE_REGISTER_FILE_VGA_BLUE_WIDTH
+    4'b 1111  // index[10] CHESHIRE_REGISTER_FILE_RESET_FREQ
   };
 
 endpackage
