@@ -7,7 +7,7 @@
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 
 {
-  name: "cheshire_register_file"
+  name: "cheshire"
   clock_primary: "clk_i"
   bus_interfaces: [
     { protocol: "reg_iface", direction: "device" }
