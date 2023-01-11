@@ -6,6 +6,8 @@
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Axel Vanoni <axvanoni@student.ethz.ch>
 
+// TODO: generate this from a shared template
+
 /dts-v1/;
 / {
   #address-cells = <2>;
