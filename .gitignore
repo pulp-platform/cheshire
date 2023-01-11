@@ -8,16 +8,22 @@
 # Bender files
 .bender/
 
-# Makefile helper files
-.cheshire_regs
+# Software build files
+*.bin
+*.dump
+*.elf
+*.o
+*.a
+sw/deps/.patched
 
-# Test models
-test/models
+# Test models (except UART)
+target/sim/models/*
+!target/sim/models/uart_tb_rx.sv
 
 # VSIM generated files
-vsim/compile.tcl
-vsim/*.log
-vsim/modelsim.ini
-vsim/transcript
-vsim/vsim.wlf
-vsim/work/
+target/sim/vsim/compile.tcl
+target/sim/vsim/*.log
+target/sim/vsim/modelsim.ini
+target/sim/vsim/transcript
+target/sim/vsim/vsim.wlf
+target/sim/vsim/work/

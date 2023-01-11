@@ -1,6 +1,6 @@
-[submodule "sw/submodules/printf"]
-	path = sw/submodules/printf
+[submodule "sw/deps/printf"]
+	path = sw/deps/printf
 	url = https://github.com/mpaland/printf
-[submodule "sw/submodules/opentitan"]
-	path = sw/submodules/opentitan
-	url = git@github.com:lowrisc/opentitan
+[submodule "sw/deps/opentitan"]
+	path = sw/deps/opentitan
+	url = https://github.com/lowrisc/opentitan

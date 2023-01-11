@@ -21,27 +21,26 @@ dependencies:
   register_interface:       { git: "git@github.com:pulp-platform/register_interface.git",    version: =0.3.6  }
   riscv-dbg:                { git: "git@github.com:pulp-platform/riscv-dbg.git",             version: =0.7.0  }
   tech_cells_generic:       { git: "git@github.com:pulp-platform/tech_cells_generic.git",    version: =0.2.10 }
+  serial_link:              { git: "git@github.com:pulp-platform/serial_link.git",           version: =0.1.0  }
   ariane:                   { git: "git@github.com:pulp-platform/cva6",                      rev: cheshire    }
   opentitan_peripherals:    { git: "git@github.com:pulp-platform/opentitan_peripherals.git", rev: fix/spi_host_non_word_reads }
-  serial_link:              { git: "git@github.com:pulp-platform/serial_link.git",           rev: d4072df77065513d247862f7e9246a9c248fe43a }
-  
 
 sources:
-  - src/cheshire_pkg.sv
-  - src/regs/cheshire_register_file_reg_pkg.sv
-  - src/regs/cheshire_register_file_reg_top.sv
-  - src/bootrom.sv
-  - src/cheshire_soc.sv
+  - hw/bootrom/cheshire_bootrom.sv
+  - hw/regs/cheshire_reg_pkg.sv
+  - hw/regs/cheshire_reg_top.sv
+  - hw/cheshire_pkg.sv
+  - hw/cheshire_soc.sv
 
-  - target: sim
+  - target: any(simulation, test)
     files:
-      - test/models/spi/S25fs512s/model/s25fs512s.v
-      - test/models/i2c/M24FC1025.v
-      - test/models/uart_tb_rx.sv
-      - test/cheshire_soc_fixture.sv
-      - test/tb_cheshire_soc.sv
+      - target/simulation/models/s25fs512s.v
+      - target/simulation/models/M24FC1025.v
+      - target/simulation/models/uart_tb_rx.sv
+      - target/simulation/fixture_cheshire_soc.sv
+      - target/simulation/tb_cheshire_soc.sv
 
-  - target: fpga
+  - target: all(fpga, xilinx)
     files:
-      - src/fan_ctrl.sv
-      - src/cheshire_top_xilinx.sv
+      - target/xilinx/fan_ctrl.sv
+      - target/xilinx/cheshire_top_xilinx.sv

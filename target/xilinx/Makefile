@@ -15,7 +15,7 @@ bit := $(out)/cheshire_top_xilinx.bit
 mcs := $(out)/cheshire_top_xilinx.mcs
 
 
-VIVADOENV ?= 	PROJECT=$(PROJECT)            \
+VIVADOENV ?=  PROJECT=$(PROJECT)            \
               BOARD=$(BOARD)                \
               XILINX_PART=$(XILINX_PART)    \
               XILINX_BOARD=$(XILINX_BOARD)  \

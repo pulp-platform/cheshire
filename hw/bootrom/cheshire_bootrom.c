@@ -89,8 +89,8 @@ void sd_boot(unsigned int core_freq)
 
 int main(void)
 {
-    volatile uint32_t *bootmode   = (uint32_t *) (((uint64_t)&__base_cheshire_regs) + CHESHIRE_REGISTER_FILE_BOOT_MODE_REG_OFFSET);
-    volatile uint32_t *reset_freq = (uint32_t *) (((uint64_t)&__base_cheshire_regs) + CHESHIRE_REGISTER_FILE_RESET_FREQ_REG_OFFSET);
+    volatile uint32_t *bootmode   = (uint32_t *) (((uint64_t)&__base_cheshire_regs) + CHESHIRE_BOOT_MODE_REG_OFFSET);
+    volatile uint32_t *reset_freq = (uint32_t *) (((uint64_t)&__base_cheshire_regs) + CHESHIRE_RESET_FREQ_REG_OFFSET);
 
     // Initiate our window to the world around us
     init_uart(*reset_freq, UART_BAUD);
