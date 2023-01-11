@@ -7,7 +7,7 @@
 
 `include "common_cells/assertions.svh"
 
-module cheshire_register_file_reg_top #(
+module cheshire_reg_top #(
     parameter type reg_req_t = logic,
     parameter type reg_rsp_t = logic,
     parameter int AW = 6
@@ -17,14 +17,14 @@ module cheshire_register_file_reg_top #(
   input  reg_req_t reg_req_i,
   output reg_rsp_t reg_rsp_o,
   // To HW
-  input  cheshire_register_file_reg_pkg::cheshire_register_file_hw2reg_t hw2reg, // Read
+  input  cheshire_reg_pkg::cheshire_hw2reg_t hw2reg, // Read
 
 
   // Config
   input devmode_i // If 1, explicit error return for unmapped register access
 );
 
-  import cheshire_register_file_reg_pkg::* ;
+  import cheshire_reg_pkg::* ;
 
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
@@ -431,17 +431,17 @@ module cheshire_register_file_reg_top #(
   logic [10:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == CHESHIRE_REGISTER_FILE_VERSION_OFFSET);
-    addr_hit[ 1] = (reg_addr == CHESHIRE_REGISTER_FILE_SCRATCH_0_OFFSET);
-    addr_hit[ 2] = (reg_addr == CHESHIRE_REGISTER_FILE_SCRATCH_1_OFFSET);
-    addr_hit[ 3] = (reg_addr == CHESHIRE_REGISTER_FILE_SCRATCH_2_OFFSET);
-    addr_hit[ 4] = (reg_addr == CHESHIRE_REGISTER_FILE_SCRATCH_3_OFFSET);
-    addr_hit[ 5] = (reg_addr == CHESHIRE_REGISTER_FILE_BOOT_MODE_OFFSET);
-    addr_hit[ 6] = (reg_addr == CHESHIRE_REGISTER_FILE_STATUS_OFFSET);
-    addr_hit[ 7] = (reg_addr == CHESHIRE_REGISTER_FILE_VGA_RED_WIDTH_OFFSET);
-    addr_hit[ 8] = (reg_addr == CHESHIRE_REGISTER_FILE_VGA_GREEN_WIDTH_OFFSET);
-    addr_hit[ 9] = (reg_addr == CHESHIRE_REGISTER_FILE_VGA_BLUE_WIDTH_OFFSET);
-    addr_hit[10] = (reg_addr == CHESHIRE_REGISTER_FILE_RESET_FREQ_OFFSET);
+    addr_hit[ 0] = (reg_addr == CHESHIRE_VERSION_OFFSET);
+    addr_hit[ 1] = (reg_addr == CHESHIRE_SCRATCH_0_OFFSET);
+    addr_hit[ 2] = (reg_addr == CHESHIRE_SCRATCH_1_OFFSET);
+    addr_hit[ 3] = (reg_addr == CHESHIRE_SCRATCH_2_OFFSET);
+    addr_hit[ 4] = (reg_addr == CHESHIRE_SCRATCH_3_OFFSET);
+    addr_hit[ 5] = (reg_addr == CHESHIRE_BOOT_MODE_OFFSET);
+    addr_hit[ 6] = (reg_addr == CHESHIRE_STATUS_OFFSET);
+    addr_hit[ 7] = (reg_addr == CHESHIRE_VGA_RED_WIDTH_OFFSET);
+    addr_hit[ 8] = (reg_addr == CHESHIRE_VGA_GREEN_WIDTH_OFFSET);
+    addr_hit[ 9] = (reg_addr == CHESHIRE_VGA_BLUE_WIDTH_OFFSET);
+    addr_hit[10] = (reg_addr == CHESHIRE_RESET_FREQ_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -449,17 +449,17 @@ module cheshire_register_file_reg_top #(
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[ 0] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 0] & ~reg_be))) |
-               (addr_hit[ 1] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 1] & ~reg_be))) |
-               (addr_hit[ 2] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 2] & ~reg_be))) |
-               (addr_hit[ 3] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 3] & ~reg_be))) |
-               (addr_hit[ 4] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 4] & ~reg_be))) |
-               (addr_hit[ 5] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 5] & ~reg_be))) |
-               (addr_hit[ 6] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 6] & ~reg_be))) |
-               (addr_hit[ 7] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 7] & ~reg_be))) |
-               (addr_hit[ 8] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 8] & ~reg_be))) |
-               (addr_hit[ 9] & (|(CHESHIRE_REGISTER_FILE_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(CHESHIRE_REGISTER_FILE_PERMIT[10] & ~reg_be)))));
+              ((addr_hit[ 0] & (|(CHESHIRE_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(CHESHIRE_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(CHESHIRE_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(CHESHIRE_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(CHESHIRE_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(CHESHIRE_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(CHESHIRE_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(CHESHIRE_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(CHESHIRE_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(CHESHIRE_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(CHESHIRE_PERMIT[10] & ~reg_be)))));
   end
 
   assign scratch_0_we = addr_hit[1] & reg_we & !reg_error;

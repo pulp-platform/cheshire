@@ -4,96 +4,74 @@
 #
 # Nicole Narr <narrn@student.ethz.ch>
 # Christopher Reinwardt <creinwar@student.ethz.ch>
+# Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
+BENDER      ?= bender
+PYTHON3     ?= python3
+REGGEN      ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
 
-BENDER 	    ?= bender
-PYTHON      ?= python3
-
-REGGEN_PATH  = $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
-REGGEN	     = $(PYTHON) $(REGGEN_PATH) 
-
-OT_PERI 	 = $(shell $(BENDER) path opentitan_peripherals)
-
-# Alternative PLIC parameters
 PLICOPT      = -s 20 -t 2 -p 7
+VLOG_ARGS   ?= ""
 
-VLOG_ARGS    ?= "" 
+.PHONY: all sw-all hw-all sim-all xilinx-all
 
-.PHONY: all 
+all: sw-all hw-all sim-all xilinx-all
 
-all: 	cheshire_regs\
-		otp\
-		serial_link\
-		i2c_regs \
-		spi_regs \
-		vsim/compile.tcl\
-		vivado
+############
+# Build SW #
+############
 
-
-##################################
-# OpenTitan Peripherals Makefile #
-##################################
-
-include $(OT_PERI)/otp.mk
+include sw/sw.mk
 
 ###############
 # Generate HW #
 ###############
 
-cheshire_regs: .cheshire_regs
-.cheshire_regs:
-	$(REGGEN) -r src/regs/cheshire_regs.hjson --outdir src/regs
-	$(REGGEN) --cdefines --outfile sw/include/cheshire_regs.h src/regs/cheshire_regs.hjson
-	@touch .cheshire_regs
+# SoC registers
+hw/regs/cheshire_reg_pkg.sv hw/regs/cheshire_reg_top.sv: hw/regs/cheshire_regs.hjson
+	$(REGGEN) -r $< --outdir $(dir $@)
 
-#################
-# Configure IPs #
-#################
-
-serial_link:
-	cp serial_link_single_channel.hjson $(shell $(BENDER) path serial_link)/src/regs/serial_link_single_channel.hjson
+# Custom serial link
+$(shell $(BENDER) path serial_link)/src/regs/.generated: hw/serial_link.hjson
+	cp $< $(dir $@)/serial_link_single_channel.hjson
 	$(MAKE) -C $(shell $(BENDER) path serial_link) update-regs
+	touch $@
 
-####################
-# Generate headers #
-####################
+# Boot ROM (needs SW stack)
+BROM_SRCS = $(wildcard hw/bootrom/*.S hw/bootrom/*.c) $(LIBS)
 
-i2c_regs: sw/include/i2c_regs.h
-sw/include/i2c_regs.h: $(OT_PERI)/src/i2c/data/i2c.hjson
-	$(REGGEN) --cdefines $< > $@
+hw/bootrom/cheshire_bootrom.elf: hw/bootrom/cheshire_bootrom.ld $(BROM_SRCS)
+	$(RISCV_CC) $(INCLUDES) -T$< $(RISCV_LDFLAGS) -o $@ $(BROM_SRCS)
 
-spi_regs: sw/include/spi_regs.h
-sw/include/spi_regs.h: $(OT_PERI)/src/spi_host/data/spi_host.hjson
-	$(REGGEN) --cdefines $< > $@
+hw/bootrom/cheshire_bootrom.sv: hw/bootrom/cheshire_bootrom.bin util/gen_bootrom.py
+	$(PYTHON3) util/gen_bootrom.py --sv-module cheshire_bootrom $< > $@
 
-
-#########################
-# Dependency Management #
-#########################
-
-bender: Bender.yml
-	$(BENDER) update
-
+hw-all: hw/regs/cheshire_reg_pkg.sv hw/regs/cheshire_reg_top.sv
+hw-all: $(shell $(BENDER) path serial_link)/src/regs/.generated
+hw-all: hw/bootrom/cheshire_bootrom.sv
 
 ##############
 # Simulation #
 ##############
 
-vsim/compile.tcl: bender
+target/sim/vsim/compile.tcl: Bender.yml
 	$(BENDER) script vsim -t sim -t cv64a6_imafdc_sv39 -t test -t cva6 --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "../test/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
+sim-all: target/sim/vsim/compile.tcl
 
 #############
 # FPGA Flow #
 #############
-vivado: vivado/scripts/add_sources.tcl
-vivado/scripts/add_sources.tcl: bender
+
+target/xilinx/scripts/add_sources.tcl: Bender.yml
 	$(BENDER) script vivado -t fpga -t cv64a6_imafdc_sv39 -t cva6 > $@
 
+xilinx-all: target/xilinx/scripts/add_sources.tcl
 
 ####################
 # License Checking #
 ####################
+
 licence-check: ./util/licence-checker.hjson
 	$(PYTHON) util/lowrisc_misc-linters/licence-checker/licence-checker.py -v --config $<
