@@ -54,11 +54,11 @@ hw-all: hw/bootrom/cheshire_bootrom.sv
 # Simulation #
 ##############
 
-target/sim/vsim/compile.tcl: Bender.yml
+target/sim/vsim/compile.cheshire_soc.tcl: Bender.yml
 	$(BENDER) script vsim -t sim -t cv64a6_imafdc_sv39 -t test -t cva6 --vlog-arg="$(VLOG_ARGS)" > $@
-	echo 'vlog "../test/elfloader.cpp" -ccflags "-std=c++11"' >> $@
+	echo 'vlog "../src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
-sim-all: target/sim/vsim/compile.tcl
+sim-all: target/sim/vsim/compile.cheshire_soc.tcl
 
 #############
 # FPGA Flow #
