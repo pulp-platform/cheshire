@@ -1091,7 +1091,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  Register File  //
   /////////////////////
 
-  cheshire_register_file_reg_pkg::cheshire_register_file_hw2reg_t reg_file_in;
+  cheshire_reg_pkg::cheshire_hw2reg_t reg_file_in;
 
   assign reg_file_in.boot_mode.d               = boot_mode_i;
   assign reg_file_in.status.clock_lock.d       = clk_locked_i;
@@ -1107,7 +1107,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   assign reg_file_in.vga_blue_width.d          = CheshireCfg.VGABlueWidth;
   assign reg_file_in.reset_freq.d              = CheshireCfg.ResetFreq;
 
-  cheshire_register_file_reg_top #(
+  cheshire_reg_top #(
     .reg_req_t  ( reg_a48_d32_req_t ),
     .reg_rsp_t  ( reg_a48_d32_rsp_t )
   ) i_cheshire_reg_file (
@@ -1148,7 +1148,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .rerror_i   ( '0                )
   );
 
-  bootrom #(
+  cheshire_bootrom #(
     .AddrWidth  ( 16         ),
     .DataWidth  ( 32         )
   ) i_bootrom (

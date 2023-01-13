@@ -787,8 +787,8 @@ module cheshire_soc_fixture;
   logic uart_tx;
 
   uart_tb_rx #(
-    .BAUD_RATE ( UartBaudRate     ),
-    .PARITY_EN ( UartParityEna    )
+    .BaudRate ( UartBaudRate     ),
+    .ParityEn ( UartParityEna    )
   ) i_uart_rx_model (
     .rx        ( uart_tx          ),
     .rx_en     ( 1'b1             ),
