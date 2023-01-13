@@ -12,10 +12,21 @@ REGGEN      ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowr
 
 PLICOPT      = -s 20 -t 2 -p 7
 VLOG_ARGS   ?= ""
+VSIM        ?= vsim
 
-.PHONY: all sw-all hw-all sim-all xilinx-all
+.PHONY: all sw-all hw-all sim-compile-all sim-run-all xilinx-all
 
-all: sw-all hw-all sim-all xilinx-all
+all: nonfree-all sw-all hw-all sim-compile-all sim-run-all xilinx-all
+
+#####################
+# Non free services #
+#####################
+
+nonfree-all: nonfree
+nonfree:
+	git clone git@iis-git.ee.ethz.ch:pulp-restricted/cheshire_nonfree.git nonfree
+	cd nonfree; \
+	git checkout aottaviano/initial-nonfree
 
 ############
 # Build SW #
@@ -54,20 +65,38 @@ hw-all: hw/bootrom/cheshire_bootrom.sv
 # Simulation #
 ##############
 
-target/sim/vsim/compile.tcl: Bender.yml
+target/sim/vsim/compile.cheshire_soc.tcl: Bender.yml
 	$(BENDER) script vsim -t sim -t cv64a6_imafdc_sv39 -t test -t cva6 --vlog-arg="$(VLOG_ARGS)" > $@
-	echo 'vlog "../test/elfloader.cpp" -ccflags "-std=c++11"' >> $@
+	echo 'vlog "$(CURDIR)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
-sim-all: target/sim/vsim/compile.tcl
+sim-compile-all: target/sim/vsim/compile.cheshire_soc.tcl
+	cd target/sim/vsim; \
+	$(VSIM) -c -do "compile.cheshire_soc.tcl" \
+	-do quit
+
+sim-run-all: target/sim/vsim/start.cheshire_soc.tcl
+	cd target/sim/vsim; \
+	$(VSIM) -c \
+	-do "set BINARY ../../../sw/tests/$(BINARY)" \
+	-do "start.cheshire_soc.tcl" \
+	-do "run -all" \
+	-do quit
 
 #############
 # FPGA Flow #
 #############
 
+xilinx-srcs: target/xilinx/scripts/add_sources.tcl
 target/xilinx/scripts/add_sources.tcl: Bender.yml
 	$(BENDER) script vivado -t fpga -t cv64a6_imafdc_sv39 -t cva6 > $@
 
-xilinx-all: target/xilinx/scripts/add_sources.tcl
+xilinx-implementation: xilinx-srcs
+	$(MAKE) -C target/xilinx
+
+xilinx-all: xilinx-srcs xilinx-implementation
+
+xilinx-clean:
+	$(MAKE) -C target/xilinx clean
 
 ####################
 # License Checking #
