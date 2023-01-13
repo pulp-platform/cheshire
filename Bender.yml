@@ -34,11 +34,11 @@ sources:
 
   - target: any(simulation, test)
     files:
-      - target/simulation/models/s25fs512s.v
-      - target/simulation/models/M24FC1025.v
-      - target/simulation/models/uart_tb_rx.sv
-      - target/simulation/fixture_cheshire_soc.sv
-      - target/simulation/tb_cheshire_soc.sv
+      - cheshire_nonfree/target-nonfree/sim/models/spi/S25fs512s/model/s25fs512s.v
+      - cheshire_nonfree/target-nonfree/sim/models/i2c/M24FC1025.v
+      - target/sim/models/uart_tb_rx.sv
+      - target/sim/src/fixture_cheshire_soc.sv
+      - target/sim/src/tb_cheshire_soc.sv
 
   - target: all(fpga, xilinx)
     files:
