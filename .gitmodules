@@ -4,3 +4,6 @@
 [submodule "sw/deps/opentitan"]
 	path = sw/deps/opentitan
 	url = https://github.com/lowrisc/opentitan
+[submodule "cheshire_nonfree"]
+	path = cheshire_nonfree
+	url = git@iis-git.ee.ethz.ch:pulp-restricted/cheshire_nonfree.git
