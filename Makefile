@@ -64,10 +64,17 @@ sim-all: target/sim/vsim/compile.cheshire_soc.tcl
 # FPGA Flow #
 #############
 
+xilinx-srcs: target/xilinx/scripts/add_sources.tcl
 target/xilinx/scripts/add_sources.tcl: Bender.yml
 	$(BENDER) script vivado -t fpga -t cv64a6_imafdc_sv39 -t cva6 > $@
 
-xilinx-all: target/xilinx/scripts/add_sources.tcl
+xilinx-implementation: xilinx-srcs
+	$(MAKE) -C target/xilinx
+
+xilinx-all: xilinx-srcs xilinx-implementation
+
+xilinx-clean:
+	$(MAKE) -C target/xilinx clean
 
 ####################
 # License Checking #
