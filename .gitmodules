@@ -7,3 +7,6 @@
 [submodule "cheshire_nonfree"]
 	path = cheshire_nonfree
 	url = git@iis-git.ee.ethz.ch:pulp-restricted/cheshire_nonfree.git
+[submodule "sw/cva6-sdk"]
+	path = sw/cva6-sdk
+	url = git@github.com:pulp-platform/cva6-sdk.git
