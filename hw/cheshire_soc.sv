@@ -1148,7 +1148,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .rerror_i   ( '0                )
   );
 
-  bootrom #(
+  cheshire_bootrom #(
     .AddrWidth  ( 16         ),
     .DataWidth  ( 32         )
   ) i_bootrom (
