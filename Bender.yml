@@ -42,5 +42,5 @@ sources:
 
   - target: all(fpga, xilinx)
     files:
-      - target/xilinx/fan_ctrl.sv
-      - target/xilinx/cheshire_top_xilinx.sv
+      - target/xilinx/src/fan_ctrl.sv
+      - target/xilinx/src/cheshire_top_xilinx.sv
