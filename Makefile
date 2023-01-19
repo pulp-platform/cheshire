@@ -15,7 +15,17 @@ VLOG_ARGS   ?= ""
 
 .PHONY: all sw-all hw-all sim-all xilinx-all
 
-all: sw-all hw-all sim-all xilinx-all
+all: nonfree-all sw-all hw-all sim-all xilinx-all
+
+#####################
+# Non free services #
+#####################
+
+nonfree-all: nonfree
+nonfree:
+	git clone git@iis-git.ee.ethz.ch:pulp-restricted/cheshire_nonfree.git nonfree
+	cd nonfree; \
+	git checkout aottaviano/initial-nonfree
 
 ############
 # Build SW #
