@@ -18,21 +18,61 @@ TBD
 Before starting RTL simulation, FPGA mapping or ASIC implementation, we need to
 build the full set of hardware sources. This includes:
 
-* Fetching `git submodules`
-* Fetching IP dependencies. The default IP dependency tool is
+* Fetching the `nonfree` services containing tech-dependent scripts and
+  vendor-specific models that can't be open-sourced.
+* Fetching `git submodules` dependencies.
+* Fetching IP dependencies to build the SoC. The default IP dependency tool is
   [Bender](https://github.com/pulp-platform/bender).
-* Compiling memory-mapped registers for external IOs. Registers are handled with
-  OpenTitan's
+* Compiling memory-mapped registers for external IOs to build the SoC. Registers
+  are handled with OpenTitan's
   [reggen](https://github.com/pulp-platform/register_interface/blob/master/vendor/lowrisc_opentitan/util/regtool.py)
   tool.
-* Compiling the bootcode and generating the synthesizable boot ROM.
+* Compiling the bootcode and generating the synthesizable boot ROM to build the
+  SoC.
 
-To accomplish this, from the root of the repository type:
+To accomplish this, follow the instructions below.
+
+### Cloning the `nonfree` services
+Some services are not available open-source. This includes tech-dependent files
+for ASIC, external IP behavioral models for RTL simulation, and internal CI.
+They are collected in a private repository that can be cloned as a `make`
+target. For ETH/UNIBO members, from the root of the repository type:
+
+```console
+make nonfree
+```
+
+Note that services included in the `nonfree` repository are **not mandatory** to
+setup a functional simulation of the SoC, as hardware IPs that need external
+models, such as DDR controller, SPI or I2C peripherals are disabled by default
+and need to be manually enabled (see "Configure Cheshire" below).
+
+### Get the submodules
+From the root of the repository type:
 
 ```console
 git submodule update --init --recursive
+```
+
+### Get the hardware (IP dependencies, registers generation, bootrom)
+All of the hardware IPs of cheshire are open-source and exist in standalone
+repositories. From the root of the repository type:
+
+```console
 make hw-all
 ```
+
+## Configure Cheshire
+Once the hardware IPs are fetched with Bender, Cheshire can be configured. There
+are several configuration flavours:
+
+1. Tune CVA6 features according to your needs.
+2. Tune on-chip memory size according to the application.
+3. Enable/disable hardware modules: as explained above, the default
+   configuration of the SoC comes with fundamental peripherals that do not need
+   external models in simulation, such as UART and JTAG.
+
+**TBD TODO @ale:** expand this section
 
 ## Add your own C/C++ code
 
