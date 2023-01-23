@@ -283,7 +283,7 @@ module cheshire_soc_fixture;
     data = 32'hff;
 
     // cfg_spm_low = 0xff;
-    riscv_dbg.write_dmi(dm::SBAddress0, regbus_addrmap[REGBUS_OUT_LLC].start_addr[31:0]);
+    riscv_dbg.write_dmi(dm::SBAddress0, RegbusAddrmap[RegbusOutLlc].start_addr[31:0]);
     riscv_dbg.write_dmi(dm::SBData0, data);
     // Wait for the write to complete
     do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
@@ -298,7 +298,7 @@ module cheshire_soc_fixture;
 
     // commit_cfg = 0x1;
     data = 32'h1;
-    riscv_dbg.write_dmi(dm::SBAddress0, regbus_addrmap[REGBUS_OUT_LLC].start_addr[31:0]+32'h10);
+    riscv_dbg.write_dmi(dm::SBAddress0, RegbusAddrmap[RegbusOutLlc].start_addr[31:0]+32'h10);
     riscv_dbg.write_dmi(dm::SBData0, data);
     // Wait for the write to complete
     do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
@@ -436,19 +436,19 @@ module cheshire_soc_fixture;
   /////////////////
 
   AXI_BUS_DV #(
-    .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH  ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH  ),
-    .AXI_ID_WIDTH   ( AXI_XBAR_MASTER_ID_WIDTH ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH  )
+    .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
+    .AXI_DATA_WIDTH ( AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( AxiXbarMasterIdWidth ),
+    .AXI_USER_WIDTH ( AxiUserWidth  )
   ) axi_bus_sl2tb (
     .clk_i  ( clk_sys )
   );
 
   AXI_BUS_DV #(
-    .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH  ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH  ),
-    .AXI_ID_WIDTH   ( AXI_XBAR_MASTER_ID_WIDTH ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH  )
+    .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
+    .AXI_DATA_WIDTH ( AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( AxiXbarMasterIdWidth ),
+    .AXI_USER_WIDTH ( AxiUserWidth  )
   ) axi_bus_tb2sl (
     .clk_i  ( clk_sys )
   );
@@ -516,10 +516,10 @@ module cheshire_soc_fixture;
 
   // Random slave that keeps written data for the slave side
   axi_test::axi_rand_slave #(
-    .AW                   ( AXI_ADDR_WIDTH  ),
-    .DW                   ( AXI_DATA_WIDTH  ),
-    .IW                   ( AXI_XBAR_MASTER_ID_WIDTH ),
-    .UW                   ( AXI_USER_WIDTH  ),
+    .AW                   ( AxiAddrWidth                  ),
+    .DW                   ( AxiDataWidth                  ),
+    .IW                   ( AxiXbarMasterIdWidth          ),
+    .UW                   ( AxiUserWidth                  ),
     .MAPPED               ( 1'b1                          ),
     .TA                   ( TA                            ),
     .TT                   ( TT                            ),
@@ -540,10 +540,10 @@ module cheshire_soc_fixture;
 
   // An AXI driver for the master side
   typedef axi_test::axi_driver #(
-    .AW     ( AXI_ADDR_WIDTH  ),
-    .DW     ( AXI_DATA_WIDTH  ),
-    .IW     ( AXI_XBAR_MASTER_ID_WIDTH ),
-    .UW     ( AXI_USER_WIDTH  ),
+    .AW     ( AxiAddrWidth    ),
+    .DW     ( AxiDataWidth    ),
+    .IW     ( AxiXbarMasterIdWidth ),
+    .UW     ( AxiUserWidth    ),
     .TA     ( TA              ),
     .TT     ( TT              )
   ) sl_axi_driver_t;
@@ -557,9 +557,9 @@ module cheshire_soc_fixture;
 
   // Write data from queue with given granularity (1, 2, 4 or 8 bytes)
   task automatic sl_write_size(
-    input logic [AXI_ADDR_WIDTH-1:0]  addr,
-    input logic [3:0]                               size,
-    ref logic   [AXI_DATA_WIDTH-1:0]  data [$]
+    input logic [AxiAddrWidth-1:0]  addr,
+    input logic [3:0]               size,
+    ref logic   [AxiDataWidth-1:0]  data [$]
   );
     automatic sl_axi_driver_t::ax_beat_t ax = new();
     automatic sl_axi_driver_t::w_beat_t w = new();
@@ -591,7 +591,7 @@ module cheshire_soc_fixture;
     //$display("[SL] - Writing burst data");
      
     do begin
-      w.w_strb = (~('1 << size_bytes)) << addr[$clog2(AXI_DATA_WIDTH)-1:0];
+      w.w_strb = (~('1 << size_bytes)) << addr[$clog2(AxiDataWidth)-1:0];
       w.w_data = data[i];
       w.w_last = (i == ax.ax_len);
 
@@ -615,10 +615,10 @@ module cheshire_soc_fixture;
   endtask
 
   task automatic sl_read_size(
-    input logic [AXI_ADDR_WIDTH-1:0]  addr,
-    input logic [3:0]                               size,
-    input logic [7:0]                               len,
-    ref logic   [AXI_DATA_WIDTH-1:0]  data [$]
+    input logic [AxiAddrWidth-1:0]  addr,
+    input logic [3:0]               size,
+    input logic [7:0]               len,
+    ref logic   [AxiDataWidth-1:0]  data [$]
   );
     automatic sl_axi_driver_t::ax_beat_t ax = new();
     automatic sl_axi_driver_t::r_beat_t r;
@@ -657,7 +657,7 @@ module cheshire_soc_fixture;
 
   // Preload the ELF sections using 64-bit bursts
   task sl_preload;
-    logic [AXI_DATA_WIDTH-1:0] wdata [$];
+    logic [AxiDataWidth-1:0] wdata [$];
     int loopcount;
 
     $display("[SL] Preloading ELF sections");
@@ -697,10 +697,10 @@ module cheshire_soc_fixture;
   // DRAM //
   //////////
   AXI_BUS_DV #(
-    .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH  ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH  ),
-    .AXI_ID_WIDTH   ( AXI_XBAR_SLAVE_ID_WIDTH + 1 ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH  )
+    .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
+    .AXI_DATA_WIDTH ( AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( AxiXbarSlaveIdWidth + 1 ),
+    .AXI_USER_WIDTH ( AxiUserWidth  )
   ) axi_bus_dram2tb (
     .clk_i  ( clk_sys )
   );
@@ -713,10 +713,10 @@ module cheshire_soc_fixture;
 
   // Random slave that keeps written data for the slave side
   axi_test::axi_rand_slave #(
-    .AW                   ( AXI_ADDR_WIDTH  ),
-    .DW                   ( AXI_DATA_WIDTH  ),
-    .IW                   ( AXI_XBAR_SLAVE_ID_WIDTH + 1 ),
-    .UW                   ( AXI_USER_WIDTH  ),
+    .AW                   ( AxiAddrWidth                  ),
+    .DW                   ( AxiDataWidth                  ),
+    .IW                   ( AxiXbarSlaveIdWidth + 1       ),
+    .UW                   ( AxiUserWidth                  ),
     .MAPPED               ( 1'b1                          ),
     .TA                   ( TA                            ),
     .TT                   ( TT                            ),

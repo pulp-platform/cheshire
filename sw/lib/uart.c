@@ -22,14 +22,11 @@ void write_serial(char a) {
     write_reg_u8(UART_THR, a);
 }
 
-void _putchar(char a)
-{
-    write_serial(a);
-}
+void _putchar(char a) { write_serial(a); }
 
-char read_serial()
-{
-    while (!is_read_full()) {}
+char read_serial() {
+    while (!is_read_full()) {
+    }
 
     return read_reg_u8(UART_RBR);
 }
@@ -37,15 +34,13 @@ char read_serial()
 void init_uart(uint32_t freq, uint32_t baud) {
     uint32_t divisor = freq / (baud << 4);
 
-    write_reg_u8(UART_INTERRUPT_ENABLE, 0x00);  // Disable all interrupts
-    write_reg_u8(UART_LINE_CONTROL,
-                 0x80);  // Enable DLAB (set baud rate divisor)
-    write_reg_u8(UART_DLAB_LSB, divisor);                // divisor (lo byte)
-    write_reg_u8(UART_DLAB_MSB, (divisor >> 8) & 0xFF);  // divisor (hi byte)
-    write_reg_u8(UART_LINE_CONTROL, 0x03);  // 8 bits, no parity, one stop bit
-    write_reg_u8(UART_FIFO_CONTROL,
-                 0xC7);  // Enable FIFO, clear them, with 14-byte threshold
-    write_reg_u8(UART_MODEM_CONTROL, 0x20);  // Autoflow mode
+    write_reg_u8(UART_INTERRUPT_ENABLE, 0x00);          // Disable all interrupts
+    write_reg_u8(UART_LINE_CONTROL, 0x80);              // Enable DLAB (set baud rate divisor)
+    write_reg_u8(UART_DLAB_LSB, divisor);               // divisor (lo byte)
+    write_reg_u8(UART_DLAB_MSB, (divisor >> 8) & 0xFF); // divisor (hi byte)
+    write_reg_u8(UART_LINE_CONTROL, 0x03);              // 8 bits, no parity, one stop bit
+    write_reg_u8(UART_FIFO_CONTROL, 0xC7);              // Enable FIFO, clear them, with 14-byte threshold
+    write_reg_u8(UART_MODEM_CONTROL, 0x20);             // Autoflow mode
 }
 
 void print_uart(const char *str) {
@@ -56,8 +51,7 @@ void print_uart(const char *str) {
     }
 }
 
-uint8_t bin_to_hex_table[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
-                                '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+uint8_t bin_to_hex_table[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
 void bin_to_hex(uint8_t inp, uint8_t res[2]) {
     res[1] = bin_to_hex_table[inp & 0xf];

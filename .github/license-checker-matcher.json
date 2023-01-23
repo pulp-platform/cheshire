@@ -1,0 +1,15 @@
+{
+  "problemMatcher": [
+    {
+      "owner": "license-checker-matcher",
+      "pattern": [
+        {
+          "regexp": "^ERROR: (.+):(\\d+)(.*)$",
+          "file": 1,
+          "line": 2,
+          "message": 3
+        }
+      ]
+    }
+  ]
+}
