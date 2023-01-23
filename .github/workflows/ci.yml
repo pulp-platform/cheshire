@@ -16,7 +16,6 @@ on:
 jobs:
 
   check-license:
-    name: Check license
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -37,8 +36,18 @@ jobs:
         bash -c "set -e; .github/misc-linters/licence-checker/licence-checker.py --config .github/license-checker.hjson"
         echo "::remove-matcher owner=license-checker-matcher::"
 
+  lint-verilog:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: chipsalliance/verible-linter-action@main
+      with:
+        paths: hw
+        extra_args: ".github/verible.waiver"
+        fail_on_error: true
+        reviewdog_reporter: github-check
+
   check-hw:
-    name: Check hardware build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -47,3 +56,4 @@ jobs:
         run: make hw-all
       - name: Check whether clean
         run: git status && test -z "$(git status --porcelain)"
+
