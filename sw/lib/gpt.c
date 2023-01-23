@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Authors:
-// - Nicole Narr <narrn@ethz.ch>
-// - Christopher Reinwardt <creinwar@ethz.ch>
+// Nicole Narr <narrn@student.ethz.ch>
+// Christopher Reinwardt <creinwar@student.ethz.ch>
 // Date:   05.12.2022
 
 #include <stddef.h>
