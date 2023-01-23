@@ -21,7 +21,7 @@ module cheshire_bootrom #(
     input  logic [AddrWidth-1:0] addr_i,
     output logic [DataWidth-1:0] data_o
 );
-    localparam NumWords   = 4096;
+    localparam unsigned NumWords = 4096;
     logic [$clog2(NumWords)-1:0] word;
 
     assign word = addr_i / (DataWidth / 8);

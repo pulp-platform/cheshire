@@ -5,3 +5,5 @@
 # Auto-generated configuration registers are waived
 waive --rule=typedef-structs-unions --location="hw/regs/*"
 waive --rule=line-length --location="hw/regs/*"
+# Package contains long lines
+waive --rule=line-length --location="hw/cheshire_pkg.sv"

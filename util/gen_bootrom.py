@@ -119,7 +119,7 @@ module {module_name} #(
     input  logic [AddrWidth-1:0] addr_i,
     output logic [DataWidth-1:0] data_o
 );
-    localparam NumWords   = {num_words};
+    localparam unsigned NumWords = {num_words};
     logic [$clog2(NumWords)-1:0] word;
 
     assign word = addr_i / (DataWidth / 8);
