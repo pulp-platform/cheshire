@@ -14,9 +14,9 @@ PLICOPT      = -s 20 -t 2 -p 7
 VLOG_ARGS   ?= ""
 VSIM        ?= vsim
 
-.PHONY: all sw-all hw-all sim-compile-all sim-run-all xilinx-all
+.PHONY: all sw-all hw-all sim-all xilinx-all
 
-all: nonfree-all sw-all hw-all sim-compile-all sim-run-all xilinx-all
+all: sw-all hw-all sim-all xilinx-all
 
 ############
 # Build SW #
@@ -59,38 +59,13 @@ target/sim/vsim/compile.cheshire_soc.tcl: Bender.yml
 	$(BENDER) script vsim -t sim -t cv64a6_imafdc_sv39 -t test -t cva6 --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CURDIR)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
-sim-compile-all: target/sim/vsim/compile.cheshire_soc.tcl
-	cd target/sim/vsim; \
-	$(VSIM) -c -do "compile.cheshire_soc.tcl" \
-	-do quit
-
-sim-run-all: target/sim/vsim/start.cheshire_soc.tcl
-	cd target/sim/vsim; \
-	$(VSIM) -c \
-	-do "set BINARY ../../../sw/tests/$(BINARY)" \
-	-do "start.cheshire_soc.tcl" \
-	-do "run -all" \
-	-do quit
+sim-all: target/sim/vsim/compile.cheshire_soc.tcl
 
 #############
 # FPGA Flow #
 #############
 
-xilinx-srcs: target/xilinx/scripts/add_sources.tcl
 target/xilinx/scripts/add_sources.tcl: Bender.yml
 	$(BENDER) script vivado -t fpga -t cv64a6_imafdc_sv39 -t cva6 > $@
 
-xilinx-implementation: xilinx-srcs
-	$(MAKE) -C target/xilinx
-
-xilinx-all: xilinx-srcs xilinx-implementation
-
-xilinx-clean:
-	$(MAKE) -C target/xilinx clean
-
-####################
-# License Checking #
-####################
-
-licence-check: ./util/licence-checker.hjson
-	$(PYTHON) util/lowrisc_misc-linters/licence-checker/licence-checker.py -v --config $<
+xilinx-all: target/xilinx/scripts/add_sources.tcl
