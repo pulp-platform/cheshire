@@ -24,7 +24,9 @@ jobs:
       with:
         python-version: 3.9
     - name: Install Python requirements
-      run: pip install -r requirements.txt
+      run: |
+        cd .github
+        pip install -r requirements.txt
     - name: Intall license linter
       run: |
         cd .github
