@@ -34,8 +34,8 @@ sources:
 
   - target: any(simulation, test)
     files:
-      - nonfree/target/sim/models/spi/S25fs512s/model/s25fs512s.v
-      - nonfree/target/sim/models/i2c/M24FC1025.v
+      - target/sim/models/spi/S25fs512s/model/s25fs512s.v
+      - target/sim/models/i2c/M24FC1025.v
       - target/sim/models/uart_tb_rx.sv
       - target/sim/src/fixture_cheshire_soc.sv
       - target/sim/src/tb_cheshire_soc.sv

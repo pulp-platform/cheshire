@@ -11,7 +11,7 @@ PYTHON3     ?= python3
 REGGEN      ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
 
 PLICOPT      = -s 20 -t 2 -p 7
-VLOG_ARGS   ?= ""
+VLOG_ARGS   ?= -suppress 2583 -suppress 13314
 VSIM        ?= vsim
 
 .PHONY: all sw-all hw-all sim-all xilinx-all
@@ -32,9 +32,21 @@ include sw/sw.mk
 hw/regs/cheshire_reg_pkg.sv hw/regs/cheshire_reg_top.sv: hw/regs/cheshire_regs.hjson
 	$(REGGEN) -r $< --outdir $(dir $@)
 
+# CLINT
+include $(shell $(BENDER) path clint)/clint.mk
+$(shell $(BENDER) path clint)/.generated: Bender.yml
+	$(MAKE) clint
+	touch $@
+
+# OpenTitan peripherals
+include $(shell $(BENDER) path opentitan_peripherals)/otp.mk
+$(shell $(BENDER) path opentitan_peripherals)/.generated: Bender.yml
+	$(MAKE) otp
+	touch $@
+
 # Custom serial link
-$(shell $(BENDER) path serial_link)/src/regs/.generated: hw/serial_link.hjson
-	cp $< $(dir $@)/serial_link_single_channel.hjson
+$(shell $(BENDER) path serial_link)/.generated: hw/serial_link.hjson
+	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
 	$(MAKE) -C $(shell $(BENDER) path serial_link) update-regs
 	touch $@
 
@@ -48,7 +60,9 @@ hw/bootrom/cheshire_bootrom.sv: hw/bootrom/cheshire_bootrom.bin util/gen_bootrom
 	$(PYTHON3) util/gen_bootrom.py --sv-module cheshire_bootrom $< > $@
 
 hw-all: hw/regs/cheshire_reg_pkg.sv hw/regs/cheshire_reg_top.sv
-hw-all: $(shell $(BENDER) path serial_link)/src/regs/.generated
+hw-all: $(shell $(BENDER) path clint)/.generated
+hw-all: $(shell $(BENDER) path opentitan_peripherals)/.generated
+hw-all: $(shell $(BENDER) path serial_link)/.generated
 hw-all: hw/bootrom/cheshire_bootrom.sv
 
 ##############

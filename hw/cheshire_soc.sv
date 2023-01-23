@@ -497,9 +497,9 @@ module cheshire_soc import cheshire_pkg::*; #(
   if(CheshireCfg.Vga) begin : gen_vga
 
     axi_vga #(
-      .RedWidth       ( CheshireCfg.VGARedWidth   ),
-      .GreenWidth     ( CheshireCfg.VGAGreenWidth ),
-      .BlueWidth      ( CheshireCfg.VGABlueWidth  ),
+      .RedWidth       ( CheshireCfg.VgaRedWidth   ),
+      .GreenWidth     ( CheshireCfg.VgaGreenWidth ),
+      .BlueWidth      ( CheshireCfg.VgaBlueWidth  ),
       .HCountWidth    ( 32                        ),
       .VCountWidth    ( 32                        ),
       .AXIAddrWidth   ( AxiAddrWidth              ),
@@ -722,7 +722,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .conf_resp_o         ( regbus_out_rsp[RegbusOutLlc]               ),
     .cached_start_addr_i ( AxiXbarAddrmap[AxiXbarOutLlc+1].start_addr ),
     .cached_end_addr_i   ( AxiXbarAddrmap[AxiXbarOutLlc+1].end_addr   ),
-    .spm_start_addr_i    ( AxiXbarAddrmap[AxiXbarOutLlc].start_addr   )
+    .spm_start_addr_i    ( AxiXbarAddrmap[AxiXbarOutLlc].start_addr   ),
+    .axi_llc_events_o    ( /* TODO: connect me to CSRs? */            )
   );
 
   //////////

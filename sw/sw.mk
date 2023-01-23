@@ -81,11 +81,10 @@ $$(SW_DIR)/include/$(1).h: $(2)
 endef
 
 OT_PERI_DIR = $(shell $(BENDER) path opentitan_peripherals)
-include $(OT_PERI_DIR)/otp.mk
 
-$(eval $(call hdr_gen_rule,i2c_regs,$(OT_PERI_DIR)/src/i2c/data/i2c.hjson))
-$(eval $(call hdr_gen_rule,spi_regs,$(OT_PERI_DIR)/src/spi_host/data/spi_host.hjson))
-$(eval $(call hdr_gen_rule,serial_link_regs,$(TOP_DIR)/hw/serial_link.hjson))
+$(eval $(call hdr_gen_rule,i2c_regs,$(OT_PERI_DIR)/src/i2c/data/i2c.hjson $(OT_PERI_DIR)/.generated))
+$(eval $(call hdr_gen_rule,spi_regs,$(OT_PERI_DIR)/src/spi_host/data/spi_host.hjson $(OT_PERI_DIR)/.generated))
+$(eval $(call hdr_gen_rule,serial_link_regs,$(TOP_DIR)/hw/serial_link.hjson $(shell bender path serial_link)/.generated))
 $(eval $(call hdr_gen_rule,cheshire_regs,$(TOP_DIR)/hw/regs/cheshire_regs.hjson))
 
 sw-headers: $(GEN_HDRS)

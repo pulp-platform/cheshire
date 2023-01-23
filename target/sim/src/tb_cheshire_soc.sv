@@ -31,7 +31,7 @@ module tb_cheshire_soc;
       
     end else begin
       // If no ELF file is provided jump to the beginning of the SPM
-      entry = cheshire_pkg::SPM_BASE;
+      entry = cheshire_pkg::SpmBase;
     end
 
     fix.jtag_init();
@@ -50,7 +50,7 @@ module tb_cheshire_soc;
     fix.jtag_run(entry);
 
     // Wait for the application to write the return value to the first scratch register
-    fix.jtag_wait_for_eoc(cheshire_pkg::SCRATCH_REGS_BASE + 64'h4);
+    fix.jtag_wait_for_eoc(cheshire_pkg::ScratchRegsBase + 64'h4);
 
     $finish;
   end

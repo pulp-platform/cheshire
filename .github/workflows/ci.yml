@@ -36,7 +36,7 @@ jobs:
         bash -c "set -e; .github/misc-linters/licence-checker/licence-checker.py --config .github/license-checker.hjson"
         echo "::remove-matcher owner=license-checker-matcher::"
 
-  lint-verilog:
+  lint-sv:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -48,7 +48,27 @@ jobs:
         fail_on_error: true
         reviewdog_reporter: github-check
 
-  check-hw:
+  lint-cxx:
+    name: C/C++ Sources
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: DoozyX/clang-format-lint-action@v0.14
+      with:
+        extensions: 'c,h,cpp'
+        clangFormatVersion: 14
+
+  build-sw:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: './.github/actions/setup-env'
+      - name: Build hardware
+        run: make sw-all
+      - name: Check whether clean
+        run: git status && test -z "$(git status --porcelain)"
+
+  build-hw:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

@@ -72,12 +72,12 @@ package cheshire_pkg;
   /// Address map of the AXI X-Bar
   /// NUM_OUTPUT rules + 1 additional for LLC (SPM and DRAM)
   localparam address_rule_48_t [AxiXbarNumOutputs:0] AxiXbarAddrmap = '{
-    '{ idx:AxiXbarOutSerialLink,  start_addr: 48'h100000000000, end_addr: 48'h200000000000},
-    '{ idx:AxiXbarOutLlc,         start_addr: 48'h000080000000, end_addr: 48'h000100000000},
-    '{ idx:AxiXbarOutLlc,         start_addr: 48'h000070000000, end_addr: 48'h000070020000},
-    '{ idx:AxiXbarOutDmaConf,     start_addr: 48'h000060000000, end_addr: 48'h000060001000},
-    '{ idx:AxiXbarOutRegbus,      start_addr: 48'h000001000000, end_addr: 48'h000060000000},
-    '{ idx:AxiXbarOutDebug,       start_addr: 48'h000000000000, end_addr: 48'h000000001000}
+    '{ idx: AxiXbarOutSerialLink,  start_addr: 48'h100000000000, end_addr: 48'h200000000000},
+    '{ idx: AxiXbarOutLlc,         start_addr: 48'h000080000000, end_addr: 48'h000100000000},
+    '{ idx: AxiXbarOutLlc,         start_addr: 48'h000070000000, end_addr: 48'h000070020000},
+    '{ idx: AxiXbarOutDmaConf,     start_addr: 48'h000060000000, end_addr: 48'h000060001000},
+    '{ idx: AxiXbarOutRegbus,      start_addr: 48'h000001000000, end_addr: 48'h000060000000},
+    '{ idx: AxiXbarOutDebug,       start_addr: 48'h000000000000, end_addr: 48'h000000001000}
   };
 
   /// Inputs of the Regbus Demux
@@ -208,8 +208,8 @@ package cheshire_pkg;
   localparam logic [31:0] IDCode = (dm::DbgVersion013 << 28) | (PartNum << 12) | 32'h1;
 
   /// Testbench start adresses
-  localparam logic [47:0] SpmBase = axi_xbar_addrmap[AxiXbarOutLlc].start_addr;
-  localparam logic [47:0] ScratchRegsBase = regbus_addrmap[RegbusOutCsr].start_addr;
+  localparam logic [47:0] SpmBase = AxiXbarAddrmap[AxiXbarOutLlc].start_addr;
+  localparam logic [47:0] ScratchRegsBase = RegbusAddrmap[RegbusOutCsr].start_addr;
 
   /// Cheshire Config
   /// Can be used to exclude parts of the system
@@ -222,11 +222,11 @@ package cheshire_pkg;
     bit Dram;
     bit Vga;
     /// Width of the VGA red channel, ignored if VGA set to 0
-    logic [31:0] VGARedWidth;
+    logic [31:0] VgaRedWidth;
     /// Width of the VGA green channel, ignored if VGA set to 0
-    logic [31:0] VGAGreenWidth;
+    logic [31:0] VgaGreenWidth;
     /// Width of the VGA blue channel, ignored if VGA set to 0
-    logic [31:0] VGABlueWidth;
+    logic [31:0] VgaBlueWidth;
     /// The Clock frequency after coming out of reset
     logic [31:0] ResetFreq;
   } cheshire_cfg_t;
