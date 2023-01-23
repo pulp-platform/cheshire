@@ -59,4 +59,4 @@ test_addr_t test_addresses[] = {
 };
 // clang-format on
 
-unsigned int test_addresses_length = sizeof(test_addresses)/sizeof(test_addr_t);
+unsigned int test_addresses_length = sizeof(test_addresses) / sizeof(test_addr_t);

@@ -8,12 +8,11 @@
 
 #include <stddef.h>
 
-#include "sd.h"
-#include "printf.h"
 #include "gpt.h"
+#include "printf.h"
+#include "sd.h"
 
-int gpt_info(opentitan_qspi_t *spi)
-{
+int gpt_info(opentitan_qspi_t *spi) {
     // Ignore LBA0
     // Load LBA1
     size_t block_size = 512;
@@ -44,20 +43,20 @@ int gpt_info(opentitan_qspi_t *spi)
     // Copy partition entries
     ret = sd_copy_blocks(spi, gpt_header->partition_entry_lba, lba2_buf, 1);
 
-    if (ret != 0){
+    if (ret != 0) {
         printf("SD card copy of partition entries failed!\r\n");
         return ret;
     }
 
-    for (int i = 0; i < 4; i++){
+    for (int i = 0; i < 4; i++) {
         partition_entry_t *part_entry = (partition_entry_t *)(lba2_buf + (i * 128));
         printf("GPT partition entry %d\r\n", i);
-        //printf("\tpartition type guid:\t");
-        //for (int j = 0; j < 16; j++)
+        // printf("\tpartition type guid:\t");
+        // for (int j = 0; j < 16; j++)
         //    printf("%i", part_entry->partition_type_guid[j]);
-        //printf("\r\n");
-        //printf("\tpartition guid:     \t");
-        //for (int j = 0; j < 16; j++)
+        // printf("\r\n");
+        // printf("\tpartition guid:     \t");
+        // for (int j = 0; j < 16; j++)
         //    printf("%", part_entry->partition_guid[j]);
         printf("\tfirst lba:\t 0x%lx\r\n", part_entry->starting_lba);
         printf("\tlast lba:\t 0x%lx\r\n", part_entry->ending_lba);
@@ -69,11 +68,9 @@ int gpt_info(opentitan_qspi_t *spi)
     }
 
     return 0;
-
 }
 
-int gpt_find_partition(opentitan_qspi_t *spi, unsigned int part, unsigned int *start_lba)
-{
+int gpt_find_partition(opentitan_qspi_t *spi, unsigned int part, unsigned int *start_lba) {
     // Ignore LBA0
     // Load LBA1
     size_t block_size = 512;
@@ -93,7 +90,7 @@ int gpt_find_partition(opentitan_qspi_t *spi, unsigned int part, unsigned int *s
     // Copy partition entries
     ret = sd_copy_blocks(spi, gpt_header->partition_entry_lba, lba2_buf, 1);
 
-    if (ret != 0){
+    if (ret != 0) {
         printf("SD card copy of partition entries failed!\r\n");
         return ret;
     }
@@ -103,5 +100,4 @@ int gpt_find_partition(opentitan_qspi_t *spi, unsigned int part, unsigned int *s
     *start_lba = part_entry->starting_lba;
 
     return 0;
-
 }

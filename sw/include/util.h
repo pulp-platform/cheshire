@@ -10,4 +10,6 @@
 
 #define OPT_O3 __attribute__((optimize("03")))
 
-#define CHECK_ELSE_TRAP(call, code) if ((call) != (code)) asm volatile("addi a0, x0, -3\n j _exit"::: "a0");
+#define CHECK_ELSE_TRAP(call, code) \
+    if ((call) != (code)) \
+        asm volatile("addi a0, x0, -3\n j _exit" ::: "a0");

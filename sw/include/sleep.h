@@ -11,7 +11,7 @@
 
 extern void *__base_clint;
 
-#define CLINT(offset) *((volatile unsigned long int *) (((unsigned long int) &__base_clint) + (offset)))
+#define CLINT(offset) *((volatile unsigned long int *)(((unsigned long int)&__base_clint) + (offset)))
 
 // Setup a timer interrupt and enter sleep mode until it expires
 void sleep(unsigned long int us);

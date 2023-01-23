@@ -12,14 +12,14 @@
 #define SD_R1b_TIMEOUT 10000
 
 typedef enum {
-  SD_RESP_R1 = 0,
-  SD_RESP_R1b,
-  SD_RESP_R2,
-  SD_RESP_R3,
-  SD_RESP_R4,
-  SD_RESP_R5,
-  SD_RESP_UNUSED,
-  SD_RESP_R7
+    SD_RESP_R1 = 0,
+    SD_RESP_R1b,
+    SD_RESP_R2,
+    SD_RESP_R3,
+    SD_RESP_R4,
+    SD_RESP_R5,
+    SD_RESP_UNUSED,
+    SD_RESP_R7
 } sd_resp_t;
 
 int sd_init(opentitan_qspi_t *spi);
