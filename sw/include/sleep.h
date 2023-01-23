@@ -5,16 +5,13 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 
-#ifndef SLEEP_H_
-#define SLEEP_H_
+#pragma once
 
 #define RTC_CLK_PER_US 1
 
 extern void *__base_clint;
 
-#define CLINT(offset) *((volatile unsigned long int *) (((unsigned long int) &__base_clint) + (offset)))
+#define CLINT(offset) *((volatile unsigned long int *)(((unsigned long int)&__base_clint) + (offset)))
 
 // Setup a timer interrupt and enter sleep mode until it expires
 void sleep(unsigned long int us);
-
-#endif
