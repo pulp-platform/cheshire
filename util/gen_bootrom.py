@@ -83,7 +83,7 @@ def format_binary(binary):
     words = list(enumerate(chunks(binary, 4)))
     num_words = len(words)
     return num_words, ";\n            ".join(
-        ("    {:03}: data_o = 32'h{} /* 0x{:04x} */".format(
+        ("{:03}: data_o = 32'h{} /* 0x{:04x} */".format(
             i, format_word_hex(x), i * 4) for i, x in words))
 
 
