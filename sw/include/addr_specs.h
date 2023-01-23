@@ -5,6 +5,8 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 
+#pragma once
+
 typedef struct {
     void *addr;    // 64 bit address
     int length;    // Length of "memory" region in bytes
@@ -28,6 +30,7 @@ extern void *__base_dma_conf;
 extern void *__base_spm;
 extern void *__base_dram;
 
+// clang-format off
 test_addr_t test_addresses[] = {
    {(void *) &__base_bootrom        + 0x00000000, 16, 64,  8, 2}, // Boot Rom lower 16 bytes
    {(void *) &__base_bootrom        + 0x0001FFF0, 16, 64,  8, 2}, // Boot Rom upper 16 bytes
@@ -54,5 +57,6 @@ test_addr_t test_addresses[] = {
    {(void *) &__base_spm            + 0x0000FFF0, 16, 64,  8, 3}, // SPM middle 16 bytes - hopefully out of the way of the stack and the code
    {(void *) &__base_dram           + 0x00000000, 0x1000000, 64, 8, 3}, // FPGA 1 GiB DRAM
 };
+// clang-format on
 
 unsigned int test_addresses_length = sizeof(test_addresses)/sizeof(test_addr_t);

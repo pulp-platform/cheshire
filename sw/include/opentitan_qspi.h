@@ -5,8 +5,7 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 
-#ifndef OPENTITAN_QSPI_H_
-#define OPENTITAN_QSPI_H_
+#pragma once
 
 #define MIN(a,b) ((a <= b) ? a : b)
 
@@ -65,5 +64,3 @@ int opentitan_qspi_xfer(opentitan_qspi_t *priv, unsigned int bitlen,
 int opentitan_qspi_set_speed(opentitan_qspi_t *priv, unsigned int speed);
 
 int opentitan_qspi_set_mode(opentitan_qspi_t *priv, unsigned int mode);
-
-#endif //OPENTITAN_QSPI_H_

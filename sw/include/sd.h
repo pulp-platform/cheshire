@@ -5,8 +5,7 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 
-#ifndef SD_H_
-#define SD_H_
+#pragma once
 
 #include "opentitan_qspi.h"
 
@@ -26,5 +25,3 @@ typedef enum {
 int sd_init(opentitan_qspi_t *spi);
 
 int sd_copy_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_addr, unsigned int num_blocks);
-
-#endif

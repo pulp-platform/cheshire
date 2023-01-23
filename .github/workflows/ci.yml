@@ -49,7 +49,6 @@ jobs:
         reviewdog_reporter: github-check
 
   lint-cxx:
-    name: C/C++ Sources
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -57,6 +56,12 @@ jobs:
       with:
         extensions: 'c,h,cpp'
         clangFormatVersion: 14
+        style: '{IndentWidth: 4, ColumnLimit: 120, AlignEscapedNewlines: DontAlign}'
+        exclude: |
+          cheshire_regs.h
+          i2c_regs.h
+          serial_link_regs.h
+          spi_regs.h
 
   build-sw:
     runs-on: ubuntu-latest
