@@ -8,9 +8,9 @@ name: ci
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, rc, initial-neo-port ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, rc, initial-neo-port ]
   workflow_dispatch:
 
 jobs:
