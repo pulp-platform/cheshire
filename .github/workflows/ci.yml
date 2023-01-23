@@ -1,0 +1,36 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Author: Paul Scheffler <paulsc@iis.ee.ethz.ch>
+
+name: ci
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+
+  check-license:
+    name: Check license
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Install Python requirements
+      run: pip install -r requirements.txt
+    - name: Intall license linter
+      run: |
+        cd .github
+        git clone https://github.com/lowRISC/misc-linters.git
+    - name: Check license
+      run: |
+        echo "::add-matcher::.github/license-checker-matcher.json"
+        bash -c "set -e; .github/misc-linters/licence-checker/licence-checker.py --config .github/license-checker.hjson"
+        echo "::remove-matcher owner=license-checker-matcher::"
