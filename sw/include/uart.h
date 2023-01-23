@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 extern void *__base_uart;
-#define UART_BASE ((uintptr_t)(void*) &__base_uart)
+#define UART_BASE ((uintptr_t)(void *)&__base_uart)
 
 #define UART_RBR UART_BASE + 0
 #define UART_THR UART_BASE + 0
@@ -23,7 +23,7 @@ extern void *__base_uart;
 
 void init_uart();
 
-void print_uart(const char* str);
+void print_uart(const char *str);
 
 void print_uart_int(uint32_t addr);
 

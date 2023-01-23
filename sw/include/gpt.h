@@ -7,14 +7,14 @@
 
 #pragma once
 
+#include "opentitan_qspi.h"
 #include <stdint.h>
 
 // LBA 0: Protective MBR
 // ignored here
 
 // Partition Table Header (LBA 1)
-typedef struct gpt_header
-{
+typedef struct gpt_header {
     uint64_t signature;
     uint32_t revision;
     uint32_t header_size; //! little endian, usually 0x5c = 92
@@ -32,8 +32,7 @@ typedef struct gpt_header
 } gpt_header_t;
 
 // Partition Entries (LBA 2-33)
-typedef struct partition_entry
-{
+typedef struct partition_entry {
     uint8_t partition_type_guid[16];
     uint8_t partition_guid[16];
     uint64_t starting_lba;

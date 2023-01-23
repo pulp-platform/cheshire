@@ -4,6 +4,3 @@
 [submodule "sw/deps/opentitan"]
 	path = sw/deps/opentitan
 	url = https://github.com/lowrisc/opentitan
-[submodule "sw/cva6-sdk"]
-	path = sw/cva6-sdk
-	url = git@github.com:pulp-platform/cva6-sdk.git

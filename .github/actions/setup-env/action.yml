@@ -1,0 +1,30 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Author: Paul Scheffler <paulsc@iis.ee.ethz.ch>
+
+name: Set up environment
+
+runs:
+  using: composite
+  steps:
+
+  - name: Install RISC-V GCC toolchain
+    run: |
+      curl -Ls -o riscv-gcc.tar.gz https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-${RISCV_GCC_VERSION}-x86_64-linux-ubuntu14.tar.gz
+      sudo mkdir -p /tools/riscv && sudo chmod 777 /tools/riscv
+      tar -C /tools/riscv -xf riscv-gcc.tar.gz --strip-components=1
+      echo "PATH=$PATH:/tools/riscv/bin" >> ${GITHUB_ENV}
+    env:
+      RISCV_GCC_VERSION: 8.3.0-2020.04.0
+    shell: bash
+
+  - name: Install Bender
+    run: |
+      sudo mkdir -p /tools/bender && sudo chmod 777 /tools/bender
+      cd /tools/bender && curl --proto '=https' --tlsv1.2 -sSf https://pulp-platform.github.io/bender/init | bash -s -- ${BENDER_VERSION}
+      echo "PATH=$PATH:/tools/bender" >> ${GITHUB_ENV}
+    env:
+      BENDER_VERSION: 0.27.0
+    shell: bash

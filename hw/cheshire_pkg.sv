@@ -15,47 +15,47 @@ package cheshire_pkg;
 
   /// Inputs of X-Bar
   typedef enum int {
-    AXI_XBAR_IN_CVA6,
-    AXI_XBAR_IN_DEBUG,
-    AXI_XBAR_IN_DDR_LINK,
-    AXI_XBAR_IN_VGA,
-    AXI_XBAR_IN_DMA,
-    AXI_XBAR_NUM_INPUTS
+    AxiXbarInCva6,
+    AxiXbarInDebug,
+    AxiXbarInSerialLink,
+    AxiXbarInVga,
+    AxiXbarInDma,
+    AxiXbarNumInputs
   } axi_xbar_inputs_e;
 
   /// Outputs of X-Bar
   typedef enum int {
-    AXI_XBAR_OUT_DEBUG,
-    AXI_XBAR_OUT_REGBUS,
-    AXI_XBAR_OUT_DMA_CONF,
-    AXI_XBAR_OUT_LLC,
-    AXI_XBAR_OUT_DDR_LINK,
-    AXI_XBAR_NUM_OUTPUTS
+    AxiXbarOutDebug,
+    AxiXbarOutRegbus,
+    AxiXbarOutDmaConf,
+    AxiXbarOutLlc,
+    AxiXbarOutSerialLink,
+    AxiXbarNumOutputs
   } axi_xbar_outputs_e;
 
   /// Parameters for AXI types
-  localparam int unsigned AXI_ADDR_WIDTH           = 48;
-  localparam int unsigned AXI_DATA_WIDTH           = 64;
-  localparam int unsigned AXI_USER_WIDTH           = 1;
-  localparam int unsigned AXI_STRB_WIDTH           = AXI_DATA_WIDTH/8;  // Using byte strobes
+  localparam int unsigned AxiAddrWidth = 48;
+  localparam int unsigned AxiDataWidth = 64;
+  localparam int unsigned AxiUserWidth = 1;
+  localparam int unsigned AxiStrbWidth = AxiDataWidth/8;  // Using byte strobes
 
-  localparam int unsigned AXI_XBAR_MASTER_ID_WIDTH = 2;
-  localparam int unsigned AXI_XBAR_SLAVE_ID_WIDTH  = AXI_XBAR_MASTER_ID_WIDTH + $clog2(AXI_XBAR_NUM_INPUTS); 
+  localparam int unsigned AxiXbarMasterIdWidth = 2;
+  localparam int unsigned AxiXbarSlaveIdWidth  = AxiXbarMasterIdWidth + $clog2(AxiXbarNumInputs);
 
-  localparam int unsigned AXI_XBAR_COMBS           = AXI_XBAR_NUM_INPUTS * AXI_XBAR_NUM_OUTPUTS;
-  localparam logic [AXI_XBAR_COMBS-1:0] AXI_XBAR_CONNECTIVITY = {AXI_XBAR_COMBS{1'b1}};
+  localparam int unsigned AxiXbarCombs = AxiXbarNumInputs * AxiXbarNumOutputs;
+  localparam logic [AxiXbarCombs-1:0] AxiXbarConnectivity = {AxiXbarCombs{1'b1}};
 
   /// Configuration struct of X-Bar
-  localparam axi_pkg::xbar_cfg_t axi_xbar_cfg = '{
-    NoSlvPorts:         AXI_XBAR_NUM_INPUTS,
-    NoMstPorts:         AXI_XBAR_NUM_OUTPUTS,
+  localparam axi_pkg::xbar_cfg_t AxiXbarCfg = '{
+    NoSlvPorts:         AxiXbarNumInputs,
+    NoMstPorts:         AxiXbarNumOutputs,
     MaxMstTrans:        12,
     MaxSlvTrans:        12,
     FallThrough:        0,
     LatencyMode:        axi_pkg::CUT_ALL_PORTS,
     PipelineStages:     1,
-    AxiIdWidthSlvPorts: AXI_XBAR_MASTER_ID_WIDTH,
-    AxiIdUsedSlvPorts:  AXI_XBAR_MASTER_ID_WIDTH,
+    AxiIdWidthSlvPorts: AxiXbarMasterIdWidth,
+    AxiIdUsedSlvPorts:  AxiXbarMasterIdWidth,
     UniqueIds:          0,
     AxiAddrWidth:       48,
     AxiDataWidth:       64,
@@ -71,50 +71,50 @@ package cheshire_pkg;
 
   /// Address map of the AXI X-Bar
   /// NUM_OUTPUT rules + 1 additional for LLC (SPM and DRAM)
-  localparam address_rule_48_t [AXI_XBAR_NUM_OUTPUTS:0] axi_xbar_addrmap = '{
-    '{ idx: AXI_XBAR_OUT_DDR_LINK,      start_addr: 48'h100000000000, end_addr: 48'h200000000000},
-    '{ idx: AXI_XBAR_OUT_LLC,           start_addr: 48'h000080000000, end_addr: 48'h000100000000},
-    '{ idx: AXI_XBAR_OUT_LLC,           start_addr: 48'h000070000000, end_addr: 48'h000070020000},
-    '{ idx: AXI_XBAR_OUT_DMA_CONF,      start_addr: 48'h000060000000, end_addr: 48'h000060001000},
-    '{ idx: AXI_XBAR_OUT_REGBUS,        start_addr: 48'h000001000000, end_addr: 48'h000060000000},
-    '{ idx: AXI_XBAR_OUT_DEBUG,         start_addr: 48'h000000000000, end_addr: 48'h000000001000}
+  localparam address_rule_48_t [AxiXbarNumOutputs:0] AxiXbarAddrmap = '{
+    '{ idx: AxiXbarOutSerialLink,  start_addr: 48'h100000000000, end_addr: 48'h200000000000},
+    '{ idx: AxiXbarOutLlc,         start_addr: 48'h000080000000, end_addr: 48'h000100000000},
+    '{ idx: AxiXbarOutLlc,         start_addr: 48'h000070000000, end_addr: 48'h000070020000},
+    '{ idx: AxiXbarOutDmaConf,     start_addr: 48'h000060000000, end_addr: 48'h000060001000},
+    '{ idx: AxiXbarOutRegbus,      start_addr: 48'h000001000000, end_addr: 48'h000060000000},
+    '{ idx: AxiXbarOutDebug,       start_addr: 48'h000000000000, end_addr: 48'h000000001000}
   };
 
   /// Inputs of the Regbus Demux
   typedef enum int {
-    REGBUS_IN_XBAR,
-    REGBUS_NUM_INPUTS
+    RegbusInXbar,
+    RegbusNumInputs
   } regbus_inputs_e;
 
   /// Outputs of the Regbus Demux
   typedef enum int {
-    REGBUS_OUT_BOOTROM,
-    REGBUS_OUT_CSR,
-    REGBUS_OUT_LLC,
-    REGBUS_OUT_DDR_LINK,
-    REGBUS_OUT_UART,
-    REGBUS_OUT_I2C,
-    REGBUS_OUT_SPIM,
-    REGBUS_OUT_VGA,
-    REGBUS_OUT_CLINT,
-    REGBUS_OUT_PLIC,
-    REGBUS_OUT_EXTERNAL,
-    REGBUS_NUM_OUTPUTS
+    RegbusOutBootrom,
+    RegbusOutCsr,
+    RegbusOutLlc,
+    RegbusOutSerialLink,
+    RegbusOutUart,
+    RegbusOutI2c,
+    RegbusOutSpim,
+    RegbusOutVga,
+    RegbusOutClint,
+    RegbusOutPlic,
+    RegbusOutExternal,
+    RegbusNumOutputs
   } regbus_outputs_e;
 
   /// Address map of the Regbus Demux
-  localparam address_rule_48_t [REGBUS_NUM_OUTPUTS-1:0] regbus_addrmap = '{
-    '{ idx: REGBUS_OUT_EXTERNAL, start_addr: 48'h10000000, end_addr: 48'h60000000 },  // EXTERNAL  - 1.25 GiB
-    '{ idx: REGBUS_OUT_PLIC,     start_addr: 48'h0c000000, end_addr: 48'h10000000 },  // PLIC      -   64 MiB 
-    '{ idx: REGBUS_OUT_CLINT,    start_addr: 48'h04000000, end_addr: 48'h04100000 },  // CLINT     -    1 MiB
-    '{ idx: REGBUS_OUT_VGA,      start_addr: 48'h02006000, end_addr: 48'h02007000 },  // VGA       -    4 KiB
-    '{ idx: REGBUS_OUT_SPIM,     start_addr: 48'h02005000, end_addr: 48'h02006000 },  // SPIM      -    4 KiB
-    '{ idx: REGBUS_OUT_I2C,      start_addr: 48'h02004000, end_addr: 48'h02005000 },  // I2C       -    4 KiB
-    '{ idx: REGBUS_OUT_UART,     start_addr: 48'h02003000, end_addr: 48'h02004000 },  // UART      -    4 KiB
-    '{ idx: REGBUS_OUT_DDR_LINK, start_addr: 48'h02002000, end_addr: 48'h02003000 },  // DDR Link  -    4 KiB
-    '{ idx: REGBUS_OUT_LLC,      start_addr: 48'h02001000, end_addr: 48'h02002000 },  // LLC       -    4 KiB
-    '{ idx: REGBUS_OUT_CSR,      start_addr: 48'h02000000, end_addr: 48'h02001000 },  // CSR       -    4 KiB
-    '{ idx: REGBUS_OUT_BOOTROM,  start_addr: 48'h01000000, end_addr: 48'h01020000 }   // Bootrom   -  128 KiB
+  localparam address_rule_48_t [RegbusNumOutputs-1:0] RegbusAddrmap = '{
+    '{ idx: RegbusOutExternal,    start_addr: 48'h10000000, end_addr: 48'h60000000 },  // EXTERNAL    - 1.25 GiB
+    '{ idx: RegbusOutPlic,        start_addr: 48'h0c000000, end_addr: 48'h10000000 },  // PLIC        -   64 MiB
+    '{ idx: RegbusOutClint,       start_addr: 48'h04000000, end_addr: 48'h04100000 },  // CLINT       -    1 MiB
+    '{ idx: RegbusOutVga,         start_addr: 48'h02006000, end_addr: 48'h02007000 },  // VGA         -    4 KiB
+    '{ idx: RegbusOutSpim,        start_addr: 48'h02005000, end_addr: 48'h02006000 },  // SPIM        -    4 KiB
+    '{ idx: RegbusOutI2c,         start_addr: 48'h02004000, end_addr: 48'h02005000 },  // I2C         -    4 KiB
+    '{ idx: RegbusOutUart,        start_addr: 48'h02003000, end_addr: 48'h02004000 },  // UART        -    4 KiB
+    '{ idx: RegbusOutSerialLink,  start_addr: 48'h02002000, end_addr: 48'h02003000 },  // Serial Link -    4 KiB
+    '{ idx: RegbusOutLlc,         start_addr: 48'h02001000, end_addr: 48'h02002000 },  // LLC         -    4 KiB
+    '{ idx: RegbusOutCsr,         start_addr: 48'h02000000, end_addr: 48'h02001000 },  // CSR         -    4 KiB
+    '{ idx: RegbusOutBootrom,     start_addr: 48'h01000000, end_addr: 48'h01020000 }   // Bootrom     -  128 KiB
   };
 
   /// Type definitions
@@ -126,20 +126,20 @@ package cheshire_pkg;
   `REG_BUS_TYPEDEF_ALL(reg_a48_d64, logic [47:0], logic [63:0], logic [7:0])
 
   /// AXI bus with 48 bit address and 64 bit data
-  `AXI_TYPEDEF_ALL(axi_a48_d64_mst_u0, logic [47:0], logic [AXI_XBAR_MASTER_ID_WIDTH-1:0], logic [63:0], logic [7:0], logic [0:0])
-  `AXI_TYPEDEF_ALL(axi_a48_d64_slv_u0, logic [47:0], logic [AXI_XBAR_SLAVE_ID_WIDTH-1:0], logic [63:0], logic [7:0], logic [0:0])
-  
+  `AXI_TYPEDEF_ALL(axi_a48_d64_mst_u0, logic [47:0], logic [AxiXbarMasterIdWidth-1:0], logic [63:0], logic [7:0], logic [0:0])
+  `AXI_TYPEDEF_ALL(axi_a48_d64_slv_u0, logic [47:0], logic [AxiXbarSlaveIdWidth-1:0], logic [63:0], logic [7:0], logic [0:0])
+
   /// Same AXI bus with 48 bit address and 64 bit data but with CVA6s 4 bit ID
   `AXI_TYPEDEF_ALL(axi_cva6, logic [47:0], logic [3:0], logic [63:0], logic [7:0], logic [0:0])
 
   /// AXI bus for LLC (one additional ID bit)
-  `AXI_TYPEDEF_ALL(axi_a48_d64_mst_u0_llc, logic [47:0], logic [AXI_XBAR_SLAVE_ID_WIDTH:0], logic [63:0], logic [7:0], logic [0:0])
-  
+  `AXI_TYPEDEF_ALL(axi_a48_d64_mst_u0_llc, logic [47:0], logic [AxiXbarSlaveIdWidth:0], logic [63:0], logic [7:0], logic [0:0])
+
   /// AXI bus with 48 bit address and 32 bit data
-  `AXI_TYPEDEF_ALL(axi_a48_d32_slv_u0, logic [47:0], logic [AXI_XBAR_SLAVE_ID_WIDTH-1:0], logic [31:0], logic [3:0], logic [0:0])
+  `AXI_TYPEDEF_ALL(axi_a48_d32_slv_u0, logic [47:0], logic [AxiXbarSlaveIdWidth-1:0], logic [31:0], logic [3:0], logic [0:0])
 
   /// Identifier used for user-signal based ATOPs by CVA6
-  localparam logic [0:0] CVA6_IDENTIFIER = 1'b1;
+  localparam logic [0:0] Cva6Identifier = 1'b1;
 
   /// CVA6 Configuration struct
   localparam ariane_pkg::ariane_cfg_t CheshireArianeConfig = '{
@@ -149,7 +149,7 @@ package cheshire_pkg;
     BHTEntries: 128,
     /// Non idempotent regions
     NrNonIdempotentRules: 1,
-    NonIdempotentAddrBase: { 
+    NonIdempotentAddrBase: {
         64'h0100_0000
     },
     // Everything up until the SPM is assumed non idempotent
@@ -208,57 +208,57 @@ package cheshire_pkg;
   localparam logic [31:0] IDCode = (dm::DbgVersion013 << 28) | (PartNum << 12) | 32'h1;
 
   /// Testbench start adresses
-  localparam SPM_BASE = axi_xbar_addrmap[AXI_XBAR_OUT_LLC].start_addr;
-  localparam SCRATCH_REGS_BASE = regbus_addrmap[REGBUS_OUT_CSR].start_addr;
+  localparam logic [47:0] SpmBase = AxiXbarAddrmap[AxiXbarOutLlc].start_addr;
+  localparam logic [47:0] ScratchRegsBase = RegbusAddrmap[RegbusOutCsr].start_addr;
 
   /// Cheshire Config
   /// Can be used to exclude parts of the system
   typedef struct packed {
-    bit UART;
-    bit SPI;
-    bit I2C;
-    bit DMA;
-    bit DDR_LINK;
-    bit DRAM;
-    bit VGA;
+    bit Uart;
+    bit Spim;
+    bit I2c;
+    bit Dma;
+    bit SerialLink;
+    bit Dram;
+    bit Vga;
     /// Width of the VGA red channel, ignored if VGA set to 0
-    logic [31:0] VGARedWidth;
+    logic [31:0] VgaRedWidth;
     /// Width of the VGA green channel, ignored if VGA set to 0
-    logic [31:0] VGAGreenWidth;
+    logic [31:0] VgaGreenWidth;
     /// Width of the VGA blue channel, ignored if VGA set to 0
-    logic [31:0] VGABlueWidth;
+    logic [31:0] VgaBlueWidth;
     /// The Clock frequency after coming out of reset
     logic [31:0] ResetFreq;
   } cheshire_cfg_t;
 
   /// Default FPGA config for Cheshire Platform
   localparam cheshire_cfg_t CheshireCfgFPGADefault = '{
-    UART: 1'b1,
-    SPI: 1'b1,
-    I2C: 1'b1,
-    DMA: 1'b1,
-    DDR_LINK: 1'b0,
-    DRAM: 1'b1,
-    VGA: 1'b1,
-    VGARedWidth: 32'd5,
-    VGAGreenWidth: 32'd6,
-    VGABlueWidth: 32'd5,
-    ResetFreq: 32'd50000000
+    Uart:           1'b1,
+    Spim:           1'b1,
+    I2c:            1'b1,
+    Dma:            1'b1,
+    SerialLink:     1'b0,
+    Dram:           1'b1,
+    Vga:            1'b1,
+    VgaRedWidth:    32'd5,
+    VgaGreenWidth:  32'd6,
+    VgaBlueWidth:   32'd5,
+    ResetFreq:      32'd50000000
   };
 
   /// Default ASIC config for Cheshire Platform
   localparam cheshire_cfg_t CheshireCfgASICDefault = '{
-    UART: 1'b1,
-    SPI: 1'b1,
-    I2C: 1'b1,
-    DMA: 1'b1,
-    DDR_LINK: 1'b1,
-    DRAM: 1'b1,
-    VGA: 1'b1,
-    VGARedWidth: 32'd2,
-    VGAGreenWidth: 32'd3,
-    VGABlueWidth: 32'd3,
-    ResetFreq: 32'd200000000
+    Uart:           1'b1,
+    Spim:           1'b1,
+    I2c:            1'b1,
+    Dma:            1'b1,
+    SerialLink:     1'b1,
+    Dram:           1'b1,
+    Vga:            1'b1,
+    VgaRedWidth:    32'd2,
+    VgaGreenWidth:  32'd3,
+    VgaBlueWidth:   32'd3,
+    ResetFreq:      32'd200000000
   };
 
 endpackage
