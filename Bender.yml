@@ -22,8 +22,8 @@ dependencies:
   riscv-dbg:                { git: "git@github.com:pulp-platform/riscv-dbg.git",             version: =0.7.0  }
   tech_cells_generic:       { git: "git@github.com:pulp-platform/tech_cells_generic.git",    version: =0.2.10 }
   serial_link:              { git: "git@github.com:pulp-platform/serial_link.git",           version: =0.1.0  }
+  opentitan_peripherals:    { git: "git@github.com:pulp-platform/opentitan_peripherals.git", version: =0.2.0  }
   ariane:                   { git: "git@github.com:pulp-platform/cva6",                      rev: cheshire    }
-  opentitan_peripherals:    { git: "git@github.com:pulp-platform/opentitan_peripherals.git", rev: fix/spi_host_non_word_reads }
 
 sources:
   - hw/bootrom/cheshire_bootrom.sv
