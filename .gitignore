@@ -16,9 +16,9 @@
 *.a
 sw/deps/.patched
 
-# Test models (except UART)
+# Test models (except SD SPI model)
 target/sim/models/*
-!target/sim/models/uart_tb_rx.sv
+!target/sim/models/sd_spi.v
 
 # VSIM generated files
 target/sim/vsim/compile.*.tcl

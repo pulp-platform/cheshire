@@ -1,3 +1,5 @@
+# TODO: THIS README NEEDS TO BE REWORKED
+
 # Cheshire: Linux-capable RISC-V SoC platform
 
 This repository is the house of the Cheshire SoC platform. Cheshire is a Linux

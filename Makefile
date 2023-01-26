@@ -73,6 +73,23 @@ target/sim/vsim/compile.cheshire_soc.tcl: Bender.yml
 	$(BENDER) script vsim -t sim -t cv64a6_imafdc_sv39 -t test -t cva6 --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CURDIR)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
+# Download (partially non-free) models from their sources
+target/sim/models/s25fs512s.sv: Bender.yml
+	wget --no-check-certificate https://freemodelfoundry.com/fmf_vlog_models/flash/s25fs512s.sv -O $@
+	touch $@
+
+target/sim/models/24FC1025.v: Bender.yml
+	wget https://ww1.microchip.com/downloads/en/DeviceDoc/24xx1025_Verilog_Model.zip -o $@
+	unzip -p 24xx1025_Verilog_Model.zip 24FC1025.v > $@
+	rm 24xx1025_Verilog_Model.zip
+
+target/sim/models/uart_tb_rx.v: Bender.yml
+	wget https://raw.githubusercontent.com/pulp-platform/pulp/v1.0/rtl/vip/uart_tb_rx.sv -O $@
+	touch $@
+
+sim-all: target/sim/models/s25fs512s.sv
+sim-all: target/sim/models/24FC1025.v
+sim-all: target/sim/models/uart_tb_rx.v
 sim-all: target/sim/vsim/compile.cheshire_soc.tcl
 
 #############
