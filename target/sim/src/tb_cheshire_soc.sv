@@ -12,6 +12,7 @@ module tb_cheshire_soc;
   string binary;
   longint entry_int;
   logic [63:0] entry;
+  int          exit_status = 0;
 
   initial begin
 
@@ -50,7 +51,7 @@ module tb_cheshire_soc;
     fix.jtag_run(entry);
 
     // Wait for the application to write the return value to the first scratch register
-    fix.jtag_wait_for_eoc(cheshire_pkg::ScratchRegsBase + 64'h4);
+    fix.jtag_wait_for_eoc(cheshire_pkg::ScratchRegsBase + 64'h4, exit_status);
 
     $finish;
   end

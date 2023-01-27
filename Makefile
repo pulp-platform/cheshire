@@ -83,13 +83,13 @@ target/sim/models/24FC1025.v: Bender.yml
 	unzip -p 24xx1025_Verilog_Model.zip 24FC1025.v > $@
 	rm 24xx1025_Verilog_Model.zip
 
-target/sim/models/uart_tb_rx.v: Bender.yml
+target/sim/models/uart_tb_rx.sv: Bender.yml
 	wget https://raw.githubusercontent.com/pulp-platform/pulp/v1.0/rtl/vip/uart_tb_rx.sv -O $@
 	touch $@
 
 sim-all: target/sim/models/s25fs512s.sv
 sim-all: target/sim/models/24FC1025.v
-sim-all: target/sim/models/uart_tb_rx.v
+sim-all: target/sim/models/uart_tb_rx.sv
 sim-all: target/sim/vsim/compile.cheshire_soc.tcl
 
 #############
