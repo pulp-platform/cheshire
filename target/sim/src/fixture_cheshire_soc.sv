@@ -50,6 +50,11 @@ module cheshire_soc_fixture;
   localparam real TA      = 0.1;
   localparam real TT      = 0.9;
 
+  // exit
+  localparam int ExitSuccess = 0;
+  localparam int ExitFail    = 1;
+  int exit_status            = ExitFail;  // per default we fail
+
 
   /////////////////////////
   // Clocking and Resets //
@@ -364,7 +369,8 @@ module cheshire_soc_fixture;
   endtask
 
   task jtag_wait_for_eoc(
-    input logic [63:0] poll_addr
+    input logic [63:0] poll_addr,
+    output int         exit_status
   );
 
     logic [31:0] scratch;
@@ -391,11 +397,14 @@ module cheshire_soc_fixture;
 
     // Report end of execution
     $display("[JTAG] Execution finished");
-    if ((scratch >> 1) != '0)
+    if ((scratch >> 1) != '0) begin
       $error("[JTAG] FAILED: return code %d", scratch >> 1);
-    else 
+      exit_status = ExitFail;
+    end
+    else begin
       $display("[JTAG] SUCCESSFUL");
-
+      exit_status = ExitSuccess;
+    end
   endtask
 
   ///////////////

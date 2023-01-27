@@ -10,9 +10,24 @@ if {![info exists BINARY]} {
     set BINARY ""
 }
 
-vsim -c tb_cheshire_soc -t 1ps -voptargs=+acc +BINARY=$BINARY -permissive -suppress 3009
+vsim tb_cheshire_soc -t 1ps -voptargs=+acc +BINARY=$BINARY -permissive -suppress 3009
 
 set StdArithNoWarnings 1
 set NumericStdNoWarnings 1
 
 log -r *
+
+# check exit status in tb and quit the simulation accordingly
+proc run_and_exit {} {
+    onfinish stop
+    run -all
+
+    if {[coverage attribute -concise -name TESTSTATUS] >= 3} {
+        # exit with error if we had a $fatal somewhere
+        quit -code 1
+    } else {
+        # assume there is an `exit_status` signal that contains the status of
+        # the simulation
+        quit -code [examine -radix decimal sim:/tb_cheshire_soc/exit_status]
+    }
+}
