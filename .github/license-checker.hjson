@@ -18,6 +18,7 @@
         sw/include/spi_regs.h
         sw/include/serial_link_regs.h
         sw/include/i2c_regs.h
+        sw/include/axi_vga_regs.h
         sw/include/cheshire_regs.h
     ],
 }

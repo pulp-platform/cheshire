@@ -44,6 +44,12 @@ $(shell $(BENDER) path opentitan_peripherals)/.generated: Bender.yml
 	$(MAKE) otp
 	touch $@
 
+# AXI VGA
+include $(shell $(BENDER) path axi_vga)/axi_vga.mk
+$(shell $(BENDER) path axi_vga)/.generated: Bender.yml
+	$(MAKE) axi_vga
+	touch $@
+
 # Custom serial link
 $(shell $(BENDER) path serial_link)/.generated: hw/serial_link.hjson
 	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
@@ -62,6 +68,7 @@ hw/bootrom/cheshire_bootrom.sv: hw/bootrom/cheshire_bootrom.bin util/gen_bootrom
 hw-all: hw/regs/cheshire_reg_pkg.sv hw/regs/cheshire_reg_top.sv
 hw-all: $(shell $(BENDER) path clint)/.generated
 hw-all: $(shell $(BENDER) path opentitan_peripherals)/.generated
+hw-all: $(shell $(BENDER) path axi_vga)/.generated
 hw-all: $(shell $(BENDER) path serial_link)/.generated
 hw-all: hw/bootrom/cheshire_bootrom.sv
 

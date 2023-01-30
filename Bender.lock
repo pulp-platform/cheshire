@@ -56,10 +56,10 @@ packages:
     - common_cells
     - common_verification
   axi_vga:
-    revision: a5b0a20006debc024276ee239543dd5c6406d80a
-    version: 0.0.3
+    revision: 07be187d1e954d8090031b32d236ad76dc62ce45
+    version: 0.1.1
     source:
-      Git: git@github.com:pulp-platform/axi_vga.git
+      Git: https://github.com/pulp-platform/axi_vga.git
     dependencies:
     - axi
     - common_cells
@@ -97,8 +97,8 @@ packages:
     - common_verification
     - register_interface
   opentitan_peripherals:
-    revision: 8f97849e314578969369e8026217b4a61c030ea7
-    version: 0.2.0
+    revision: e38ebcc6dbfe30e03b7548f5acb87a61d0fc17bd
+    version: 0.2.1
     source:
       Git: https://github.com/pulp-platform/opentitan_peripherals.git
     dependencies:

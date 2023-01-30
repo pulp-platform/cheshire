@@ -62,25 +62,31 @@ jobs:
           ./sw/include/i2c_regs.h
           ./sw/include/serial_link_regs.h
           ./sw/include/spi_regs.h
+          ./sw/include/axi_vga_regs.h
           ./target/sim/src/elfloader.cpp
 
   build-sw:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - uses: './.github/actions/setup-env'
       - name: Build hardware
         run: make sw-all
       - name: Check whether clean
-        run: git status && test -z "$(git status --porcelain)"
+        run: git status && test -z "$(git status --porcelain --ignore-submodules)"
 
   build-hw:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: actions/checkout@v3
       - uses: './.github/actions/setup-env'
       - name: Build hardware
         run: make hw-all
       - name: Check whether clean
-        run: git status && test -z "$(git status --porcelain)"
+        run: git status && test -z "$(git status --porcelain --ignore-submodules)"
 
