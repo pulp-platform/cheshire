@@ -4,33 +4,39 @@
 
 # Author: Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-name: ci
+name: lint
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
 
-  check-license:
+  lint-license:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v2
+    -
+      name: Checkout
+      uses: actions/checkout@v3
+    -
+      name: Install Python
+      uses: actions/setup-python@v2
       with:
         python-version: 3.9
-    - name: Install Python requirements
+    -
+      name: Install Python requirements
       run: |
         cd .github
         pip install -r requirements.txt
-    - name: Intall license linter
+    -
+      name: Intall license linter
       run: |
         cd .github
         git clone https://github.com/lowRISC/misc-linters.git
-    - name: Check license
+    -
+      name: Check license
       run: |
         echo "::add-matcher::.github/license-checker-matcher.json"
         bash -c "set -e; .github/misc-linters/licence-checker/licence-checker.py --config .github/license-checker.hjson"
@@ -39,8 +45,12 @@ jobs:
   lint-sv:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: chipsalliance/verible-linter-action@main
+    -
+      name: Checkout
+      uses: actions/checkout@v3
+    -
+      name: Run Verible
+      uses: chipsalliance/verible-linter-action@main
       with:
         paths: hw
         extra_args: "--waiver_files .github/verible.waiver"
@@ -51,8 +61,12 @@ jobs:
   lint-cxx:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: DoozyX/clang-format-lint-action@v0.14
+    -
+      name: Checkout
+      uses: actions/checkout@v3
+    -
+      name: Run Clang-format
+      uses: DoozyX/clang-format-lint-action@v0.14
       with:
         extensions: 'c,h,cpp'
         clangFormatVersion: 14
@@ -64,19 +78,3 @@ jobs:
           ./sw/include/spi_regs.h
           ./sw/include/axi_vga_regs.h
           ./target/sim/src/elfloader.cpp
-
-  build:
-    strategy:
-      matrix:
-        target: [sw, hw, sim, xilinx, bootrom]
-      fail-fast: false
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: './.github/actions/setup-env'
-      - name: Build target
-        run: make ${{ matrix.target }}-all
-      - name: Check whether clean
-        run: git status && test -z "$(git status --porcelain --ignore-submodules)"

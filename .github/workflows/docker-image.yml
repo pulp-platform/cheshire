@@ -8,9 +8,12 @@ name: docker-image
 
 on:
   push:
-    branches: [ master, rc-docker-ci ]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
+
   build:
     runs-on: ubuntu-latest
     steps:
