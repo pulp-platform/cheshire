@@ -6,13 +6,16 @@
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
+# Override this as needed
+RISCV_GCC_BINROOT ?= $(dir $(shell which riscv64-unknown-elf-gcc))
+
 BENDER        ?= bender
 PYTHON3       ?= python3
 DTC           ?= dtc
-RISCV_AR      ?= riscv64-unknown-elf-ar
-RISCV_CC      ?= riscv64-unknown-elf-gcc
-RISCV_OBJCOPY ?= riscv64-unknown-elf-objcopy
-RISCV_OBJDUMP ?= riscv64-unknown-elf-objdump
+RISCV_AR      ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-ar
+RISCV_CC      ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-gcc
+RISCV_OBJCOPY ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-objcopy
+RISCV_OBJDUMP ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-objdump
 REGGEN        ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
 
 RISCV_FLAGS   ?= -march=rv64gc -mabi=lp64d -O2 -Wall -static -ffunction-sections -fdata-sections
