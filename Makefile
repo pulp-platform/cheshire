@@ -62,7 +62,6 @@ hw-all: $(shell $(BENDER) path opentitan_peripherals)/.generated
 hw-all: $(shell $(BENDER) path axi_vga)/.generated
 hw-all: $(shell $(BENDER) path serial_link)/.generated
 
-
 #####################
 # Generate Boot ROM #
 #####################

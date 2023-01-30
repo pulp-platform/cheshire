@@ -90,3 +90,16 @@ jobs:
       - name: Check whether clean
         run: git status && test -z "$(git status --porcelain --ignore-submodules)"
 
+  build-bootrom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: actions/checkout@v3
+      - uses: './.github/actions/setup-env'
+      - name: Build boot ROM
+        run: make bootrom-all
+      - name: Check whether clean
+        run: git status && test -z "$(git status --porcelain --ignore-submodules)"
+
