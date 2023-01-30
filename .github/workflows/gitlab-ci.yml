@@ -1,0 +1,50 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Author: Paul Scheffler <paulsc@iis.ee.ethz.ch>
+
+name: gitlab-ci
+
+on: [push, delete]
+
+jobs:
+
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+    -
+      name: Full checkout
+      run: git clone --bare https://token:${{ github.token }}@github.com/${{ github.repository }} ${{ github.workspace }}
+    -
+      name: Push to mirror
+      run: |
+        git remote add gitlab https://token:${{ secrets.GITLAB_TOKEN }}@iis-git.ee.ethz.ch/github-mirror/cheshire.git
+        git push --force --mirror gitlab
+
+  check:
+    runs-on: ubuntu-latest
+    needs: [mirror]
+    steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    -
+      name: Install Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    -
+      name: Install Python requirements
+      run: |
+        cd ${{ github.workspace }}/.github
+        pip install -r requirements.txt
+    -
+      name: Poll results
+      run: .github/gitlab-ci.py
+      env:
+        TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        SHA: ${{ github.sha }}
+        PIPELINES: "https://iis-git.ee.ethz.ch/api/v4/projects/3478/pipelines"

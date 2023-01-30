@@ -1,10 +1,19 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Author: Jannis Schoenleber <janniss@iis.ee.ethz.ch>
+
 name: docker-image 
 
 on:
   push:
-    branches: [ master, rc-docker-ci ]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
+
   build:
     runs-on: ubuntu-latest
     steps:

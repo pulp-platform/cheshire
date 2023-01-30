@@ -1,0 +1,61 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Author: Paul Scheffler <paulsc@iis.ee.ethz.ch>
+
+name: build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  # TODO: somehow handle reproducible boot ROM builds
+  # TODO: migrate to and/or replicate on docker
+  build:
+    strategy:
+      matrix:
+        target: [sw, hw, sim, xilinx]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      -
+        name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+          cache: pip
+      -
+        name: Install Python requirements
+        run: pip install -r .github/requirements.txt
+      -
+        name: Install RISC-V GCC toolchain
+        run: |
+          curl -Ls -o riscv-gcc.tar.gz https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2022.06.10/riscv64-elf-ubuntu-20.04-nightly-2022.06.10-nightly.tar.gz
+          sudo mkdir -p /tools/riscv && sudo chmod 777 /tools/riscv
+          tar -C /tools/riscv -xf riscv-gcc.tar.gz --strip-components=1
+          rm riscv-gcc.tar.gz
+          echo "PATH=$PATH:/tools/riscv/bin" >> ${GITHUB_ENV}
+      -
+        name: Install Bender
+        run: |
+          sudo mkdir -p /tools/bender && sudo chmod 777 /tools/bender
+          cd /tools/bender && curl --proto '=https' --tlsv1.2 -sSf https://pulp-platform.github.io/bender/init | bash -s -- ${BENDER_VERSION}
+          echo "PATH=$PATH:/tools/bender" >> ${GITHUB_ENV}
+        env:
+          BENDER_VERSION: 0.27.0
+      -
+        name: Build target
+        run: make ${{ matrix.target }}-all
+      -
+        name: Check whether clean
+        run: git status && test -z "$(git status --porcelain --ignore-submodules)"

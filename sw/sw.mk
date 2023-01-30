@@ -6,16 +6,19 @@
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
+# Override this as needed
+RISCV_GCC_BINROOT ?= $(dir $(shell which riscv64-unknown-elf-gcc))
+
 BENDER        ?= bender
 PYTHON3       ?= python3
 DTC           ?= dtc
-RISCV_AR      ?= riscv64-unknown-elf-ar
-RISCV_CC      ?= riscv64-unknown-elf-gcc
-RISCV_OBJCOPY ?= riscv64-unknown-elf-objcopy
-RISCV_OBJDUMP ?= riscv64-unknown-elf-objdump
+RISCV_AR      ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-ar
+RISCV_CC      ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-gcc
+RISCV_OBJCOPY ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-objcopy
+RISCV_OBJDUMP ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-objdump
 REGGEN        ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
 
-RISCV_FLAGS   ?= -march=rv64gc -mabi=lp64d -O2 -Wall -static -ffunction-sections -fdata-sections
+RISCV_FLAGS   ?= -march=rv64gc_zifencei -mabi=lp64d -O2 -Wall -static -ffunction-sections -fdata-sections -frandom-seed=cheshire
 RISCV_CCFLAGS ?= $(RISCV_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
 RISCV_LDFLAGS ?= $(RISCV_FLAGS) -nostartfiles -Wl,--gc-sections
 
@@ -64,7 +67,8 @@ LIB_SRCS_O  = $(DEPS_SRCS:.c=.o) $(LIB_SRCS_S:.S=.o) $(LIB_SRCS_C:.c=.o)
 LIBS = $(SW_DIR)/lib/libcheshire.a
 
 $(SW_DIR)/lib/libcheshire.a: $(LIB_SRCS_O)
-	@$(RISCV_AR) -rcsv $@ $^
+	rm -f $@
+	$(RISCV_AR) -rcsv $@ $^
 
 sw-libs: $(LIBS)
 
@@ -81,10 +85,15 @@ $$(SW_DIR)/include/$(1).h: $(2)
 endef
 
 OT_PERI_DIR = $(shell $(BENDER) path opentitan_peripherals)
+SLINK_DIR =  $(shell bender path serial_link)
+VGA_DIR = $(shell bender path axi_vga)
+LLC_DIR = $(shell bender path axi_llc)
 
 $(eval $(call hdr_gen_rule,i2c_regs,$(OT_PERI_DIR)/src/i2c/data/i2c.hjson $(OT_PERI_DIR)/.generated))
 $(eval $(call hdr_gen_rule,spi_regs,$(OT_PERI_DIR)/src/spi_host/data/spi_host.hjson $(OT_PERI_DIR)/.generated))
-$(eval $(call hdr_gen_rule,serial_link_regs,$(TOP_DIR)/hw/serial_link.hjson $(shell bender path serial_link)/.generated))
+$(eval $(call hdr_gen_rule,serial_link_regs,$(TOP_DIR)/hw/serial_link.hjson $(SLINK_DIR)/.generated))
+$(eval $(call hdr_gen_rule,axi_vga_regs,$(VGA_DIR)/data/axi_vga.hjson $(VGA_DIR)/.generated))
+$(eval $(call hdr_gen_rule,axi_llc_regs,$(LLC_DIR)/data/axi_llc_regs.hjson))
 $(eval $(call hdr_gen_rule,cheshire_regs,$(TOP_DIR)/hw/regs/cheshire_regs.hjson))
 
 sw-headers: $(GEN_HDRS)

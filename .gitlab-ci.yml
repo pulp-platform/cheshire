@@ -1,0 +1,25 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Paul Scheffler <paulsc@iis.ee.ethz.ch>
+
+# We initialize the nonfree repo, then spawn a sub-pipeline from it
+
+stages:
+  - nonfree
+
+init:
+  stage: nonfree
+  script: make nonfree-init
+  artifacts:
+    paths: [ nonfree/ci.yml ]
+
+subpipe:
+  stage: nonfree
+  needs: [ init ]
+  trigger:
+    include:
+      - artifact: nonfree/ci.yml
+        job: init
+    strategy: depend

@@ -5,6 +5,9 @@
 # Nicole Narr <narrn@student.ethz.ch>
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 
+# Nonfree repository
+nonfree/
+
 # Bender files
 .bender/
 

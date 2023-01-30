@@ -14,9 +14,22 @@ PLICOPT      = -s 20 -t 2 -p 7
 VLOG_ARGS   ?= -suppress 2583 -suppress 13314
 VSIM        ?= vsim
 
-.PHONY: all sw-all hw-all sim-all xilinx-all
+.PHONY: all nonfree-init sw-all hw-all bootrom-all sim-all xilinx-all
 
 all: sw-all hw-all sim-all xilinx-all
+
+######################
+# Nonfree components #
+######################
+
+NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
+NONFREE_COMMIT ?= 9d0d14b94fb6ca7e2895809add461bd8a6ff35bb
+
+nonfree-init:
+	git clone $(NONFREE_REMOTE) nonfree
+	cd nonfree && git checkout $(NONFREE_COMMIT)
+
+-include nonfree/nonfree.mk
 
 ############
 # Build SW #
@@ -44,11 +57,29 @@ $(shell $(BENDER) path opentitan_peripherals)/.generated: Bender.yml
 	$(MAKE) otp
 	touch $@
 
+# AXI VGA
+include $(shell $(BENDER) path axi_vga)/axi_vga.mk
+$(shell $(BENDER) path axi_vga)/.generated: Bender.yml
+	$(MAKE) axi_vga
+	touch $@
+
 # Custom serial link
 $(shell $(BENDER) path serial_link)/.generated: hw/serial_link.hjson
 	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
 	$(MAKE) -C $(shell $(BENDER) path serial_link) update-regs
 	touch $@
+
+hw-all: hw/regs/cheshire_reg_pkg.sv hw/regs/cheshire_reg_top.sv
+hw-all: $(shell $(BENDER) path clint)/.generated
+hw-all: $(shell $(BENDER) path opentitan_peripherals)/.generated
+hw-all: $(shell $(BENDER) path axi_vga)/.generated
+hw-all: $(shell $(BENDER) path serial_link)/.generated
+
+#####################
+# Generate Boot ROM #
+#####################
+
+# This is *not* done as part of `all` as it is only reproducible with a specific compiler
 
 # Boot ROM (needs SW stack)
 BROM_SRCS = $(wildcard hw/bootrom/*.S hw/bootrom/*.c) $(LIBS)
@@ -59,11 +90,7 @@ hw/bootrom/cheshire_bootrom.elf: hw/bootrom/cheshire_bootrom.ld $(BROM_SRCS)
 hw/bootrom/cheshire_bootrom.sv: hw/bootrom/cheshire_bootrom.bin util/gen_bootrom.py
 	$(PYTHON3) util/gen_bootrom.py --sv-module cheshire_bootrom $< > $@
 
-hw-all: hw/regs/cheshire_reg_pkg.sv hw/regs/cheshire_reg_top.sv
-hw-all: $(shell $(BENDER) path clint)/.generated
-hw-all: $(shell $(BENDER) path opentitan_peripherals)/.generated
-hw-all: $(shell $(BENDER) path serial_link)/.generated
-hw-all: hw/bootrom/cheshire_bootrom.sv
+bootrom-all: hw/bootrom/cheshire_bootrom.sv
 
 ##############
 # Simulation #
