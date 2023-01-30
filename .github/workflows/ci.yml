@@ -8,9 +8,9 @@ name: ci
 
 on:
   push:
-    branches: [ master, rc, initial-neo-port ]
+    branches: [ main ]
   pull_request:
-    branches: [ master, rc, initial-neo-port ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -65,41 +65,18 @@ jobs:
           ./sw/include/axi_vga_regs.h
           ./target/sim/src/elfloader.cpp
 
-  build-sw:
+  build:
+    strategy:
+      matrix:
+        target: [sw, hw, sim, xilinx, bootrom]
+      fail-fast: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
       - uses: './.github/actions/setup-env'
-      - name: Build hardware
-        run: make sw-all
+      - name: Build target
+        run: make ${{ matrix.target }}-all
       - name: Check whether clean
         run: git status && test -z "$(git status --porcelain --ignore-submodules)"
-
-  build-hw:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: actions/checkout@v3
-      - uses: './.github/actions/setup-env'
-      - name: Build hardware
-        run: make hw-all
-      - name: Check whether clean
-        run: git status && test -z "$(git status --porcelain --ignore-submodules)"
-
-  build-bootrom:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: actions/checkout@v3
-      - uses: './.github/actions/setup-env'
-      - name: Build boot ROM
-        run: make bootrom-all
-      - name: Check whether clean
-        run: git status && test -z "$(git status --porcelain --ignore-submodules)"
-
