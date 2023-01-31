@@ -18,7 +18,7 @@ RISCV_OBJCOPY ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-objcopy
 RISCV_OBJDUMP ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-objdump
 REGGEN        ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
 
-RISCV_FLAGS   ?= -march=rv64gc_zifencei -mabi=lp64d -O2 -Wall -static -ffunction-sections -fdata-sections
+RISCV_FLAGS   ?= -march=rv64gc_zifencei -mabi=lp64d -O2 -Wall -static -ffunction-sections -fdata-sections -frandom-seed=cheshire
 RISCV_CCFLAGS ?= $(RISCV_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
 RISCV_LDFLAGS ?= $(RISCV_FLAGS) -nostartfiles -Wl,--gc-sections
 
@@ -67,7 +67,8 @@ LIB_SRCS_O  = $(DEPS_SRCS:.c=.o) $(LIB_SRCS_S:.S=.o) $(LIB_SRCS_C:.c=.o)
 LIBS = $(SW_DIR)/lib/libcheshire.a
 
 $(SW_DIR)/lib/libcheshire.a: $(LIB_SRCS_O)
-	@$(RISCV_AR) -rcsv $@ $^
+	rm -f $@
+	$(RISCV_AR) -rcsv $@ $^
 
 sw-libs: $(LIBS)
 

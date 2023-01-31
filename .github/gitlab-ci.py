@@ -14,7 +14,7 @@ import requests
 
 def main():
     # How often to retry if no pipeline exists and period (default: 2 min timeout)
-    retry = os.getenv('RETRY_CNT', default=12)
+    retry_cnt = os.getenv('RETRY_CNT', default=12)
     retry_period = os.getenv('RETRY_PERIOD', default=10)
     # How often to poll and period (default: 2 hour timeout)
     poll_cnt = os.getenv('POLL_CNT', 720)
@@ -25,32 +25,32 @@ def main():
     pipelines = os.environ['PIPELINES']
 
     # Wait for pipeline to spawn
-    for i in range(1, retry+1):
+    for i in range(1, retry_cnt+1):
         response = requests.get(pipelines, headers={'PRIVATE-TOKEN': token}).json()
         try:
             next(p for p in response if p['sha'] == sha)
             break
         except StopIteration:
-            print(f'No pipeline yet for SHA {sha} (attempt {i})')
+            print(f'[{i*retry_period}s] No pipeline yet for SHA {sha}')
             time.sleep(retry_period)
     else:
-        print(f'Pipeline spawn timeout after {retry} attempts')
+        print(f'[{retry_cnt*retry_period}s] Pipeline spawn timeout')
         return 2
 
     # Wait for pipeline to complete
-    for _ in range(1, poll_cnt+1):
+    for i in range(1, poll_cnt+1):
         response = requests.get(pipelines, headers={'PRIVATE-TOKEN': token}).json()
         pipeline = next(p for p in response if p['sha'] == sha)
         if pipeline['status'] == 'success':
-            print(f'Pipeline success! See {pipeline["web_url"]}')
+            print(f'[{i*poll_period}s] Pipeline success! See {pipeline["web_url"]}')
             return 0
         elif pipeline['status'] == 'failed':
-            print(f'Pipeline failure! See {pipeline["web_url"]}')
+            print(f'[{i*poll_period}s] Pipeline failure! See {pipeline["web_url"]}')
             return 1
-        print(f'Pipeline status: {pipeline["status"]}')
+        print(f'[{i*poll_period}s] Pipeline status: {pipeline["status"]}')
         time.sleep(poll_period)
     else:
-        print(f'Pipeline completion timeout after {poll_cnt} attempts; See {pipeline["web_url"]}')
+        print(f'[{poll_cnt*poll_period}s] Pipeline completion timeout! See {pipeline["web_url"]}')
         return 3
 
 
