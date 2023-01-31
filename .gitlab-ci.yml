@@ -13,14 +13,11 @@ init:
   stage: nonfree
   script: make nonfree-init
   artifacts:
-    paths:
-      - nonfree/ci.yml
-      - nonfree
+    paths: [ nonfree/ci.yml ]
 
 subpipe:
   stage: nonfree
-  needs:
-    - init
+  needs: [ init ]
   trigger:
     include:
       - artifact: nonfree/ci.yml
