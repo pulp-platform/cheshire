@@ -24,7 +24,7 @@ all: sw-all hw-all sim-all xilinx-all
 
 NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
 # TODO: use main commit
-NONFREE_COMMIT ?= 72666d233fdc9c49cdc6ecaa4e390ead5ba7ca71
+NONFREE_COMMIT ?= 69c8dd622cb4e53caad68660171e6483a0cbadc2
 
 nonfree-init:
 	git clone $(NONFREE_REMOTE) nonfree
