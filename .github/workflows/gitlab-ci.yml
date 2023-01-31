@@ -9,7 +9,8 @@ name: gitlab-ci
 on: [push, delete]
 
 jobs:
-  gitlab-ci:
+
+  mirror:
     runs-on: ubuntu-latest
     steps:
     -
@@ -20,8 +21,30 @@ jobs:
       run: |
         git remote add gitlab https://token:${{ secrets.GITLAB_TOKEN }}@iis-git.ee.ethz.ch/github-mirror/cheshire.git
         git push --force --mirror gitlab
-    - 
-      name: Check results
-      # TODO: actually do this
+
+  check:
+    runs-on: ubuntu-latest
+    needs: [mirror]
+    steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    -
+      name: Install Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    -
+      name: Install Python requirements
       run: |
-        curl --header "PRIVATE-TOKEN: ${{ secrets.GITLAB_TOKEN }}" "https://iis-git.ee.ethz.ch/api/v4/projects/3478/pipelines"
+        cd ${{ github.workspace }}/.github
+        pip install -r requirements.txt
+    -
+      name: Poll results
+      run: .github/gitlab-ci.py
+      env:
+        TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        SHA: ${{ github.sha }}
+        PIPELINES: "https://iis-git.ee.ethz.ch/api/v4/projects/3478/pipelines"
