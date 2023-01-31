@@ -35,3 +35,6 @@ RUN mkdir -p /tools/slang && chmod 777 /tools/slang && \
 # install python dependencies
 COPY .github/requirements.txt .
 RUN pip3 install -r requirements.txt
+
+# remove safe directory check in git
+RUN git config --global --add safe.directory '*'
