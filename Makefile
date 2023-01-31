@@ -18,6 +18,21 @@ VSIM        ?= vsim
 
 all: sw-all hw-all sim-all xilinx-all
 
+######################
+# Nonfree components #
+######################
+
+NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:github-mirror/cheshire.git
+NONFREE_COMMIT ?=
+
+nonfree/ci.mk:
+	git clone $(NONFREE_REMOTE) nonfree
+	cd nonfree && git checkout $(NONFREE_COMMIT)
+
+-include nonfree/ci.mk
+
+nonfree-all: | nonfree/ci.mk
+
 ############
 # Build SW #
 ############
