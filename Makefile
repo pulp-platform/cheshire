@@ -14,7 +14,7 @@ PLICOPT      = -s 20 -t 2 -p 7
 VLOG_ARGS   ?= -suppress 2583 -suppress 13314
 VSIM        ?= vsim
 
-.PHONY: all sw-all hw-all bootrom-all sim-all xilinx-all
+.PHONY: all nonfree-init sw-all hw-all bootrom-all sim-all xilinx-all
 
 all: sw-all hw-all sim-all xilinx-all
 
@@ -22,16 +22,15 @@ all: sw-all hw-all sim-all xilinx-all
 # Nonfree components #
 ######################
 
-NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:github-mirror/cheshire.git
-NONFREE_COMMIT ?=
+NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
+# TODO: use main commit
+NONFREE_COMMIT ?= 2aaaf5e150e2092c50a40d815bf1a89aef6c9ac4
 
-nonfree/ci.mk:
+nonfree-init:
 	git clone $(NONFREE_REMOTE) nonfree
 	cd nonfree && git checkout $(NONFREE_COMMIT)
 
 -include nonfree/ci.mk
-
-nonfree-all: | nonfree/ci.mk
 
 ############
 # Build SW #
