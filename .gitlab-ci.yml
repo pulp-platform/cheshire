@@ -25,3 +25,4 @@ subpipe:
     include:
       - artifact: nonfree/ci.yml
         job: init
+    strategy: depend
