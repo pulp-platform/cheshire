@@ -10,7 +10,7 @@ RUN apt update && apt upgrade -y && apt install -y curl python3 build-essential 
 
 # ARG RISCV_GCC_VERSION=8.3.0-2020.04.0
 # risvc-gnu-compiler
-RUN curl -Ls -o riscv-gcc.tar.gz https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2022.06.10/riscv64-elf-ubuntu-20.04-nightly-2022.06.10-nightly.tar.gz
+RUN curl -Ls -o riscv-gcc.tar.gz https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2022.06.10/riscv64-elf-ubuntu-20.04-nightly-2022.06.10-nightly.tar.gz && \
     mkdir -p /tools/riscv && chmod 777 /tools/riscv && \
     tar -C /tools/riscv -xf riscv-gcc.tar.gz --strip-components=1 && \
     rm riscv-gcc.tar.gz
