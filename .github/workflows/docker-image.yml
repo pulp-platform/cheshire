@@ -8,7 +8,7 @@ name: docker-image
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, docker-ci ]
   pull_request:
     branches: [ main ]
 
