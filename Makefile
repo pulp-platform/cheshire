@@ -14,6 +14,8 @@ PLICOPT      = -s 20 -t 2 -p 7
 VLOG_ARGS   ?= -suppress 2583 -suppress 13314
 VSIM        ?= vsim
 
+BUILD_DIR   ?= build
+
 .PHONY: all nonfree-init sw-all hw-all bootrom-all sim-all xilinx-all
 
 all: sw-all hw-all sim-all xilinx-all
@@ -127,3 +129,19 @@ target/xilinx/scripts/add_sources.tcl: Bender.yml
 	$(BENDER) script vivado -t fpga -t cv64a6_imafdc_sv39 -t cva6 > $@
 
 xilinx-all: target/xilinx/scripts/add_sources.tcl
+
+
+#############
+# slang			#
+#############
+
+$(BUILD_DIR):
+	mkdir -p $@
+
+$(BUILD_DIR)/cheshire_top.pickle.sv: Bender.yml $(BUILD_DIR)
+	bender sources -f | morty -f /dev/stdin -q -o $@ --top cheshire_soc
+
+pickle: $(BUILD_DIR)/cheshire_top.pickle.sv
+
+slang-check: pickle
+	slang $(BUILD_DIR)/cheshire_top.pickle.sv --error-limit=4419 
