@@ -23,14 +23,13 @@ all: sw-all hw-all sim-all xilinx-all
 ######################
 
 NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-# TODO: use main commit
-NONFREE_COMMIT ?= 10ce15e1a5c44aae149dd2f1a535fdc397f71962
+NONFREE_COMMIT ?= 9d0d14b94fb6ca7e2895809add461bd8a6ff35bb
 
 nonfree-init:
 	git clone $(NONFREE_REMOTE) nonfree
 	cd nonfree && git checkout $(NONFREE_COMMIT)
 
--include nonfree/ci.mk
+-include nonfree/nonfree.mk
 
 ############
 # Build SW #
