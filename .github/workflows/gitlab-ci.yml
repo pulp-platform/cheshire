@@ -6,9 +6,7 @@
 
 name: gitlab-ci
 
-on:
-  push:
-  delete:
+on: [push, delete]
 
 jobs:
   gitlab-ci:
@@ -22,3 +20,7 @@ jobs:
       run: |
         git remote add gitlab https://token:${{ secrets.GITLAB_TOKEN }}@iis-git.ee.ethz.ch/github-mirror/cheshire.git
         git push --force --mirror gitlab
+    - name: Check results
+      # TODO: actually do this
+      run: |
+        curl --header "PRIVATE-TOKEN: ${{ secrets.GITLAB_TOKEN }}" "https://iis-git.ee.ethz.ch/api/v4/projects/3478/pipelines"
