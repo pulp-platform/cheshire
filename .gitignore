@@ -29,3 +29,5 @@ target/sim/vsim/modelsim.ini
 target/sim/vsim/transcript
 target/sim/vsim/vsim.wlf
 target/sim/vsim/work/
+
+build/
