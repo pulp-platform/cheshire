@@ -6,7 +6,7 @@
 
 FROM ubuntu:22.04
 
-RUN apt update && apt upgrade -y && apt install -y curl python3 build-essential git cmake python3-pip wget
+RUN apt update && apt upgrade -y && apt install -y curl python3 build-essential git cmake python3-pip wget unzip
 
 # ARG RISCV_GCC_VERSION=8.3.0-2020.04.0
 # risvc-gnu-compiler
