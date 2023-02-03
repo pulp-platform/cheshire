@@ -36,7 +36,7 @@ RUN mkdir -p /tools/slang && chmod 777 /tools/slang && \
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 # install morty via cargo
-RUN source $HOME/.cargo/env && cargo install --git https://github.com/pulp-platform/morty.git
+RUN . "$HOME/.cargo/env" && cargo install --git https://github.com/pulp-platform/morty.git
 
 # install python dependencies
 COPY .github/requirements.txt .
