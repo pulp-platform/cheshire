@@ -145,7 +145,10 @@ $(BUILD_DIR):
 $(BUILD_DIR)/cheshire_top.pickle.sv: Bender.yml $(BUILD_DIR)
 	bender sources -f | morty -f /dev/stdin -q -o $@ --top cheshire_soc
 
-pickle: $(BUILD_DIR)/cheshire_top.pickle.sv
+$(BUILD_DIR)/cva6.pickle.sv: Bender.yml $(BUILD_DIR)
+	bender sources -f -d $(shell $(BENDER) path ariane) | morty -f /dev/stdin -q -o $@ --top cva6
+
+pickle: $(BUILD_DIR)/cva6.pickle.sv
 
 slang-check: pickle
-	slang $(BUILD_DIR)/cheshire_top.pickle.sv --error-limit=4419 
+	slang $(BUILD_DIR)/cva6.pickle.sv --error-limit=4419 
