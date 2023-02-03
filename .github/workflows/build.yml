@@ -91,7 +91,7 @@ jobs:
           submodules: recursive
       - # https://github.com/actions/runner-images/issues/6775#issuecomment-1409159167
         name: Safe Directory workaround
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       -
         name: Check Slang
         run: make slang-check
