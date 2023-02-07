@@ -6,12 +6,7 @@
 
 name: gitlab-ci
 
-on:
-  push:
-  delete:
-  pull_request:
-    types: [opened, reopened]
-  workflow_dispatch:
+on: [ push, pull_request, workflow_dispatch ]
 
 jobs:
 
@@ -48,8 +43,11 @@ jobs:
         pip install -r requirements.txt
     -
       name: Poll results
-      run: .github/gitlab-ci.py
+      # Pull request SHAs point to a merged commit that is not mirrored
+      run: |
+        export SHA=${{ github.sha }}
+        if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then export SHA=${{ github.event.pull_request.head.sha }}; fi
+        .github/gitlab-ci.py
       env:
         TOKEN: ${{ secrets.GITLAB_TOKEN }}
-        SHA: ${{ github.sha }}
         PIPELINES: "https://iis-git.ee.ethz.ch/api/v4/projects/3478/pipelines"
