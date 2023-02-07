@@ -6,7 +6,12 @@
 
 name: gitlab-ci
 
-on: [push, delete]
+on:
+  push:
+  delete:
+  pull_request:
+    types: [opened, reopened]
+  workflow_dispatch:
 
 jobs:
 
