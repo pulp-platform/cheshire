@@ -34,6 +34,9 @@ sources:
 
   - target: any(simulation, test)
     files:
+      - target/sim/models/s25fs512s.sv
+      - target/sim/models/24FC1025.v
+      - target/sim/models/uart_tb_rx.sv
       - target/sim/src/fixture_cheshire_soc.sv
       - target/sim/src/tb_cheshire_soc.sv
 

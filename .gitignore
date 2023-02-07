@@ -19,10 +19,8 @@ nonfree/
 *.a
 sw/deps/.patched
 
-# Test models (except README and SD SPI model)
-target/sim/models/*
-!target/sim/models/README.md
-!target/sim/models/sd_spi.v
+# Test models
+target/sim/models
 
 # VSIM generated files
 target/sim/vsim/compile.*.tcl
