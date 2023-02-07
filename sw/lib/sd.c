@@ -10,8 +10,8 @@
 
 //#define DEBUG 1
 
-#include "crc.h"
 #include "sd.h"
+#include "crc.h"
 #include "printf.h"
 #include <stddef.h>
 
@@ -258,7 +258,7 @@ int sd_read_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_a
     }
 
     // Calculate the CRC for the command
-    cmd |= (crc7((unsigned char *) &cmd, 5, 0) << 1) | 1;
+    cmd |= (crc7((unsigned char *)&cmd, 5, 0) << 1) | 1;
 
     // Fill command buffer
     txbuf[0] = (cmd >> 40) & 0xFFL;
@@ -328,12 +328,12 @@ int sd_read_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_a
 
         crc = (rxbuf[0] << 8) | rxbuf[1];
 
-        exp_crc = crc16((unsigned char *) (mem_addr + i*512), 512, 1);
+        exp_crc = crc16((unsigned char *)(mem_addr + i * 512), 512, 1);
 
-        if(crc != exp_crc){
+        if (crc != exp_crc) {
 #ifdef DEBUG
             printf("[sd] Block read to 0x%lx has a CRC mismatch: Read: 0x%x, computed: 0x%x\r\n",
-                    (unsigned long int) (mem_addr + i*512), crc, exp_crc);
+                   (unsigned long int)(mem_addr + i * 512), crc, exp_crc);
 #endif
             return -1;
         }
@@ -353,9 +353,8 @@ int sd_read_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_a
     return ret;
 }
 
-int sd_read_blocks_callback(void *priv, unsigned int lba, void *mem_addr, unsigned int num_blocks)
-{
-    return sd_read_blocks((opentitan_qspi_t *) priv, lba, (unsigned char *) mem_addr, num_blocks);
+int sd_read_blocks_callback(void *priv, unsigned int lba, void *mem_addr, unsigned int num_blocks) {
+    return sd_read_blocks((opentitan_qspi_t *)priv, lba, (unsigned char *)mem_addr, num_blocks);
 }
 
 int sd_write_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_addr, unsigned int num_blocks) {
@@ -382,7 +381,7 @@ int sd_write_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_
     }
 
     // Calculate the CRC for the command
-    cmd |= (crc7((unsigned char *) &cmd, 5, 0) << 1) | 1;
+    cmd |= (crc7((unsigned char *)&cmd, 5, 0) << 1) | 1;
 
     // Fill command buffer
     txbuf[0] = (cmd >> 40) & 0xFFL;
@@ -398,17 +397,17 @@ int sd_write_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_
         return ret;
 
     // Wait for the response
-    while(resp & 0x80){
-        ret = opentitan_qspi_xfer(spi, 4*8, NULL, rxbuf, 0);
-        for(int i = 0; i < 4; i++){
-            if(!(rxbuf[i] & 0x80)){
+    while (resp & 0x80) {
+        ret = opentitan_qspi_xfer(spi, 4 * 8, NULL, rxbuf, 0);
+        for (int i = 0; i < 4; i++) {
+            if (!(rxbuf[i] & 0x80)) {
                 resp = rxbuf[i];
                 break;
             }
         }
     }
 
-    if(resp != 0){
+    if (resp != 0) {
 #ifdef DEBUG
         printf("[sd] CMD%u got response 0x%x\r\n", txbuf[0] & 0x3F, resp);
 #endif
@@ -417,80 +416,80 @@ int sd_write_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_
     }
 
     // Send out the block(s)
-    for(int i = 0; i < num_blocks; i++){
+    for (int i = 0; i < num_blocks; i++) {
         unsigned char token = 0xFC; // Multi block write start token
 
-        if (num_blocks == 1){
-            token = 0xFE;   // Single block write start token
+        if (num_blocks == 1) {
+            token = 0xFE; // Single block write start token
         }
 
         // Send the start token to the SD Card
-        ret = opentitan_qspi_xfer(spi, 1*8, (unsigned char *) &token, NULL, 0);
+        ret = opentitan_qspi_xfer(spi, 1 * 8, (unsigned char *)&token, NULL, 0);
         if (ret)
             return ret;
 
         // Send the data block to the SD Card
-        ret = opentitan_qspi_xfer(spi, 512*8, mem_addr + i*512, NULL, 0);
+        ret = opentitan_qspi_xfer(spi, 512 * 8, mem_addr + i * 512, NULL, 0);
         if (ret)
             return ret;
 
         // Calculate the block CRC and send it to the card
-        crc = crc16((unsigned char *) (mem_addr + i*512), 512, 1);
+        crc = crc16((unsigned char *)(mem_addr + i * 512), 512, 1);
 #ifdef DEBUG
         printf("[sd] Block No. %u written to LBA 0x%lx with CRC 0x%x\r\n", i, lba + i, crc);
 #endif
 
-        ret = opentitan_qspi_xfer(spi, 2*8, (unsigned char *) &crc, NULL, 0);
+        ret = opentitan_qspi_xfer(spi, 2 * 8, (unsigned char *)&crc, NULL, 0);
         if (ret)
             return ret;
 
         // Read status response and wait for busy to clear
         unsigned char data_resp = 0xFF;
 
-        while(data_resp & 0x10){
-            ret = opentitan_qspi_xfer(spi, 4*8, NULL, rxbuf, 0);
+        while (data_resp & 0x10) {
+            ret = opentitan_qspi_xfer(spi, 4 * 8, NULL, rxbuf, 0);
             if (ret)
                 return ret;
 
-            for(int rx = 0; rx < 4; rx++){
-                if(rxbuf[rx] & 0x01 && !(rxbuf[rx] & 0x10)){
+            for (int rx = 0; rx < 4; rx++) {
+                if (rxbuf[rx] & 0x01 && !(rxbuf[rx] & 0x10)) {
                     data_resp = rxbuf[rx];
                     break;
                 }
             }
         }
 
-        switch((data_resp >> 1) & 0x07){
-            // status = 010 ==> Data accepted
-            case 0x02: break;
+        switch ((data_resp >> 1) & 0x07) {
+        // status = 010 ==> Data accepted
+        case 0x02:
+            break;
 
-            // status = 101 ==> Data rejected due to CRC error
-            case 0x05:
+        // status = 101 ==> Data rejected due to CRC error
+        case 0x05:
 #ifdef DEBUG
-                        printf("[sd] Card rejected block No. %u with CRC error\r\n", i);
+            printf("[sd] Card rejected block No. %u with CRC error\r\n", i);
 #endif
-                        ret = -1;
-                        goto sd_write_blocks_end_transaction_out;
-                        break;
+            ret = -1;
+            goto sd_write_blocks_end_transaction_out;
+            break;
 
-            // status = 110 ==> Data rejected due to write error
-            case 0x06:
+        // status = 110 ==> Data rejected due to write error
+        case 0x06:
 #ifdef DEBUG
-                        printf("[sd] Card rejected block No. %u with write error\r\n", i);
+            printf("[sd] Card rejected block No. %u with write error\r\n", i);
 #endif
-                        ret = -1;
-                        goto sd_write_blocks_end_transaction_out;
-                        break;
+            ret = -1;
+            goto sd_write_blocks_end_transaction_out;
+            break;
 
-            // unknown status
-            default:
+        // unknown status
+        default:
 #ifdef DEBUG
-                        printf("[sd] Card returned unknown status on block No. %u\r\n", i);
+            printf("[sd] Card returned unknown status on block No. %u\r\n", i);
 #endif
-                        ret = -1;
-                        goto sd_write_blocks_end_transaction_out;
-                        break;
-
+            ret = -1;
+            goto sd_write_blocks_end_transaction_out;
+            break;
         }
 
         // Now we finally wait for the busy to clear
@@ -509,30 +508,29 @@ int sd_write_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_
                 break;
         }
 
-        if(busy){
+        if (busy) {
 #ifdef DEBUG
             printf("[sd] Timed out while waiting for busy to clear after block write\r\n");
 #endif
             ret = -1;
             goto sd_write_blocks_end_transaction_out;
         }
-
     }
 
     // Send stop token and wait for busy to clear
     // if we wrote more than one block
-    if(num_blocks > 1){
+    if (num_blocks > 1) {
         unsigned char token = 0xFD;
 
-        ret = opentitan_qspi_xfer(spi, 1*8, (unsigned char *) &token, NULL, 0);
-        if(ret)
+        ret = opentitan_qspi_xfer(spi, 1 * 8, (unsigned char *)&token, NULL, 0);
+        if (ret)
             return ret;
 
         // Wait for the busy to clear
         unsigned char busy = 1;
         for (int b = 0; b < SD_R1b_TIMEOUT; b++) {
             ret = opentitan_qspi_xfer(spi, 4 * 8, NULL, rxbuf, 0);
-            if(ret)
+            if (ret)
                 return ret;
 
             for (int i = 0; i < 4; i++) {
@@ -546,14 +544,13 @@ int sd_write_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_
                 break;
         }
 
-        if(busy){
+        if (busy) {
 #ifdef DEBUG
             printf("[sd] Timed out while waiting for busy to clear after stop token\r\n");
 #endif
             ret = -1;
             goto sd_write_blocks_end_transaction_out;
         }
-
     }
 
 sd_write_blocks_end_transaction_out:
@@ -562,10 +559,10 @@ sd_write_blocks_end_transaction_out:
     //--------------
     //    CMD13 - 0x4D0000000006
     //--------------
-    if(!ret){
-        ret = sd_cmd(spi, 0x4D0000000006L, (unsigned char *) &status, SD_RESP_R2);
+    if (!ret) {
+        ret = sd_cmd(spi, 0x4D0000000006L, (unsigned char *)&status, SD_RESP_R2);
     } else {
-        (void) sd_cmd(spi, 0x4D0000000006L, (unsigned char *) &status, SD_RESP_R2);
+        (void)sd_cmd(spi, 0x4D0000000006L, (unsigned char *)&status, SD_RESP_R2);
     }
 
 #ifdef DEBUG
@@ -575,10 +572,8 @@ sd_write_blocks_end_transaction_out:
     return ret;
 }
 
-int sd_write_blocks_callback(void *priv, unsigned int lba, void *mem_addr, unsigned int num_blocks)
-{
-    return sd_write_blocks((opentitan_qspi_t *) priv, lba, (unsigned char *) mem_addr, num_blocks);
+int sd_write_blocks_callback(void *priv, unsigned int lba, void *mem_addr, unsigned int num_blocks) {
+    return sd_write_blocks((opentitan_qspi_t *)priv, lba, (unsigned char *)mem_addr, num_blocks);
 }
-
 
 #endif

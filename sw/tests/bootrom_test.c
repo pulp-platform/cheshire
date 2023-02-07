@@ -17,6 +17,6 @@ void __attribute__((aligned(4))) trap_vector(void) { test_trap_vector(&uart_init
 int main(void) {
 
     // We just re-enter the bootrom from here
-    void (*bootrom)(void) = (void (*)(void)) &__base_bootrom;
+    void (*bootrom)(void) = (void (*)(void)) & __base_bootrom;
     bootrom();
 }

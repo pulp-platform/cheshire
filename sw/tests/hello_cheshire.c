@@ -22,7 +22,7 @@ int main(void) {
     volatile uint32_t *reset_freq = (uint32_t *)(((uint64_t)&__base_cheshire_regs) + CHESHIRE_RESET_FREQ_REG_OFFSET);
 
     init_uart(*reset_freq, 115200);
-    
+
     uart_initialized = 1;
 
     printf("Hello from Cheshire :)\r\n");

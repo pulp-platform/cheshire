@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "opentitan_qspi.h"
+
 int spi_flash_read_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_addr, unsigned int num_blocks);
 
 int spi_flash_read_blocks_callback(void *priv, unsigned int lba, void *mem_addr, unsigned int num_blocks);

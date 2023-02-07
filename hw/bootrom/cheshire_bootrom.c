@@ -34,22 +34,23 @@ extern void *__base_i2c;
 extern void *__base_spim;
 extern void *__base_spm;
 
-void idle_boot(void)
-{
+void idle_boot(void) {
     void (*cheshire_entry)(void);
-    volatile unsigned int *scratch0 = (unsigned int *)(((unsigned long int)&__base_cheshire_regs) + CHESHIRE_SCRATCH_0_REG_OFFSET);
-    volatile unsigned int *scratch1 = (unsigned int *)(((unsigned long int)&__base_cheshire_regs) + CHESHIRE_SCRATCH_1_REG_OFFSET);
+    volatile unsigned int *scratch0 =
+        (unsigned int *)(((unsigned long int)&__base_cheshire_regs) + CHESHIRE_SCRATCH_0_REG_OFFSET);
+    volatile unsigned int *scratch1 =
+        (unsigned int *)(((unsigned long int)&__base_cheshire_regs) + CHESHIRE_SCRATCH_1_REG_OFFSET);
 
     printf("[bootrom] Polling scratch0 for entry point and scratch1 for start signal.\r\n");
 
     // Reset the commit register to 0
     *scratch1 = 0;
 
-    while(!*scratch1){
-        (void) *scratch1;
+    while (!*scratch1) {
+        (void)*scratch1;
     }
 
-    cheshire_entry = (void (*)(void)) ((unsigned long int) *scratch0);
+    cheshire_entry = (void (*)(void))((unsigned long int)*scratch0);
 
     asm volatile("fence.i\n" ::: "memory");
 
@@ -58,8 +59,7 @@ void idle_boot(void)
     return;
 }
 
-void sd_boot(unsigned int core_freq)
-{
+void sd_boot(unsigned int core_freq) {
     opentitan_qspi_t spi = {0};
     unsigned int stage1_lba = 0, sd_init_tries = SD_RETRY_COUNT;
     int ret = 0;
@@ -80,7 +80,7 @@ void sd_boot(unsigned int core_freq)
         sd_init_tries--;
     } while (ret && sd_init_tries > 0);
 
-    if(ret){
+    if (ret) {
         printf("[bootrom] Could not initialize a SD card. Falling back to idle boot!\r\n");
         idle_boot();
     }
@@ -91,9 +91,9 @@ void sd_boot(unsigned int core_freq)
     gpt_find_partition(sd_read_blocks_callback, &spi, 0, &stage1_lba, NULL);
 
     // Copy stage1 to SPM
-    sd_read_blocks(&spi, stage1_lba, (unsigned char *)&__base_spm, STAGE1_LEN/512);
+    sd_read_blocks(&spi, stage1_lba, (unsigned char *)&__base_spm, STAGE1_LEN / 512);
 
-    void (*cheshire_entry)(void) = (void (*)(void)) &__base_spm;
+    void (*cheshire_entry)(void) = (void (*)(void)) & __base_spm;
 
     asm volatile("fence.i\n" ::: "memory");
 
@@ -102,8 +102,7 @@ void sd_boot(unsigned int core_freq)
     return;
 }
 
-void spi_flash_boot(unsigned int core_freq)
-{
+void spi_flash_boot(unsigned int core_freq) {
     opentitan_qspi_t spi = {0};
     unsigned int stage1_lba = 0;
 
@@ -121,17 +120,16 @@ void spi_flash_boot(unsigned int core_freq)
     gpt_find_partition(spi_flash_read_blocks_callback, &spi, 0, &stage1_lba, NULL);
 
     // Copy stage1 to SPM
-    spi_flash_read_blocks(&spi, stage1_lba, (unsigned char *)&__base_spm, STAGE1_LEN/512);
+    spi_flash_read_blocks(&spi, stage1_lba, (unsigned char *)&__base_spm, STAGE1_LEN / 512);
 
-    void (*cheshire_entry)(void) = (void (*)(void)) &__base_spm;
+    void (*cheshire_entry)(void) = (void (*)(void)) & __base_spm;
 
     asm volatile("fence.i\n" ::: "memory");
 
     cheshire_entry();
 }
 
-void i2c_flash_boot(unsigned int core_freq)
-{
+void i2c_flash_boot(unsigned int core_freq) {
     unsigned int stage1_lba = 0;
     dif_i2c_config_t config = {0};
     dif_i2c_t i2c = {0};
@@ -164,49 +162,50 @@ void i2c_flash_boot(unsigned int core_freq)
     gpt_find_partition(i2c_flash_read_blocks_callback, &i2c, 0, &stage1_lba, NULL);
 
     // Copy stage1 to SPM
-    i2c_flash_read_blocks(&i2c, stage1_lba, (unsigned char *)&__base_spm, STAGE1_LEN/512);
-    
-    void (*cheshire_entry)(void) = (void (*)(void)) &__base_spm;
+    i2c_flash_read_blocks(&i2c, stage1_lba, (unsigned char *)&__base_spm, STAGE1_LEN / 512);
+
+    void (*cheshire_entry)(void) = (void (*)(void)) & __base_spm;
 
     asm volatile("fence.i\n" ::: "memory");
 
     cheshire_entry();
 }
 
-int main(void)
-{
-    volatile unsigned int *bootmode   = (volatile unsigned int *)(((unsigned long int)&__base_cheshire_regs) + CHESHIRE_BOOT_MODE_REG_OFFSET);
-    volatile unsigned int *reset_freq = (volatile unsigned int *)(((unsigned long int)&__base_cheshire_regs) + CHESHIRE_RESET_FREQ_REG_OFFSET);
+int main(void) {
+    volatile unsigned int *bootmode =
+        (volatile unsigned int *)(((unsigned long int)&__base_cheshire_regs) + CHESHIRE_BOOT_MODE_REG_OFFSET);
+    volatile unsigned int *reset_freq =
+        (volatile unsigned int *)(((unsigned long int)&__base_cheshire_regs) + CHESHIRE_RESET_FREQ_REG_OFFSET);
 
     // Initiate our window to the world around us
     init_uart(*reset_freq, UART_BAUD);
 
     // Decide what to do
     switch (*bootmode) {
-        case 0:
-            printf("[bootrom] Bootmode 0: Idle boot.\r\n");
-            idle_boot();
-            break;
+    case 0:
+        printf("[bootrom] Bootmode 0: Idle boot.\r\n");
+        idle_boot();
+        break;
 
-        case 1:
-            printf("[bootrom] Bootmode 1: SD card boot (CS 0)\r\n");
-            sd_boot(*reset_freq);
-            break;
+    case 1:
+        printf("[bootrom] Bootmode 1: SD card boot (CS 0)\r\n");
+        sd_boot(*reset_freq);
+        break;
 
-        case 2:
-            printf("[bootrom] Bootmode 2: SPI flash boot (CS 1)\r\n");
-            spi_flash_boot(*reset_freq);
-            break;
+    case 2:
+        printf("[bootrom] Bootmode 2: SPI flash boot (CS 1)\r\n");
+        spi_flash_boot(*reset_freq);
+        break;
 
-        case 3:
-            printf("[bootrom] Bootmode 3: I2C flash boot (addr: 0b1010000)\r\n");
-            i2c_flash_boot(*reset_freq);
-            break;
+    case 3:
+        printf("[bootrom] Bootmode 3: I2C flash boot (addr: 0b1010000)\r\n");
+        i2c_flash_boot(*reset_freq);
+        break;
 
-        default:
-            printf("[bootrom] Bootmode %d: Unknown bootmode. Using idle boot.\r\n", *bootmode);
-            idle_boot();
-            break;
+    default:
+        printf("[bootrom] Bootmode %d: Unknown bootmode. Using idle boot.\r\n", *bootmode);
+        idle_boot();
+        break;
     }
 
     while (1) {

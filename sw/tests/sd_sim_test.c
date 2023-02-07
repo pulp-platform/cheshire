@@ -45,5 +45,5 @@ int main(void) {
 
     opentitan_qspi_set_speed(&spi, SD_SPEED);
 
-    return sd_write_blocks(&spi, 0, (unsigned char *) 0x01000000, TEST_LEN);
+    return sd_write_blocks(&spi, 0, (unsigned char *)0x01000000, TEST_LEN);
 }

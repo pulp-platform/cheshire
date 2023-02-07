@@ -40,7 +40,7 @@ extern void *__base_i2c;
 extern void *__base_spim;
 extern void *__base_spm;
 
-unsigned char devicetree[DT_LEN*512];
+unsigned char devicetree[DT_LEN * 512];
 
 void llc_info(void *base) {
 
@@ -51,22 +51,23 @@ void llc_info(void *base) {
     printf("[axi_llc] BIST Outcome      :       %d\r\n", axi_llc_reg32_get_bist_out(base));
 }
 
-void idle_boot(void)
-{
+void idle_boot(void) {
     void (*cheshire_entry)(void);
-    volatile unsigned int *scratch0 = (unsigned int *)(((unsigned long int)&__base_cheshire_regs) + CHESHIRE_SCRATCH_0_REG_OFFSET);
-    volatile unsigned int *scratch1 = (unsigned int *)(((unsigned long int)&__base_cheshire_regs) + CHESHIRE_SCRATCH_1_REG_OFFSET);
+    volatile unsigned int *scratch0 =
+        (unsigned int *)(((unsigned long int)&__base_cheshire_regs) + CHESHIRE_SCRATCH_0_REG_OFFSET);
+    volatile unsigned int *scratch1 =
+        (unsigned int *)(((unsigned long int)&__base_cheshire_regs) + CHESHIRE_SCRATCH_1_REG_OFFSET);
 
     // Reset the commit register to 0
     *scratch1 = 0;
 
     printf("[stage1] Polling scratch0 for entry point and scratch1 for start signal.\r\n");
 
-    while(!*scratch1){
-        (void) *scratch1;
+    while (!*scratch1) {
+        (void)*scratch1;
     }
 
-    cheshire_entry = (void (*)(void)) ((unsigned long int) *scratch0);
+    cheshire_entry = (void (*)(void))((unsigned long int)*scratch0);
 
     asm volatile("fence.i\n" ::: "memory");
 
@@ -75,8 +76,7 @@ void idle_boot(void)
     return;
 }
 
-void sd_boot(unsigned int core_freq)
-{
+void sd_boot(unsigned int core_freq) {
     opentitan_qspi_t spi = {0};
     unsigned int dt_lba_s = 0;
     unsigned int fw_lba_s = 0;
@@ -100,7 +100,7 @@ void sd_boot(unsigned int core_freq)
         sd_init_tries--;
     } while (ret && sd_init_tries > 0);
 
-    if(ret){
+    if (ret) {
         printf("[stage1] Could not initialize a SD card. Falling back to idle boot!\r\n");
         idle_boot();
     }
@@ -122,7 +122,7 @@ void sd_boot(unsigned int core_freq)
     // Copy firmware to DRAM
     // Length in blocks = end_lba - start_lba + 1
     // as end_lba is inclusive
-    sd_read_blocks(&spi, fw_lba_s, (unsigned char *) DRAM, fw_lba_e - fw_lba_s + 1);
+    sd_read_blocks(&spi, fw_lba_s, (unsigned char *)DRAM, fw_lba_e - fw_lba_s + 1);
 
     void (*cheshire_entry)(unsigned long int, unsigned long int, unsigned long int) =
         (void (*)(unsigned long int, unsigned long int, unsigned long int))DRAM;
@@ -134,8 +134,7 @@ void sd_boot(unsigned int core_freq)
     return;
 }
 
-void spi_flash_boot(unsigned int core_freq)
-{
+void spi_flash_boot(unsigned int core_freq) {
     opentitan_qspi_t spi = {0};
     unsigned int dt_lba_s = 0;
     unsigned int fw_lba_s = 0;
@@ -163,7 +162,7 @@ void spi_flash_boot(unsigned int core_freq)
     gpt_find_partition(spi_flash_read_blocks_callback, &spi, 2, &fw_lba_s, &fw_lba_e);
 
     // Copy firmware to DRAM
-    spi_flash_read_blocks(&spi, fw_lba_s, (unsigned char *) DRAM, fw_lba_e - fw_lba_s + 1);
+    spi_flash_read_blocks(&spi, fw_lba_s, (unsigned char *)DRAM, fw_lba_e - fw_lba_s + 1);
 
     void (*cheshire_entry)(unsigned long int, unsigned long int, unsigned long int) =
         (void (*)(unsigned long int, unsigned long int, unsigned long int))DRAM;
@@ -175,8 +174,7 @@ void spi_flash_boot(unsigned int core_freq)
     return;
 }
 
-void i2c_flash_boot(unsigned int core_freq)
-{
+void i2c_flash_boot(unsigned int core_freq) {
     unsigned int dt_lba_s = 0;
     unsigned int fw_lba_s = 0;
     unsigned int fw_lba_e = 0;
@@ -220,7 +218,7 @@ void i2c_flash_boot(unsigned int core_freq)
     gpt_find_partition(i2c_flash_read_blocks_callback, &i2c, 2, &fw_lba_s, &fw_lba_e);
 
     // Copy firmware to DRAM
-    i2c_flash_read_blocks(&i2c, fw_lba_s, (unsigned char *) DRAM, fw_lba_e - fw_lba_s + 1);
+    i2c_flash_read_blocks(&i2c, fw_lba_s, (unsigned char *)DRAM, fw_lba_e - fw_lba_s + 1);
 
     void (*cheshire_entry)(unsigned long int, unsigned long int, unsigned long int) =
         (void (*)(unsigned long int, unsigned long int, unsigned long int))DRAM;
@@ -244,31 +242,31 @@ int main(void) {
 
     // Decide what to do
     switch (*bootmode) {
-    // Normal boot over SD Card
-        case 0:
-            printf("[stage1] Idle boot.\r\n");
-            idle_boot();
-            break; // We will never reach this
+        // Normal boot over SD Card
+    case 0:
+        printf("[stage1] Idle boot.\r\n");
+        idle_boot();
+        break; // We will never reach this
 
-        case 1:
-            printf_("[stage1] SD Card boot (CS 0).\r\n");
-            sd_boot(*reset_freq);
-            break;
+    case 1:
+        printf_("[stage1] SD Card boot (CS 0).\r\n");
+        sd_boot(*reset_freq);
+        break;
 
-        case 2:
-            printf_("[stage1] SPI flash boot (CS 1).\r\n");
-            spi_flash_boot(*reset_freq);
-            break;
+    case 2:
+        printf_("[stage1] SPI flash boot (CS 1).\r\n");
+        spi_flash_boot(*reset_freq);
+        break;
 
-        case 3:
-            printf_("[stage1] I2C flash boot.\r\n");
-            i2c_flash_boot(*reset_freq);
-            break;
+    case 3:
+        printf_("[stage1] I2C flash boot.\r\n");
+        i2c_flash_boot(*reset_freq);
+        break;
 
-        default:
-            printf_("[stage1] Unknown bootmode %d\r\n", *bootmode);
-            idle_boot();
-            break;
+    default:
+        printf_("[stage1] Unknown bootmode %d\r\n", *bootmode);
+        idle_boot();
+        break;
     }
 
     while (1) {

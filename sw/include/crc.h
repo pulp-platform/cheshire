@@ -5,8 +5,7 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 
-#ifndef CRC_H_
-#define CRC_H_
+#pragma once
 
 // Computes the CRC7 over the input data
 // Generator Poly: G(x) = x^7 + x^3 + 1
@@ -19,6 +18,3 @@ unsigned char crc7(unsigned char *data, int len, char dir);
 // dir == 1 => MSB in data[0]
 // dir == 0 => MSB in data[len-1]
 unsigned short crc16(unsigned char *data, int len, char dir);
-
-#endif
-

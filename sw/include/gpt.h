@@ -48,4 +48,4 @@ int gpt_info(int (*read_blocks)(void *priv, unsigned int lba, void *buf, unsigne
 
 // Find partition and load it to the destination
 int gpt_find_partition(int (*read_blocks)(void *priv, unsigned int lba, void *buf, unsigned int count), void *priv,
-                        unsigned int part, unsigned int *start_lba, unsigned int *end_lba);
+                       unsigned int part, unsigned int *start_lba, unsigned int *end_lba);

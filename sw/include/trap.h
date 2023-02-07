@@ -5,6 +5,10 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 
+#pragma once
+
+#include "printf.h"
+
 inline static void test_trap_vector(char *uart_initialized) {
     long int mcause = 0, mepc = 0, mip = 0, mie = 0, mstatus = 0, mtval = 0;
 
@@ -32,13 +36,13 @@ inline static void test_trap_vector(char *uart_initialized) {
         return;
     } else {
         if (*uart_initialized) {
-            printf_("Hello from the trap_vector :)\r\n");
-            printf_("mcause:    0x%lx\r\n", mcause);
-            printf_("mepc:      0x%lx\r\n", mepc);
-            printf_("mip:       0x%lx\r\n", mip);
-            printf_("mie:       0x%lx\r\n", mie);
-            printf_("mstatus:   0x%lx\r\n", mstatus);
-            printf_("mtval:     0x%lx\r\n", mtval);
+            printf("Hello from the trap_vector :)\r\n");
+            printf("mcause:    0x%lx\r\n", mcause);
+            printf("mepc:      0x%lx\r\n", mepc);
+            printf("mip:       0x%lx\r\n", mip);
+            printf("mie:       0x%lx\r\n", mie);
+            printf("mstatus:   0x%lx\r\n", mstatus);
+            printf("mtval:     0x%lx\r\n", mtval);
         }
     }
 

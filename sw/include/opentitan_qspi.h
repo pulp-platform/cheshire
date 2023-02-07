@@ -44,8 +44,8 @@ enum opentitan_qspi_regs {
 /* opentitan qspi priv */
 typedef struct opentitan_qspi_priv {
     volatile unsigned int *regs;
-    unsigned int clk_freq;    /* Peripheral clock frequency */
-    unsigned int max_freq;    /* Max supported SPI frequency */
+    unsigned int clk_freq; /* Peripheral clock frequency */
+    unsigned int max_freq; /* Max supported SPI frequency */
     unsigned int used_cs;
     unsigned int cs_state;    /* 0 = CS currently not asserted, 1 = CS currently asserted */
     unsigned char byte_order; /* 1 = LSB shifted in/out first, 0 = MSB shifted in/out first */
