@@ -5,16 +5,13 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 
-#include "gpt.h"
 #include "opentitan_qspi.h"
 #include "printf.h"
 #include "sd.h"
-#include "sleep.h"
 #include "trap.h"
 #include "uart.h"
 
-#define DT_LEN 0x8
-#define FW_LEN 0x1800
+#define TEST_LEN 0x8
 
 #define SD_SPEED 25000000
 //#define SD_SPEED 400000
@@ -29,14 +26,11 @@ int main(void) {
     opentitan_qspi_t spi;
     int ret = 0;
 
-    unsigned int dt_lba = 0;
-    unsigned int fw_lba = 0;
-
-    init_uart(50000000, 115200);
+    init_uart(200000000, 115200);
     uart_initialized = 1;
 
     // Setup the SPI Host
-    opentitan_qspi_init((volatile unsigned int *)&__base_spim, 50000000, 25000000, 0, &spi);
+    opentitan_qspi_init((volatile unsigned int *)&__base_spim, 200000000, 25000000, 0, &spi);
 
     opentitan_qspi_probe(&spi);
 
@@ -51,25 +45,5 @@ int main(void) {
 
     opentitan_qspi_set_speed(&spi, SD_SPEED);
 
-    // Print info of SD Card
-    gpt_info(sd_read_blocks_callback, &spi);
-
-    // Copy Device Tree to high SPM
-    gpt_find_partition(sd_read_blocks_callback, &spi, 0, &dt_lba, NULL);
-    sd_read_blocks(&spi, dt_lba, (unsigned char *)0x70010000, DT_LEN);
-
-    printf("Copied DT to 0x70010000\r\n");
-
-    // Copy firmware to DRAM
-    gpt_find_partition(sd_read_blocks_callback, &spi, 1, &fw_lba, NULL);
-    sd_read_blocks(&spi, fw_lba, (unsigned char *)0x80000000, FW_LEN);
-
-    printf("Copied FW to 0x80000000\r\n");
-
-    void (*entry)(int, int, int) = (void (*)(int, int, int))0x80000000;
-
-    asm volatile("ebreak\n");
-    entry(0, 0x70010000, 0);
-
-    return 0;
+    return sd_write_blocks(&spi, 0, (unsigned char *) 0x01000000, TEST_LEN);
 }

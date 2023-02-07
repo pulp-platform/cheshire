@@ -24,4 +24,10 @@ typedef enum {
 
 int sd_init(opentitan_qspi_t *spi);
 
-int sd_copy_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_addr, unsigned int num_blocks);
+int sd_read_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_addr, unsigned int num_blocks);
+
+int sd_read_blocks_callback(void *priv, unsigned int lba, void *mem_addr, unsigned int num_blocks);
+
+int sd_write_blocks(opentitan_qspi_t *spi, unsigned int lba, unsigned char *mem_addr, unsigned int num_blocks);
+
+int sd_write_blocks_callback(void *priv, unsigned int lba, void *mem_addr, unsigned int num_blocks);

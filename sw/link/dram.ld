@@ -9,7 +9,7 @@ ENTRY(_start)
 
 MEMORY
 {
-  spm (rwx)     : ORIGIN = 0x70000000, LENGTH = 128K
+  spm (rwx)     : ORIGIN = 0x70000000, LENGTH = 24K
   dram (rwx)    : ORIGIN = 0x80000000, LENGTH = 1024M
 }
 
@@ -32,14 +32,23 @@ SECTIONS
     *(.rodata)
     *(.rodata.*)
     *(.data)
+    *(.data.*)
     *(.srodata)
     *(.srodata.*)
     *(.sdata)
+    *(.sdata.*)
+  } > dram
+
+  . = ALIGN(32);
+  __bss_start = .;
+  .bss : {
     *(.bss)
     *(.bss.*)
     *(.sbss)
     *(.sbss.*)
   } > dram
+  . = ALIGN(32);
+  __bss_end = .;
 
 
   /DISCARD/ : { *(.riscv.attributes) *(.comment) }

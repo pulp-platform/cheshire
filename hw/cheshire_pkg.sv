@@ -74,7 +74,7 @@ package cheshire_pkg;
   localparam address_rule_48_t [AxiXbarNumOutputs:0] AxiXbarAddrmap = '{
     '{ idx: AxiXbarOutSerialLink,  start_addr: 48'h100000000000, end_addr: 48'h200000000000},
     '{ idx: AxiXbarOutLlc,         start_addr: 48'h000080000000, end_addr: 48'h000100000000},
-    '{ idx: AxiXbarOutLlc,         start_addr: 48'h000070000000, end_addr: 48'h000070020000},
+    '{ idx: AxiXbarOutLlc,         start_addr: 48'h000070000000, end_addr: 48'h000070006000},
     '{ idx: AxiXbarOutDmaConf,     start_addr: 48'h000060000000, end_addr: 48'h000060001000},
     '{ idx: AxiXbarOutRegbus,      start_addr: 48'h000001000000, end_addr: 48'h000060000000},
     '{ idx: AxiXbarOutDebug,       start_addr: 48'h000000000000, end_addr: 48'h000000001000}
@@ -162,15 +162,15 @@ package cheshire_pkg;
         64'h8000_0000, 64'h7000_0000, 64'h0100_0000, 64'h0
     },
     ExecuteRegionLength: {
-        64'h8000_0000, 64'h0002_0000, 64'h0002_0000, 64'h1000
+        64'h8000_0000, 64'h0000_6000, 64'h0002_0000, 64'h1000
     },
-    /// Cached regions: DRAM, Upper half of SPM
-    NrCachedRegionRules: 2,
+    /// Cached regions: DRAM
+    NrCachedRegionRules: 1,
     CachedRegionAddrBase: {
-        64'h8000_0000, 64'h7001_0000
+        64'h8000_0000
     },
     CachedRegionLength: {
-        64'h8000_0000, 64'h0001_0000
+        64'h8000_0000
     },
     Axi64BitCompliant: 1'b1,
     SwapEndianess: 1'b0,

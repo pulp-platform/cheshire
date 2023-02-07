@@ -10,6 +10,8 @@
 #include "opentitan_qspi.h"
 #include <stdint.h>
 
+#define BLOCK_SIZE 512
+
 // LBA 0: Protective MBR
 // ignored here
 
@@ -42,7 +44,8 @@ typedef struct partition_entry {
 } partition_entry_t;
 
 // Print info about partitions
-int gpt_info(opentitan_qspi_t *spi);
+int gpt_info(int (*read_blocks)(void *priv, unsigned int lba, void *buf, unsigned int count), void *priv);
 
 // Find partition and load it to the destination
-int gpt_find_partition(opentitan_qspi_t *spi, unsigned int part, unsigned int *start_lba);
+int gpt_find_partition(int (*read_blocks)(void *priv, unsigned int lba, void *buf, unsigned int count), void *priv,
+                        unsigned int part, unsigned int *start_lba, unsigned int *end_lba);

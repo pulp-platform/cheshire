@@ -116,49 +116,13 @@ module cheshire_soc import cheshire_pkg::*; #(
   axi_cva6_req_t  cva6_out_req, cva6_user_id_req;
   axi_cva6_resp_t cva6_out_resp, cva6_user_id_resp;
 
-  // Patch the requests coming from ariane to issue the right user signal
-  // AW
-  assign cva6_user_id_req.aw.id     = cva6_out_req.aw.id;
-  assign cva6_user_id_req.aw.addr   = cva6_out_req.aw.addr;
-  assign cva6_user_id_req.aw.len    = cva6_out_req.aw.len;
-  assign cva6_user_id_req.aw.size   = cva6_out_req.aw.size;
-  assign cva6_user_id_req.aw.burst  = cva6_out_req.aw.burst;
-  assign cva6_user_id_req.aw.lock   = cva6_out_req.aw.lock;
-  assign cva6_user_id_req.aw.cache  = cva6_out_req.aw.cache;
-  assign cva6_user_id_req.aw.prot   = cva6_out_req.aw.prot;
-  assign cva6_user_id_req.aw.qos    = cva6_out_req.aw.qos;
-  assign cva6_user_id_req.aw.region = cva6_out_req.aw.region;
-  assign cva6_user_id_req.aw.atop   = cva6_out_req.aw.atop;
-  assign cva6_user_id_req.aw.user   = Cva6Identifier;
-  assign cva6_user_id_req.aw_valid  = cva6_out_req.aw_valid;
-
-  // W
-  assign cva6_user_id_req.w.data    = cva6_out_req.w.data;
-  assign cva6_user_id_req.w.strb    = cva6_out_req.w.strb;
-  assign cva6_user_id_req.w.last    = cva6_out_req.w.last;
-  assign cva6_user_id_req.w.user    = Cva6Identifier;
-  assign cva6_user_id_req.w_valid   = cva6_out_req.w_valid;
-
-  // AR
-  assign cva6_user_id_req.ar.id     = cva6_out_req.ar.id;
-  assign cva6_user_id_req.ar.addr   = cva6_out_req.ar.addr;
-  assign cva6_user_id_req.ar.len    = cva6_out_req.ar.len;
-  assign cva6_user_id_req.ar.size   = cva6_out_req.ar.size;
-  assign cva6_user_id_req.ar.burst  = cva6_out_req.ar.burst;
-  assign cva6_user_id_req.ar.lock   = cva6_out_req.ar.lock;
-  assign cva6_user_id_req.ar.cache  = cva6_out_req.ar.cache;
-  assign cva6_user_id_req.ar.prot   = cva6_out_req.ar.prot;
-  assign cva6_user_id_req.ar.qos    = cva6_out_req.ar.qos;
-  assign cva6_user_id_req.ar.region = cva6_out_req.ar.region;
-  assign cva6_user_id_req.ar.user   = Cva6Identifier;
-  assign cva6_user_id_req.ar_valid  = cva6_out_req.ar_valid;
-
-  // Ready signals
-  assign cva6_user_id_req.b_ready   = cva6_out_req.b_ready;
-  assign cva6_user_id_req.r_ready   = cva6_out_req.r_ready;
-
-  // Responses are handed right through
-  assign cva6_out_resp = cva6_user_id_resp;
+  always_comb begin
+    cva6_user_id_req          = cva6_out_req;
+    cva6_user_id_req.aw.user  = Cva6Identifier;
+    cva6_user_id_req.w.user   = Cva6Identifier;
+    cva6_user_id_req.ar.user  = Cva6Identifier;
+    cva6_out_resp             = cva6_user_id_resp;
+  end
 
   cva6 #(
     .ArianeCfg    ( CheshireArianeConfig  )
@@ -696,9 +660,9 @@ module cheshire_soc import cheshire_pkg::*; #(
   );
 
   axi_llc_reg_wrap #(
-    .SetAssociativity    ( 8                              ),
+    .SetAssociativity    ( 3                              ),
     .NumLines            ( 256                            ),
-    .NumBlocks           ( 8                              ),
+    .NumBlocks           ( 4                              ),
     .AxiIdWidth          ( AxiXbarSlaveIdWidth            ),
     .AxiAddrWidth        ( AxiAddrWidth                   ),
     .AxiDataWidth        ( AxiDataWidth                   ),

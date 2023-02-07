@@ -85,7 +85,7 @@ hw-all: $(shell $(BENDER) path serial_link)/.generated
 BROM_SRCS = $(wildcard hw/bootrom/*.S hw/bootrom/*.c) $(LIBS)
 
 hw/bootrom/cheshire_bootrom.elf: hw/bootrom/cheshire_bootrom.ld $(BROM_SRCS)
-	$(RISCV_CC) $(INCLUDES) -T$< $(RISCV_LDFLAGS) -o $@ $(BROM_SRCS)
+	$(RISCV_CC) $(INCLUDES) $(RISCV_BROM_FLAGS) -T$< $(RISCV_LDFLAGS) -o $@ $(BROM_SRCS)
 
 hw/bootrom/cheshire_bootrom.sv: hw/bootrom/cheshire_bootrom.bin util/gen_bootrom.py
 	$(PYTHON3) util/gen_bootrom.py --sv-module cheshire_bootrom $< > $@
