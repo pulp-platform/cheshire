@@ -7,12 +7,12 @@
 # Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
 if {![info exists BINARY ]} {
-    return -code error -errorinfo "[ERRORINFO] You must set the \"BINARY\" variable before sourcing the start script."
+    return -code error -errorinfo "\[ERRORINFO\] You must set the \"BINARY\" variable before sourcing the start script."
     set BINARY ""
 }
 
 if {![info exists TESTBENCH ]} {
-    return -code error -errorinfo "[ERRORINFO] You must set the \"TESTBENCH\" variable before sourcing the start script."
+    return -code error -errorinfo "\[ERRORINFO\] You must set the \"TESTBENCH\" variable before sourcing the start script."
     set TESTBENCH ""
 }
 

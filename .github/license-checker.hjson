@@ -15,11 +15,6 @@
         # Exclude matchers
         .github/*-matcher.json
         # Exclude generated headers (no support for optional lines)
-        sw/include/spi_regs.h
-        sw/include/serial_link_regs.h
-        sw/include/i2c_regs.h
-        sw/include/axi_vga_regs.h
-        sw/include/axi_llc_regs.h
-        sw/include/cheshire_regs.h
+        sw/include/regs/*.h
     ],
 }

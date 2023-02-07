@@ -90,7 +90,7 @@ package cheshire_pkg;
   localparam address_rule_48_t [AxiXbarNumOutputs:0] AxiXbarAddrmap = '{
     '{ idx: AxiXbarOutSerialLink,  start_addr: 48'h100000000000, end_addr: 48'h200000000000},
     '{ idx: AxiXbarOutLlc,         start_addr: 48'h000080000000, end_addr: 48'h000100000000},
-    '{ idx: AxiXbarOutLlc,         start_addr: 48'h000070000000, end_addr: 48'h000070006000},
+    '{ idx: AxiXbarOutLlc,         start_addr: 48'h000070000000, end_addr: 48'h000070020000},
     '{ idx: AxiXbarOutDmaConf,     start_addr: 48'h000060000000, end_addr: 48'h000060001000},
     '{ idx: AxiXbarOutRegbus,      start_addr: 48'h000001000000, end_addr: 48'h000060000000},
     '{ idx: AxiXbarOutDebug,       start_addr: 48'h000000000000, end_addr: 48'h000000001000}
@@ -178,15 +178,15 @@ package cheshire_pkg;
         64'h8000_0000, 64'h7000_0000, 64'h0100_0000, 64'h0
     },
     ExecuteRegionLength: {
-        64'h8000_0000, 64'h0000_6000, 64'h0002_0000, 64'h1000
+        64'h8000_0000, 64'h0002_0000, 64'h0002_0000, 64'h1000
     },
     /// Cached regions: DRAM
-    NrCachedRegionRules: 1,
+    NrCachedRegionRules: 2,
     CachedRegionAddrBase: {
-        64'h8000_0000
+        64'h8000_0000, 64'h7000_0000
     },
     CachedRegionLength: {
-        64'h8000_0000
+        64'h8000_0000, 64'h0002_0000
     },
     Axi64BitCompliant: 1'b1,
     SwapEndianess: 1'b0,
@@ -201,12 +201,11 @@ package cheshire_pkg;
     logic spim_spi_event;
     logic spim_error;
     logic i2c_host_timeout;
-    logic i2c_ack_stop;
-    logic i2c_acq_overflow;
+    logic i2c_unexp_stop;
+    logic i2c_acq_full;
     logic i2c_tx_overflow;
-    logic i2c_tx_nonempty;
-    logic i2c_tx_empty;
-    logic i2c_trans_complete;
+    logic i2c_tx_stretch;
+    logic i2c_cmd_complete;
     logic i2c_sda_unstable;
     logic i2c_stretch_timeout;
     logic i2c_sda_interference;
@@ -214,8 +213,8 @@ package cheshire_pkg;
     logic i2c_nak;
     logic i2c_rx_overflow;
     logic i2c_fmt_overflow;
-    logic i2c_rx_watermark;
-    logic i2c_fmt_watermark;
+    logic i2c_rx_threshold;
+    logic i2c_fmt_threshold;
     logic zero;
   } cheshire_interrupt_t;
 

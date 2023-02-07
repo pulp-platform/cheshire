@@ -18,7 +18,7 @@ _start:
     la gp, __global_pointer$
     .option pop
 
-    // Reset all the registers
+    // Reset all GPRs
     li x1, 0
     li x4, 0
     li x5, 0
@@ -47,12 +47,17 @@ _start:
     li x28, 0
     li x29, 0
     li x30, 0
+    li x31, 0
+
+    // TODO: Delete this cancer once LLC is fixed! Sentinel read from SPM so BIST cannot fuck us...
+    la t0, __base_spm
+    ld t0, 0(t0)
 
     // Configure the LLC to all SPM
     la t0, __base_axi_llc
     li t1, -1
-    sw t1, 0(t0)    // CFG_SPM_LOW  = 0xFFFFFFFF
-    sw t1, 4(t0)    // CFG_SPM_HIGH = 0xFFFFFFFF
+    sw t1, 0(t0)    // CFG_SPM_LOW  = 0xFF..F
+    sw t1, 4(t0)    // CFG_SPM_HIGH = 0xFF..F
     li t1, 1
     sw t1, 16(t0)   // COMMIT_CFG = 0x1
     li t0, 0

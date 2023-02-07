@@ -53,7 +53,7 @@ gui:
 	@echo "Starting $(vivado) GUI"
 	@$(VIVADOENV) $(VIVADO) -nojournal -mode gui $(PROJECT).xpr &
 
-program: $(bit)
+program: #$(bit)
 	@echo "Programming board $(BOARD) ($(XILINX_PART))"
 	$(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/program.tcl
 

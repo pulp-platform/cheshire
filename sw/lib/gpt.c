@@ -4,101 +4,79 @@
 //
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
-// Date:   05.12.2022
-
-#include <stddef.h>
+// Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 #include "gpt.h"
-#include "printf.h"
+#include "util.h"
 
-int gpt_info(int (*read_blocks)(void *priv, unsigned int lba, void *buf, unsigned int count), void *priv) {
-    // Ignore LBA0
-    // Load LBA1
-    uint8_t lba1_buf[BLOCK_SIZE] = {0};
-    uint8_t lba2_buf[BLOCK_SIZE] = {0};
-    gpt_header_t *gpt_header = (gpt_header_t *)lba1_buf;
+int gpt_check_signature(gpt_read_t read, void* priv) {
+    // Signature is first 8 bytes of LBA1 (512B from disk start)
+    uint64_t sig;
+    // If call fails, we may as well report no signature was found
+    if (read(priv, &sig, 0x200, sizeof(sig))) return 0;
+    return (sig == 0x5452415020494645UL /*EFI BOOT*/);
+}
 
-    // Copy header
-    int ret = read_blocks(priv, 1, (void *) lba1_buf, 1);
-
-    if (ret != 0) {
-        printf("SD card copy of header failed!\r\n");
-        return ret;
+int gpt_find_boot_partition(gpt_read_t read, void *priv,
+                            uint64_t *lba_begin, uint64_t *lba_end, uint64_t max_lbas) {
+    // Read partition-essential info from GPT header
+    struct hdr_fields {
+        uint64_t lba;
+        uint32_t count;
+        uint32_t size;
+    } hf;
+    uint64_t hf_offs = 0x200 + 0x72;
+    CHECK_CALL(read(priv, &hf, hf_offs, sizeof(hf)));
+    // The first partition to fit in SPM and fulfill one of the following is our boot partition:
+    // * Attributes: bit 2 (BIOS bootable) or 56 (ChromeOS boot success) or 46 (custom) set.
+    // * Name: starts with either "firmware" or "cheshire" (UTF16 encoded).
+    // If no such partition is found, the first partition (at most an SPM-fitting chunk) is booted.
+    struct part_fields {
+        uint64_t lba_begin;
+        uint64_t lba_end;
+        uint64_t flags;
+        uint64_t name_d0;
+        uint64_t name_d1;
+    } pf;
+    uint64_t p;
+    for (p = 0; p < hf.count; ++p) {
+        // Read first two partition fields for size
+        uint64_t pf_offs = 0x200*hf.lba + p*hf.size + 0x32;
+        CHECK_CALL(read(priv, &pf, pf_offs, 2*sizeof(uint64_t)));
+        // Record first partition in any case (but only subset of bootable size)
+        if (p == 0) {
+            *lba_begin = pf.lba_begin;
+            *lba_end = MIN(pf.lba_end, pf.lba_begin + max_lbas);
+        }
+        // Skip if partition if it is too large to boot
+        if (pf.lba_end - pf.lba_begin > max_lbas) continue;
+        // If it does fit in SPM, check our criteria, reading data as needed
+        CHECK_CALL(read(priv, &pf.flags, pf_offs + 16, sizeof(uint64_t)));
+        if (pf.flags & ((1UL<<2) | (1UL<<46) | (1UL<<46))) break;
+        CHECK_CALL(read(priv, &pf.name_d0, pf_offs + 24, sizeof(uint64_t)));
+        if (pf.name_d0 == 0x006600690072006dUL /*firm*/ &&
+            pf.name_d1 == 0x0077006100720065UL /*ware*/) break;
+        if (pf.name_d0 == 0x0063006800650073UL /*ches*/ &&
+            pf.name_d1 == 0x0068006900720065UL /*hire*/) break;
     }
-
-    printf("GPT partition table header:\r\n");
-    printf("\tsignature:\t 0x%lx\r\n", gpt_header->signature);
-    printf("\trevision:\t 0x%x\r\n", gpt_header->revision);
-    printf("\theader size:\t\t 0x%x\r\n", gpt_header->header_size);
-    printf("\treserved:\t 0x%x\r\n", gpt_header->reserved);
-    printf("\tmy lba:\t 0x%lx\r\n", gpt_header->my_lba);
-    printf("\talternate lba:\t 0x%lx\r\n", gpt_header->alternate_lba);
-    printf("\tpartition entry lba:\t 0x%lx\r\n", gpt_header->partition_entry_lba);
-    printf("\tnumber partition entries:\t %d\r\n", gpt_header->nr_partition_entries);
-    printf("\tsize partition entries:  \t %d\r\n", gpt_header->size_partition_entry);
-
-    // Copy partition entries
-    ret = read_blocks(priv, gpt_header->partition_entry_lba, (void *) lba2_buf, 1);
-
-    if (ret != 0) {
-        printf("SD card copy of partition entries failed!\r\n");
-        return ret;
+    // If we did find a viable partition after the first, write out LBA range
+    if (p != hf.count) {
+        *lba_begin = pf.lba_begin;
+        *lba_end = pf.lba_end;
     }
-
-    for (int i = 0; i < 4; i++) {
-        partition_entry_t *part_entry = (partition_entry_t *)(lba2_buf + (i * 128));
-        printf("GPT partition entry %d\r\n", i);
-        // printf("\tpartition type guid:\t");
-        // for (int j = 0; j < 16; j++)
-        //    printf("%i", part_entry->partition_type_guid[j]);
-        // printf("\r\n");
-        // printf("\tpartition guid:     \t");
-        // for (int j = 0; j < 16; j++)
-        //    printf("%", part_entry->partition_guid[j]);
-        printf("\tfirst lba:\t 0x%lx\r\n", part_entry->starting_lba);
-        printf("\tlast lba:\t 0x%lx\r\n", part_entry->ending_lba);
-        printf("\tattributes:\t 0x%lx\r\n", part_entry->attributes);
-        printf("\tname:\t");
-        for (int j = 0; j < 72; j++)
-            printf("%c", part_entry->partition_name[j]);
-        printf("\r\n");
-    }
-
+    // Nothing went wrong
     return 0;
 }
 
-int gpt_find_partition(int (*read_blocks)(void *priv, unsigned int lba, void *buf, unsigned int count), void *priv,
-                        unsigned int part, unsigned int *start_lba, unsigned int *end_lba) {
-    // Ignore LBA0
-    // Load LBA1
-    uint8_t lba1_buf[BLOCK_SIZE] = {0};
-    uint8_t lba2_buf[BLOCK_SIZE] = {0};
-    gpt_header_t *gpt_header = (gpt_header_t *)lba1_buf;
 
-    // Copy header
-    int ret = read_blocks(priv, 1, (void *) lba1_buf, 1);
-
-    if (ret != 0) {
-        printf("Copying the header failed!\r\n");
-        return ret;
-    }
-
-
-    // Copy partition entries
-    ret = read_blocks(priv, gpt_header->partition_entry_lba, (void *) lba2_buf, 1);
-
-    if (ret != 0) {
-        printf("Copying the partition entries failed!\r\n");
-        return ret;
-    }
-
-    partition_entry_t *part_entry = (partition_entry_t *)(lba2_buf + (part * 128));
-
-    if(start_lba)
-        *start_lba = part_entry->starting_lba;
-
-    if(end_lba)
-        *end_lba = part_entry->ending_lba;
-
-    return 0;
+int gpt_boot_part_else_raw(gpt_read_t read, void *priv, void* code_buf, uint64_t max_lbas) {
+    uint64_t lba_begin = 0, lba_end = max_lbas;
+    if (gpt_check_signature(read, priv))
+        CHECK_CALL(gpt_find_boot_partition(read, priv, &lba_begin, &lba_end, max_lbas))
+    // Copy code to SPM
+    uint64_t addr = 0x200 * lba_begin;
+    uint64_t len = 0x200 * (lba_end - lba_begin);
+    CHECK_CALL(read(priv, code_buf, addr, len));
+    // Invoke code
+    return invoke((void*)code_buf);
 }

@@ -702,9 +702,9 @@ module cheshire_soc import cheshire_pkg::*; #(
   );
 
   axi_llc_reg_wrap #(
-    .SetAssociativity    ( 3                              ),
+    .SetAssociativity    ( 8                              ),
     .NumLines            ( 256                            ),
-    .NumBlocks           ( 4                              ),
+    .NumBlocks           ( 8                              ),
     .AxiIdWidth          ( AxiXbarSlaveIdWidth            ),
     .AxiAddrWidth        ( AxiAddrWidth                   ),
     .AxiDataWidth        ( AxiDataWidth                   ),
@@ -990,8 +990,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .cio_sda_i                ( i2c_sda_i                ),
       .cio_sda_o                ( i2c_sda_o                ),
       .cio_sda_en_o             ( i2c_sda_en_o             ),
-      .intr_fmt_watermark_o     ( irq.i2c_fmt_watermark    ),
-      .intr_rx_watermark_o      ( irq.i2c_rx_watermark     ),
+      .intr_fmt_threshold_o     ( irq.i2c_fmt_threshold    ),
+      .intr_rx_threshold_o      ( irq.i2c_rx_threshold     ),
       .intr_fmt_overflow_o      ( irq.i2c_fmt_overflow     ),
       .intr_rx_overflow_o       ( irq.i2c_rx_overflow      ),
       .intr_nak_o               ( irq.i2c_nak              ),
@@ -999,12 +999,11 @@ module cheshire_soc import cheshire_pkg::*; #(
       .intr_sda_interference_o  ( irq.i2c_sda_interference ),
       .intr_stretch_timeout_o   ( irq.i2c_stretch_timeout  ),
       .intr_sda_unstable_o      ( irq.i2c_sda_unstable     ),
-      .intr_trans_complete_o    ( irq.i2c_trans_complete   ),
-      .intr_tx_empty_o          ( irq.i2c_tx_empty         ),
-      .intr_tx_nonempty_o       ( irq.i2c_tx_nonempty      ),
+      .intr_cmd_complete_o      ( irq.i2c_cmd_complete     ),
+      .intr_tx_stretch_o        ( irq.i2c_tx_stretch       ),
       .intr_tx_overflow_o       ( irq.i2c_tx_overflow      ),
-      .intr_acq_overflow_o      ( irq.i2c_acq_overflow     ),
-      .intr_ack_stop_o          ( irq.i2c_ack_stop         ),
+      .intr_acq_full_o          ( irq.i2c_acq_full         ),
+      .intr_unexp_stop_o        ( irq.i2c_unexp_stop       ),
       .intr_host_timeout_o      ( irq.i2c_host_timeout     )
     );
 
@@ -1017,8 +1016,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign i2c_sda_en_o = '0;
 
     // Bind I2C interrupts to 0
-    assign irq.i2c_fmt_watermark    = '0;
-    assign irq.i2c_rx_watermark     = '0;
+    assign irq.i2c_fmt_threshold    = '0;
+    assign irq.i2c_rx_threshold     = '0;
     assign irq.i2c_fmt_overflow     = '0;
     assign irq.i2c_rx_overflow      = '0;
     assign irq.i2c_nak              = '0;
@@ -1026,12 +1025,11 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign irq.i2c_sda_interference = '0;
     assign irq.i2c_stretch_timeout  = '0;
     assign irq.i2c_sda_unstable     = '0;
-    assign irq.i2c_trans_complete   = '0;
-    assign irq.i2c_tx_empty         = '0;
-    assign irq.i2c_tx_nonempty      = '0;
+    assign irq.i2c_cmd_complete     = '0;
+    assign irq.i2c_tx_stretch       = '0;
     assign irq.i2c_tx_overflow      = '0;
-    assign irq.i2c_acq_overflow     = '0;
-    assign irq.i2c_ack_stop         = '0;
+    assign irq.i2c_acq_full         = '0;
+    assign irq.i2c_unexp_stop       = '0;
     assign irq.i2c_host_timeout     = '0;
 
     reg_err_slv #(
@@ -1058,8 +1056,6 @@ module cheshire_soc import cheshire_pkg::*; #(
     ) i_spi_host (
       .clk_i,
       .rst_ni,
-      .clk_core_i       ( clk_i              ),
-      .rst_core_ni      ( rst_ni             ),
       .reg_req_i        ( regbus_out_req[RegbusOutSpim] ),
       .reg_rsp_o        ( regbus_out_rsp[RegbusOutSpim] ),
       .cio_sck_o        ( spim_sck_o         ),

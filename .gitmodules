@@ -1,6 +1,4 @@
 [submodule "sw/deps/printf"]
 	path = sw/deps/printf
 	url = https://github.com/mpaland/printf
-[submodule "sw/deps/opentitan"]
-	path = sw/deps/opentitan
-	url = https://github.com/lowrisc/opentitan
+	ignore = dirty

@@ -500,6 +500,19 @@ module cheshire_soc_fixture;
     .RESET  ( rst_n   )
   );
 
+  // Preload with bootloader
+  initial begin
+    for (int i = 0; i < $size(i_i2c_model.MemoryBlock); ++i)
+      i_i2c_model.MemoryBlock[i] = 'h9a;
+    /*
+    $readmemh(
+      "test/bootloader/bootself.memh",
+      i_M24FC1025.MemoryBlock
+    );
+    */
+  end
+
+
 
   /////////////////
   // Serial Link //
@@ -894,6 +907,7 @@ module cheshire_soc_fixture;
     .RESETNeg ( spi_reset_n )
   );
 
+/*
   spi_sd_model i_sd_model (
     .sclk   ( spi_sck       ),
     .rstn   ( spi_reset_n   ),
@@ -902,6 +916,9 @@ module cheshire_soc_fixture;
     .miso   ( spi_miso_sd   )
   );
 
+  */
+
+  assign spi_miso_sd = 0;
 
   ///////////////////
   // UART Receiver //
