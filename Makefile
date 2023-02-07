@@ -103,7 +103,8 @@ target/sim/vsim/compile.cheshire_soc.tcl: Bender.yml
 target/sim/models:
 	mkdir -p $@
 
-# Download (partially non-free) models from their sources
+# Download (partially non-free) simulation models from publically available sources;
+# by running these targets or targets depending on them, you accept this (see README.md).
 target/sim/models/s25fs512s.sv: Bender.yml | target/sim/models
 	wget --no-check-certificate https://freemodelfoundry.com/fmf_vlog_models/flash/s25fs512s.sv -O $@
 	touch $@
