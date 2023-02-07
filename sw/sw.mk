@@ -43,12 +43,12 @@ sw-clean:
 DEPS_INCS  = -I$(shell $(BENDER) path axi_llc)/sw/include
 DEPS_INCS += -I$(SW_DIR)/deps/opentitan
 DEPS_INCS += -I$(SW_DIR)/deps/printf
-DEPS_SRCS  = $(wildcard $(shell $(BENDER) path axi_llc)/sw/lib/*.c)
+DEPS_SRCS  = $(shell $(BENDER) path axi_llc)/sw/lib/axi_llc_reg32.c
 DEPS_SRCS += $(SW_DIR)/deps/opentitan/sw/device/lib/base/bitfield.c
 DEPS_SRCS += $(SW_DIR)/deps/opentitan/sw/device/lib/base/memory.c
 DEPS_SRCS += $(SW_DIR)/deps/opentitan/sw/device/lib/base/mmio.c
 DEPS_SRCS += $(SW_DIR)/deps/opentitan/sw/device/lib/dif/dif_i2c.c
-DEPS_SRCS += $(wildcard $(SW_DIR)/deps/printf/*.c)
+DEPS_SRCS += $(SW_DIR)/deps/printf/printf.c
 
 # Apply existing patches whenever deps (including patches) change
 $(SW_DIR)/deps/.patched: $(wildcard $(SW_DIR)/deps/*.patch wildcard $(SW_DIR)/deps/*/.git)
