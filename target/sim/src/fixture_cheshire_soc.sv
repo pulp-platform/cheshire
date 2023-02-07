@@ -368,6 +368,67 @@ module cheshire_soc_fixture;
     $display("[JTAG] Resuming hart 0 from 0x%h", start_addr);
   endtask
 
+  // Run HART 0 from specified address
+  task jtag_idle_boot(
+    input logic [63:0] start_addr
+  );
+    automatic dm::sbcs_t sbcs = jtag_init_sbcs;
+    automatic logic [31:0] data;
+
+    // Update SBCS
+    sbcs.sbreadonaddr = 0;
+    sbcs.sbreadondata = 0;
+    sbcs.sbautoincrement = 0;
+    sbcs.sbaccess = 3;
+
+    riscv_dbg.write_dmi(dm::SBCS, sbcs);
+    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+
+    $display("[JTAG] Using idle boot bootmethod");
+
+    data = start_addr[31:0];
+
+    // scratch0 = entrypoint
+    riscv_dbg.write_dmi(dm::SBAddress0, RegbusAddrmap[RegbusOutCsr].start_addr[31:0]+32'h4);
+    riscv_dbg.write_dmi(dm::SBData0, data);
+
+    // Wait for the write to complete
+    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+
+    if(sbcs.sberror) begin
+      sbcs.sberror = 1;
+      riscv_dbg.write_dmi(dm::SBCS, sbcs);
+      do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+      while (sbcs.sbbusy);
+    end
+
+    // scratch1 = 0x1 => start token
+    data = 32'h1;
+    riscv_dbg.write_dmi(dm::SBAddress0, RegbusAddrmap[RegbusOutCsr].start_addr[31:0]+32'h8);
+    riscv_dbg.write_dmi(dm::SBData0, data);
+
+    $display("[JTAG] Providing entrypoint 0x%h", start_addr);
+
+    // Wait for the write to complete
+    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+
+    if(sbcs.sberror) begin
+      sbcs.sberror = 1;
+      riscv_dbg.write_dmi(dm::SBCS, sbcs);
+      do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+      while (sbcs.sbbusy);
+    end
+
+    sbcs = jtag_init_sbcs;
+    // Ensure the system bus is ready again
+    riscv_dbg.write_dmi(dm::SBCS, sbcs);
+    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+  endtask
+
   task jtag_wait_for_eoc(
     input logic [63:0] poll_addr,
     output int         exit_status
@@ -702,6 +763,47 @@ module cheshire_soc_fixture;
     end
   endtask
 
+
+  // Randomize memory contents
+  task sl_rand(
+    input logic [AxiAddrWidth-1:0]  addr,
+    input logic [AxiDataWidth-1:0]  len
+  );
+    logic [AxiDataWidth-1:0] wdata [$];
+    logic [AxiDataWidth-1:0] random_data;
+    int loopcount;
+
+    $display("[SL] Randomizing 0x%h -> 0x%h", addr, addr+len);
+
+    for (int i = 0; i < len/(256*8); i++) begin
+      wdata = {};
+
+      // Load the queue for one burst
+      for(int k = 0; k < 256; k++) begin
+        void'(std::randomize(random_data));
+        wdata.push_back(random_data);
+      end
+
+      $display(" - Word %0d/%0d (%0d%%)", i*256, len/8, i*256*100/((len/8) > 1 ? (len/8)-1 : 1));
+      sl_write_size(addr + (i*256 * 8), 3, wdata);
+
+      loopcount = i+1;
+    end
+
+    // Complete the remainder in a shorter burst
+    if(loopcount*256*8 < len) begin
+      wdata = {};
+
+      for(int k = loopcount*256*8; k < len; k++) begin
+        void'(std::randomize(random_data));
+        wdata.push_back(random_data);
+      end
+
+      $display(" - Word %0d/%0d (%0d%%)", loopcount*256, len/8, loopcount*256*100/((len/8) > 1 ? (len/8)-1 : 1));
+      sl_write_size(addr + (loopcount*256 * 8), 3, wdata);
+    end
+  endtask
+
   //////////
   // DRAM //
   //////////
@@ -749,7 +851,8 @@ module cheshire_soc_fixture;
   // SPI Model //
   ///////////////
 
-  wire spi_sck, spi_cs;
+  wire spi_sck, spi_cs_flash, spi_cs_sd;
+  wire spi_miso_sd;
   wire [3:0] spi_io;
   wire spi_reset_n;
   wire spi_wp_n;
@@ -763,7 +866,8 @@ module cheshire_soc_fixture;
   assign spi_wp_n = 1'b1;
  
   assign spi_sck = spi_sck_en ? spi_sck_soc_out : 1'b0;
-  assign spi_cs = spi_cs_en[0] ? spi_cs_soc_out[0] : 2'b1;
+  assign spi_cs_sd    = spi_cs_en[0] ? spi_cs_soc_out[0] : 2'b1;
+  assign spi_cs_flash = spi_cs_en[1] ? spi_cs_soc_out[1] : 2'b1;
 
   // Pull-ups
   assign (weak0, weak1) spi_io = 4'b1111;
@@ -772,6 +876,8 @@ module cheshire_soc_fixture;
   assign spi_io[1] = spi_sd_en[1] ? spi_sd_soc_out[1] : 1'bz;
   assign spi_io[2] = spi_sd_en[2] ? spi_sd_soc_out[2] : 1'bz;
   assign spi_io[3] = spi_sd_en[3] ? spi_sd_soc_out[3] : 1'bz;
+
+  assign spi_io[1] = spi_cs_sd    ? 1'bz : spi_miso_sd;
     
   assign spi_sd_soc_in = spi_io;
     
@@ -783,9 +889,17 @@ module cheshire_soc_fixture;
     .SO       ( spi_io[1]   ),
     // Controls
     .SCK      ( spi_sck     ),
-    .CSNeg    ( spi_cs      ),
+    .CSNeg    ( spi_cs_flash),
     .WPNeg    ( spi_wp_n    ),
     .RESETNeg ( spi_reset_n )
+  );
+
+  spi_sd_model i_sd_model (
+    .sclk   ( spi_sck       ),
+    .rstn   ( spi_reset_n   ),
+    .ncs    ( spi_cs_sd     ),
+    .mosi   ( spi_io[0]     ),
+    .miso   ( spi_miso_sd   )
   );
 
 

@@ -10,6 +10,7 @@
 
 #include "opentitan_qspi.h"
 #include "printf.h"
+#include "spi_regs.h"
 
 //#define DEBUG
 
@@ -17,7 +18,7 @@ static inline void writel(unsigned int val, volatile unsigned int *addr) { *addr
 
 static inline unsigned int readl(volatile unsigned int *addr) { return *addr; }
 
-int opentitan_qspi_init(volatile unsigned int *qspi, unsigned int clk_freq, unsigned int max_freq,
+int opentitan_qspi_init(volatile unsigned int *qspi, unsigned int clk_freq, unsigned int max_freq, unsigned int cs,
                         opentitan_qspi_t *priv) {
     if (!priv)
         return -1;
@@ -35,6 +36,8 @@ int opentitan_qspi_init(volatile unsigned int *qspi, unsigned int clk_freq, unsi
     if (!priv->max_freq || priv->max_freq > (priv->clk_freq / 2))
         priv->max_freq = 500000;
 
+    priv->used_cs = cs;
+
 #ifdef DEBUG
     printf("[opentitan_qspi] clock-frequency = %d Hz\r\n", priv->clk_freq);
     printf("[opentitan_qspi] max-frequency = %d Hz\r\n", priv->max_freq);
@@ -45,7 +48,7 @@ int opentitan_qspi_init(volatile unsigned int *qspi, unsigned int clk_freq, unsi
 }
 
 int opentitan_qspi_probe(opentitan_qspi_t *priv) {
-    unsigned int status;
+    unsigned int status = 0;
     unsigned int loop_count = 0;
 
     // Disable all interrupts
@@ -71,7 +74,7 @@ int opentitan_qspi_probe(opentitan_qspi_t *priv) {
 
     // Configure the CS
     // De-select the connected peripheral by default
-    writel(OPENTITAN_QSPI_CS_UNUSED, priv->regs + REG_CSID);
+    writel(((priv->used_cs + 1) % SPI_HOST_PARAM_NUM_C_S), priv->regs + REG_CSID);
 
     // Read the byte order
     status = readl((volatile unsigned int *)(priv->regs + REG_STATUS));
@@ -85,14 +88,14 @@ static int opentitan_qspi_issue_dummy(opentitan_qspi_t *priv, unsigned int bitle
 
     if (flags & SPI_XFER_BEGIN) {
         priv->cs_state = 1;
-        writel(OPENTITAN_QSPI_CS_USED, priv->regs + REG_CSID);
+        writel(priv->used_cs, priv->regs + REG_CSID);
     }
 
     // Just setting the CS
     if (bitlen == 0) {
         if (flags & SPI_XFER_END) {
             priv->cs_state = 0;
-            writel(OPENTITAN_QSPI_CS_UNUSED, priv->regs + REG_CSID);
+            writel(((priv->used_cs + 1) % SPI_HOST_PARAM_NUM_C_S), priv->regs + REG_CSID);
             opentitan_qspi_issue_dummy(priv, 8, 0);
         }
         return 0;
@@ -122,7 +125,7 @@ static int opentitan_qspi_issue_dummy(opentitan_qspi_t *priv, unsigned int bitle
 
     if (flags & SPI_XFER_END) {
         priv->cs_state = 0;
-        writel(OPENTITAN_QSPI_CS_UNUSED, priv->regs + REG_CSID);
+        writel(((priv->used_cs + 1) % SPI_HOST_PARAM_NUM_C_S), priv->regs + REG_CSID);
     }
 
     return 0;
@@ -146,7 +149,7 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
         return -1;
     }
 
-    unsigned int num_bytes = bitlen / 8;
+    int num_bytes = bitlen / 8;
     unsigned char csaat = !(flags & SPI_XFER_END) && (priv->cs_state || flags & SPI_XFER_BEGIN);
     unsigned char dir = (din != NULL) | ((dout != NULL) << 1);
 
@@ -157,14 +160,14 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 
     if (flags & SPI_XFER_BEGIN) {
         priv->cs_state = 1;
-        writel(OPENTITAN_QSPI_CS_USED, priv->regs + REG_CSID);
+        writel(priv->used_cs, priv->regs + REG_CSID);
     }
 
     // Just setting the CS
     if (bitlen == 0) {
         if (flags & SPI_XFER_END) {
             priv->cs_state = 0;
-            writel(OPENTITAN_QSPI_CS_UNUSED, priv->regs + REG_CSID);
+            writel(((priv->used_cs + 1) % SPI_HOST_PARAM_NUM_C_S), priv->regs + REG_CSID);
             opentitan_qspi_issue_dummy(priv, 8, 0);
         }
         return 0;
@@ -174,7 +177,7 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
     unsigned int status = 0;
 
     if (dir >> 1) {
-        unsigned int i = 0;
+        int i = 0;
         // Take care of the word aligned part
         for (; i < num_bytes / 4; i++) {
             unsigned char tmp[4];
@@ -234,7 +237,7 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
     }
 
     // Set the correct transfer mode
-    command = ((num_bytes & 0x1FF) - 1) | ((csaat & 0x1) << 9) | (dir << 12);
+    command = ((num_bytes - 1) & 0x1FF) | ((csaat & 0x1) << 9) | (dir << 12);
 
     // Wait for the SPI host to be ready
     unsigned int ready_timeout = OPENTITAN_QSPI_READY_TIMEOUT;
@@ -421,7 +424,7 @@ static int opentitan_qspi_xfer_single(opentitan_qspi_t *priv, unsigned int bitle
 
     if (flags & SPI_XFER_END) {
         priv->cs_state = 0;
-        writel(OPENTITAN_QSPI_CS_UNUSED, priv->regs + REG_CSID);
+        writel(((priv->used_cs + 1) % SPI_HOST_PARAM_NUM_C_S), priv->regs + REG_CSID);
     }
 
     return 0;
@@ -492,13 +495,13 @@ int opentitan_qspi_set_speed(opentitan_qspi_t *priv, unsigned int speed) {
         clkdiv = ~(-1 << 16);
     }
 
-    configopts = (unsigned int)readl((volatile unsigned int *)(priv->regs + REG_CONFIGOPTS_0 + OPENTITAN_QSPI_CS_USED));
+    configopts = (unsigned int)readl((volatile unsigned int *)(priv->regs + REG_CONFIGOPTS_0 + priv->used_cs));
     configopts = (configopts & (-1 << 16)) | (clkdiv & ~(-1 << 16));
-    writel(configopts, priv->regs + REG_CONFIGOPTS_0 + OPENTITAN_QSPI_CS_USED);
+    writel(configopts, priv->regs + REG_CONFIGOPTS_0 + priv->used_cs);
 
     // This is dirty... we are wasting a whole chip select just to be able to control the chipselect
     // independently of the rest of the SPI bus
-    writel(configopts, priv->regs + REG_CONFIGOPTS_0 + OPENTITAN_QSPI_CS_UNUSED);
+    writel(configopts, priv->regs + REG_CONFIGOPTS_0 + ((priv->used_cs + 1) % SPI_HOST_PARAM_NUM_C_S));
 
     return 0;
 }
@@ -506,10 +509,10 @@ int opentitan_qspi_set_speed(opentitan_qspi_t *priv, unsigned int speed) {
 int opentitan_qspi_set_mode(opentitan_qspi_t *priv, unsigned int mode) {
     unsigned int configopts = 0;
 
-    configopts = (unsigned int)readl((volatile unsigned int *)(priv->regs + REG_CONFIGOPTS_0 + OPENTITAN_QSPI_CS_USED));
+    configopts = (unsigned int)readl((volatile unsigned int *)(priv->regs + REG_CONFIGOPTS_0 + priv->used_cs));
     configopts = (configopts & 0xFFFF) | (0xFFF << 16) | ((mode & 0x3) << 30);
-    writel(configopts, priv->regs + REG_CONFIGOPTS_0 + OPENTITAN_QSPI_CS_USED);
-    writel(configopts, priv->regs + REG_CONFIGOPTS_0 + OPENTITAN_QSPI_CS_UNUSED);
+    writel(configopts, priv->regs + REG_CONFIGOPTS_0 + priv->used_cs);
+    writel(configopts, priv->regs + REG_CONFIGOPTS_0 + ((priv->used_cs + 1) % SPI_HOST_PARAM_NUM_C_S));
 
     return 0;
 }

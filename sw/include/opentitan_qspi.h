@@ -17,9 +17,6 @@
 #define OPENTITAN_QSPI_RXFIFO_DEPTH 256
 #define OPENTITAN_QSPI_FIFO_DEPTH MIN(OPENTITAN_QSPI_TXFIFO_DEPTH, OPENTITAN_QSPI_RXFIFO_DEPTH)
 
-#define OPENTITAN_QSPI_CS_USED 0
-#define OPENTITAN_QSPI_CS_UNUSED 1
-
 #define OPENTITAN_QSPI_READY_TIMEOUT 10000
 #define OPENTITAN_QSPI_READ_TIMEOUT 10000
 
@@ -49,11 +46,12 @@ typedef struct opentitan_qspi_priv {
     volatile unsigned int *regs;
     unsigned int clk_freq;    /* Peripheral clock frequency */
     unsigned int max_freq;    /* Max supported SPI frequency */
+    unsigned int used_cs;
     unsigned int cs_state;    /* 0 = CS currently not asserted, 1 = CS currently asserted */
     unsigned char byte_order; /* 1 = LSB shifted in/out first, 0 = MSB shifted in/out first */
 } opentitan_qspi_t;
 
-int opentitan_qspi_init(volatile unsigned int *qspi, unsigned int clk_freq, unsigned int max_freq,
+int opentitan_qspi_init(volatile unsigned int *qspi, unsigned int clk_freq, unsigned int max_freq, unsigned int cs,
                         opentitan_qspi_t *priv);
 
 int opentitan_qspi_probe(opentitan_qspi_t *priv);
