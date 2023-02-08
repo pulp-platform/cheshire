@@ -83,9 +83,10 @@ hw-all: $(shell $(BENDER) path serial_link)/.generated
 
 # Boot ROM (needs SW stack)
 BROM_SRCS = $(wildcard hw/bootrom/*.S hw/bootrom/*.c) $(LIBS)
+BROM_FLAGS = $(RISCV_LDFLAGS) -Os -fno-zero-initialized-in-bss -flto -fwhole-program -s
 
 hw/bootrom/cheshire_bootrom.elf: hw/bootrom/cheshire_bootrom.ld $(BROM_SRCS)
-	$(RISCV_CC) $(INCLUDES) $(RISCV_BROM_FLAGS) -T$< $(RISCV_LDFLAGS) -o $@ $(BROM_SRCS)
+	$(RISCV_CC) $(INCLUDES) -T$< $(BROM_FLAGS) -o $@ $(BROM_SRCS)
 
 hw/bootrom/cheshire_bootrom.sv: hw/bootrom/cheshire_bootrom.bin util/gen_bootrom.py
 	$(PYTHON3) util/gen_bootrom.py --sv-module cheshire_bootrom $< > $@

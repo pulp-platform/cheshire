@@ -9,7 +9,7 @@ ENTRY(_start)
 
 MEMORY
 {
-  bootrom (rx)  : ORIGIN = 0x01000000, LENGTH = 64K
+  bootrom (rx)  : ORIGIN = 0x01000000, LENGTH = 4K
   spm (rwx)     : ORIGIN = 0x70000000, LENGTH = 24K
 }
 

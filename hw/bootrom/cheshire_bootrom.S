@@ -18,7 +18,7 @@ _start:
     la gp, __global_pointer$
     .option pop
 
-    // Reset all the registers
+    // Reset all GPRs
     li x1, 0
     li x4, 0
     li x5, 0
@@ -47,6 +47,7 @@ _start:
     li x28, 0
     li x29, 0
     li x30, 0
+    li x31, 0
 
     // Configure the LLC to all SPM
     la t0, __base_axi_llc
