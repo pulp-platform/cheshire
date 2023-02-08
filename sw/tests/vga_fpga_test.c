@@ -10,6 +10,7 @@
 #include "trap.h"
 #include "uart.h"
 #include <stdint.h>
+#include "util.h"
 
 extern void *__base_dram;
 extern void *__base_vga;
@@ -245,14 +246,14 @@ int main(void) {
     init_uart(50000000, 115200);
     uart_initialized = 1;
 
-    printf_("Testing VGA\r\n");
+    PRINTF("Testing VGA\r\n");
 
     // Disable D-Cache
     asm volatile("addi t0, x0, 1\n   \
              csrrc x0, 0x701, t0\n" ::
                      : "t0");
 
-    printf_("Writing checkerboard to DRAM\r\n");
+    PRINTF("Writing checkerboard to DRAM\r\n");
 
     // checkerboard_640_350();
     color_matrix_640_480();
@@ -263,7 +264,7 @@ int main(void) {
     // init_vga_800_600();
     // init_vga_testmode();
 
-    printf_("VGA initialized\r\n");
+    PRINTF("VGA initialized\r\n");
 
     // render_gif_640_480((unsigned long int *) &_binary_graphics_image_bin_start);
     // render_gif_800_600((unsigned long int *) &_binary_graphics_image_bin_start);

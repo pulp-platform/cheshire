@@ -20,6 +20,8 @@ REGGEN        ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lo
 
 RISCV_FLAGS   ?= -march=rv64gc_zifencei -mabi=lp64d -O2 -Wall -static -ffunction-sections -fdata-sections -frandom-seed=cheshire
 RISCV_CCFLAGS ?= $(RISCV_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
+# Add here application-specific flags
+RISCV_APP_CCFLAGS += $(RISCV_CCFLAGS) -DDEBUG
 RISCV_LDFLAGS ?= $(RISCV_FLAGS) -nostartfiles -Wl,--gc-sections
 
 TOP_DIR       ?= $(shell git rev-parse --show-toplevel)
@@ -104,10 +106,10 @@ sw-headers: $(GEN_HDRS)
 
 # All objects require up-to-date patches and headers
 %.o: %.c $(SW_DIR)/deps/.patched $(GEN_HDRS)
-	$(RISCV_CC) $(INCLUDES) $(RISCV_CCFLAGS) -c $< -o $@
+	$(RISCV_CC) $(INCLUDES) $(RISCV_APP_CCFLAGS) -c $< -o $@
 
 %.o: %.S $(SW_DIR)/deps/.patched $(GEN_HDRS)
-	$(RISCV_CC) $(INCLUDES) $(RISCV_CCFLAGS) -c $< -o $@
+	$(RISCV_CC) $(INCLUDES) $(RISCV_APP_CCFLAGS) -c $< -o $@
 
 define ld_elf_rule
 .PRECIOUS: %.$(1).elf

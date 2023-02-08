@@ -101,7 +101,7 @@ int xilinx_ina219_read_reg(dif_i2c_t *i2c, uint8_t address, uint8_t reg) {
 int main(void) {
     init_uart(CORE_FREQ_HZ, 115200);
     uart_initialized = 1;
-    printf("Testing I2C\r\n");
+    PRINTF("Testing I2C\r\n");
 
     // Obtain handle to I2C
     // mmio_region_t i2c_base = mmio_region_from_addr((uintptr_t) &__base_i2c);
@@ -127,12 +127,12 @@ int main(void) {
     // We do *not* set up any interrupts; traps of any kind should be fatal
     CHECK_ELSE_TRAP(dif_i2c_host_set_enabled(&i2c, kDifI2cToggleEnabled), kDifI2cOk)
 
-    printf("Configured I2C in host mode with a SCL period of %u ns\r\n", timing_config.scl_period_nanos);
+    PRINTF("Configured I2C in host mode with a SCL period of %u ns\r\n", timing_config.scl_period_nanos);
 
     // Init all the INA219s
     for (int i = 0; i < 6; i++) {
         xilinx_ina219_init(&i2c, ina219_addresses[i]);
-        printf("Initialized INA219 for %s\r\n", ina219_rails[i]);
+        PRINTF("Initialized INA219 for %s\r\n", ina219_rails[i]);
     }
 
     while (true) {
@@ -152,16 +152,16 @@ int main(void) {
 
             current = current >> 1;
 
-            printf("%s:\r\n", ina219_rails[i]);
-            printf("\tShunt Voltage: %d uV\r\n", shunt);
-            printf("\tRail Voltage: %d mV\r\n", voltage);
-            printf("\tPower: %d mW\r\n", power);
-            printf("\tCurrent: %d mA\r\n\r\n", current);
+            PRINTF("%s:\r\n", ina219_rails[i]);
+            PRINTF("\tShunt Voltage: %d uV\r\n", shunt);
+            PRINTF("\tRail Voltage: %d mV\r\n", voltage);
+            PRINTF("\tPower: %d mW\r\n", power);
+            PRINTF("\tCurrent: %d mA\r\n\r\n", current);
 
             overall_power += power;
         }
 
-        printf("System Power: %d mW\r\n", overall_power);
+        PRINTF("System Power: %d mW\r\n", overall_power);
 
         sleep(1000000);
     }

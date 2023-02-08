@@ -13,3 +13,10 @@
 #define CHECK_ELSE_TRAP(call, code) \
     if ((call) != (code)) \
         asm volatile("addi a0, x0, -3\n j _exit" ::: "a0");
+
+#ifdef DEBUG
+#define PRINTF(fmt, ...) printf_("%s:%d: " fmt, __func__, __LINE__, ##__VA_ARGS__);
+#else
+#define PRINTF(...) ((void)0)
+#endif
+

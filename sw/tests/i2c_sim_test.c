@@ -86,7 +86,7 @@ int main(void) {
         CHECK_ELSE_TRAP(dif_i2c_irq_acknowledge(&i2c, kDifI2cIrqNak), kDifI2cOk)
     } while (nak_set);
 
-    printf("Write done\r\n");
+    PRINTF("Write done\r\n");
 
     // Reset address
     CHECK_ELSE_TRAP(dif_i2c_write_byte(&i2c, 0b10100000, kDifI2cFmtStart, false), kDifI2cOk)

@@ -12,6 +12,7 @@
 #include "sleep.h"
 #include "trap.h"
 #include "uart.h"
+#include "util.h"
 
 #define DT_LEN 0x8
 #define FW_LEN 0x1800
@@ -58,13 +59,13 @@ int main(void) {
     gpt_find_partition(&spi, 0, &dt_lba);
     sd_copy_blocks(&spi, dt_lba, (unsigned char *)0x70010000, DT_LEN);
 
-    printf("Copied DT to 0x70010000\r\n");
+    PRINTF("Copied DT to 0x70010000\r\n");
 
     // Copy firmware to DRAM
     gpt_find_partition(&spi, 1, &fw_lba);
     sd_copy_blocks(&spi, fw_lba, (unsigned char *)0x80000000, FW_LEN);
 
-    printf("Copied FW to 0x80000000\r\n");
+    PRINTF("Copied FW to 0x80000000\r\n");
 
     void (*entry)(int, int, int) = (void (*)(int, int, int))0x80000000;
 

@@ -11,6 +11,7 @@
 #include "sleep.h"
 #include "trap.h"
 #include "uart.h"
+#include "util.h"
 
 #define BENCH_LBA 0x800
 #define BENCH_LEN 0x1800
@@ -72,12 +73,12 @@ int main(void) {
     for (int i = 0; i < (sizeof(speeds) / sizeof(unsigned int)); i++) {
         unsigned long int mismatches = 0;
 
-        printf("--- Zeroing the memory region ---\r\n");
+        PRINTF("--- Zeroing the memory region ---\r\n");
         for (int x = 0; x < BENCH_LEN * 512 / 8; x++) {
             dram[x] = 0L;
         }
 
-        printf("--- Testing %d Hz ---\r\n", speeds[i]);
+        PRINTF("--- Testing %d Hz ---\r\n", speeds[i]);
         opentitan_qspi_set_speed(&spi, speeds[i]);
 
         // for(int b = 0; b < BENCH_LEN; b++){
@@ -87,20 +88,20 @@ int main(void) {
         // Copy check pattern to DRAM
         ret = sd_copy_blocks(&spi, BENCH_LBA, (unsigned char *)0x80000000, BENCH_LEN);
 
-        printf("----- Check pattern copied with return value %d. Verifying... -----\r\n", ret);
+        PRINTF("----- Check pattern copied with return value %d. Verifying... -----\r\n", ret);
 
         for (int j = 0; j < BENCH_LEN * 512 / 8; j++) {
             unsigned long int expected = ((4 * j) & 0xFFFFL) | (((4 * j + 1) & 0xFFFFL) << 16) |
                                          (((4 * j + 2) & 0xFFFFL) << 32) | (((4 * j + 3) & 0xFFFFL) << 48);
 
             if (expected != dram[j]) {
-                printf("!!! Mismatch @ 0x%x: Expected: 0x%lx <-> Actual: 0x%lx !!!\r\n", (unsigned long int)&dram[j],
+                PRINTF("!!! Mismatch @ 0x%x: Expected: 0x%lx <-> Actual: 0x%lx !!!\r\n", (unsigned long int)&dram[j],
                        expected, dram[j]);
                 mismatches++;
             }
         }
 
-        printf("----- %d Hz: %ld mismatches -----\r\n\n\n", speeds[i], mismatches);
+        PRINTF("----- %d Hz: %ld mismatches -----\r\n\n\n", speeds[i], mismatches);
     }
 
     return 0;
