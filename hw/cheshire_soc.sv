@@ -569,6 +569,13 @@ module cheshire_soc import cheshire_pkg::*; #(
     AXI_BUS #(
       .AXI_ADDR_WIDTH ( AxiAddrWidth          ),
       .AXI_DATA_WIDTH ( AxiDataWidth          ),
+      .AXI_ID_WIDTH   ( AxiXbarSlaveIdWidth   ),
+      .AXI_USER_WIDTH ( AxiUserWidth          )
+    ) axi_atomics_dma_wrap_cut ();
+
+    AXI_BUS #(
+      .AXI_ADDR_WIDTH ( AxiAddrWidth          ),
+      .AXI_DATA_WIDTH ( AxiDataWidth          ),
       .AXI_ID_WIDTH   ( AxiXbarMasterIdWidth  ),
       .AXI_USER_WIDTH ( AxiUserWidth          )
     ) dma_wrap_axi_xbar ();
@@ -598,17 +605,31 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AXI_DATA_WIDTH     ( AxiDataWidth        ),
       .AXI_ID_WIDTH       ( AxiXbarSlaveIdWidth ),
       .AXI_USER_WIDTH     ( AxiUserWidth        ),
-      .AXI_MAX_READ_TXNS  ( 4                   ),
-      .AXI_MAX_WRITE_TXNS ( 4                   ),
+      .AXI_MAX_READ_TXNS  ( 1                   ),
+      .AXI_MAX_WRITE_TXNS ( 1                   ),
       .AXI_USER_AS_ID     ( 1'b1                ),
       .AXI_USER_ID_MSB    ( 0                   ),
       .AXI_USER_ID_LSB    ( 0                   ),
-      .RISCV_WORD_WIDTH   ( 64                  )
+      .RISCV_WORD_WIDTH   ( 64                  ),
+      .N_AXI_CUT          ( 1'b1                )
     ) i_axi_riscv_atomics_dma (
       .clk_i,
       .rst_ni,
       .mst                ( axi_atomics_dma_wrap.Master ),
       .slv                ( axi_xbar_atomics_dma.Slave  )
+    );
+
+    axi_multicut_intf #(
+      .ADDR_WIDTH(AxiAddrWidth),
+      .DATA_WIDTH(AxiDataWidth),
+      .ID_WIDTH  (AxiXbarSlaveIdWidth),
+      .USER_WIDTH(AxiUserWidth),
+      .NUM_CUTS  (1)
+    ) i_axi_multicut_intf_dma (
+      .clk_i (clk_i ),
+      .rst_ni(rst_ni),
+      .in    (axi_atomics_dma_wrap.Slave    ),
+      .out   (axi_atomics_dma_wrap_cut.Master   )
     );
 
     dma_core_wrap #(
@@ -622,7 +643,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .rst_ni,
       .testmode_i,
       .axi_master       ( dma_wrap_axi_xbar.Master    ),
-      .axi_slave        ( axi_atomics_dma_wrap.Slave  )
+      .axi_slave        ( axi_atomics_dma_wrap_cut.Slave  )
     );
 
   end : gen_dma else begin : gen_dma_dummy
@@ -665,11 +686,18 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AXI_USER_WIDTH ( AxiUserWidth          )
   ) axi_dram_out();
 
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( AxiAddrWidth          ),
+    .AXI_DATA_WIDTH ( AxiDataWidth          ),
+    .AXI_ID_WIDTH   ( AxiXbarSlaveIdWidth   ),
+    .AXI_USER_WIDTH ( AxiUserWidth          )
+  ) axi_dram_out_cut();
+
   `AXI_ASSIGN_FROM_REQ(axi_xbar_atomics_dram, axi_xbar_mst_port_reqs[AxiXbarOutLlc])
   `AXI_ASSIGN_TO_RESP(axi_xbar_mst_port_rsps[AxiXbarOutLlc], axi_xbar_atomics_dram)
 
-  `AXI_ASSIGN_TO_REQ(axi_atomics_to_llc_req, axi_dram_out)
-  `AXI_ASSIGN_FROM_RESP(axi_dram_out, axi_atomics_to_llc_rsp)
+  `AXI_ASSIGN_TO_REQ(axi_atomics_to_llc_req, axi_dram_out_cut)
+  `AXI_ASSIGN_FROM_RESP(axi_dram_out_cut, axi_atomics_to_llc_rsp)
 
   axi_a48_d64_slv_u0_req_t  axi_atomics_to_llc_req;
   axi_a48_d64_slv_u0_resp_t axi_atomics_to_llc_rsp;
@@ -682,17 +710,31 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AXI_DATA_WIDTH     ( AxiDataWidth        ),
     .AXI_ID_WIDTH       ( AxiXbarSlaveIdWidth ),
     .AXI_USER_WIDTH     ( AxiUserWidth        ),
-    .AXI_MAX_READ_TXNS  ( 4                   ),
-    .AXI_MAX_WRITE_TXNS ( 4                   ),
+    .AXI_MAX_READ_TXNS  ( 1                   ),
+    .AXI_MAX_WRITE_TXNS ( 1                   ),
     .AXI_USER_AS_ID     ( 1'b1                ),
     .AXI_USER_ID_MSB    ( 0                   ),
     .AXI_USER_ID_LSB    ( 0                   ),
-    .RISCV_WORD_WIDTH   ( 64                  )
+    .RISCV_WORD_WIDTH   ( 64                  ),
+    .N_AXI_CUT          ( 1'b1                )
   ) i_axi_riscv_atomics_dram (
     .clk_i,
     .rst_ni,
     .mst                ( axi_dram_out.Master         ),
     .slv                ( axi_xbar_atomics_dram.Slave )
+  );
+
+  axi_multicut_intf #(
+    .ADDR_WIDTH(AxiAddrWidth),
+    .DATA_WIDTH(AxiDataWidth),
+    .ID_WIDTH  (AxiXbarSlaveIdWidth),
+    .USER_WIDTH(AxiUserWidth),
+    .NUM_CUTS  (1)
+  ) i_axi_multicut_intf_llc (
+    .clk_i (clk_i ),
+    .rst_ni(rst_ni),
+    .in    (axi_dram_out.Slave    ),
+    .out   (axi_dram_out_cut.Master   )
   );
 
   axi_llc_reg_wrap #(
@@ -778,6 +820,13 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AXI_USER_WIDTH ( AxiUserWidth          )
   ) axi_atomics_dw_conv();
 
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( AxiAddrWidth          ),
+    .AXI_DATA_WIDTH ( AxiDataWidth          ),
+    .AXI_ID_WIDTH   ( AxiXbarSlaveIdWidth   ),
+    .AXI_USER_WIDTH ( AxiUserWidth          )
+  ) axi_atomics_dw_conv_cut();
+
   axi_a48_d64_slv_u0_req_t  axi_xbar_atomics_req;
   axi_a48_d64_slv_u0_resp_t axi_xbar_atomics_rsp;
 
@@ -795,8 +844,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   `AXI_ASSIGN_TO_RESP(axi_xbar_atomics_rsp, axi_xbar_atomics_regbus)
 
   // From Atomics Wrap to DW Converter
-  `AXI_ASSIGN_TO_REQ(axi_atomics_dw_conv_req, axi_atomics_dw_conv)
-  `AXI_ASSIGN_FROM_RESP(axi_atomics_dw_conv, axi_atomics_dw_conv_rsp)
+  `AXI_ASSIGN_TO_REQ(axi_atomics_dw_conv_req, axi_atomics_dw_conv_cut)
+  `AXI_ASSIGN_FROM_RESP(axi_atomics_dw_conv_cut, axi_atomics_dw_conv_rsp)
 
   assign axi_xbar_atomics_req = axi_xbar_mst_port_reqs[AxiXbarOutRegbus];
   assign axi_xbar_mst_port_rsps[AxiXbarOutRegbus] = axi_xbar_atomics_rsp;
@@ -806,17 +855,31 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AXI_DATA_WIDTH     ( AxiDataWidth        ),
     .AXI_ID_WIDTH       ( AxiXbarSlaveIdWidth ),
     .AXI_USER_WIDTH     ( AxiUserWidth        ),
-    .AXI_MAX_READ_TXNS  ( 4                   ),
-    .AXI_MAX_WRITE_TXNS ( 4                   ),
+    .AXI_MAX_READ_TXNS  ( 1                   ),
+    .AXI_MAX_WRITE_TXNS ( 1                   ),
     .AXI_USER_AS_ID     ( 1'b1                ),
     .AXI_USER_ID_MSB    ( 0                   ),
     .AXI_USER_ID_LSB    ( 0                   ),
-    .RISCV_WORD_WIDTH   ( 64                  )
+    .RISCV_WORD_WIDTH   ( 64                  ),
+    .N_AXI_CUT          ( 1'b1                )
   ) i_axi_riscv_atomics_regbus (
     .clk_i,
     .rst_ni,
     .mst                ( axi_atomics_dw_conv.Master ),
     .slv                ( axi_xbar_atomics_regbus.Slave )
+  );
+
+  axi_multicut_intf #(
+    .ADDR_WIDTH(AxiAddrWidth),
+    .DATA_WIDTH(AxiDataWidth),
+    .ID_WIDTH  (AxiXbarSlaveIdWidth),
+    .USER_WIDTH(AxiUserWidth),
+    .NUM_CUTS  (1)
+  ) i_axi_multicut_intf_regbus (
+    .clk_i (clk_i ),
+    .rst_ni(rst_ni),
+    .in    (axi_atomics_dw_conv.Slave    ),
+    .out   (axi_atomics_dw_conv_cut.Master   )
   );
 
   axi_dw_converter #(
@@ -849,8 +912,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .DATA_WIDTH         ( 32                        ),
     .ID_WIDTH           ( AxiXbarSlaveIdWidth       ),
     .USER_WIDTH         ( AxiUserWidth              ),
-    .AXI_MAX_WRITE_TXNS ( 4                         ),
-    .AXI_MAX_READ_TXNS  ( 4                         ),
+    .AXI_MAX_WRITE_TXNS ( 1                         ),
+    .AXI_MAX_READ_TXNS  ( 1                         ),
     .DECOUPLE_W         ( 1                         ),
     .axi_req_t          ( axi_a48_d32_slv_u0_req_t  ),
     .axi_rsp_t          ( axi_a48_d32_slv_u0_resp_t ),
