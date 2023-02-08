@@ -10,15 +10,28 @@ module tb_cheshire_soc;
   cheshire_soc_fixture fix();
 
   string binary;
-  longint entry_int;
+  logic [1:0]  bootmode;
+  logic        testmode;
   logic [63:0] entry;
+  longint      entry_int;
   int          exit_status = 0;
 
   initial begin
 
-    fix.set_bootmode(3);
-    fix.set_testmode(0);
- 
+    if ($value$plusargs("BOOTMODE=%d", bootmode)) begin
+      fix.set_bootmode(bootmode);
+    end else begin
+      // If no BOOTMODE is provided, use default JTAG (2'h11)
+      fix.set_bootmode(3);
+    end
+
+    if ($value$plusargs("TESTMODE=%d", testmode)) begin
+      fix.set_testmode(testmode);
+    end else begin
+      // If no BOOTMODE is provided, use default JTAG
+      fix.set_testmode(0);
+    end
+
     fix.wait_for_reset();
 
     // Load binaries into memory (if any)
@@ -29,7 +42,7 @@ module tb_cheshire_soc;
       // Obtain the entry point from the ELF file
       void'(fix.get_entry(entry_int));
       entry = entry_int[63:0];
-      
+
     end else begin
       // If no ELF file is provided jump to the beginning of the SPM
       entry = cheshire_pkg::SpmBase;
