@@ -55,7 +55,14 @@ launch_runs impl_1
 wait_on_run impl_1
 launch_runs impl_1 -to_step write_bitstream
 wait_on_run impl_1
+
+#Check timing constraints
 open_run impl_1
+set timingrep [report_timing_summary -no_header -no_detailed_paths -return_string]
+if {! [string match -nocase {*timing constraints are met*} $timingrep]} {
+  send_msg_id {USER 1-1} ERROR {Timing constraints were not met.}
+  return -code error
+}
 
 # output Verilog netlist + SDC for timing simulation
 write_verilog -force -mode funcsim out/${project}_funcsim.v
