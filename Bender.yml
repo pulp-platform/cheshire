@@ -16,7 +16,7 @@ dependencies:
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",              version: =0.2.0  }
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                 version: =0.1.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells",              version: =1.28.0 }
-  iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                  version: =0.3.1  }
+  iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                  version: =0.4.1  }
   register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",    version: =0.3.8  }
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",             version: =0.7.0  }
   tech_cells_generic:       { git: "https://github.com/pulp-platform/tech_cells_generic.git",    version: =0.2.11 }
