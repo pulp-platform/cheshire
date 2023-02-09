@@ -605,13 +605,13 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AXI_DATA_WIDTH     ( AxiDataWidth        ),
       .AXI_ID_WIDTH       ( AxiXbarSlaveIdWidth ),
       .AXI_USER_WIDTH     ( AxiUserWidth        ),
-      .AXI_MAX_READ_TXNS  ( 1                   ),
-      .AXI_MAX_WRITE_TXNS ( 1                   ),
+      .AXI_MAX_READ_TXNS  ( MaxReadTxnsConfDma  ),
+      .AXI_MAX_WRITE_TXNS ( MaxWriteTxnsConfDma ),
       .AXI_USER_AS_ID     ( 1'b1                ),
       .AXI_USER_ID_MSB    ( 0                   ),
       .AXI_USER_ID_LSB    ( 0                   ),
       .RISCV_WORD_WIDTH   ( 64                  ),
-      .N_AXI_CUT          ( 1'b1                )
+      .N_AXI_CUT          ( AmoCutsConfDma      )
     ) i_axi_riscv_atomics_dma (
       .clk_i,
       .rst_ni,
@@ -620,16 +620,16 @@ module cheshire_soc import cheshire_pkg::*; #(
     );
 
     axi_multicut_intf #(
-      .ADDR_WIDTH(AxiAddrWidth),
-      .DATA_WIDTH(AxiDataWidth),
-      .ID_WIDTH  (AxiXbarSlaveIdWidth),
-      .USER_WIDTH(AxiUserWidth),
-      .NUM_CUTS  (1)
+      .ADDR_WIDTH ( AxiAddrWidth        ),
+      .DATA_WIDTH ( AxiDataWidth        ),
+      .ID_WIDTH   ( AxiXbarSlaveIdWidth ),
+      .USER_WIDTH ( AxiUserWidth        ),
+      .NUM_CUTS   ( AxiCutsConfDma      )
     ) i_axi_multicut_intf_dma (
-      .clk_i (clk_i ),
-      .rst_ni(rst_ni),
-      .in    (axi_atomics_dma_wrap.Slave    ),
-      .out   (axi_atomics_dma_wrap_cut.Master   )
+      .clk_i,
+      .rst_ni,
+      .in      ( axi_atomics_dma_wrap.Slave      ),
+      .out     ( axi_atomics_dma_wrap_cut.Master )
     );
 
     dma_core_wrap #(
@@ -642,7 +642,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clk_i,
       .rst_ni,
       .testmode_i,
-      .axi_master       ( dma_wrap_axi_xbar.Master    ),
+      .axi_master       ( dma_wrap_axi_xbar.Master        ),
       .axi_slave        ( axi_atomics_dma_wrap_cut.Slave  )
     );
 
@@ -710,13 +710,13 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AXI_DATA_WIDTH     ( AxiDataWidth        ),
     .AXI_ID_WIDTH       ( AxiXbarSlaveIdWidth ),
     .AXI_USER_WIDTH     ( AxiUserWidth        ),
-    .AXI_MAX_READ_TXNS  ( 1                   ),
-    .AXI_MAX_WRITE_TXNS ( 1                   ),
+    .AXI_MAX_READ_TXNS  ( MaxReadTxnsLlc      ),
+    .AXI_MAX_WRITE_TXNS ( MaxWriteTxnsLlc     ),
     .AXI_USER_AS_ID     ( 1'b1                ),
     .AXI_USER_ID_MSB    ( 0                   ),
     .AXI_USER_ID_LSB    ( 0                   ),
     .RISCV_WORD_WIDTH   ( 64                  ),
-    .N_AXI_CUT          ( 1'b1                )
+    .N_AXI_CUT          ( AmoCutsLlc          )
   ) i_axi_riscv_atomics_dram (
     .clk_i,
     .rst_ni,
@@ -725,16 +725,16 @@ module cheshire_soc import cheshire_pkg::*; #(
   );
 
   axi_multicut_intf #(
-    .ADDR_WIDTH(AxiAddrWidth),
-    .DATA_WIDTH(AxiDataWidth),
-    .ID_WIDTH  (AxiXbarSlaveIdWidth),
-    .USER_WIDTH(AxiUserWidth),
-    .NUM_CUTS  (1)
+    .ADDR_WIDTH ( AxiAddrWidth        ),
+    .DATA_WIDTH ( AxiDataWidth        ),
+    .ID_WIDTH   ( AxiXbarSlaveIdWidth ),
+    .USER_WIDTH ( AxiUserWidth        ),
+    .NUM_CUTS   ( AxiCutsLlc          )
   ) i_axi_multicut_intf_llc (
-    .clk_i (clk_i ),
-    .rst_ni(rst_ni),
-    .in    (axi_dram_out.Slave    ),
-    .out   (axi_dram_out_cut.Master   )
+    .clk_i,
+    .rst_ni,
+    .in      ( axi_dram_out.Slave      ),
+    .out     ( axi_dram_out_cut.Master )
   );
 
   axi_llc_reg_wrap #(
@@ -855,31 +855,31 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AXI_DATA_WIDTH     ( AxiDataWidth        ),
     .AXI_ID_WIDTH       ( AxiXbarSlaveIdWidth ),
     .AXI_USER_WIDTH     ( AxiUserWidth        ),
-    .AXI_MAX_READ_TXNS  ( 1                   ),
-    .AXI_MAX_WRITE_TXNS ( 1                   ),
+    .AXI_MAX_READ_TXNS  ( MaxReadTxnsPeriph   ),
+    .AXI_MAX_WRITE_TXNS ( MaxWriteTxnsPeriph  ),
     .AXI_USER_AS_ID     ( 1'b1                ),
     .AXI_USER_ID_MSB    ( 0                   ),
     .AXI_USER_ID_LSB    ( 0                   ),
     .RISCV_WORD_WIDTH   ( 64                  ),
-    .N_AXI_CUT          ( 1'b1                )
+    .N_AXI_CUT          ( AmoCutsPeriph       )
   ) i_axi_riscv_atomics_regbus (
     .clk_i,
     .rst_ni,
-    .mst                ( axi_atomics_dw_conv.Master ),
+    .mst                ( axi_atomics_dw_conv.Master    ),
     .slv                ( axi_xbar_atomics_regbus.Slave )
   );
 
   axi_multicut_intf #(
-    .ADDR_WIDTH(AxiAddrWidth),
-    .DATA_WIDTH(AxiDataWidth),
-    .ID_WIDTH  (AxiXbarSlaveIdWidth),
-    .USER_WIDTH(AxiUserWidth),
-    .NUM_CUTS  (1)
+    .ADDR_WIDTH ( AxiAddrWidth         ),
+    .DATA_WIDTH ( AxiDataWidth         ),
+    .ID_WIDTH   ( AxiXbarSlaveIdWidth  ),
+    .USER_WIDTH ( AxiUserWidth         ),
+    .NUM_CUTS   ( AxiCutsPeriph        )
   ) i_axi_multicut_intf_regbus (
-    .clk_i (clk_i ),
-    .rst_ni(rst_ni),
-    .in    (axi_atomics_dw_conv.Slave    ),
-    .out   (axi_atomics_dw_conv_cut.Master   )
+    .clk_i,
+    .rst_ni,
+    .in      (axi_atomics_dw_conv.Slave       ),
+    .out     (axi_atomics_dw_conv_cut.Master  )
   );
 
   axi_dw_converter #(
