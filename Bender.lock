@@ -15,7 +15,7 @@ packages:
     - apb
     - register_interface
   ariane:
-    revision: 1db4bcd5164742c09605a91045bfbab7d86c0ee0
+    revision: 502e0b5543e2520ef1b94492337853d826d4082a
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6
@@ -87,8 +87,8 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   idma:
-    revision: 16e526511fed8144373f2c35c4fa075ff4dbce67
-    version: 0.4.1
+    revision: b31e8f019c657eff4126bc789f0336d403da6766
+    version: 0.4.2
     source:
       Git: https://github.com/pulp-platform/iDMA.git
     dependencies:
