@@ -51,7 +51,7 @@ int main(void) {
     unsigned long int *dram = (unsigned long *)0x80000000;
     int ret = 0;
 
-    init_uart(50000000, 115200);
+    init_uart(200000000, 115200);
     uart_initialized = 1;
 
     // Setup the SPI Host

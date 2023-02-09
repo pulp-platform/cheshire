@@ -422,8 +422,8 @@ void read_8_bit_access(void *addr, int length) {
 }
 
 int main(void) {
-    // init_uart(200000000, 115200);
-    init_uart(50000000, 115200);
+    init_uart(200000000, 115200);
+    //init_uart(50000000, 115200);
     uart_initialized = 1;
     printf_("Testing addressing throughout the system\r\n");
 
