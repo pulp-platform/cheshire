@@ -81,6 +81,7 @@ define hdr_gen_rule
 GEN_HDRS += $$(SW_DIR)/include/$(1).h
 
 $$(SW_DIR)/include/$(1).h: $(2)
+	mkdir -p $$(dir $$@)
 	$$(REGGEN) --cdefines $$< > $$@
 endef
 
@@ -89,12 +90,12 @@ SLINK_DIR =  $(shell bender path serial_link)
 VGA_DIR = $(shell bender path axi_vga)
 LLC_DIR = $(shell bender path axi_llc)
 
-$(eval $(call hdr_gen_rule,i2c_regs,$(OT_PERI_DIR)/src/i2c/data/i2c.hjson $(OT_PERI_DIR)/.generated))
-$(eval $(call hdr_gen_rule,spi_regs,$(OT_PERI_DIR)/src/spi_host/data/spi_host.hjson $(OT_PERI_DIR)/.generated))
-$(eval $(call hdr_gen_rule,serial_link_regs,$(TOP_DIR)/hw/serial_link.hjson $(SLINK_DIR)/.generated))
-$(eval $(call hdr_gen_rule,axi_vga_regs,$(VGA_DIR)/data/axi_vga.hjson $(VGA_DIR)/.generated))
-$(eval $(call hdr_gen_rule,axi_llc_regs,$(LLC_DIR)/data/axi_llc_regs.hjson))
-$(eval $(call hdr_gen_rule,cheshire_regs,$(TOP_DIR)/hw/regs/cheshire_regs.hjson))
+$(eval $(call hdr_gen_rule,regs/i2c,$(OT_PERI_DIR)/src/i2c/data/i2c.hjson $(OT_PERI_DIR)/.generated))
+$(eval $(call hdr_gen_rule,regs/spi_host,$(OT_PERI_DIR)/src/spi_host/data/spi_host.hjson $(OT_PERI_DIR)/.generated))
+$(eval $(call hdr_gen_rule,regs/serial_link,$(TOP_DIR)/hw/serial_link.hjson $(SLINK_DIR)/.generated))
+$(eval $(call hdr_gen_rule,regs/axi_vga,$(VGA_DIR)/data/axi_vga.hjson $(VGA_DIR)/.generated))
+$(eval $(call hdr_gen_rule,regs/axi_llc,$(LLC_DIR)/data/axi_llc_regs.hjson))
+$(eval $(call hdr_gen_rule,regs/cheshire,$(TOP_DIR)/hw/regs/cheshire_regs.hjson))
 
 sw-headers: $(GEN_HDRS)
 
