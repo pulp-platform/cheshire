@@ -56,9 +56,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: pulpplatform/cheshire-ci:latest
-    defaults:
-      run:
-        shell: bash -el {0}
     steps:
       -
         name: Checkout
@@ -80,9 +77,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: pulpplatform/cheshire-ci:latest
-    defaults:
-      run:
-        shell: bash -el {0}
     steps:
       -
         name: Checkout
