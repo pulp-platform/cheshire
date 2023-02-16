@@ -15,17 +15,11 @@ packages:
     - apb
     - register_interface
   ariane:
-    revision: 502e0b5543e2520ef1b94492337853d826d4082a
+    revision: fbfc417b9285ab9ec40470ce5269802b1dcc96a6
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6
-    dependencies:
-    - axi
-    - axi_riscv_atomics
-    - common_cells
-    - register_interface
-    - riscv-dbg
-    - tech_cells_generic
+    dependencies: []
   axi:
     revision: af8b0ce2653997301b1b792c4c6d207b95f63a56
     version: 0.39.0-beta.2
