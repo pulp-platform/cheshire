@@ -35,7 +35,7 @@ RUN mkdir -p /tools/slang && chmod 777 /tools/slang && \
 # install rust
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-ENV RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo PATH="${PATH}:/usr/local/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ENV RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo PATH="${PATH}:$HOME/.cargo/bin"
 # install morty via cargo
 RUN cargo install --git https://github.com/pulp-platform/morty.git
 
