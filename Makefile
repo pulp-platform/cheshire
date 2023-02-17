@@ -146,7 +146,7 @@ $(BUILD_DIR)/cheshire_top.pickle.sv: Bender.yml $(BUILD_DIR)
 	bender sources -f | morty -f /dev/stdin -q -o $@ --top cheshire_soc
 
 $(BUILD_DIR)/cva6.pickle.sv: Bender.yml $(BUILD_DIR)
-	bender sources -f -d $(shell $(BENDER) path ariane) -t cv64a6_imafdc_sv39 | morty -f /dev/stdin -o $@ 
+	bender sources -f -d $(shell $(BENDER) path ariane) -t cv64a6_imafdc_sv39 | morty -f /dev/stdin -o $@ --top cva6
 
 pickle: $(BUILD_DIR)/cva6.pickle.sv
 
