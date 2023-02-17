@@ -6,6 +6,8 @@
 
 FROM ubuntu:22.04
 
+SHELL ["/bin/bash", "-c"]
+
 RUN apt update && apt upgrade -y && apt install -y curl python3 build-essential git cmake python3-pip wget unzip
 
 # ARG RISCV_GCC_VERSION=8.3.0-2020.04.0
@@ -35,7 +37,7 @@ RUN mkdir -p /tools/slang && chmod 777 /tools/slang && \
 # install rust
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-ENV RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo PATH="${PATH}:$HOME/.cargo/bin"
+ENV PATH="${PATH}:root/.cargo/bin"
 # install morty via cargo
 RUN cargo install --git https://github.com/pulp-platform/morty.git
 
