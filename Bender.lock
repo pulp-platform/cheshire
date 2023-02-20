@@ -15,7 +15,7 @@ packages:
     - apb
     - register_interface
   ariane:
-    revision: 1db4bcd5164742c09605a91045bfbab7d86c0ee0
+    revision: 502e0b5543e2520ef1b94492337853d826d4082a
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6
@@ -97,16 +97,17 @@ packages:
     - common_verification
     - register_interface
   opentitan_peripherals:
-    revision: e38ebcc6dbfe30e03b7548f5acb87a61d0fc17bd
-    version: 0.2.1
+    revision: 855a00272af5aaf213b851b1f9f50e754efc0ea4
+    version: null
     source:
       Git: https://github.com/pulp-platform/opentitan_peripherals.git
     dependencies:
     - common_cells
     - register_interface
+    - tech_cells_generic
   register_interface:
-    revision: e3a4955071fcf554febd4b29a7c7a52c7f1e7fc6
-    version: 0.3.8
+    revision: 7cf6ae7d8bc14af2c83e3178e068d79271b20815
+    version: null
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:

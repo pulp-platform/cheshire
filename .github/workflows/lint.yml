@@ -68,10 +68,5 @@ jobs:
         clangFormatVersion: 14
         style: '{IndentWidth: 4, ColumnLimit: 120, AlignEscapedNewlines: DontAlign}'
         exclude: |
-          ./sw/include/cheshire_regs.h
-          ./sw/include/i2c_regs.h
-          ./sw/include/serial_link_regs.h
-          ./sw/include/spi_regs.h
-          ./sw/include/axi_vga_regs.h
-          ./sw/include/axi_llc_regs.h
+          ./sw/include/regs/
           ./target/sim/src/elfloader.cpp

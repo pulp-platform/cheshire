@@ -4,14 +4,14 @@
 //
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
+// Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 #pragma once
 
-#define RTC_CLK_PER_US 1
+#include <stdint.h>
 
-extern void *__base_clint;
+uint64_t clint_get_mtime();
 
-#define CLINT(offset) *((volatile unsigned long int *)(((unsigned long int)&__base_clint) + (offset)))
+void clint_set_mtimecmpx(uint64_t timer_idx, uint64_t value);
 
-// Setup a timer interrupt and enter sleep mode until it expires
-void sleep(unsigned long int us);
+void clint_sleep_ticks(uint64_t timer_idx, uint64_t ticks);

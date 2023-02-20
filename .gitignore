@@ -8,7 +8,8 @@
 # Nonfree repository
 nonfree/
 
-# Bender files
+# Dependency files
+.deps
 .bender/
 
 # Software build files

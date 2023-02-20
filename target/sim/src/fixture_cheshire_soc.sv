@@ -894,6 +894,7 @@ module cheshire_soc_fixture;
     .RESETNeg ( spi_reset_n )
   );
 
+/*
   spi_sd_model i_sd_model (
     .sclk   ( spi_sck       ),
     .rstn   ( spi_reset_n   ),
@@ -902,6 +903,9 @@ module cheshire_soc_fixture;
     .miso   ( spi_miso_sd   )
   );
 
+  */
+
+  assign spi_miso_sd = 0;
 
   ///////////////////
   // UART Receiver //
