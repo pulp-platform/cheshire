@@ -38,6 +38,8 @@ uint64_t boot_i2c_eeprom(uint64_t reset_freq) {
 }
 
 int main() {
+    // JUST STOP AND WAIT FOR DEBUGGING
+    asm volatile ("wfi" ::: "memory");
     // TODO: we *NEED* an established scheme to communicate from the chip
     // level to the SoC that the "final" boot clock is *ready*  and *stable*.
     // We should wait for this here, right at the beginning.

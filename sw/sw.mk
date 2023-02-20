@@ -22,10 +22,10 @@ RISCV_ARFLAGS ?= --plugin=$(shell find $(shell dirname $(RISCV_GCC_BINROOT))/lib
 
 CHS_LD_DIR    ?= $(CHS_SW_DIR)/link
 
-sw-all: sw-libs sw-headers sw-tests
+chs-sw-all: chs-sw-libs chs-sw-headers chs-sw-tests
 
 .PRECIOUS: %.elf %.dtb
-.PHONY: sw-all sw-libs sw-headers sw-tests
+.PHONY: chs-sw-all chs-sw-libs chs-sw-headers chs-sw-tests
 
 ################
 # Dependencies #
@@ -56,7 +56,7 @@ $(CHS_SW_DIR)/lib/libcheshire.a: $(CHS_SW_LIB_SRCS_O)
 	rm -f $@
 	$(RISCV_AR) $(RISCV_ARFLAGS) -rcsv $@ $^
 
-sw-libs: $(CHS_SW_LIBS)
+chs-sw-libs: $(CHS_SW_LIBS)
 
 #####################
 # Header generation #
@@ -79,7 +79,7 @@ $(eval $(call chs_sw_gen_hdr_rule,cheshire,$(CHS_ROOT)/hw/regs/cheshire_regs.hjs
 
 # Generate headers for OT peripherals in the bendered repo itself
 CHS_SW_GEN_HDRS += $(CHS_OTP_DIR)/.generated
-sw-headers: $(CHS_SW_GEN_HDRS)
+chs-sw-headers: $(CHS_SW_GEN_HDRS)
 
 ###############
 # Compilation #
@@ -119,4 +119,4 @@ CHS_TEST_SRCS_C     = $(wildcard $(CHS_SW_DIR)/tests/*.c)
 CHS_TEST_DRAM_DUMP  = $(CHS_TEST_SRCS_S:.S=.dram.dump) $(CHS_TEST_SRCS_C:.c=.dram.dump)
 CHS_TEST_SPM_DUMP   = $(CHS_TEST_SRCS_S:.S=.spm.dump)  $(CHS_TEST_SRCS_C:.c=.spm.dump)
 
-sw-tests: $(CHS_TEST_DRAM_DUMP) $(CHS_TEST_SPM_DUMP)
+chs-sw-tests: $(CHS_TEST_DRAM_DUMP) $(CHS_TEST_SPM_DUMP)
