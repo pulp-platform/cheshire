@@ -44,12 +44,12 @@ all: chs-sw-all chs-hw-all chs-sim-all chs-xilinx-all
 # Nonfree components #
 ######################
 
-NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-NONFREE_COMMIT ?= 9d0d14b94fb6ca7e2895809add461bd8a6ff35bb
+CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
+CHS_NONFREE_COMMIT ?= 1d804bb67667fb944e634415ef6d0cd2d27e75ac
 
 nonfree-init:
-	git clone $(NONFREE_REMOTE) nonfree
-	cd nonfree && git checkout $(NONFREE_COMMIT)
+	git clone $(CHS_NONFREE_REMOTE) nonfree
+	cd nonfree && git checkout $(CHS_NONFREE_COMMIT)
 
 -include nonfree/nonfree.mk
 
