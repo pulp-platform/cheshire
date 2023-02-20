@@ -18,6 +18,7 @@ RISCV_OBJDUMP ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-objdump
 RISCV_FLAGS   ?= -march=rv64gc_zifencei -mabi=lp64d -O2 -Wall -static -ffunction-sections -fdata-sections -frandom-seed=cheshire -fuse-linker-plugin -flto -Wl,-flto
 RISCV_CCFLAGS ?= $(RISCV_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
 RISCV_LDFLAGS ?= $(RISCV_FLAGS) -nostartfiles -Wl,--gc-sections
+RISCV_ARFLAGS ?= --plugin=$(shell find $(shell dirname $(RISCV_GCC_BINROOT))/libexec/gcc/riscv64-unknown-elf/**/liblto_plugin.so)
 
 CHS_LD_DIR    ?= $(CHS_SW_DIR)/link
 
@@ -53,7 +54,7 @@ CHS_SW_LIBS = $(CHS_SW_DIR)/lib/libcheshire.a
 
 $(CHS_SW_DIR)/lib/libcheshire.a: $(CHS_SW_LIB_SRCS_O)
 	rm -f $@
-	$(RISCV_AR) -rcsv $@ $^
+	$(RISCV_AR) $(RISCV_ARFLAGS) -rcsv $@ $^
 
 sw-libs: $(CHS_SW_LIBS)
 
