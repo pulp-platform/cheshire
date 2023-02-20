@@ -12,8 +12,8 @@
 #include "params.h"
 
 volatile uint64_t clint_get_mtime() {
-    return (((volatile uint64_t)*reg32(&__base_clint, CLINT_MTIME_HIGH_REG_OFFSET) << 32) |
-    *reg32(&__base_clint, CLINT_MTIME_LOW_REG_OFFSET));
+    return (((volatile uint64_t) * reg32(&__base_clint, CLINT_MTIME_HIGH_REG_OFFSET) << 32) |
+            *reg32(&__base_clint, CLINT_MTIME_LOW_REG_OFFSET));
 }
 
 void clint_set_mtimecmpx(uint64_t timer_idx, uint64_t value) {

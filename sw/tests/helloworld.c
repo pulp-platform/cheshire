@@ -21,12 +21,13 @@ char uart_initialized = 0;
 void __attribute__((aligned(4))) trap_vector(void) {
     // Disable timing interrupt (should be conditionalized)
     set_mtie(0);
- }
+}
 
 int main(void) {
-    //volatile uint32_t *reset_freq = (uint32_t *)(((uint64_t)&__base_cheshire_regs) + CHESHIRE_RESET_FREQ_REG_OFFSET);
+    // volatile uint32_t *reset_freq = (uint32_t *)(((uint64_t)&__base_cheshire_regs) +
+    // CHESHIRE_RESET_FREQ_REG_OFFSET);
 
-    //uart_init(__base_uart, *reset_freq, 115200);
+    // uart_init(__base_uart, *reset_freq, 115200);
 
     // *((volatile char*)(0x02003000)) = 'b';
     // *((volatile char*)(0x02003000)) = '\n';

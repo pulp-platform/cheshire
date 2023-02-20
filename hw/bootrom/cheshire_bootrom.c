@@ -36,10 +36,10 @@ extern void *__base_spm;
 
 void idle_boot(void) {
     void (*cheshire_entry)(void);
-    volatile unsigned int *scratch0 =
-        (unsigned int *)(((unsigned long int)&__base_cheshire_regs) + CHESHIRE_SCRATCH_0_REG_OFFSET);
-    volatile unsigned int *scratch1 =
-        (unsigned int *)(((unsigned long int)&__base_cheshire_regs) + CHESHIRE_SCRATCH_1_REG_OFFSET);
+    volatile unsigned int *scratch0 = (unsigned int *)(((unsigned long int)&__base_cheshire_regs) +
+                                                       CHESHIRE_SCRATCH_0_REG_OFFSET);
+    volatile unsigned int *scratch1 = (unsigned int *)(((unsigned long int)&__base_cheshire_regs) +
+                                                       CHESHIRE_SCRATCH_1_REG_OFFSET);
 
     printf("[bootrom] Polling scratch0 for entry point and scratch1 for start signal.\r\n");
 
@@ -173,9 +173,11 @@ void i2c_flash_boot(unsigned int core_freq) {
 
 int main(void) {
     volatile unsigned int *bootmode =
-        (volatile unsigned int *)(((unsigned long int)&__base_cheshire_regs) + CHESHIRE_BOOT_MODE_REG_OFFSET);
+        (volatile unsigned int *)(((unsigned long int)&__base_cheshire_regs) +
+                                  CHESHIRE_BOOT_MODE_REG_OFFSET);
     volatile unsigned int *reset_freq =
-        (volatile unsigned int *)(((unsigned long int)&__base_cheshire_regs) + CHESHIRE_RESET_FREQ_REG_OFFSET);
+        (volatile unsigned int *)(((unsigned long int)&__base_cheshire_regs) +
+                                  CHESHIRE_RESET_FREQ_REG_OFFSET);
 
     // Initiate our window to the world around us
     init_uart(*reset_freq, UART_BAUD);

@@ -25,22 +25,24 @@ void uart_init(void *uart_base, uint64_t freq, uint64_t baud) {
     uint64_t divisor = freq / (baud << 4);
     uint8_t dlo = (uint8_t)(divisor);
     uint8_t dhi = (uint8_t)(divisor >> 8);
-    *reg8(uart_base, UART_INTR_ENABLE_REG_OFFSET)   = 0x00;     // Disable all interrupts
-    *reg8(uart_base, UART_LINE_CONTROL_REG_OFFSET)  = 0x80;     // Enable DLAB (set baud rate divisor)
-    *reg8(uart_base, UART_DLAB_LSB_REG_OFFSET)      = dlo;      // divisor (lo byte)
-    *reg8(uart_base, UART_DLAB_MSB_REG_OFFSET)      = dhi;      // divisor (hi byte)
-    *reg8(uart_base, UART_LINE_CONTROL_REG_OFFSET)  = 0x03;     // 8 bits, no parity, one stop bit
-    *reg8(uart_base, UART_FIFO_CONTROL_REG_OFFSET)  = 0xC7;     // Enable FIFO, clear them, with 14-byte threshold
-    *reg8(uart_base, UART_MODEM_CONTROL_REG_OFFSET) = 0x20;     // Autoflow mode
+    *reg8(uart_base, UART_INTR_ENABLE_REG_OFFSET) = 0x00;   // Disable all interrupts
+    *reg8(uart_base, UART_LINE_CONTROL_REG_OFFSET) = 0x80;  // Enable DLAB (set baud rate divisor)
+    *reg8(uart_base, UART_DLAB_LSB_REG_OFFSET) = dlo;       // divisor (lo byte)
+    *reg8(uart_base, UART_DLAB_MSB_REG_OFFSET) = dhi;       // divisor (hi byte)
+    *reg8(uart_base, UART_LINE_CONTROL_REG_OFFSET) = 0x03;  // 8 bits, no parity, one stop bit
+    *reg8(uart_base, UART_FIFO_CONTROL_REG_OFFSET) = 0xC7;  // Enable & clear FIFO, 14B threshold
+    *reg8(uart_base, UART_MODEM_CONTROL_REG_OFFSET) = 0x20; // Autoflow mode
 }
 
 void uart_write(void *uart_base, uint8_t byte) {
-    while (!uart_write_ready(uart_base));
+    while (!uart_write_ready(uart_base))
+        ;
     *reg8(uart_base, UART_THR_REG_OFFSET) = byte;
 }
 
 uint8_t uart_read(void *uart_base) {
-    while (!uart_read_ready(uart_base));
+    while (!uart_read_ready(uart_base))
+        ;
     return *reg8(uart_base, UART_RBR_REG_OFFSET);
 }
 
@@ -48,7 +50,8 @@ void uart_write_flush(void *uart_base) {
     // Ensure our read comes after any prior writes only
     // TODO: CVA6 likely violates inter-read-write ordering; double-check!
     fence();
-    while (!uart_write_idle(uart_base));
+    while (!uart_write_idle(uart_base))
+        ;
 }
 
 // Default UART provides console
