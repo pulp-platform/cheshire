@@ -15,11 +15,15 @@ packages:
     - apb
     - register_interface
   ariane:
-    revision: fe11e33db3c4c20d5d53c51376a3446fd94be819
+    revision: 6cf9f7a527d38c8a68bbdc87bf45aaea0ad402e0
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6
-    dependencies: []
+    dependencies:
+    - axi
+    - common_cells
+    - fpnew
+    - tech_cells_generic
   axi:
     revision: af8b0ce2653997301b1b792c4c6d207b95f63a56
     version: 0.39.0-beta.2
@@ -80,6 +84,21 @@ packages:
     source:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
+  fpnew:
+    revision: 8dc44406b1ccbc4487121710c1883e805f893965
+    version: 0.6.6
+    source:
+      Git: https://github.com/pulp-platform/fpnew.git
+    dependencies:
+    - common_cells
+    - fpu_div_sqrt_mvp
+  fpu_div_sqrt_mvp:
+    revision: 86e1f558b3c95e91577c41b2fc452c86b04e85ac
+    version: 1.0.4
+    source:
+      Git: https://github.com/pulp-platform/fpu_div_sqrt_mvp.git
+    dependencies:
+    - common_cells
   idma:
     revision: 6ad5695b85ce253f3095871b958fb76b36d074c6
     version: 0.3.1
