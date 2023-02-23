@@ -172,7 +172,7 @@ package cheshire_pkg;
     CachedRegionLength: {
         64'h8000_0000, 64'h0001_0000
     },
-    Axi64BitCompliant: 1'b1,
+    AxiCompliant: 1'b1,
     SwapEndianess: 1'b0,
     /// Debug
     DmBaseAddress: 64'h0,
