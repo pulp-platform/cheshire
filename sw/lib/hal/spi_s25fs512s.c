@@ -64,8 +64,8 @@ int spi_s25fs512s_single_read(void *priv, void* buf, uint64_t addr, uint64_t len
     // Top speed for the used command is 50 MHz
     CHECK_ASSERT(1, handle->spi_freq < 50*1000*1000)
     // Copy in chunks (no alignment necessary)
-    for (uint64_t offs = 0; offs < len; ++offs) {
-        uint64_t chunk_len = MIN(SPI_HOST_PARAM_RX_DEPTH, len - offs);
+    for (uint64_t offs = 0; offs < len; offs += 4*SPI_HOST_PARAM_RX_DEPTH) {
+        uint64_t chunk_len = MIN(4*SPI_HOST_PARAM_RX_DEPTH, len - offs);
         CHECK_CALL(__spi_s25fs512s_single_read_chunk(handle, buf + offs, addr + offs, chunk_len))
     }
     // Nothing went wrong

@@ -13,7 +13,7 @@ int gpt_check_signature(gpt_read_t read, void* priv) {
     // Signature is first 8 bytes of LBA1 (512B from disk start)
     uint64_t sig;
     // If call fails, we may as well report no signature was found
-    CHECK_CALL(read(priv, &sig, 0x200, sizeof(sig)));
+    if (read(priv, &sig, 0x200, sizeof(sig))) return 0;
     return (sig == 0x5452415020494645UL /*EFI BOOT*/);
 
 }

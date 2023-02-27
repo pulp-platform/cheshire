@@ -105,7 +105,7 @@ static inline int __i2c_24xx1025_access(void *priv, void* buf, uint64_t addr,
         CHECK_CALL(__i2c_24xx1025_access_chunk(i2c, buf, addr, offs, write))
     }
     // Copy start-aligned chunks
-    for (; offs < len; ++offs) {
+    for (; offs < len; offs += I2C_PARAM_FIFO_DEPTH) {
         uint64_t chunk_len = MIN(I2C_PARAM_FIFO_DEPTH, len - offs);
         CHECK_CALL(__i2c_24xx1025_access_chunk(i2c, buf + offs, addr + offs, chunk_len, write))
     }

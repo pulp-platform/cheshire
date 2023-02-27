@@ -660,9 +660,9 @@ module cheshire_soc import cheshire_pkg::*; #(
   );
 
   axi_llc_reg_wrap #(
-    .SetAssociativity    ( 3                              ),
+    .SetAssociativity    ( 8                              ),
     .NumLines            ( 256                            ),
-    .NumBlocks           ( 4                              ),
+    .NumBlocks           ( 8                              ),
     .AxiIdWidth          ( AxiXbarSlaveIdWidth            ),
     .AxiAddrWidth        ( AxiAddrWidth                   ),
     .AxiDataWidth        ( AxiDataWidth                   ),

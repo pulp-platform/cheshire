@@ -10,6 +10,7 @@
 #include "util.h"
 #include "params.h"
 #include "regs/cheshire.h"
+#include "dif/clint.h"
 #include "hal/i2c_24xx1025.h"
 #include "hal/spi_s25fs512s.h"
 #include "hal/uart_debug.h"
@@ -39,8 +40,12 @@ int boot_spi_norflash(uint64_t reset_freq) {
         .spi_freq = MIN(40*1000*1000, reset_freq/4),  // Quarter of core freq, at most 40 MHz
         .csid = 1
     };
-    // TODO: wait for device initialization
+    // Initialize device handle
     CHECK_CALL(spi_s25fs512s_init(&device, reset_freq))
+    // Wait for device to be initialized (t_PU = 300us, make it 350us to be sure).
+    // TODO: how do we know what REFLK is??? Assume it is 32.768kHz -> wait until t = 11 ticks.
+    const uint64_t num_ticks_init = 3500;
+    clint_spin_until(num_ticks_init);
     // Try to detect GPT signature; otherwise, raw boot from LBA 0
     uint64_t lba_begin = 0, lba_end = __BOOT_SPM_MAX_LBAS;
     if (gpt_check_signature(spi_s25fs512s_single_read, &device))
@@ -75,6 +80,7 @@ int main() {
     // TODO: we *NEED* an established scheme to communicate from the chip
     // level to the SoC that the "final" boot clock is *ready* and *stable*.
     // We should wait for this here, right at the beginning.
+    // TODO: also, we need to know what refclock is... see SPI.
 
     uint32_t bootmode = *reg32(&__base_cheshire_regs, CHESHIRE_BOOT_MODE_REG_OFFSET);
     uint32_t reset_freq = *reg32(&__base_cheshire_regs, CHESHIRE_RESET_FREQ_REG_OFFSET);

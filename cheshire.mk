@@ -114,7 +114,7 @@ hw/bootrom/cheshire_bootrom.elf: hw/bootrom/cheshire_bootrom.ld $(CHS_BROM_SRCS)
 hw/bootrom/cheshire_bootrom.sv: hw/bootrom/cheshire_bootrom.bin util/gen_bootrom.py
 	$(PYTHON3) util/gen_bootrom.py --sv-module cheshire_bootrom $< > $@
 
-chs-bootrom-all: hw/bootrom/cheshire_bootrom.sv
+chs-bootrom-all: hw/bootrom/cheshire_bootrom.sv hw/bootrom/cheshire_bootrom.dump
 
 ##############
 # Simulation #

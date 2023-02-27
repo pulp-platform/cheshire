@@ -58,6 +58,6 @@ static inline volatile uint64_t invoke(void *code) {
 #define CHECK_CALL(call) { int ret = (volatile int)(call); if (ret) return ret; }
 
 // If a condition; if it is untrue, ummediately return an error code
-#define CHECK_ASSERT(ret, cond) { if (cond) return ret; }
+#define CHECK_ASSERT(ret, cond) if (!(cond)) return (ret);
 
-#define MIN(a, b) ((a <= b) ? a : b)
+#define MIN(a, b) (((a) <= (b)) ? (a) : (b))

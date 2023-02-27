@@ -12,8 +12,16 @@
 #include "params.h"
 
 volatile uint64_t clint_get_mtime() {
-    return (((volatile uint64_t) * reg32(&__base_clint, CLINT_MTIME_HIGH_REG_OFFSET) << 32) |
-            *reg32(&__base_clint, CLINT_MTIME_LOW_REG_OFFSET));
+    return (((volatile uint64_t) *reg32(&__base_clint, CLINT_MTIME_HIGH_REG_OFFSET)) << 32) |
+            *reg32(&__base_clint, CLINT_MTIME_LOW_REG_OFFSET);
+}
+
+void clint_spin_until(uint64_t tgt_mtime) {
+    while (clint_get_mtime() < tgt_mtime);
+}
+
+void clint_spin_ticks(uint64_t ticks) {
+    clint_spin_until(clint_get_mtime() + ticks);
 }
 
 void clint_set_mtimecmpx(uint64_t timer_idx, uint64_t value) {
@@ -25,10 +33,10 @@ void clint_set_mtimecmpx(uint64_t timer_idx, uint64_t value) {
     *reg32(&__base_clint, CLINT_MTIMECMP_LOW0_REG_OFFSET + mtimecmp_offs) = vlo;
 }
 
-void clint_sleep_ticks(uint64_t timer_idx, uint64_t ticks) {
-    if (ticks == 0) return;
+void clint_sleep_until(uint64_t timer_idx, uint64_t tgt_mtime) {
+    if (clint_get_mtime() < tgt_mtime) return;
     // Set comparison register `ticks` from now
-    clint_set_mtimecmpx(timer_idx, clint_get_mtime() + ticks);
+    clint_set_mtimecmpx(timer_idx, tgt_mtime);
     fence();
     // Make sure timer and global interrupts are enabled
     set_mtie(1);
@@ -36,3 +44,8 @@ void clint_sleep_ticks(uint64_t timer_idx, uint64_t ticks) {
     // Wait for interrupt, resuming from here
     wfi();
 }
+
+void clint_sleep_ticks(uint64_t timer_idx, uint64_t ticks) {
+    clint_sleep_until(timer_idx, clint_get_mtime() + ticks);
+}
+

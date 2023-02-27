@@ -9,7 +9,7 @@ ENTRY(_start)
 
 MEMORY
 {
-  spm (rwx)     : ORIGIN = 0x70000000, LENGTH = 24K
+  spm (rwx)     : ORIGIN = 0x70000000, LENGTH = 128K
   dram (rwx)    : ORIGIN = 0x80000000, LENGTH = 1024M
 }
 
