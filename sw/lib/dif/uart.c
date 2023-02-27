@@ -13,7 +13,7 @@ static inline int uart_write_ready(void *uart_base) {
     return *reg8(uart_base, UART_LINE_STATUS_REG_OFFSET) & (1 << UART_LINE_STATUS_THR_EMPTY_BIT);
 }
 
-static inline int uart_read_ready(void *uart_base) {
+int uart_read_ready(void *uart_base) {
     return *reg8(uart_base, UART_LINE_STATUS_REG_OFFSET) & (1 << UART_LINE_STATUS_DATA_READY_BIT);
 }
 

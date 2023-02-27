@@ -31,6 +31,8 @@ void uart_init(void *uart_base, uint64_t freq, uint64_t baud);
 
 void uart_write(void *uart_base, uint8_t byte);
 
+int uart_read_ready(void *uart_base);
+
 uint8_t uart_read(void *uart_base);
 
 void uart_write_flush(void *uart_base);

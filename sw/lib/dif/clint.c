@@ -25,7 +25,6 @@ void clint_set_mtimecmpx(uint64_t timer_idx, uint64_t value) {
     *reg32(&__base_clint, CLINT_MTIMECMP_LOW0_REG_OFFSET + mtimecmp_offs) = vlo;
 }
 
-// PRE: requires an appropriate trap handler catching the timer interrupt
 void clint_sleep_ticks(uint64_t timer_idx, uint64_t ticks) {
     if (ticks == 0) return;
     // Set comparison register `ticks` from now

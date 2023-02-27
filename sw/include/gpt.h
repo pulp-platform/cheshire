@@ -10,9 +10,9 @@
 
 #include <stdint.h>
 
-uint64_t clint_get_mtime();
+typedef int (*gpt_read_t)(void *priv, void* buf, uint64_t addr, uint64_t len);
 
-void clint_set_mtimecmpx(uint64_t timer_idx, uint64_t value);
+int gpt_check_signature(gpt_read_t read, void* priv);
 
-// PRE: requires an appropriate trap handler catching the timer interrupt
-void clint_sleep_ticks(uint64_t timer_idx, uint64_t ticks);
+int gpt_find_boot_partition(gpt_read_t read, void* priv,
+                            uint64_t *lba_begin, uint64_t *lba_end, uint64_t max_lbas);

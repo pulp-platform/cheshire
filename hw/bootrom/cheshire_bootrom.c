@@ -7,41 +7,73 @@
 // Paul Scheffler <paulsc@student.ethz.ch>
 
 #include <stdint.h>
-
 #include "util.h"
 #include "params.h"
 #include "regs/cheshire.h"
-/*
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_i2c.h"
-*/
+#include "hal/i2c_24xx1025.h"
+#include "hal/spi_s25fs512s.h"
+#include "hal/uart_debug.h"
+#include "gpt.h"
 
-uint64_t boot_slave(uint64_t reset_freq) {
-    //  scratch[0] provides an entry point, scratch[1] a start signal.
+int boot_slave(uint64_t reset_freq) {
+    // Initialize UART with debug settings
+    uart_debug_init(&__base_uart, reset_freq);
+    // scratch[0] provides an entry point, scratch[1] a start signal
     volatile uint32_t *scratch = reg32(&__base_cheshire_regs, CHESHIRE_SCRATCH_0_REG_OFFSET);
-    // TODO: Implement UART boot protocol in this loop and reduce poll rate.
-    while (!scratch[1]) continue;
-    fence();
+    // While we poll scratch[1], check for incoming UART debug requests
+    while (!scratch[1])
+        if (uart_debug_check(&__base_uart))
+            return uart_debug_serve(&__base_uart);
+    // No UART (or JTAG) requests came in, but scratch[1] was set --> run code at scratch[0]
     return invoke((void*)(uintptr_t)scratch[0]);
 }
 
-uint64_t boot_spi_sd(uint64_t reset_freq) {
+int boot_spi_sd(uint64_t reset_freq) {
+    // TODO
     return 0;
 }
 
-uint64_t boot_spi_norflash(uint64_t reset_freq) {
-    return 0;
+int boot_spi_norflash(uint64_t reset_freq) {
+    // Initialize SPI NOR FLASH HAL
+    spi_s25fs512s_t device = {
+        .spi_freq = MIN(40*1000*1000, reset_freq/4),  // Quarter of core freq, at most 40 MHz
+        .csid = 1
+    };
+    // TODO: wait for device initialization
+    CHECK_CALL(spi_s25fs512s_init(&device, reset_freq))
+    // Try to detect GPT signature; otherwise, raw boot from LBA 0
+    uint64_t lba_begin = 0, lba_end = __BOOT_SPM_MAX_LBAS;
+    if (gpt_check_signature(spi_s25fs512s_single_read, &device))
+        CHECK_CALL(gpt_find_boot_partition(spi_s25fs512s_single_read, &device, &lba_begin,
+                                           &lba_end, __BOOT_SPM_MAX_LBAS))
+    // Copy code to SPM
+    uint64_t addr = 0x200 * lba_begin;
+    uint64_t len = 0x200 * (lba_end - lba_begin);
+    CHECK_CALL(spi_s25fs512s_single_read(&device, &__base_spm, addr, len));
+    // Invoke code
+    return invoke((void*)&__base_spm);
 }
 
-uint64_t boot_i2c_eeprom(uint64_t reset_freq) {
-    return 0;
+int boot_i2c_eeprom(uint64_t reset_freq) {
+    // Initialize I2C EEPROM HAL
+    dif_i2c_t i2c;
+    CHECK_CALL(i2c_24xx1025_init(&i2c, reset_freq))
+    // Try to detect GPT signature; otherwise, raw boot from LBA 0
+    uint64_t lba_begin = 0, lba_end = __BOOT_SPM_MAX_LBAS;
+    if (gpt_check_signature(i2c_24xx1025_read, &i2c))
+        CHECK_CALL(gpt_find_boot_partition(i2c_24xx1025_read, &i2c, &lba_begin,
+                                           &lba_end, __BOOT_SPM_MAX_LBAS))
+    // Copy code to SPM
+    uint64_t addr = 0x200 * lba_begin;
+    uint64_t len = 0x200 * (lba_end - lba_begin);
+    CHECK_CALL(i2c_24xx1025_read(&i2c, &__base_spm, addr, len));
+    // Invoke code
+    return invoke((void*)&__base_spm);
 }
 
 int main() {
-    // JUST STOP AND WAIT FOR DEBUGGING
-    asm volatile ("wfi" ::: "memory");
     // TODO: we *NEED* an established scheme to communicate from the chip
-    // level to the SoC that the "final" boot clock is *ready*  and *stable*.
+    // level to the SoC that the "final" boot clock is *ready* and *stable*.
     // We should wait for this here, right at the beginning.
 
     uint32_t bootmode = *reg32(&__base_cheshire_regs, CHESHIRE_BOOT_MODE_REG_OFFSET);

@@ -6,6 +6,8 @@
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
+#pragma once
+
 #include <stdint.h>
 
 static inline volatile uint8_t *reg8(void *base, int offs) {
@@ -45,19 +47,17 @@ static inline void set_mie(int enable) {
 }
 
 // This may also be used to invoke code that does not return.
-static inline uint64_t invoke(void *code) {
-    uint64_t (*code_fun_ptr)(void) = code;
+static inline volatile uint64_t invoke(void *code) {
+    volatile uint64_t (*code_fun_ptr)(void) = code;
+    fence();
     fencei();
     return code_fun_ptr();
 }
 
-// If a call yields an unexpected return, call `_exit` procedure with error code
-// clang-format off
-#define CHECK_ELSE_EXIT_ERRCODE -3
-#define CHECK_ELSE_EXIT(exp, call) \
-    if ((call) != (exp)) \
-        asm volatile("li a0, %[errcode]; j _exit" :: \
-            [errcode]"i"(CHECK_ELSE_EXIT_ERRCODE) : "a0");
-// clang-format on
+// If a call yields a nonzero return, return that immediately as an int
+#define CHECK_CALL(call) { int ret = (volatile int)(call); if (ret) return ret; }
+
+// If a condition; if it is untrue, ummediately return an error code
+#define CHECK_ASSERT(ret, cond) { if (cond) return ret; }
 
 #define MIN(a, b) ((a <= b) ? a : b)

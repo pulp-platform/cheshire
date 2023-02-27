@@ -106,7 +106,7 @@ chs-hw-all: $(CHS_SLINK_DIR)/.generated
 
 # Boot ROM (needs SW stack)
 CHS_BROM_SRCS = $(wildcard hw/bootrom/*.S hw/bootrom/*.c) $(CHS_SW_LIBS)
-CHS_BROM_FLAGS = $(RISCV_LDFLAGS) -Os -fno-zero-initialized-in-bss -flto -fwhole-program -s
+CHS_BROM_FLAGS = $(RISCV_LDFLAGS) -Os -fno-zero-initialized-in-bss -flto -fwhole-program
 
 hw/bootrom/cheshire_bootrom.elf: hw/bootrom/cheshire_bootrom.ld $(CHS_BROM_SRCS)
 	$(RISCV_CC) $(CHS_SW_INCLUDES) -T$< $(CHS_BROM_FLAGS) -o $@ $(CHS_BROM_SRCS)

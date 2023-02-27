@@ -500,6 +500,19 @@ module cheshire_soc_fixture;
     .RESET  ( rst_n   )
   );
 
+  // Preload with bootloader
+  initial begin
+    for (int i = 0; i < $size(i_i2c_model.MemoryBlock); ++i)
+      i_i2c_model.MemoryBlock[i] = 'h9a;
+    /*
+    $readmemh(
+      "test/bootloader/bootself.memh",
+      i_M24FC1025.MemoryBlock
+    );
+    */
+  end
+
+
 
   /////////////////
   // Serial Link //
