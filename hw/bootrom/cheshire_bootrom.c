@@ -30,50 +30,45 @@ int boot_slave(uint64_t reset_freq) {
 }
 
 int boot_spi_sd(uint64_t reset_freq) {
-    // TODO
-    return 0;
-}
-
-int boot_spi_norflash(uint64_t reset_freq) {
-    // Initialize SPI NOR FLASH HAL
+    /*
+    // Initialize device handle
     spi_s25fs512s_t device = {
         .spi_freq = MIN(40*1000*1000, reset_freq/4),  // Quarter of core freq, at most 40 MHz
         .csid = 1
     };
-    // Initialize device handle
     CHECK_CALL(spi_s25fs512s_init(&device, reset_freq))
     // Wait for device to be initialized (t_PU = 300us, make it 350us to be sure).
-    // TODO: how do we know what REFLK is??? Assume it is 32.768kHz -> wait until t = 11 ticks.
+    // TODO: how do we know what REFLK is?
     const uint64_t num_ticks_init = 3500;
     clint_spin_until(num_ticks_init);
-    // Try to detect GPT signature; otherwise, raw boot from LBA 0
-    uint64_t lba_begin = 0, lba_end = __BOOT_SPM_MAX_LBAS;
-    if (gpt_check_signature(spi_s25fs512s_single_read, &device))
-        CHECK_CALL(gpt_find_boot_partition(spi_s25fs512s_single_read, &device, &lba_begin,
-                                           &lba_end, __BOOT_SPM_MAX_LBAS))
-    // Copy code to SPM
-    uint64_t addr = 0x200 * lba_begin;
-    uint64_t len = 0x200 * (lba_end - lba_begin);
-    CHECK_CALL(spi_s25fs512s_single_read(&device, &__base_spm, addr, len));
-    // Invoke code
-    return invoke((void*)&__base_spm);
+    return gpt_boot_part_else_raw(spi_s25fs512s_single_read, &device,
+                                  &__base_spm, __BOOT_SPM_MAX_LBAS);
+    */
+    return 0;
+}
+
+int boot_spi_norflash(uint64_t reset_freq) {
+    // Initialize device handle
+    spi_s25fs512s_t device = {
+        .spi_freq = MIN(40*1000*1000, reset_freq/4),  // Quarter of core freq, at most 40 MHz
+        .csid = 1
+    };
+    CHECK_CALL(spi_s25fs512s_init(&device, reset_freq))
+    // Wait for device to be initialized (t_PU = 300us, make it 350us to be sure).
+    // TODO: how do we know what REFLK is?
+    const uint64_t num_ticks_init = 3500;
+    clint_spin_until(num_ticks_init);
+
+    return gpt_boot_part_else_raw(spi_s25fs512s_single_read, &device,
+                                  &__base_spm, __BOOT_SPM_MAX_LBAS);
 }
 
 int boot_i2c_eeprom(uint64_t reset_freq) {
     // Initialize I2C EEPROM HAL
     dif_i2c_t i2c;
     CHECK_CALL(i2c_24xx1025_init(&i2c, reset_freq))
-    // Try to detect GPT signature; otherwise, raw boot from LBA 0
-    uint64_t lba_begin = 0, lba_end = __BOOT_SPM_MAX_LBAS;
-    if (gpt_check_signature(i2c_24xx1025_read, &i2c))
-        CHECK_CALL(gpt_find_boot_partition(i2c_24xx1025_read, &i2c, &lba_begin,
-                                           &lba_end, __BOOT_SPM_MAX_LBAS))
-    // Copy code to SPM
-    uint64_t addr = 0x200 * lba_begin;
-    uint64_t len = 0x200 * (lba_end - lba_begin);
-    CHECK_CALL(i2c_24xx1025_read(&i2c, &__base_spm, addr, len));
-    // Invoke code
-    return invoke((void*)&__base_spm);
+    return gpt_boot_part_else_raw(i2c_24xx1025_read, &i2c,
+                                  &__base_spm, __BOOT_SPM_MAX_LBAS);
 }
 
 int main() {

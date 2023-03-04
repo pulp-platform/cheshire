@@ -9,10 +9,19 @@
 #include "util.h"
 #include "params.h"
 
+// UART debug opcodes
+typedef enum {
+    kUartDebugCmdRead  = 0x10,
+    kUartDebugCmdWrite = 0x11,
+    kUartDebugCmdExec  = 0x12,
+    kUartDebugAck      = 0x06,   // Starts debug or acknowledges parsed command
+    kUartDebugEot      = 0x04    // Sent on end of (read/write) transmission
+} uart_debug_opcode_t;
+
 int uart_debug_init(void *uart_base, uint64_t core_freq) {
     // Check arguments
-    CHECK_ASSERT(1, uart_base != 0);
-    CHECK_ASSERT(2, core_freq != 0);
+    CHECK_ASSERT(0x11, uart_base != 0);
+    CHECK_ASSERT(0x12, core_freq != 0);
     // The UART debug mode uses the sane default 115.2kBaud
     uart_init(uart_base, core_freq, 115200);
     fence();

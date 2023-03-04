@@ -15,7 +15,6 @@ int gpt_check_signature(gpt_read_t read, void* priv) {
     // If call fails, we may as well report no signature was found
     if (read(priv, &sig, 0x200, sizeof(sig))) return 0;
     return (sig == 0x5452415020494645UL /*EFI BOOT*/);
-
 }
 
 int gpt_find_boot_partition(gpt_read_t read, void *priv,
@@ -67,4 +66,17 @@ int gpt_find_boot_partition(gpt_read_t read, void *priv,
     }
     // Nothing went wrong
     return 0;
+}
+
+
+int gpt_boot_part_else_raw(gpt_read_t read, void *priv, void* code_buf, uint64_t max_lbas) {
+    uint64_t lba_begin = 0, lba_end = max_lbas;
+    if (gpt_check_signature(read, priv))
+        CHECK_CALL(gpt_find_boot_partition(read, priv, &lba_begin, &lba_end, max_lbas))
+    // Copy code to SPM
+    uint64_t addr = 0x200 * lba_begin;
+    uint64_t len = 0x200 * (lba_end - lba_begin);
+    CHECK_CALL(read(priv, code_buf, addr, len));
+    // Invoke code
+    return invoke((void*)code_buf);
 }

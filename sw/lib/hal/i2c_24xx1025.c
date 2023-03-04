@@ -13,8 +13,8 @@
 
 int i2c_24xx1025_init(dif_i2c_t *i2c, uint64_t core_freq) {
     // Check for legal arguments
-    CHECK_ASSERT(1, i2c != 0);
-    CHECK_ASSERT(2, core_freq != 0);
+    CHECK_ASSERT(0x11, i2c != 0);
+    CHECK_ASSERT(0x12, core_freq != 0);
     // Initialize handle
     mmio_region_t i2c_base = (mmio_region_t){.base = (void *)&__base_i2c};
     CHECK_CALL(dif_i2c_init(i2c_base, i2c))
@@ -91,10 +91,10 @@ static inline int __i2c_24xx1025_access_chunk(dif_i2c_t *i2c, void* buf, uint64_
     return 0;
 }
 
-static inline int __i2c_24xx1025_access(void *priv, void* buf, uint64_t addr,
+static inline int __i2c_24xx1025_access(void *priv, void *buf, uint64_t addr,
                                         uint64_t len, int write) {
     // Ensure that FIFO size divides device pages (and hence is a power of two)
-    CHECK_ASSERT(1, 128 % I2C_PARAM_FIFO_DEPTH == 0);
+    CHECK_ASSERT(0x13, 128 % I2C_PARAM_FIFO_DEPTH == 0);
     // The private pointer passed is an I2C handle
     dif_i2c_t *i2c = (dif_i2c_t*) priv;
     // Align to FIFO size boundary if necessary

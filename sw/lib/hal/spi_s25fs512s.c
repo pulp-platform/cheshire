@@ -13,10 +13,10 @@
 
 int spi_s25fs512s_init(spi_s25fs512s_t *handle, uint64_t core_freq) {
     // Check for legal arguments
-    CHECK_ASSERT(1, handle != 0)
-    CHECK_ASSERT(2, handle->csid < SPI_HOST_PARAM_NUM_C_S)
-    CHECK_ASSERT(3, handle->spi_freq != 0)
-    CHECK_ASSERT(4, handle->spi_freq <= core_freq)
+    CHECK_ASSERT(0x11, handle != 0)
+    CHECK_ASSERT(0x12, handle->csid < SPI_HOST_PARAM_NUM_C_S)
+    CHECK_ASSERT(0x13, handle->spi_freq != 0)
+    CHECK_ASSERT(0x14, handle->spi_freq <= core_freq)
     // Initialize handle
     mmio_region_t spi_host_base = (mmio_region_t){.base = (void *)&__base_spim};
     CHECK_CALL(dif_spi_host_init(spi_host_base, &handle->spi_host))
@@ -50,6 +50,7 @@ static inline int __spi_s25fs512s_single_read_chunk(spi_s25fs512s_t *handle, voi
             .mode = kDifSpiHostAddrMode4b,
             .address = addr }}},
         {kDifSpiHostSegmentTypeRx, {.rx = {
+            .width = kDifSpiHostWidthStandard,
             .buf = buf,
             .length = len }}}
     };
@@ -62,7 +63,7 @@ int spi_s25fs512s_single_read(void *priv, void* buf, uint64_t addr, uint64_t len
     // The private pointer passed is a device handle
     spi_s25fs512s_t *handle = (spi_s25fs512s_t*) priv;
     // Top speed for the used command is 50 MHz
-    CHECK_ASSERT(1, handle->spi_freq < 50*1000*1000)
+    CHECK_ASSERT(0x15, handle->spi_freq < 50*1000*1000)
     // Copy in chunks (no alignment necessary)
     for (uint64_t offs = 0; offs < len; offs += 4*SPI_HOST_PARAM_RX_DEPTH) {
         uint64_t chunk_len = MIN(4*SPI_HOST_PARAM_RX_DEPTH, len - offs);
@@ -79,6 +80,7 @@ static inline int __spi_s25fs512s_poll_wip(spi_s25fs512s_t *handle) {
         dif_spi_host_segment_t segs[] = {
             {kDifSpiHostSegmentTypeOpcode, {.opcode = 0x05}},
             {kDifSpiHostSegmentTypeRx, {.rx = {
+                .width = kDifSpiHostWidthStandard,
                 .buf = &status_reg_1,
                 .length = 1 }}}
         };
@@ -111,6 +113,7 @@ static inline int __spi_s25fs512s_single_flash_page(spi_s25fs512s_t *handle, voi
             .mode = kDifSpiHostAddrMode4b,
             .address = (page << 9) }}},
         {kDifSpiHostSegmentTypeRx, {.rx = {
+            .width = kDifSpiHostWidthStandard,
             .buf = buf,
             .length = 512 }}}
     };
@@ -125,7 +128,7 @@ int spi_s25fs512s_single_flash(void *priv, void* buf, uint64_t page, uint64_t nu
     // The private pointer passed is a device handle
     spi_s25fs512s_t *handle = (spi_s25fs512s_t*) priv;
     // Top speed for the used commands is 100 MHz
-    CHECK_ASSERT(1, handle->spi_freq < 100*1000*1000)
+    CHECK_ASSERT(0x16, handle->spi_freq < 100*1000*1000)
     // Ensure write enable (WREN) control register is set
     dif_spi_host_segment_t wren = {kDifSpiHostSegmentTypeOpcode, {.opcode = 0x06}};
     CHECK_CALL(dif_spi_host_transaction(&handle->spi_host, handle->csid, &wren, 1))

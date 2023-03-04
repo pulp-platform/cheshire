@@ -55,9 +55,12 @@ static inline volatile uint64_t invoke(void *code) {
 }
 
 // If a call yields a nonzero return, return that immediately as an int
-#define CHECK_CALL(call) { int ret = (volatile int)(call); if (ret) return ret; }
+#define CHECK_CALL(call) { int __ccret = (volatile int)(call); if (__ccret) return __ccret; }
 
 // If a condition; if it is untrue, ummediately return an error code
 #define CHECK_ASSERT(ret, cond) if (!(cond)) return (ret);
 
 #define MIN(a, b) (((a) <= (b)) ? (a) : (b))
+
+// Apply this to functions that should be fast at the expense of code size
+#define FAST __attribute__((optimize("-O3"), flatten))

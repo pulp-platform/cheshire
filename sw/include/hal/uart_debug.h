@@ -8,15 +8,6 @@
 
 #include <stdint.h>
 
-// UART debug opcodes
-typedef enum {
-    kUartDebugCmdRead  = 0x10,
-    kUartDebugCmdWrite = 0x11,
-    kUartDebugCmdExec  = 0x12,
-    kUartDebugAck      = 0x06,   // Starts debug or acknowledges parsed command
-    kUartDebugEot      = 0x04    // Sent on end of (read/write) transmission
-} uart_debug_opcode_t;
-
 int uart_debug_init(void *uart_base, uint64_t core_freq);
 
 // Check if we received a debug request (ACK byte on RX)
