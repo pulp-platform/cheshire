@@ -15,7 +15,7 @@ packages:
     - apb
     - register_interface
   ariane:
-    revision: af0b93088492b28a9f750d3feca947d119359ace
+    revision: 84ae5d954ea77d7cd97cb40141e485fc76d9aa1f
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6
