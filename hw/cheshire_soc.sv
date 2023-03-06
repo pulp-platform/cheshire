@@ -161,7 +161,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   assign cva6_out_resp = cva6_user_id_resp;
 
   cva6 #(
-    .ArianeCfg    ( CheshireArianeConfig  )
+    .ArianeCfg    ( CheshireArianeConfig  ),
+    .AxiAddrWidth ( AxiAddrWidth          )
   ) i_cva6 (
     .clk_i,
     .rst_ni,
