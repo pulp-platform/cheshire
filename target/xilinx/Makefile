@@ -6,14 +6,13 @@
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 
 PROJECT      ?= cheshire
-BOARD        ?= genesys2
-XILINX_PART  ?= xc7k325tffg900-2
-XILINX_BOARD ?= digilentinc.com:genesys2:part0:1.1
+BOARD        ?= vcu128
+XILINX_PART  ?= xcvu37p-fsvh2892-2L-e
+XILINX_BOARD ?= xilinx.com:vcu128:part0:1.0
 
 out := out
 bit := $(out)/cheshire_top_xilinx.bit
 mcs := $(out)/cheshire_top_xilinx.mcs
-
 
 VIVADOENV ?=  PROJECT=$(PROJECT)            \
               BOARD=$(BOARD)                \
@@ -28,10 +27,10 @@ else
 	VIVADO ?= vivado
 endif
 
-VIVADOFLAGS ?= -nojournal -mode batch -source scripts/prologue.tcl
+VIVADOFLAGS ?= -nojournal -mode gui -source scripts/prologue.tcl
 
 ip-dir  := xilinx
-ips     :=  xlnx_mig_7_ddr3.xci
+ips     := xlnx_mig_ddr4.xci
 
 all: $(mcs)
 

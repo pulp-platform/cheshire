@@ -34,25 +34,8 @@ module cheshire_top_xilinx
   output logic        sd_reset_o,
   output logic        sd_sclk_o,
 
-  input logic [3:0]   fan_sw,
+  (* mark_debug = "true" *) input logic [3:0]   fan_sw,
   output logic        fan_pwm,
-
-  // DDR3 DRAM interface
-  output wire [14:0]  ddr3_addr,
-  output wire [2:0]   ddr3_ba,
-  output wire         ddr3_cas_n,
-  output wire [0:0]   ddr3_ck_n,
-  output wire [0:0]   ddr3_ck_p,
-  output wire [0:0]   ddr3_cke,
-  output wire [0:0]   ddr3_cs_n,
-  output wire [3:0]   ddr3_dm,
-  inout wire  [31:0]  ddr3_dq,
-  inout wire  [3:0]   ddr3_dqs_n,
-  inout wire  [3:0]   ddr3_dqs_p,
-  output wire [0:0]   ddr3_odt,
-  output wire         ddr3_ras_n,
-  output wire         ddr3_reset_n,
-  output wire         ddr3_we_n,
 
   // VGA Colour signals
   output logic [4:0]  vga_b,
@@ -61,7 +44,12 @@ module cheshire_top_xilinx
 
   // VGA Sync signals
   output logic        vga_hs,
-  output logic        vga_vs
+  output logic        vga_vs,
+
+  // DDR Link
+  output logic [4:0]  ddr_link_o,
+  output logic        ddr_link_clk_o
+
 );
 
   wire dram_clock_out;
@@ -167,76 +155,66 @@ module cheshire_top_xilinx
   // DRAM MIG //
   //////////////
 
-  xlnx_mig_7_ddr3 i_dram (
-    .sys_clk_p       ( sysclk_p               ),
-    .sys_clk_n       ( sysclk_n               ),
-    .ddr3_dq,
-    .ddr3_dqs_n,
-    .ddr3_dqs_p,
-    .ddr3_addr,
-    .ddr3_ba,
-    .ddr3_ras_n,
-    .ddr3_cas_n,
-    .ddr3_we_n,
-    .ddr3_reset_n,
-    .ddr3_ck_p,
-    .ddr3_ck_n,
-    .ddr3_cke,
-    .ddr3_cs_n,
-    .ddr3_dm,
-    .ddr3_odt,
-    .mmcm_locked     (                        ), // keep open
-    .app_sr_req      ( '0                     ),
-    .app_ref_req     ( '0                     ),
-    .app_zq_req      ( '0                     ),
-    .app_sr_active   (                        ), // keep open
-    .app_ref_ack     (                        ), // keep open
-    .app_zq_ack      (                        ), // keep open
-    .ui_clk          ( dram_clock_out         ),
-    .ui_clk_sync_rst ( dram_sync_reset        ),
-    .aresetn         ( rst_n                  ),
-    .s_axi_awid      ( dram_req.aw.id         ),
-    .s_axi_awaddr    ( dram_req.aw.addr[29:0] ),
-    .s_axi_awlen     ( dram_req.aw.len        ),
-    .s_axi_awsize    ( dram_req.aw.size       ),
-    .s_axi_awburst   ( dram_req.aw.burst      ),
-    .s_axi_awlock    ( dram_req.aw.lock       ),
-    .s_axi_awcache   ( dram_req.aw.cache      ),
-    .s_axi_awprot    ( dram_req.aw.prot       ),
-    .s_axi_awqos     ( dram_req.aw.qos        ),
-    .s_axi_awvalid   ( dram_req.aw_valid      ),
-    .s_axi_awready   ( dram_resp.aw_ready     ),
-    .s_axi_wdata     ( dram_req.w.data        ),
-    .s_axi_wstrb     ( dram_req.w.strb        ),
-    .s_axi_wlast     ( dram_req.w.last        ),
-    .s_axi_wvalid    ( dram_req.w_valid       ),
-    .s_axi_wready    ( dram_resp.w_ready      ),
-    .s_axi_bready    ( dram_req.b_ready       ),
-    .s_axi_bid       ( dram_resp.b.id         ),
-    .s_axi_bresp     ( dram_resp.b.resp       ),
-    .s_axi_bvalid    ( dram_resp.b_valid      ),
-    .s_axi_arid      ( dram_req.ar.id         ),
-    .s_axi_araddr    ( dram_req.ar.addr[29:0] ),
-    .s_axi_arlen     ( dram_req.ar.len        ),
-    .s_axi_arsize    ( dram_req.ar.size       ),
-    .s_axi_arburst   ( dram_req.ar.burst      ),
-    .s_axi_arlock    ( dram_req.ar.lock       ),
-    .s_axi_arcache   ( dram_req.ar.cache      ),
-    .s_axi_arprot    ( dram_req.ar.prot       ),
-    .s_axi_arqos     ( dram_req.ar.qos        ),
-    .s_axi_arvalid   ( dram_req.ar_valid      ),
-    .s_axi_arready   ( dram_resp.ar_ready     ),
-    .s_axi_rready    ( dram_req.r_ready       ),
-    .s_axi_rid       ( dram_resp.r.id         ),
-    .s_axi_rdata     ( dram_resp.r.data       ),
-    .s_axi_rresp     ( dram_resp.r.resp       ),
-    .s_axi_rlast     ( dram_resp.r.last       ),
-    .s_axi_rvalid    ( dram_resp.r_valid      ),
-    .init_calib_complete (                    ), // keep open
-    .device_temp         (                    ), // keep open
-    .sys_rst             ( cpu_resetn         )
+  xlnx_mig_ddr4 i_dram (
+    .c0_ddr4_ui_clk            ( dram_clock_out         ),
+    .c0_ddr4_ui_clk_sync_rst   ( dram_sync_reset        ),
+    .c0_ddr4_aresetn           ( rst_n                  ),
+    .c0_ddr4_s_axi_awid        ( dram_req.aw.id         ),
+    .c0_ddr4_s_axi_awaddr      ( dram_req.aw.addr[29:0] ),
+    .c0_ddr4_s_axi_awlen       ( dram_req.aw.len        ),
+    .c0_ddr4_s_axi_awsize      ( dram_req.aw.size       ),
+    .c0_ddr4_s_axi_awburst     ( dram_req.aw.burst      ),
+    .c0_ddr4_s_axi_awlock      ( dram_req.aw.lock       ),
+    .c0_ddr4_s_axi_awcache     ( dram_req.aw.cache      ),
+    .c0_ddr4_s_axi_awprot      ( dram_req.aw.prot       ),
+    .c0_ddr4_s_axi_awqos       ( dram_req.aw.qos        ),
+    .c0_ddr4_s_axi_awvalid     ( dram_req.aw_valid      ),
+    .c0_ddr4_s_axi_awready     ( dram_resp.aw_ready     ),
+    .c0_ddr4_s_axi_wdata       ( dram_req.w.data        ),
+    .c0_ddr4_s_axi_wstrb       ( dram_req.w.strb        ),
+    .c0_ddr4_s_axi_wlast       ( dram_req.w.last        ),
+    .c0_ddr4_s_axi_wvalid      ( dram_req.w_valid       ),
+    .c0_ddr4_s_axi_wready      ( dram_resp.w_ready      ),
+    .c0_ddr4_s_axi_bready      ( dram_req.b_ready       ),
+    .c0_ddr4_s_axi_bid         ( dram_resp.b.id         ),
+    .c0_ddr4_s_axi_bresp       ( dram_resp.b.resp       ),
+    .c0_ddr4_s_axi_bvalid      ( dram_resp.b_valid      ),
+    .c0_ddr4_s_axi_arid        ( dram_req.ar.id         ),
+    .c0_ddr4_s_axi_araddr      ( dram_req.ar.addr[29:0] ),
+    .c0_ddr4_s_axi_arlen       ( dram_req.ar.len        ),
+    .c0_ddr4_s_axi_arsize      ( dram_req.ar.size       ),
+    .c0_ddr4_s_axi_arburst     ( dram_req.ar.burst      ),
+    .c0_ddr4_s_axi_arlock      ( dram_req.ar.lock       ),
+    .c0_ddr4_s_axi_arcache     ( dram_req.ar.cache      ),
+    .c0_ddr4_s_axi_arprot      ( dram_req.ar.prot       ),
+    .c0_ddr4_s_axi_arqos       ( dram_req.ar.qos        ),
+    .c0_ddr4_s_axi_arvalid     ( dram_req.ar_valid      ),
+    .c0_ddr4_s_axi_arready     ( dram_resp.ar_ready     ),
+    .c0_ddr4_s_axi_rready      ( dram_req.r_ready       ),
+    .c0_ddr4_s_axi_rid         ( dram_resp.r.id         ),
+    .c0_ddr4_s_axi_rdata       ( dram_resp.r.data       ),
+    .c0_ddr4_s_axi_rresp       ( dram_resp.r.resp       ),
+    .c0_ddr4_s_axi_rlast       ( dram_resp.r.last       ),
+    .c0_ddr4_s_axi_rvalid      ( dram_resp.r_valid      ),
+    .c0_ddr4_s_axi_ctrl_awvalid(                      '0),
+    .c0_ddr4_s_axi_ctrl_awready(                        ),
+    .c0_ddr4_s_axi_ctrl_awaddr (                      '0),
+    .c0_ddr4_s_axi_ctrl_wvalid (                      '0),
+    .c0_ddr4_s_axi_ctrl_wready (                        ),
+    .c0_ddr4_s_axi_ctrl_wdata  (                      '0),
+    .c0_ddr4_s_axi_ctrl_bvalid (                        ),
+    .c0_ddr4_s_axi_ctrl_bready (                      '0),
+    .c0_ddr4_s_axi_ctrl_bresp  (                        ),
+    .c0_ddr4_s_axi_ctrl_arvalid(                      '0),
+    .c0_ddr4_s_axi_ctrl_arready(                        ),
+    .c0_ddr4_s_axi_ctrl_araddr (                      '0),
+    .c0_ddr4_s_axi_ctrl_rvalid (                        ),
+    .c0_ddr4_s_axi_ctrl_rready (                      '0),
+    .c0_ddr4_s_axi_ctrl_rdata  (                        ),
+    .c0_ddr4_s_axi_ctrl_rresp  (                        ),
+    .c0_init_calib_complete    (                        ), // keep open
+    .sys_rst                   ( cpu_resetn             )
   );
-
 
   //////////////////
   // I2C Adaption //
@@ -392,9 +370,9 @@ module cheshire_top_xilinx
     .dram_resp_i          ( soc_resp              ),
   
     .ddr_link_i           ( '0                    ),
-    .ddr_link_o           (                       ),
+    .ddr_link_o,
     .ddr_link_clk_i       ( 1'b1                  ),
-    .ddr_link_clk_o       (                       ),
+    .ddr_link_clk_o,
 
     .jtag_tck_i,
     .jtag_trst_ni,
