@@ -23,9 +23,9 @@ CHS_SLINK_DIR  = $(shell $(BENDER) path serial_link)
 CHS_VGA_DIR    = $(shell $(BENDER) path axi_vga)
 CHS_LLC_DIR    = $(shell $(BENDER) path axi_llc)
 
-.PHONY: all nonfree-init chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-xilinx-all
+.PHONY: chs-all nonfree-init chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-xilinx-all
 
-all: chs-sw-all chs-hw-all chs-sim-all chs-xilinx-all
+chs-all: chs-sw-all chs-hw-all chs-sim-all chs-xilinx-all
 
 ################
 # Dependencies #
@@ -37,8 +37,8 @@ $(CHS_ROOT)/.deps:
 	git submodule update --init --recursive
 	@touch $@
 
-# Make sure this is done before any makefrags are included
-%.mk: $(CHS_ROOT)/.deps
+# Make sure dependencies are more up-to-date than any targets run
+-include $(CHS_ROOT)/.deps
 
 ######################
 # Nonfree components #
@@ -68,6 +68,7 @@ $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv:
 	$(REGGEN) -r $< --outdir $(dir $@)
 
 # CLINT
+CLINTCORES = 1
 include $(CHS_CLINT_DIR)/clint.mk
 $(CHS_CLINT_DIR)/.generated: Bender.yml
 	$(MAKE) clint

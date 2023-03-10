@@ -24,6 +24,23 @@ void clint_spin_ticks(uint64_t ticks) {
     clint_spin_until(clint_get_mtime() + ticks);
 }
 
+uint64_t clint_get_core_freq(uint64_t ref_freq, uint64_t min_mcycles, uint64_t min_ticks) {
+    uint64_t end_mcycle, start_mcycle;
+    uint64_t end_mtime, start_mtime = clint_get_mtime();
+    // Get cycle count just before tick rollover to capture its start
+    do start_mcycle = get_mcycle();
+    while (start_mtime == clint_get_mtime());
+    start_mtime++;
+    // Ohserve ticks untill we meet our accuracy goals
+    do {
+        end_mcycle = get_mcycle();
+        end_mtime = clint_get_mtime();
+    } while (end_mcycle < start_mtime + min_mcycles &&
+              end_mcycle < start_mcycle + min_mcycles);
+    // Compute current frequency in Hz
+    return ((end_mcycle - start_mcycle) * ref_freq) / (end_mtime - start_mtime);
+}
+
 void clint_set_mtimecmpx(uint64_t timer_idx, uint64_t value) {
     uint32_t vlo = (uint32_t)(value);
     uint32_t vhi = (uint32_t)(value >> 32);

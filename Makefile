@@ -11,5 +11,8 @@ CHS_ROOT ?= .
 include cheshire.mk
 
 # Inside the repo, forward prefixed all targets
+all:
+	@$(MAKE) chs-all
+
 %-all:
 	@$(MAKE) chs-$*-all

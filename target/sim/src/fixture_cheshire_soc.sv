@@ -42,7 +42,7 @@ module cheshire_soc_fixture;
 
   localparam time ClkPeriodSys    = 5ns;
   localparam time ClkPeriodJTAG   = 20ns;
-  localparam time ClkPeriodRTC    = 100ns;
+  localparam time ClkPeriodRTC    = 30518ns;
 
   localparam int UartBaudRate     = 115200;
   localparam int UartParityEna    = 0;
@@ -238,91 +238,6 @@ module cheshire_soc_fixture;
       end
     end
   endtask
-
-  task jtag_preload_check;
-    logic [63:0] rdata;
-
-    // Update SBCS
-    automatic dm::sbcs_t sbcs = jtag_init_sbcs;
-    sbcs.sbreadonaddr = 1;
-
-    riscv_dbg.write_dmi(dm::SBCS, sbcs);
-
-    $display("[JTAG] Checking ELF sections");
-
-    // Read sections
-    foreach (sections[addr]) begin
-      $display("[JTAG] Checking 0x%h (%0d words)", addr*8, sections[addr]);
-
-      riscv_dbg.write_dmi(dm::SBAddress0, addr*8);
-
-      for (int i = 0; i < sections[addr]; i++) begin
-        if (i % 20 == 0)
-          $display(" - Word %0d/%0d (%0d%%)", i, sections[addr], i*100/(sections[addr] > 1 ? sections[addr]-1 : 1));
-
-        riscv_dbg.read_dmi_exp_backoff(dm::SBData1, rdata[32 +: 32]);
-        riscv_dbg.read_dmi_exp_backoff(dm::SBData0, rdata[ 0 +: 32]);
-
-        if (rdata != memory[addr + i])
-          $error("[JTAG] ERROR: Readback mismatch at 0x%x: act 0x%x != exp 0x%x", (addr + i) * 8, rdata, memory[addr + i]);
-      end
-    end
-  endtask
-
-  task jtag_cfg_llc_spm;
-    automatic dm::sbcs_t sbcs = jtag_init_sbcs;
-    automatic logic [31:0] data;
-
-    // Update SBCS
-    sbcs.sbreadonaddr = 0;
-    sbcs.sbreadondata = 0;
-    sbcs.sbautoincrement = 0;
-    sbcs.sbaccess = 3;
-
-    riscv_dbg.write_dmi(dm::SBCS, sbcs);
-    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-
-    $display("[JTAG] Configuring all of LLC to SPM");
-
-    data = 32'hff;
-
-    // cfg_spm_low = 0xff;
-    riscv_dbg.write_dmi(dm::SBAddress0, RegbusAddrmap[RegbusOutLlc].start_addr[31:0]);
-    riscv_dbg.write_dmi(dm::SBData0, data);
-    // Wait for the write to complete
-    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-
-    if(sbcs.sberror) begin
-      sbcs.sberror = 1;
-      riscv_dbg.write_dmi(dm::SBCS, sbcs);
-      do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-      while (sbcs.sbbusy);
-    end
-
-    // commit_cfg = 0x1;
-    data = 32'h1;
-    riscv_dbg.write_dmi(dm::SBAddress0, RegbusAddrmap[RegbusOutLlc].start_addr[31:0]+32'h10);
-    riscv_dbg.write_dmi(dm::SBData0, data);
-    // Wait for the write to complete
-    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-
-    if(sbcs.sberror) begin
-      sbcs.sberror = 1;
-      riscv_dbg.write_dmi(dm::SBCS, sbcs);
-      do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-      while (sbcs.sbbusy);
-    end
-
-    sbcs = jtag_init_sbcs;
-    // Ensure the system bus is ready again
-    riscv_dbg.write_dmi(dm::SBCS, sbcs);
-    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-  endtask
-
 
   // Run HART 0 from specified address
   task jtag_run(
@@ -961,43 +876,34 @@ module cheshire_soc_fixture;
   cheshire_soc i_dut_cheshire_soc (
     .clk_i            ( clk_sys         ),
     .rst_ni           ( rst_n           ),
-
     .testmode_i       ( testmode        ),
-
     // Boot mode selection
     .boot_mode_i      ( bootmode        ),
-
     // Boot address for CVA6
     .boot_addr_i      ( 64'h0100_0000   ),
-
     // DRAM
     .dram_req_o       ( dram_req        ),
     .dram_resp_i      ( dram_resp       ),
-                                   
     // DDR-Link
     .ddr_link_i       ( sl_ddr_data_i   ),
     .ddr_link_o       ( sl_ddr_data_o   ),
     .ddr_link_clk_i   ( sl_ddr_clk_i    ),
     .ddr_link_clk_o   ( sl_ddr_clk_o    ),
-
     // VGA Controller
     .vga_hsync_o      (                 ),
     .vga_vsync_o      (                 ),
     .vga_red_o        (                 ),
     .vga_green_o      (                 ),
     .vga_blue_o       (                 ),
-
     // JTAG Interface
     .jtag_tck_i       ( jtag_tck        ),
     .jtag_trst_ni     ( jtag_trst_n     ),
     .jtag_tms_i       ( jtag_tms        ),
     .jtag_tdi_i       ( jtag_tdi        ),
     .jtag_tdo_o       ( jtag_tdo        ),
-
     // UART Interface
     .uart_tx_o        ( uart_tx         ),
     .uart_rx_i        ( 1'b0            ),
-
     // I2C Interface
     .i2c_sda_o        ( i2c_sda_out     ),
     .i2c_sda_i        ( i2c_sda_in      ),
@@ -1005,7 +911,6 @@ module cheshire_soc_fixture;
     .i2c_scl_o        ( i2c_scl_out     ),
     .i2c_scl_i        ( i2c_scl_in      ),
     .i2c_scl_en_o     ( i2c_scl_oe      ),
-
     // SPI Host Interface
     .spim_sck_o       ( spi_sck_soc_out ),
     .spim_sck_en_o    ( spi_sck_en      ),
@@ -1014,13 +919,8 @@ module cheshire_soc_fixture;
     .spim_sd_o        ( spi_sd_soc_out  ),
     .spim_sd_en_o     ( spi_sd_en       ),
     .spim_sd_i        ( spi_sd_soc_in   ),
-
-    // CLINT
+    // RTC
     .rtc_i            ( clk_rtc         ),
-
-    // CLK locked signal
-    .clk_locked_i     ( 1'b0            ),
-
     // External Regbus
     .external_reg_req_o ( external_reg_req ),
     .external_reg_rsp_i ( external_reg_rsp )

@@ -85,11 +85,13 @@ chs-sw-headers: $(CHS_SW_GEN_HDRS)
 # Compilation #
 ###############
 
+# TODO: track headers with gcc -MM!
+
 # All objects require up-to-date patches and headers
-%.o: %.c $(CHS_ROOT)/.deps $(CHS_SW_GEN_HDRS)
+%.o: %.c $(CHS_SW_GEN_HDRS)
 	$(RISCV_CC) $(CHS_SW_INCLUDES) $(RISCV_CCFLAGS) -c $< -o $@
 
-%.o: %.S $(CHS_ROOT)/.deps $(CHS_SW_GEN_HDRS)
+%.o: %.S $(CHS_SW_GEN_HDRS)
 	$(RISCV_CC) $(CHS_SW_INCLUDES) $(RISCV_CCFLAGS) -c $< -o $@
 
 define chs_ld_elf_rule

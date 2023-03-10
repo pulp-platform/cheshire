@@ -49,6 +49,8 @@ _start:
     li x30, 0
     li x31, 0
 
+    // TODO: park non-0 harts here and adapt to new parameterization
+
     // TODO: Delete this cancer once LLC is fixed! Sentinel read from SPM so BIST cannot fuck us...
     la t0, __base_spm
     ld t0, 0(t0)
