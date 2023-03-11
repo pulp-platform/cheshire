@@ -14,27 +14,33 @@ package cheshire_pkg;
   endfunction
 
   // Parameters defined by generated hardware (regenerate to adapt)
-  localparam int unsigned NumIntIntrs   = 20; // Must agree with struct below
-  localparam int unsigned NumExtIntrs   = plic_reg_pkg::NumSrc - NumIntIntrs;
-  localparam int unsigned SpihNumCs     = spi_host_reg_pkg::NumCs - 1;  // Last CS is dummy
-  localparam int unsigned SlinkNumChan  = serial_link_single_channel_reg_pkg::NumChannels;
-  localparam int unsigned SlinkNumBits  = serial_link_single_channel_reg_pkg::NumBits;
-  localparam int unsigned ClintNumCores = serial_link_single_channel_reg_pkg::NumCores;
+  localparam int unsigned NumIntIntrs     = 20; // Must agree with struct below
+  localparam int unsigned NumExtIntrs     = plic_reg_pkg::NumSrc - NumIntIntrs;
+  localparam int unsigned SpihNumCs       = spi_host_reg_pkg::NumCs - 1;  // Last CS is dummy
+  localparam int unsigned SlinkNumChan    = serial_link_single_channel_reg_pkg::NumChannels;
+  localparam int unsigned SlinkNumBits    = serial_link_single_channel_reg_pkg::NumBits;
+  localparam int unsigned SlinkMaxClkDiv  = 1 << serial_link_single_channel_reg_pkg::Log2MaxClkDiv;
+  localparam int unsigned ClintNumCores   = serial_link_single_channel_reg_pkg::NumCores;
 
   // Externally controllable parameters
   typedef struct packed {
     // Hart parameters
-    bit [63:0]      NumIntHarts;
+    bit             DualCore;
     bit [63:0]      NumExtIrqHarts;
     bit [63:0]      NumExtDbgHarts;
+    bit [ 9:0]      Core1UserAmoBit;
+    bit [ 5:0]      CoreMaxTxnsPerId;
+    bit [ 5:0]      CoreMaxUniqIds;
     // Interconnect parameters
     bit [ 5:0]      AddrWidth;
     bit [ 9:0]      AxiDataWidth;
     bit [ 9:0]      AxiUserWidth;
     bit [ 5:0]      AxiMstIdWidth;
+    // User signals identify atomics masters.
+    // A '0 user signal indicates no atomics.
     bit [ 9:0]      AxiUserAmoMsb;
     bit [ 9:0]      AxiUserAmoLsb;
-    bit [63:0]      AxiUserDomain;
+    bit [63:0]      AxiUserAmoDomain;
     // External AXI ports (at most 8)
     bit [2:0]       AxiExtNumMst;
     bit [2:0]       AxiExtNumSlv;
@@ -81,6 +87,11 @@ package cheshire_pkg;
     bit [ 5:0]      SlinkMaxTxnsPerId;
     bit [ 5:0]      SlinkMaxUniqIds;
     bit [ 5:0]      SlinkMaxClkDiv;
+    bit [63:0]      SlinkRegionStart;
+    bit [63:0]      SlinkRegionEnd;
+    bit [63:0]      SlinkTxAddrMask;
+    bit [63:0]      SlinkTxAddrDomain;
+    bit [ 9:0]      SlinkUserAmoBit;
     // Parameters for DMA
     bit [ 9:0]      DmaConfMaxReadTxns;
     bit [ 9:0]      DmaConfMaxWriteTxns;

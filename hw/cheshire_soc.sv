@@ -8,6 +8,7 @@
 
 `include "axi/assign.svh"
 `include "common_cells/registers.svh"
+`include "common_cells/assert.svh"
 
 module cheshire_soc import cheshire_pkg::*; #(
   // Cheshire config
@@ -17,14 +18,14 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Debug info for external harts
   parameter dm::hartinfo_t [iomsb(Cfg.NumExtDbgHarts)-1:0] ExtHartinfo = '0,
   // Interconnect types (must agree with Cheshire config)
-  parameter type axi_mst_req_t      = logic,
-  parameter type axi_mst_rsp_t      = logic,
+  parameter type axi_ext_mst_req_t  = logic,
+  parameter type axi_ext_mst_rsp_t  = logic,
   parameter type axi_llc_mst_req_t  = logic,
   parameter type axi_llc_mst_rsp_t  = logic,
-  parameter type axi_slv_req_t      = logic,
-  parameter type axi_slv_rsp_t      = logic,
-  parameter type reg_req_t          = logic,
-  parameter type reg_rsp_t          = logic
+  parameter type axi_ext_slv_req_t  = logic,
+  parameter type axi_ext_slv_rsp_t  = logic,
+  parameter type reg_ext_req_t      = logic,
+  parameter type reg_ext_rsp_t      = logic
 ) (
   input  logic        clk_i,
   input  logic        rst_ni,
@@ -35,13 +36,13 @@ module cheshire_soc import cheshire_pkg::*; #(
   output axi_llc_mst_req_t axi_llc_mst_req_o,
   input  axi_llc_mst_rsp_t axi_llc_mst_rsp_i,
   // External AXI crossbar ports
-  output axi_mst_req_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_req_o,
-  input  axi_mst_rsp_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_rsp_i,
+  output axi_ext_mst_req_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_req_o,
+  input  axi_ext_mst_rsp_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_rsp_i,
   input  axi_slv_req_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_req_i,
   output axi_slv_rsp_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_rsp_o,
   // External reg demux slaves
-  input  reg_req_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_req_i,
-  output reg_rsp_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_rsp_o,
+  input  reg_ext_req_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_req_i,
+  output reg_ext_rsp_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_rsp_o,
   // Interrupts from external devices
   input  logic [iomsb(Cfg.NumExtIntrs):0] intr_ext_i
   // Interrupts to external harts
@@ -105,7 +106,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  Interrupts  //
   //////////////////
 
-  localparam int unsigned NumIrqHarts = Cfg.NumIntHarts + Cfg.NumExtIrqHarts;
+  localparam int unsigned NumIntHarts = 1 + Cfg.DualCore;
+  localparam int unsigned NumIrqHarts = NumIntHarts + Cfg.NumExtIrqHarts;
 
   cheshire_intr_t       intr;
   logic [NumIrqHarts-1:0]  irq, time_irq, ipi;
@@ -116,15 +118,74 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   // Forward IRQs to external interruptible harts if any
   if (Cfg.NumExtIrqHarts != 0) begin : gen_ext_irqs
-    assign meip_ext_o = irq      [NumIrqHarts-1:Cfg.NumIntHarts];
-    assign mtip_ext_o = time_irq [NumIrqHarts-1:Cfg.NumIntHarts];
-    assign msip_ext_o = ipi      [NumIrqHarts-1:Cfg.NumIntHarts];
+    assign meip_ext_o = irq      [NumIrqHarts-1:NumIntHarts];
+    assign mtip_ext_o = time_irq [NumIrqHarts-1:NumIntHarts];
+    assign msip_ext_o = ipi      [NumIrqHarts-1:NumIntHarts];
   end else begin : gen_no_ext_irqs
     assign meip_ext_o = '0;
     assign mtip_ext_o = '0;
     assign msip_ext_o = '0;
   end
 
+  /////////////////////
+  //  Interconnnect  //
+  /////////////////////
+
+  localparam AxiInCores
+
+
+  // We assume that all internal cores share one port
+  localparam int unsigned AxiNumMst     = 2 + AxiExtNumMst;
+  localparam int unsigned AxiStrbWidth  = Cfg.AxiDataWidth;
+  localparam int unsigned AxiSlvIdWidth = 0;
+
+  localparam type aidx_t      = logic [7:0];
+  localparam type addr_t      = logic [AddrWidth-1:0];
+  localparam type axi_data_t  = logic [Cfg.AxiDataWidth-1:0];
+  localparam type axi_strb_t  = logic [AxiStrbWidth-1:0];
+  localparam type axi_strb_t  = logic [CfgAxiStrbWidth-1:0];
+
+  `AXI_TYPEDEF_ALL(axi_mst, addr_t, logic [AxiXbarMasterIdWidth-1:0], axi_data_t, axi_strb_t, logic [0:0])
+
+
+
+
+  typedef struct packed {
+    aidx_t idx;
+    addr_t start_addr;
+    addr_t end_addr;
+  } addr_rule_t;
+
+  axi_xbar #(
+    .Cfg            ( AxiXbarCfg ),
+    .ATOPs          ( 1  ),
+    .Connectivity   ( '1 ),
+    .slv_aw_chan_t  ( axi_mst_aw_chan_t ),
+    .mst_aw_chan_t  ( axi_slv_aw_chan_t ),
+    .w_chan_t       ( axi_mst_w_chan_t  ),
+    .slv_b_chan_t   ( axi_mst_b_chan_t  ),
+    .mst_b_chan_t   ( axi_slv_b_chan_t  ),
+    .slv_ar_chan_t  ( axi_mst_ar_chan_t ),
+    .mst_ar_chan_t  ( axi_slv_ar_chan_t ),
+    .slv_r_chan_t   ( axi_mst_r_chan_t  ),
+    .mst_r_chan_t   ( axi_slv_r_chan_t  ),
+    .slv_req_t      ( axi_mst_req_t ),
+    .slv_resp_t     ( axi_mst_rsp_t ),
+    .mst_req_t      ( axi_slv_req_t ),
+    .mst_resp_t     ( axi_slv_rsp_t ),
+    .rule_t         ( addr_rule_t )
+  ) i_axi_xbar (
+    .clk_i,
+    .rst_ni,
+    .test_i                 ( test_mode_i ),
+    .slv_ports_req_i        ( axi_in_req  ),
+    .slv_ports_resp_o       ( axi_in_rsp  ),
+    .mst_ports_req_o        ( axi_out_req ),
+    .mst_ports_resp_i       ( axi_out_rsp ),
+    .addr_map_i             ( AxiXbarAddrmap ),
+    .en_default_mst_port_i  ( '0 ),
+    .default_mst_port_i     ( '0 )
+  );
 
 
 
@@ -141,20 +202,16 @@ module cheshire_soc import cheshire_pkg::*; #(
 
 
 
-  ////////////////////
-  //  Interconnect  //
-  ////////////////////
+
+
+
 
   // TODO: ensure that every master gets its atomics user range mapped!
 
   // TODO
-  localparam int unsigned AxiStrbWidth = 0;
-  localparam int unsigned AxiSlvIdWidth = 0;
 
 
-  localparam type addr_t      = logic [AddrWidth-1:0];
-  localparam type axi_data_t  = logic [AxiDataWidth-1:0];
-  localparam type axi_strb_t  = logic [AxiStrbWidth-1:0];
+
 
   // TODO
   localparam addr_t BaseDbg     = '0;
@@ -164,131 +221,127 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   // TODO
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /////////////////
+  //  Reg demux  //
+  /////////////////
+
+
+
+
+
+  ///////////
+  //  LLC  //
+  ///////////
+
+  // TODO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   /////////////
   //  Cores  //
   /////////////
 
-  // Boot from boot ROM only if available, otherwise platform ROM
+  // TODO: Migrate to upstream CVA6 (We currently use a 48b-address fork)
+  // TODO: Implement WIP coherent dual-core CVA6
+  // TODO: Implement X interface support
+
+  // Boot from boot ROM only if available, otherwise from platform ROM
   localparam addr_t BootAddr = (Cfg.Bootrom ? BaseBootrom : Cfg.PlatformRom);
 
   // Debug interface for internal harts
-  dm::hartinfo_t [Cfg.NumIntHarts-1:0] dbg_int_info;
-  logic          [Cfg.NumIntHarts-1:0] dbg_int_unavail;
-  logic          [Cfg.NumIntHarts-1:0] dbg_int_req;
+  dm::hartinfo_t [NumIntHarts-1:0] dbg_int_info;
+  logic          [NumIntHarts-1:0] dbg_int_unavail;
+  logic          [NumIntHarts-1:0] dbg_int_req;
 
   // All internal harts are CVA6 and always available
-  assign dbg_int_info     = {(Cfg.NumIntHarts){ariane_pkg::DebugHartInfo}};
+  assign dbg_int_info     = {(NumIntHarts){ariane_pkg::DebugHartInfo}};
   assign dbg_int_unavail  = '0;
 
-  if (Cfg.NumIntHarts == 1) begin : gen_single_core
+  ariane_axi::req_t   core_out_req, core_ur_req;
+  ariane_axi::resp_t  core_out_rsp, core_ur_rsp;
 
-    // TODO: Implement X interface somehow
-
-    axi_cva6_req_t  core_out_req, core_user_id_req;
-    axi_cva6_resp_t core_out_rsp, core_user_id_rsp;
-
-    cva6 #(
-      .ArianeCfg  ( Cva6Cfg )
-    ) i_cva6 (
-      .clk_i,
-      .rst_ni,
-      .boot_addr_i  ( BootAddr )
-      .hart_id_i    ( '0 ),
-      .irq_i        ( irq      ),
-      .ipi_i        ( ipi      ),
-      .time_irq_i   ( time_irq ),
-      .debug_req_i  ( dbg_req  ),
-      .cvxif_req_o  (  ),
-      .cvxif_resp_i ( '0 ),
-      .axi_req_o    ( core_out_req ),
-      .axi_resp_i   ( core_out_rsp )
-    );
-
-    // Adapt user signal to reflect
-
-
-
-
-  end else begin : gen_multi_core
-
-    // TODO: Not yet implemented
-
-  end
-
-
-  // TODO: Parameterize the below for more than one hart
-
-  always_comb begin
-    cva6_user_id_req          = cva6_out_req;
-    cva6_user_id_req.aw.user  = Cva6Identifier;
-    cva6_user_id_req.w.user   = Cva6Identifier;
-    cva6_user_id_req.ar.user  = Cva6Identifier;
-    cva6_out_resp             = cva6_user_id_resp;
-  end
-
+  // Currently, we support only one core
   cva6 #(
-    .ArianeCfg    ( CheshireArianeConfig  )
-  ) i_cva6 (
+    .ArianeCfg  ( Cva6Cfg )
+  ) i_core_cva6 (
     .clk_i,
     .rst_ni,
-    .boot_addr_i,
-    .hart_id_i    ( Cfg.),
-    .irq_i        ( eip           ),
-    .ipi_i        ( mssip[0]      ),
-    .time_irq_i   ( mstip[0]      ),
-    .debug_req_i  ( debug_req     ),
-    .cvxif_req_o  (               ),
-    .cvxif_resp_i ( '0            ),
-    .axi_req_o    ( cva6_out_req  ),
-    .axi_resp_i   ( cva6_out_resp )
+    .boot_addr_i  ( BootAddr )
+    .hart_id_i    ( '0 ),
+    .irq_i        ( irq[0]      ),
+    .ipi_i        ( ipi[0]      ),
+    .time_irq_i   ( time_irq[0] ),
+    .debug_req_i  ( dbg_int_req[0] ),
+    .cvxif_req_o  (  ),
+    .cvxif_resp_i ( '0 ),
+    .axi_req_o    ( core_out_req ),
+    .axi_resp_i   ( core_out_rsp )
   );
 
-  // Remap CVA6s 4 id bits to the system width
+  // Map user to AMO domain as we are an atomics-capable master.
+  // As we are core 0, the core 1 and serial link AMO bits should *not* be set.
+  always_comb begin
+    core_ur_req         = core_out_req;
+    core_ur_req.aw.user = AxiUserAmoDomain;
+    core_ur_req.ar.user = AxiUserAmoDomain;
+    core_ur_req.w.user  = AxiUserAmoDomain;
+    core_out_rsp        = core_ur_rsp;
+  end
+
+  // Remap core ID width to configured ID width
   axi_id_remap #(
-    .AxiSlvPortIdWidth      ( 4                         ),
-    .AxiSlvPortMaxUniqIds   ( 4                         ),
-    .AxiMaxTxnsPerId        ( 1                         ),
-    .AxiMstPortIdWidth      ( AxiXbarMasterIdWidth      ),
-    .slv_req_t              ( axi_cva6_req_t            ),
-    .slv_resp_t             ( axi_cva6_resp_t           ),
-    .mst_req_t              ( axi_a48_d64_mst_u0_req_t  ),
-    .mst_resp_t             ( axi_a48_d64_mst_u0_resp_t )
-  ) i_axi_id_remap_cva6 (
+    .AxiSlvPortIdWidth    ( ariane_axi_pkg::IdWidth ),
+    .AxiSlvPortMaxUniqIds ( Cfg.CoreMaxTxnsPerId ),
+    .AxiMaxTxnsPerId      ( Cfg.CoreMaxUniqIds   ),
+    .AxiMstPortIdWidth    ( Cfg.AxiMstIdWidth    ),
+    .slv_req_t            ( ariane_axi::req_t  ),
+    .slv_resp_t           ( ariane_axi::resp_t ),
+    .mst_req_t            ( axi_mst_req_t   ),
+    .mst_resp_t           ( axi_mst_rsp_t   )
+  ) i_core_axi_id_remap (
     .clk_i,
     .rst_ni,
-    .slv_req_i              ( cva6_user_id_req                      ),
-    .slv_resp_o             ( cva6_user_id_resp                     ),
-    .mst_req_o              ( axi_xbar_slv_port_reqs[AxiXbarInCva6] ),
-    .mst_resp_i             ( axi_xbar_slv_port_rsps[AxiXbarInCva6] )
+    .slv_req_i  ( core_ur_req ),
+    .slv_resp_o ( core_ur_rsp ),
+    .mst_req_o  ( axi_in_req[AxiInCore] ),
+    .mst_resp_i ( axi_in_rsp[AxiInCore] )
   );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   /////////////////////////
   //  JTAG Debug Module  //
   /////////////////////////
 
-  localparam int unsigned NumDbgHarts = Cfg.NumIntHarts + Cfg.NumExtDbgHarts;
+  localparam int unsigned NumDbgHarts = NumIntHarts + Cfg.NumExtDbgHarts;
 
   // Filter atomics and cut
   axi_slv_req_t dbg_slv_axi_amo_req, dbg_slv_axi_cut_req;
@@ -502,12 +555,6 @@ module cheshire_soc import cheshire_pkg::*; #(
     .td_o             ( jtag_tdo_o     ),
     .tdo_oe_o         ( jtag_tdo_oe_o  )
   );
-
-  ///////////
-  //  LLC  //
-  ///////////
-
-  // TODO
 
   /////////////////////
   //  Register File  //
@@ -953,16 +1000,36 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  Serial Link  //
   ///////////////////
 
-  // TODO: Remap user and addresses!!
+  // TODO: ensure gating and connect isolation IO properly
 
   if(Cfg.SerialLink) begin : gen_serial_link
 
-    // TODO: ensure gating and connect isolation IO properly
+    axi_slv_req_t slink_tx_uar_req;
+    axi_slv_rsp_t slink_tx_uar_rsp;
 
-    axi_mst_req_t serial_link_in_req;
-    axi_mst_rsp_t serial_link_in_rsp;
+    axi_mst_req_t slink_tx_idr_req;
+    axi_mst_rsp_t slink_tx_idr_rsp;
 
-    // Remap wider slave ID to narrower master ID
+    // TX outgoing channels: Remap address and set serial link user bit
+    always_comb begin
+      slink_tx_uar_req          = axi_out_req[AxiOutSerialLink];
+      slink_tx_uar_req.aw.addr  = (Cfg.SlinkTxAddrDomain    & ~Cfg.SlinkTxAddrMask) |
+                                  (slink_tx_uar_req.aw.addr &  Cfg.SlinkTxAddrMask);
+      slink_tx_uar_req.ar.addr  = (Cfg.SlinkTxAddrDomain    & ~Cfg.SlinkTxAddrMask) |
+                                  (slink_tx_uar_req.ar.addr &  Cfg.SlinkTxAddrMask);
+      slink_tx_uar_req.aw.user |= (64'b1 << SlinkUserAmoBit);
+      slink_tx_uar_req.ar.user |= (64'b1 << SlinkUserAmoBit);
+      slink_tx_uar_req.w.user  |= (64'b1 << SlinkUserAmoBit);
+    end
+
+    // TX incoming channels: unset serial link user bit
+    always_comb begin
+      axi_out_rsp[AxiOutSerialLink]         = slink_tx_uar_rsp;
+      axi_out_rsp[AxiOutSerialLink].r.user &= ~(64'b1 << SlinkUserAmoBit);
+      axi_out_rsp[AxiOutSerialLink].b.user &= ~(64'b1 << SlinkUserAmoBit);
+    end
+
+    // TX: Remap wider slave ID to narrower master ID
     axi_id_remap #(
       .AxiSlvPortIdWidth    ( AxiSlvIdWidth         ),
       .AxiSlvPortMaxUniqIds ( Cfg.SlinkMaxUniqIds   ),
@@ -972,13 +1039,13 @@ module cheshire_soc import cheshire_pkg::*; #(
       .slv_resp_t           ( axi_slv_rsp_t ),
       .mst_req_t            ( axi_mst_req_t ),
       .mst_resp_t           ( axi_mst_rsp_t )
-    ) i_serial_link_id_remap (
+    ) i_serial_link_tx_id_remap (
       .clk_i,
       .rst_ni,
-      .slv_req_i  ( axi_out_req[AxiOutSerialLink] ),
-      .slv_resp_o ( axi_out_rsp[AxiOutSerialLink] ),
-      .mst_req_o  ( serial_link_in_req ),
-      .mst_resp_i ( serial_link_in_rsp )
+      .slv_req_i  ( slink_tx_uar_req ),
+      .slv_resp_o ( slink_tx_uar_rsp ),
+      .mst_req_o  ( slink_tx_idr_req ),
+      .mst_resp_i ( slink_tx_idr_rsp )
     );
 
     serial_link #(
@@ -993,9 +1060,9 @@ module cheshire_soc import cheshire_pkg::*; #(
       .b_chan_t     ( axi_mst_b_chan_t  ),
       .hw2reg_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t ),
       .reg2hw_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t ),
-      .NumChannels  ( Cfg.SlinkNumChan   ),
-      .NumLanes     ( Cfg.SlinkNumBits   ),
-      .MaxClkDiv    ( Cfg.SlinkMaxClkDiv )
+      .NumChannels  ( SlinkNumChan   ),
+      .NumLanes     ( SlinkNumBits   ),
+      .MaxClkDiv    ( SlinkMaxClkDiv )
     ) i_serial_link (
       .clk_i,
       .rst_ni,
@@ -1004,8 +1071,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clk_reg_i      ( clk_i  ),
       .rst_reg_ni     ( rst_ni ),
       .testmode_i     ( test_mode_i ),
-      .axi_in_req_i   ( serial_link_in_req ),
-      .axi_in_rsp_o   ( serial_link_in_rsp ),
+      .axi_in_req_i   ( slink_tx_idr_req ),
+      .axi_in_rsp_o   ( slink_tx_idr_rsp ),
       .axi_out_req_o  ( axi_in_req[AxiInSerialLink]   ),
       .axi_out_rsp_i  ( axi_in_rsp[AxiInSerialLink]   ),
       .cfg_req_i      ( reg_out_req[RegOutSerialLink] ),
@@ -1115,11 +1182,16 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  Assertions  //
   //////////////////
 
+  `ASSERT_INIT(NoDualCoreSupport, ~Cfg.DualCore)
+
   // TODO: check that CVA6 and Cheshire config agree
   // TODO: check that all interconnect params agree
   // TODO: check that params with min/max values are within legal range
-  // TODO: check that CLINT and PLIC target counts are both `Cfg.NumIntHarts + Cfg.NumExtHarts`
-  // TODO: check that (for now) `Cfg.NumIntHarts == 1`
+  // TODO: check that CLINT and PLIC target counts are both `NumIntHarts + Cfg.NumExtHarts`
+  // TODO: check that (for now) `NumIntHarts == 1`
+  // TODO: check that available user bits suffice to identify all masters
+  // TODO: check that atomics user domain is nonzero
+  // TODO: check that `ext` (IO) and internal types agree
   // TODO: many other things I most likely forgot
 
 endmodule
