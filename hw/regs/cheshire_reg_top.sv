@@ -85,6 +85,8 @@ module cheshire_reg_top #(
   logic rtc_freq_re;
   logic [31:0] platform_rom_qs;
   logic platform_rom_re;
+  logic hw_features_bootrom_qs;
+  logic hw_features_bootrom_re;
   logic hw_features_uart_qs;
   logic hw_features_uart_re;
   logic hw_features_spi_host_qs;
@@ -97,8 +99,6 @@ module cheshire_reg_top #(
   logic hw_features_serial_link_re;
   logic hw_features_vga_qs;
   logic hw_features_vga_re;
-  logic hw_features_dram_qs;
-  logic hw_features_dram_re;
   logic [7:0] vga_params_red_width_qs;
   logic vga_params_red_width_re;
   logic [7:0] vga_params_green_width_qs;
@@ -267,7 +267,22 @@ module cheshire_reg_top #(
 
   // R[hw_features]: V(True)
 
-  //   F[uart]: 0:0
+  //   F[bootrom]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_hw_features_bootrom (
+    .re     (hw_features_bootrom_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_features.bootrom.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (hw_features_bootrom_qs)
+  );
+
+
+  //   F[uart]: 1:1
   prim_subreg_ext #(
     .DW    (1)
   ) u_hw_features_uart (
@@ -282,7 +297,7 @@ module cheshire_reg_top #(
   );
 
 
-  //   F[spi_host]: 1:1
+  //   F[spi_host]: 2:2
   prim_subreg_ext #(
     .DW    (1)
   ) u_hw_features_spi_host (
@@ -297,7 +312,7 @@ module cheshire_reg_top #(
   );
 
 
-  //   F[i2c]: 2:2
+  //   F[i2c]: 3:3
   prim_subreg_ext #(
     .DW    (1)
   ) u_hw_features_i2c (
@@ -312,7 +327,7 @@ module cheshire_reg_top #(
   );
 
 
-  //   F[dma]: 3:3
+  //   F[dma]: 4:4
   prim_subreg_ext #(
     .DW    (1)
   ) u_hw_features_dma (
@@ -327,7 +342,7 @@ module cheshire_reg_top #(
   );
 
 
-  //   F[serial_link]: 4:4
+  //   F[serial_link]: 5:5
   prim_subreg_ext #(
     .DW    (1)
   ) u_hw_features_serial_link (
@@ -342,7 +357,7 @@ module cheshire_reg_top #(
   );
 
 
-  //   F[vga]: 5:5
+  //   F[vga]: 6:6
   prim_subreg_ext #(
     .DW    (1)
   ) u_hw_features_vga (
@@ -354,21 +369,6 @@ module cheshire_reg_top #(
     .qe     (),
     .q      (),
     .qs     (hw_features_vga_qs)
-  );
-
-
-  //   F[dram]: 6:6
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_hw_features_dram (
-    .re     (hw_features_dram_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.hw_features.dram.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (hw_features_dram_qs)
   );
 
 
@@ -469,6 +469,8 @@ module cheshire_reg_top #(
 
   assign platform_rom_re = addr_hit[6] & reg_re & !reg_error;
 
+  assign hw_features_bootrom_re = addr_hit[7] & reg_re & !reg_error;
+
   assign hw_features_uart_re = addr_hit[7] & reg_re & !reg_error;
 
   assign hw_features_spi_host_re = addr_hit[7] & reg_re & !reg_error;
@@ -480,8 +482,6 @@ module cheshire_reg_top #(
   assign hw_features_serial_link_re = addr_hit[7] & reg_re & !reg_error;
 
   assign hw_features_vga_re = addr_hit[7] & reg_re & !reg_error;
-
-  assign hw_features_dram_re = addr_hit[7] & reg_re & !reg_error;
 
   assign vga_params_red_width_re = addr_hit[8] & reg_re & !reg_error;
 
@@ -522,13 +522,13 @@ module cheshire_reg_top #(
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[0] = hw_features_uart_qs;
-        reg_rdata_next[1] = hw_features_spi_host_qs;
-        reg_rdata_next[2] = hw_features_i2c_qs;
-        reg_rdata_next[3] = hw_features_dma_qs;
-        reg_rdata_next[4] = hw_features_serial_link_qs;
-        reg_rdata_next[5] = hw_features_vga_qs;
-        reg_rdata_next[6] = hw_features_dram_qs;
+        reg_rdata_next[0] = hw_features_bootrom_qs;
+        reg_rdata_next[1] = hw_features_uart_qs;
+        reg_rdata_next[2] = hw_features_spi_host_qs;
+        reg_rdata_next[3] = hw_features_i2c_qs;
+        reg_rdata_next[4] = hw_features_dma_qs;
+        reg_rdata_next[5] = hw_features_serial_link_qs;
+        reg_rdata_next[6] = hw_features_vga_qs;
       end
 
       addr_hit[8]: begin

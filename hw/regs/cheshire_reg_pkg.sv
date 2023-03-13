@@ -28,6 +28,9 @@ package cheshire_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
+    } bootrom;
+    struct packed {
+      logic        d;
     } uart;
     struct packed {
       logic        d;
@@ -44,9 +47,6 @@ package cheshire_reg_pkg;
     struct packed {
       logic        d;
     } vga;
-    struct packed {
-      logic        d;
-    } dram;
   } cheshire_hw2reg_hw_features_reg_t;
 
   typedef struct packed {
