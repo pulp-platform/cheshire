@@ -2,7 +2,7 @@
 # Solderpad Hardware License, Version 0.51, see LICENSE for details.
 # SPDX-License-Identifier: SHL-0.51
 #
-# Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+# Author: Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 # Description: Connects ports on IP to top level based on Vivado constaints
 # Usage: (from Vivado post synthesis)
 #        set argv [list <path_to_board.xdc> <path_to_ip_instance>]
