@@ -68,12 +68,12 @@ exec rm -rf reports/*
 #report_clock_interaction                                                -file reports/$project.clock_interaction.rpt
 
 # Ddr specific ips
-set ddr_constraints "/scratch2/cykoenig/education/cheshire/target/xilinx/constraints/dram/xlnx_mig_ddr4.xdc"
+set ddr_constraints "constraints/dram/xlnx_mig_ddr4.xdc"
 
 set argv [list $ddr_constraints i_dram]
 set argc 2
 source scripts/connect_ip.tcl
-read_xdc $ddr_constraints
+add_files $ddr_constraints
 
 # Instantiate ILA
 set DEBUG [llength [get_nets -hier -filter {MARK_DEBUG == 1}]]

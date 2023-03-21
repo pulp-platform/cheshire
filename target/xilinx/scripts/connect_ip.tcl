@@ -28,8 +28,9 @@ foreach pin_path [get_pins $ip_path/*] {
         #set pin_name $bus_name
     }
 
-    common::send_gid_msg -ssname BD::TCL -id 2001 -severity "INFO" "Creating port $pin_name and connecting to $pin_path"
+    common::send_gid_msg -ssname BD::TCL -id 2001 -severity "INFO" "Creating port port_$pin_name and connecting to $pin_path"
 
+    # If the pin is present in the constraint file
     if {[string first $bus_name $constraints] != -1} {
         create_port -direction [get_property DIRECTION [get_pins $pin_path]] port_$pin_name
         create_net net_$pin_name

@@ -3,6 +3,7 @@
 # Copied from xlnx_mig_ddr4.gen/sources_1/ip/xlnx_mig_ddr4/par/xlnx_mig_ddr4.xdc  #
 ###################################################################################
 
+puts "WE ARE IN xlnx_mig_ddr4.xdc"
 puts [ get_ports * ]
 
 ## please copy over all contents of the XDC when it is merged with othe XDC files ##
@@ -286,21 +287,21 @@ set_false_path -hold -to [get_pins i_dram/*inst/*/*/*/*/*/*.u_xiphy_control/xiph
 set_false_path -hold -to [get_pins i_dram/*inst/*/*/*/*/*/*.u_xiphy_control/xiphy_control/RIU_WR_DATA*]
 
 
-set_property SLEW FAST  [get_ports port_{c0_ddr4_adr[*] c0_ddr4_act_n c0_ddr4_ba[*] c0_ddr4_bg[*] c0_ddr4_cke[*] c0_ddr4_ck_t[*] c0_ddr4_ck_c[*] c0_ddr4_odt[*] c0_ddr4_dq[*] c0_ddr4_dqs_t[*] c0_ddr4_dqs_c[*]}]
-set_property IBUF_LOW_PWR FALSE  [get_ports port_{c0_ddr4_dq[*] c0_ddr4_dqs_t[*] c0_ddr4_dqs_c[*]}]
-set_property ODT RTT_40  [get_ports port_{c0_ddr4_dq[*] c0_ddr4_dqs_t[*] c0_ddr4_dqs_c[*]}]
-set_property EQUALIZATION EQ_LEVEL2 [get_ports port_{c0_ddr4_dq[*] c0_ddr4_dqs_t[*] c0_ddr4_dqs_c[*]}]
-set_property PRE_EMPHASIS RDRV_240 [get_ports port_{c0_ddr4_dq[*] c0_ddr4_dqs_t[*] c0_ddr4_dqs_c[*]}]
-set_property SLEW FAST  [get_ports port_{c0_ddr4_cs_n[*]}]
-set_property DATA_RATE SDR  [get_ports port_{c0_ddr4_cs_n[*]}]
-set_property SLEW FAST  [get_ports port_{c0_ddr4_dm_dbi_n[*]}]
-set_property IBUF_LOW_PWR FALSE  [get_ports port_{c0_ddr4_dm_dbi_n[*]}]
-set_property ODT RTT_40  [get_ports port_{c0_ddr4_dm_dbi_n[*]}]
-set_property EQUALIZATION EQ_LEVEL2 [get_ports port_{c0_ddr4_dm_dbi_n[*]}]
-set_property PRE_EMPHASIS RDRV_240 [get_ports port_{c0_ddr4_dm_dbi_n[*]}]
-set_property DATA_RATE DDR [get_ports port_{c0_ddr4_dm_dbi_n[*]}]
-set_property DATA_RATE SDR  [get_ports port_{c0_ddr4_adr[*] c0_ddr4_act_n c0_ddr4_ba[*] c0_ddr4_bg[*] c0_ddr4_cke[*] c0_ddr4_odt[*] }]
-set_property DATA_RATE DDR  [get_ports port_{c0_ddr4_dq[*] c0_ddr4_dqs_t[*] c0_ddr4_dqs_c[*] c0_ddr4_ck_t[*] c0_ddr4_ck_c[*]}]
+set_property SLEW FAST  [get_ports {port_c0_ddr4_adr[*] port_c0_ddr4_act_n port_c0_ddr4_ba[*] port_c0_ddr4_bg[*] port_c0_ddr4_cke[*] port_c0_ddr4_ck_t[*] port_c0_ddr4_ck_c[*] port_c0_ddr4_odt[*] port_c0_ddr4_dq[*] port_c0_ddr4_dqs_t[*] port_c0_ddr4_dqs_c[*]}]
+set_property IBUF_LOW_PWR FALSE  [get_ports {port_c0_ddr4_dq[*] port_c0_ddr4_dqs_t[*] port_c0_ddr4_dqs_c[*]}]
+set_property ODT RTT_40  [get_ports {port_c0_ddr4_dq[*] port_c0_ddr4_dqs_t[*] port_c0_ddr4_dqs_c[*]}]
+set_property EQUALIZATION EQ_LEVEL2 [get_ports {port_c0_ddr4_dq[*] port_c0_ddr4_dqs_t[*] port_c0_ddr4_dqs_c[*]}]
+set_property PRE_EMPHASIS RDRV_240 [get_ports {port_c0_ddr4_dq[*] port_c0_ddr4_dqs_t[*] port_c0_ddr4_dqs_c[*]}]
+set_property SLEW FAST  [get_ports {port_c0_ddr4_cs_n[*]}]
+set_property DATA_RATE SDR  [get_ports {port_c0_ddr4_cs_n[*]}]
+set_property SLEW FAST  [get_ports {port_c0_ddr4_dm_dbi_n[*]}]
+set_property IBUF_LOW_PWR FALSE  [get_ports {port_c0_ddr4_dm_dbi_n[*]}]
+set_property ODT RTT_40  [get_ports {port_c0_ddr4_dm_dbi_n[*]}]
+set_property EQUALIZATION EQ_LEVEL2 [get_ports {port_c0_ddr4_dm_dbi_n[*]}]
+set_property PRE_EMPHASIS RDRV_240 [get_ports {port_c0_ddr4_dm_dbi_n[*]}]
+set_property DATA_RATE DDR [get_ports {port_c0_ddr4_dm_dbi_n[*]}]
+set_property DATA_RATE SDR  [get_ports {port_c0_ddr4_adr[*] port_c0_ddr4_act_n port_c0_ddr4_ba[*] port_c0_ddr4_bg[*] port_c0_ddr4_cke[*] port_c0_ddr4_odt[*] }]
+set_property DATA_RATE DDR  [get_ports {port_c0_ddr4_dq[*] port_c0_ddr4_dqs_t[*] port_c0_ddr4_dqs_c[*] port_c0_ddr4_ck_t[*] port_c0_ddr4_ck_c[*]}]
 ## Multi-cycle path constraints for Fabric - RIU clock domain crossing signals
 set_max_delay 5.0 -datapath_only -from [get_pins i_dram/*inst/*/*/*/u_ddr_cal_addr_decode/io_ready_lvl_reg/C] -to [get_pins i_dram/*inst/*/u_io_ready_lvl_sync/SYNC[*].sync_reg_reg[0]/D]
 set_max_delay 5.0 -datapath_only -from [get_pins i_dram/*inst/*/*/*/u_ddr_cal_addr_decode/io_read_data_reg[*]/C] -to [get_pins i_dram/*inst/*/u_io_read_data_sync/SYNC[*].sync_reg_reg[0]/D]
@@ -340,7 +341,7 @@ create_waiver -internal -user DDR4 -tags "1010162" -scope -type METHODOLOGY -id 
 ## These below commands are used to create Interface ports for controller.
 
 create_interface -quiet interface_xlnx_mig_ddr4
-set_property interface interface_xlnx_mig_ddr4 [get_ports port_[list {c0_ddr4_dq[36]} {c0_ddr4_dm_dbi_n[4]} {c0_ddr4_dq[37]} {c0_ddr4_dq[70]} {c0_ddr4_dq[38]} {c0_ddr4_dq[39]} {c0_ddr4_dqs_t[4]} {c0_ddr4_dqs_c[4]} {c0_ddr4_dq[68]} {c0_ddr4_dq[69]} {c0_ddr4_dq[71]} {c0_ddr4_dq[62]} {c0_ddr4_dq[63]} {c0_ddr4_dq[2]} {c0_ddr4_dq[4]} {c0_ddr4_dq[5]} {c0_ddr4_dq[34]} {c0_ddr4_dq[35]} {c0_ddr4_dq[32]} {c0_ddr4_dq[33]} {c0_ddr4_dqs_t[8]} {c0_ddr4_dqs_c[8]} {c0_ddr4_dq[64]} {c0_ddr4_dq[66]} {c0_ddr4_dq[67]} {c0_ddr4_dm_dbi_n[0]} {c0_ddr4_dq[3]} c0_ddr4_reset_n {c0_ddr4_dq[28]} {c0_ddr4_dq[29]} {c0_ddr4_dq[30]} {c0_ddr4_dq[31]} {c0_ddr4_dm_dbi_n[8]} {c0_ddr4_dq[65]} {c0_ddr4_dq[56]} {c0_ddr4_dq[60]} {c0_ddr4_dq[61]} {c0_ddr4_dq[0]} {c0_ddr4_dq[1]} {c0_ddr4_dq[6]} {c0_ddr4_cs_n[1]} {c0_ddr4_dm_dbi_n[3]} {c0_ddr4_dq[24]} {c0_ddr4_dq[25]} {c0_ddr4_dqs_t[3]} {c0_ddr4_dqs_t[6]} {c0_ddr4_dq[54]} {c0_ddr4_dq[55]} {c0_ddr4_dq[52]} {c0_ddr4_dq[57]} {c0_ddr4_dqs_t[7]} {c0_ddr4_dqs_t[0]} {c0_ddr4_dq[7]} {c0_ddr4_cke[0]} {c0_ddr4_odt[0]} c0_ddr4_act_n {c0_ddr4_dq[26]} {c0_ddr4_dq[22]} {c0_ddr4_dq[23]} {c0_ddr4_dqs_c[3]} {c0_ddr4_dqs_c[6]} {c0_ddr4_dq[50]} {c0_ddr4_dq[51]} {c0_ddr4_dq[53]} {c0_ddr4_dm_dbi_n[7]} {c0_ddr4_dqs_c[7]} {c0_ddr4_dqs_c[0]} c0_sys_clk_p {c0_ddr4_ba[1]} {c0_ddr4_dq[27]} {c0_ddr4_dq[20]} {c0_ddr4_dq[21]} {c0_ddr4_dqs_t[2]} {c0_ddr4_dqs_c[2]} {c0_ddr4_dm_dbi_n[6]} {c0_ddr4_dq[48]} {c0_ddr4_dq[49]} {c0_ddr4_dq[58]} {c0_ddr4_dq[59]} {c0_ddr4_adr[6]} c0_sys_clk_n {c0_ddr4_adr[14]} {c0_ddr4_bg[0]} {c0_ddr4_adr[16]} {c0_ddr4_dq[18]} {c0_ddr4_dq[19]} {c0_ddr4_dq[16]} {c0_ddr4_dq[17]} {c0_ddr4_dm_dbi_n[2]} {c0_ddr4_dq[44]} {c0_ddr4_dq[46]} {c0_ddr4_dq[47]} {c0_ddr4_adr[0]} {c0_ddr4_adr[1]} {c0_ddr4_adr[7]} {c0_ddr4_adr[15]} {c0_ddr4_adr[10]} {c0_ddr4_ba[0]} {c0_ddr4_dq[12]} {c0_ddr4_dq[14]} {c0_ddr4_dq[42]} {c0_ddr4_dqs_t[5]} {c0_ddr4_dqs_c[5]} {c0_ddr4_dq[45]} {c0_ddr4_ck_t[0]} {c0_ddr4_ck_c[0]} {c0_ddr4_adr[4]} {c0_ddr4_adr[8]} {c0_ddr4_adr[12]} {c0_ddr4_adr[11]} {c0_ddr4_dm_dbi_n[1]} {c0_ddr4_dq[13]} {c0_ddr4_dq[15]} {c0_ddr4_dqs_t[1]} {c0_ddr4_dq[8]} {c0_ddr4_dq[43]} {c0_ddr4_dq[40]} {c0_ddr4_dq[41]} {c0_ddr4_adr[2]} {c0_ddr4_adr[3]} {c0_ddr4_adr[5]} {c0_ddr4_adr[9]} {c0_ddr4_cs_n[0]} {c0_ddr4_adr[13]} {c0_ddr4_dq[10]} {c0_ddr4_dq[11]} {c0_ddr4_dqs_c[1]} {c0_ddr4_dq[9]} {c0_ddr4_dm_dbi_n[5]}]]
+set_property interface interface_xlnx_mig_ddr4 [get_ports [list {port_c0_ddr4_dq[36]} {port_c0_ddr4_dm_dbi_n[4]} {port_c0_ddr4_dq[37]} {port_c0_ddr4_dq[70]} {port_c0_ddr4_dq[38]} {port_c0_ddr4_dq[39]} {port_c0_ddr4_dqs_t[4]} {port_c0_ddr4_dqs_c[4]} {port_c0_ddr4_dq[68]} {port_c0_ddr4_dq[69]} {port_c0_ddr4_dq[71]} {port_c0_ddr4_dq[62]} {port_c0_ddr4_dq[63]} {port_c0_ddr4_dq[2]} {port_c0_ddr4_dq[4]} {port_c0_ddr4_dq[5]} {port_c0_ddr4_dq[34]} {port_c0_ddr4_dq[35]} {port_c0_ddr4_dq[32]} {port_c0_ddr4_dq[33]} {port_c0_ddr4_dqs_t[8]} {port_c0_ddr4_dqs_c[8]} {port_c0_ddr4_dq[64]} {port_c0_ddr4_dq[66]} {port_c0_ddr4_dq[67]} {port_c0_ddr4_dm_dbi_n[0]} {port_c0_ddr4_dq[3]} port_c0_ddr4_reset_n {port_c0_ddr4_dq[28]} {port_c0_ddr4_dq[29]} {port_c0_ddr4_dq[30]} {port_c0_ddr4_dq[31]} {port_c0_ddr4_dm_dbi_n[8]} {port_c0_ddr4_dq[65]} {port_c0_ddr4_dq[56]} {port_c0_ddr4_dq[60]} {port_c0_ddr4_dq[61]} {port_c0_ddr4_dq[0]} {port_c0_ddr4_dq[1]} {port_c0_ddr4_dq[6]} {port_c0_ddr4_cs_n[1]} {port_c0_ddr4_dm_dbi_n[3]} {port_c0_ddr4_dq[24]} {port_c0_ddr4_dq[25]} {port_c0_ddr4_dqs_t[3]} {port_c0_ddr4_dqs_t[6]} {port_c0_ddr4_dq[54]} {port_c0_ddr4_dq[55]} {port_c0_ddr4_dq[52]} {port_c0_ddr4_dq[57]} {port_c0_ddr4_dqs_t[7]} {port_c0_ddr4_dqs_t[0]} {port_c0_ddr4_dq[7]} {port_c0_ddr4_cke[0]} {port_c0_ddr4_odt[0]} port_c0_ddr4_act_n {port_c0_ddr4_dq[26]} {port_c0_ddr4_dq[22]} {port_c0_ddr4_dq[23]} {port_c0_ddr4_dqs_c[3]} {port_c0_ddr4_dqs_c[6]} {port_c0_ddr4_dq[50]} {port_c0_ddr4_dq[51]} {port_c0_ddr4_dq[53]} {port_c0_ddr4_dm_dbi_n[7]} {port_c0_ddr4_dqs_c[7]} {port_c0_ddr4_dqs_c[0]} port_c0_sys_clk_p {port_c0_ddr4_ba[1]} {port_c0_ddr4_dq[27]} {port_c0_ddr4_dq[20]} {port_c0_ddr4_dq[21]} {port_c0_ddr4_dqs_t[2]} {port_c0_ddr4_dqs_c[2]} {port_c0_ddr4_dm_dbi_n[6]} {port_c0_ddr4_dq[48]} {port_c0_ddr4_dq[49]} {port_c0_ddr4_dq[58]} {port_c0_ddr4_dq[59]} {port_c0_ddr4_adr[6]} port_c0_sys_clk_n {port_c0_ddr4_adr[14]} {port_c0_ddr4_bg[0]} {port_c0_ddr4_adr[16]} {port_c0_ddr4_dq[18]} {port_c0_ddr4_dq[19]} {port_c0_ddr4_dq[16]} {port_c0_ddr4_dq[17]} {port_c0_ddr4_dm_dbi_n[2]} {port_c0_ddr4_dq[44]} {port_c0_ddr4_dq[46]} {port_c0_ddr4_dq[47]} {port_c0_ddr4_adr[0]} {port_c0_ddr4_adr[1]} {port_c0_ddr4_adr[7]} {port_c0_ddr4_adr[15]} {port_c0_ddr4_adr[10]} {port_c0_ddr4_ba[0]} {port_c0_ddr4_dq[12]} {port_c0_ddr4_dq[14]} {port_c0_ddr4_dq[42]} {port_c0_ddr4_dqs_t[5]} {port_c0_ddr4_dqs_c[5]} {port_c0_ddr4_dq[45]} {port_c0_ddr4_ck_t[0]} {port_c0_ddr4_ck_c[0]} {port_c0_ddr4_adr[4]} {port_c0_ddr4_adr[8]} {port_c0_ddr4_adr[12]} {port_c0_ddr4_adr[11]} {port_c0_ddr4_dm_dbi_n[1]} {port_c0_ddr4_dq[13]} {port_c0_ddr4_dq[15]} {port_c0_ddr4_dqs_t[1]} {port_c0_ddr4_dq[8]} {port_c0_ddr4_dq[43]} {port_c0_ddr4_dq[40]} {port_c0_ddr4_dq[41]} {port_c0_ddr4_adr[2]} {port_c0_ddr4_adr[3]} {port_c0_ddr4_adr[5]} {port_c0_ddr4_adr[9]} {port_c0_ddr4_cs_n[0]} {port_c0_ddr4_adr[13]} {port_c0_ddr4_dq[10]} {port_c0_ddr4_dq[11]} {port_c0_ddr4_dqs_c[1]} {port_c0_ddr4_dq[9]} {port_c0_ddr4_dm_dbi_n[5]}]]
 
 
 ####################################################################################
