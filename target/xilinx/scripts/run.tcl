@@ -31,7 +31,7 @@ switch $::env(BOARD) {
   }
 }
 
-import_ip $ips
+read_ip $ips
 
 source scripts/add_sources.tcl
 
@@ -46,6 +46,8 @@ set_property strategy Flow_RuntimeOptimized [get_runs impl_1]
 
 set_property XPM_LIBRARIES XPM_MEMORY [current_project]
 
+set_property is_enabled false [get_files -of_objects [get_files $ips] -filter {FILE_TYPE == XDC}]
+
 synth_design -rtl -name rtl_1
 
 set_property STEPS.SYNTH_DESIGN.ARGS.RETIMING true [get_runs synth_1]
@@ -58,12 +60,12 @@ open_run synth_1 -name synth_1
 exec mkdir -p reports/
 exec rm -rf reports/*
 
-check_timing -verbose                                                   -file reports/$project.check_timing.rpt
-report_timing -max_paths 100 -nworst 100 -delay_type max -sort_by slack -file reports/$project.timing_WORST_100.rpt
-report_timing -nworst 1 -delay_type max -sort_by group                  -file reports/$project.timing.rpt
-report_utilization -hierarchical                                        -file reports/$project.utilization.rpt
-report_cdc                                                              -file reports/$project.cdc.rpt
-report_clock_interaction                                                -file reports/$project.clock_interaction.rpt
+#check_timing -verbose                                                   -file reports/$project.check_timing.rpt
+#report_timing -max_paths 100 -nworst 100 -delay_type max -sort_by slack -file reports/$project.timing_WORST_100.rpt
+#report_timing -nworst 1 -delay_type max -sort_by group                  -file reports/$project.timing.rpt
+#report_utilization -hierarchical                                        -file reports/$project.utilization.rpt
+#report_cdc                                                              -file reports/$project.cdc.rpt
+#report_clock_interaction                                                -file reports/$project.clock_interaction.rpt
 
 # Ddr specific ips
 set ddr_constraints "/scratch2/cykoenig/education/cheshire/target/xilinx/constraints/dram/xlnx_mig_ddr4.xdc"

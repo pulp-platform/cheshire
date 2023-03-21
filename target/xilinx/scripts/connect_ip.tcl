@@ -31,10 +31,11 @@ foreach pin_path [get_pins $ip_path/*] {
     common::send_gid_msg -ssname BD::TCL -id 2001 -severity "INFO" "Creating port $pin_name and connecting to $pin_path"
 
     if {[string first $bus_name $constraints] != -1} {
-        create_port -direction [get_property DIRECTION [get_pins $pin_path]] $pin_name
+        create_port -direction [get_property DIRECTION [get_pins $pin_path]] port_$pin_name
         create_net net_$pin_name
 
         # No idea why does vivado does not accept without eval here
-        eval "connect_net -net net_$pin_name -objects {$pin_name $pin_path}"
+        eval "connect_net -net net_$pin_name -objects {port_$pin_name $pin_path}"
+        set_property DONT_TOUCH true [get_nets net_$pin_name] 
     }
 }
