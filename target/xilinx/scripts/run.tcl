@@ -10,8 +10,6 @@
 switch $::env(BOARD) {
   "genesys2" - "kc705" - "vc707" - "vcu128" {
     add_files -fileset constrs_1 -norecurse constraints/$::env(BOARD).xdc
-    #import_files -fileset constrs_1 constraints/$::env(BOARD).xdc
-    #set_property used_in_synthesis false [get_files cheshire.srcs/constrs_1/imports/constraints/$::env(BOARD).xdc]
   }
   default {
       exit 1
@@ -24,7 +22,7 @@ switch $::env(BOARD) {
     set ips { "xilinx/xlnx_mig_7_ddr3/xlnx_mig_7_ddr3.srcs/sources_1/ip/xlnx_mig_7_ddr3/xlnx_mig_7_ddr3.xci" }
   }
   "vcu128" {
-    set ips { "xilinx/xlnx_mig_ddr4/xlnx_mig_ddr4.srcs/sources_1/ip/xlnx_mig_ddr4/xlnx_mig_ddr4.xci" }
+    set ips { "xilinx/xlnx_mig_ddr4/xlnx_mig_ddr4.srcs/sources_1/ip/xlnx_mig_ddr4/xlnx_mig_ddr4.xci" "xilinx/xlnx_sim_clk_gen/xlnx_sim_clk_gen.srcs/sources_1/ip/xlnx_sim_clk_gen/xlnx_sim_clk_gen.xci" }
   }
   default {
     set ips {}
@@ -34,6 +32,7 @@ switch $::env(BOARD) {
 read_ip $ips
 
 source scripts/add_sources.tcl
+add_files -fileset sim_1 -norecurse src/tb.sv
 
 set_property top ${project}_top_xilinx [current_fileset]
 
@@ -41,12 +40,10 @@ update_compile_order -fileset sources_1
 
 add_files -fileset constrs_1 -norecurse constraints/$project.xdc
 
-set_property strategy Flow_RuntimeOptimized [get_runs synth_1]
-set_property strategy Flow_RuntimeOptimized [get_runs impl_1]
+set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
+set_property strategy Performance_ExtraTimingOpt [get_runs impl_1]
 
 set_property XPM_LIBRARIES XPM_MEMORY [current_project]
-
-set_property is_enabled false [get_files -of_objects [get_files $ips] -filter {FILE_TYPE == XDC}]
 
 synth_design -rtl -name rtl_1
 
@@ -60,24 +57,15 @@ open_run synth_1 -name synth_1
 exec mkdir -p reports/
 exec rm -rf reports/*
 
-#check_timing -verbose                                                   -file reports/$project.check_timing.rpt
-#report_timing -max_paths 100 -nworst 100 -delay_type max -sort_by slack -file reports/$project.timing_WORST_100.rpt
-#report_timing -nworst 1 -delay_type max -sort_by group                  -file reports/$project.timing.rpt
-#report_utilization -hierarchical                                        -file reports/$project.utilization.rpt
-#report_cdc                                                              -file reports/$project.cdc.rpt
-#report_clock_interaction                                                -file reports/$project.clock_interaction.rpt
-
-# Ddr specific ips
-set ddr_constraints "constraints/dram/xlnx_mig_ddr4.xdc"
-
-set argv [list $ddr_constraints i_dram]
-set argc 2
-source scripts/connect_ip.tcl
-add_files $ddr_constraints
+check_timing -verbose                                                   -file reports/$project.check_timing.rpt
+report_timing -max_paths 100 -nworst 100 -delay_type max -sort_by slack -file reports/$project.timing_WORST_100.rpt
+report_timing -nworst 1 -delay_type max -sort_by group                  -file reports/$project.timing.rpt
+report_utilization -hierarchical                                        -file reports/$project.utilization.rpt
+report_cdc                                                              -file reports/$project.cdc.rpt
+report_clock_interaction                                                -file reports/$project.clock_interaction.rpt
 
 # Instantiate ILA
 set DEBUG [llength [get_nets -hier -filter {MARK_DEBUG == 1}]]
-set DEBUG 0
 if ($DEBUG) {
     # Create core
     puts "Creating debug core..."

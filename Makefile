@@ -14,9 +14,9 @@ PLICOPT      = -s 20 -t 2 -p 7
 VLOG_ARGS   ?= -suppress 2583 -suppress 13314
 VSIM        ?= vsim
 
-.PHONY: all nonfree-init sw-all hw-all bootrom-all sim-all xilinx-all
+.PHONY: all nonfree-init sw-all hw-all bootrom-all sim-all
 
-all: sw-all hw-all sim-all xilinx-all
+all: sw-all hw-all sim-all
 
 ######################
 # Nonfree components #
@@ -127,7 +127,4 @@ sim-all: target/sim/vsim/compile.cheshire_soc.tcl
 # FPGA Flow #
 #############
 
-target/xilinx/scripts/add_sources.tcl: Bender.yml
-	$(BENDER) script vivado -t fpga -t cv64a6_imafdc_sv39 -t cva6 > $@
-
-xilinx-all: target/xilinx/scripts/add_sources.tcl
+# See in target/xilinx/Makefile

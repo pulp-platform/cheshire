@@ -8,6 +8,7 @@
 #        set argv [list <path_to_board.xdc> <path_to_ip_instance>]
 #        set argc 2
 
+set argc 2
 set board_xdc [lindex $argv 0]
 set ip_path   [lindex $argv 1]
 

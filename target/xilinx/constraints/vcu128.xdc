@@ -1,5 +1,11 @@
 #  VCU128 Rev1.0 XDC
 #  Date: 01/24/2018
+
+
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets -of [get_ports jtag_tck_i]]
+set_property CLOCK_BUFFER_TYPE NONE [get_nets -of [get_ports jtag_tck_i]]
+
+
 #### This file is a general .xdc for the VCU128 1 Rev.
 #### To use it in a project:
 #### - uncomment the lines corresponding to used pins
@@ -102,10 +108,10 @@
 #set_property IOSTANDARD  LVCMOS18 [get_ports "QSFP1_INTL_LS"] ;# Bank  67 VCCO - VCC1V8   - IO_L3N_T0L_N5_AD15N_67
 #set_property PACKAGE_PIN BN24     [get_ports "QSFP1_LPMODE_LS"] ;# Bank  67 VCCO - VCC1V8   - IO_L3P_T0L_N4_AD15P_67
 #set_property IOSTANDARD  LVCMOS18 [get_ports "QSFP1_LPMODE_LS"] ;# Bank  67 VCCO - VCC1V8   - IO_L3P_T0L_N4_AD15P_67
-#set_property PACKAGE_PIN BP26     [get_ports "UART0_RXD"] ;# Bank  67 VCCO - VCC1V8   - IO_L2N_T0L_N3_67
-#set_property IOSTANDARD  LVCMOS18 [get_ports "UART0_RXD"] ;# Bank  67 VCCO - VCC1V8   - IO_L2N_T0L_N3_67
-#set_property PACKAGE_PIN BN26     [get_ports "UART0_TXD"] ;# Bank  67 VCCO - VCC1V8   - IO_L2P_T0L_N2_67
-#set_property IOSTANDARD  LVCMOS18 [get_ports "UART0_TXD"] ;# Bank  67 VCCO - VCC1V8   - IO_L2P_T0L_N2_67
+set_property PACKAGE_PIN BP26     [get_ports "uart_rx_i"] ;# Bank  67 VCCO - VCC1V8   - IO_L2N_T0L_N3_67
+set_property IOSTANDARD  LVCMOS18 [get_ports "uart_rx_i"] ;# Bank  67 VCCO - VCC1V8   - IO_L2N_T0L_N3_67
+set_property PACKAGE_PIN BN26     [get_ports "uart_tx_o"] ;# Bank  67 VCCO - VCC1V8   - IO_L2P_T0L_N2_67
+set_property IOSTANDARD  LVCMOS18 [get_ports "uart_tx_o"] ;# Bank  67 VCCO - VCC1V8   - IO_L2P_T0L_N2_67
 #set_property PACKAGE_PIN BP22     [get_ports "UART0_RTS_B"] ;# Bank  67 VCCO - VCC1V8   - IO_L1N_T0L_N1_DBC_67
 #set_property IOSTANDARD  LVCMOS18 [get_ports "UART0_RTS_B"] ;# Bank  67 VCCO - VCC1V8   - IO_L1N_T0L_N1_DBC_67
 #set_property PACKAGE_PIN BP23     [get_ports "UART0_CTS_B"] ;# Bank  67 VCCO - VCC1V8   - IO_L1P_T0L_N0_DBC_67
@@ -1158,14 +1164,19 @@ set_property IOSTANDARD LVCMOS12 [get_ports cpu_resetn]
 #set_property IOSTANDARD  LVDS     [get_ports "FMCP_HSPC_LA03_N"] ;# Bank  72 VCCO - VADJ     - IO_L23N_T3U_N9_72
 #set_property PACKAGE_PIN B27      [get_ports "FMCP_HSPC_LA03_P"] ;# Bank  72 VCCO - VADJ     - IO_L23P_T3U_N8_72
 #set_property IOSTANDARD  LVDS     [get_ports "FMCP_HSPC_LA03_P"] ;# Bank  72 VCCO - VADJ     - IO_L23P_T3U_N8_72
-#set_property PACKAGE_PIN A23      [get_ports "FMCP_HSPC_LA10_N"] ;# Bank  72 VCCO - VADJ     - IO_L22N_T3U_N7_DBC_AD0N_72
-#set_property IOSTANDARD  LVDS     [get_ports "FMCP_HSPC_LA10_N"] ;# Bank  72 VCCO - VADJ     - IO_L22N_T3U_N7_DBC_AD0N_72
-#set_property PACKAGE_PIN B23      [get_ports "FMCP_HSPC_LA10_P"] ;# Bank  72 VCCO - VADJ     - IO_L22P_T3U_N6_DBC_AD0P_72
-#set_property IOSTANDARD  LVDS     [get_ports "FMCP_HSPC_LA10_P"] ;# Bank  72 VCCO - VADJ     - IO_L22P_T3U_N6_DBC_AD0P_72
-#set_property PACKAGE_PIN B25      [get_ports "FMCP_HSPC_LA11_N"] ;# Bank  72 VCCO - VADJ     - IO_L21N_T3L_N5_AD8N_72
-#set_property IOSTANDARD  LVDS     [get_ports "FMCP_HSPC_LA11_N"] ;# Bank  72 VCCO - VADJ     - IO_L21N_T3L_N5_AD8N_72
-#set_property PACKAGE_PIN B26      [get_ports "FMCP_HSPC_LA11_P"] ;# Bank  72 VCCO - VADJ     - IO_L21P_T3L_N4_AD8P_72
-#set_property IOSTANDARD  LVDS     [get_ports "FMCP_HSPC_LA11_P"] ;# Bank  72 VCCO - VADJ     - IO_L21P_T3L_N4_AD8P_72
+
+set_property PACKAGE_PIN A23     [get_ports jtag_gnd_o] ;# A23 - C15 (FMCP_HSPC_LA10_N) - J1.04 - GND
+set_property IOSTANDARD LVCMOS18 [get_ports jtag_gnd_o] ;
+
+set_property PACKAGE_PIN B23     [get_ports jtag_vdd_o] ;# B23 - C14 (FMCP_HSPC_LA10_P) - J1.02 - VDD
+set_property IOSTANDARD LVCMOS18 [get_ports jtag_vdd_o] ;
+
+set_property PACKAGE_PIN B25     [get_ports jtag_tdo_o] ;# B25 - H17 (FMCP_HSPC_LA11_N) - J1.08 - TDO
+set_property IOSTANDARD LVCMOS18 [get_ports jtag_tdo_o]
+
+set_property PACKAGE_PIN B26     [get_ports jtag_tck_i] ;# B26 - H16 (FMCP_HSPC_LA11_P) - J1.06 - TCK
+set_property IOSTANDARD LVCMOS18 [get_ports jtag_tck_i] ;
+
 #set_property PACKAGE_PIN C24      [get_ports "FMCP_HSPC_LA04_N"] ;# Bank  72 VCCO - VADJ     - IO_L20N_T3L_N3_AD1N_72
 #set_property IOSTANDARD  LVDS     [get_ports "FMCP_HSPC_LA04_N"] ;# Bank  72 VCCO - VADJ     - IO_L20N_T3L_N3_AD1N_72
 #set_property PACKAGE_PIN C25      [get_ports "FMCP_HSPC_LA04_P"] ;# Bank  72 VCCO - VADJ     - IO_L20P_T3L_N2_AD1P_72
@@ -1218,10 +1229,13 @@ set_property IOSTANDARD LVCMOS12 [get_ports cpu_resetn]
 #set_property IOSTANDARD  LVDS     [get_ports "FMCP_HSPC_LA05_N"] ;# Bank  72 VCCO - VADJ     - IO_L9N_T1L_N5_AD12N_72
 #set_property PACKAGE_PIN H27      [get_ports "FMCP_HSPC_LA05_P"] ;# Bank  72 VCCO - VADJ     - IO_L9P_T1L_N4_AD12P_72
 #set_property IOSTANDARD  LVDS     [get_ports "FMCP_HSPC_LA05_P"] ;# Bank  72 VCCO - VADJ     - IO_L9P_T1L_N4_AD12P_72
-#set_property PACKAGE_PIN H22      [get_ports "FMCP_HSPC_LA12_N"] ;# Bank  72 VCCO - VADJ     - IO_L8N_T1L_N3_AD5N_72
-#set_property IOSTANDARD  LVDS     [get_ports "FMCP_HSPC_LA12_N"] ;# Bank  72 VCCO - VADJ     - IO_L8N_T1L_N3_AD5N_72
-#set_property PACKAGE_PIN J22      [get_ports "FMCP_HSPC_LA12_P"] ;# Bank  72 VCCO - VADJ     - IO_L8P_T1L_N2_AD5P_72
-#set_property IOSTANDARD  LVDS     [get_ports "FMCP_HSPC_LA12_P"] ;# Bank  72 VCCO - VADJ     - IO_L8P_T1L_N2_AD5P_72
+
+set_property PACKAGE_PIN H22     [get_ports jtag_tms_i] ;# H22 - G16 (FMCP_HSPC_LA12_N) - J1.12 - TNS
+set_property IOSTANDARD LVCMOS18 [get_ports jtag_tms_i] ;
+
+set_property PACKAGE_PIN J22     [get_ports jtag_tdi_i] ;# J22 - G15 (FMCP_HSPC_LA12_P) - J1.10 - TDI
+set_property IOSTANDARD LVCMOS18 [get_ports jtag_tdi_i]
+
 #set_property PACKAGE_PIN H23      [get_ports "FMCP_HSPC_REFCLK_C2M_N"] ;# Bank  72 VCCO - VADJ     - IO_L7N_T1L_N1_QBC_AD13N_72
 #set_property IOSTANDARD  LVDS     [get_ports "FMCP_HSPC_REFCLK_C2M_N"] ;# Bank  72 VCCO - VADJ     - IO_L7N_T1L_N1_QBC_AD13N_72
 #set_property PACKAGE_PIN H24      [get_ports "FMCP_HSPC_REFCLK_C2M_P"] ;# Bank  72 VCCO - VADJ     - IO_L7P_T1L_N0_QBC_AD13P_72
