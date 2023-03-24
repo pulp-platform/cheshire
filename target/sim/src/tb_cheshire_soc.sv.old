@@ -18,7 +18,24 @@ module tb_cheshire_soc;
 
   initial begin
 
+    if ($value$plusargs("BOOTMODE=%d", bootmode)) begin
+      fix.set_bootmode(bootmode);
+    end else begin
+      // If no BOOTMODE is provided, use default JTAG (2'h11)
+      fix.set_bootmode(0);
+    end
+
+    if ($value$plusargs("TESTMODE=%d", testmode)) begin
+      fix.set_testmode(testmode);
+    end else begin
+      // If no BOOTMODE is provided, use default JTAG
+      fix.set_testmode(0);
+    end
+
+    fix.wait_for_reset();
+
     #1000000000ns
+
 
     $finish;
   end

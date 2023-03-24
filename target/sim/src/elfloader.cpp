@@ -241,7 +241,7 @@ static void load_elf(char *buf, size_t size)
       }
 
       if(ph[i].p_memsz > ph[i].p_filesz){
-        printf("[elfloader] WARNING: The section starting @ %p contains 0x%lx zero bytes which will NOT get preloaded!\n",
+        printf("[elfloader] WARNING: The section starting @ %p contains 0x%lx zero bytes which will NOT be preloaded!\n",
                ph[i].p_paddr, (ph[i].p_memsz - ph[i].p_filesz));
       }
     }

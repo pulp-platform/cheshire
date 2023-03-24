@@ -8,19 +8,42 @@
 
 package cheshire_pkg;
 
+  ///////////
+  //  SoC  //
+  ///////////
+
   // Return either the argument minus 1 or 0 if 0; useful for IO vector width declaration
   function automatic integer unsigned iomsb (input integer unsigned width);
       return (width != 32'd0) ? unsigned'(width-1) : 32'd0;
   endfunction
 
   // Parameters defined by generated hardware (regenerate to adapt)
-  localparam int unsigned NumIntIntrs     = 20; // Must agree with struct below
+  localparam int unsigned NumIntIntrs     = 51; // Must agree with struct below
   localparam int unsigned NumExtIntrs     = rv_plic_reg_pkg::NumSrc - NumIntIntrs;
   localparam int unsigned SpihNumCs       = spi_host_reg_pkg::NumCS - 1;  // Last CS is dummy
   localparam int unsigned SlinkNumChan    = serial_link_single_channel_reg_pkg::NumChannels;
-  localparam int unsigned SlinkNumBits    = serial_link_single_channel_reg_pkg::NumBits;
+  localparam int unsigned SlinkNumLanes   = serial_link_single_channel_reg_pkg::NumBits/2;
   localparam int unsigned SlinkMaxClkDiv  = 1 << serial_link_single_channel_reg_pkg::Log2MaxClkDiv;
   localparam int unsigned ClintNumCores   = clint_reg_pkg::NumCores;
+
+  // Default JTAG ID code type
+  typedef struct packed {
+    bit         _one;
+    bit [10:0]  manufacturer;
+    bit [15:0]  part_num;
+    bit [ 3:0]  version;
+  } jtag_idcode_t;
+
+  // PULP Platform manufacturer and default Cheshire part number
+  localparam [10:0] JtagPulpManufacturer  = 12'h6d9;
+  localparam [15:0] JtagCheshirePartNum   = 16'hc5e5;
+  localparam [ 3:0] JtagCheshireVersion   = 4'h1;
+  localparam jtag_idcode_t CheshireIdCode = '{
+    _one          : 1,
+    manufacturer  : JtagPulpManufacturer,
+    part_num      : JtagCheshirePartNum,
+    version       : JtagCheshireVersion
+  };
 
   // Bit vector types for parameters.
   //We limit range to keep parameters sane.
@@ -33,29 +56,35 @@ package cheshire_pkg;
 
   // Externally controllable parameters
   typedef struct packed {
+    // CVA6 parameters
+    shrt_bt Cva6RASDepth;
+    shrt_bt Cva6BTBEntries;
+    shrt_bt Cva6BHTEntries;
+    shrt_bt Cva6NrPMPEntries;
+    doub_bt Cva6ExtCieLength;
     // Hart parameters
     bit     DualCore;
     doub_bt NumExtIrqHarts;
     doub_bt NumExtDbgHarts;
     shrt_bt NumExtIntrs;
     dw_bt   Core1UserAmoBit;
-    aw_bt   CoreMaxTxnsPerId;
-    aw_bt   CoreMaxUniqIds;
+    dw_bt   CoreMaxTxnsPerId;
+    dw_bt   CoreMaxUniqIds;
     // AXI parameters
     aw_bt   AddrWidth;
     dw_bt   AxiDataWidth;
     dw_bt   AxiUserWidth;
     aw_bt   AxiMstIdWidth;
-    aw_bt   AxiMaxMstTrans;
-    aw_bt   AxiMaxSlvTrans;
+    dw_bt   AxiMaxMstTrans;
+    dw_bt   AxiMaxSlvTrans;
     // User signals identify atomics masters.
     // A '0 user signal indicates no atomics.
     dw_bt   AxiUserAmoMsb;
     dw_bt   AxiUserAmoLsb;
     doub_bt AxiUserAmoDomain;
     // Reg parameters
-    aw_bt   RegMaxReadTxns;
-    aw_bt   RegMaxWriteTxns;
+    dw_bt   RegMaxReadTxns;
+    dw_bt   RegMaxWriteTxns;
     aw_bt   RegAmoNumCuts;
     bit     RegAmoPostCut;
     // External AXI ports (at most 8 ports and rules)
@@ -85,19 +114,19 @@ package cheshire_pkg;
     bit     SerialLink;
     bit     Vga;
     // Parameters for Debug Module
-    word_bt DbgIdCode;
-    aw_bt   DbgMaxReqs;
-    aw_bt   DbgMaxReadTxns;
-    aw_bt   DbgMaxWriteTxns;
+    jtag_idcode_t DbgIdCode;
+    dw_bt   DbgMaxReqs;
+    dw_bt   DbgMaxReadTxns;
+    dw_bt   DbgMaxWriteTxns;
     aw_bt   DbgAmoNumCuts;
     bit     DbgAmoPostCut;
     // Parameters for LLC
-    bit     LlcOrBypass;
+    bit     LlcNotBypass;
     shrt_bt LlcSetAssoc;
     shrt_bt LlcNumLines;
     shrt_bt LlcNumBlocks;
-    aw_bt   LlcMaxReadTxns;
-    aw_bt   LlcMaxWriteTxns;
+    dw_bt   LlcMaxReadTxns;
+    dw_bt   LlcMaxWriteTxns;
     aw_bt   LlcAmoNumCuts;
     bit     LlcAmoPostCut;
     bit     LlcOutConnect;
@@ -110,8 +139,8 @@ package cheshire_pkg;
     aw_bt   VgaHCountWidth;
     aw_bt   VgaVCountWidth;
     // Parameters for Serial Link
-    aw_bt   SlinkMaxTxnsPerId;
-    aw_bt   SlinkMaxUniqIds;
+    dw_bt   SlinkMaxTxnsPerId;
+    dw_bt   SlinkMaxUniqIds;
     shrt_bt SlinkMaxClkDiv;
     doub_bt SlinkRegionStart;
     doub_bt SlinkRegionEnd;
@@ -119,8 +148,8 @@ package cheshire_pkg;
     doub_bt SlinkTxAddrDomain;
     dw_bt   SlinkUserAmoBit;
     // Parameters for DMA
-    aw_bt   DmaConfMaxReadTxns;
-    aw_bt   DmaConfMaxWriteTxns;
+    dw_bt   DmaConfMaxReadTxns;
+    dw_bt   DmaConfMaxWriteTxns;
     aw_bt   DmaConfAmoNumCuts;
     bit     DmaConfAmoPostCut;
     // Parameters for GPIO
@@ -130,7 +159,7 @@ package cheshire_pkg;
   // Defined interrupts
   typedef struct packed {
     logic [iomsb(NumExtIntrs):0] ext;
-    logic gpio;
+    logic [31:0] gpio;
     logic spih_spi_event;
     logic spih_error;
     logic i2c_host_timeout;
@@ -152,10 +181,17 @@ package cheshire_pkg;
     logic zero;
   } cheshire_intr_t;
 
-  // Declare Symbols for externally needed addresses
-  localparam doub_bt BaseDbg      = 'hBAAD_F00D;
-  localparam doub_bt BaseBootrom  = 'hBAAD_F00D;
-  localparam doub_bt BaseSpm      = 'hBAAD_F00D;
+  ////////////////////
+  //  Interconnect  //
+  ////////////////////
+
+  // Static addresses
+  localparam doub_bt AmDbg  = 'h0000_0000;  // Base of AXI peripherals
+  localparam doub_bt AmBrom = 'h0200_0000;  // Base of reg peripherals
+  localparam doub_bt AmSpm  = 'h1000_0000;  // Cached region at bottom, uncached on top
+
+  // Static masks
+  localparam doub_bt AmSpmRegionMask = 'h03FF_FFFF;
 
   // AXI Xbar master indices
   typedef struct packed {
@@ -201,18 +237,23 @@ package cheshire_pkg;
   } axi_out_t;
 
   function automatic axi_out_t gen_axi_out(cheshire_cfg_t cfg);
+    automatic doub_bt SizeSpm = cfg.LlcSetAssoc*cfg.LlcNumLines*cfg.LlcNumBlocks*cfg.AxiDataWidth;
     automatic axi_out_t ret = '{dbg: 0, reg_demux: 1, default: '0};
     automatic int unsigned i = 1, r = 1;
-    ret.map[0] = '{0, BaseDbg, 'hBAAD_F00D};
-    ret.map[1] = '{1, 'hBAAD_F00D, 'hBAAD_F00D};
+    ret.map[0] = '{0, AmDbg,   AmDbg + 'h40000};
+    ret.map[1] = '{1, 'h0200_0000, 'h0800_0000};
     // Whether we have an LLC or a bypass, the output port is has its
     // own Xbar output with the specified region iff it is connected.
     if (cfg.LlcOutConnect) begin ret.llc  = ++i;
         ret.map[++r] = '{i, cfg.LlcOutRegionStart, cfg.LlcOutRegionEnd}; end
     // We can only internally map the SPM region if an LLC exists.
     // Otherwise, we assume external ports map and back the SPM region.
-    if (cfg.LlcOrBypass)  begin ret.spm   =   i; ret.map[++r] = '{i, 'hBAAD_F00D, 'hBAAD_F00D}; end
-    if (cfg.Dma)          begin ret.dma   = ++i; ret.map[++r] = '{i, 'hBAAD_F00D, 'hBAAD_F00D}; end
+    // SPM comes in
+    if (cfg.LlcNotBypass) begin
+      ret.spm  =  i; ret.map[++r] = '{i, AmSpm, AmSpm + SizeSpm};
+      ret.spm  =  i; ret.map[++r] = '{i, AmSpm, AmSpm + SizeSpm};
+    end
+    if (cfg.Dma)          begin ret.dma   = ++i; ret.map[++r] = '{i, 'h0100_0000, 'h0100_1000}; end
     if (cfg.SerialLink)   begin ret.slink = ++i;
         ret.map[++r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
     // External port indices start after iternal ones
@@ -227,22 +268,20 @@ package cheshire_pkg;
     for (int j = 0; j < cfg.RegExtNumRules; ++j)
       ret.map[r++] = '{1, cfg.RegExtRegionStart[j], cfg.RegExtRegionEnd[j]};
     return ret;
-
   endfunction
 
   // Reg demux slave indices and map
   typedef struct packed {
     aw_bt err;    // Error slave for decoder; has no rules
-    aw_bt regs;
     aw_bt clint;
     aw_bt plic;
-    aw_bt llc;
+    aw_bt regs;
     aw_bt bootrom;
+    aw_bt llc;
     aw_bt uart;
     aw_bt i2c;
     aw_bt spi_host;
     aw_bt gpio;
-    aw_bt dma;
     aw_bt slink;
     aw_bt vga;
     aw_bt ext_base;
@@ -251,21 +290,20 @@ package cheshire_pkg;
     arul_bt [aw_bt'(-1):0] map;
   } reg_out_t;
 
-  function automatic axi_in_t gen_reg_out(cheshire_cfg_t cfg);
-    automatic reg_out_t ret = '{err: 0, regs: 1, clint: 2, plic: 3, default: '0};
+  function automatic reg_out_t gen_reg_out(cheshire_cfg_t cfg);
+    automatic reg_out_t ret = '{err: 0, clint: 1, plic: 2, regs: 3, default: '0};
     automatic int unsigned i = 3, r = 2;
-    ret.map[1] = '{0, 'hBAAD_F00D, 'hBAAD_F00D};
-    ret.map[2] = '{1, 'hBAAD_F00D, 'hBAAD_F00D};
-    ret.map[3] = '{2, 'hBAAD_F00D, 'hBAAD_F00D};
-    if (cfg.LlcOrBypass) begin ret.llc   = ++i;  ret.map[++r] = '{i, 'hBAAD_F00D, 'hBAAD_F00D}; end
-    if (cfg.Bootrom)  begin ret.bootrom  = ++i;  ret.map[++r] = '{i, BaseBootrom, 'hBAAD_F00D}; end
-    if (cfg.Uart)     begin ret.uart     = ++i;  ret.map[++r] = '{i, 'hBAAD_F00D, 'hBAAD_F00D}; end
-    if (cfg.I2c)      begin ret.i2c      = ++i;  ret.map[++r] = '{i, 'hBAAD_F00D, 'hBAAD_F00D}; end
-    if (cfg.SpiHost)  begin ret.spi_host = ++i;  ret.map[++r] = '{i, 'hBAAD_F00D, 'hBAAD_F00D}; end
-    if (cfg.Gpio)     begin ret.gpio     = ++i;  ret.map[++r] = '{i, 'hBAAD_F00D, 'hBAAD_F00D}; end
-    if (cfg.Dma)      begin ret.dma      = ++i;  ret.map[++r] = '{i, 'hBAAD_F00D, 'hBAAD_F00D}; end
-    if (cfg.SerialLink) begin ret.slink  = ++i;  ret.map[++r] = '{i, 'hBAAD_F00D, 'hBAAD_F00D}; end
-    if (cfg.Vga)      begin ret.vga      = ++i;  ret.map[++r] = '{i, 'hBAAD_F00D, 'hBAAD_F00D}; end
+    ret.map[0] = '{1, 'h0204_0000, 'h0208_0000};
+    ret.map[1] = '{2, 'h0400_0000, 'h0800_0000};
+    ret.map[2] = '{3, 'h0300_0000, 'h0300_1000};
+    if (cfg.Bootrom)  begin ret.bootrom  = ++i;  ret.map[++r] = '{i, AmBrom, AmBrom + 'h40000}; end
+    if (cfg.LlcNotBypass) begin ret.llc  = ++i;  ret.map[++r] = '{i, 'h0300_1000, 'h0300_2000}; end
+    if (cfg.Uart)     begin ret.uart     = ++i;  ret.map[++r] = '{i, 'h0300_2000, 'h0300_3000}; end
+    if (cfg.I2c)      begin ret.i2c      = ++i;  ret.map[++r] = '{i, 'h0300_3000, 'h0300_4000}; end
+    if (cfg.SpiHost)  begin ret.spi_host = ++i;  ret.map[++r] = '{i, 'h0300_4000, 'h0300_5000}; end
+    if (cfg.Gpio)     begin ret.gpio     = ++i;  ret.map[++r] = '{i, 'h0300_5000, 'h0300_6000}; end
+    if (cfg.SerialLink) begin ret.slink  = ++i;  ret.map[++r] = '{i, 'h0300_6000, 'h0300_7000}; end
+    if (cfg.Vga)      begin ret.vga      = ++i;  ret.map[++r] = '{i, 'h0300_7000, 'h0300_8000}; end
     ret.ext_base  = ++i;
     ret.num_out   = i + cfg.RegExtNumSlv;
     ret.num_rules = ++r + cfg.RegExtNumRules;
@@ -275,5 +313,121 @@ package cheshire_pkg;
           cfg.RegExtRegionStart[k], cfg.RegExtRegionEnd[k]};
     return ret;
   endfunction
+
+  ////////////
+  //  CVA6  //
+  ////////////
+
+  function automatic ariane_pkg::ariane_cfg_t gen_cva6_cfg(cheshire_cfg_t cfg);
+    automatic doub_bt SizeSpm = cfg.LlcSetAssoc*cfg.LlcNumLines*cfg.LlcNumBlocks*cfg.AxiDataWidth;
+    automatic doub_bt SizeLlcOut = cfg.LlcOutRegionEnd - cfg.LlcOutRegionStart;
+    return ariane_pkg::ariane_cfg_t'{
+      RASDepth              : cfg.Cva6RASDepth,
+      BTBEntries            : cfg.Cva6BTBEntries,
+      BHTEntries            : cfg.Cva6BHTEntries,
+      NrNonIdempotentRules  : 2,   // Periphs, ExtNonCIE
+      NonIdempotentAddrBase : {64'h0000_0000, 64'h4000_0000},
+      NonIdempotentLength   : {64'h1000_0000, 64'h6000_0000 - cfg.Cva6ExtCieLength},
+      NrExecuteRegionRules  : 5,   // Debug, Bootrom, AllSPM, LLCOut, ExtCIE
+      ExecuteRegionAddrBase : {AmDbg, AmBrom, AmSpm, cfg.LlcOutRegionStart,  64'h2000_0000},
+      ExecuteRegionLength   : {64'h40000, 64'h40000,  2*SizeSpm, SizeLlcOut, cfg.Cva6ExtCieLength},
+      NrCachedRegionRules   : 3,   // CachedSPM, LLCOut, ExtCIE
+      CachedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart,  64'h2000_0000},
+      CachedRegionLength    : {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength},
+      AxiCompliant          : 1,
+      SwapEndianess         : 0,
+      DmBaseAddress         : AmDbg,
+      NrPMPEntries          : cfg.Cva6NrPMPEntries
+    };
+  endfunction
+
+  ////////////////
+  //  Defaults  //
+  ////////////////
+
+  // DO *NOT* BLINDLY ADOPT THE BELOW DEFAULTS WITHOUT FURTHER CONSIDERATION.
+  // They are intended to provide references on reasonable defaults for *most*
+  // parameters for select example SoCs. They will *likely* not be suitable for
+  // your purposes and, depending on context, *may not work*. You were warned.
+
+  localparam cheshire_cfg_t DefaultCfg = '{
+    // CVA6 parameters
+    Cva6RASDepth      : ariane_pkg::ArianeDefaultConfig.RASDepth,
+    Cva6BTBEntries    : ariane_pkg::ArianeDefaultConfig.BTBEntries,
+    Cva6BHTEntries    : ariane_pkg::ArianeDefaultConfig.BHTEntries,
+    Cva6NrPMPEntries  : 0,
+    Cva6ExtCieLength  : 'h2000_0000,
+    // Harts
+    DualCore          : 0,  // Only one core, but rest of config allows for two
+    CoreMaxTxnsPerId  : 4,
+    CoreMaxUniqIds    : 4,
+    // Interconnect
+    AddrWidth         : 48,
+    AxiDataWidth      : 64,
+    AxiUserWidth      : 2,  // Convention: bit 0 for core(s), bit 1 for serial link
+    AxiMstIdWidth     : 2,
+    AxiMaxMstTrans    : 8,
+    AxiMaxSlvTrans    : 8,
+    AxiUserAmoMsb     : 1,
+    AxiUserAmoLsb     : 0,
+    RegMaxReadTxns    : 8,
+    RegMaxWriteTxns   : 8,
+    RegAmoNumCuts     : 1,
+    RegAmoPostCut     : 1,
+    // RTC
+    RtcFreq           : 32768,
+    // Features
+    Bootrom           : 1,
+    Uart              : 1,
+    I2c               : 1,
+    SpiHost           : 1,
+    Gpio              : 1,
+    Dma               : 1,
+    SerialLink        : 1,
+    Vga               : 1,
+    // Debug
+    DbgIdCode         : CheshireIdCode,
+    DbgMaxReqs        : 4,
+    DbgMaxReadTxns    : 4,
+    DbgMaxWriteTxns   : 4,
+    DbgAmoNumCuts     : 1,
+    DbgAmoPostCut     : 1,
+    // LLC: 128 KiB, up to 2 GiB DRAM
+    LlcNotBypass      : 1,
+    LlcSetAssoc       : 8,
+    LlcNumLines       : 256,
+    LlcNumBlocks      : 8,
+    LlcMaxReadTxns    : 8,
+    LlcMaxWriteTxns   : 8,
+    LlcAmoNumCuts     : 1,
+    LlcAmoPostCut     : 1,
+    LlcOutConnect     : 1,
+    LlcOutRegionStart : 'h8000_0000,
+    LlcOutRegionEnd   : 'h1_0000_0000,
+    // VGA: RGB332
+    VgaRedWidth       : 3,
+    VgaGreenWidth     : 3,
+    VgaBlueWidth      : 2,
+    VgaHCountWidth    : 24, // TODO: Default is 32; is this needed?
+    VgaVCountWidth    : 24, // TODO: See above
+    // Serial Link: map other chip's lower 32bit to 'h1_000_0000
+    SlinkMaxTxnsPerId : 4,
+    SlinkMaxUniqIds   : 4,
+    SlinkMaxClkDiv    : 1024,
+    SlinkRegionStart  : 'h1_0000_0000,
+    SlinkRegionEnd    : 'h2_0000_0000,
+    SlinkTxAddrMask   : 'hFFFF_FFFF,
+    SlinkTxAddrDomain : 'h0000_0000,
+    SlinkUserAmoBit   : 1,  // Upper atomics bit for serial link
+    // DMA config
+    DmaConfMaxReadTxns  : 4,
+    DmaConfMaxWriteTxns : 4,
+    DmaConfAmoNumCuts   : 1,
+    DmaConfAmoPostCut   : 1,
+    // GPIOs
+    GpioInputSyncs    : 1,
+    // All non-set values should be zero
+    default: '0
+  };
 
 endpackage

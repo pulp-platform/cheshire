@@ -15,16 +15,14 @@ packages:
     - apb
     - register_interface
   ariane:
-    revision: 502e0b5543e2520ef1b94492337853d826d4082a
+    revision: 35e1c869dfdc6471c2b74040a11210be86c582fb
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6
     dependencies:
     - axi
-    - axi_riscv_atomics
     - common_cells
-    - register_interface
-    - riscv-dbg
+    - fpnew
     - tech_cells_generic
   axi:
     revision: af8b0ce2653997301b1b792c4c6d207b95f63a56
@@ -47,8 +45,8 @@ packages:
     - register_interface
     - tech_cells_generic
   axi_riscv_atomics:
-    revision: 430838a10a9bdf1e381d4fcb33907428f3273420
-    version: 0.6.0
+    revision: 2758dd84b8a0cd06b939f2147b46518a614d2dfe
+    version: null
     source:
       Git: https://github.com/pulp-platform/axi_riscv_atomics.git
     dependencies:
@@ -86,9 +84,24 @@ packages:
     source:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
+  fpnew:
+    revision: 8dc44406b1ccbc4487121710c1883e805f893965
+    version: 0.6.6
+    source:
+      Git: https://github.com/pulp-platform/fpnew.git
+    dependencies:
+    - common_cells
+    - fpu_div_sqrt_mvp
+  fpu_div_sqrt_mvp:
+    revision: 86e1f558b3c95e91577c41b2fc452c86b04e85ac
+    version: 1.0.4
+    source:
+      Git: https://github.com/pulp-platform/fpu_div_sqrt_mvp.git
+    dependencies:
+    - common_cells
   idma:
-    revision: 6ad5695b85ce253f3095871b958fb76b36d074c6
-    version: 0.3.1
+    revision: d396bfee5d0a1d1a9c43e174a3007a8afda7b48b
+    version: null
     source:
       Git: https://github.com/pulp-platform/iDMA.git
     dependencies:

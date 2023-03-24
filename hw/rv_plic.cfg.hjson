@@ -7,8 +7,8 @@
 {
     instance_name: "rv_plic",
     param_values: {
-        src: 19,
-        target: 1,
+        src: 53,
+        target: 2,  // We need *two targets* per hart: M and S modes
         prio: 7,
     },
 }
