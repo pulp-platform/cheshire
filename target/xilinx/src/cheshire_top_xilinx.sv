@@ -5,14 +5,16 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 
-module cheshire_top_xilinx 
+`include "cheshire/typedef.svh"
+
+module cheshire_top_xilinx
   import cheshire_pkg::*;
 (
   input logic         sysclk_p,
   input logic         sysclk_n,
   input logic         cpu_resetn,
 
-  input logic         testmode_i,
+  input logic         test_mode_i,
 
   input logic [1:0]   boot_mode_i,
 
@@ -64,14 +66,98 @@ module cheshire_top_xilinx
   output logic        vga_vs
 );
 
+  // Configure cheshire for FPGA mapping
+  localparam cheshire_cfg_t FPGACfg = '{
+    // CVA6 parameters
+    Cva6RASDepth      : ariane_pkg::ArianeDefaultConfig.RASDepth,
+    Cva6BTBEntries    : ariane_pkg::ArianeDefaultConfig.BTBEntries,
+    Cva6BHTEntries    : ariane_pkg::ArianeDefaultConfig.BHTEntries,
+    Cva6NrPMPEntries  : 0,
+    Cva6ExtCieLength  : 'h2000_0000,
+    // Harts
+    DualCore          : 0,  // Only one core, but rest of config allows for two
+    CoreMaxTxnsPerId  : 4,
+    CoreMaxUniqIds    : 4,
+    // Interconnect
+    AddrWidth         : 48,
+    AxiDataWidth      : 64,
+    AxiUserWidth      : 2,  // Convention: bit 0 for core(s), bit 1 for serial link
+    AxiMstIdWidth     : 2,
+    AxiMaxMstTrans    : 8,
+    AxiMaxSlvTrans    : 8,
+    AxiUserAmoMsb     : 1,
+    AxiUserAmoLsb     : 0,
+    RegMaxReadTxns    : 8,
+    RegMaxWriteTxns   : 8,
+    RegAmoNumCuts     : 1,
+    RegAmoPostCut     : 1,
+    // RTC
+    RtcFreq           : 32768,
+    // Features
+    Bootrom           : 1,
+    Uart              : 1,
+    I2c               : 1,
+    SpiHost           : 1,
+    Gpio              : 1,
+    Dma               : 1,
+    SerialLink        : 0,
+    Vga               : 1,
+    // Debug
+    DbgIdCode         : CheshireIdCode,
+    DbgMaxReqs        : 4,
+    DbgMaxReadTxns    : 4,
+    DbgMaxWriteTxns   : 4,
+    DbgAmoNumCuts     : 1,
+    DbgAmoPostCut     : 1,
+    // LLC: 128 KiB, up to 2 GiB DRAM
+    LlcNotBypass      : 1,
+    LlcSetAssoc       : 8,
+    LlcNumLines       : 256,
+    LlcNumBlocks      : 8,
+    LlcMaxReadTxns    : 8,
+    LlcMaxWriteTxns   : 8,
+    LlcAmoNumCuts     : 1,
+    LlcAmoPostCut     : 1,
+    LlcOutConnect     : 1,
+    LlcOutRegionStart : 'h8000_0000,
+    LlcOutRegionEnd   : 'h1_0000_0000,
+    // VGA: RGB332
+    VgaRedWidth       : 5,
+    VgaGreenWidth     : 6,
+    VgaBlueWidth      : 5,
+    VgaHCountWidth    : 24, // TODO: Default is 32; is this needed?
+    VgaVCountWidth    : 24, // TODO: See above
+    // Serial Link: map other chip's lower 32bit to 'h1_000_0000
+    SlinkMaxTxnsPerId : 4,
+    SlinkMaxUniqIds   : 4,
+    SlinkMaxClkDiv    : 1024,
+    SlinkRegionStart  : 'h1_0000_0000,
+    SlinkRegionEnd    : 'h2_0000_0000,
+    SlinkTxAddrMask   : 'hFFFF_FFFF,
+    SlinkTxAddrDomain : 'h0000_0000,
+    SlinkUserAmoBit   : 1,  // Upper atomics bit for serial link
+    // DMA config
+    DmaConfMaxReadTxns  : 4,
+    DmaConfMaxWriteTxns : 4,
+    DmaConfAmoNumCuts   : 1,
+    DmaConfAmoPostCut   : 1,
+    // GPIOs
+    GpioInputSyncs    : 1,
+    // All non-set values should be zero
+    default: '0
+  };
+
+  localparam cheshire_cfg_t CheshireFPGACfg = FPGACfg;
+  `CHESHIRE_TYPEDEF_ALL(, CheshireFPGACfg)
+
+  axi_llc_req_t axi_llc_mst_req, dram_req, dram_req_cdc;
+  axi_llc_rsp_t axi_llc_mst_rsp, dram_resp, dram_resp_cdc;
+
   wire dram_clock_out;
   wire dram_sync_reset;
   wire soc_clk;
 
   logic rst_n;
-
-  axi_a48_d64_mst_u0_llc_req_t soc_req, dram_req;
-  axi_a48_d64_mst_u0_llc_resp_t soc_resp, dram_resp;
 
   // Statically assign the response user signals
   // B Channel user
@@ -80,9 +166,8 @@ module cheshire_top_xilinx
   // R Channel user
   assign dram_resp.r.user      = '0;
 
-
   ///////////////////
-  // Clock Divider // 
+  // Clock Divider //
   ///////////////////
 
   clk_int_div #(
@@ -118,23 +203,20 @@ module cheshire_top_xilinx
   // AXI Clock Domain Crossing SoC -> DRAM //
   ///////////////////////////////////////////
 
-  axi_a48_d64_mst_u0_llc_req_t dram_req_cdc;
-  axi_a48_d64_mst_u0_llc_resp_t dram_resp_cdc;
-
   axi_cdc #(
-    .aw_chan_t  ( axi_a48_d64_mst_u0_llc_aw_chan_t    ),
-    .w_chan_t   ( axi_a48_d64_mst_u0_llc_w_chan_t     ),
-    .b_chan_t   ( axi_a48_d64_mst_u0_llc_b_chan_t     ),
-    .ar_chan_t  ( axi_a48_d64_mst_u0_llc_ar_chan_t    ),
-    .r_chan_t   ( axi_a48_d64_mst_u0_llc_r_chan_t     ),
-    .axi_req_t  ( axi_a48_d64_mst_u0_llc_req_t        ),
-    .axi_resp_t ( axi_a48_d64_mst_u0_llc_resp_t       ),
+    .aw_chan_t  ( axi_llc_aw_chan_t ),
+    .w_chan_t   ( axi_llc_w_chan_t  ),
+    .b_chan_t   ( axi_llc_b_chan_t  ),
+    .ar_chan_t  ( axi_llc_ar_chan_t ),
+    .r_chan_t   ( axi_llc_r_chan_t  ),
+    .axi_req_t  ( axi_llc_req_t     ),
+    .axi_resp_t ( axi_llc_rsp_t     ),
     .LogDepth   ( 1                                   )
   ) i_axi_cdc_mig (
     .src_clk_i    ( soc_clk           ),
     .src_rst_ni   ( rst_n             ),
-    .src_req_i    ( soc_req           ),
-    .src_resp_o   ( soc_resp          ),
+    .src_req_i    ( axi_llc_mst_req   ),
+    .src_resp_o   ( axi_llc_mst_rsp   ),
     .dst_clk_i    ( dram_clock_out    ),
     .dst_rst_ni   ( rst_n             ),
     .dst_req_o    ( dram_req_cdc      ),
@@ -145,13 +227,13 @@ module cheshire_top_xilinx
   // reduce timing pressure
   axi_cut #(
     .Bypass     ( 1'b0  ),
-    .aw_chan_t  ( axi_a48_d64_mst_u0_llc_aw_chan_t  ),
-    .w_chan_t   ( axi_a48_d64_mst_u0_llc_w_chan_t   ),
-    .b_chan_t   ( axi_a48_d64_mst_u0_llc_b_chan_t   ),
-    .ar_chan_t  ( axi_a48_d64_mst_u0_llc_ar_chan_t  ),
-    .r_chan_t   ( axi_a48_d64_mst_u0_llc_r_chan_t   ),
-    .axi_req_t  ( axi_a48_d64_mst_u0_llc_req_t      ),
-    .axi_resp_t ( axi_a48_d64_mst_u0_llc_resp_t     )
+    .aw_chan_t  ( axi_llc_aw_chan_t  ),
+    .w_chan_t   ( axi_llc_w_chan_t   ),
+    .b_chan_t   ( axi_llc_b_chan_t   ),
+    .ar_chan_t  ( axi_llc_ar_chan_t  ),
+    .r_chan_t   ( axi_llc_r_chan_t   ),
+    .axi_req_t  ( axi_llc_req_t      ),
+    .axi_resp_t ( axi_llc_rsp_t      )
   ) i_axi_cut_soc_dram (
     .clk_i      ( dram_clock_out  ),
     .rst_ni     ( rst_n           ),
@@ -358,14 +440,14 @@ module cheshire_top_xilinx
   // Regbus Error Slave //
   ////////////////////////
 
-  reg_a48_d32_req_t ext_req;
-  reg_a48_d32_rsp_t ext_rsp; 
-   
+  reg_req_t ext_req;
+  reg_rsp_t ext_rsp;
+
   reg_err_slv #(
     .DW       ( 32                 ),
     .ERR_VAL  ( 32'hBADCAB1E       ),
-    .req_t    ( reg_a48_d32_req_t  ),
-    .rsp_t    ( reg_a48_d32_rsp_t  )
+    .req_t    ( reg_req_t  ),
+    .rsp_t    ( reg_rsp_t  )
   ) i_reg_err_slv_ext (
     .req_i ( ext_req  ),
     .rsp_o ( ext_rsp  )
@@ -377,61 +459,77 @@ module cheshire_top_xilinx
   //////////////////
 
   cheshire_soc #(
-    .CheshireCfg          ( CheshireCfgFPGADefault)
+    .Cfg                ( FPGACfg ),
+    .ExtHartinfo        ( '0 ),
+    .axi_ext_llc_req_t  ( axi_llc_req_t ),
+    .axi_ext_llc_rsp_t  ( axi_llc_rsp_t ),
+    .axi_ext_mst_req_t  ( axi_mst_req_t ),
+    .axi_ext_mst_rsp_t  ( axi_mst_rsp_t ),
+    .axi_ext_slv_req_t  ( axi_slv_req_t ),
+    .axi_ext_slv_rsp_t  ( axi_slv_rsp_t ),
+    .reg_ext_req_t      ( reg_req_t ),
+    .reg_ext_rsp_t      ( reg_req_t )
   ) i_cheshire_soc (
-    .clk_i                ( soc_clk               ),
-    .rst_ni               ( rst_n                 ),
-
-    .testmode_i,
-
+    .clk_i              ( soc_clk ),
+    .rst_ni             ( rst_n   ),
+    .test_mode_i,
     .boot_mode_i,
-
-    .boot_addr_i          ( 64'h00000000_01000000 ),
-
-    .dram_req_o           ( soc_req               ),
-    .dram_resp_i          ( soc_resp              ),
-  
-    .ddr_link_i           ( '0                    ),
-    .ddr_link_o           (                       ),
-    .ddr_link_clk_i       ( 1'b1                  ),
-    .ddr_link_clk_o       (                       ),
-
+    .rtc_i              ( rtc_clk_q             ),
+    .axi_llc_mst_req_o  ( axi_llc_mst_req ),
+    .axi_llc_mst_rsp_i  ( axi_llc_mst_rsp ),
+    .axi_ext_mst_req_i  ( '0 ),
+    .axi_ext_mst_rsp_o  ( ),
+    .axi_ext_slv_req_o  ( ),
+    .axi_ext_slv_rsp_i  ( '0 ),
+    .reg_ext_slv_req_o  ( ),
+    .reg_ext_slv_rsp_i  ( '0 ),
+    .intr_ext_i         ( '0 ),
+    .meip_ext_o         ( ),
+    .seip_ext_o         ( ),
+    .mtip_ext_o         ( ),
+    .msip_ext_o         ( ),
+    .dbg_active_o       ( ),
+    .dbg_ext_req_o      ( ),
+    .dbg_ext_unavail_i  ( '0 ),
     .jtag_tck_i,
     .jtag_trst_ni,
     .jtag_tms_i,
     .jtag_tdi_i,
     .jtag_tdo_o,
-
+    .jtag_tdo_oe_o      ( ),
     .uart_tx_o,
     .uart_rx_i,
-
-    .i2c_sda_o            ( i2c_sda_soc_out       ),
-    .i2c_sda_i            ( i2c_sda_soc_in        ),
-    .i2c_sda_en_o         ( i2c_sda_en            ),
-    .i2c_scl_o            ( i2c_scl_soc_out       ),
-    .i2c_scl_i            ( i2c_scl_soc_in        ),
-    .i2c_scl_en_o         ( i2c_scl_en            ),
-
-    .rtc_i                ( rtc_clk_q             ),
-
-    .clk_locked_i         ( 1'b0                  ),
-
-    .spim_sck_o           ( spi_sck_soc           ),
-    .spim_sck_en_o        ( spi_sck_en            ),
-    .spim_csb_o           ( spi_cs_soc            ),
-    .spim_csb_en_o        ( spi_cs_en             ),
-    .spim_sd_o            ( spi_sd_soc_out        ),
-    .spim_sd_en_o         ( spi_sd_en             ),
-    .spim_sd_i            ( spi_sd_soc_in         ),
-
-    .vga_hsync_o          ( vga_hs                ),
-    .vga_vsync_o          ( vga_vs                ),
-    .vga_red_o            ( vga_r                 ),
-    .vga_green_o          ( vga_g                 ),
-    .vga_blue_o           ( vga_b                 ),
-
-    .external_reg_req_o   ( ext_req               ),
-    .external_reg_rsp_i   ( ext_rsp               )
+    .uart_rts_no        ( ),
+    .uart_dtr_no        ( ),
+    .uart_cts_ni        ( 1'b0 ),
+    .uart_dsr_ni        ( 1'b0 ),
+    .uart_dcd_ni        ( 1'b0 ),
+    .uart_rin_ni        ( 1'b0 ),
+    .i2c_sda_o          ( i2c_sda_soc_out ),
+    .i2c_sda_i          ( i2c_sda_soc_in  ),
+    .i2c_sda_en_o       ( i2c_sda_en      ),
+    .i2c_scl_o          ( i2c_scl_soc_out ),
+    .i2c_scl_i          ( i2c_scl_soc_in  ),
+    .i2c_scl_en_o       ( i2c_scl_en      ),
+    .spih_sck_o         ( spi_sck_soc     ),
+    .spih_sck_en_o      ( spi_sck_en      ),
+    .spih_csb_o         ( spi_cs_soc      ),
+    .spih_csb_en_o      ( spi_cs_en       ),
+    .spih_sd_o          ( spi_sd_soc_out  ),
+    .spih_sd_en_o       ( spi_sd_en       ),
+    .spih_sd_i          ( spi_sd_soc_in   ),
+    .gpio_i             ( '0 ),
+    .gpio_o             ( ),
+    .gpio_en_o          ( ),
+    .slink_rcv_clk_i    ( '1 ),
+    .slink_rcv_clk_o    ( ),
+    .slink_i            ( '0 ),
+    .slink_o            ( ),
+    .vga_hsync_o        ( vga_hs          ),
+    .vga_vsync_o        ( vga_vs          ),
+    .vga_red_o          ( vga_r           ),
+    .vga_green_o        ( vga_g           ),
+    .vga_blue_o         ( vga_b           )
   );
 
 endmodule
