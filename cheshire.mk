@@ -38,7 +38,7 @@ $(CHS_ROOT)/.deps:
 	@touch $@
 
 # Make sure dependencies are more up-to-date than any targets run
--include $(CHS_ROOT)/.deps
+include $(CHS_ROOT)/.deps
 
 ######################
 # Nonfree components #

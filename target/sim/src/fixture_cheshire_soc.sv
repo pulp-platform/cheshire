@@ -292,17 +292,19 @@ module cheshire_soc_fixture;
     end
   endtask
 
-  task automatic jtag_poll_bit0(input doub_bt addr, output word_bt data);
+  task automatic jtag_poll_bit0(
+    input doub_bt addr,
+    output word_bt data,
+    input int unsigned idle_cycles
+  );
     // Update SBCS
-    automatic dm::sbcs_t sbcs = JtagInitSbcs;
-    sbcs.sbautoincrement = 0;
-    sbcs.sbaccess = 2;
-    jtag_write(dm::SBCS, sbcs);
+    automatic dm::sbcs_t sbcs = dm::sbcs_t'{sbreadonaddr: 1'b1, sbaccess: 2, default: '0};
+    jtag_write(dm::SBCS, sbcs, 0, 1);
     // Poll scratch register 0
     jtag_write(dm::SBAddress1, addr[63:32]);
-    jtag_write(dm::SBAddress0, addr[31:0]);
     do begin
-      jtag_dbg.wait_idle(10);
+      jtag_write(dm::SBAddress0, addr[31:0]);
+      jtag_dbg.wait_idle(idle_cycles);
       jtag_dbg.read_dmi_exp_backoff(dm::SBData0, data);
     end while (~data[0]);
   endtask
@@ -329,7 +331,6 @@ module cheshire_soc_fixture;
   // Load a binary; this expects precautions to have been taken (e.g. halted hart)
   task automatic jtag_elf_preload(input string binary, output doub_bt entry);
     longint sec_addr, sec_len;
-    automatic dm::sbcs_t sbcs = JtagInitSbcs;
     $display("[JTAG] Preloading ELF binary: %s", binary);
     if (read_elf(binary))
       $fatal(1, "[JTAG] Failed to load ELF!");
@@ -337,7 +338,7 @@ module cheshire_soc_fixture;
       byte bf[] = new [sec_len];
       $display("[JTAG] Preloading section at 0x%h (%0d bytes)", sec_addr, sec_len);
       if (read_section(sec_addr, bf, sec_len)) $fatal(1, "[JTAG] Failed to read ELF section!");
-      jtag_write(dm::SBCS, sbcs, 1, 1);
+      jtag_write(dm::SBCS, JtagInitSbcs, 1, 1);
       // Write bootloader as 64-bit doubless
       jtag_write(dm::SBAddress1, sec_addr[63:32]);
       jtag_write(dm::SBAddress0, sec_addr[31:0]);
@@ -355,18 +356,16 @@ module cheshire_soc_fixture;
 
   // Run a binary
   task automatic jtag_elf_run(input string binary);
-    dm::dmcontrol_t dmcontrol = '{dmactive: 1, default: '0};
     dm::dmstatus_t status;
     doub_bt entry;
     // Wait until bootrom initialized LLC
     if (DutCfg.LlcNotBypass) begin
       word_bt regval;
       $display("[JTAG] Wait for LLC configuration");
-      jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval);
+      jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
     end
     // Halt hart 0
-    dmcontrol.haltreq = 1;
-    jtag_write(dm::DMControl, dmcontrol);
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, default: '0});
     do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
     while (~status.allhalted);
     $display("[JTAG] Halted hart 0");
@@ -377,14 +376,12 @@ module cheshire_soc_fixture;
     jtag_write(dm::Data0, entry[31:0]);
     jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
     // Resume hart 0
-    dmcontrol.haltreq = 0;
-    dmcontrol.resumereq = 1;
-    jtag_write(dm::DMControl, dmcontrol);
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
     $display("[JTAG] Resumed hart 0 from 0x%h", entry);
   endtask
 
   task automatic jtag_wait_for_eoc(output word_bt exit_code);
-    jtag_poll_bit0(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_1_OFFSET, exit_code);
+    jtag_poll_bit0(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_1_OFFSET, exit_code, 800);
     exit_code >>= 1;
     if (exit_code) $error("[JTAG] FAILED: return code %d", exit_code);
     else $display("[JTAG] SUCCESS");

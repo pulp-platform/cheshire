@@ -18,7 +18,8 @@ int uart_read_ready(void *uart_base) {
 }
 
 static inline int uart_write_idle(void *uart_base) {
-    return *reg8(uart_base, UART_LINE_STATUS_REG_OFFSET) & (1 << UART_LINE_STATUS_TMIT_EMPTY_BIT);
+    return uart_write_ready(uart_base) &&
+        *reg8(uart_base, UART_LINE_STATUS_REG_OFFSET) & (1 << UART_LINE_STATUS_TMIT_EMPTY_BIT);
 }
 
 void uart_init(void *uart_base, uint64_t freq, uint64_t baud) {

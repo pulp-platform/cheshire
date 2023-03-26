@@ -17,5 +17,6 @@ int main(void) {
     uint64_t reset_freq = 200*1000*1000;
     uart_init(&__base_uart, reset_freq, 115200);
     printf("Hello World!\r\n");
+    uart_write_flush(&__base_uart);
     return 0;
 }

@@ -13,7 +13,7 @@ dependencies:
   axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",               rev: add_bist_status-tbenz } # TODO
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",     version: =0.7.0  }
   apb:                      { git: "https://github.com/pulp-platform/apb.git",                   version: =0.2.2  }
-  apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",              version: =0.2.0  }
+  apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",              rev: lsr-thre-fix } # TODO!
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                 version: =0.1.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells",              version: =1.28.0 }
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                  rev: cva6_structs } # TODO!
