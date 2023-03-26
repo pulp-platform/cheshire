@@ -22,12 +22,13 @@ int boot_passive(uint64_t core_freq) {
     // Initialize UART with debug settings
     uart_debug_init(&__base_uart, core_freq);
     // scratch[0] provides an entry point, scratch[1] a start signal
-    volatile uint32_t *scratch = reg32(&__base_cheshire_regs, CHESHIRE_SCRATCH_0_REG_OFFSET);
+    volatile uint32_t *scratch = reg32(&__base_regs, CHESHIRE_SCRATCH_0_REG_OFFSET);
     // While we poll scratch[1], check for incoming UART debug requests
     while (!scratch[1])
         if (uart_debug_check(&__base_uart))
             return uart_debug_serve(&__base_uart);
     // No UART (or JTAG) requests came in, but scratch[1] was set --> run code at scratch[0]
+    scratch[1] = 0;
     return invoke((void*)(uintptr_t)scratch[0]);
 }
 
@@ -41,7 +42,7 @@ int boot_spi_sdcard(uint64_t core_freq, uint64_t rtc_freq) {
     CHECK_CALL(spi_sdcard_init(&device, core_freq))
     // Wait for device to be initialized (1ms, round up extra tick to be sure)
     clint_spin_until((1000*rtc_freq)/(1000*1000)+1);
-    return gpt_boot_part_else_raw(spi_s25fs512s_single_read, &device,
+    return gpt_boot_part_else_raw(spi_sdcard_read_checkcrc, &device,
                                   &__base_spm, __BOOT_SPM_MAX_LBAS);
 }
 
@@ -67,14 +68,9 @@ int boot_i2c_24xx1025(uint64_t core_freq) {
 }
 
 int main() {
-    // Run the external platform ROM first if there is any.
-    // This will initialize a locked clock and set up IO as needed.
-    uint32_t prom = *reg32(&__base_cheshire_regs, CHESHIRE_PLATFORM_ROM_REG_OFFSET);
-    if (prom)
-        CHECK_CALL(invoke((void*)(uintptr_t)prom))
     // Read boot mode and reference frequency
-    uint32_t bootmode = *reg32(&__base_cheshire_regs, CHESHIRE_BOOT_MODE_REG_OFFSET);
-    uint32_t rtc_freq = *reg32(&__base_cheshire_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
+    uint32_t bootmode = *reg32(&__base_regs, CHESHIRE_BOOT_MODE_REG_OFFSET);
+    uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
     // Compute the boot core frequency using the reference clock
     uint64_t core_freq = clint_get_core_freq(rtc_freq, 10000, 10);
     // In case of reentry, store return in scratch0 as is convention

@@ -130,10 +130,10 @@ module cheshire_soc_fixture;
     .uart_rx_i          ( uart_rx ),
     .uart_rts_no        ( ),
     .uart_dtr_no        ( ),
-    .uart_cts_ni        ( 1'b1 ),
-    .uart_dsr_ni        ( 1'b1 ),
-    .uart_dcd_ni        ( 1'b1 ),
-    .uart_rin_ni        ( 1'b1 ),
+    .uart_cts_ni        ( 1'b0 ),
+    .uart_dsr_ni        ( 1'b0 ),
+    .uart_dcd_ni        ( 1'b0 ),
+    .uart_rin_ni        ( 1'b0 ),
     .i2c_sda_o          ( i2c_sda_o  ),
     .i2c_sda_i          ( i2c_sda_i  ),
     .i2c_sda_en_o       ( i2c_sda_en ),
@@ -227,11 +227,11 @@ module cheshire_soc_fixture;
     @(posedge clk);
   endtask
 
-  task set_test_mode (input logic mode);
+  task set_test_mode(input logic mode);
     test_mode = mode;
   endtask
 
-  task set_boot_mode (input logic [1:0] mode);
+  task set_boot_mode(input logic [1:0] mode);
     boot_mode = mode;
   endtask
 
@@ -256,8 +256,8 @@ module cheshire_soc_fixture;
 
   typedef jtag_test::riscv_dbg #(
     .IrLength ( 5 ),
-    .TA       ( TckJtg * TAppl ),
-    .TT       ( TckJtg * TTest )
+    .TA       ( ClkPeriodJtag * TAppl ),
+    .TT       ( ClkPeriodJtag * TTest )
   ) riscv_dbg_t;
 
   riscv_dbg_t::jtag_driver_t  jtag_dv   = new (jtag);
@@ -271,21 +271,40 @@ module cheshire_soc_fixture;
 
   task automatic jtag_write(
     input dm::dm_csr_e addr,
-    input logic [31:0] data,
-    input logic wait_cmd = 0,
-    input logic wait_sba = 0
+    input word_bt data,
+    input bit wait_cmd = 0,
+    input bit wait_sba = 0
   );
     jtag_dbg.write_dmi(addr, data);
     if (wait_cmd) begin
       dm::abstractcs_t acs;
-      do jtag_dbg.read_dmi_exp_backoff(dm::AbstractCS, acs);
-      while (acs.busy);
+      do begin
+        jtag_dbg.read_dmi_exp_backoff(dm::AbstractCS, acs);
+        if (acs.cmderr) $fatal(1, "[JTAG] Abstract command error!");
+      end while (acs.busy);
     end
     if (wait_sba) begin
       dm::sbcs_t sbcs;
-      do jtag_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-      while (sbcs.sbbusy);
+      do begin
+        jtag_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+        if (sbcs.sberror | sbcs.sbbusyerror) $fatal(1, "[JTAG] System bus error!");
+      end while (sbcs.sbbusy);
     end
+  endtask
+
+  task automatic jtag_poll_bit0(input doub_bt addr, output word_bt data);
+    // Update SBCS
+    automatic dm::sbcs_t sbcs = JtagInitSbcs;
+    sbcs.sbautoincrement = 0;
+    sbcs.sbaccess = 2;
+    jtag_write(dm::SBCS, sbcs);
+    // Poll scratch register 0
+    jtag_write(dm::SBAddress1, addr[63:32]);
+    jtag_write(dm::SBAddress0, addr[31:0]);
+    do begin
+      jtag_dbg.wait_idle(10);
+      jtag_dbg.read_dmi_exp_backoff(dm::SBData0, data);
+    end while (~data[0]);
   endtask
 
   // Initialize the debug module
@@ -293,64 +312,83 @@ module cheshire_soc_fixture;
     jtag_idcode_t idcode;
     dm::dmcontrol_t dmcontrol = '{dmactive: 1, default: '0};
     // Reset debug module
-    riscv_dbg.reset_master();
-    wait_for_reset();
+    jtag_dbg.reset_master();
     // Check ID code
-    riscv_dbg.get_idcode(idcode);
-    assert (idcode == DutCfg.DbgIdCode) else
-        $fatal("[JTAG] Unexpected ID code (expected 0x%h, got 0x%h)", idcode, DutCfg.DbgIdCode);
+    jtag_dbg.get_idcode(idcode);
+    if (idcode != DutCfg.DbgIdCode)
+        $fatal(1, "[JTAG] Unexpected ID code: expected 0x%h, got 0x%h!", idcode, DutCfg.DbgIdCode);
     // Activate, wait for debug module
     jtag_write(dm::DMControl, dmcontrol);
-    do riscv_dbg.read_dmi_exp_backoff(dm::DMControl, dmcontrol);
+    do jtag_dbg.read_dmi_exp_backoff(dm::DMControl, dmcontrol);
     while (~dmcontrol.dmactive);
     // Activate, wait for system bus
     jtag_write(dm::SBCS, JtagInitSbcs, 0, 1);
-    $display("[JTAG] Initializion success", idcode);
+    $display("[JTAG] Initializion success");
   endtask
 
   // Load a binary; this expects precautions to have been taken (e.g. halted hart)
   task automatic jtag_elf_preload(input string binary, output doub_bt entry);
     longint sec_addr, sec_len;
-    automatic dm::sbcs_t sbcs = jtag_init_sbcs;
-    jtag_write(dm::SBCS, sbcs);
+    automatic dm::sbcs_t sbcs = JtagInitSbcs;
     $display("[JTAG] Preloading ELF binary: %s", binary);
-    void'(read_elf(binary));
+    if (read_elf(binary))
+      $fatal(1, "[JTAG] Failed to load ELF!");
     while (get_section(sec_addr, sec_len)) begin
       byte bf[] = new [sec_len];
       $display("[JTAG] Preloading section at 0x%h (%0d bytes)", sec_addr, sec_len);
-      void'(read_section(sec_addr, bf, sec_len));
+      if (read_section(sec_addr, bf, sec_len)) $fatal(1, "[JTAG] Failed to read ELF section!");
       jtag_write(dm::SBCS, sbcs, 1, 1);
       // Write bootloader as 64-bit doubless
       jtag_write(dm::SBAddress1, sec_addr[63:32]);
       jtag_write(dm::SBAddress0, sec_addr[31:0]);
       for (longint i = 0; i <= sec_len ; i += 8) begin
-        if (i % 256 == 0)
-          $display(" - Byte %0d/%0d (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
+        bit checkpoint = (i != 0 && i % 512 == 0);
+        if (checkpoint)
+          $display("   %6d/%6d Bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
         jtag_write(dm::SBData1, {bf[i+7], bf[i+6], bf[i+5], bf[i+4]});
-        jtag_write(dm::SBData0, {bf[i+3], bf[i+2], bf[i+1], bf[i]}, 1, 1);
+        jtag_write(dm::SBData0, {bf[i+3], bf[i+2], bf[i+1], bf[i]}, checkpoint, checkpoint);
       end
     end
+    void'(get_entry(entry));
     $display("[JTAG] Preload complete");
-  end
+  endtask
 
   // Run a binary
   task automatic jtag_elf_run(input string binary);
     dm::dmcontrol_t dmcontrol = '{dmactive: 1, default: '0};
     dm::dmstatus_t status;
     doub_bt entry;
+    // Wait until bootrom initialized LLC
+    if (DutCfg.LlcNotBypass) begin
+      word_bt regval;
+      $display("[JTAG] Wait for LLC configuration");
+      jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval);
+    end
     // Halt hart 0
     dmcontrol.haltreq = 1;
     jtag_write(dm::DMControl, dmcontrol);
     do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
     while (~status.allhalted);
     $display("[JTAG] Halted hart 0");
+    // Preload binary
     jtag_elf_preload(binary, entry);
+    // Repoint execution
+    jtag_write(dm::Data1, entry[63:32]);
+    jtag_write(dm::Data0, entry[31:0]);
+    jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
+    // Resume hart 0
+    dmcontrol.haltreq = 0;
+    dmcontrol.resumereq = 1;
+    jtag_write(dm::DMControl, dmcontrol);
+    $display("[JTAG] Resumed hart 0 from 0x%h", entry);
+  endtask
 
-  end
-
-
-
-
+  task automatic jtag_wait_for_eoc(output word_bt exit_code);
+    jtag_poll_bit0(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_1_OFFSET, exit_code);
+    exit_code >>= 1;
+    if (exit_code) $error("[JTAG] FAILED: return code %d", exit_code);
+    else $display("[JTAG] SUCCESS");
+  endtask
 
   ////////////
   //  UART  //

@@ -9,16 +9,20 @@ module tb_cheshire_soc;
 
   cheshire_soc_fixture fix();
 
-  string binary;
-  logic [1:0]  bootmode;
-  logic        testmode;
-  logic [63:0] entry;
-  longint      entry_int;
-  int          exit_status = 0;
+  string        binary;
+  logic [1:0]   boot_mode;
+  logic         test_mode;
+
+  bit [31:0] ret;
 
   initial begin
+    fix.wait_for_reset();
+    fix.jtag_init();
+    fix.jtag_elf_run("../../../sw/tests/helloworld.spm.elf");
 
-    #1000000000ns
+    #20000ns;
+
+    fix.jtag_wait_for_eoc(ret);
 
     $finish;
   end

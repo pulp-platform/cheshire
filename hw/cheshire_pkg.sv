@@ -188,6 +188,8 @@ package cheshire_pkg;
   // Static addresses
   localparam doub_bt AmDbg  = 'h0000_0000;  // Base of AXI peripherals
   localparam doub_bt AmBrom = 'h0200_0000;  // Base of reg peripherals
+  localparam doub_bt AmRegs = 'h0300_0000;
+  localparam doub_bt AmLlc  = 'h0300_1000;
   localparam doub_bt AmSpm  = 'h1000_0000;  // Cached region at bottom, uncached on top
 
   // Static masks
@@ -248,10 +250,11 @@ package cheshire_pkg;
         ret.map[++r] = '{i, cfg.LlcOutRegionStart, cfg.LlcOutRegionEnd}; end
     // We can only internally map the SPM region if an LLC exists.
     // Otherwise, we assume external ports map and back the SPM region.
-    // SPM comes in
+    // We map both the cached and uncached regions.
     if (cfg.LlcNotBypass) begin
-      ret.spm  =  i; ret.map[++r] = '{i, AmSpm, AmSpm + SizeSpm};
-      ret.spm  =  i; ret.map[++r] = '{i, AmSpm, AmSpm + SizeSpm};
+      ret.spm   = i;
+      ret.map[++r] = '{i, AmSpm, AmSpm + SizeSpm};
+      ret.map[++r] = '{i, AmSpm + 'h0400_0000, AmSpm + 'h0400_0000 + SizeSpm};
     end
     if (cfg.Dma)          begin ret.dma   = ++i; ret.map[++r] = '{i, 'h0100_0000, 'h0100_1000}; end
     if (cfg.SerialLink)   begin ret.slink = ++i;
@@ -295,9 +298,9 @@ package cheshire_pkg;
     automatic int unsigned i = 3, r = 2;
     ret.map[0] = '{1, 'h0204_0000, 'h0208_0000};
     ret.map[1] = '{2, 'h0400_0000, 'h0800_0000};
-    ret.map[2] = '{3, 'h0300_0000, 'h0300_1000};
+    ret.map[2] = '{3, AmRegs,  AmRegs + 'h1000};
     if (cfg.Bootrom)  begin ret.bootrom  = ++i;  ret.map[++r] = '{i, AmBrom, AmBrom + 'h40000}; end
-    if (cfg.LlcNotBypass) begin ret.llc  = ++i;  ret.map[++r] = '{i, 'h0300_1000, 'h0300_2000}; end
+    if (cfg.LlcNotBypass) begin ret.llc  = ++i;  ret.map[++r] = '{i, AmLlc,    AmLlc + 'h1000}; end
     if (cfg.Uart)     begin ret.uart     = ++i;  ret.map[++r] = '{i, 'h0300_2000, 'h0300_3000}; end
     if (cfg.I2c)      begin ret.i2c      = ++i;  ret.map[++r] = '{i, 'h0300_3000, 'h0300_4000}; end
     if (cfg.SpiHost)  begin ret.spi_host = ++i;  ret.map[++r] = '{i, 'h0300_4000, 'h0300_5000}; end
@@ -329,8 +332,8 @@ package cheshire_pkg;
       NonIdempotentAddrBase : {64'h0000_0000, 64'h4000_0000},
       NonIdempotentLength   : {64'h1000_0000, 64'h6000_0000 - cfg.Cva6ExtCieLength},
       NrExecuteRegionRules  : 5,   // Debug, Bootrom, AllSPM, LLCOut, ExtCIE
-      ExecuteRegionAddrBase : {AmDbg, AmBrom, AmSpm, cfg.LlcOutRegionStart,  64'h2000_0000},
-      ExecuteRegionLength   : {64'h40000, 64'h40000,  2*SizeSpm, SizeLlcOut, cfg.Cva6ExtCieLength},
+      ExecuteRegionAddrBase : {AmDbg, AmBrom, AmSpm, cfg.LlcOutRegionStart, 64'h2000_0000},
+      ExecuteRegionLength   : {64'h40000, 64'h40000, 2*SizeSpm, SizeLlcOut, cfg.Cva6ExtCieLength},
       NrCachedRegionRules   : 3,   // CachedSPM, LLCOut, ExtCIE
       CachedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart,  64'h2000_0000},
       CachedRegionLength    : {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength},

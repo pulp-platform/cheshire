@@ -79,12 +79,14 @@
       hwext:    "true"
       fields: [
         { bits: "0",  name: "bootrom",      desc: "Whether boot ROM is available"     }
-        { bits: "1",  name: "uart",         desc: "Whether UART is available"         }
-        { bits: "2",  name: "spi_host",     desc: "Whether SPI host is available"     }
-        { bits: "3",  name: "i2c",          desc: "Whether I2C is available"          }
-        { bits: "4",  name: "dma",          desc: "Whether DMA is available"          }
-        { bits: "5",  name: "serial_link",  desc: "Whether serial link is available"  }
-        { bits: "6",  name: "vga",          desc: "Whether VGA is available"          }
+        { bits: "1",  name: "llc",          desc: "Whether LLC is available"          }
+        { bits: "2",  name: "uart",         desc: "Whether UART is available"         }
+        { bits: "3",  name: "spi_host",     desc: "Whether SPI host is available"     }
+        { bits: "4",  name: "i2c",          desc: "Whether I2C is available"          }
+        { bits: "5",  name: "gpio",         desc: "Whether I2C is available"          }
+        { bits: "6",  name: "dma",          desc: "Whether DMA is available"          }
+        { bits: "7",  name: "serial_link",  desc: "Whether serial link is available"  }
+        { bits: "8",  name: "vga",          desc: "Whether VGA is available"          }
 
       ]
     }

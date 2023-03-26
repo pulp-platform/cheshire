@@ -87,12 +87,16 @@ module cheshire_reg_top #(
   logic platform_rom_re;
   logic hw_features_bootrom_qs;
   logic hw_features_bootrom_re;
+  logic hw_features_llc_qs;
+  logic hw_features_llc_re;
   logic hw_features_uart_qs;
   logic hw_features_uart_re;
   logic hw_features_spi_host_qs;
   logic hw_features_spi_host_re;
   logic hw_features_i2c_qs;
   logic hw_features_i2c_re;
+  logic hw_features_gpio_qs;
+  logic hw_features_gpio_re;
   logic hw_features_dma_qs;
   logic hw_features_dma_re;
   logic hw_features_serial_link_qs;
@@ -282,7 +286,22 @@ module cheshire_reg_top #(
   );
 
 
-  //   F[uart]: 1:1
+  //   F[llc]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_hw_features_llc (
+    .re     (hw_features_llc_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_features.llc.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (hw_features_llc_qs)
+  );
+
+
+  //   F[uart]: 2:2
   prim_subreg_ext #(
     .DW    (1)
   ) u_hw_features_uart (
@@ -297,7 +316,7 @@ module cheshire_reg_top #(
   );
 
 
-  //   F[spi_host]: 2:2
+  //   F[spi_host]: 3:3
   prim_subreg_ext #(
     .DW    (1)
   ) u_hw_features_spi_host (
@@ -312,7 +331,7 @@ module cheshire_reg_top #(
   );
 
 
-  //   F[i2c]: 3:3
+  //   F[i2c]: 4:4
   prim_subreg_ext #(
     .DW    (1)
   ) u_hw_features_i2c (
@@ -327,7 +346,22 @@ module cheshire_reg_top #(
   );
 
 
-  //   F[dma]: 4:4
+  //   F[gpio]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_hw_features_gpio (
+    .re     (hw_features_gpio_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_features.gpio.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (hw_features_gpio_qs)
+  );
+
+
+  //   F[dma]: 6:6
   prim_subreg_ext #(
     .DW    (1)
   ) u_hw_features_dma (
@@ -342,7 +376,7 @@ module cheshire_reg_top #(
   );
 
 
-  //   F[serial_link]: 5:5
+  //   F[serial_link]: 7:7
   prim_subreg_ext #(
     .DW    (1)
   ) u_hw_features_serial_link (
@@ -357,7 +391,7 @@ module cheshire_reg_top #(
   );
 
 
-  //   F[vga]: 6:6
+  //   F[vga]: 8:8
   prim_subreg_ext #(
     .DW    (1)
   ) u_hw_features_vga (
@@ -471,11 +505,15 @@ module cheshire_reg_top #(
 
   assign hw_features_bootrom_re = addr_hit[7] & reg_re & !reg_error;
 
+  assign hw_features_llc_re = addr_hit[7] & reg_re & !reg_error;
+
   assign hw_features_uart_re = addr_hit[7] & reg_re & !reg_error;
 
   assign hw_features_spi_host_re = addr_hit[7] & reg_re & !reg_error;
 
   assign hw_features_i2c_re = addr_hit[7] & reg_re & !reg_error;
+
+  assign hw_features_gpio_re = addr_hit[7] & reg_re & !reg_error;
 
   assign hw_features_dma_re = addr_hit[7] & reg_re & !reg_error;
 
@@ -523,12 +561,14 @@ module cheshire_reg_top #(
 
       addr_hit[7]: begin
         reg_rdata_next[0] = hw_features_bootrom_qs;
-        reg_rdata_next[1] = hw_features_uart_qs;
-        reg_rdata_next[2] = hw_features_spi_host_qs;
-        reg_rdata_next[3] = hw_features_i2c_qs;
-        reg_rdata_next[4] = hw_features_dma_qs;
-        reg_rdata_next[5] = hw_features_serial_link_qs;
-        reg_rdata_next[6] = hw_features_vga_qs;
+        reg_rdata_next[1] = hw_features_llc_qs;
+        reg_rdata_next[2] = hw_features_uart_qs;
+        reg_rdata_next[3] = hw_features_spi_host_qs;
+        reg_rdata_next[4] = hw_features_i2c_qs;
+        reg_rdata_next[5] = hw_features_gpio_qs;
+        reg_rdata_next[6] = hw_features_dma_qs;
+        reg_rdata_next[7] = hw_features_serial_link_qs;
+        reg_rdata_next[8] = hw_features_vga_qs;
       end
 
       addr_hit[8]: begin

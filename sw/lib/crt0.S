@@ -150,7 +150,7 @@ trap_vector:
 _exit:
     slli a0, a0, 1
     ori  a0, a0, 1
-    la t0, __base_cheshire_regs
+    la t0, __base_regs
     sw a0, 4(t0)
 
 _exit_wait_loop:

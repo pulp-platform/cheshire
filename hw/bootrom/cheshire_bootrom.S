@@ -5,6 +5,9 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 
+// TODO: Avoid hardcoding in addresses and offsets
+// TODO: park non-0 harts here and adapt to new parameterization
+
 .section .text._start
 
 // Minimal bootrom crt0
@@ -49,38 +52,44 @@ _start:
     li x30, 0
     li x31, 0
 
-    // TODO: park non-0 harts here and adapt to new parameterization
-
-    // TODO: Delete this cancer once LLC is fixed! Sentinel read from SPM so BIST cannot fuck us...
-    la t0, __base_spm
-    ld t0, 0(t0)
-
-    // Configure the LLC to all SPM
-    la t0, __base_axi_llc
+    // If LLC present: Wait for end of BIST, then set to all SPM
+    la t0, __base_regs
+    lw t0, 28(t0)   // regs.HW_FEATURES
+    andi t0, t0, 2  // regs.HW_FEATURES.llc
+    beqz t0, _prom_check_run
+    la t0, __base_llc
+_wait_llc_bist:
+    lw t1, 72(t0)   // llc.BIST_STATUS_DONE_BIT
+    beqz t1, _wait_llc_bist
     li t1, -1
-    sw t1, 0(t0)    // CFG_SPM_LOW  = 0xFF..F
-    sw t1, 4(t0)    // CFG_SPM_HIGH = 0xFF..F
+    sw t1, 0(t0)    // llc.CFG_SPM_LOW
+    sw t1, 4(t0)    // llc.CFG_SPM_HIGH
     li t1, 1
-    sw t1, 16(t0)   // COMMIT_CFG = 0x1
+    sw t1, 16(t0)   // llc.CFG_COMMIT
+
+// Enter Platform ROM if present.
+_prom_check_run:
+    // Note that we have internal access to SPM here *if and only if* there is an LLC.
+    la t0, __base_regs
+    lw t0, 24(t0)   // regs.PLATFORM_ROM
+    beqz t0, _boot
+    jalr t0
+
+// Reset regs, full fence, then jump to main
+_boot:
     li t0, 0
     li t1, 0
-
-    // Boldly flush everything
+    fence
     fence.i
-
     jal main
 
-    // Main returned - save return value and mark as done
-    j _exit
-
-// If main returns we end up here
-// Save the return value to the scratch register 0
-// and wait forever
+// If main returns, we end up here.
+// Save the return value to scratch register 1 and wait forever.
 _exit:
     slli a0, a0, 1
     ori  a0, a0, 1
-    la t0, __base_cheshire_regs
-    sw a0, 4(t0)
+    la t0, __base_regs
+    sw a0, 4(t0)     // regs.SCRATCH[1]
 
 _exit_wait_loop:
     wfi

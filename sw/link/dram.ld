@@ -9,7 +9,7 @@ ENTRY(_start)
 
 MEMORY
 {
-  spm (rwx)     : ORIGIN = 0x70000000, LENGTH = 128K
+  spm (rwx)     : ORIGIN = 0x10000000, LENGTH = 128K
   dram (rwx)    : ORIGIN = 0x80000000, LENGTH = 1024M
 }
 
@@ -56,18 +56,18 @@ SECTIONS
   __global_pointer$ = ADDR(.misc) + SIZEOF(.misc) / 2;
   __stack_pointer$  = ORIGIN(spm) + LENGTH(spm) - 8;
   /* Further addresses */
-  __base_bootrom        = 0x01000000;
-  __base_cheshire_regs  = 0x02000000;
-  __base_axi_llc        = 0x02001000;
-  __base_ddr_link       = 0x02002000;
-  __base_uart           = 0x02003000;
-  __base_i2c            = 0x02004000;
-  __base_spim           = 0x02005000;
-  __base_vga            = 0x02006000;
-  __base_clint          = 0x04000000;
-  __base_clint_mtime    = 0x0400bff8;
-  __base_plic           = 0x0c000000;
-  __base_dma_conf       = 0x60000000;
-  __base_spm            = ORIGIN(spm);
-  __base_dram           = ORIGIN(dram);
+  __base_dma      = 0x01000000;
+  __base_bootrom  = 0x02000000;
+  __base_clint    = 0x02040000;
+  __base_regs     = 0x03000000;
+  __base_llc      = 0x03001000;
+  __base_uart     = 0x03002000;
+  __base_i2c      = 0x03003000;
+  __base_spih     = 0x03004000;
+  __base_gpio     = 0x03005000;
+  __base_slink    = 0x03006000;
+  __base_vga      = 0x03007000;
+  __base_plic     = 0x04000000;
+  __base_spm      = ORIGIN(spm);
+  __base_dram     = ORIGIN(dram);
 }

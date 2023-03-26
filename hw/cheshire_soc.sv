@@ -838,8 +838,10 @@ module cheshire_soc import cheshire_pkg::*; #(
     platform_rom  : Cfg.PlatformRom,
     hw_features   : '{
       bootrom     : Cfg.Bootrom,
+      llc         : Cfg.LlcNotBypass,
       uart        : Cfg.Uart,
       i2c         : Cfg.I2c,
+      gpio        : Cfg.Gpio,
       spi_host    : Cfg.SpiHost,
       dma         : Cfg.Dma,
       serial_link : Cfg.SerialLink,
@@ -1351,5 +1353,6 @@ module cheshire_soc import cheshire_pkg::*; #(
   // TODO: check that atomics user domain is nonzero
   // TODO: check that `ext` (IO) and internal types agree
   // TODO: many other things I most likely forgot
+  // TODO: check that LLC only exists if its output is connected (the reverse is allowed)
 
 endmodule
