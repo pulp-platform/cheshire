@@ -209,10 +209,10 @@ package cheshire_pkg;
   function automatic axi_in_t gen_axi_in(cheshire_cfg_t cfg);
     automatic axi_in_t ret = '{cores: 0, dbg: 1, default: '0};
     automatic int unsigned i = 1;
-    if (cfg.Dma)        ret.dma   = ++i;
-    if (cfg.SerialLink) ret.slink = ++i;
-    if (cfg.Vga)        ret.vga   = ++i;
-    ret.ext_base  = ++i;
+    if (cfg.Dma)        begin i++; ret.dma   = i; end
+    if (cfg.SerialLink) begin i++; ret.slink = i; end
+    if (cfg.Vga)        begin i++; ret.vga   = i; end
+    i++; ret.ext_base  = i;
     ret.num_in    = i + cfg.AxiExtNumMst;
     return ret;
   endfunction
@@ -246,30 +246,34 @@ package cheshire_pkg;
     ret.map[1] = '{1, 'h0200_0000, 'h0800_0000};
     // Whether we have an LLC or a bypass, the output port is has its
     // own Xbar output with the specified region iff it is connected.
-    if (cfg.LlcOutConnect) begin ret.llc  = ++i;
-        ret.map[++r] = '{i, cfg.LlcOutRegionStart, cfg.LlcOutRegionEnd}; end
+    if (cfg.LlcOutConnect) begin i++; ret.llc  = i;
+        r++; ret.map[r] = '{i, cfg.LlcOutRegionStart, cfg.LlcOutRegionEnd}; end
     // We can only internally map the SPM region if an LLC exists.
     // Otherwise, we assume external ports map and back the SPM region.
     // We map both the cached and uncached regions.
     if (cfg.LlcNotBypass) begin
       ret.spm   = i;
-      ret.map[++r] = '{i, AmSpm, AmSpm + SizeSpm};
-      ret.map[++r] = '{i, AmSpm + 'h0400_0000, AmSpm + 'h0400_0000 + SizeSpm};
+      r++; ret.map[r] = '{i, AmSpm, AmSpm + SizeSpm};
+      r++; ret.map[r] = '{i, AmSpm + 'h0400_0000, AmSpm + 'h0400_0000 + SizeSpm};
     end
-    if (cfg.Dma)          begin ret.dma   = ++i; ret.map[++r] = '{i, 'h0100_0000, 'h0100_1000}; end
-    if (cfg.SerialLink)   begin ret.slink = ++i;
-        ret.map[++r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
+    if (cfg.Dma)          begin i++; ret.dma   = i; r++; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
+    if (cfg.SerialLink)   begin i++; ret.slink = i;
+        r++; ret.map[r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
     // External port indices start after iternal ones
-    ret.ext_base  = ++i;
+    i++; ret.ext_base  = i;
     ret.num_out   = i + cfg.AxiExtNumSlv;
-    ret.num_rules = ++r + cfg.AxiExtNumRules + cfg.RegExtNumRules;
+    r++; ret.num_rules = r + cfg.AxiExtNumRules + cfg.RegExtNumRules;
     // Append external AXI rules to map
-    for (int k = 0; k < cfg.AxiExtNumRules; ++k)
-      ret.map[r++] = '{ret.ext_base + cfg.AxiExtRegionIdx[k],
+    for (int k = 0; k < cfg.AxiExtNumRules; ++k) begin
+      ret.map[r] = '{ret.ext_base + cfg.AxiExtRegionIdx[k],
           cfg.AxiExtRegionStart[k], cfg.AxiExtRegionEnd[k]};
+      r++;
+    end
     // Append external reg rules to map; these are directed to the reg demux
-    for (int j = 0; j < cfg.RegExtNumRules; ++j)
-      ret.map[r++] = '{1, cfg.RegExtRegionStart[j], cfg.RegExtRegionEnd[j]};
+    for (int j = 0; j < cfg.RegExtNumRules; ++j) begin
+      ret.map[r] = '{1, cfg.RegExtRegionStart[j], cfg.RegExtRegionEnd[j]};
+      r++;
+    end
     return ret;
   endfunction
 
@@ -299,21 +303,23 @@ package cheshire_pkg;
     ret.map[0] = '{1, 'h0204_0000, 'h0208_0000};
     ret.map[1] = '{2, 'h0400_0000, 'h0800_0000};
     ret.map[2] = '{3, AmRegs,  AmRegs + 'h1000};
-    if (cfg.Bootrom)  begin ret.bootrom  = ++i;  ret.map[++r] = '{i, AmBrom, AmBrom + 'h40000}; end
-    if (cfg.LlcNotBypass) begin ret.llc  = ++i;  ret.map[++r] = '{i, AmLlc,    AmLlc + 'h1000}; end
-    if (cfg.Uart)     begin ret.uart     = ++i;  ret.map[++r] = '{i, 'h0300_2000, 'h0300_3000}; end
-    if (cfg.I2c)      begin ret.i2c      = ++i;  ret.map[++r] = '{i, 'h0300_3000, 'h0300_4000}; end
-    if (cfg.SpiHost)  begin ret.spi_host = ++i;  ret.map[++r] = '{i, 'h0300_4000, 'h0300_5000}; end
-    if (cfg.Gpio)     begin ret.gpio     = ++i;  ret.map[++r] = '{i, 'h0300_5000, 'h0300_6000}; end
-    if (cfg.SerialLink) begin ret.slink  = ++i;  ret.map[++r] = '{i, 'h0300_6000, 'h0300_7000}; end
-    if (cfg.Vga)      begin ret.vga      = ++i;  ret.map[++r] = '{i, 'h0300_7000, 'h0300_8000}; end
-    ret.ext_base  = ++i;
+    if (cfg.Bootrom)  begin i++; ret.bootrom  = i; r++; ret.map[r] = '{i, AmBrom, AmBrom + 'h40000}; end
+    if (cfg.LlcNotBypass) begin i++; ret.llc  = i; r++; ret.map[r] = '{i, AmLlc,    AmLlc + 'h1000}; end
+    if (cfg.Uart)     begin i++; ret.uart     = i; r++; ret.map[r] = '{i, 'h0300_2000, 'h0300_3000}; end
+    if (cfg.I2c)      begin i++; ret.i2c      = i; r++; ret.map[r] = '{i, 'h0300_3000, 'h0300_4000}; end
+    if (cfg.SpiHost)  begin i++; ret.spi_host = i; r++; ret.map[r] = '{i, 'h0300_4000, 'h0300_5000}; end
+    if (cfg.Gpio)     begin i++; ret.gpio     = i; r++; ret.map[r] = '{i, 'h0300_5000, 'h0300_6000}; end
+    if (cfg.SerialLink) begin i++; ret.slink  = i; r++; ret.map[r] = '{i, 'h0300_6000, 'h0300_7000}; end
+    if (cfg.Vga)      begin i++; ret.vga      = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
+    i++; ret.ext_base  = i;
     ret.num_out   = i + cfg.RegExtNumSlv;
-    ret.num_rules = ++r + cfg.RegExtNumRules;
+    r++; ret.num_rules = r + cfg.RegExtNumRules;
     // Append external slaves at end of map
-    for (int k = 0; k < cfg.AxiExtNumRules; ++k)
-      ret.map[r++] = '{ret.ext_base + cfg.RegExtRegionIdx[k],
+    for (int k = 0; k < cfg.AxiExtNumRules; ++k) begin
+      ret.map[r] = '{ret.ext_base + cfg.RegExtRegionIdx[k],
           cfg.RegExtRegionStart[k], cfg.RegExtRegionEnd[k]};
+      r++;
+    end     
     return ret;
   endfunction
 
