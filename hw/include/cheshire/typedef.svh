@@ -11,12 +11,13 @@
 `include "register_interface/typedef.svh"
 
 `define CHESHIRE_TYPEDEF_AXI(__name, __name_llc, __addr_t, __cfg) \
-  localparam type __name``_data_t    = logic [__cfg.AxiDataWidth   -1:0]; \
-  localparam type __name``_strb_t    = logic [__cfg.AxiDataWidth/8 -1:0]; \
-  localparam type __name``_user_t    = logic [__cfg.AxiUserWidth   -1:0]; \
-  localparam type __name``_mst_id_t  = logic [__cfg.AxiMstIdWidth  -1:0]; \
-  localparam type __name``_slv_id_t  = logic [__cfg.AxiMstIdWidth + \
-      $clog2(cheshire_pkg::gen_axi_in(__cfg).num_in)-1:0]; \
+  localparam axi_in_t __name_``AxiIn__ = gen_axi_in(__cfg); \
+  localparam __name_``AxiSlvIdWidth__ = __cfg.AxiMstIdWidth + $clog2(__name_``AxiIn__.num_in); \
+  localparam type __name``_data_t    = logic [__cfg.AxiDataWidth       -1:0]; \
+  localparam type __name``_strb_t    = logic [__cfg.AxiDataWidth/8     -1:0]; \
+  localparam type __name``_user_t    = logic [__cfg.AxiUserWidth       -1:0]; \
+  localparam type __name``_mst_id_t  = logic [__cfg.AxiMstIdWidth      -1:0]; \
+  localparam type __name``_slv_id_t  = logic [__name_``AxiSlvIdWidth__ -1:0]; \
   localparam type __name_llc``_id_t  = logic [$bits(__name``_slv_id_t)+__cfg.LlcNotBypass-1:0]; \
   `AXI_TYPEDEF_ALL_CT(__name``_mst, __name``_mst_req_t, __name``_mst_rsp_t, __addr_t, \
       __name``_mst_id_t, __name``_data_t, __name``_strb_t, __name``_user_t) \
