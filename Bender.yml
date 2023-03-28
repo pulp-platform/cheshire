@@ -15,7 +15,7 @@ dependencies:
   apb:                      { git: "https://github.com/pulp-platform/apb.git",                   version: =0.2.2  }
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",              version: =0.2.1  } # TODO!
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                 version: =0.1.0  }
-  common_cells:             { git: "https://github.com/pulp-platform/common_cells",              version: =1.28.0 }
+  common_cells:             { git: "https://github.com/pulp-platform/common_cells",              rev: 8d72ec6eb84445ac4cf2e1cfd4273d85e1b5eb40 } # yt/carfield
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                  rev: 437ffa9dac5dea0daccfd3e8ae604d4f6ae2cdf1 } # master
   register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",    version: =0.3.8  } # TODO!
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",             version: =0.7.0  }
