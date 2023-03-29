@@ -10,19 +10,19 @@ package:
 
 dependencies:
   axi:                      { git: "https://github.com/pulp-platform/axi.git",                   version: =0.39.0-beta.4 }
-  axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",               rev: add_bist_status-tbenz } # TODO
+  axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",               rev: 2ba8b81fba784aca4acc3cd817025914f475a3aa } # master
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",     version: =0.7.0  }
   apb:                      { git: "https://github.com/pulp-platform/apb.git",                   version: =0.2.2  }
-  apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",              rev: lsr-thre-fix } # TODO!
+  apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",              version: =0.2.1  } # TODO!
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                 version: =0.1.0  }
-  common_cells:             { git: "https://github.com/pulp-platform/common_cells",              version: =1.28.0 }
-  iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                  rev: cva6_structs } # TODO!
-  register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",    rev: backport/steer-fix  } # TODO!
+  common_cells:             { git: "https://github.com/pulp-platform/common_cells",              rev: 8d72ec6eb84445ac4cf2e1cfd4273d85e1b5eb40 } # yt/carfield
+  iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                  rev: 437ffa9dac5dea0daccfd3e8ae604d4f6ae2cdf1 } # master
+  register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",    version: =0.3.8  } # TODO!
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",             version: =0.7.0  }
   tech_cells_generic:       { git: "https://github.com/pulp-platform/tech_cells_generic.git",    version: =0.2.11 }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",           version: =1.0.0  }
   axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",               version: =0.1.1  }
-  opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git", rev: rb          } # TODO!
+  opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git", version: =0.3.0  } # TODO!
   cva6:                     { git: "https://github.com/pulp-platform/cva6",                      rev: pulp-v0.1.1 }
 
 export_include_dirs:
