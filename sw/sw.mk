@@ -23,64 +23,70 @@ RISCV_CCFLAGS ?= $(RISCV_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-bui
 RISCV_LDFLAGS ?= $(RISCV_FLAGS) -nostartfiles -Wl,--gc-sections
 
 TOP_DIR       ?= $(shell git rev-parse --show-toplevel)
-SW_DIR        ?= $(TOP_DIR)/sw
-LD_DIR    	  ?= $(SW_DIR)/link
+CHS_SW_DIR    ?= $(TOP_DIR)/$(CHS_ROOT)/sw
+CHS_LD_DIR 	  ?= $(CHS_SW_DIR)/link
 
-sw-all: sw-libs sw-headers sw-tests
+chs-sw-all: chs-sw-libs chs-sw-headers chs-sw-tests
 
 .PRECIOUS: %.elf %.dtb
-.PHONY: sw-clean sw-all sw-libs sw-headers sw-tests
+.PHONY: chs-sw-clean chs-sw-all chs-sw-libs chs-sw-headers chs-sw-tests
 
-sw-clean:
-	rm -f $(SW_DIR)/lib/*.{a,o}
-	rm -f $(SW_DIR)/tests/*.{dump,elf,o}
+chs-sw-clean:
+	rm -f $(CHS_SW_DIR)/lib/*.{a,o}
+	rm -f $(CHS_SW_DIR)/tests/*.{dump,elf,o}
 
 ################
 # Dependencies #
 ################
 
-DEPS_INCS  = -I$(shell $(BENDER) path axi_llc)/sw/include
-DEPS_INCS += -I$(SW_DIR)/deps/opentitan
-DEPS_INCS += -I$(SW_DIR)/deps/printf
-DEPS_SRCS  = $(wildcard $(shell $(BENDER) path axi_llc)/sw/lib/*.c)
-DEPS_SRCS += $(SW_DIR)/deps/opentitan/sw/device/lib/base/bitfield.c
-DEPS_SRCS += $(SW_DIR)/deps/opentitan/sw/device/lib/base/memory.c
-DEPS_SRCS += $(SW_DIR)/deps/opentitan/sw/device/lib/base/mmio.c
-DEPS_SRCS += $(SW_DIR)/deps/opentitan/sw/device/lib/dif/dif_i2c.c
-DEPS_SRCS += $(wildcard $(SW_DIR)/deps/printf/*.c)
+CHS_SW_DEPS_INCS  = -I$(shell $(BENDER) path axi_llc)/sw/include
+CHS_SW_DEPS_INCS += -I$(CHS_SW_DIR)/deps/opentitan
+CHS_SW_DEPS_INCS += -I$(CHS_SW_DIR)/deps/printf
+CHS_SW_DEPS_SRCS  = $(wildcard $(shell $(BENDER) path axi_llc)/sw/lib/*.c)
+CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/opentitan/sw/device/lib/base/bitfield.c
+CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/opentitan/sw/device/lib/base/memory.c
+CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/opentitan/sw/device/lib/base/mmio.c
+CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/opentitan/sw/device/lib/dif/dif_i2c.c
+CHS_SW_DEPS_SRCS += $(wildcard $(CHS_SW_DIR)/deps/printf/*.c)
+
+ifeq ($(CHS_ROOT), .)
+	git-update := git submodule update --init --recursive $(CHS_SW_DIR)/deps/*
+else
+	git-update :=
+endif
 
 # Apply existing patches whenever deps (including patches) change
-$(SW_DIR)/deps/.patched: $(wildcard $(SW_DIR)/deps/*.patch wildcard $(SW_DIR)/deps/*/.git)
-	git submodule update --init --recursive $(SW_DIR)/deps/*
-	-patch --forward $(SW_DIR)/deps/opentitan/sw/device/lib/dif/dif_i2c.c $(SW_DIR)/deps/dif_i2c.c.patch
+$(CHS_SW_DIR)/deps/.patched: $(wildcard $(CHS_SW_DIR)/deps/*.patch wildcard $(CHS_SW_DIR)/deps/*/.git)
+	$(git-update)
+	-patch --forward $(CHS_SW_DIR)/deps/opentitan/sw/device/lib/dif/dif_i2c.c $(CHS_SW_DIR)/deps/dif_i2c.c.patch
 	touch $@
 
 #############
 # Libraries #
 #############
 
-INCLUDES   ?= -I$(SW_DIR)/include $(DEPS_INCS)
-LIB_SRCS_S  = $(wildcard $(SW_DIR)/lib/*.S)
-LIB_SRCS_C  = $(wildcard $(SW_DIR)/lib/*.c)
-LIB_SRCS_O  = $(DEPS_SRCS:.c=.o) $(LIB_SRCS_S:.S=.o) $(LIB_SRCS_C:.c=.o)
+CHS_SW_INCLUDES   ?= -I$(CHS_SW_DIR)/include $(CHS_SW_DEPS_INCS)
+CHS_SW_LIB_SRCS_S  = $(wildcard $(CHS_SW_DIR)/lib/*.S)
+CHS_SW_LIB_SRCS_C  = $(wildcard $(CHS_SW_DIR)/lib/*.c)
+CHS_SW_LIB_SRCS_O  = $(CHS_SW_DEPS_SRCS:.c=.o) $(CHS_SW_LIB_SRCS_S:.S=.o) $(CHS_SW_LIB_SRCS_C:.c=.o)
 
-LIBS = $(SW_DIR)/lib/libcheshire.a
+CHS_SW_LIBS = $(CHS_SW_DIR)/lib/libcheshire.a
 
-$(SW_DIR)/lib/libcheshire.a: $(LIB_SRCS_O)
+$(CHS_SW_DIR)/lib/libcheshire.a: $(CHS_SW_LIB_SRCS_O)
 	rm -f $@
 	$(RISCV_AR) -rcsv $@ $^
 
-sw-libs: $(LIBS)
+chs-sw-libs: $(CHS_SW_LIBS)
 
 #####################
 # Header generation #
 #####################
 
-define hdr_gen_rule
-.PRECIOUS: $$(SW_DIR)/include/$(1).h
-GEN_HDRS += $$(SW_DIR)/include/$(1).h
+define chs_hdr_gen_rule
+.PRECIOUS: $$(CHS_SW_DIR)/include/$(1).h
+GEN_HDRS += $$(CHS_SW_DIR)/include/$(1).h
 
-$$(SW_DIR)/include/$(1).h: $(2)
+$$(CHS_SW_DIR)/include/$(1).h: $(2)
 	$$(REGGEN) --cdefines $$< > $$@
 endef
 
@@ -89,34 +95,34 @@ SLINK_DIR =  $(shell bender path serial_link)
 VGA_DIR = $(shell bender path axi_vga)
 LLC_DIR = $(shell bender path axi_llc)
 
-$(eval $(call hdr_gen_rule,i2c_regs,$(OT_PERI_DIR)/src/i2c/data/i2c.hjson $(OT_PERI_DIR)/.generated))
-$(eval $(call hdr_gen_rule,spi_regs,$(OT_PERI_DIR)/src/spi_host/data/spi_host.hjson $(OT_PERI_DIR)/.generated))
-$(eval $(call hdr_gen_rule,serial_link_regs,$(TOP_DIR)/hw/serial_link.hjson $(SLINK_DIR)/.generated))
-$(eval $(call hdr_gen_rule,axi_vga_regs,$(VGA_DIR)/data/axi_vga.hjson $(VGA_DIR)/.generated))
-$(eval $(call hdr_gen_rule,axi_llc_regs,$(LLC_DIR)/data/axi_llc_regs.hjson))
-$(eval $(call hdr_gen_rule,cheshire_regs,$(TOP_DIR)/hw/regs/cheshire_regs.hjson))
+$(eval $(call chs_hdr_gen_rule,i2c_regs,$(OT_PERI_DIR)/src/i2c/data/i2c.hjson $(OT_PERI_DIR)/.generated))
+$(eval $(call chs_hdr_gen_rule,spi_regs,$(OT_PERI_DIR)/src/spi_host/data/spi_host.hjson $(OT_PERI_DIR)/.generated))
+$(eval $(call chs_hdr_gen_rule,serial_link_regs,$(TOP_DIR)/$(CHS_ROOT)/hw/serial_link.hjson $(SLINK_DIR)/.generated))
+$(eval $(call chs_hdr_gen_rule,axi_vga_regs,$(VGA_DIR)/data/axi_vga.hjson $(VGA_DIR)/.generated))
+$(eval $(call chs_hdr_gen_rule,axi_llc_regs,$(LLC_DIR)/data/axi_llc_regs.hjson))
+$(eval $(call chs_hdr_gen_rule,cheshire_regs,$(TOP_DIR)/$(CHS_ROOT)/hw/regs/cheshire_regs.hjson))
 
-sw-headers: $(GEN_HDRS)
+chs-sw-headers: $(GEN_HDRS)
 
 ###############
 # Compilation #
 ###############
 
 # All objects require up-to-date patches and headers
-%.o: %.c $(SW_DIR)/deps/.patched $(GEN_HDRS)
-	$(RISCV_CC) $(INCLUDES) $(RISCV_CCFLAGS) -c $< -o $@
+%.o: %.c $(CHS_SW_DIR)/deps/.patched $(GEN_HDRS)
+	$(RISCV_CC) $(CHS_SW_INCLUDES) $(RISCV_CCFLAGS) -c $< -o $@
 
-%.o: %.S $(SW_DIR)/deps/.patched $(GEN_HDRS)
-	$(RISCV_CC) $(INCLUDES) $(RISCV_CCFLAGS) -c $< -o $@
+%.o: %.S $(CHS_SW_DIR)/deps/.patched $(GEN_HDRS)
+	$(RISCV_CC) $(CHS_SW_INCLUDES) $(RISCV_CCFLAGS) -c $< -o $@
 
-define ld_elf_rule
+define chs_ld_elf_rule
 .PRECIOUS: %.$(1).elf
 
-%.$(1).elf: $$(LD_DIR)/$(1).ld %.o $$(LIBS)
-	$$(RISCV_CC) $$(INCLUDES) -T$$< $$(RISCV_LDFLAGS) -o $$@ $$*.o $$(LIBS)
+%.$(1).elf: $$(CHS_LD_DIR)/$(1).ld %.o $$(CHS_SW_LIBS)
+	$$(RISCV_CC) $$(CHS_SW_INCLUDES) -T$$< $$(RISCV_LDFLAGS) -o $$@ $$*.o $$(CHS_SW_LIBS)
 endef
 
-$(foreach link,$(patsubst $(LD_DIR)/%.ld,%,$(wildcard $(LD_DIR)/*.ld)),$(eval $(call ld_elf_rule,$(link))))
+$(foreach link,$(patsubst $(CHS_LD_DIR)/%.ld,%,$(wildcard $(CHS_LD_DIR)/*.ld)),$(eval $(call chs_ld_elf_rule,$(link))))
 
 %.dump: %.elf
 	$(RISCV_OBJDUMP) -d $< > $@
@@ -131,9 +137,9 @@ $(foreach link,$(patsubst $(LD_DIR)/%.ld,%,$(wildcard $(LD_DIR)/*.ld)),$(eval $(
 # Tests #
 #########
 
-TEST_SRCS_S     = $(wildcard $(SW_DIR)/tests/*.S)
-TEST_SRCS_C     = $(wildcard $(SW_DIR)/tests/*.c)
+TEST_SRCS_S     = $(wildcard $(CHS_SW_DIR)/tests/*.S)
+TEST_SRCS_C     = $(wildcard $(CHS_SW_DIR)/tests/*.c)
 TEST_DRAM_DUMP  = $(TEST_SRCS_S:.S=.dram.dump) $(TEST_SRCS_C:.c=.dram.dump)
 TEST_SPM_DUMP   = $(TEST_SRCS_S:.S=.spm.dump)  $(TEST_SRCS_C:.c=.spm.dump)
 
-sw-tests: $(TEST_DRAM_DUMP) $(TEST_SPM_DUMP)
+chs-sw-tests: $(TEST_DRAM_DUMP) $(TEST_SPM_DUMP)

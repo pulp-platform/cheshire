@@ -6,5 +6,5 @@
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-CHE_ROOT ?= .
+CHS_ROOT ?= .
 include cheshire.mk

@@ -15,7 +15,7 @@ jobs:
   build:
     strategy:
       matrix:
-        target: [sw, hw, sim, xilinx]
+        target: [chs-sw, chs-hw, chs-sim, chs-xilinx]
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
