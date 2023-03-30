@@ -45,6 +45,22 @@ package cheshire_pkg;
   localparam int unsigned AxiXbarCombs = AxiXbarNumInputs * AxiXbarNumOutputs;
   localparam logic [AxiXbarCombs-1:0] AxiXbarConnectivity = {AxiXbarCombs{1'b1}};
 
+  /// Various interconnect-related Configs
+  localparam int unsigned MaxReadTxnsConfDma  = 2;
+  localparam int unsigned MaxWriteTxnsConfDma = 2;
+  localparam int unsigned AmoCutsConfDma      = 1;
+  localparam int unsigned AxiCutsConfDma      = 0;
+
+  localparam int unsigned MaxReadTxnsLlc      = 8;
+  localparam int unsigned MaxWriteTxnsLlc     = 8;
+  localparam int unsigned AmoCutsLlc          = 1;
+  localparam int unsigned AxiCutsLlc          = 1;
+
+  localparam int unsigned MaxReadTxnsPeriph   = 1;
+  localparam int unsigned MaxWriteTxnsPeriph  = 1;
+  localparam int unsigned AmoCutsPeriph       = 1;
+  localparam int unsigned AxiCutsPeriph       = 1;
+
   /// Configuration struct of X-Bar
   localparam axi_pkg::xbar_cfg_t AxiXbarCfg = '{
     NoSlvPorts:         AxiXbarNumInputs,
@@ -53,7 +69,7 @@ package cheshire_pkg;
     MaxSlvTrans:        12,
     FallThrough:        0,
     LatencyMode:        axi_pkg::CUT_ALL_PORTS,
-    PipelineStages:     1,
+    PipelineStages:     0,
     AxiIdWidthSlvPorts: AxiXbarMasterIdWidth,
     AxiIdUsedSlvPorts:  AxiXbarMasterIdWidth,
     UniqueIds:          0,
