@@ -14,19 +14,18 @@
 
 // Base addresses provided at link time
 extern void *__base_bootrom;
-extern void *__base_cheshire_regs;
-extern void *__base_axi_llc;
-extern void *__base_serial_link_cfg;
+extern void *__base_regs;
+extern void *__base_llc;
 extern void *__base_uart;
 extern void *__base_i2c;
-extern void *__base_spim;
+extern void *__base_spih;
+extern void *__base_gpio;
+extern void *__base_slink;
 extern void *__base_vga;
 extern void *__base_clint;
 extern void *__base_plic;
 extern void *__base_dma;
 extern void *__base_spm;
-extern void *__base_dram;
 
-// Maximum number of LBAs to copy to SPM for boot (now: 52 KiB)
-// TODO: REVERT THIS!
-static const uint64_t __BOOT_SPM_MAX_LBAS = 48;
+// Maximum number of LBAs to copy to SPM for boot (48 KiB)
+static const uint64_t __BOOT_SPM_MAX_LBAS = 2*48;

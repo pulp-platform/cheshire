@@ -23,9 +23,9 @@ CHS_SLINK_DIR  = $(shell $(BENDER) path serial_link)
 CHS_VGA_DIR    = $(shell $(BENDER) path axi_vga)
 CHS_LLC_DIR    = $(shell $(BENDER) path axi_llc)
 
-.PHONY: all nonfree-init chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-xilinx-all
+.PHONY: chs-all nonfree-init chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-xilinx-all
 
-all: chs-sw-all chs-hw-all chs-sim-all chs-xilinx-all
+chs-all: chs-sw-all chs-hw-all chs-sim-all chs-xilinx-all
 
 ################
 # Dependencies #
@@ -37,8 +37,8 @@ $(CHS_ROOT)/.deps:
 	git submodule update --init --recursive
 	@touch $@
 
-# Make sure this is done before any makefrags are included
-%.mk: $(CHS_ROOT)/.deps
+# Make sure dependencies are more up-to-date than any targets run
+include $(CHS_ROOT)/.deps
 
 ######################
 # Nonfree components #
@@ -68,6 +68,7 @@ $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv:
 	$(REGGEN) -r $< --outdir $(dir $@)
 
 # CLINT
+CLINTCORES = 1
 include $(CHS_CLINT_DIR)/clint.mk
 $(CHS_CLINT_DIR)/.generated: Bender.yml
 	$(MAKE) clint
@@ -129,8 +130,8 @@ $(CHS_ROOT)/target/sim/models:
 
 # Download (partially non-free) simulation models from publically available sources;
 # by running these targets or targets depending on them, you accept this (see README.md).
-$(CHS_ROOT)/target/sim/models/s25fs512s.sv: Bender.yml | $(CHS_ROOT)/target/sim/models
-	wget --no-check-certificate https://freemodelfoundry.com/fmf_vlog_models/flash/s25fs512s.sv -O $@
+$(CHS_ROOT)/target/sim/models/s25fs512s.v: Bender.yml | $(CHS_ROOT)/target/sim/models
+	wget --no-check-certificate https://freemodelfoundry.com/fmf_vlog_models/flash/s25fs512s.v -O $@
 	touch $@
 
 $(CHS_ROOT)/target/sim/models/24FC1025.v: Bender.yml | $(CHS_ROOT)/target/sim/models
@@ -138,13 +139,8 @@ $(CHS_ROOT)/target/sim/models/24FC1025.v: Bender.yml | $(CHS_ROOT)/target/sim/mo
 	unzip -p 24xx1025_Verilog_Model.zip 24FC1025.v > $@
 	rm 24xx1025_Verilog_Model.zip
 
-$(CHS_ROOT)/target/sim/models/uart_tb_rx.sv: Bender.yml | $(CHS_ROOT)/target/sim/models
-	wget https://raw.githubusercontent.com/pulp-platform/pulp/v1.0/rtl/vip/uart_tb_rx.sv -O $@
-	touch $@
-
-chs-sim-all: $(CHS_ROOT)/target/sim/models/s25fs512s.sv
+chs-sim-all: $(CHS_ROOT)/target/sim/models/s25fs512s.v
 chs-sim-all: $(CHS_ROOT)/target/sim/models/24FC1025.v
-chs-sim-all: $(CHS_ROOT)/target/sim/models/uart_tb_rx.sv
 chs-sim-all: $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 
 #############

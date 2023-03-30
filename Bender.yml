@@ -9,21 +9,24 @@ package:
     - "Christopher Reinwardt <creinwar@student.ethz.ch>"
 
 dependencies:
-  axi:                      { git: "https://github.com/pulp-platform/axi.git",                   version: =0.39.0-beta.2 }
-  axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",               version: =0.2.0  }
-  axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",     version: =0.6.0  }
+  axi:                      { git: "https://github.com/pulp-platform/axi.git",                   version: =0.39.0-beta.4 }
+  axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",               version: =0.2.1  }
+  axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",     version: =0.7.0  }
   apb:                      { git: "https://github.com/pulp-platform/apb.git",                   version: =0.2.2  }
-  apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",              version: =0.2.0  }
+  apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",              version: =0.2.1  }
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                 version: =0.1.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells",              version: =1.28.0 }
-  iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                  version: =0.4.2  }
-  register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",    rev: backport/steer-fix  }
+  iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                  rev: 437ffa9     } # TODO: master commit; use next release once out
+  register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",    rev: "7786760"   } # TODO: master commit; use next release once out
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",             version: =0.7.0  }
   tech_cells_generic:       { git: "https://github.com/pulp-platform/tech_cells_generic.git",    version: =0.2.11 }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",           version: =1.0.0  }
   axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",               version: =0.1.1  }
-  opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git", rev: rb          }
-  ariane:                   { git: "https://github.com/pulp-platform/cva6",                      rev: cheshire    }
+  opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git", version: =0.3.0  }
+  cva6:                     { git: "https://github.com/pulp-platform/cva6",                      rev: pulp-v0.1.1 }
+
+export_include_dirs:
+  - hw/include
 
 sources:
   - hw/bootrom/cheshire_bootrom.sv
@@ -34,9 +37,8 @@ sources:
 
   - target: any(simulation, test)
     files:
-      - target/sim/models/s25fs512s.sv
+      - target/sim/models/s25fs512s.v
       - target/sim/models/24FC1025.v
-      - target/sim/models/uart_tb_rx.sv
       - target/sim/src/fixture_cheshire_soc.sv
       - target/sim/src/tb_cheshire_soc.sv
 

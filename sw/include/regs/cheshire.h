@@ -16,63 +16,69 @@ extern "C" {
 // Register width
 #define CHESHIRE_PARAM_REG_WIDTH 32
 
-// Version register, should read 2.
-#define CHESHIRE_VERSION_REG_OFFSET 0x0
-#define CHESHIRE_VERSION_VERSION_MASK 0xffff
-#define CHESHIRE_VERSION_VERSION_OFFSET 0
-#define CHESHIRE_VERSION_VERSION_FIELD \
-  ((bitfield_field32_t) { .mask = CHESHIRE_VERSION_VERSION_MASK, .index = CHESHIRE_VERSION_VERSION_OFFSET })
-
-// Scratch register for SW to write to. (common parameters)
+// Registers for use by software (common parameters)
 #define CHESHIRE_SCRATCH_SCRATCH_FIELD_WIDTH 32
 #define CHESHIRE_SCRATCH_SCRATCH_FIELDS_PER_REG 1
 #define CHESHIRE_SCRATCH_MULTIREG_COUNT 4
 
-// Scratch register for SW to write to.
-#define CHESHIRE_SCRATCH_0_REG_OFFSET 0x4
+// Registers for use by software
+#define CHESHIRE_SCRATCH_0_REG_OFFSET 0x0
 
-// Scratch register for SW to write to.
-#define CHESHIRE_SCRATCH_1_REG_OFFSET 0x8
+// Registers for use by software
+#define CHESHIRE_SCRATCH_1_REG_OFFSET 0x4
 
-// Scratch register for SW to write to.
-#define CHESHIRE_SCRATCH_2_REG_OFFSET 0xc
+// Registers for use by software
+#define CHESHIRE_SCRATCH_2_REG_OFFSET 0x8
 
-// Scratch register for SW to write to.
-#define CHESHIRE_SCRATCH_3_REG_OFFSET 0x10
+// Registers for use by software
+#define CHESHIRE_SCRATCH_3_REG_OFFSET 0xc
 
-// Selected boot mode exposed as a register.
-#define CHESHIRE_BOOT_MODE_REG_OFFSET 0x14
-#define CHESHIRE_BOOT_MODE_MODE_MASK 0x3
-#define CHESHIRE_BOOT_MODE_MODE_OFFSET 0
-#define CHESHIRE_BOOT_MODE_MODE_FIELD \
-  ((bitfield_field32_t) { .mask = CHESHIRE_BOOT_MODE_MODE_MASK, .index = CHESHIRE_BOOT_MODE_MODE_OFFSET })
-#define CHESHIRE_BOOT_MODE_MODE_VALUE_SD_BOOT 0x0
-#define CHESHIRE_BOOT_MODE_MODE_VALUE_RESERVED_1 0x1
-#define CHESHIRE_BOOT_MODE_MODE_VALUE_RESERVED_2 0x2
-#define CHESHIRE_BOOT_MODE_MODE_VALUE_RESERVED_3 0x3
+// Method to load boot code (connected to input pins)
+#define CHESHIRE_BOOT_MODE_REG_OFFSET 0x10
+#define CHESHIRE_BOOT_MODE_BOOT_MODE_MASK 0x3
+#define CHESHIRE_BOOT_MODE_BOOT_MODE_OFFSET 0
+#define CHESHIRE_BOOT_MODE_BOOT_MODE_FIELD \
+  ((bitfield_field32_t) { .mask = CHESHIRE_BOOT_MODE_BOOT_MODE_MASK, .index = CHESHIRE_BOOT_MODE_BOOT_MODE_OFFSET })
+#define CHESHIRE_BOOT_MODE_BOOT_MODE_VALUE_PASSIVE 0x0
+#define CHESHIRE_BOOT_MODE_BOOT_MODE_VALUE_SPI_SDCARD 0x1
+#define CHESHIRE_BOOT_MODE_BOOT_MODE_VALUE_SPI_S25FS512S 0x2
+#define CHESHIRE_BOOT_MODE_BOOT_MODE_VALUE_I2C_24XX1025 0x3
 
-// Clock frequency lock exposed as a register.
-#define CHESHIRE_STATUS_REG_OFFSET 0x18
-#define CHESHIRE_STATUS_CLOCK_LOCK_BIT 0
-#define CHESHIRE_STATUS_UART_PRESENT_BIT 1
-#define CHESHIRE_STATUS_SPI_PRESENT_BIT 2
-#define CHESHIRE_STATUS_I2C_PRESENT_BIT 3
-#define CHESHIRE_STATUS_DMA_PRESENT_BIT 4
-#define CHESHIRE_STATUS_DDR_LINK_PRESENT_BIT 5
-#define CHESHIRE_STATUS_DRAM_PRESENT_BIT 6
-#define CHESHIRE_STATUS_VGA_PRESENT_BIT 7
+// Frequency (Hz) configured for RTC
+#define CHESHIRE_RTC_FREQ_REG_OFFSET 0x14
 
-// Selected VGA red width exposed as a register.
-#define CHESHIRE_VGA_RED_WIDTH_REG_OFFSET 0x1c
+// Address of platform ROM
+#define CHESHIRE_PLATFORM_ROM_REG_OFFSET 0x18
 
-// Selected VGA green width exposed as a register.
-#define CHESHIRE_VGA_GREEN_WIDTH_REG_OFFSET 0x20
+// Specifies which hardware features are available
+#define CHESHIRE_HW_FEATURES_REG_OFFSET 0x1c
+#define CHESHIRE_HW_FEATURES_BOOTROM_BIT 0
+#define CHESHIRE_HW_FEATURES_LLC_BIT 1
+#define CHESHIRE_HW_FEATURES_UART_BIT 2
+#define CHESHIRE_HW_FEATURES_SPI_HOST_BIT 3
+#define CHESHIRE_HW_FEATURES_I2C_BIT 4
+#define CHESHIRE_HW_FEATURES_GPIO_BIT 5
+#define CHESHIRE_HW_FEATURES_DMA_BIT 6
+#define CHESHIRE_HW_FEATURES_SERIAL_LINK_BIT 7
+#define CHESHIRE_HW_FEATURES_VGA_BIT 8
 
-// Selected VGA blue width exposed as a register.
-#define CHESHIRE_VGA_BLUE_WIDTH_REG_OFFSET 0x24
+// Total size of LLC in bytes
+#define CHESHIRE_LLC_SIZE_REG_OFFSET 0x20
 
-// Clock frequency after coming out of reset.
-#define CHESHIRE_RESET_FREQ_REG_OFFSET 0x28
+// VGA hardware parameters
+#define CHESHIRE_VGA_PARAMS_REG_OFFSET 0x24
+#define CHESHIRE_VGA_PARAMS_RED_WIDTH_MASK 0xff
+#define CHESHIRE_VGA_PARAMS_RED_WIDTH_OFFSET 0
+#define CHESHIRE_VGA_PARAMS_RED_WIDTH_FIELD \
+  ((bitfield_field32_t) { .mask = CHESHIRE_VGA_PARAMS_RED_WIDTH_MASK, .index = CHESHIRE_VGA_PARAMS_RED_WIDTH_OFFSET })
+#define CHESHIRE_VGA_PARAMS_GREEN_WIDTH_MASK 0xff
+#define CHESHIRE_VGA_PARAMS_GREEN_WIDTH_OFFSET 8
+#define CHESHIRE_VGA_PARAMS_GREEN_WIDTH_FIELD \
+  ((bitfield_field32_t) { .mask = CHESHIRE_VGA_PARAMS_GREEN_WIDTH_MASK, .index = CHESHIRE_VGA_PARAMS_GREEN_WIDTH_OFFSET })
+#define CHESHIRE_VGA_PARAMS_BLUE_WIDTH_MASK 0xff
+#define CHESHIRE_VGA_PARAMS_BLUE_WIDTH_OFFSET 16
+#define CHESHIRE_VGA_PARAMS_BLUE_WIDTH_FIELD \
+  ((bitfield_field32_t) { .mask = CHESHIRE_VGA_PARAMS_BLUE_WIDTH_MASK, .index = CHESHIRE_VGA_PARAMS_BLUE_WIDTH_OFFSET })
 
 #ifdef __cplusplus
 }  // extern "C"

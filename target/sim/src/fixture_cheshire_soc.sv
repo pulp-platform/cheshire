@@ -4,1026 +4,922 @@
 //
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
+// Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 module cheshire_soc_fixture;
 
+  `include "cheshire/typedef.svh"
   `include "axi/assign.svh"
-  `include "axi/typedef.svh"
-  `include "register_interface/assign.svh"
-  `include "register_interface/typedef.svh"
 
   import cheshire_pkg::*;
 
-  /////////////////////////////
-  // ELFLoader C++ functions //
-  /////////////////////////////
+  ///////////
+  //  DPI  //
+  ///////////
 
   import "DPI-C" function byte read_elf(input string filename);
   import "DPI-C" function byte get_entry(output longint entry);
   import "DPI-C" function byte get_section(output longint address, output longint len);
   import "DPI-C" context function byte read_section(input longint address, inout byte buffer[], input longint len);
 
+  //////////////////
+  //  Parameters  //
+  //////////////////
 
-  ////////////////////
-  // Global Signals //
-  ////////////////////
-
-  logic clk_sys, rst_n;
-  logic clk_jtag;
-  logic clk_rtc;
-
-  logic testmode;
-  logic [1:0] bootmode;
-
-
-  //////////////////////
-  // Global Variables //
-  //////////////////////
+  localparam cheshire_cfg_t DutCfg = DefaultCfg;
+  `CHESHIRE_TYPEDEF_ALL(, DutCfg)
+  localparam int unsigned AxiStrbWidth = DutCfg.AxiDataWidth/8;
+  localparam int unsigned AxiStrbBits  = $clog2(DutCfg.AxiDataWidth/8);
 
   localparam time ClkPeriodSys    = 5ns;
-  localparam time ClkPeriodJTAG   = 20ns;
-  localparam time ClkPeriodRTC    = 100ns;
+  localparam time ClkPeriodJtag   = 20ns;
+  localparam time ClkPeriodRtc    = 30518ns;
 
-  localparam int UartBaudRate     = 115200;
-  localparam int UartParityEna    = 0;
+  localparam int unsigned RstCycles = 5;
 
-  localparam real TA      = 0.1;
-  localparam real TT      = 0.9;
+  localparam real TAppl   = 0.1;
+  localparam real TTest   = 0.9;
 
-  // exit
-  localparam int ExitSuccess = 0;
-  localparam int ExitFail    = 1;
-  int exit_status            = ExitFail;  // per default we fail
+  localparam int unsigned UartBaudRate    = 115200;
+  localparam int unsigned UartParityEna   = 0;
+  localparam int unsigned UartBurstBytes  = 256;
+  localparam int unsigned UartWaitCycles  = 50;
 
+  localparam int unsigned SlinkMaxWaitAx    = 100;
+  localparam int unsigned SlinkMaxWaitR     = 5;
+  localparam int unsigned SlinkMaxWaitResp  = 20;
+  localparam int unsigned SlinkBurstBytes   = 1024;
+  localparam bit          SlinkAxiDebug     = 0;
 
-  /////////////////////////
-  // Clocking and Resets //
-  /////////////////////////
+  //////////////
+  //  DUT IO  //
+  //////////////
+
+  logic       clk;
+  logic       rst_n;
+  logic       test_mode;
+  logic [1:0] boot_mode;
+  logic       rtc;
+
+  axi_llc_req_t axi_llc_mst_req;
+  axi_llc_rsp_t axi_llc_mst_rsp;
+
+  logic jtag_tck;
+  logic jtag_trst_n;
+  logic jtag_tms;
+  logic jtag_tdi;
+  logic jtag_tdo;
+
+  logic uart_tx;
+  logic uart_rx;
+
+  logic i2c_sda_o;
+  logic i2c_sda_i;
+  logic i2c_sda_en;
+  logic i2c_scl_o;
+  logic i2c_scl_i;
+  logic i2c_scl_en;
+
+  logic                 spih_sck_o;
+  logic                 spih_sck_en;
+  logic [SpihNumCs-1:0] spih_csb_o;
+  logic [SpihNumCs-1:0] spih_csb_en;
+  logic [ 3:0]          spih_sd_o;
+  logic [ 3:0]          spih_sd_i;
+  logic [ 3:0]          spih_sd_en;
+
+  logic [SlinkNumChan-1:0]                    slink_rcv_clk_i;
+  logic [SlinkNumChan-1:0]                    slink_rcv_clk_o;
+  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i;
+  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o;
+
+  ///////////
+  //  DUT  //
+  ///////////
+
+  cheshire_soc #(
+    .Cfg                ( DutCfg ),
+    .ExtHartinfo        ( '0 ),
+    .axi_ext_llc_req_t  ( axi_llc_req_t ),
+    .axi_ext_llc_rsp_t  ( axi_llc_rsp_t ),
+    .axi_ext_mst_req_t  ( axi_mst_req_t ),
+    .axi_ext_mst_rsp_t  ( axi_mst_rsp_t ),
+    .axi_ext_slv_req_t  ( axi_slv_req_t ),
+    .axi_ext_slv_rsp_t  ( axi_slv_rsp_t ),
+    .reg_ext_req_t      ( reg_req_t ),
+    .reg_ext_rsp_t      ( reg_req_t )
+  ) i_dut (
+    .clk_i              ( clk       ),
+    .rst_ni             ( rst_n     ),
+    .test_mode_i        ( test_mode ),
+    .boot_mode_i        ( boot_mode ),
+    .rtc_i              ( rtc       ),
+    .axi_llc_mst_req_o  ( axi_llc_mst_req ),
+    .axi_llc_mst_rsp_i  ( axi_llc_mst_rsp ),
+    .axi_ext_mst_req_i  ( '0 ),
+    .axi_ext_mst_rsp_o  ( ),
+    .axi_ext_slv_req_o  ( ),
+    .axi_ext_slv_rsp_i  ( '0 ),
+    .reg_ext_slv_req_o  ( ),
+    .reg_ext_slv_rsp_i  ( '0 ),
+    .intr_ext_i         ( '0 ),
+    .meip_ext_o         ( ),
+    .seip_ext_o         ( ),
+    .mtip_ext_o         ( ),
+    .msip_ext_o         ( ),
+    .dbg_active_o       ( ),
+    .dbg_ext_req_o      ( ),
+    .dbg_ext_unavail_i  ( '0 ),
+    .jtag_tck_i         ( jtag_tck    ),
+    .jtag_trst_ni       ( jtag_trst_n ),
+    .jtag_tms_i         ( jtag_tms    ),
+    .jtag_tdi_i         ( jtag_tdi    ),
+    .jtag_tdo_o         ( jtag_tdo    ),
+    .jtag_tdo_oe_o      ( ),
+    .uart_tx_o          ( uart_tx ),
+    .uart_rx_i          ( uart_rx ),
+    .uart_rts_no        ( ),
+    .uart_dtr_no        ( ),
+    .uart_cts_ni        ( 1'b0 ),
+    .uart_dsr_ni        ( 1'b0 ),
+    .uart_dcd_ni        ( 1'b0 ),
+    .uart_rin_ni        ( 1'b0 ),
+    .i2c_sda_o          ( i2c_sda_o  ),
+    .i2c_sda_i          ( i2c_sda_i  ),
+    .i2c_sda_en_o       ( i2c_sda_en ),
+    .i2c_scl_o          ( i2c_scl_o  ),
+    .i2c_scl_i          ( i2c_scl_i  ),
+    .i2c_scl_en_o       ( i2c_scl_en ),
+    .spih_sck_o         ( spih_sck_o  ),
+    .spih_sck_en_o      ( spih_sck_en ),
+    .spih_csb_o         ( spih_csb_o  ),
+    .spih_csb_en_o      ( spih_csb_en ),
+    .spih_sd_o          ( spih_sd_o   ),
+    .spih_sd_en_o       ( spih_sd_en  ),
+    .spih_sd_i          ( spih_sd_i   ),
+    .gpio_i             ( '0 ),
+    .gpio_o             ( ),
+    .gpio_en_o          ( ),
+    .slink_rcv_clk_i    ( slink_rcv_clk_i ),
+    .slink_rcv_clk_o    ( slink_rcv_clk_o ),
+    .slink_i            ( slink_i ),
+    .slink_o            ( slink_o ),
+    .vga_hsync_o        ( ),
+    .vga_vsync_o        ( ),
+    .vga_red_o          ( ),
+    .vga_green_o        ( ),
+    .vga_blue_o         ( )
+  );
+
+  ////////////
+  //  DRAM  //
+  ////////////
+
+  axi_sim_mem #(
+    .AddrWidth          ( DutCfg.AddrWidth    ),
+    .DataWidth          ( DutCfg.AxiDataWidth ),
+    .IdWidth            ( $bits(axi_llc_id_t) ),
+    .UserWidth          ( DutCfg.AxiUserWidth ),
+    .axi_req_t          ( axi_llc_req_t ),
+    .axi_rsp_t          ( axi_llc_rsp_t ),
+    .WarnUninitialized  ( 1 ),
+    .ClearErrOnAccess   ( 1 ),
+    .ApplDelay          ( ClkPeriodSys * TAppl ),
+    .AcqDelay           ( ClkPeriodSys * TTest )
+  ) i_dram_sim_mem (
+    .clk_i              ( clk   ),
+    .rst_ni             ( rst_n ),
+    .axi_req_i          ( axi_llc_mst_req ),
+    .axi_rsp_o          ( axi_llc_mst_rsp ),
+    .mon_w_valid_o      ( ),
+    .mon_w_addr_o       ( ),
+    .mon_w_data_o       ( ),
+    .mon_w_id_o         ( ),
+    .mon_w_user_o       ( ),
+    .mon_w_beat_count_o ( ),
+    .mon_w_last_o       ( ),
+    .mon_r_valid_o      ( ),
+    .mon_r_addr_o       ( ),
+    .mon_r_data_o       ( ),
+    .mon_r_id_o         ( ),
+    .mon_r_user_o       ( ),
+    .mon_r_beat_count_o ( ),
+    .mon_r_last_o       ( )
+  );
+
+  ///////////////////////////////
+  //  SoC Clock, Reset, Modes  //
+  ///////////////////////////////
 
   clk_rst_gen #(
-    .ClkPeriod    ( ClkPeriodSys  ),
-    .RstClkCycles ( 5             )
+    .ClkPeriod    ( ClkPeriodSys ),
+    .RstClkCycles ( RstCycles )
   ) i_clk_rst_sys (
-    .clk_o        ( clk_sys       ),
-    .rst_no       (               )
+    .clk_o  ( clk   ),
+    .rst_no ( rst_n )
   );
 
   clk_rst_gen #(
-    .ClkPeriod    ( ClkPeriodJTAG ),
-    .RstClkCycles ( 5             )
-  ) i_clk_rst_jtag (
-    .clk_o        ( clk_jtag      ),
-    .rst_no       (               )
-  );
-
-  clk_rst_gen #(
-    .ClkPeriod    ( ClkPeriodRTC  ),
-    .RstClkCycles ( 5             )
+    .ClkPeriod    ( ClkPeriodRtc ),
+    .RstClkCycles ( RstCycles )
   ) i_clk_rst_rtc (
-    .clk_o        ( clk_rtc       ),
-    .rst_no       (               )
+    .clk_o  ( rtc ),
+    .rst_no ( )
   );
 
   initial begin
-    rst_n = 1'b0;
-
-    #(5*ClkPeriodSys);
-
-    rst_n = 1'b1;
+    test_mode = '0;
+    boot_mode = '0;
   end
 
   task wait_for_reset;
     @(posedge rst_n);
-    @(posedge clk_sys);
+    @(posedge clk);
   endtask
 
-  task set_bootmode (
-    input logic [1:0] mode
+  task set_test_mode(input logic mode);
+    test_mode = mode;
+  endtask
+
+  task set_boot_mode(input logic [1:0] mode);
+    boot_mode = mode;
+  endtask
+
+  ////////////
+  //  JTAG  //
+  ////////////
+
+  localparam dm::sbcs_t JtagInitSbcs = dm::sbcs_t'{
+      sbautoincrement: 1'b1, sbreadondata: 1'b1, sbaccess: 3, default: '0};
+
+  // Generate clock
+  clk_rst_gen #(
+    .ClkPeriod    ( ClkPeriodJtag ),
+    .RstClkCycles ( RstCycles )
+  ) i_clk_jtag (
+    .clk_o  ( jtag_tck ),
+    .rst_no ( )
   );
-    bootmode = mode;
-  endtask
 
-  task set_testmode (
-    input logic mode
-  );
-    testmode = mode;
-  endtask
-
-  ///////////////////
-  // ELF Importing //
-  ///////////////////
-
-  // Ensure memory buffer is initialized to 0 to avoid poisoning DUT
-  logic [63:0] memory[bit [63:0]] = '{default: '0};
-  int sections [bit [63:0]];
-
-  // Load binary into a temporary buffer
-  task load_binary(
-    input string binary
-  );
-
-    longint section_addr, section_len;
-    byte buffer[];
-    void'(read_elf(binary));
-
-    $display("[BINLOAD] Loading binary %s", binary);
-      
-    while (get_section(section_addr, section_len)) begin
-      automatic int num_words = (section_len + 7)/8;
-        
-      $display("[BINLOAD] Loading section 0x%x of length 0x%x B", section_addr, section_len);
-        
-      sections[section_addr/8] = num_words;
-      buffer = new [num_words * 8];
-        
-      void'(read_section(section_addr, buffer, num_words * 8));
-        
-      for (int i = 0; i < num_words; i++) begin
-        automatic logic [7:0][7:0] word = '0;
-
-        for (int k = 0; k < 8; k++) begin
-          word[k] = buffer[i * 8 + k];
-        end
-
-        memory[section_addr/8 + i] = word;
-      end
-    end
-  endtask
-
-
-  ////////////////////
-  // JTAG Debugging //
-  ////////////////////
-
-  logic jtag_tck, jtag_trst_n;
-  logic jtag_tms;
-  logic jtag_tdi, jtag_tdo;
-
-    // JTAG interface
-  JTAG_DV jtag_mst (clk_jtag);
-
-  // Connect DUT signals to JTAG interface
-  assign jtag_tck     = clk_jtag;
-  assign jtag_trst_n  = jtag_mst.trst_n;
-  assign jtag_tms     = jtag_mst.tms;
-  assign jtag_tdi     = jtag_mst.tdi;
-  assign jtag_mst.tdo = jtag_tdo;
+  // Define test bus and driver
+  JTAG_DV jtag(jtag_tck);
 
   typedef jtag_test::riscv_dbg #(
-    .IrLength ( 5                   ),
-    .TA       ( ClkPeriodJTAG * TA  ),
-    .TT       ( ClkPeriodJTAG * TT  )
+    .IrLength ( 5 ),
+    .TA       ( ClkPeriodJtag * TAppl ),
+    .TT       ( ClkPeriodJtag * TTest )
   ) riscv_dbg_t;
 
-  riscv_dbg_t::jtag_driver_t jtag_in = new (jtag_mst);
-  riscv_dbg_t riscv_dbg = new (jtag_in);
-
-  dm::sbcs_t jtag_init_sbcs = dm::sbcs_t'{sbautoincrement: 1'b1, sbreadondata: 1'b1, sbaccess: 3, default: '0};
-
-  // Initialize the debug module
-  task jtag_init;
-    logic [31:0] idcode;
-    logic [31:0] dmctrl;
-    automatic dm::sbcs_t sbcs = jtag_init_sbcs;
-
-    $display("[JTAG] Initializing debug module");
-
-    // Reset debug module
-    riscv_dbg.reset_master();
-    riscv_dbg.wait_idle(12);
-
-    // Check ID code to match
-    riscv_dbg.get_idcode(idcode);
-    assert (idcode == IDCode) else
-        $error("[JTAG] IDCode Mismatch (0x%h (act) != 0x%h (exp))", idcode, IDCode);
-    $display("[JTAG] Read IDCode 0x%h", idcode);
-
-    // Activate debug module
-    riscv_dbg.write_dmi(dm::DMControl, 32'h0000_0001);
-    
-    // Check for the activation to complete
-    do riscv_dbg.read_dmi_exp_backoff(dm::DMControl, dmctrl);
-    while (!(dmctrl & 32'h0000_0001));
-    
-    // Ensure the system bus is ready too
-    riscv_dbg.write_dmi(dm::SBCS, sbcs);
-    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-
-  endtask
-
-  task jtag_preload;
-    automatic dm::sbcs_t sbcs = jtag_init_sbcs;
-    riscv_dbg.write_dmi(dm::SBCS, sbcs);
-
-    $display("[JTAG] Preloading ELF sections");
-
-    // Write sections
-    foreach (sections[addr]) begin
-      $display("[JTAG] Writing section 0x%h (%0d words)", addr*8, sections[addr]);
-
-      riscv_dbg.write_dmi(dm::SBAddress0, addr*8);
-
-      for (int i = 0; i < sections[addr]; i++) begin
-
-        if (i % 20 == 0)
-            $display(" - Word %0d/%0d (%0d%%)", i, sections[addr], i*100/(sections[addr] > 1 ? sections[addr]-1 : 1));
-
-        riscv_dbg.write_dmi(dm::SBData1, memory[addr + i][32+:32]);
-        riscv_dbg.write_dmi(dm::SBData0, memory[addr + i][0+:32]);
-
-        // Wait for the write to complete
-        do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-        while (sbcs.sbbusy);
-      end
-    end
-  endtask
-
-  task jtag_preload_check;
-    logic [63:0] rdata;
-
-    // Update SBCS
-    automatic dm::sbcs_t sbcs = jtag_init_sbcs;
-    sbcs.sbreadonaddr = 1;
-
-    riscv_dbg.write_dmi(dm::SBCS, sbcs);
-
-    $display("[JTAG] Checking ELF sections");
-
-    // Read sections
-    foreach (sections[addr]) begin
-      $display("[JTAG] Checking 0x%h (%0d words)", addr*8, sections[addr]);
-
-      riscv_dbg.write_dmi(dm::SBAddress0, addr*8);
-
-      for (int i = 0; i < sections[addr]; i++) begin
-        if (i % 20 == 0)
-          $display(" - Word %0d/%0d (%0d%%)", i, sections[addr], i*100/(sections[addr] > 1 ? sections[addr]-1 : 1));
-
-        riscv_dbg.read_dmi_exp_backoff(dm::SBData1, rdata[32 +: 32]);
-        riscv_dbg.read_dmi_exp_backoff(dm::SBData0, rdata[ 0 +: 32]);
-
-        if (rdata != memory[addr + i])
-          $error("[JTAG] ERROR: Readback mismatch at 0x%x: act 0x%x != exp 0x%x", (addr + i) * 8, rdata, memory[addr + i]);
-      end
-    end
-  endtask
-
-  task jtag_cfg_llc_spm;
-    automatic dm::sbcs_t sbcs = jtag_init_sbcs;
-    automatic logic [31:0] data;
-
-    // Update SBCS
-    sbcs.sbreadonaddr = 0;
-    sbcs.sbreadondata = 0;
-    sbcs.sbautoincrement = 0;
-    sbcs.sbaccess = 3;
-
-    riscv_dbg.write_dmi(dm::SBCS, sbcs);
-    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-
-    $display("[JTAG] Configuring all of LLC to SPM");
-
-    data = 32'hff;
-
-    // cfg_spm_low = 0xff;
-    riscv_dbg.write_dmi(dm::SBAddress0, RegbusAddrmap[RegbusOutLlc].start_addr[31:0]);
-    riscv_dbg.write_dmi(dm::SBData0, data);
-    // Wait for the write to complete
-    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-
-    if(sbcs.sberror) begin
-      sbcs.sberror = 1;
-      riscv_dbg.write_dmi(dm::SBCS, sbcs);
-      do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-      while (sbcs.sbbusy);
-    end
-
-    // commit_cfg = 0x1;
-    data = 32'h1;
-    riscv_dbg.write_dmi(dm::SBAddress0, RegbusAddrmap[RegbusOutLlc].start_addr[31:0]+32'h10);
-    riscv_dbg.write_dmi(dm::SBData0, data);
-    // Wait for the write to complete
-    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-
-    if(sbcs.sberror) begin
-      sbcs.sberror = 1;
-      riscv_dbg.write_dmi(dm::SBCS, sbcs);
-      do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-      while (sbcs.sbbusy);
-    end
-
-    sbcs = jtag_init_sbcs;
-    // Ensure the system bus is ready again
-    riscv_dbg.write_dmi(dm::SBCS, sbcs);
-    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-  endtask
-
-
-  // Run HART 0 from specified address
-  task jtag_run(
-    input logic [63:0] start_addr
-  );
-    logic [31:0] dm_data;
-
-    riscv_dbg.reset_dmi();
-
-    
-    $display("[JTAG] halting hart 0");
-    // Halt hart 0
-    dm_data = 32'h8000_0001;
-    riscv_dbg.write_dmi(dm::DMControl, dm_data);
-    
-    // Check that all selected harts have halted
-    do riscv_dbg.read_dmi_exp_backoff(dm::DMStatus, dm_data);
-    while (!(dm_data & 32'h0000_0200));
-
-
-    $display("[JTAG] writing start address to register");
-    // Write start address to dpc
-    // High 4 bytes
-    dm_data = start_addr[63:32];
-    riscv_dbg.write_dmi(dm::Data1, dm_data);
-
-    // ... and the low 4 bytes
-    dm_data = start_addr[31:0];
-    riscv_dbg.write_dmi(dm::Data0, dm_data);
-
-
-    $display("[JTAG] writing abstract command");
-    dm_data = 32'h0033_07b1;
-    riscv_dbg.write_dmi(dm::Command, dm_data);
-    
-    // Wait until the abstract command has completed
-    do riscv_dbg.read_dmi_exp_backoff(dm::AbstractCS, dm_data);
-    while (dm_data & 32'h0000_1000);
-
-    // Set resume request for hart 0
-    dm_data = 32'h4000_0001;
-    riscv_dbg.write_dmi(dm::DMControl, dm_data);
-    $display("[JTAG] Resuming hart 0 from 0x%h", start_addr);
-  endtask
-
-  // Run HART 0 from specified address
-  task jtag_idle_boot(
-    input logic [63:0] start_addr
-  );
-    automatic dm::sbcs_t sbcs = jtag_init_sbcs;
-    automatic logic [31:0] data;
-
-    // Update SBCS
-    sbcs.sbreadonaddr = 0;
-    sbcs.sbreadondata = 0;
-    sbcs.sbautoincrement = 0;
-    sbcs.sbaccess = 3;
-
-    riscv_dbg.write_dmi(dm::SBCS, sbcs);
-    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-
-    $display("[JTAG] Using idle boot bootmethod");
-
-    data = start_addr[31:0];
-
-    // scratch0 = entrypoint
-    riscv_dbg.write_dmi(dm::SBAddress0, RegbusAddrmap[RegbusOutCsr].start_addr[31:0]+32'h4);
-    riscv_dbg.write_dmi(dm::SBData0, data);
-
-    // Wait for the write to complete
-    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-
-    if(sbcs.sberror) begin
-      sbcs.sberror = 1;
-      riscv_dbg.write_dmi(dm::SBCS, sbcs);
-      do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-      while (sbcs.sbbusy);
-    end
-
-    // scratch1 = 0x1 => start token
-    data = 32'h1;
-    riscv_dbg.write_dmi(dm::SBAddress0, RegbusAddrmap[RegbusOutCsr].start_addr[31:0]+32'h8);
-    riscv_dbg.write_dmi(dm::SBData0, data);
-
-    $display("[JTAG] Providing entrypoint 0x%h", start_addr);
-
-    // Wait for the write to complete
-    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-
-    if(sbcs.sberror) begin
-      sbcs.sberror = 1;
-      riscv_dbg.write_dmi(dm::SBCS, sbcs);
-      do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-      while (sbcs.sbbusy);
-    end
-
-    sbcs = jtag_init_sbcs;
-    // Ensure the system bus is ready again
-    riscv_dbg.write_dmi(dm::SBCS, sbcs);
-    do riscv_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-  endtask
-
-  task jtag_wait_for_eoc(
-    input logic [63:0] poll_addr,
-    output int         exit_status
-  );
-
-    logic [31:0] scratch;
-
-    // Update SBCS
-    automatic dm::sbcs_t sbcs = jtag_init_sbcs;
-    sbcs.sbreadonaddr = 0;
-    sbcs.sbreadondata = 1;
-    sbcs.sbautoincrement = 0;
-    sbcs.sbaccess = 2;
-
-    riscv_dbg.write_dmi(dm::SBCS, sbcs);
-
-    // Wait for scratch register to be set to non-zero value
-    $display("[JTAG] Waiting for completion");
-    $display("[JTAG] Polling address: 0x%x", poll_addr);
-    riscv_dbg.write_dmi(dm::SBAddress1, poll_addr[63:32]);
-    riscv_dbg.write_dmi(dm::SBAddress0, poll_addr[31:0]);
-
-    do begin
-      riscv_dbg.wait_idle(10);
-      riscv_dbg.read_dmi_exp_backoff(dm::SBData0, scratch);
-    end while (scratch[0] == 1'b0);
-
-    // Report end of execution
-    $display("[JTAG] Execution finished");
-    if ((scratch >> 1) != '0) begin
-      $error("[JTAG] FAILED: return code %d", scratch >> 1);
-      exit_status = ExitFail;
-    end
-    else begin
-      $display("[JTAG] SUCCESSFUL");
-      exit_status = ExitSuccess;
-    end
-  endtask
-
-  ///////////////
-  // I2C Model //
-  ///////////////
-
-  // I2C wires
-  wire i2c_scl, i2c_sda;
-
-  // I2C logic SoC lines
-  logic i2c_sda_in, i2c_sda_out, i2c_sda_oe;
-  logic i2c_scl_in, i2c_scl_out, i2c_scl_oe;
-
-  // Static pull-ups
-  assign (weak0, weak1) i2c_scl = 1'b1;
-  assign (weak0, weak1) i2c_sda = 1'b1;
-
-  // Bidirectional driver emulation
-  assign i2c_sda_in = (i2c_sda_oe) ? 1'b1 : i2c_sda;
-  assign i2c_scl_in = (i2c_scl_oe) ? 1'b1 : i2c_scl;
-
-  assign i2c_sda = (i2c_sda_oe) ? i2c_sda_out : 1'bz;
-  assign i2c_scl = (i2c_scl_oe) ? i2c_scl_out : 1'bz;
-
-  M24FC1025 i_i2c_model (
-    .A0     ( 1'b0    ),
-    .A1     ( 1'b0    ),
-    .A2     ( 1'b1    ),
-    .WP     ( 1'b0    ),
-    .SDA    ( i2c_sda ),
-    .SCL    ( i2c_scl ),
-    .RESET  ( rst_n   )
-  );
-
-  // Preload with bootloader
-  initial begin
-    for (int i = 0; i < $size(i_i2c_model.MemoryBlock); ++i)
-      i_i2c_model.MemoryBlock[i] = 'h9a;
-    /*
-    $readmemh(
-      "test/bootloader/bootself.memh",
-      i_M24FC1025.MemoryBlock
-    );
-    */
-  end
-
-
-
-  /////////////////
-  // Serial Link //
-  /////////////////
-
-  AXI_BUS_DV #(
-    .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
-    .AXI_DATA_WIDTH ( AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( AxiXbarMasterIdWidth ),
-    .AXI_USER_WIDTH ( AxiUserWidth  )
-  ) axi_bus_sl2tb (
-    .clk_i  ( clk_sys )
-  );
-
-  AXI_BUS_DV #(
-    .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
-    .AXI_DATA_WIDTH ( AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( AxiXbarMasterIdWidth ),
-    .AXI_USER_WIDTH ( AxiUserWidth  )
-  ) axi_bus_tb2sl (
-    .clk_i  ( clk_sys )
-  );
-
-  axi_a48_d64_mst_u0_req_t sl_out_req, sl_in_req;
-  axi_a48_d64_mst_u0_resp_t sl_out_resp, sl_in_resp;
-
-  // From the Serial Link to the Testbench
-  `AXI_ASSIGN_FROM_REQ(axi_bus_sl2tb, sl_out_req)
-  `AXI_ASSIGN_TO_RESP(sl_out_resp, axi_bus_sl2tb)
-
-  // From the Testbench to the Serial Link
-  `AXI_ASSIGN_TO_REQ(sl_in_req, axi_bus_tb2sl)
-  `AXI_ASSIGN_FROM_RESP(axi_bus_tb2sl, sl_in_resp)
-
-  logic [3:0]   sl_ddr_data_o, sl_ddr_data_i;
-  logic         sl_ddr_clk_o, sl_ddr_clk_i;
-
-  serial_link #(
-    .axi_req_t      ( axi_a48_d64_mst_u0_req_t     ),
-    .axi_rsp_t      ( axi_a48_d64_mst_u0_resp_t    ),
-    .cfg_req_t      ( reg_a48_d32_req_t            ),
-    .cfg_rsp_t      ( reg_a48_d32_rsp_t            ),
-    .aw_chan_t      ( axi_a48_d64_mst_u0_aw_chan_t ),
-    .ar_chan_t      ( axi_a48_d64_mst_u0_ar_chan_t ),
-    .r_chan_t       ( axi_a48_d64_mst_u0_r_chan_t  ),
-    .w_chan_t       ( axi_a48_d64_mst_u0_w_chan_t  ),
-    .b_chan_t       ( axi_a48_d64_mst_u0_b_chan_t  ),
-    .hw2reg_t       (serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t),
-    .reg2hw_t       (serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t),
-    .NumChannels    ( 1                            ),
-    .NumLanes       ( 4                            ),
-    .MaxClkDiv      ( 1024                         )
-  ) i_fix_serial_link (
-    // There are 3 different clock/resets:
-    // 1) clk_i & rst_ni: "always-on" clock & reset coming from the SoC domain. Only config registers are conected to this clock
-    // 2) clk_sl_i & rst_sl_ni: Same as 1) but clock is gated and reset is SW synchronized.
-    // 3) clk_reg_i & rst_reg_ni: peripheral clock and reset. Only connected to RegBus CDC
-    // W/o clock gating, reset synchronization -> tie clk_sl_i to clk_i resp. rst_sl_ni to rst_ni
-    .clk_i          ( clk_sys       ),
-    .rst_ni         ( rst_n         ),
-    .clk_sl_i       ( clk_sys       ),
-    .rst_sl_ni      ( rst_n         ),
-    .clk_reg_i      ( clk_sys       ),
-    .rst_reg_ni     ( rst_n         ),
-    .testmode_i     ( testmode      ),
-    .axi_in_req_i   ( sl_in_req     ),
-    .axi_in_rsp_o   ( sl_in_resp    ),
-    .axi_out_req_o  ( sl_out_req    ),
-    .axi_out_rsp_i  ( sl_out_resp   ),
-    .cfg_req_i      ( '0            ),
-    .cfg_rsp_o      (               ),
-    .ddr_rcv_clk_i  ( sl_ddr_clk_o  ),
-    .ddr_rcv_clk_o  ( sl_ddr_clk_i  ),
-    .ddr_i          ( sl_ddr_data_o ),
-    .ddr_o          ( sl_ddr_data_i ),
-    // AXI isolation signals (in/out), if not used tie to 0
-    .isolated_i     ( '0            ),
-    .isolate_o      (               ),
-    // Clock gate register
-    .clk_ena_o      (               ),
-    // synch-reset register
-    .reset_no       (               )
-  );
-
-  // Random slave that keeps written data for the slave side
-  axi_test::axi_rand_slave #(
-    .AW                   ( AxiAddrWidth                  ),
-    .DW                   ( AxiDataWidth                  ),
-    .IW                   ( AxiXbarMasterIdWidth          ),
-    .UW                   ( AxiUserWidth                  ),
-    .MAPPED               ( 1'b1                          ),
-    .TA                   ( TA                            ),
-    .TT                   ( TT                            ),
-    .RAND_RESP            ( 0                             ),
-    .AX_MIN_WAIT_CYCLES   ( 0                             ),
-    .AX_MAX_WAIT_CYCLES   ( 100                           ),
-    .R_MIN_WAIT_CYCLES    ( 0                             ),
-    .R_MAX_WAIT_CYCLES    ( 5                             ),
-    .RESP_MIN_WAIT_CYCLES ( 0                             ),
-    .RESP_MAX_WAIT_CYCLES ( 20                            )
-  ) sl_axi_rand_slave = new (axi_bus_sl2tb);
-
-
-  // Start the rand slave directly from the beginning
-  initial begin
-    sl_axi_rand_slave.run();
-  end
-
-  // An AXI driver for the master side
-  typedef axi_test::axi_driver #(
-    .AW     ( AxiAddrWidth    ),
-    .DW     ( AxiDataWidth    ),
-    .IW     ( AxiXbarMasterIdWidth ),
-    .UW     ( AxiUserWidth    ),
-    .TA     ( TA              ),
-    .TT     ( TT              )
-  ) sl_axi_driver_t;
-
-  sl_axi_driver_t sl_axi_driver = new (axi_bus_tb2sl);
+  riscv_dbg_t::jtag_driver_t  jtag_dv   = new (jtag);
+  riscv_dbg_t                 jtag_dbg  = new (jtag_dv);
+
+  // Connect DUT to test bus
+  assign jtag_trst_n  = jtag.trst_n;
+  assign jtag_tms     = jtag.tms;
+  assign jtag_tdi     = jtag.tdi;
+  assign jtag.tdo     = jtag_tdo;
 
   initial begin
     @(negedge rst_n);
-    sl_axi_driver.reset_master();
+    jtag_dbg.reset_master();
   end
 
-  // Write data from queue with given granularity (1, 2, 4 or 8 bytes)
-  task automatic sl_write_size(
-    input logic [AxiAddrWidth-1:0]  addr,
-    input logic [3:0]               size,
-    ref logic   [AxiDataWidth-1:0]  data [$]
+  task automatic jtag_write(
+    input dm::dm_csr_e addr,
+    input word_bt data,
+    input bit wait_cmd = 0,
+    input bit wait_sba = 0
   );
-    automatic sl_axi_driver_t::ax_beat_t ax = new();
-    automatic sl_axi_driver_t::w_beat_t w = new();
-    automatic sl_axi_driver_t::b_beat_t b;
-    automatic int i = 0;
-    automatic int size_bytes = (1 << size);
-
-    @(posedge clk_sys);
-
-    sl_axi_driver.reset_master();  
-    
-    //$display("[SL] Write address: %h, len: %0d", addr, data.size()-1);
-    ax.ax_addr  = addr;
-    ax.ax_id    = '0;
-    ax.ax_len   = data.size() - 1;
-    ax.ax_size  = size;
-    ax.ax_burst = axi_pkg::BURST_INCR;
-
-    sl_axi_driver.cycle_start();
-    sl_axi_driver.cycle_end();
-     
-    //$write("[SL] - Sending AW... ");
-    sl_axi_driver.send_aw(ax);
-
-    sl_axi_driver.cycle_start();
-    sl_axi_driver.cycle_end();
-    
-    //$display("OK");
-    //$display("[SL] - Writing burst data");
-     
-    do begin
-      w.w_strb = (~('1 << size_bytes)) << addr[$clog2(AxiDataWidth)-1:0];
-      w.w_data = data[i];
-      w.w_last = (i == ax.ax_len);
-
-      sl_axi_driver.cycle_start();
-      sl_axi_driver.cycle_end();
-       
-      sl_axi_driver.send_w(w);
-
-      sl_axi_driver.cycle_start();
-      sl_axi_driver.cycle_end();
-         
-      i++;
-      addr += size_bytes;
-      addr &= size_bytes - 1;
-    end while (i <= ax.ax_len);
-    
-    //$write("[SL] - Waiting for B... ");
-    sl_axi_driver.recv_b(b);
-
-    //$display("OK (1)");
+    jtag_dbg.write_dmi(addr, data);
+    if (wait_cmd) begin
+      dm::abstractcs_t acs;
+      do begin
+        jtag_dbg.read_dmi_exp_backoff(dm::AbstractCS, acs);
+        if (acs.cmderr) $fatal(1, "[JTAG] Abstract command error!");
+      end while (acs.busy);
+    end
+    if (wait_sba) begin
+      dm::sbcs_t sbcs;
+      do begin
+        jtag_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+        if (sbcs.sberror | sbcs.sbbusyerror) $fatal(1, "[JTAG] System bus error!");
+      end while (sbcs.sbbusy);
+    end
   endtask
 
-  task automatic sl_read_size(
-    input logic [AxiAddrWidth-1:0]  addr,
-    input logic [3:0]               size,
-    input logic [7:0]               len,
-    ref logic   [AxiDataWidth-1:0]  data [$]
+  task automatic jtag_poll_bit0(
+    input doub_bt addr,
+    output word_bt data,
+    input int unsigned idle_cycles
   );
-    automatic sl_axi_driver_t::ax_beat_t ax = new();
-    automatic sl_axi_driver_t::r_beat_t r;
+    automatic dm::sbcs_t sbcs = dm::sbcs_t'{sbreadonaddr: 1'b1, sbaccess: 2, default: '0};
+    jtag_write(dm::SBCS, sbcs, 0, 1);
+    jtag_write(dm::SBAddress1, addr[63:32]);
+    do begin
+      jtag_write(dm::SBAddress0, addr[31:0]);
+      jtag_dbg.wait_idle(idle_cycles);
+      jtag_dbg.read_dmi_exp_backoff(dm::SBData0, data);
+    end while (~data[0]);
+  endtask
+  // Initialize the debug module
+  task automatic jtag_init;
+    jtag_idcode_t idcode;
+    dm::dmcontrol_t dmcontrol = '{dmactive: 1, default: '0};
+    // Check ID code
+    repeat(100) @(posedge jtag_tck);
+    jtag_dbg.get_idcode(idcode);
+    if (idcode != DutCfg.DbgIdCode)
+        $fatal(1, "[JTAG] Unexpected ID code: expected 0x%h, got 0x%h!", DutCfg.DbgIdCode, idcode);
+    // Activate, wait for debug module
+    jtag_write(dm::DMControl, dmcontrol);
+    do jtag_dbg.read_dmi_exp_backoff(dm::DMControl, dmcontrol);
+    while (~dmcontrol.dmactive);
+    // Activate, wait for system bus
+    jtag_write(dm::SBCS, JtagInitSbcs, 0, 1);
+    $display("[JTAG] Initialization success");
+  endtask
 
-    @(posedge clk_sys);
+  // Load a binary
+  task automatic jtag_elf_preload(input string binary, output doub_bt entry);
+    longint sec_addr, sec_len;
+    $display("[JTAG] Preloading ELF binary: %s", binary);
+    if (read_elf(binary))
+      $fatal(1, "[JTAG] Failed to load ELF!");
+    while (get_section(sec_addr, sec_len)) begin
+      byte bf[] = new [sec_len];
+      $display("[JTAG] Preloading section at 0x%h (%0d bytes)", sec_addr, sec_len);
+      if (read_section(sec_addr, bf, sec_len)) $fatal(1, "[JTAG] Failed to read ELF section!");
+      jtag_write(dm::SBCS, JtagInitSbcs, 1, 1);
+      // Write address as 64-bit double
+      jtag_write(dm::SBAddress1, sec_addr[63:32]);
+      jtag_write(dm::SBAddress0, sec_addr[31:0]);
+      for (longint i = 0; i <= sec_len ; i += 8) begin
+        bit checkpoint = (i != 0 && i % 512 == 0);
+        if (checkpoint)
+          $display("[JTAG] - %0d/%0d bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
+        jtag_write(dm::SBData1, {bf[i+7], bf[i+6], bf[i+5], bf[i+4]});
+        jtag_write(dm::SBData0, {bf[i+3], bf[i+2], bf[i+1], bf[i]}, checkpoint, checkpoint);
+      end
+    end
+    void'(get_entry(entry));
+    $display("[JTAG] Preload complete");
+  endtask
 
-    sl_axi_driver.reset_master();
-     
-    $display("[SL] Read address: %h, len: %0d", addr, len);
+  // Run a binary
+  task automatic jtag_elf_run(input string binary);
+    dm::dmstatus_t status;
+    doub_bt entry;
+    // Wait until bootrom initialized LLC
+    if (DutCfg.LlcNotBypass) begin
+      word_bt regval;
+      $display("[JTAG] Wait for LLC configuration");
+      jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
+    end
+    // Halt hart 0
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, default: '0});
+    do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
+    while (~status.allhalted);
+    $display("[JTAG] Halted hart 0");
+    // Preload binary
+    jtag_elf_preload(binary, entry);
+    // Repoint execution
+    jtag_write(dm::Data1, entry[63:32]);
+    jtag_write(dm::Data0, entry[31:0]);
+    jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
+    // Resume hart 0
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
+    $display("[JTAG] Resumed hart 0 from 0x%h", entry);
+  endtask
+
+  // Wait for termination signal and get return code
+  task automatic jtag_wait_for_eoc(output word_bt exit_code);
+    jtag_poll_bit0(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, exit_code, 800);
+    exit_code >>= 1;
+    if (exit_code) $error("[JTAG] FAILED: return code %d", exit_code);
+    else $display("[JTAG] SUCCESS");
+  endtask
+
+  ////////////
+  //  UART  //
+  ////////////
+
+  localparam time UartBaudPeriod = 1000ns*1000*1000/UartBaudRate;
+
+  localparam byte_bt UartDebugCmdRead  = 'h11;
+  localparam byte_bt UartDebugCmdWrite = 'h12;
+  localparam byte_bt UartDebugCmdExec  = 'h13;
+  localparam byte_bt UartDebugAck      = 'h06;
+  localparam byte_bt UartDebugEot      = 'h04;
+  localparam byte_bt UartDebugEoc      = 'h14;
+
+  byte_bt uart_boot_byte;
+  logic   uart_boot_ena;
+  logic   uart_boot_eoc;
+
+  initial begin
+    uart_rx       = 1;
+    uart_boot_eoc = 0;
+    uart_boot_ena = 0;
+  end
+
+  task automatic uart_read_byte(output byte_bt bite);
+    // Start bit
+    @(negedge uart_tx);
+    #(UartBaudPeriod/2);
+    // 8-bit byte
+    for (int i = 0; i < 8; i++) begin
+      #UartBaudPeriod bite[i] = uart_tx;
+    end
+    // Parity bit
+    if(UartParityEna) begin
+      bit parity;
+      #UartBaudPeriod parity = uart_tx;
+      if(parity ^ (^bite))
+        $error("[UART] - Parity error detected!");
+    end
+    // Stop bit
+    #UartBaudPeriod;
+  endtask
+
+  task automatic uart_write_byte(input byte_bt bite);
+    // Start bit
+    uart_rx = 1'b0;
+    // 8-bit byte
+    for (int i = 0; i < 8; i++)
+      #UartBaudPeriod uart_rx = bite[i];
+    // Parity bit
+    if (UartParityEna)
+      #UartBaudPeriod uart_rx = (^bite);
+    // Stop bit
+    #UartBaudPeriod uart_rx = 1'b1;
+    #UartBaudPeriod;
+  endtask
+
+  task automatic uart_boot_scoop(output byte_bt bite);
+    // Assert our intention to scoop the next received byte
+    uart_boot_ena = 1;
+    // Wait until read task notifies us a scooped byte is available
+    @(negedge uart_boot_ena);
+    // Grab scooped byte
+    bite = uart_boot_byte;
+  endtask
+
+  task automatic uart_boot_scoop_expect(input string name, input byte_bt exp);
+    byte_bt bite;
+    uart_boot_scoop(bite);
+    if (bite != exp)
+      $fatal(1, "[UART] Expected %s (%0x) after read command, received %0x", name, exp, bite);
+  endtask
+
+  // Continually read characters and print lines
+  // TODO: we should be able to support CR properly, but buffers are hard to deal with...
+  initial begin
+    static byte_bt uart_read_buf [$];
+    byte_bt bite;
+    wait_for_reset();
+    forever begin
+      uart_read_byte(bite);
+      if (uart_boot_ena) begin
+        uart_boot_byte  = bite;
+        uart_boot_ena = 0;
+      end else if (bite == "\n") begin
+        $display("[UART] %s", {>>8{uart_read_buf}});
+        uart_read_buf.delete();
+      end else if (bite == UartDebugEoc) begin
+        uart_boot_eoc = 1;
+      end else begin
+        uart_read_buf.push_back(bite);
+      end
+    end
+  end
+
+  // A length of zero indcates a write (write lengths are inferred from their queue)
+  task automatic uart_debug_rw(doub_bt addr, doub_bt len_or_w, ref byte_bt data [$]);
+    byte_bt bite;
+    doub_bt len = len_or_w ? len_or_w : data.size();
+    // Send command, address, and length
+    uart_write_byte(len_or_w ? UartDebugCmdRead : UartDebugCmdWrite);
+    for (int i = 0; i < 8; ++i)
+      uart_write_byte(addr[8*i +: 8]);
+        for (int i = 0; i < 8; ++i)
+      uart_write_byte(len[8*i +: 8]);
+    // Receive and check ACK
+    uart_boot_scoop_expect("ACK", UartDebugAck);
+    // Send or receive requested data
+    for (int i = 0; i < len; ++i) begin
+      if (len_or_w) begin
+        uart_boot_scoop(bite);
+        data.push_back(bite);
+      end else begin
+        uart_write_byte(data[i]);
+      end
+    end
+    // Receive and check EOT
+    uart_boot_scoop_expect("EOT", UartDebugEot);
+  endtask
+
+  // Load a binary
+  task automatic uart_debug_elf_preload(input string binary, output doub_bt entry);
+    longint sec_addr, sec_len;
+    $display("[UART] Preloading ELF binary: %s", binary);
+    if (read_elf(binary))
+      $fatal(1, "[UART] Failed to load ELF!");
+    while (get_section(sec_addr, sec_len)) begin
+      byte bf[] = new [sec_len];
+      $display("[UART] Preloading section at 0x%h (%0d bytes)", sec_addr, sec_len);
+      if (read_section(sec_addr, bf, sec_len)) $fatal(1, "[UART] Failed to read ELF section!");
+      // Write section in blocks
+      for (longint i = 0; i <= sec_len ; i += UartBurstBytes) begin
+        byte_bt bytes [$];
+        if (i != 0)
+          $display("[UART] - %0d/%0d bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
+        for (int b = 0; b < UartBurstBytes; b++) begin
+          if (i+b >= sec_len) break;
+          bytes.push_back(bf [i+b]);
+        end
+        uart_debug_rw(sec_addr + i, 0, bytes);
+      end
+    end
+    void'(get_entry(entry));
+    $display("[UART] Preload complete");
+  endtask
+
+  task automatic uart_debug_elf_run_and_wait(input string binary, output word_bt exit_code);
+    byte_bt bite;
+    doub_bt entry;
+    // Wait some time for boot ROM to settle (No way to query this using only UART)
+    $display("[UART] Waiting for debug loop to start");
+    #(UartWaitCycles*UartBaudPeriod);
+    // We send an ACK challenge to the debug server and wait for an ACK response
+    $display("[UART] Sending ACK chellenge");
+    uart_write_byte(UartDebugAck);
+    uart_boot_scoop_expect("ACK", UartDebugAck);
+    // Preload
+    uart_debug_elf_preload(binary, entry);
+  $display("[UART] Sending EXEC command for address %0x", entry);
+    // Send exec command and receive ACK
+    uart_write_byte(UartDebugCmdExec);
+    for (int i = 0; i < 8; ++i)
+      uart_write_byte(entry[8*i +: 8]);
+    uart_boot_scoop_expect("ACK", UartDebugAck);
+    // Wait for EOC and read return code
+    wait (uart_boot_eoc == 1);
+    $display("[UART] Received EOC signal");
+    uart_boot_eoc = 0;
+    for (int i = 0; i < 8; ++i)
+      uart_boot_scoop(exit_code[8*i +: 8]);
+    // Report exit code
+    exit_code >>= 1;
+    if (exit_code) $error("[UART] FAILED: return code %d", exit_code);
+    else $display("[UART] SUCCESS");
+  endtask
+
+  ///////////
+  //  I2C  //
+  ///////////
+
+  // Map IO to wires and pull up
+  wire i2c_sda, i2c_scl;
+  bufif1 (i2c_sda_i, i2c_sda, ~i2c_sda_en);
+  bufif1 (i2c_sda, i2c_sda_o,  i2c_sda_en);
+  bufif1 (i2c_scl_i, i2c_scl, ~i2c_scl_en);
+  bufif1 (i2c_scl, i2c_scl_o,  i2c_scl_en);
+  pullup (i2c_sda);
+  pullup (i2c_scl);
+
+  // Write-protect only chip 0
+  bit [3:0] i2c_wp = 4'b0001;
+
+  // We connect 2 chips available at different addresses;
+  // however, the boot ROM will always boot from chip 0.
+  for (genvar i = 0; i < 2; i++) begin : gen_i2c_eeproms
+    M24FC1025 i_i2c_eeprom (
+      .RESET  ( rst_n ),
+      .A0     ( i[0] ),
+      .A1     ( 1'b0 ),
+      .A2     ( 1'b1 ),
+      .WP     ( i2c_wp[i] ),
+      .SDA    ( i2c_sda   ),
+      .SCL    ( i2c_scl   )
+    );
+  end
+
+  // Preload function called by testbench
+  task automatic i2c_eeprom_preload(string image);
+    // We overlay the entire memory with an alternating pattern
+    for (int k = 0; k < $size(gen_i2c_eeproms[0].i_i2c_eeprom.MemoryBlock); ++k)
+        gen_i2c_eeproms[0].i_i2c_eeprom.MemoryBlock[k] = 'h9a;
+    // We load an image into chip 0 only if it exists
+    if (image != "")
+      $readmemh(image, gen_i2c_eeproms[0].i_i2c_eeprom.MemoryBlock);
+  endtask
+
+  ////////////////
+  //  SPI Host  //
+  ////////////////
+
+  // Map clock to wire and pull up
+  wire spih_sck;
+  bufif1 (spih_sck, spih_sck_o, spih_sck_en);
+  pullup (spih_sck);
+
+  // Map data IO to wires and pull up
+  wire [3:0] spih_sd;
+  for (genvar i = 0; i < 4; ++i) begin : gen_spih_sd_io
+    bufif1 (spih_sd_i[i], spih_sd[i], ~spih_sd_en[i]);
+    bufif1 (spih_sd[i], spih_sd_o[i],  spih_sd_en[i]);
+    pullup (spih_sd[i]);
+  end
+
+  // Map CS IO to wires and pull up
+  wire [SpihNumCs-1:0] spih_csb;
+  for (genvar i =0; i < SpihNumCs; ++i) begin : gen_spih_cs_io
+    bufif1 (spih_csb[i], spih_csb_o[i], spih_csb_en[i]);
+    pullup (spih_csb[i]);
+  end
+
+  // We connect one chip at CS1, where we can boot from this flash.
+  s25fs512s #(
+    .UserPreload ( 0 )
+  ) i_spi_norflash (
+    .SI       ( spih_sd[0] ),
+    .SO       ( spih_sd[1] ),
+    .WPNeg    ( spih_sd[2] ),
+    .RESETNeg ( spih_sd[3] ),
+    .SCK      ( spih_sck ),
+    .CSNeg    ( spih_csb[1] )
+  );
+
+  // Preload function called by testbench
+  task automatic spih_norflash_preload(string image);
+    // We overlay the entire memory with an alternating pattern
+    for (int k = 0; k < $size(i_spi_norflash.Mem); ++k)
+        i_spi_norflash.Mem[k] = 'h9a;
+    // We load an image into chip 0 only if it exists
+    if (image != "")
+      $readmemh(image, i_spi_norflash.Mem);
+  endtask
+
+  ///////////////////
+  //  Serial Link  //
+  ///////////////////
+
+  axi_mst_req_t slink_axi_mst_req, slink_axi_slv_req;
+  axi_mst_rsp_t slink_axi_mst_rsp, slink_axi_slv_rsp;
+
+  AXI_BUS_DV #(
+    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
+    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
+  ) slink_mst (
+    .clk_i  ( clk )
+  );
+
+  AXI_BUS_DV #(
+    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
+    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
+  ) slink_slv (
+    .clk_i  ( clk )
+  );
+
+  `AXI_ASSIGN_TO_REQ(slink_axi_mst_req, slink_mst)
+  `AXI_ASSIGN_FROM_RESP(slink_mst, slink_axi_mst_rsp)
+
+  `AXI_ASSIGN_FROM_REQ(slink_slv, slink_axi_slv_req)
+  `AXI_ASSIGN_TO_RESP(slink_axi_slv_rsp, slink_slv)
+
+  // Mirror instance of serial link, reflecting another chip
+  serial_link #(
+    .axi_req_t    ( axi_mst_req_t ),
+    .axi_rsp_t    ( axi_mst_rsp_t ),
+    .cfg_req_t    ( reg_req_t ),
+    .cfg_rsp_t    ( reg_rsp_t ),
+    .aw_chan_t    ( axi_mst_aw_chan_t ),
+    .ar_chan_t    ( axi_mst_ar_chan_t ),
+    .r_chan_t     ( axi_mst_r_chan_t  ),
+    .w_chan_t     ( axi_mst_w_chan_t  ),
+    .b_chan_t     ( axi_mst_b_chan_t  ),
+    .hw2reg_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t ),
+    .reg2hw_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t ),
+    .NumChannels  ( SlinkNumChan   ),
+    .NumLanes     ( SlinkNumLanes  ),
+    .MaxClkDiv    ( SlinkMaxClkDiv )
+  ) i_serial_link (
+    .clk_i          ( clk   ),
+    .rst_ni         ( rst_n ),
+    .clk_sl_i       ( clk   ),
+    .rst_sl_ni      ( rst_n ),
+    .clk_reg_i      ( clk   ),
+    .rst_reg_ni     ( rst_n ),
+    .testmode_i     ( test_mode_i ),
+    .axi_in_req_i   ( slink_axi_mst_req ),
+    .axi_in_rsp_o   ( slink_axi_mst_rsp ),
+    .axi_out_req_o  ( slink_axi_slv_req ),
+    .axi_out_rsp_i  ( slink_axi_slv_rsp ),
+    .cfg_req_i      ( '0 ),
+    .cfg_rsp_o      ( ),
+    .ddr_rcv_clk_i  ( slink_rcv_clk_o ),
+    .ddr_rcv_clk_o  ( slink_rcv_clk_i ),
+    .ddr_i          ( slink_o ),
+    .ddr_o          ( slink_i ),
+    .isolated_i     ( '0 ),
+    .isolate_o      ( ),
+    .clk_ena_o      ( ),
+    .reset_no       ( )
+  );
+
+  // We terminate the slave interface with a random agent
+  axi_test::axi_rand_slave #(
+    .AW                   ( DutCfg.AddrWidth     ),
+    .DW                   ( DutCfg.AxiDataWidth  ),
+    .IW                   ( DutCfg.AxiMstIdWidth ),
+    .UW                   ( DutCfg.AxiUserWidth  ),
+    .MAPPED               ( 1'b1 ),
+    .TA                   ( ClkPeriodSys * TAppl ),
+    .TT                   ( ClkPeriodSys * TTest ),
+    .RAND_RESP            ( 0 ),
+    .AX_MIN_WAIT_CYCLES   ( 0 ),
+    .AX_MAX_WAIT_CYCLES   ( SlinkMaxWaitAx ),
+    .R_MIN_WAIT_CYCLES    ( 0 ),
+    .R_MAX_WAIT_CYCLES    ( SlinkMaxWaitR ),
+    .RESP_MIN_WAIT_CYCLES ( 0 ),
+    .RESP_MAX_WAIT_CYCLES ( SlinkMaxWaitResp )
+  ) i_slink_rand_slv = new (slink_slv);
+
+  initial begin
+    i_slink_rand_slv.run();
+  end
+
+  // We use an AXI driver to inject serial link transfers
+  typedef axi_test::axi_driver #(
+    .AW ( DutCfg.AddrWidth     ),
+    .DW ( DutCfg.AxiDataWidth  ),
+    .IW ( DutCfg.AxiMstIdWidth ),
+    .UW ( DutCfg.AxiUserWidth  ),
+    .TA ( ClkPeriodSys * TAppl ),
+    .TT ( ClkPeriodSys * TTest )
+  ) slink_axi_driver_t;
+
+  slink_axi_driver_t slink_axi_driver = new (slink_mst);
+
+  initial begin
+    @(negedge rst_n);
+    slink_axi_driver.reset_master();
+  end
+
+  task automatic slink_write_beats(
+    input addr_t          addr,
+    input axi_pkg::size_t size,
+    ref axi_data_t        beats [$]
+  );
+    slink_axi_driver_t::ax_beat_t ax = new();
+    slink_axi_driver_t::w_beat_t w = new();
+    slink_axi_driver_t::b_beat_t b;
+    int i = 0;
+    int size_bytes = (1 << size);
+    if (beats.size() == 0)
+      $fatal(1, "[SLINK] Zero-length write requested!");
+    @(posedge clk);
+    if (SlinkAxiDebug) $display("[SLINK] Write to address: %h, len: %0d", addr, beats.size()-1);
+    ax.ax_addr  = addr;
+    ax.ax_id    = '0;
+    ax.ax_len   = beats.size() - 1;
+    ax.ax_size  = size;
+    ax.ax_burst = axi_pkg::BURST_INCR;
+    if (SlinkAxiDebug) $display("[SLINK] - Sending AW ");
+    slink_axi_driver.send_aw(ax);
+    do begin
+      w.w_strb = (~('1 << size_bytes)) << addr[AxiStrbBits-1:0];
+      w.w_data = beats[i];
+      w.w_last = (i == ax.ax_len);
+      if (SlinkAxiDebug) $display("[SLINK] - Sending W (%0d)", i);
+      slink_axi_driver.send_w(w);
+      addr += size_bytes;
+      addr &= size_bytes - 1;
+      i++;
+    end while (i <= ax.ax_len);
+    if (SlinkAxiDebug) $display("[SLINK] - Receiving B");
+    slink_axi_driver.recv_b(b);
+    if (b.b_resp != axi_pkg::RESP_OKAY)
+      $error("[SLINK] - Write error response: %d!", b.b_resp);
+    if (SlinkAxiDebug) $display("[SLINK] - Done");
+  endtask
+
+  task automatic slink_read_beats(
+    input addr_t          addr,
+    input axi_pkg::size_t size,
+    input axi_pkg::len_t  len,
+    ref axi_data_t        beats [$]
+  );
+    slink_axi_driver_t::ax_beat_t ax = new();
+    slink_axi_driver_t::r_beat_t r;
+    int i = 0;
+    @(posedge clk)
+    if (SlinkAxiDebug) $display("[SLINK] Read from address: %h, len: %0d", addr, len);
     ax.ax_addr  = addr;
     ax.ax_id    = '0;
     ax.ax_len   = len;
     ax.ax_size  = size;
     ax.ax_burst = axi_pkg::BURST_INCR;
-
-    sl_axi_driver.cycle_start();
-    sl_axi_driver.cycle_end();
-     
-    $write("[SL] - Sending AR... ");
-    sl_axi_driver.send_ar(ax);
-
-    sl_axi_driver.cycle_start();
-    sl_axi_driver.cycle_end();
-    
-    $display("OK");
-
+    if (SlinkAxiDebug) $display("[SLINK] - Sending AR");
+    slink_axi_driver.send_ar(ax);
     do begin
-      $write("[SL] - Receiving R... ");
-      sl_axi_driver.recv_r(r);
-
-      $display("OK");
-      data.push_back(r.r_data);
-
+      if (SlinkAxiDebug) $display("[SLINK] - Receiving R (%0d)", i);
+      slink_axi_driver.recv_r(r);
+      beats.push_back(r.r_data);
+      addr += (1 << size);
+      addr &= (1 << size) - 1;
+      i++;
+      if (r.r_resp != axi_pkg::RESP_OKAY)
+        $error("[SLINK] - Read error response: %d!", r.r_resp);
     end while (!r.r_last);
+    if (SlinkAxiDebug) $display("[SLINK] - Done");
   endtask
 
-  // Preload the ELF sections using 64-bit bursts
-  task sl_preload;
-    logic [AxiDataWidth-1:0] wdata [$];
-    int loopcount;
+  task automatic slink_write_32(input addr_t addr, input word_bt data);
+    axi_data_t beats [$];
+    beats.push_back(data << (8 * addr[AxiStrbBits-1:0]));
+    slink_write_beats(addr, 2, beats);
+  endtask
 
-    $display("[SL] Preloading ELF sections");
+  task automatic slink_poll_bit0(
+    input doub_bt addr,
+    output word_bt data,
+    input int unsigned idle_cycles
+  );
+    do begin
+        axi_data_t beats [$];
+        #(ClkPeriodSys * idle_cycles);
+        slink_read_beats(addr, 2, 0, beats);
+        data = beats[0] >> addr[AxiStrbBits-1:0];
+    end while (~data[0]);
+  endtask
 
-    foreach (sections[addr]) begin
-      $display("[SL] Writing section 0x%x (%0d words)", addr * 8, sections[addr]);
-
-      for (int i = 0; i < sections[addr]/256; i++) begin
-        wdata = {};
-
-        // Load the queue for one burst
-        for(int k = 0; k < 256; k++) begin
-          wdata.push_back(memory[addr + 256*i + k]);
+  // Load a binary
+  task automatic slink_elf_preload(input string binary, output doub_bt entry);
+    longint sec_addr, sec_len;
+    $display("[SLINK] Preloading ELF binary: %s", binary);
+    if (read_elf(binary))
+      $fatal(1, "[SLINK] Failed to load ELF!");
+    while (get_section(sec_addr, sec_len)) begin
+      byte bf[] = new [sec_len];
+      $display("[SLINK] Preloading section at 0x%h (%0d bytes)", sec_addr, sec_len);
+      if (read_section(sec_addr, bf, sec_len)) $fatal(1, "[SLINK] Failed to read ELF section!");
+      jtag_write(dm::SBCS, JtagInitSbcs, 1, 1);
+      // Write address as 64-bit double
+      jtag_write(dm::SBAddress1, sec_addr[63:32]);
+      jtag_write(dm::SBAddress0, sec_addr[31:0]);
+      // Write section as fixed-size bursts
+      for (longint i = 0; i <= sec_len ; i += SlinkBurstBytes) begin
+        axi_data_t beats [$];
+        if (i != 0)
+          $display("[SLINK] - %0d/%0d bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
+        // Assemble beats for current burst from section buffer
+        for (int b = 0; b < SlinkBurstBytes; b += AxiStrbWidth) begin
+          axi_data_t beat;
+          // We handle incomplete bursts, but do assume bus-aligned sections
+          if (i+b >= sec_len) break;
+          for (int e = 0; e < AxiStrbWidth; ++e)
+            beat[8*e +: 8] = bf [i+b+e];
+          beats.push_back(beat);
         end
-
-        $display(" - Word %0d/%0d (%0d%%)", i*256, sections[addr], i*256*100/(sections[addr] > 1 ? sections[addr]-1 : 1));
-        sl_write_size(((addr + i*256) * 8), 3, wdata);
-
-        loopcount = i+1;
-      end
-
-      // Complete the remainder in a shorter burst
-      if(loopcount*256 < sections[addr]) begin
-        wdata = {};
-
-        for(int k = loopcount*256; k < sections[addr]; k++) begin
-          wdata.push_back(memory[addr + k]);
-        end
-
-        $display(" - Word %0d/%0d (%0d%%)", loopcount*256, sections[addr], loopcount*256*100/(sections[addr] > 1 ? sections[addr]-1 : 1));
-        sl_write_size(((addr + loopcount*256) * 8), 3, wdata);
+        // Write this burst
+        slink_write_beats(sec_addr + i, AxiStrbBits, beats);
       end
     end
+    void'(get_entry(entry));
+    $display("[SLINK] Preload complete");
   endtask
 
-
-  // Randomize memory contents
-  task sl_rand(
-    input logic [AxiAddrWidth-1:0]  addr,
-    input logic [AxiDataWidth-1:0]  len
-  );
-    logic [AxiDataWidth-1:0] wdata [$];
-    logic [AxiDataWidth-1:0] random_data;
-    int loopcount;
-
-    $display("[SL] Randomizing 0x%h -> 0x%h", addr, addr+len);
-
-    for (int i = 0; i < len/(256*8); i++) begin
-      wdata = {};
-
-      // Load the queue for one burst
-      for(int k = 0; k < 256; k++) begin
-        void'(std::randomize(random_data));
-        wdata.push_back(random_data);
-      end
-
-      $display(" - Word %0d/%0d (%0d%%)", i*256, len/8, i*256*100/((len/8) > 1 ? (len/8)-1 : 1));
-      sl_write_size(addr + (i*256 * 8), 3, wdata);
-
-      loopcount = i+1;
+  // Run a binary
+  task automatic slink_elf_run(input string binary);
+    dm::dmstatus_t status;
+    doub_bt entry;
+    // Wait for bootrom to ungate Serial Link
+    if (DutCfg.LlcNotBypass) begin
+      word_bt regval;
+      $display("[SLINK] Wait for LLC configuration");
+      slink_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
     end
-
-    // Complete the remainder in a shorter burst
-    if(loopcount*256*8 < len) begin
-      wdata = {};
-
-      for(int k = loopcount*256*8; k < len; k++) begin
-        void'(std::randomize(random_data));
-        wdata.push_back(random_data);
-      end
-
-      $display(" - Word %0d/%0d (%0d%%)", loopcount*256, len/8, loopcount*256*100/((len/8) > 1 ? (len/8)-1 : 1));
-      sl_write_size(addr + (loopcount*256 * 8), 3, wdata);
-    end
+    // Preload
+    slink_elf_preload(binary, entry);
+    // Write entry point
+    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_1_OFFSET, entry[63:32]);
+    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_0_OFFSET, entry[32:0]);
+    // Resume hart 0
+    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, 2);
+    $display("[SLINK] Wrote launch signal and entry point 0x%h", entry);
   endtask
 
-  //////////
-  // DRAM //
-  //////////
-  AXI_BUS_DV #(
-    .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
-    .AXI_DATA_WIDTH ( AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( AxiXbarSlaveIdWidth + 1 ),
-    .AXI_USER_WIDTH ( AxiUserWidth  )
-  ) axi_bus_dram2tb (
-    .clk_i  ( clk_sys )
-  );
-
-  axi_a48_d64_mst_u0_llc_req_t  dram_req;
-  axi_a48_d64_mst_u0_llc_resp_t dram_resp;
-   
-  `AXI_ASSIGN_FROM_REQ(axi_bus_dram2tb, dram_req)
-  `AXI_ASSIGN_TO_RESP(dram_resp, axi_bus_dram2tb)
-
-  // Random slave that keeps written data for the slave side
-  axi_test::axi_rand_slave #(
-    .AW                   ( AxiAddrWidth                  ),
-    .DW                   ( AxiDataWidth                  ),
-    .IW                   ( AxiXbarSlaveIdWidth + 1       ),
-    .UW                   ( AxiUserWidth                  ),
-    .MAPPED               ( 1'b1                          ),
-    .TA                   ( TA                            ),
-    .TT                   ( TT                            ),
-    .RAND_RESP            ( 0                             ),
-    .AX_MIN_WAIT_CYCLES   ( 0                             ),
-    .AX_MAX_WAIT_CYCLES   ( 100                           ),
-    .R_MIN_WAIT_CYCLES    ( 0                             ),
-    .R_MAX_WAIT_CYCLES    ( 5                             ),
-    .RESP_MIN_WAIT_CYCLES ( 0                             ),
-    .RESP_MAX_WAIT_CYCLES ( 20                            )
-  ) dram_axi_rand_slave = new (axi_bus_dram2tb);
-
-
-  // Start the rand slave directly from the beginning
-  initial begin
-    dram_axi_rand_slave.run();
-  end  
-   
-   
-  ///////////////
-  // SPI Model //
-  ///////////////
-
-  wire spi_sck, spi_cs_flash, spi_cs_sd;
-  wire spi_miso_sd;
-  wire [3:0] spi_io;
-  wire spi_reset_n;
-  wire spi_wp_n;
-  logic spi_sck_soc_out;
-  logic spi_sck_en;
-  logic [3:0] spi_sd_soc_out, spi_sd_soc_in;
-  logic [1:0] spi_cs_soc_out;
-  logic [1:0] spi_cs_en;
-  logic [3:0] spi_sd_en;
-
-  assign spi_wp_n = 1'b1;
- 
-  assign spi_sck = spi_sck_en ? spi_sck_soc_out : 1'b0;
-  assign spi_cs_sd    = spi_cs_en[0] ? spi_cs_soc_out[0] : 2'b1;
-  assign spi_cs_flash = spi_cs_en[1] ? spi_cs_soc_out[1] : 2'b1;
-
-  // Pull-ups
-  assign (weak0, weak1) spi_io = 4'b1111;
-
-  assign spi_io[0] = spi_sd_en[0] ? spi_sd_soc_out[0] : 1'bz;
-  assign spi_io[1] = spi_sd_en[1] ? spi_sd_soc_out[1] : 1'bz;
-  assign spi_io[2] = spi_sd_en[2] ? spi_sd_soc_out[2] : 1'bz;
-  assign spi_io[3] = spi_sd_en[3] ? spi_sd_soc_out[3] : 1'bz;
-
-  assign spi_io[1] = spi_cs_sd    ? 1'bz : spi_miso_sd;
-    
-  assign spi_sd_soc_in = spi_io;
-    
-  assign spi_reset_n = rst_n;
-
-  s25fs512s i_spi_model (
-    // Data IO
-    .SI       ( spi_io[0]   ),
-    .SO       ( spi_io[1]   ),
-    // Controls
-    .SCK      ( spi_sck     ),
-    .CSNeg    ( spi_cs_flash),
-    .WPNeg    ( spi_wp_n    ),
-    .RESETNeg ( spi_reset_n )
-  );
-
-/*
-  spi_sd_model i_sd_model (
-    .sclk   ( spi_sck       ),
-    .rstn   ( spi_reset_n   ),
-    .ncs    ( spi_cs_sd     ),
-    .mosi   ( spi_io[0]     ),
-    .miso   ( spi_miso_sd   )
-  );
-
-  */
-
-  assign spi_miso_sd = 0;
-
-  ///////////////////
-  // UART Receiver //
-  ///////////////////
-
-  logic uart_tx;
-
-  uart_tb_rx #(
-    .BAUD_RATE ( UartBaudRate     ),
-    .PARITY_EN ( UartParityEna    )
-  ) i_uart_rx_model (
-    .rx        ( uart_tx          ),
-    .rx_en     ( 1'b1             ),
-    .word_done (                  )
-  );
-
-
-  /////////////////////////
-  // Regbus Error Slaves //
-  /////////////////////////
-
-  reg_a48_d32_req_t external_reg_req;
-  reg_a48_d32_rsp_t external_reg_rsp; 
-   
-  reg_err_slv #(
-    .DW       ( 32                 ),
-    .ERR_VAL  ( 32'hBADCAB1E       ),
-    .req_t    ( reg_a48_d32_req_t  ),
-    .rsp_t    ( reg_a48_d32_rsp_t  )
-  ) i_reg_err_slv_external_reg (
-    .req_i    ( external_reg_req   ),
-    .rsp_o    ( external_reg_rsp   )
-  );
-
-   
-  //////////////////
-  // Cheshire SoC //
-  //////////////////
-
-  cheshire_soc i_dut_cheshire_soc (
-    .clk_i            ( clk_sys         ),
-    .rst_ni           ( rst_n           ),
-
-    .testmode_i       ( testmode        ),
-
-    // Boot mode selection
-    .boot_mode_i      ( bootmode        ),
-
-    // Boot address for CVA6
-    .boot_addr_i      ( 64'h0100_0000   ),
-
-    // DRAM
-    .dram_req_o       ( dram_req        ),
-    .dram_resp_i      ( dram_resp       ),
-                                   
-    // DDR-Link
-    .ddr_link_i       ( sl_ddr_data_i   ),
-    .ddr_link_o       ( sl_ddr_data_o   ),
-    .ddr_link_clk_i   ( sl_ddr_clk_i    ),
-    .ddr_link_clk_o   ( sl_ddr_clk_o    ),
-
-    // VGA Controller
-    .vga_hsync_o      (                 ),
-    .vga_vsync_o      (                 ),
-    .vga_red_o        (                 ),
-    .vga_green_o      (                 ),
-    .vga_blue_o       (                 ),
-
-    // JTAG Interface
-    .jtag_tck_i       ( jtag_tck        ),
-    .jtag_trst_ni     ( jtag_trst_n     ),
-    .jtag_tms_i       ( jtag_tms        ),
-    .jtag_tdi_i       ( jtag_tdi        ),
-    .jtag_tdo_o       ( jtag_tdo        ),
-
-    // UART Interface
-    .uart_tx_o        ( uart_tx         ),
-    .uart_rx_i        ( 1'b0            ),
-
-    // I2C Interface
-    .i2c_sda_o        ( i2c_sda_out     ),
-    .i2c_sda_i        ( i2c_sda_in      ),
-    .i2c_sda_en_o     ( i2c_sda_oe      ),
-    .i2c_scl_o        ( i2c_scl_out     ),
-    .i2c_scl_i        ( i2c_scl_in      ),
-    .i2c_scl_en_o     ( i2c_scl_oe      ),
-
-    // SPI Host Interface
-    .spim_sck_o       ( spi_sck_soc_out ),
-    .spim_sck_en_o    ( spi_sck_en      ),
-    .spim_csb_o       ( spi_cs_soc_out  ),
-    .spim_csb_en_o    ( spi_cs_en       ),
-    .spim_sd_o        ( spi_sd_soc_out  ),
-    .spim_sd_en_o     ( spi_sd_en       ),
-    .spim_sd_i        ( spi_sd_soc_in   ),
-
-    // CLINT
-    .rtc_i            ( clk_rtc         ),
-
-    // CLK locked signal
-    .clk_locked_i     ( 1'b0            ),
-
-    // External Regbus
-    .external_reg_req_o ( external_reg_req ),
-    .external_reg_rsp_i ( external_reg_rsp )
-  );
+  // Wait for termination signal and get return code
+  task automatic slink_wait_for_eoc(output word_bt exit_code);
+    slink_poll_bit0(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, exit_code, 800);
+    exit_code >>= 1;
+    if (exit_code) $error("[SLINK] FAILED: return code %d", exit_code);
+    else $display("[SLINK] SUCCESS");
+  endtask
 
 endmodule

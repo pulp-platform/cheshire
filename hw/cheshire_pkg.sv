@@ -4,202 +4,164 @@
 //
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
+// Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-/// Contains the structs and configurations necessary for the Cheshire Platform
 package cheshire_pkg;
 
-  `include "axi/typedef.svh"
-  `include "axi/assign.svh"
-  `include "register_interface/typedef.svh"
-  `include "apb/typedef.svh"
+  ///////////
+  //  SoC  //
+  ///////////
 
-  /// Inputs of X-Bar
-  typedef enum int {
-    AxiXbarInCva6,
-    AxiXbarInDebug,
-    AxiXbarInSerialLink,
-    AxiXbarInVga,
-    AxiXbarInDma,
-    AxiXbarNumInputs
-  } axi_xbar_inputs_e;
+  // Return either the argument minus 1 or 0 if 0; useful for IO vector width declaration
+  function automatic integer unsigned iomsb (input integer unsigned width);
+      return (width != 32'd0) ? unsigned'(width-1) : 32'd0;
+  endfunction
 
-  /// Outputs of X-Bar
-  typedef enum int {
-    AxiXbarOutDebug,
-    AxiXbarOutRegbus,
-    AxiXbarOutDmaConf,
-    AxiXbarOutLlc,
-    AxiXbarOutSerialLink,
-    AxiXbarNumOutputs
-  } axi_xbar_outputs_e;
+  // Parameters defined by generated hardware (regenerate to adapt)
+  localparam int unsigned NumIntIntrs     = 51; // Must agree with struct below
+  localparam int unsigned NumExtIntrs     = rv_plic_reg_pkg::NumSrc - NumIntIntrs;
+  localparam int unsigned SpihNumCs       = spi_host_reg_pkg::NumCS - 1;  // Last CS is dummy
+  localparam int unsigned SlinkNumChan    = serial_link_single_channel_reg_pkg::NumChannels;
+  localparam int unsigned SlinkNumLanes   = serial_link_single_channel_reg_pkg::NumBits/2;
+  localparam int unsigned SlinkMaxClkDiv  = 1 << serial_link_single_channel_reg_pkg::Log2MaxClkDiv;
+  localparam int unsigned ClintNumCores   = clint_reg_pkg::NumCores;
 
-  /// Parameters for AXI types
-  localparam int unsigned AxiAddrWidth = 48;
-  localparam int unsigned AxiDataWidth = 64;
-  localparam int unsigned AxiUserWidth = 1;
-  localparam int unsigned AxiStrbWidth = AxiDataWidth/8;  // Using byte strobes
-
-  localparam int unsigned AxiXbarMasterIdWidth = 2;
-  localparam int unsigned AxiXbarSlaveIdWidth  = AxiXbarMasterIdWidth + $clog2(AxiXbarNumInputs);
-
-  localparam int unsigned AxiXbarCombs = AxiXbarNumInputs * AxiXbarNumOutputs;
-  localparam logic [AxiXbarCombs-1:0] AxiXbarConnectivity = {AxiXbarCombs{1'b1}};
-
-  /// Various interconnect-related Configs
-  localparam int unsigned MaxReadTxnsConfDma  = 2;
-  localparam int unsigned MaxWriteTxnsConfDma = 2;
-  localparam int unsigned AmoCutsConfDma      = 1;
-  localparam int unsigned AxiCutsConfDma      = 0;
-
-  localparam int unsigned MaxReadTxnsLlc      = 8;
-  localparam int unsigned MaxWriteTxnsLlc     = 8;
-  localparam int unsigned AmoCutsLlc          = 1;
-  localparam int unsigned AxiCutsLlc          = 1;
-
-  localparam int unsigned MaxReadTxnsPeriph   = 1;
-  localparam int unsigned MaxWriteTxnsPeriph  = 1;
-  localparam int unsigned AmoCutsPeriph       = 1;
-  localparam int unsigned AxiCutsPeriph       = 1;
-
-  /// Configuration struct of X-Bar
-  localparam axi_pkg::xbar_cfg_t AxiXbarCfg = '{
-    NoSlvPorts:         AxiXbarNumInputs,
-    NoMstPorts:         AxiXbarNumOutputs,
-    MaxMstTrans:        12,
-    MaxSlvTrans:        12,
-    FallThrough:        0,
-    LatencyMode:        axi_pkg::CUT_ALL_PORTS,
-    PipelineStages:     0,
-    AxiIdWidthSlvPorts: AxiXbarMasterIdWidth,
-    AxiIdUsedSlvPorts:  AxiXbarMasterIdWidth,
-    UniqueIds:          0,
-    AxiAddrWidth:       48,
-    AxiDataWidth:       64,
-    NoAddrRules:        6
-  };
-
-  /// Address rule struct
+  // Default JTAG ID code type
   typedef struct packed {
-    logic [31:0] idx;
-    logic [47:0] start_addr;
-    logic [47:0] end_addr;
-  } address_rule_48_t;
+    bit         _one;
+    bit [10:0]  manufacturer;
+    bit [15:0]  part_num;
+    bit [ 3:0]  version;
+  } jtag_idcode_t;
 
-  /// Address map of the AXI X-Bar
-  /// NUM_OUTPUT rules + 1 additional for LLC (SPM and DRAM)
-  localparam address_rule_48_t [AxiXbarNumOutputs:0] AxiXbarAddrmap = '{
-    '{ idx: AxiXbarOutSerialLink,  start_addr: 48'h100000000000, end_addr: 48'h200000000000},
-    '{ idx: AxiXbarOutLlc,         start_addr: 48'h000080000000, end_addr: 48'h000100000000},
-    '{ idx: AxiXbarOutLlc,         start_addr: 48'h000070000000, end_addr: 48'h000070020000},
-    '{ idx: AxiXbarOutDmaConf,     start_addr: 48'h000060000000, end_addr: 48'h000060001000},
-    '{ idx: AxiXbarOutRegbus,      start_addr: 48'h000001000000, end_addr: 48'h000060000000},
-    '{ idx: AxiXbarOutDebug,       start_addr: 48'h000000000000, end_addr: 48'h000000001000}
+  // PULP Platform manufacturer and default Cheshire part number
+  localparam [10:0] JtagPulpManufacturer  = 12'h6d9;
+  localparam [15:0] JtagCheshirePartNum   = 16'hc5e5;
+  localparam [ 3:0] JtagCheshireVersion   = 4'h1;
+  localparam jtag_idcode_t CheshireIdCode = '{
+    _one          : 1,
+    manufacturer  : JtagPulpManufacturer,
+    part_num      : JtagCheshirePartNum,
+    version       : JtagCheshireVersion
   };
 
-  /// Inputs of the Regbus Demux
-  typedef enum int {
-    RegbusInXbar,
-    RegbusNumInputs
-  } regbus_inputs_e;
+  // Bit vector types for parameters.
+  //We limit range to keep parameters sane.
+  typedef bit [ 7:0] byte_bt;
+  typedef bit [15:0] shrt_bt;
+  typedef bit [31:0] word_bt;
+  typedef bit [63:0] doub_bt;
+  typedef bit [ 9:0] dw_bt;   // data widths
+  typedef bit [ 5:0] aw_bt;   // address, ID widths or small buffers
 
-  /// Outputs of the Regbus Demux
-  typedef enum int {
-    RegbusOutBootrom,
-    RegbusOutCsr,
-    RegbusOutLlc,
-    RegbusOutSerialLink,
-    RegbusOutUart,
-    RegbusOutI2c,
-    RegbusOutSpim,
-    RegbusOutVga,
-    RegbusOutClint,
-    RegbusOutPlic,
-    RegbusOutExternal,
-    RegbusNumOutputs
-  } regbus_outputs_e;
-
-  /// Address map of the Regbus Demux
-  localparam address_rule_48_t [RegbusNumOutputs-1:0] RegbusAddrmap = '{
-    '{ idx: RegbusOutExternal,    start_addr: 48'h10000000, end_addr: 48'h60000000 },  // EXTERNAL    - 1.25 GiB
-    '{ idx: RegbusOutPlic,        start_addr: 48'h0c000000, end_addr: 48'h10000000 },  // PLIC        -   64 MiB
-    '{ idx: RegbusOutClint,       start_addr: 48'h04000000, end_addr: 48'h04100000 },  // CLINT       -    1 MiB
-    '{ idx: RegbusOutVga,         start_addr: 48'h02006000, end_addr: 48'h02007000 },  // VGA         -    4 KiB
-    '{ idx: RegbusOutSpim,        start_addr: 48'h02005000, end_addr: 48'h02006000 },  // SPIM        -    4 KiB
-    '{ idx: RegbusOutI2c,         start_addr: 48'h02004000, end_addr: 48'h02005000 },  // I2C         -    4 KiB
-    '{ idx: RegbusOutUart,        start_addr: 48'h02003000, end_addr: 48'h02004000 },  // UART        -    4 KiB
-    '{ idx: RegbusOutSerialLink,  start_addr: 48'h02002000, end_addr: 48'h02003000 },  // Serial Link -    4 KiB
-    '{ idx: RegbusOutLlc,         start_addr: 48'h02001000, end_addr: 48'h02002000 },  // LLC         -    4 KiB
-    '{ idx: RegbusOutCsr,         start_addr: 48'h02000000, end_addr: 48'h02001000 },  // CSR         -    4 KiB
-    '{ idx: RegbusOutBootrom,     start_addr: 48'h01000000, end_addr: 48'h01020000 }   // Bootrom     -  128 KiB
-  };
-
-  /// Type definitions
-  ///
-  /// Register bus with 48 bit address and 32 bit data
-  `REG_BUS_TYPEDEF_ALL(reg_a48_d32, logic [47:0], logic [31:0], logic [3:0])
-
-  /// Register bus with 48 bit address and 64 bit data
-  `REG_BUS_TYPEDEF_ALL(reg_a48_d64, logic [47:0], logic [63:0], logic [7:0])
-
-  /// AXI bus with 48 bit address and 64 bit data
-  `AXI_TYPEDEF_ALL(axi_a48_d64_mst_u0, logic [47:0], logic [AxiXbarMasterIdWidth-1:0], logic [63:0], logic [7:0], logic [0:0])
-  `AXI_TYPEDEF_ALL(axi_a48_d64_slv_u0, logic [47:0], logic [AxiXbarSlaveIdWidth-1:0], logic [63:0], logic [7:0], logic [0:0])
-
-  /// Same AXI bus with 48 bit address and 64 bit data but with CVA6s 4 bit ID
-  `AXI_TYPEDEF_ALL(axi_cva6, logic [47:0], logic [3:0], logic [63:0], logic [7:0], logic [0:0])
-
-  /// AXI bus for LLC (one additional ID bit)
-  `AXI_TYPEDEF_ALL(axi_a48_d64_mst_u0_llc, logic [47:0], logic [AxiXbarSlaveIdWidth:0], logic [63:0], logic [7:0], logic [0:0])
-
-  /// AXI bus with 48 bit address and 32 bit data
-  `AXI_TYPEDEF_ALL(axi_a48_d32_slv_u0, logic [47:0], logic [AxiXbarSlaveIdWidth-1:0], logic [31:0], logic [3:0], logic [0:0])
-
-  /// Identifier used for user-signal based ATOPs by CVA6
-  localparam logic [0:0] Cva6Identifier = 1'b1;
-
-  /// CVA6 Configuration struct
-  localparam ariane_pkg::ariane_cfg_t CheshireArianeConfig = '{
-    /// Default config
-    RASDepth: 2,
-    BTBEntries: 32,
-    BHTEntries: 128,
-    /// Non idempotent regions
-    NrNonIdempotentRules: 1,
-    NonIdempotentAddrBase: {
-        64'h0100_0000
-    },
-    // Everything up until the SPM is assumed non idempotent
-    NonIdempotentLength: {
-        64'h6F00_0000
-    },
-    /// DRAM, SPM, Boot ROM, Debug Module
-    NrExecuteRegionRules: 4,
-    ExecuteRegionAddrBase: {
-        64'h8000_0000, 64'h7000_0000, 64'h0100_0000, 64'h0
-    },
-    ExecuteRegionLength: {
-        64'h8000_0000, 64'h0002_0000, 64'h0002_0000, 64'h1000
-    },
-    /// Cached regions: DRAM
-    NrCachedRegionRules: 2,
-    CachedRegionAddrBase: {
-        64'h8000_0000, 64'h7000_0000
-    },
-    CachedRegionLength: {
-        64'h8000_0000, 64'h0002_0000
-    },
-    Axi64BitCompliant: 1'b1,
-    SwapEndianess: 1'b0,
-    /// Debug
-    DmBaseAddress: 64'h0,
-    NrPMPEntries: 0
-  };
-
-  /// Interrupts
+  // Externally controllable parameters
   typedef struct packed {
-    logic uart;
-    logic spim_spi_event;
-    logic spim_error;
+    // CVA6 parameters
+    shrt_bt Cva6RASDepth;
+    shrt_bt Cva6BTBEntries;
+    shrt_bt Cva6BHTEntries;
+    shrt_bt Cva6NrPMPEntries;
+    doub_bt Cva6ExtCieLength;
+    // Hart parameters
+    bit     DualCore;
+    doub_bt NumExtIrqHarts;
+    doub_bt NumExtDbgHarts;
+    shrt_bt NumExtIntrs;
+    dw_bt   Core1UserAmoBit;
+    dw_bt   CoreMaxTxnsPerId;
+    dw_bt   CoreMaxUniqIds;
+    // AXI parameters
+    aw_bt   AddrWidth;
+    dw_bt   AxiDataWidth;
+    dw_bt   AxiUserWidth;
+    aw_bt   AxiMstIdWidth;
+    dw_bt   AxiMaxMstTrans;
+    dw_bt   AxiMaxSlvTrans;
+    // User signals identify atomics masters.
+    // A '0 user signal indicates no atomics.
+    dw_bt   AxiUserAmoMsb;
+    dw_bt   AxiUserAmoLsb;
+    doub_bt AxiUserAmoDomain;
+    // Reg parameters
+    dw_bt   RegMaxReadTxns;
+    dw_bt   RegMaxWriteTxns;
+    aw_bt   RegAmoNumCuts;
+    bit     RegAmoPostCut;
+    // External AXI ports (at most 8 ports and rules)
+    bit     [2:0] AxiExtNumMst;
+    bit     [2:0] AxiExtNumSlv;
+    bit     [2:0] AxiExtNumRules;
+    byte_bt [7:0] AxiExtRegionIdx;
+    doub_bt [7:0] AxiExtRegionStart;
+    doub_bt [7:0] AxiExtRegionEnd;
+    // External reg slaves (at most 8 ports and rules)
+    bit     [2:0] RegExtNumSlv;
+    bit     [2:0] RegExtNumRules;
+    byte_bt [7:0] RegExtRegionIdx;
+    doub_bt [7:0] RegExtRegionStart;
+    doub_bt [7:0] RegExtRegionEnd;
+    // Real-time clock speed
+    word_bt RtcFreq;
+    // Address of platfrom ROM
+    word_bt PlatformRom;
+    // Enabled hardware features
+    bit     Bootrom;
+    bit     Uart;
+    bit     I2c;
+    bit     SpiHost;
+    bit     Gpio;
+    bit     Dma;
+    bit     SerialLink;
+    bit     Vga;
+    // Parameters for Debug Module
+    jtag_idcode_t DbgIdCode;
+    dw_bt   DbgMaxReqs;
+    dw_bt   DbgMaxReadTxns;
+    dw_bt   DbgMaxWriteTxns;
+    aw_bt   DbgAmoNumCuts;
+    bit     DbgAmoPostCut;
+    // Parameters for LLC
+    bit     LlcNotBypass;
+    shrt_bt LlcSetAssoc;
+    shrt_bt LlcNumLines;
+    shrt_bt LlcNumBlocks;
+    dw_bt   LlcMaxReadTxns;
+    dw_bt   LlcMaxWriteTxns;
+    aw_bt   LlcAmoNumCuts;
+    bit     LlcAmoPostCut;
+    bit     LlcOutConnect;
+    doub_bt LlcOutRegionStart;
+    doub_bt LlcOutRegionEnd;
+    // Parameters for VGA
+    byte_bt VgaRedWidth;
+    byte_bt VgaGreenWidth;
+    byte_bt VgaBlueWidth;
+    aw_bt   VgaHCountWidth;
+    aw_bt   VgaVCountWidth;
+    // Parameters for Serial Link
+    dw_bt   SlinkMaxTxnsPerId;
+    dw_bt   SlinkMaxUniqIds;
+    shrt_bt SlinkMaxClkDiv;
+    doub_bt SlinkRegionStart;
+    doub_bt SlinkRegionEnd;
+    doub_bt SlinkTxAddrMask;
+    doub_bt SlinkTxAddrDomain;
+    dw_bt   SlinkUserAmoBit;
+    // Parameters for DMA
+    dw_bt   DmaConfMaxReadTxns;
+    dw_bt   DmaConfMaxWriteTxns;
+    aw_bt   DmaConfAmoNumCuts;
+    bit     DmaConfAmoPostCut;
+    // Parameters for GPIO
+    bit     GpioInputSyncs;
+  } cheshire_cfg_t;
+
+  // Defined interrupts
+  typedef struct packed {
+    logic [iomsb(NumExtIntrs):0] ext;
+    logic [31:0] gpio;
+    logic spih_spi_event;
+    logic spih_error;
     logic i2c_host_timeout;
     logic i2c_unexp_stop;
     logic i2c_acq_full;
@@ -215,65 +177,275 @@ package cheshire_pkg;
     logic i2c_fmt_overflow;
     logic i2c_rx_threshold;
     logic i2c_fmt_threshold;
+    logic uart;
     logic zero;
-  } cheshire_interrupt_t;
+  } cheshire_intr_t;
 
-  /// Debug Module parameter
-  localparam logic [15:0] PartNum = 1012;
-  localparam logic [31:0] IDCode = (dm::DbgVersion013 << 28) | (PartNum << 12) | 32'h1;
+  ////////////////////
+  //  Interconnect  //
+  ////////////////////
 
-  /// Testbench start adresses
-  localparam logic [47:0] SpmBase = AxiXbarAddrmap[AxiXbarOutLlc].start_addr;
-  localparam logic [47:0] ScratchRegsBase = RegbusAddrmap[RegbusOutCsr].start_addr;
+  // Return total size of LLC in bytes; this is equal to the maximum LLC SPM capacity.
+  function automatic int unsigned get_llc_size(cheshire_cfg_t cfg);
+    return cfg.LlcSetAssoc * cfg.LlcNumLines * cfg.LlcNumBlocks * cfg.AxiDataWidth / 8;
+  endfunction
 
-  /// Cheshire Config
-  /// Can be used to exclude parts of the system
+  // Static addresses
+  localparam doub_bt AmDbg    = 'h0000_0000;  // Base of AXI peripherals
+  localparam doub_bt AmBrom   = 'h0200_0000;  // Base of reg peripherals
+  localparam doub_bt AmRegs   = 'h0300_0000;
+  localparam doub_bt AmLlc    = 'h0300_1000;
+  localparam doub_bt AmSlink  = 'h0300_6000;
+  localparam doub_bt AmSpm    = 'h1000_0000;  // Cached region at bottom, uncached on top
+
+  // Static masks
+  localparam doub_bt AmSpmRegionMask = 'h03FF_FFFF;
+
+  // AXI Xbar master indices
   typedef struct packed {
-    bit Uart;
-    bit Spim;
-    bit I2c;
-    bit Dma;
-    bit SerialLink;
-    bit Dram;
-    bit Vga;
-    /// Width of the VGA red channel, ignored if VGA set to 0
-    logic [31:0] VgaRedWidth;
-    /// Width of the VGA green channel, ignored if VGA set to 0
-    logic [31:0] VgaGreenWidth;
-    /// Width of the VGA blue channel, ignored if VGA set to 0
-    logic [31:0] VgaBlueWidth;
-    /// The Clock frequency after coming out of reset
-    logic [31:0] ResetFreq;
-  } cheshire_cfg_t;
+    aw_bt cores;
+    aw_bt dbg;
+    aw_bt dma;
+    aw_bt slink;
+    aw_bt vga;
+    aw_bt ext_base;
+    aw_bt num_in;
+  } axi_in_t;
 
-  /// Default FPGA config for Cheshire Platform
-  localparam cheshire_cfg_t CheshireCfgFPGADefault = '{
-    Uart:           1'b1,
-    Spim:           1'b1,
-    I2c:            1'b1,
-    Dma:            1'b1,
-    SerialLink:     1'b0,
-    Dram:           1'b1,
-    Vga:            1'b1,
-    VgaRedWidth:    32'd5,
-    VgaGreenWidth:  32'd6,
-    VgaBlueWidth:   32'd5,
-    ResetFreq:      32'd50000000
-  };
+  function automatic axi_in_t gen_axi_in(cheshire_cfg_t cfg);
+    axi_in_t ret = '{cores: 0, dbg: 1, default: '0};
+    int unsigned i = 1;
+    if (cfg.Dma)        begin i++; ret.dma   = i; end
+    if (cfg.SerialLink) begin i++; ret.slink = i; end
+    if (cfg.Vga)        begin i++; ret.vga   = i; end
+    i++;
+    ret.ext_base = i;
+    ret.num_in = i + cfg.AxiExtNumMst;
+    return ret;
+  endfunction
 
-  /// Default ASIC config for Cheshire Platform
-  localparam cheshire_cfg_t CheshireCfgASICDefault = '{
-    Uart:           1'b1,
-    Spim:           1'b1,
-    I2c:            1'b1,
-    Dma:            1'b1,
-    SerialLink:     1'b1,
-    Dram:           1'b1,
-    Vga:            1'b1,
-    VgaRedWidth:    32'd2,
-    VgaGreenWidth:  32'd3,
-    VgaBlueWidth:   32'd3,
-    ResetFreq:      32'd200000000
+  // A generic address rule type (max-width addresses)
+  typedef struct packed {
+    aw_bt   idx;
+    doub_bt start;
+    doub_bt pte;
+  } arul_bt;
+
+  // AXI Xbar slave indices and map
+  typedef struct packed {
+    aw_bt dbg;
+    aw_bt reg_demux;
+    aw_bt llc;
+    aw_bt spm;
+    aw_bt dma;
+    aw_bt slink;
+    aw_bt ext_base;
+    aw_bt num_out;
+    aw_bt num_rules;
+    arul_bt [aw_bt'(-1):0] map;
+  } axi_out_t;
+
+  function automatic axi_out_t gen_axi_out(cheshire_cfg_t cfg);
+    doub_bt SizeSpm = get_llc_size(cfg);
+    axi_out_t ret = '{dbg: 0, reg_demux: 1, default: '0};
+    int unsigned i = 1, r = 1;
+    ret.map[0] = '{0, AmDbg,   AmDbg + 'h40000};
+    ret.map[1] = '{1, 'h0200_0000, 'h0800_0000};
+    // Whether we have an LLC or a bypass, the output port is has its
+    // own Xbar output with the specified region iff it is connected.
+    if (cfg.LlcOutConnect) begin i++; r++; ret.llc = i;
+        ret.map[r] = '{i, cfg.LlcOutRegionStart, cfg.LlcOutRegionEnd}; end
+    // We can only internally map the SPM region if an LLC exists.
+    // Otherwise, we assume external ports map and back the SPM region.
+    // We map both the cached and uncached regions.
+    if (cfg.LlcNotBypass) begin
+      ret.spm = i;
+      r++; ret.map[r] = '{i, AmSpm, AmSpm + SizeSpm};
+      r++; ret.map[r] = '{i, AmSpm + 'h0400_0000, AmSpm + 'h0400_0000 + SizeSpm};
+    end
+    if (cfg.Dma)          begin i++; r++; ret.dma = i; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
+    if (cfg.SerialLink)   begin i++; r++; ret.slink = i;
+        ret.map[r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
+    // External port indices start after iternal ones
+    i++; r++;
+    ret.ext_base  = i;
+    ret.num_out   = i + cfg.AxiExtNumSlv;
+    ret.num_rules = r + cfg.AxiExtNumRules + cfg.RegExtNumRules;
+    // Append external AXI rules to map
+    for (int k = 0; k < cfg.AxiExtNumRules; ++k) begin
+      r++;
+      ret.map[r] = '{ret.ext_base + cfg.AxiExtRegionIdx[k],
+          cfg.AxiExtRegionStart[k], cfg.AxiExtRegionEnd[k]};
+    end
+    // Append external reg rules to map; these are directed to the reg demux
+    for (int j = 0; j < cfg.RegExtNumRules; ++j) begin
+      r++;
+      ret.map[r] = '{1, cfg.RegExtRegionStart[j], cfg.RegExtRegionEnd[j]};
+    end
+    return ret;
+  endfunction
+
+  // Reg demux slave indices and map
+  typedef struct packed {
+    aw_bt err;    // Error slave for decoder; has no rules
+    aw_bt clint;
+    aw_bt plic;
+    aw_bt regs;
+    aw_bt bootrom;
+    aw_bt llc;
+    aw_bt uart;
+    aw_bt i2c;
+    aw_bt spi_host;
+    aw_bt gpio;
+    aw_bt slink;
+    aw_bt vga;
+    aw_bt ext_base;
+    aw_bt num_out;
+    aw_bt num_rules;
+    arul_bt [aw_bt'(-1):0] map;
+  } reg_out_t;
+
+  function automatic reg_out_t gen_reg_out(cheshire_cfg_t cfg);
+    reg_out_t ret = '{err: 0, clint: 1, plic: 2, regs: 3, default: '0};
+    int unsigned i = 3, r = 2;
+    ret.map[0] = '{1, 'h0204_0000, 'h0208_0000};
+    ret.map[1] = '{2, 'h0400_0000, 'h0800_0000};
+    ret.map[2] = '{3, AmRegs,  AmRegs + 'h1000};
+    if (cfg.Bootrom)  begin i++; ret.bootrom  = i; r++; ret.map[r] = '{i, AmBrom, AmBrom + 'h40000}; end
+    if (cfg.LlcNotBypass) begin i++; ret.llc  = i; r++; ret.map[r] = '{i, AmLlc,    AmLlc + 'h1000}; end
+    if (cfg.Uart)     begin i++; ret.uart     = i; r++; ret.map[r] = '{i, 'h0300_2000, 'h0300_3000}; end
+    if (cfg.I2c)      begin i++; ret.i2c      = i; r++; ret.map[r] = '{i, 'h0300_3000, 'h0300_4000}; end
+    if (cfg.SpiHost)  begin i++; ret.spi_host = i; r++; ret.map[r] = '{i, 'h0300_4000, 'h0300_5000}; end
+    if (cfg.Gpio)     begin i++; ret.gpio     = i; r++; ret.map[r] = '{i, 'h0300_5000, 'h0300_6000}; end
+    if (cfg.SerialLink) begin i++; ret.slink  = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
+    if (cfg.Vga)      begin i++; ret.vga      = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
+    i++; r++;
+    ret.ext_base  = i;
+    ret.num_out   = i + cfg.RegExtNumSlv;
+    ret.num_rules = r + cfg.RegExtNumRules;
+    // Append external slaves at end of map
+    for (int k = 0; k < cfg.AxiExtNumRules; ++k) begin
+      r++;
+      ret.map[r] = '{ret.ext_base + cfg.RegExtRegionIdx[k],
+          cfg.RegExtRegionStart[k], cfg.RegExtRegionEnd[k]};
+      end
+    return ret;
+  endfunction
+
+  ////////////
+  //  CVA6  //
+  ////////////
+
+  function automatic ariane_pkg::ariane_cfg_t gen_cva6_cfg(cheshire_cfg_t cfg);
+    doub_bt SizeSpm = get_llc_size(cfg);
+    doub_bt SizeLlcOut = cfg.LlcOutRegionEnd - cfg.LlcOutRegionStart;
+    return ariane_pkg::ariane_cfg_t'{
+      RASDepth              : cfg.Cva6RASDepth,
+      BTBEntries            : cfg.Cva6BTBEntries,
+      BHTEntries            : cfg.Cva6BHTEntries,
+      NrNonIdempotentRules  : 2,   // Periphs, ExtNonCIE
+      NonIdempotentAddrBase : {64'h0000_0000, 64'h4000_0000},
+      NonIdempotentLength   : {64'h1000_0000, 64'h6000_0000 - cfg.Cva6ExtCieLength},
+      NrExecuteRegionRules  : 5,   // Debug, Bootrom, AllSPM, LLCOut, ExtCIE
+      ExecuteRegionAddrBase : {AmDbg, AmBrom, AmSpm, cfg.LlcOutRegionStart, 64'h2000_0000},
+      ExecuteRegionLength   : {64'h40000, 64'h40000, 2*SizeSpm, SizeLlcOut, cfg.Cva6ExtCieLength},
+      NrCachedRegionRules   : 3,   // CachedSPM, LLCOut, ExtCIE
+      CachedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart,  64'h2000_0000},
+      CachedRegionLength    : {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength},
+      AxiCompliant          : 1,
+      SwapEndianess         : 0,
+      DmBaseAddress         : AmDbg,
+      NrPMPEntries          : cfg.Cva6NrPMPEntries
+    };
+  endfunction
+
+  ////////////////
+  //  Defaults  //
+  ////////////////
+
+  // DO *NOT* BLINDLY ADOPT THE BELOW DEFAULTS WITHOUT FURTHER CONSIDERATION.
+  // They are intended to provide references on reasonable defaults for *most*
+  // parameters for select example SoCs. They will *likely* not be suitable for
+  // your purposes and, depending on context, *may not work*. You were warned.
+
+  localparam cheshire_cfg_t DefaultCfg = '{
+    // CVA6 parameters
+    Cva6RASDepth      : ariane_pkg::ArianeDefaultConfig.RASDepth,
+    Cva6BTBEntries    : ariane_pkg::ArianeDefaultConfig.BTBEntries,
+    Cva6BHTEntries    : ariane_pkg::ArianeDefaultConfig.BHTEntries,
+    Cva6NrPMPEntries  : 0,
+    Cva6ExtCieLength  : 'h2000_0000,
+    // Harts
+    DualCore          : 0,  // Only one core, but rest of config allows for two
+    CoreMaxTxnsPerId  : 4,
+    CoreMaxUniqIds    : 4,
+    // Interconnect
+    AddrWidth         : 48,
+    AxiDataWidth      : 64,
+    AxiUserWidth      : 2,  // Convention: bit 0 for core(s), bit 1 for serial link
+    AxiMstIdWidth     : 2,
+    AxiMaxMstTrans    : 8,
+    AxiMaxSlvTrans    : 8,
+    AxiUserAmoMsb     : 1,
+    AxiUserAmoLsb     : 0,
+    RegMaxReadTxns    : 8,
+    RegMaxWriteTxns   : 8,
+    RegAmoNumCuts     : 1,
+    RegAmoPostCut     : 1,
+    // RTC
+    RtcFreq           : 32768,
+    // Features
+    Bootrom           : 1,
+    Uart              : 1,
+    I2c               : 1,
+    SpiHost           : 1,
+    Gpio              : 1,
+    Dma               : 1,
+    SerialLink        : 1,
+    Vga               : 1,
+    // Debug
+    DbgIdCode         : CheshireIdCode,
+    DbgMaxReqs        : 4,
+    DbgMaxReadTxns    : 4,
+    DbgMaxWriteTxns   : 4,
+    DbgAmoNumCuts     : 1,
+    DbgAmoPostCut     : 1,
+    // LLC: 128 KiB, up to 2 GiB DRAM
+    LlcNotBypass      : 1,
+    LlcSetAssoc       : 8,
+    LlcNumLines       : 256,
+    LlcNumBlocks      : 8,
+    LlcMaxReadTxns    : 8,
+    LlcMaxWriteTxns   : 8,
+    LlcAmoNumCuts     : 1,
+    LlcAmoPostCut     : 1,
+    LlcOutConnect     : 1,
+    LlcOutRegionStart : 'h8000_0000,
+    LlcOutRegionEnd   : 'h1_0000_0000,
+    // VGA: RGB332
+    VgaRedWidth       : 3,
+    VgaGreenWidth     : 3,
+    VgaBlueWidth      : 2,
+    VgaHCountWidth    : 24, // TODO: Default is 32; is this needed?
+    VgaVCountWidth    : 24, // TODO: See above
+    // Serial Link: map other chip's lower 32bit to 'h1_000_0000
+    SlinkMaxTxnsPerId : 4,
+    SlinkMaxUniqIds   : 4,
+    SlinkMaxClkDiv    : 1024,
+    SlinkRegionStart  : 'h1_0000_0000,
+    SlinkRegionEnd    : 'h2_0000_0000,
+    SlinkTxAddrMask   : 'hFFFF_FFFF,
+    SlinkTxAddrDomain : 'h0000_0000,
+    SlinkUserAmoBit   : 1,  // Upper atomics bit for serial link
+    // DMA config
+    DmaConfMaxReadTxns  : 4,
+    DmaConfMaxWriteTxns : 4,
+    DmaConfAmoNumCuts   : 1,
+    DmaConfAmoPostCut   : 1,
+    // GPIOs
+    GpioInputSyncs    : 1,
+    // All non-set values should be zero
+    default: '0
   };
 
 endpackage

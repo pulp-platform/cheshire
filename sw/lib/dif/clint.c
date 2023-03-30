@@ -13,7 +13,7 @@
 
 volatile uint64_t clint_get_mtime() {
     return (((volatile uint64_t) *reg32(&__base_clint, CLINT_MTIME_HIGH_REG_OFFSET)) << 32) |
-            *reg32(&__base_clint, CLINT_MTIME_LOW_REG_OFFSET);
+            ((volatile uint64_t) *reg32(&__base_clint, CLINT_MTIME_LOW_REG_OFFSET));
 }
 
 void clint_spin_until(uint64_t tgt_mtime) {
@@ -22,6 +22,23 @@ void clint_spin_until(uint64_t tgt_mtime) {
 
 void clint_spin_ticks(uint64_t ticks) {
     clint_spin_until(clint_get_mtime() + ticks);
+}
+
+uint64_t clint_get_core_freq(uint64_t ref_freq, uint64_t num_ticks) {
+    uint64_t end_mcycle, start_mcycle;
+    uint64_t end_mtime = clint_get_mtime(), start_mtime;
+    // Capture start times until we observe an RTC tick rollover
+    do {
+        start_mcycle = get_mcycle();
+        start_mtime = clint_get_mtime();
+    } while (start_mtime == end_mtime);
+    // Capture end times until we observe rollover to the past-the-end RTC tick
+    do {
+        end_mcycle = get_mcycle();
+        end_mtime = clint_get_mtime();
+    } while (end_mtime < start_mtime + num_ticks);
+    // Compute current frequency in Hz
+    return ((end_mcycle - start_mcycle) * ref_freq) / (end_mtime - start_mtime);
 }
 
 void clint_set_mtimecmpx(uint64_t timer_idx, uint64_t value) {

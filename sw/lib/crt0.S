@@ -143,15 +143,13 @@ _trap_handler_wrap:
 trap_vector:
     j trap_vector
 
-// If main returns we end up here
-// Save the return value to the scratch register 0
-// and wait forever
-.global _exit
+// If main returns, we end up here.
+// Save the return value to scratch register 2 and wait forever.
 _exit:
     slli a0, a0, 1
     ori  a0, a0, 1
-    la t0, __base_cheshire_regs
-    sw a0, 4(t0)
+    la t0, __base_regs
+    sw a0, 8(t0)     // regs.SCRATCH[2]
 
 _exit_wait_loop:
     wfi

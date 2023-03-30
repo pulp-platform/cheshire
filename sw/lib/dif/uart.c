@@ -9,18 +9,6 @@
 #include "util.h"
 #include "params.h"
 
-static inline int uart_write_ready(void *uart_base) {
-    return *reg8(uart_base, UART_LINE_STATUS_REG_OFFSET) & (1 << UART_LINE_STATUS_THR_EMPTY_BIT);
-}
-
-int uart_read_ready(void *uart_base) {
-    return *reg8(uart_base, UART_LINE_STATUS_REG_OFFSET) & (1 << UART_LINE_STATUS_DATA_READY_BIT);
-}
-
-static inline int uart_write_idle(void *uart_base) {
-    return *reg8(uart_base, UART_LINE_STATUS_REG_OFFSET) & (1 << UART_LINE_STATUS_TMIT_EMPTY_BIT);
-}
-
 void uart_init(void *uart_base, uint64_t freq, uint64_t baud) {
     uint64_t divisor = freq / (baud << 4);
     uint8_t dlo = (uint8_t)(divisor);
@@ -34,10 +22,36 @@ void uart_init(void *uart_base, uint64_t freq, uint64_t baud) {
     *reg8(uart_base, UART_MODEM_CONTROL_REG_OFFSET) = 0x20; // Autoflow mode
 }
 
+int uart_read_ready(void *uart_base) {
+    return *reg8(uart_base, UART_LINE_STATUS_REG_OFFSET) & (1 << UART_LINE_STATUS_DATA_READY_BIT);
+}
+
+static inline int __uart_write_ready(void *uart_base) {
+    return *reg8(uart_base, UART_LINE_STATUS_REG_OFFSET) & (1 << UART_LINE_STATUS_THR_EMPTY_BIT);
+}
+
+static inline int __uart_write_idle(void *uart_base) {
+    return __uart_write_ready(uart_base) &&
+        *reg8(uart_base, UART_LINE_STATUS_REG_OFFSET) & (1 << UART_LINE_STATUS_TMIT_EMPTY_BIT);
+}
+
 void uart_write(void *uart_base, uint8_t byte) {
-    while (!uart_write_ready(uart_base))
+    while (!__uart_write_ready(uart_base))
         ;
     *reg8(uart_base, UART_THR_REG_OFFSET) = byte;
+}
+
+void uart_write_str(void *uart_base, void* src, uint64_t len) {
+    for(uint64_t i = 0; i < len; ++i)
+        uart_write(uart_base, ((uint8_t*)src)[i]);
+}
+
+void uart_write_flush(void *uart_base) {
+    // Ensure our read comes after any prior writes only
+    // TODO: CVA6 likely violates inter-read-write ordering; double-check!
+    fence();
+    while (!__uart_write_idle(uart_base))
+        ;
 }
 
 uint8_t uart_read(void *uart_base) {
@@ -46,12 +60,9 @@ uint8_t uart_read(void *uart_base) {
     return *reg8(uart_base, UART_RBR_REG_OFFSET);
 }
 
-void uart_write_flush(void *uart_base) {
-    // Ensure our read comes after any prior writes only
-    // TODO: CVA6 likely violates inter-read-write ordering; double-check!
-    fence();
-    while (!uart_write_idle(uart_base))
-        ;
+void uart_read_str(void *uart_base, void* dst, uint64_t len) {
+    for(uint64_t i = 0; i < len; ++i)
+        ((uint8_t*)dst)[i] = uart_read(uart_base);
 }
 
 // Default UART provides console

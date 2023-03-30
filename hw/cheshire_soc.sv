@@ -4,1213 +4,1356 @@
 //
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
-
-`include "axi/assign.svh"
-`include "common_cells/registers.svh"
+// Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 module cheshire_soc import cheshire_pkg::*; #(
-  parameter cheshire_cfg_t CheshireCfg = CheshireCfgASICDefault
+  // Cheshire config
+  parameter cheshire_cfg_t Cfg = '0,
+  // Debug info for external harts
+  parameter dm::hartinfo_t [iomsb(Cfg.NumExtDbgHarts)-1:0] ExtHartinfo = '0,
+  // Interconnect types (must agree with Cheshire config)
+  parameter type axi_ext_llc_req_t  = logic,
+  parameter type axi_ext_llc_rsp_t  = logic,
+  parameter type axi_ext_mst_req_t  = logic,
+  parameter type axi_ext_mst_rsp_t  = logic,
+  parameter type axi_ext_slv_req_t  = logic,
+  parameter type axi_ext_slv_rsp_t  = logic,
+  parameter type reg_ext_req_t      = logic,
+  parameter type reg_ext_rsp_t      = logic
 ) (
-  input   logic               clk_i,
-  input   logic               rst_ni,
-
-  input   logic               testmode_i,
-
-  // Boot mode selection
-  input   logic [1:0]         boot_mode_i,
-
-  // Boot address for CVA6
-  input   logic [63:0]        boot_addr_i,
-
-  // DRAM AXI interface
-  output  axi_a48_d64_mst_u0_llc_req_t    dram_req_o,
-  input   axi_a48_d64_mst_u0_llc_resp_t   dram_resp_i,
-
-  // DDR-Link
-  input   logic [3:0]         ddr_link_i,
-  output  logic [3:0]         ddr_link_o,
-
-  input   logic               ddr_link_clk_i,
-  output  logic               ddr_link_clk_o,
-
-  // VGA Controller
-  output  logic                                   vga_hsync_o,
-  output  logic                                   vga_vsync_o,
-  output  logic [CheshireCfg.VgaRedWidth-1:0]     vga_red_o,
-  output  logic [CheshireCfg.VgaGreenWidth-1:0]   vga_green_o,
-  output  logic [CheshireCfg.VgaBlueWidth-1:0]    vga_blue_o,
-
-  // JTAG Interface
-  input   logic               jtag_tck_i,
-  input   logic               jtag_trst_ni,
-  input   logic               jtag_tms_i,
-  input   logic               jtag_tdi_i,
-  output  logic               jtag_tdo_o,
-
-  // UART Interface
-  output logic                uart_tx_o,
-  input  logic                uart_rx_i,
-
-  // I2C Interface
-  output logic                i2c_sda_o,
-  input  logic                i2c_sda_i,
-  output logic                i2c_sda_en_o,
-  output logic                i2c_scl_o,
-  input  logic                i2c_scl_i,
-  output logic                i2c_scl_en_o,
-
-  // SPI Host Interface
-  output logic                spim_sck_o,
-  output logic                spim_sck_en_o,
-  output logic [ 1:0]         spim_csb_o,
-  output logic [ 1:0]         spim_csb_en_o,
-  output logic [ 3:0]         spim_sd_o,
-  output logic [ 3:0]         spim_sd_en_o,
-  input  logic [ 3:0]         spim_sd_i,
-
-  // CLINT
-  input  logic                rtc_i,
-
-  // CLK locked signal
-  input  logic                clk_locked_i,
-
-  // External Regbus
-  output reg_a48_d32_req_t    external_reg_req_o,
-  input  reg_a48_d32_rsp_t    external_reg_rsp_i
-
+  input  logic        clk_i,
+  input  logic        rst_ni,
+  input  logic        test_mode_i,
+  input  logic [1:0]  boot_mode_i,
+  input  logic        rtc_i,
+  // External AXI LLC (DRAM) port
+  output axi_ext_llc_req_t axi_llc_mst_req_o,
+  input  axi_ext_llc_rsp_t axi_llc_mst_rsp_i,
+  // External AXI crossbar ports
+  input  axi_ext_mst_req_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_req_i,
+  output axi_ext_mst_rsp_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_rsp_o,
+  output axi_ext_slv_req_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_req_o,
+  input  axi_ext_slv_rsp_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_rsp_i,
+  // External reg demux slaves
+  output reg_ext_req_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_req_o,
+  input  reg_ext_rsp_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_rsp_i,
+  // Interrupts from external devices
+  input  logic [iomsb(Cfg.NumExtIntrs):0] intr_ext_i,
+  // Interrupts to external harts
+  output logic [iomsb(Cfg.NumExtIrqHarts):0] meip_ext_o,
+  output logic [iomsb(Cfg.NumExtIrqHarts):0] seip_ext_o,
+  output logic [iomsb(Cfg.NumExtIrqHarts):0] mtip_ext_o,
+  output logic [iomsb(Cfg.NumExtIrqHarts):0] msip_ext_o,
+  // Debug interface to external harts
+  output logic                                dbg_active_o,
+  output logic [iomsb(Cfg.NumExtDbgHarts):0]  dbg_ext_req_o,
+  input  logic [iomsb(Cfg.NumExtDbgHarts):0]  dbg_ext_unavail_i,
+  // JTAG interface
+  input  logic  jtag_tck_i,
+  input  logic  jtag_trst_ni,
+  input  logic  jtag_tms_i,
+  input  logic  jtag_tdi_i,
+  output logic  jtag_tdo_o,
+  output logic  jtag_tdo_oe_o,
+  // UART interface
+  output logic  uart_tx_o,
+  input  logic  uart_rx_i,
+  // UART Modem flow control
+  output logic  uart_rts_no,
+  output logic  uart_dtr_no,
+  input  logic  uart_cts_ni,
+  input  logic  uart_dsr_ni,
+  input  logic  uart_dcd_ni,
+  input  logic  uart_rin_ni,
+  // I2C interface
+  output logic  i2c_sda_o,
+  input  logic  i2c_sda_i,
+  output logic  i2c_sda_en_o,
+  output logic  i2c_scl_o,
+  input  logic  i2c_scl_i,
+  output logic  i2c_scl_en_o,
+  // SPI host interface
+  output logic                  spih_sck_o,
+  output logic                  spih_sck_en_o,
+  output logic [SpihNumCs-1:0]  spih_csb_o,
+  output logic [SpihNumCs-1:0]  spih_csb_en_o,
+  output logic [ 3:0]           spih_sd_o,
+  output logic [ 3:0]           spih_sd_en_o,
+  input  logic [ 3:0]           spih_sd_i,
+  // GPIO interface
+  input  logic [31:0] gpio_i,
+  output logic [31:0] gpio_o,
+  output logic [31:0] gpio_en_o,
+  // Serial link interface
+  input  logic [SlinkNumChan-1:0]                     slink_rcv_clk_i,
+  output logic [SlinkNumChan-1:0]                     slink_rcv_clk_o,
+  input  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_i,
+  output logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_o,
+  // VGA interface
+  output logic                          vga_hsync_o,
+  output logic                          vga_vsync_o,
+  output logic [Cfg.VgaRedWidth  -1:0]  vga_red_o,
+  output logic [Cfg.VgaGreenWidth-1:0]  vga_green_o,
+  output logic [Cfg.VgaBlueWidth -1:0]  vga_blue_o
 );
 
-  // X-Bar
-  axi_a48_d64_slv_u0_req_t  [AxiXbarNumOutputs-1:0]  axi_xbar_mst_port_reqs;
-  axi_a48_d64_slv_u0_resp_t [AxiXbarNumOutputs-1:0]  axi_xbar_mst_port_rsps;
+  `include "axi/typedef.svh"
+  `include "common_cells/registers.svh"
+  `include "common_cells/assertions.svh"
+  `include "cheshire/typedef.svh"
 
-  axi_a48_d64_mst_u0_req_t  [AxiXbarNumInputs-1:0]   axi_xbar_slv_port_reqs;
-  axi_a48_d64_mst_u0_resp_t [AxiXbarNumInputs-1:0]   axi_xbar_slv_port_rsps;
+  // Declare interface types internally
+  `CHESHIRE_TYPEDEF_ALL(, Cfg)
 
+  //////////////////
+  //  Interrupts  //
+  //////////////////
 
-  // Regbus Peripherals
-  reg_a48_d32_req_t [RegbusNumOutputs-1:0] regbus_out_req;
-  reg_a48_d32_rsp_t [RegbusNumOutputs-1:0] regbus_out_rsp;
+  localparam int unsigned NumIntHarts = 1 + Cfg.DualCore;
+  localparam int unsigned NumIrqHarts = NumIntHarts + Cfg.NumExtIrqHarts;
 
+  cheshire_intr_t           intr;
+  logic [NumIrqHarts-1:0]   time_irq, ipi;
+  logic [2*NumIrqHarts-1:0] irq;
 
-  // Machine/Supervisor timer and machine/supervisor software interrupt pending.
-  logic [1:0] mstip, mssip;
+  // Collect external interrupts
+  assign intr.ext   = intr_ext_i;
+  assign intr.zero  = 0;
 
-  // External interrupt pending (Machine/Supervisor context)
-  logic [1:0] eip;
-
-  // Interrupt vector
-  cheshire_interrupt_t irq;
-
-  // Debug Module debug request signal for CVA6
-  logic debug_req;
-
-  // External Regbus sinals
-  assign external_reg_req_o = regbus_out_req[RegbusOutExternal];
-  assign regbus_out_rsp[RegbusOutExternal] = external_reg_rsp_i;
-
-  ////////////
-  //  CVA6  //
-  ////////////
-
-  axi_cva6_req_t  cva6_out_req, cva6_user_id_req;
-  axi_cva6_resp_t cva6_out_resp, cva6_user_id_resp;
-
-  always_comb begin
-    cva6_user_id_req          = cva6_out_req;
-    cva6_user_id_req.aw.user  = Cva6Identifier;
-    cva6_user_id_req.w.user   = Cva6Identifier;
-    cva6_user_id_req.ar.user  = Cva6Identifier;
-    cva6_out_resp             = cva6_user_id_resp;
+  // Forward IRQs to external interruptible harts if any
+  if (Cfg.NumExtIrqHarts != 0) begin : gen_ext_irqs
+    // We assume that machine and supervisor external interrupts are stacked
+    assign meip_ext_o = irq      [NumIrqHarts-1:NumIntHarts];
+    assign seip_ext_o = irq      [2*NumIrqHarts-1:NumIrqHarts+NumIntHarts];
+    assign mtip_ext_o = time_irq [NumIrqHarts-1:NumIntHarts];
+    assign msip_ext_o = ipi      [NumIrqHarts-1:NumIntHarts];
+  end else begin : gen_no_ext_irqs
+    assign meip_ext_o = '0;
+    assign seip_ext_o = '0;
+    assign mtip_ext_o = '0;
+    assign msip_ext_o = '0;
   end
 
-  cva6 #(
-    .ArianeCfg    ( CheshireArianeConfig  )
-  ) i_cva6 (
-    .clk_i,
-    .rst_ni,
-    .boot_addr_i,
-    .hart_id_i    ( 64'h0         ),
-    .irq_i        ( eip           ),
-    .ipi_i        ( mssip[0]      ),
-    .time_irq_i   ( mstip[0]      ),
-    .debug_req_i  ( debug_req     ),
-    .cvxif_req_o  (               ),
-    .cvxif_resp_i ( '0            ),
-    .axi_req_o    ( cva6_out_req  ),
-    .axi_resp_i   ( cva6_out_resp )
-  );
+  ////////////////
+  //  AXI Xbar  //
+  ////////////////
 
-  // Remap CVA6s 4 id bits to the system width
-  axi_id_remap #(
-    .AxiSlvPortIdWidth      ( 4                         ),
-    .AxiSlvPortMaxUniqIds   ( 4                         ),
-    .AxiMaxTxnsPerId        ( 1                         ),
-    .AxiMstPortIdWidth      ( AxiXbarMasterIdWidth      ),
-    .slv_req_t              ( axi_cva6_req_t            ),
-    .slv_resp_t             ( axi_cva6_resp_t           ),
-    .mst_req_t              ( axi_a48_d64_mst_u0_req_t  ),
-    .mst_resp_t             ( axi_a48_d64_mst_u0_resp_t )
-  ) i_axi_id_remap_cva6 (
-    .clk_i,
-    .rst_ni,
-    .slv_req_i              ( cva6_user_id_req                      ),
-    .slv_resp_o             ( cva6_user_id_resp                     ),
-    .mst_req_o              ( axi_xbar_slv_port_reqs[AxiXbarInCva6] ),
-    .mst_resp_i             ( axi_xbar_slv_port_rsps[AxiXbarInCva6] )
-  );
+  // Generate indices and get maps for all ports
+  localparam axi_in_t   AxiIn   = gen_axi_in(Cfg);
+  localparam axi_out_t  AxiOut  = gen_axi_out(Cfg);
 
-  /////////////////
-  //  AXI X-Bar  //
-  /////////////////
+  // Define needed parameters
+  localparam int unsigned AxiStrbWidth  = Cfg.AxiDataWidth / 8;
+  localparam int unsigned AxiSlvIdWidth = Cfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
+
+  // Type for address map entries
+  typedef struct packed {
+    logic [$bits(aw_bt)-1:0] idx;
+    addr_t start_addr;
+    addr_t end_addr;
+  } addr_rule_t;
+
+  // Generate address map
+  function automatic addr_rule_t [AxiOut.num_rules-1:0] gen_axi_map();
+    addr_rule_t [AxiOut.num_rules-1:0] ret;
+    for (int i = 0; i < AxiOut.num_rules; ++i)
+      ret[i] = '{idx: AxiOut.map[i].idx, start_addr: AxiOut.map[i].start, end_addr: AxiOut.map[i].pte};
+    return ret;
+  endfunction
+
+  localparam addr_rule_t [AxiOut.num_rules-1:0] AxiMap = gen_axi_map();
+
+  // Connectivity of Xbar
+  axi_mst_req_t [AxiIn.num_in-1:0]    axi_in_req;
+  axi_mst_rsp_t [AxiIn.num_in-1:0]    axi_in_rsp;
+  axi_slv_req_t [AxiOut.num_out-1:0]  axi_out_req;
+  axi_slv_rsp_t [AxiOut.num_out-1:0]  axi_out_rsp;
+
+  // Configure AXI Xbar
+  localparam axi_pkg::xbar_cfg_t AxiXbarCfg = '{
+    NoSlvPorts:         AxiIn.num_in,
+    NoMstPorts:         AxiOut.num_out,
+    MaxMstTrans:        Cfg.AxiMaxMstTrans,
+    MaxSlvTrans:        Cfg.AxiMaxSlvTrans,
+    FallThrough:        0,
+    LatencyMode:        axi_pkg::CUT_ALL_PORTS,
+    PipelineStages:     0,
+    AxiIdWidthSlvPorts: Cfg.AxiMstIdWidth,
+    AxiIdUsedSlvPorts:  Cfg.AxiMstIdWidth,
+    UniqueIds:          0,
+    AxiAddrWidth:       Cfg.AddrWidth,
+    AxiDataWidth:       Cfg.AxiDataWidth,
+    NoAddrRules:        AxiOut.num_rules
+  };
 
   axi_xbar #(
-    .Cfg            ( AxiXbarCfg                    ),
-    .ATOPs          ( 1'b1                          ),
-    .Connectivity   ( AxiXbarConnectivity           ),
-    .slv_aw_chan_t  ( axi_a48_d64_mst_u0_aw_chan_t  ),
-    .mst_aw_chan_t  ( axi_a48_d64_slv_u0_aw_chan_t  ),
-    .w_chan_t       ( axi_a48_d64_mst_u0_w_chan_t   ),
-    .slv_b_chan_t   ( axi_a48_d64_mst_u0_b_chan_t   ),
-    .mst_b_chan_t   ( axi_a48_d64_slv_u0_b_chan_t   ),
-    .slv_ar_chan_t  ( axi_a48_d64_mst_u0_ar_chan_t  ),
-    .mst_ar_chan_t  ( axi_a48_d64_slv_u0_ar_chan_t  ),
-    .slv_r_chan_t   ( axi_a48_d64_mst_u0_r_chan_t   ),
-    .mst_r_chan_t   ( axi_a48_d64_slv_u0_r_chan_t   ),
-    .slv_req_t      ( axi_a48_d64_mst_u0_req_t      ),
-    .slv_resp_t     ( axi_a48_d64_mst_u0_resp_t     ),
-    .mst_req_t      ( axi_a48_d64_slv_u0_req_t      ),
-    .mst_resp_t     ( axi_a48_d64_slv_u0_resp_t     ),
-    .rule_t         ( address_rule_48_t             )
+    .Cfg            ( AxiXbarCfg ),
+    .ATOPs          ( 1  ),
+    .Connectivity   ( '1 ),
+    .slv_aw_chan_t  ( axi_mst_aw_chan_t ),
+    .mst_aw_chan_t  ( axi_slv_aw_chan_t ),
+    .w_chan_t       ( axi_mst_w_chan_t  ),
+    .slv_b_chan_t   ( axi_mst_b_chan_t  ),
+    .mst_b_chan_t   ( axi_slv_b_chan_t  ),
+    .slv_ar_chan_t  ( axi_mst_ar_chan_t ),
+    .mst_ar_chan_t  ( axi_slv_ar_chan_t ),
+    .slv_r_chan_t   ( axi_mst_r_chan_t  ),
+    .mst_r_chan_t   ( axi_slv_r_chan_t  ),
+    .slv_req_t      ( axi_mst_req_t ),
+    .slv_resp_t     ( axi_mst_rsp_t ),
+    .mst_req_t      ( axi_slv_req_t ),
+    .mst_resp_t     ( axi_slv_rsp_t ),
+    .rule_t         ( addr_rule_t )
   ) i_axi_xbar (
     .clk_i,
     .rst_ni,
-    .test_i                 ( testmode_i                 ),
-    .slv_ports_req_i        ( axi_xbar_slv_port_reqs     ),
-    .slv_ports_resp_o       ( axi_xbar_slv_port_rsps     ),
-    .mst_ports_req_o        ( axi_xbar_mst_port_reqs     ),
-    .mst_ports_resp_i       ( axi_xbar_mst_port_rsps     ),
-    .addr_map_i             ( AxiXbarAddrmap             ),
-    .en_default_mst_port_i  ( '0                         ),
-    .default_mst_port_i     ( '0                         )
+    .test_i                 ( test_mode_i ),
+    .slv_ports_req_i        ( axi_in_req  ),
+    .slv_ports_resp_o       ( axi_in_rsp  ),
+    .mst_ports_req_o        ( axi_out_req ),
+    .mst_ports_resp_i       ( axi_out_rsp ),
+    .addr_map_i             ( AxiMap ),
+    .en_default_mst_port_i  ( '0 ),
+    .default_mst_port_i     ( '0 )
   );
 
-  /////////////
-  //  Debug  //
-  /////////////
+  // Connect external masters
+  if (Cfg.AxiExtNumMst > 0) begin : gen_ext_axi_mst
+    assign axi_in_req[AxiOut.num_out-1:AxiOut.ext_base] = axi_ext_mst_req_i;
+    assign axi_ext_mst_rsp_o = axi_in_rsp[AxiOut.num_out-1:AxiOut.ext_base];
+  end else begin : gen_no_ext_axi_mst
+    assign axi_ext_mst_rsp_o = '0;
+  end
 
-  // DMI signals for JTAG DMI <-> DM communication
-  logic dmi_rst_n;
-  dm::dmi_req_t dmi_req;
-  logic dmi_req_ready;
-  logic dmi_req_valid;
-  dm::dmi_resp_t dmi_resp;
-  logic dmi_resp_ready;
-  logic dmi_resp_valid;
+  // Connect external slaves
+  if (Cfg.AxiExtNumSlv > 0) begin : gen_ext_axi_slv
+    assign axi_ext_slv_req_o = axi_out_req[AxiOut.num_out-1:AxiOut.ext_base];
+    assign axi_out_rsp[AxiOut.num_out-1:AxiOut.ext_base] = axi_ext_slv_rsp_i;
+  end else begin : gen_no_ext_axi_slv
+    assign axi_ext_slv_req_o = '0;
+  end
 
-  // Slave side of the debug module
-  logic           dbg_req;
-  logic   [47:0]  dbg_addr;
-  logic           dbg_we;
-  logic   [63:0]  dbg_wdata;
-  logic   [ 7:0]  dbg_wstrb;
-  logic   [63:0]  dbg_rdata;
-  logic           dbg_rvalid;
+  /////////////////
+  //  Reg demux  //
+  /////////////////
 
-  // System Bus Access for the debug module
-  logic           sba_req;
-  logic   [47:0]  sba_addr;
-  logic   [63:0]  sba_addr_long;
-  logic           sba_we;
-  logic   [63:0]  sba_wdata;
-  logic   [ 7:0]  sba_strb;
-  logic           sba_gnt;
-  logic   [63:0]  sba_rdata;
-  logic           sba_rvalid;
-  logic           sba_err;
+  // Define types needed
+  `AXI_TYPEDEF_ALL_CT(axi_d32, axi_d32_req_t, axi_d32_rsp_t, addr_t, axi_slv_id_t, logic [31:0], logic [3:0], axi_user_t)
 
-  // Ignore the upper 16 bits
-  assign sba_addr = sba_addr_long[47:0];
+  // Generate indices and get maps for all ports
+  localparam reg_out_t  RegOut = gen_reg_out(Cfg);
 
-  // AXI4+ATOP -> Memory Inteface
-  axi_to_mem_interleaved #(
-    .axi_req_t       ( axi_a48_d64_slv_u0_req_t  ),
-    .axi_resp_t      ( axi_a48_d64_slv_u0_resp_t ),
-    .AddrWidth       ( 48                        ),
-    .DataWidth       ( 64                        ),
-    .IdWidth         ( AxiXbarSlaveIdWidth       ),
-    .NumBanks        ( 1                         ),
-    .BufDepth        ( 3                         )
-  ) i_axi_to_mem_dbg (
+  // Generate Reg address map
+  function automatic addr_rule_t [RegOut.num_rules-1:0] gen_reg_map();
+    addr_rule_t [RegOut.num_rules-1:0] ret;
+    for (int i = 0; i < RegOut.num_rules; ++i)
+      ret[i] = '{idx: RegOut.map[i].idx, start_addr: RegOut.map[i].start, end_addr: RegOut.map[i].pte};
+    return ret;
+  endfunction
+
+  localparam addr_rule_t [RegOut.num_rules-1:0] RegMap = gen_reg_map();
+
+  logic [cf_math_pkg::idx_width(RegOut.num_out)-1:0] reg_select;
+
+  axi_slv_req_t axi_reg_amo_req, axi_reg_cut_req;
+  axi_slv_rsp_t axi_reg_amo_rsp, axi_reg_cut_rsp;
+
+  axi_d32_req_t axi_reg_d32_req;
+  axi_d32_rsp_t axi_reg_d32_rsp;
+
+  reg_req_t reg_in_req;
+  reg_rsp_t reg_in_rsp;
+
+  reg_req_t [RegOut.num_out-1:0] reg_out_req;
+  reg_rsp_t [RegOut.num_out-1:0] reg_out_rsp;
+
+
+  // Shim atomics, which are not supported in reg
+  // TODO: should we use a filter instead here?
+  axi_riscv_atomics_structs #(
+    .AxiAddrWidth     ( Cfg.AddrWidth    ),
+    .AxiDataWidth     ( Cfg.AxiDataWidth ),
+    .AxiIdWidth       ( AxiSlvIdWidth    ),
+    .AxiUserWidth     ( Cfg.AxiUserWidth ),
+    .AxiMaxReadTxns   ( Cfg.RegMaxReadTxns  ),
+    .AxiMaxWriteTxns  ( Cfg.RegMaxWriteTxns ),
+    .AxiUserAsId      ( 1 ),
+    .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
+    .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
+    .RiscvWordWidth   ( 64 ),
+    .NAxiCuts         ( Cfg.RegAmoNumCuts ),
+    .axi_req_t        ( axi_slv_req_t ),
+    .axi_rsp_t        ( axi_slv_rsp_t )
+  ) i_reg_atomics (
     .clk_i,
     .rst_ni,
-    .busy_o          (                           ),
-    .axi_req_i       ( axi_xbar_mst_port_reqs[AxiXbarOutDebug] ),
-    .axi_resp_o      ( axi_xbar_mst_port_rsps[AxiXbarOutDebug] ),
-    .mem_req_o       ( dbg_req                   ),
-    .mem_gnt_i       ( dbg_req                   ),
-    .mem_addr_o      ( dbg_addr                  ),
-    .mem_wdata_o     ( dbg_wdata                 ),
-    .mem_strb_o      ( dbg_wstrb                 ),
-    .mem_atop_o      (                           ),
-    .mem_we_o        ( dbg_we                    ),
-    .mem_rvalid_i    ( dbg_rvalid                ),
-    .mem_rdata_i     ( dbg_rdata                 )
+    .axi_slv_req_i ( axi_out_req[AxiOut.reg_demux] ),
+    .axi_slv_rsp_o ( axi_out_rsp[AxiOut.reg_demux] ),
+    .axi_mst_req_o ( axi_reg_amo_req ),
+    .axi_mst_rsp_i ( axi_reg_amo_rsp )
   );
 
-  // dbg_rvalid = #1 dbg_req
-  `FF(dbg_rvalid, dbg_req, 1'b0, clk_i, rst_ni)
-
-  dm::hartinfo_t [0:0] hartinfo;
-  assign hartinfo[0] = ariane_pkg::DebugHartInfo;
-
-  // Debug Module
-  dm_top #(
-    .NrHarts              ( 1                 ),
-    .BusWidth             ( 64                ),
-    .DmBaseAddress        ( 'h0               )
-  ) i_dm_top (
+  axi_cut #(
+    .Bypass     ( ~Cfg.RegAmoPostCut ),
+    .aw_chan_t  ( axi_slv_aw_chan_t ),
+    .w_chan_t   ( axi_slv_w_chan_t  ),
+    .b_chan_t   ( axi_slv_b_chan_t  ),
+    .ar_chan_t  ( axi_slv_ar_chan_t ),
+    .r_chan_t   ( axi_slv_r_chan_t  ),
+    .axi_req_t  ( axi_slv_req_t ),
+    .axi_resp_t ( axi_slv_rsp_t )
+  ) i_reg_atomics_cut (
     .clk_i,
     .rst_ni,
-    .testmode_i,
-    .ndmreset_o           (                   ),
-    .dmactive_o           (                   ),
-    .debug_req_o          ( debug_req         ),
-    .unavailable_i        ( '0                ),
-    .hartinfo_i           ( hartinfo          ),
-    .slave_req_i          ( dbg_req           ),
-    .slave_we_i           ( dbg_we            ),
-    .slave_addr_i         ( {16'b0, dbg_addr} ),
-    .slave_be_i           ( dbg_wstrb         ),
-    .slave_wdata_i        ( dbg_wdata         ),
-    .slave_rdata_o        ( dbg_rdata         ),
-    .master_req_o         ( sba_req           ),
-    .master_add_o         ( sba_addr_long     ),
-    .master_we_o          ( sba_we            ),
-    .master_wdata_o       ( sba_wdata         ),
-    .master_be_o          ( sba_strb          ),
-    .master_gnt_i         ( sba_gnt           ),
-    .master_r_valid_i     ( sba_rvalid        ),
-    .master_r_rdata_i     ( sba_rdata         ),
-    .master_r_err_i       ( sba_err           ),
-    .master_r_other_err_i ( 1'b0              ),
-    .dmi_rst_ni           ( dmi_rst_n         ),
-    .dmi_req_valid_i      ( dmi_req_valid     ),
-    .dmi_req_ready_o      ( dmi_req_ready     ),
-    .dmi_req_i            ( dmi_req           ),
-    .dmi_resp_valid_o     ( dmi_resp_valid    ),
-    .dmi_resp_ready_i     ( dmi_resp_ready    ),
-    .dmi_resp_o           ( dmi_resp          )
+    .slv_req_i  ( axi_reg_amo_req ),
+    .slv_resp_o ( axi_reg_amo_rsp ),
+    .mst_req_o  ( axi_reg_cut_req ),
+    .mst_resp_i ( axi_reg_cut_rsp )
   );
 
-  // From DM --> AXI X-Bar
-  axi_from_mem #(
-    .MemAddrWidth    ( 48                        ),
-    .AxiAddrWidth    ( AxiAddrWidth              ),
-    .DataWidth       ( 64                        ),
-    .MaxRequests     ( 2                         ),
-    .AxiProt         ( '0                        ),
-    .axi_req_t       ( axi_a48_d64_mst_u0_req_t  ),
-    .axi_rsp_t       ( axi_a48_d64_mst_u0_resp_t )
-  ) i_axi_from_mem_dbg (
-    .clk_i,
-    .rst_ni,
-    .mem_req_i       ( sba_req                   ),
-    .mem_addr_i      ( sba_addr                  ),
-    .mem_we_i        ( sba_we                    ),
-    .mem_wdata_i     ( sba_wdata                 ),
-    .mem_be_i        ( sba_strb                  ),
-    .mem_gnt_o       ( sba_gnt                   ),
-    .mem_rsp_valid_o ( sba_rvalid                ),
-    .mem_rsp_rdata_o ( sba_rdata                 ),
-    .mem_rsp_error_o ( sba_err                   ),
-    .slv_aw_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
-    .slv_ar_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
-    .axi_req_o       ( axi_xbar_slv_port_reqs[AxiXbarInDebug] ),
-    .axi_rsp_i       ( axi_xbar_slv_port_rsps[AxiXbarInDebug] )
-  );
-
-  // Debug Transfer Module + Debug Module Interface
-  dmi_jtag #(
-    .IdcodeValue      ( IDCode )
-  ) i_dmi_jtag (
-    .clk_i,
-    .rst_ni,
-    .testmode_i,
-    .dmi_rst_no       ( dmi_rst_n            ),
-    .dmi_req_o        ( dmi_req              ),
-    .dmi_req_ready_i  ( dmi_req_ready        ),
-    .dmi_req_valid_o  ( dmi_req_valid        ),
-    .dmi_resp_i       ( dmi_resp             ),
-    .dmi_resp_ready_o ( dmi_resp_ready       ),
-    .dmi_resp_valid_i ( dmi_resp_valid       ),
-    .tck_i            ( jtag_tck_i           ),
-    .tms_i            ( jtag_tms_i           ),
-    .trst_ni          ( jtag_trst_ni         ),
-    .td_i             ( jtag_tdi_i           ),
-    .td_o             ( jtag_tdo_o           ),
-    .tdo_oe_o         (                      )
-  );
-
-  ///////////////////
-  //  Serial Link  //
-  ///////////////////
-
-  if(CheshireCfg.SerialLink) begin : gen_serial_link
-
-    axi_a48_d64_mst_u0_req_t ddr_link_axi_in_req;
-    axi_a48_d64_mst_u0_resp_t ddr_link_axi_in_rsp;
-
-    // Remap wider ID to smaller ID
-    axi_id_remap #(
-      .AxiSlvPortIdWidth    ( AxiXbarSlaveIdWidth       ),
-      .AxiSlvPortMaxUniqIds ( 2**AxiXbarMasterIdWidth   ),
-      .AxiMaxTxnsPerId      ( 1                         ),
-      .AxiMstPortIdWidth    ( AxiXbarMasterIdWidth      ),
-      .slv_req_t            ( axi_a48_d64_slv_u0_req_t  ),
-      .slv_resp_t           ( axi_a48_d64_slv_u0_resp_t ),
-      .mst_req_t            ( axi_a48_d64_mst_u0_req_t  ),
-      .mst_resp_t           ( axi_a48_d64_mst_u0_resp_t )
-    ) i_axi_id_remap_ddr_link (
-      .clk_i,
-      .rst_ni,
-      .slv_req_i            ( axi_xbar_mst_port_reqs[AxiXbarOutSerialLink] ),
-      .slv_resp_o           ( axi_xbar_mst_port_rsps[AxiXbarOutSerialLink] ),
-      .mst_req_o            ( ddr_link_axi_in_req       ),
-      .mst_resp_i           ( ddr_link_axi_in_rsp       )
-    );
-
-    serial_link #(
-      .axi_req_t      ( axi_a48_d64_mst_u0_req_t     ),
-      .axi_rsp_t      ( axi_a48_d64_mst_u0_resp_t    ),
-      .cfg_req_t      ( reg_a48_d32_req_t            ),
-      .cfg_rsp_t      ( reg_a48_d32_rsp_t            ),
-      .aw_chan_t      ( axi_a48_d64_mst_u0_aw_chan_t ),
-      .ar_chan_t      ( axi_a48_d64_mst_u0_ar_chan_t ),
-      .r_chan_t       ( axi_a48_d64_mst_u0_r_chan_t  ),
-      .w_chan_t       ( axi_a48_d64_mst_u0_w_chan_t  ),
-      .b_chan_t       ( axi_a48_d64_mst_u0_b_chan_t  ),
-      .hw2reg_t       ( serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t ),
-      .reg2hw_t       ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t ),
-      .NumChannels    ( 1                            ),
-      .NumLanes       ( 4                            ),
-      .MaxClkDiv      ( 1024                         )
-    ) i_serial_link (
-      .clk_i          ( clk_i                 ),
-      .rst_ni         ( rst_ni                ),
-      .clk_sl_i       ( clk_i                 ),
-      .rst_sl_ni      ( rst_ni                ),
-      .clk_reg_i      ( clk_i                 ),
-      .rst_reg_ni     ( rst_ni                ),
-      .testmode_i,
-      .axi_in_req_i   ( ddr_link_axi_in_req   ),
-      .axi_in_rsp_o   ( ddr_link_axi_in_rsp   ),
-      .axi_out_req_o  ( axi_xbar_slv_port_reqs[AxiXbarInSerialLink] ),
-      .axi_out_rsp_i  ( axi_xbar_slv_port_rsps[AxiXbarInSerialLink] ),
-      .cfg_req_i      ( regbus_out_req[RegbusOutSerialLink] ),
-      .cfg_rsp_o      ( regbus_out_rsp[RegbusOutSerialLink] ),
-      .ddr_rcv_clk_i  ( ddr_link_clk_i        ),
-      .ddr_rcv_clk_o  ( ddr_link_clk_o        ),
-      .ddr_i          ( ddr_link_i            ),
-      .ddr_o          ( ddr_link_o            ),
-      .isolated_i     ( '0                    ),
-      .isolate_o      (                       ),
-      .clk_ena_o      (                       ),
-      .reset_no       (                       )
-    );
-
-  end : gen_serial_link else begin : gen_serial_link_dummy
-
-    assign ddr_link_clk_o = '1;
-    assign ddr_link_o = '0;
-
-    assign axi_xbar_slv_port_reqs[AxiXbarInSerialLink] = '0;
-
-    axi_err_slv #(
-      .AxiIdWidth ( AxiXbarSlaveIdWidth       ),
-      .axi_req_t  ( axi_a48_d64_slv_u0_req_t  ),
-      .axi_resp_t ( axi_a48_d64_slv_u0_resp_t ),
-      .RespWidth  ( 64                        ),
-      .RespData   ( 64'hCA11AB1EBADCAB1E      ),
-      .ATOPs      ( 1'b1                      ),
-      .MaxTrans   ( 1                         )
-    ) i_axi_err_slv_ddr_link (
-      .clk_i,
-      .rst_ni,
-      .test_i     ( testmode_i                ),
-      .slv_req_i  ( axi_xbar_mst_port_reqs[AxiXbarOutSerialLink] ),
-      .slv_resp_o ( axi_xbar_mst_port_rsps[AxiXbarOutSerialLink] )
-    );
-
-    reg_err_slv #(
-      .DW      ( 32                 ),
-      .ERR_VAL ( 32'hBADCAB1E       ),
-      .req_t   ( reg_a48_d32_req_t  ),
-      .rsp_t   ( reg_a48_d32_rsp_t  )
-    ) i_reg_err_slv_ddr_link (
-      .req_i   ( regbus_out_req[RegbusOutSerialLink] ),
-      .rsp_o   ( regbus_out_rsp[RegbusOutSerialLink] )
-    );
-
-  end : gen_serial_link_dummy
-
-  //////////////////////
-  //  VGA Controller  //
-  //////////////////////
-
-  if(CheshireCfg.Vga) begin : gen_vga
-
-    axi_vga #(
-      .RedWidth       ( CheshireCfg.VgaRedWidth   ),
-      .GreenWidth     ( CheshireCfg.VgaGreenWidth ),
-      .BlueWidth      ( CheshireCfg.VgaBlueWidth  ),
-      .HCountWidth    ( 32                        ),
-      .VCountWidth    ( 32                        ),
-      .AXIAddrWidth   ( AxiAddrWidth              ),
-      .AXIDataWidth   ( AxiDataWidth              ),
-      .AXIStrbWidth   ( AxiStrbWidth              ),
-      .axi_req_t      ( axi_a48_d64_mst_u0_req_t  ),
-      .axi_resp_t     ( axi_a48_d64_mst_u0_resp_t ),
-      .reg_req_t      ( reg_a48_d32_req_t         ),
-      .reg_resp_t     ( reg_a48_d32_rsp_t         )
-    ) i_axi_vga (
-      .clk_i,
-      .rst_ni,
-      .test_mode_en_i ( testmode_i                      ),
-      .reg_req_i      ( regbus_out_req[RegbusOutVga]    ),
-      .reg_rsp_o      ( regbus_out_rsp[RegbusOutVga]    ),
-      .axi_req_o      ( axi_xbar_slv_port_reqs[AxiXbarInVga] ),
-      .axi_resp_i     ( axi_xbar_slv_port_rsps[AxiXbarInVga] ),
-      .hsync_o        ( vga_hsync_o                     ),
-      .vsync_o        ( vga_vsync_o                     ),
-      .red_o          ( vga_red_o                       ),
-      .green_o        ( vga_green_o                     ),
-      .blue_o         ( vga_blue_o                      )
-    );
-
-  end : gen_vga else begin : gen_vga_dummy
-
-    assign axi_xbar_slv_port_reqs[AxiXbarInVga] = '0;
-
-    assign vga_hsync_o  = '0;
-    assign vga_vsync_o  = '0;
-    assign vga_red_o    = '0;
-    assign vga_green_o  = '0;
-    assign vga_blue_o   = '0;
-
-    reg_err_slv #(
-      .DW      ( 32                 ),
-      .ERR_VAL ( 32'hBADCAB1E       ),
-      .req_t   ( reg_a48_d32_req_t  ),
-      .rsp_t   ( reg_a48_d32_rsp_t  )
-    ) i_reg_err_slv_vga (
-      .req_i   ( regbus_out_req[RegbusOutVga] ),
-      .rsp_o   ( regbus_out_rsp[RegbusOutVga] )
-    );
-
-  end : gen_vga_dummy
-
-  //////////////////////
-  //  DMA Controller  //
-  //////////////////////
-
-  if(CheshireCfg.Dma) begin : gen_dma
-
-    AXI_BUS #(
-      .AXI_ADDR_WIDTH ( AxiAddrWidth          ),
-      .AXI_DATA_WIDTH ( AxiDataWidth          ),
-      .AXI_ID_WIDTH   ( AxiXbarSlaveIdWidth   ),
-      .AXI_USER_WIDTH ( AxiUserWidth          )
-    ) axi_xbar_atomics_dma ();
-
-    AXI_BUS #(
-      .AXI_ADDR_WIDTH ( AxiAddrWidth          ),
-      .AXI_DATA_WIDTH ( AxiDataWidth          ),
-      .AXI_ID_WIDTH   ( AxiXbarSlaveIdWidth   ),
-      .AXI_USER_WIDTH ( AxiUserWidth          )
-    ) axi_atomics_dma_wrap ();
-
-    AXI_BUS #(
-      .AXI_ADDR_WIDTH ( AxiAddrWidth          ),
-      .AXI_DATA_WIDTH ( AxiDataWidth          ),
-      .AXI_ID_WIDTH   ( AxiXbarSlaveIdWidth   ),
-      .AXI_USER_WIDTH ( AxiUserWidth          )
-    ) axi_atomics_dma_wrap_cut ();
-
-    AXI_BUS #(
-      .AXI_ADDR_WIDTH ( AxiAddrWidth          ),
-      .AXI_DATA_WIDTH ( AxiDataWidth          ),
-      .AXI_ID_WIDTH   ( AxiXbarMasterIdWidth  ),
-      .AXI_USER_WIDTH ( AxiUserWidth          )
-    ) dma_wrap_axi_xbar ();
-
-    axi_a48_d64_slv_u0_req_t axi_xbar_atomics_dma_req;
-    axi_a48_d64_slv_u0_resp_t axi_xbar_atomics_dma_rsp;
-
-    axi_a48_d64_mst_u0_req_t dma_wrap_axi_xbar_req;
-    axi_a48_d64_mst_u0_resp_t dma_wrap_axi_xbar_rsp;
-
-    assign axi_xbar_atomics_dma_req = axi_xbar_mst_port_reqs[AxiXbarOutDmaConf];
-    assign axi_xbar_mst_port_rsps[AxiXbarOutDmaConf] = axi_xbar_atomics_dma_rsp;
-
-    // From XBar to atomics wrap
-    `AXI_ASSIGN_FROM_REQ(axi_xbar_atomics_dma, axi_xbar_atomics_dma_req)
-    `AXI_ASSIGN_TO_RESP(axi_xbar_atomics_dma_rsp, axi_xbar_atomics_dma)
-
-    // From DMA wrap to XBar
-    `AXI_ASSIGN_TO_REQ(dma_wrap_axi_xbar_req, dma_wrap_axi_xbar)
-    `AXI_ASSIGN_FROM_RESP(dma_wrap_axi_xbar, dma_wrap_axi_xbar_rsp)
-
-    assign axi_xbar_slv_port_reqs[AxiXbarInDma] = dma_wrap_axi_xbar_req;
-    assign dma_wrap_axi_xbar_rsp = axi_xbar_slv_port_rsps[AxiXbarInDma];
-
-    axi_riscv_atomics_wrap #(
-      .AXI_ADDR_WIDTH     ( AxiAddrWidth        ),
-      .AXI_DATA_WIDTH     ( AxiDataWidth        ),
-      .AXI_ID_WIDTH       ( AxiXbarSlaveIdWidth ),
-      .AXI_USER_WIDTH     ( AxiUserWidth        ),
-      .AXI_MAX_READ_TXNS  ( MaxReadTxnsConfDma  ),
-      .AXI_MAX_WRITE_TXNS ( MaxWriteTxnsConfDma ),
-      .AXI_USER_AS_ID     ( 1'b1                ),
-      .AXI_USER_ID_MSB    ( 0                   ),
-      .AXI_USER_ID_LSB    ( 0                   ),
-      .RISCV_WORD_WIDTH   ( 64                  ),
-      .N_AXI_CUT          ( AmoCutsConfDma      )
-    ) i_axi_riscv_atomics_dma (
-      .clk_i,
-      .rst_ni,
-      .mst                ( axi_atomics_dma_wrap.Master ),
-      .slv                ( axi_xbar_atomics_dma.Slave  )
-    );
-
-    axi_multicut_intf #(
-      .ADDR_WIDTH ( AxiAddrWidth        ),
-      .DATA_WIDTH ( AxiDataWidth        ),
-      .ID_WIDTH   ( AxiXbarSlaveIdWidth ),
-      .USER_WIDTH ( AxiUserWidth        ),
-      .NUM_CUTS   ( AxiCutsConfDma      )
-    ) i_axi_multicut_intf_dma (
-      .clk_i,
-      .rst_ni,
-      .in      ( axi_atomics_dma_wrap.Slave      ),
-      .out     ( axi_atomics_dma_wrap_cut.Master )
-    );
-
-    dma_core_wrap #(
-      .AXI_ADDR_WIDTH   ( AxiAddrWidth          ),
-      .AXI_DATA_WIDTH   ( AxiDataWidth          ),
-      .AXI_USER_WIDTH   ( AxiUserWidth          ),
-      .AXI_ID_WIDTH     ( AxiXbarMasterIdWidth  ),
-      .AXI_SLV_ID_WIDTH ( AxiXbarSlaveIdWidth   )
-    ) i_dma_core_wrap (
-      .clk_i,
-      .rst_ni,
-      .testmode_i,
-      .axi_master       ( dma_wrap_axi_xbar.Master        ),
-      .axi_slave        ( axi_atomics_dma_wrap_cut.Slave  )
-    );
-
-  end : gen_dma else begin : gen_dma_dummy
-
-    assign axi_xbar_slv_port_reqs[AxiXbarInDma] = '0;
-
-    axi_err_slv #(
-      .AxiIdWidth ( AxiXbarSlaveIdWidth       ),
-      .axi_req_t  ( axi_a48_d64_slv_u0_req_t  ),
-      .axi_resp_t ( axi_a48_d64_slv_u0_resp_t ),
-      .RespWidth  ( 64                        ),
-      .RespData   ( 64'hCA11AB1EBADCAB1E      ),
-      .ATOPs      ( 1'b1                      ),
-      .MaxTrans   ( 1                         )
-    ) i_axi_err_slv_dma (
-      .clk_i,
-      .rst_ni,
-      .test_i     ( testmode_i                ),
-      .slv_req_i  ( axi_xbar_mst_port_reqs[AxiXbarOutDmaConf] ),
-      .slv_resp_o ( axi_xbar_mst_port_rsps[AxiXbarOutDmaConf] )
-    );
-
-  end : gen_dma_dummy
-
-  /////////
-  // LLC //
-  /////////
-
-  AXI_BUS #(
-    .AXI_ADDR_WIDTH ( AxiAddrWidth          ),
-    .AXI_DATA_WIDTH ( AxiDataWidth          ),
-    .AXI_ID_WIDTH   ( AxiXbarSlaveIdWidth   ),
-    .AXI_USER_WIDTH ( AxiUserWidth          )
-  ) axi_xbar_atomics_dram();
-
-  AXI_BUS #(
-    .AXI_ADDR_WIDTH ( AxiAddrWidth          ),
-    .AXI_DATA_WIDTH ( AxiDataWidth          ),
-    .AXI_ID_WIDTH   ( AxiXbarSlaveIdWidth   ),
-    .AXI_USER_WIDTH ( AxiUserWidth          )
-  ) axi_dram_out();
-
-  AXI_BUS #(
-    .AXI_ADDR_WIDTH ( AxiAddrWidth          ),
-    .AXI_DATA_WIDTH ( AxiDataWidth          ),
-    .AXI_ID_WIDTH   ( AxiXbarSlaveIdWidth   ),
-    .AXI_USER_WIDTH ( AxiUserWidth          )
-  ) axi_dram_out_cut();
-
-  `AXI_ASSIGN_FROM_REQ(axi_xbar_atomics_dram, axi_xbar_mst_port_reqs[AxiXbarOutLlc])
-  `AXI_ASSIGN_TO_RESP(axi_xbar_mst_port_rsps[AxiXbarOutLlc], axi_xbar_atomics_dram)
-
-  `AXI_ASSIGN_TO_REQ(axi_atomics_to_llc_req, axi_dram_out_cut)
-  `AXI_ASSIGN_FROM_RESP(axi_dram_out_cut, axi_atomics_to_llc_rsp)
-
-  axi_a48_d64_slv_u0_req_t  axi_atomics_to_llc_req;
-  axi_a48_d64_slv_u0_resp_t axi_atomics_to_llc_rsp;
-
-  axi_a48_d64_mst_u0_llc_req_t  llc_to_dram_req;
-  axi_a48_d64_mst_u0_llc_resp_t llc_to_dram_rsp;
-
-  axi_riscv_atomics_wrap #(
-    .AXI_ADDR_WIDTH     ( AxiAddrWidth        ),
-    .AXI_DATA_WIDTH     ( AxiDataWidth        ),
-    .AXI_ID_WIDTH       ( AxiXbarSlaveIdWidth ),
-    .AXI_USER_WIDTH     ( AxiUserWidth        ),
-    .AXI_MAX_READ_TXNS  ( MaxReadTxnsLlc      ),
-    .AXI_MAX_WRITE_TXNS ( MaxWriteTxnsLlc     ),
-    .AXI_USER_AS_ID     ( 1'b1                ),
-    .AXI_USER_ID_MSB    ( 0                   ),
-    .AXI_USER_ID_LSB    ( 0                   ),
-    .RISCV_WORD_WIDTH   ( 64                  ),
-    .N_AXI_CUT          ( AmoCutsLlc          )
-  ) i_axi_riscv_atomics_dram (
-    .clk_i,
-    .rst_ni,
-    .mst                ( axi_dram_out.Master         ),
-    .slv                ( axi_xbar_atomics_dram.Slave )
-  );
-
-  axi_multicut_intf #(
-    .ADDR_WIDTH ( AxiAddrWidth        ),
-    .DATA_WIDTH ( AxiDataWidth        ),
-    .ID_WIDTH   ( AxiXbarSlaveIdWidth ),
-    .USER_WIDTH ( AxiUserWidth        ),
-    .NUM_CUTS   ( AxiCutsLlc          )
-  ) i_axi_multicut_intf_llc (
-    .clk_i,
-    .rst_ni,
-    .in      ( axi_dram_out.Slave      ),
-    .out     ( axi_dram_out_cut.Master )
-  );
-
-  axi_llc_reg_wrap #(
-    .SetAssociativity    ( 8                              ),
-    .NumLines            ( 256                            ),
-    .NumBlocks           ( 8                              ),
-    .AxiIdWidth          ( AxiXbarSlaveIdWidth            ),
-    .AxiAddrWidth        ( AxiAddrWidth                   ),
-    .AxiDataWidth        ( AxiDataWidth                   ),
-    .AxiUserWidth        ( AxiUserWidth                   ),
-    .slv_req_t           ( axi_a48_d64_slv_u0_req_t       ),
-    .slv_resp_t          ( axi_a48_d64_slv_u0_resp_t      ),
-    .mst_req_t           ( axi_a48_d64_mst_u0_llc_req_t   ),
-    .mst_resp_t          ( axi_a48_d64_mst_u0_llc_resp_t  ),
-    .reg_req_t           ( reg_a48_d32_req_t              ),
-    .reg_resp_t          ( reg_a48_d32_rsp_t              ),
-    .rule_full_t         ( address_rule_48_t              )
-  ) i_axi_llc_reg_wrap (
-    .clk_i,
-    .rst_ni,
-    .test_i              ( testmode_i                                 ),
-    .slv_req_i           ( axi_atomics_to_llc_req                     ),
-    .slv_resp_o          ( axi_atomics_to_llc_rsp                     ),
-    .mst_req_o           ( llc_to_dram_req                            ),
-    .mst_resp_i          ( llc_to_dram_rsp                            ),
-    .conf_req_i          ( regbus_out_req[RegbusOutLlc]               ),
-    .conf_resp_o         ( regbus_out_rsp[RegbusOutLlc]               ),
-    .cached_start_addr_i ( AxiXbarAddrmap[AxiXbarOutLlc+1].start_addr ),
-    .cached_end_addr_i   ( AxiXbarAddrmap[AxiXbarOutLlc+1].end_addr   ),
-    .spm_start_addr_i    ( AxiXbarAddrmap[AxiXbarOutLlc].start_addr   ),
-    .axi_llc_events_o    ( /* TODO: connect me to CSRs? */            )
-  );
-
-  //////////
-  // DRAM //
-  //////////
-
-  if(CheshireCfg.Dram) begin : gen_dram
-
-    // Connect the external DRAM signals
-    assign dram_req_o = llc_to_dram_req;
-    assign llc_to_dram_rsp = dram_resp_i;
-
-  end : gen_dram else begin : gen_dram_dummy
-
-    assign dram_req_o = '0;
-
-    axi_err_slv #(
-      .AxiIdWidth ( AxiXbarSlaveIdWidth           ),
-      .axi_req_t  ( axi_a48_d64_mst_u0_llc_req_t  ),
-      .axi_resp_t ( axi_a48_d64_mst_u0_llc_resp_t ),
-      .RespWidth  ( 64                            ),
-      .RespData   ( 64'hCA11AB1EBADCAB1E          ),
-      .ATOPs      ( 1'b1                          ),
-      .MaxTrans   ( 1                             )
-    ) i_axi_err_slv_dram (
-      .clk_i,
-      .rst_ni,
-      .test_i     ( testmode_i      ),
-      .slv_req_i  ( llc_to_dram_req ),
-      .slv_resp_o ( llc_to_dram_rsp )
-    );
-
-  end : gen_dram_dummy
-
-  //////////////
-  //  Regbus  //
-  //////////////
-
-  logic [cf_math_pkg::idx_width(RegbusNumOutputs)-1:0] regbus_select;
-
-  AXI_BUS #(
-    .AXI_ADDR_WIDTH ( AxiAddrWidth          ),
-    .AXI_DATA_WIDTH ( AxiDataWidth          ),
-    .AXI_ID_WIDTH   ( AxiXbarSlaveIdWidth   ),
-    .AXI_USER_WIDTH ( AxiUserWidth          )
-  ) axi_xbar_atomics_regbus();
-
-  AXI_BUS #(
-    .AXI_ADDR_WIDTH ( AxiAddrWidth          ),
-    .AXI_DATA_WIDTH ( AxiDataWidth          ),
-    .AXI_ID_WIDTH   ( AxiXbarSlaveIdWidth   ),
-    .AXI_USER_WIDTH ( AxiUserWidth          )
-  ) axi_atomics_dw_conv();
-
-  AXI_BUS #(
-    .AXI_ADDR_WIDTH ( AxiAddrWidth          ),
-    .AXI_DATA_WIDTH ( AxiDataWidth          ),
-    .AXI_ID_WIDTH   ( AxiXbarSlaveIdWidth   ),
-    .AXI_USER_WIDTH ( AxiUserWidth          )
-  ) axi_atomics_dw_conv_cut();
-
-  axi_a48_d64_slv_u0_req_t  axi_xbar_atomics_req;
-  axi_a48_d64_slv_u0_resp_t axi_xbar_atomics_rsp;
-
-  axi_a48_d64_slv_u0_req_t  axi_atomics_dw_conv_req;
-  axi_a48_d64_slv_u0_resp_t axi_atomics_dw_conv_rsp;
-
-  axi_a48_d32_slv_u0_req_t axi_dw_conv_to_req;
-  axi_a48_d32_slv_u0_resp_t axi_dw_conv_to_rsp;
-
-  reg_a48_d32_req_t  regbus_in_req;
-  reg_a48_d32_rsp_t  regbus_in_rsp;
-
-  // From XBar to Atomics Wrap
-  `AXI_ASSIGN_FROM_REQ(axi_xbar_atomics_regbus, axi_xbar_atomics_req)
-  `AXI_ASSIGN_TO_RESP(axi_xbar_atomics_rsp, axi_xbar_atomics_regbus)
-
-  // From Atomics Wrap to DW Converter
-  `AXI_ASSIGN_TO_REQ(axi_atomics_dw_conv_req, axi_atomics_dw_conv_cut)
-  `AXI_ASSIGN_FROM_RESP(axi_atomics_dw_conv_cut, axi_atomics_dw_conv_rsp)
-
-  assign axi_xbar_atomics_req = axi_xbar_mst_port_reqs[AxiXbarOutRegbus];
-  assign axi_xbar_mst_port_rsps[AxiXbarOutRegbus] = axi_xbar_atomics_rsp;
-
-  axi_riscv_atomics_wrap #(
-    .AXI_ADDR_WIDTH     ( AxiAddrWidth        ),
-    .AXI_DATA_WIDTH     ( AxiDataWidth        ),
-    .AXI_ID_WIDTH       ( AxiXbarSlaveIdWidth ),
-    .AXI_USER_WIDTH     ( AxiUserWidth        ),
-    .AXI_MAX_READ_TXNS  ( MaxReadTxnsPeriph   ),
-    .AXI_MAX_WRITE_TXNS ( MaxWriteTxnsPeriph  ),
-    .AXI_USER_AS_ID     ( 1'b1                ),
-    .AXI_USER_ID_MSB    ( 0                   ),
-    .AXI_USER_ID_LSB    ( 0                   ),
-    .RISCV_WORD_WIDTH   ( 64                  ),
-    .N_AXI_CUT          ( AmoCutsPeriph       )
-  ) i_axi_riscv_atomics_regbus (
-    .clk_i,
-    .rst_ni,
-    .mst                ( axi_atomics_dw_conv.Master    ),
-    .slv                ( axi_xbar_atomics_regbus.Slave )
-  );
-
-  axi_multicut_intf #(
-    .ADDR_WIDTH ( AxiAddrWidth         ),
-    .DATA_WIDTH ( AxiDataWidth         ),
-    .ID_WIDTH   ( AxiXbarSlaveIdWidth  ),
-    .USER_WIDTH ( AxiUserWidth         ),
-    .NUM_CUTS   ( AxiCutsPeriph        )
-  ) i_axi_multicut_intf_regbus (
-    .clk_i,
-    .rst_ni,
-    .in      (axi_atomics_dw_conv.Slave       ),
-    .out     (axi_atomics_dw_conv_cut.Master  )
-  );
-
+  // Convert to 32-bit reg datawidth
   axi_dw_converter #(
-    .AxiSlvPortDataWidth  ( AxiDataWidth                 ),
-    .AxiMstPortDataWidth  ( 32                           ),
-    .AxiAddrWidth         ( AxiAddrWidth                 ),
-    .AxiIdWidth           ( AxiXbarSlaveIdWidth          ),
-    .aw_chan_t            ( axi_a48_d32_slv_u0_aw_chan_t ),
-    .mst_w_chan_t         ( axi_a48_d32_slv_u0_w_chan_t  ),
-    .slv_w_chan_t         ( axi_a48_d64_slv_u0_w_chan_t  ),
-    .b_chan_t             ( axi_a48_d32_slv_u0_b_chan_t  ),
-    .ar_chan_t            ( axi_a48_d32_slv_u0_ar_chan_t ),
-    .mst_r_chan_t         ( axi_a48_d32_slv_u0_r_chan_t  ),
-    .slv_r_chan_t         ( axi_a48_d64_slv_u0_r_chan_t  ),
-    .axi_mst_req_t        ( axi_a48_d32_slv_u0_req_t     ),
-    .axi_mst_resp_t       ( axi_a48_d32_slv_u0_resp_t    ),
-    .axi_slv_req_t        ( axi_a48_d64_slv_u0_req_t     ),
-    .axi_slv_resp_t       ( axi_a48_d64_slv_u0_resp_t    )
-  ) i_axi_dw_converter_regbus (
+    .AxiSlvPortDataWidth  ( Cfg.AxiDataWidth ),
+    .AxiMstPortDataWidth  ( 32 ),
+    .AxiAddrWidth         ( Cfg.AddrWidth ),
+    .AxiIdWidth           ( AxiSlvIdWidth ),
+    .aw_chan_t            ( axi_slv_aw_chan_t ),
+    .mst_w_chan_t         ( axi_d32_w_chan_t  ),
+    .slv_w_chan_t         ( axi_slv_w_chan_t  ),
+    .b_chan_t             ( axi_slv_b_chan_t  ),
+    .ar_chan_t            ( axi_slv_ar_chan_t ),
+    .mst_r_chan_t         ( axi_d32_r_chan_t  ),
+    .slv_r_chan_t         ( axi_slv_r_chan_t  ),
+    .axi_mst_req_t        ( axi_d32_req_t ),
+    .axi_mst_resp_t       ( axi_d32_rsp_t ),
+    .axi_slv_req_t        ( axi_slv_req_t ),
+    .axi_slv_resp_t       ( axi_slv_rsp_t )
+  ) i_reg_axi_dw_converter (
     .clk_i,
     .rst_ni,
-    .slv_req_i            ( axi_atomics_dw_conv_req      ),
-    .slv_resp_o           ( axi_atomics_dw_conv_rsp      ),
-    .mst_req_o            ( axi_dw_conv_to_req           ),
-    .mst_resp_i           ( axi_dw_conv_to_rsp           )
+    .slv_req_i  ( axi_reg_cut_req ),
+    .slv_resp_o ( axi_reg_cut_rsp ),
+    .mst_req_o  ( axi_reg_d32_req ),
+    .mst_resp_i ( axi_reg_d32_rsp )
   );
 
+  // Convert from AXI to reg protocol
   axi_to_reg #(
-    .ADDR_WIDTH         ( AxiAddrWidth              ),
-    .DATA_WIDTH         ( 32                        ),
-    .ID_WIDTH           ( AxiXbarSlaveIdWidth       ),
-    .USER_WIDTH         ( AxiUserWidth              ),
-    .AXI_MAX_WRITE_TXNS ( 1                         ),
-    .AXI_MAX_READ_TXNS  ( 1                         ),
-    .DECOUPLE_W         ( 1                         ),
-    .axi_req_t          ( axi_a48_d32_slv_u0_req_t  ),
-    .axi_rsp_t          ( axi_a48_d32_slv_u0_resp_t ),
-    .reg_req_t          ( reg_a48_d32_req_t         ),
-    .reg_rsp_t          ( reg_a48_d32_rsp_t         )
-  ) i_axi_to_reg (
+    .ADDR_WIDTH         ( Cfg.AddrWidth ),
+    .DATA_WIDTH         ( 32 ),
+    .ID_WIDTH           ( AxiSlvIdWidth    ),
+    .USER_WIDTH         ( Cfg.AxiUserWidth ),
+    .AXI_MAX_WRITE_TXNS ( Cfg.RegMaxReadTxns  ),
+    .AXI_MAX_READ_TXNS  ( Cfg.RegMaxWriteTxns ),
+    .DECOUPLE_W         ( 1 ),
+    .axi_req_t          ( axi_d32_req_t ),
+    .axi_rsp_t          ( axi_d32_rsp_t ),
+    .reg_req_t          ( reg_req_t ),
+    .reg_rsp_t          ( reg_rsp_t )
+  ) i_reg_axi_to_reg (
     .clk_i,
     .rst_ni,
-    .testmode_i,
-    .axi_req_i          ( axi_dw_conv_to_req  ),
-    .axi_rsp_o          ( axi_dw_conv_to_rsp  ),
-    .reg_req_o          ( regbus_in_req       ),
-    .reg_rsp_i          ( regbus_in_rsp       )
+    .testmode_i  ( test_mode_i ),
+    .axi_req_i   ( axi_reg_d32_req ),
+    .axi_rsp_o   ( axi_reg_d32_rsp ),
+    .reg_req_o   ( reg_in_req ),
+    .reg_rsp_i   ( reg_in_rsp )
   );
 
+  // Non-matching addresses are directed to an error slave
   addr_decode #(
-    .NoIndices        ( RegbusNumOutputs    ),
-    .NoRules          ( RegbusNumOutputs    ), // Assume one rule per peripheral
-    .addr_t           ( logic [47:0]        ),
-    .rule_t           ( address_rule_48_t   )
-  ) i_addr_decode_regbus (
-    .addr_i           ( regbus_in_req.addr  ),
-    .addr_map_i       ( RegbusAddrmap       ),
-    .idx_o            ( regbus_select       ),
-    .dec_valid_o      (                     ),
-    .dec_error_o      (                     ),
-    .en_default_idx_i ( '0                  ),
-    .default_idx_i    ( '0                  )
+    .NoIndices  ( RegOut.num_out   ),
+    .NoRules    ( RegOut.num_rules ),
+    .addr_t     ( addr_t      ),
+    .rule_t     ( addr_rule_t )
+  ) i_reg_demux_decode (
+    .addr_i           ( reg_in_req.addr ),
+    .addr_map_i       ( RegMap ),
+    .idx_o            ( reg_select ),
+    .dec_valid_o      ( ),
+    .dec_error_o      ( ),
+    .en_default_idx_i ( 1'b1 ),
+    .default_idx_i    ( (cf_math_pkg::idx_width(RegOut.num_out))'(RegOut.err) )
   );
 
   reg_demux #(
-    .NoPorts      ( RegbusNumOutputs    ),
-    .req_t        ( reg_a48_d32_req_t   ),
-    .rsp_t        ( reg_a48_d32_rsp_t   )
-  ) i_soc_regbus (
+    .NoPorts  ( RegOut.num_out ),
+    .req_t    ( reg_req_t ),
+    .rsp_t    ( reg_rsp_t )
+  ) i_reg_demux (
     .clk_i,
     .rst_ni,
-    .in_select_i  ( regbus_select  ),
-    .in_req_i     ( regbus_in_req  ),
-    .in_rsp_o     ( regbus_in_rsp  ),
-    .out_req_o    ( regbus_out_req ),
-    .out_rsp_i    ( regbus_out_rsp )
+    .in_select_i  ( reg_select  ),
+    .in_req_i     ( reg_in_req  ),
+    .in_rsp_o     ( reg_in_rsp  ),
+    .out_req_o    ( reg_out_req ),
+    .out_rsp_i    ( reg_out_rsp )
   );
 
-  ////////////
-  //  UART  //
-  ////////////
+  reg_err_slv #(
+    .DW       ( 32 ),
+    .ERR_VAL  ( 32'hBADCAB1E ),
+    .req_t    ( reg_req_t ),
+    .rsp_t    ( reg_rsp_t )
+  ) i_reg_err_slv (
+    .req_i  ( reg_out_req[RegOut.err] ),
+    .rsp_o  ( reg_out_rsp[RegOut.err] )
+  );
 
-  if(CheshireCfg.Uart) begin : gen_uart
-
-    reg_uart_wrap #(
-      .AddrWidth  ( AxiAddrWidth      ),
-      .reg_req_t  ( reg_a48_d32_req_t ),
-      .reg_rsp_t  ( reg_a48_d32_rsp_t )
-    ) i_uart (
-      .clk_i,
-      .rst_ni,
-      .reg_req_i  ( regbus_out_req[RegbusOutUart] ),
-      .reg_rsp_o  ( regbus_out_rsp[RegbusOutUart] ),
-      .intr_o     ( irq.uart          ),
-      .out2_no    (                   ),  // keep open
-      .out1_no    (                   ),  // keep open
-      .rts_no     (                   ),  // no flow control
-      .dtr_no     (                   ),  // no flow control
-      .cts_ni     ( 1'b0              ),  // no flow control
-      .dsr_ni     ( 1'b0              ),  // no flow control
-      .dcd_ni     ( 1'b0              ),  // no flow control
-      .rin_ni     ( 1'b0              ),
-      .sin_i      ( uart_rx_i         ),
-      .sout_o     ( uart_tx_o         )
-    );
-
-  end : gen_uart else begin : gen_uart_dummy
-
-    // Bind UART output to 0
-    assign uart_tx_o  = '0;
-
-    // Bind UART interrupt to 0
-    assign irq.uart   = '0;
-
-    reg_err_slv #(
-      .DW      ( 32                 ),
-      .ERR_VAL ( 32'hBADCAB1E       ),
-      .req_t   ( reg_a48_d32_req_t  ),
-      .rsp_t   ( reg_a48_d32_rsp_t  )
-    ) i_reg_err_slv_uart (
-      .req_i   ( regbus_out_req[RegbusOutUart] ),
-      .rsp_o   ( regbus_out_rsp[RegbusOutUart] )
-    );
-
-  end : gen_uart_dummy
+  // Connect external slaves
+  if (Cfg.RegExtNumSlv > 0) begin : gen_ext_reg_slv
+    assign reg_ext_slv_req_o = reg_out_req[RegOut.num_out-1:RegOut.ext_base];
+    assign reg_out_rsp[RegOut.num_out-1:RegOut.ext_base] = reg_ext_slv_rsp_i;
+  end else begin : gen_no_ext_reg_slv
+    assign reg_ext_slv_req_o = '0;
+  end
 
   ///////////
-  //  I2C  //
+  //  LLC  //
   ///////////
 
-  if(CheshireCfg.I2c) begin : gen_i2c
+  axi_slv_req_t axi_llc_cut_req;
+  axi_slv_rsp_t axi_llc_cut_rsp;
 
-    i2c #(
-      .reg_req_t                ( reg_a48_d32_req_t        ),
-      .reg_rsp_t                ( reg_a48_d32_rsp_t        )
-    ) i_i2c (
+  if (Cfg.LlcOutConnect) begin : gen_llc_atomics
+
+    axi_slv_req_t axi_llc_amo_req;
+    axi_slv_rsp_t axi_llc_amo_rsp;
+
+    // Shim atomics, which are not supported by LLC
+    // TODO: This should be a filter, but how do we filter RISC-V atomics?
+    axi_riscv_atomics_structs #(
+      .AxiAddrWidth     ( Cfg.AddrWidth    ),
+      .AxiDataWidth     ( Cfg.AxiDataWidth ),
+      .AxiIdWidth       ( AxiSlvIdWidth    ),
+      .AxiUserWidth     ( Cfg.AxiUserWidth ),
+      .AxiMaxReadTxns   ( Cfg.LlcMaxReadTxns  ),
+      .AxiMaxWriteTxns  ( Cfg.LlcMaxWriteTxns ),
+      .AxiUserAsId      ( 1 ),
+      .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
+      .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
+      .RiscvWordWidth   ( 64 ),
+      .NAxiCuts         ( Cfg.LlcAmoNumCuts ),
+      .axi_req_t        ( axi_slv_req_t ),
+      .axi_rsp_t        ( axi_slv_rsp_t )
+    ) i_llc_atomics (
       .clk_i,
       .rst_ni,
-      .reg_req_i                ( regbus_out_req[RegbusOutI2c] ),
-      .reg_rsp_o                ( regbus_out_rsp[RegbusOutI2c] ),
-      .cio_scl_i                ( i2c_scl_i                ),
-      .cio_scl_o                ( i2c_scl_o                ),
-      .cio_scl_en_o             ( i2c_scl_en_o             ),
-      .cio_sda_i                ( i2c_sda_i                ),
-      .cio_sda_o                ( i2c_sda_o                ),
-      .cio_sda_en_o             ( i2c_sda_en_o             ),
-      .intr_fmt_threshold_o     ( irq.i2c_fmt_threshold    ),
-      .intr_rx_threshold_o      ( irq.i2c_rx_threshold     ),
-      .intr_fmt_overflow_o      ( irq.i2c_fmt_overflow     ),
-      .intr_rx_overflow_o       ( irq.i2c_rx_overflow      ),
-      .intr_nak_o               ( irq.i2c_nak              ),
-      .intr_scl_interference_o  ( irq.i2c_scl_interference ),
-      .intr_sda_interference_o  ( irq.i2c_sda_interference ),
-      .intr_stretch_timeout_o   ( irq.i2c_stretch_timeout  ),
-      .intr_sda_unstable_o      ( irq.i2c_sda_unstable     ),
-      .intr_cmd_complete_o      ( irq.i2c_cmd_complete     ),
-      .intr_tx_stretch_o        ( irq.i2c_tx_stretch       ),
-      .intr_tx_overflow_o       ( irq.i2c_tx_overflow      ),
-      .intr_acq_full_o          ( irq.i2c_acq_full         ),
-      .intr_unexp_stop_o        ( irq.i2c_unexp_stop       ),
-      .intr_host_timeout_o      ( irq.i2c_host_timeout     )
+      .axi_slv_req_i ( axi_out_req[AxiOut.llc] ),
+      .axi_slv_rsp_o ( axi_out_rsp[AxiOut.llc] ),
+      .axi_mst_req_o ( axi_llc_amo_req ),
+      .axi_mst_rsp_i ( axi_llc_amo_rsp )
     );
 
-  end : gen_i2c else begin : gen_i2c_dummy
-
-    // Bind I2C outputs to 0
-    assign i2c_scl_o    = '0;
-    assign i2c_scl_en_o = '0;
-    assign i2c_sda_o    = '0;
-    assign i2c_sda_en_o = '0;
-
-    // Bind I2C interrupts to 0
-    assign irq.i2c_fmt_threshold    = '0;
-    assign irq.i2c_rx_threshold     = '0;
-    assign irq.i2c_fmt_overflow     = '0;
-    assign irq.i2c_rx_overflow      = '0;
-    assign irq.i2c_nak              = '0;
-    assign irq.i2c_scl_interference = '0;
-    assign irq.i2c_sda_interference = '0;
-    assign irq.i2c_stretch_timeout  = '0;
-    assign irq.i2c_sda_unstable     = '0;
-    assign irq.i2c_cmd_complete     = '0;
-    assign irq.i2c_tx_stretch       = '0;
-    assign irq.i2c_tx_overflow      = '0;
-    assign irq.i2c_acq_full         = '0;
-    assign irq.i2c_unexp_stop       = '0;
-    assign irq.i2c_host_timeout     = '0;
-
-    reg_err_slv #(
-      .DW      ( 32                 ),
-      .ERR_VAL ( 32'hBADCAB1E       ),
-      .req_t   ( reg_a48_d32_req_t  ),
-      .rsp_t   ( reg_a48_d32_rsp_t  )
-    ) i_reg_err_slv_i2c (
-      .req_i   ( regbus_out_req[RegbusOutI2c] ),
-      .rsp_o   ( regbus_out_rsp[RegbusOutI2c] )
-    );
-
-  end : gen_i2c_dummy
-
-  ////////////
-  //  SPIM  //
-  ////////////
-
-  if(CheshireCfg.Spim) begin : gen_spi
-
-    spi_host #(
-      .reg_req_t        ( reg_a48_d32_req_t  ),
-      .reg_rsp_t        ( reg_a48_d32_rsp_t  )
-    ) i_spi_host (
+    axi_cut #(
+      .Bypass     ( ~Cfg.LlcAmoPostCut ),
+      .aw_chan_t  ( axi_slv_aw_chan_t ),
+      .w_chan_t   ( axi_slv_w_chan_t  ),
+      .b_chan_t   ( axi_slv_b_chan_t  ),
+      .ar_chan_t  ( axi_slv_ar_chan_t ),
+      .r_chan_t   ( axi_slv_r_chan_t  ),
+      .axi_req_t  ( axi_slv_req_t ),
+      .axi_resp_t ( axi_slv_rsp_t )
+    ) i_llc_atomics_cut (
       .clk_i,
       .rst_ni,
-      .reg_req_i        ( regbus_out_req[RegbusOutSpim] ),
-      .reg_rsp_o        ( regbus_out_rsp[RegbusOutSpim] ),
-      .cio_sck_o        ( spim_sck_o         ),
-      .cio_sck_en_o     ( spim_sck_en_o      ),
-      .cio_csb_o        ( spim_csb_o         ),
-      .cio_csb_en_o     ( spim_csb_en_o      ),
-      .cio_sd_o         ( spim_sd_o          ),
-      .cio_sd_en_o      ( spim_sd_en_o       ),
-      .cio_sd_i         ( spim_sd_i          ),
-      .intr_error_o     ( irq.spim_error     ),
-      .intr_spi_event_o ( irq.spim_spi_event )
+      .slv_req_i  ( axi_llc_amo_req ),
+      .slv_resp_o ( axi_llc_amo_rsp ),
+      .mst_req_o  ( axi_llc_cut_req ),
+      .mst_resp_i ( axi_llc_cut_rsp )
     );
 
-  end : gen_spi else begin : gen_spi_dummy
+  end
 
-    // Bind SPI outputs to 0
-    assign spi_sck_o      = '0;
-    assign spim_sck_en_o  = '0;
-    assign spim_csb       = '1;
-    assign spim_csb_en_o  = '0;
-    assign spim_sd_o      = '0;
-    assign spim_sd_en_o   = '0;
+  if (Cfg.LlcOutConnect && Cfg.LlcNotBypass) begin : gen_llc
 
-    // Bind SPI interrupts to 0
-    assign irq.spim_error     = '0;
-    assign irq.spim_spi_event = '0;
+    axi_slv_req_t axi_llc_remap_req;
+    axi_slv_rsp_t axi_llc_remap_rsp;
 
-    reg_err_slv #(
-      .DW      ( 32                 ),
-      .ERR_VAL ( 32'hBADCAB1E       ),
-      .req_t   ( reg_a48_d32_req_t  ),
-      .rsp_t   ( reg_a48_d32_rsp_t  )
-    ) i_reg_err_slv_spim (
-      .req_i   ( regbus_out_req[RegbusOutSpim] ),
-      .rsp_o   ( regbus_out_rsp[RegbusOutSpim] )
+    // Remap both cached and uncached accesses to single base.
+    // This is necessary for routing in the LLC-internal interconnect.
+    always_comb begin
+      axi_llc_remap_req          = axi_llc_cut_req;
+      axi_llc_remap_req.aw.addr  = AmSpm | (AmSpmRegionMask & axi_llc_cut_req.aw.addr);
+      axi_llc_remap_req.ar.addr  = AmSpm | (AmSpmRegionMask & axi_llc_cut_req.ar.addr);
+      axi_llc_cut_rsp            = axi_llc_remap_rsp;
+    end
+
+    axi_llc_reg_wrap #(
+      .SetAssociativity ( Cfg.LlcSetAssoc  ),
+      .NumLines         ( Cfg.LlcNumLines  ),
+      .NumBlocks        ( Cfg.LlcNumBlocks ),
+      .AxiIdWidth       ( AxiSlvIdWidth    ),
+      .AxiAddrWidth     ( Cfg.AddrWidth    ),
+      .AxiDataWidth     ( Cfg.AxiDataWidth ),
+      .AxiUserWidth     ( Cfg.AxiUserWidth ),
+      .slv_req_t        ( axi_slv_req_t ),
+      .slv_resp_t       ( axi_slv_rsp_t ),
+      .mst_req_t        ( axi_ext_llc_req_t ),
+      .mst_resp_t       ( axi_ext_llc_rsp_t ),
+      .reg_req_t        ( reg_req_t ),
+      .reg_resp_t       ( reg_rsp_t ),
+      .rule_full_t      ( addr_rule_t )
+    ) i_llc (
+      .clk_i,
+      .rst_ni,
+      .test_i              ( test_mode_i ),
+      .slv_req_i           ( axi_llc_remap_req ),
+      .slv_resp_o          ( axi_llc_remap_rsp ),
+      .mst_req_o           ( axi_llc_mst_req_o ),
+      .mst_resp_i          ( axi_llc_mst_rsp_i ),
+      .conf_req_i          ( reg_out_req[RegOut.llc] ),
+      .conf_resp_o         ( reg_out_rsp[RegOut.llc] ),
+      .cached_start_addr_i ( addr_t'(Cfg.LlcOutRegionStart) ),
+      .cached_end_addr_i   ( addr_t'(Cfg.LlcOutRegionEnd)   ),
+      .spm_start_addr_i    ( addr_t'(AmSpm) ),
+      .axi_llc_events_o    ( /* TODO: connect me to regs? */ )
     );
 
-  end : gen_spi_dummy
+  end else if (Cfg.LlcOutConnect) begin : gen_llc_bypass
+
+    assign axi_llc_mst_req_o  = axi_llc_cut_req;
+    assign axi_llc_cut_rsp    = axi_llc_mst_rsp_i;
+
+  end else begin : gen_llc_stubout
+
+    assign axi_llc_mst_req_o  = '0;
+
+  end
+
+  /////////////
+  //  Cores  //
+  /////////////
+
+  // TODO: Implement WIP coherent dual-core CVA6
+  // TODO: Implement X interface support
+
+  // CVA6 has a canonical ID width of 4
+  localparam Cva6IdWidth = 4;
+  typedef logic [Cva6IdWidth-1:0] cva6_id_t;
+  `AXI_TYPEDEF_ALL_CT(axi_cva6, axi_cva6_req_t, axi_cva6_rsp_t, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
+
+  localparam ariane_pkg::ariane_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
+
+  // Boot from boot ROM only if available, otherwise from platform ROM
+  localparam [63:0] BootAddr = 64'(Cfg.Bootrom ? AmBrom : Cfg.PlatformRom);
+
+  // Debug interface for internal harts
+  dm::hartinfo_t [NumIntHarts-1:0] dbg_int_info;
+  logic          [NumIntHarts-1:0] dbg_int_unavail;
+  logic          [NumIntHarts-1:0] dbg_int_req;
+
+  // All internal harts are CVA6 and always available
+  assign dbg_int_info     = {(NumIntHarts){ariane_pkg::DebugHartInfo}};
+  assign dbg_int_unavail  = '0;
+
+  axi_cva6_req_t core_out_req, core_ur_req;
+  axi_cva6_rsp_t core_out_rsp, core_ur_rsp;
+
+  // Currently, we support only one core
+  cva6 #(
+    .ArianeCfg      ( Cva6Cfg ),
+    .AxiAddrWidth   ( Cfg.AddrWidth ),
+    .AxiDataWidth   ( Cfg.AxiDataWidth ),
+    .AxiIdWidth     ( Cva6IdWidth ),
+    .axi_ar_chan_t  ( axi_cva6_ar_chan_t ),
+    .axi_aw_chan_t  ( axi_cva6_aw_chan_t ),
+    .axi_w_chan_t   ( axi_cva6_w_chan_t  ),
+    .axi_req_t      ( axi_cva6_req_t ),
+    .axi_rsp_t      ( axi_cva6_rsp_t )
+  ) i_core_cva6 (
+    .clk_i,
+    .rst_ni,
+    .boot_addr_i  ( BootAddr ),
+    .hart_id_i    ( '0 ),
+    .irq_i        ( {irq[NumIrqHarts], irq[0]} ),
+    .ipi_i        ( ipi[0] ),
+    .time_irq_i   ( time_irq[0] ),
+    .debug_req_i  ( dbg_int_req[0] ),
+    .cvxif_req_o  (  ),
+    .cvxif_resp_i ( '0 ),
+    .axi_req_o    ( core_out_req ),
+    .axi_resp_i   ( core_out_rsp )
+  );
+
+  // Map user to AMO domain as we are an atomics-capable master.
+  // As we are core 0, the core 1 and serial link AMO bits should *not* be set.
+  always_comb begin
+    core_ur_req         = core_out_req;
+    core_ur_req.aw.user = Cfg.AxiUserAmoDomain;
+    core_ur_req.ar.user = Cfg.AxiUserAmoDomain;
+    core_ur_req.w.user  = Cfg.AxiUserAmoDomain;
+    core_out_rsp        = core_ur_rsp;
+  end
+
+  // Remap core ID width to configured ID width
+  axi_id_remap #(
+    .AxiSlvPortIdWidth    ( Cva6IdWidth ),
+    .AxiSlvPortMaxUniqIds ( Cfg.CoreMaxTxnsPerId ),
+    .AxiMaxTxnsPerId      ( Cfg.CoreMaxUniqIds   ),
+    .AxiMstPortIdWidth    ( Cfg.AxiMstIdWidth    ),
+    .slv_req_t            ( axi_cva6_req_t ),
+    .slv_resp_t           ( axi_cva6_rsp_t ),
+    .mst_req_t            ( axi_mst_req_t  ),
+    .mst_resp_t           ( axi_mst_rsp_t  )
+  ) i_core_axi_id_remap (
+    .clk_i,
+    .rst_ni,
+    .slv_req_i  ( core_ur_req ),
+    .slv_resp_o ( core_ur_rsp ),
+    .mst_req_o  ( axi_in_req[AxiIn.cores] ),
+    .mst_resp_i ( axi_in_rsp[AxiIn.cores] )
+  );
+
+  /////////////////////////
+  //  JTAG Debug Module  //
+  /////////////////////////
+
+  localparam int unsigned NumDbgHarts = NumIntHarts + Cfg.NumExtDbgHarts;
+
+  // Filter atomics and cut
+  axi_slv_req_t dbg_slv_axi_amo_req, dbg_slv_axi_cut_req;
+  axi_slv_rsp_t dbg_slv_axi_amo_rsp, dbg_slv_axi_cut_rsp;
+
+  // Hart debug interface
+  dm::hartinfo_t [NumDbgHarts-1:0] dbg_info;
+  logic          [NumDbgHarts-1:0] dbg_unavail;
+  logic          [NumDbgHarts-1:0] dbg_req;
+
+  // Debug module slave interface
+  logic       dbg_slv_req;
+  addr_t      dbg_slv_addr;
+  axi_data_t  dbg_slv_addr_long;
+  logic       dbg_slv_we;
+  axi_data_t  dbg_slv_wdata;
+  axi_strb_t  dbg_slv_wstrb;
+  axi_data_t  dbg_slv_rdata;
+  logic       dbg_slv_rvalid;
+
+  // Debug module system bus access interface
+  logic       dbg_sba_req;
+  addr_t      dbg_sba_addr;
+  axi_data_t  dbg_sba_addr_long;
+  logic       dbg_sba_we;
+  axi_data_t  dbg_sba_wdata;
+  axi_strb_t  dbg_sba_strb;
+  logic       dbg_sba_gnt;
+  axi_data_t  dbg_sba_rdata;
+  logic       dbg_sba_rvalid;
+  logic       dbg_sba_err;
+
+  // JTAG DMI to debug module
+  logic           dbg_dmi_rst_n;
+  dm::dmi_req_t   dbg_dmi_req;
+  logic           dbg_dmi_req_ready, dbg_dmi_req_valid;
+  dm::dmi_resp_t  dbg_dmi_rsp;
+  logic           dbg_dmi_rsp_ready, dbg_dmi_rsp_valid;
+
+  // Truncate and pad addresses as necessary
+  assign dbg_sba_addr       = dbg_sba_addr_long;
+  assign dbg_slv_addr_long  = dbg_slv_addr;
+
+  // Connect internal harts to debug interface
+  assign dbg_info    [NumIntHarts-1:0] = dbg_int_info;
+  assign dbg_unavail [NumIntHarts-1:0] = dbg_int_unavail;
+  assign dbg_int_req = dbg_req[NumIntHarts-1:0];
+
+  // Connect external harts to debug interface
+  if (Cfg.NumExtDbgHarts != 0) begin : gen_dbg_ext
+    assign dbg_info    [NumDbgHarts-1:NumIntHarts] = ExtHartinfo;
+    assign dbg_unavail [NumDbgHarts-1:NumIntHarts] = dbg_ext_unavail_i;
+    assign dbg_ext_req_o = dbg_req[NumDbgHarts-1:NumIntHarts];
+  end else begin : gen_no_dbg_ext
+    assign dbg_ext_req_o = '0;
+  end
+
+  // Filter atomic accesses
+  axi_riscv_atomics_structs #(
+    .AxiAddrWidth     ( Cfg.AddrWidth    ),
+    .AxiDataWidth     ( Cfg.AxiDataWidth ),
+    .AxiIdWidth       ( AxiSlvIdWidth    ),
+    .AxiUserWidth     ( Cfg.AxiUserWidth ),
+    .AxiMaxReadTxns   ( Cfg.DbgMaxReadTxns  ),
+    .AxiMaxWriteTxns  ( Cfg.DbgMaxWriteTxns ),
+    .AxiUserAsId      ( 1 ),
+    .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
+    .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
+    .RiscvWordWidth   ( 64 ),
+    .NAxiCuts         ( Cfg.DbgAmoNumCuts ),
+    .axi_req_t        ( axi_slv_req_t ),
+    .axi_rsp_t        ( axi_slv_rsp_t )
+  ) i_dbg_slv_axi_atomics (
+    .clk_i,
+    .rst_ni,
+    .axi_slv_req_i ( axi_out_req[AxiOut.dbg] ),
+    .axi_slv_rsp_o ( axi_out_rsp[AxiOut.dbg] ),
+    .axi_mst_req_o ( dbg_slv_axi_amo_req ),
+    .axi_mst_rsp_i ( dbg_slv_axi_amo_rsp )
+  );
+
+  axi_cut #(
+    .Bypass     ( ~Cfg.DbgAmoPostCut ),
+    .aw_chan_t  ( axi_slv_aw_chan_t ),
+    .w_chan_t   ( axi_slv_w_chan_t  ),
+    .b_chan_t   ( axi_slv_b_chan_t  ),
+    .ar_chan_t  ( axi_slv_ar_chan_t ),
+    .r_chan_t   ( axi_slv_r_chan_t  ),
+    .axi_req_t  ( axi_slv_req_t ),
+    .axi_resp_t ( axi_slv_rsp_t )
+  ) i_dbg_slv_axi_atomics_cut (
+    .clk_i,
+    .rst_ni,
+    .slv_req_i  ( dbg_slv_axi_amo_req ),
+    .slv_resp_o ( dbg_slv_axi_amo_rsp ),
+    .mst_req_o  ( dbg_slv_axi_cut_req ),
+    .mst_resp_i ( dbg_slv_axi_cut_rsp )
+  );
+
+  // AXI access to debug module
+  axi_to_mem_interleaved #(
+    .axi_req_t  ( axi_slv_req_t ),
+    .axi_resp_t ( axi_slv_rsp_t ),
+    .AddrWidth  ( Cfg.AddrWidth    ),
+    .DataWidth  ( Cfg.AxiDataWidth ),
+    .IdWidth    ( AxiSlvIdWidth    ),
+    .NumBanks   ( 1 ),
+    .BufDepth   ( 4 )
+  ) i_dbg_slv_axi_to_mem (
+    .clk_i,
+    .rst_ni,
+    .busy_o       ( ),
+    .axi_req_i    ( dbg_slv_axi_cut_req ),
+    .axi_resp_o   ( dbg_slv_axi_cut_rsp ),
+    .mem_req_o    ( dbg_slv_req    ),
+    .mem_gnt_i    ( dbg_slv_req    ),
+    .mem_addr_o   ( dbg_slv_addr   ),
+    .mem_wdata_o  ( dbg_slv_wdata  ),
+    .mem_strb_o   ( dbg_slv_wstrb  ),
+    .mem_atop_o   ( ),
+    .mem_we_o     ( dbg_slv_we     ),
+    .mem_rvalid_i ( dbg_slv_rvalid ),
+    .mem_rdata_i  ( dbg_slv_rdata  )
+  );
+
+  // Read response is valid one cycle after request
+  `FF(dbg_slv_rvalid, dbg_slv_req, 1'b0, clk_i, rst_ni)
+
+  // Debug Module
+  dm_top #(
+    .NrHarts        ( NumDbgHarts ),
+    .BusWidth       ( Cfg.AxiDataWidth ),
+    .DmBaseAddress  ( AmDbg )
+  ) i_dbg_dm_top (
+    .clk_i,
+    .rst_ni,
+    .testmode_i           ( test_mode_i ),
+    .ndmreset_o           ( ),
+    .dmactive_o           ( dbg_active_o  ),
+    .debug_req_o          ( dbg_req       ),
+    .unavailable_i        ( dbg_unavail   ),
+    .hartinfo_i           ( dbg_info      ),
+    .slave_req_i          ( dbg_slv_req       ),
+    .slave_we_i           ( dbg_slv_we        ),
+    .slave_addr_i         ( dbg_slv_addr_long ),
+    .slave_be_i           ( dbg_slv_wstrb     ),
+    .slave_wdata_i        ( dbg_slv_wdata     ),
+    .slave_rdata_o        ( dbg_slv_rdata     ),
+    .master_req_o         ( dbg_sba_req       ),
+    .master_add_o         ( dbg_sba_addr_long ),
+    .master_we_o          ( dbg_sba_we        ),
+    .master_wdata_o       ( dbg_sba_wdata     ),
+    .master_be_o          ( dbg_sba_strb      ),
+    .master_gnt_i         ( dbg_sba_gnt       ),
+    .master_r_valid_i     ( dbg_sba_rvalid    ),
+    .master_r_rdata_i     ( dbg_sba_rdata     ),
+    .master_r_err_i       ( dbg_sba_err       ),
+    .master_r_other_err_i ( 1'b0 ),
+    .dmi_rst_ni           ( dbg_dmi_rst_n     ),
+    .dmi_req_valid_i      ( dbg_dmi_req_valid ),
+    .dmi_req_ready_o      ( dbg_dmi_req_ready ),
+    .dmi_req_i            ( dbg_dmi_req       ),
+    .dmi_resp_valid_o     ( dbg_dmi_rsp_valid ),
+    .dmi_resp_ready_i     ( dbg_dmi_rsp_ready ),
+    .dmi_resp_o           ( dbg_dmi_rsp       )
+  );
+
+  // Debug module system bus access to AXI crossbar
+  axi_from_mem #(
+    .MemAddrWidth ( Cfg.AddrWidth    ),
+    .AxiAddrWidth ( Cfg.AddrWidth    ),
+    .DataWidth    ( Cfg.AxiDataWidth ),
+    .MaxRequests  ( Cfg.DbgMaxReqs ),
+    .AxiProt      ( '0 ),
+    .axi_req_t    ( axi_mst_req_t ),
+    .axi_rsp_t    ( axi_mst_rsp_t )
+  ) i_dbg_sba_axi_from_mem (
+    .clk_i,
+    .rst_ni,
+    .mem_req_i       ( dbg_sba_req    ),
+    .mem_addr_i      ( dbg_sba_addr   ),
+    .mem_we_i        ( dbg_sba_we     ),
+    .mem_wdata_i     ( dbg_sba_wdata  ),
+    .mem_be_i        ( dbg_sba_strb   ),
+    .mem_gnt_o       ( dbg_sba_gnt    ),
+    .mem_rsp_valid_o ( dbg_sba_rvalid ),
+    .mem_rsp_rdata_o ( dbg_sba_rdata  ),
+    .mem_rsp_error_o ( dbg_sba_err    ),
+    .slv_aw_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
+    .slv_ar_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
+    .axi_req_o       ( axi_in_req[AxiIn.dbg] ),
+    .axi_rsp_i       ( axi_in_rsp[AxiIn.dbg] )
+  );
+
+  // Debug Transfer Module and JTAG interface
+  dmi_jtag #(
+    .IdcodeValue  ( Cfg.DbgIdCode )
+  ) i_dbg_dmi_jtag (
+    .clk_i,
+    .rst_ni,
+    .testmode_i       ( test_mode_i ),
+    .dmi_rst_no       ( dbg_dmi_rst_n     ),
+    .dmi_req_o        ( dbg_dmi_req       ),
+    .dmi_req_ready_i  ( dbg_dmi_req_ready ),
+    .dmi_req_valid_o  ( dbg_dmi_req_valid ),
+    .dmi_resp_i       ( dbg_dmi_rsp       ),
+    .dmi_resp_ready_o ( dbg_dmi_rsp_ready ),
+    .dmi_resp_valid_i ( dbg_dmi_rsp_valid ),
+    .tck_i            ( jtag_tck_i     ),
+    .tms_i            ( jtag_tms_i     ),
+    .trst_ni          ( jtag_trst_ni   ),
+    .td_i             ( jtag_tdi_i     ),
+    .td_o             ( jtag_tdo_o     ),
+    .tdo_oe_o         ( jtag_tdo_oe_o  )
+  );
 
   /////////////////////
   //  Register File  //
   /////////////////////
 
-  cheshire_reg_pkg::cheshire_hw2reg_t reg_file_in;
+  cheshire_reg_pkg::cheshire_hw2reg_t reg_hw2reg;
 
-  assign reg_file_in.boot_mode.d               = boot_mode_i;
-  assign reg_file_in.status.clock_lock.d       = clk_locked_i;
-  assign reg_file_in.status.uart_present.d     = CheshireCfg.Uart;
-  assign reg_file_in.status.spi_present.d      = CheshireCfg.Spim;
-  assign reg_file_in.status.i2c_present.d      = CheshireCfg.I2c;
-  assign reg_file_in.status.dma_present.d      = CheshireCfg.Dma;
-  assign reg_file_in.status.ddr_link_present.d = CheshireCfg.SerialLink;
-  assign reg_file_in.status.dram_present.d     = CheshireCfg.Dram;
-  assign reg_file_in.status.vga_present.d      = CheshireCfg.Vga;
-  assign reg_file_in.vga_red_width.d           = CheshireCfg.VgaRedWidth;
-  assign reg_file_in.vga_green_width.d         = CheshireCfg.VgaGreenWidth;
-  assign reg_file_in.vga_blue_width.d          = CheshireCfg.VgaBlueWidth;
-  assign reg_file_in.reset_freq.d              = CheshireCfg.ResetFreq;
+  assign reg_hw2reg = '{
+    boot_mode     : boot_mode_i,
+    rtc_freq      : Cfg.RtcFreq,
+    platform_rom  : Cfg.PlatformRom,
+    hw_features   : '{
+      bootrom     : Cfg.Bootrom,
+      llc         : Cfg.LlcNotBypass,
+      uart        : Cfg.Uart,
+      i2c         : Cfg.I2c,
+      gpio        : Cfg.Gpio,
+      spi_host    : Cfg.SpiHost,
+      dma         : Cfg.Dma,
+      serial_link : Cfg.SerialLink,
+      vga         : Cfg.Vga
+    },
+    llc_size      : get_llc_size(Cfg),
+    vga_params    : '{
+      red_width   : Cfg.VgaRedWidth,
+      green_width : Cfg.VgaGreenWidth,
+      blue_width  : Cfg.VgaBlueWidth
+    }
+  };
 
   cheshire_reg_top #(
-    .reg_req_t  ( reg_a48_d32_req_t ),
-    .reg_rsp_t  ( reg_a48_d32_rsp_t )
-  ) i_cheshire_reg_file (
+    .reg_req_t  ( reg_req_t ),
+    .reg_rsp_t  ( reg_rsp_t )
+  ) i_regs (
     .clk_i,
     .rst_ni,
-    .reg_req_i  ( regbus_out_req[RegbusOutCsr] ),
-    .reg_rsp_o  ( regbus_out_rsp[RegbusOutCsr] ),
-    .hw2reg     ( reg_file_in       ),
-    .devmode_i  ( 1'b1              )
+    .reg_req_i  ( reg_out_req[RegOut.regs] ),
+    .reg_rsp_o  ( reg_out_rsp[RegOut.regs] ),
+    .hw2reg     ( reg_hw2reg ),
+    .devmode_i  ( 1'b1 )
   );
-
-  ///////////////
-  //  Bootrom  //
-  ///////////////
-
-  logic rom_req, rom_rvalid;
-  logic [15:0] rom_addr;
-  logic [31:0] rom_data_q, rom_data_d;
-
-  reg_to_mem #(
-    .AW         ( 16                ),
-    .DW         ( 32                ),
-    .req_t      ( reg_a48_d32_req_t ),
-    .rsp_t      ( reg_a48_d32_rsp_t )
-  ) i_reg_to_rom (
-    .clk_i,
-    .rst_ni,
-    .reg_req_i  ( regbus_out_req[RegbusOutBootrom] ),
-    .reg_rsp_o  ( regbus_out_rsp[RegbusOutBootrom] ),
-    .req_o      ( rom_req           ),
-    .gnt_i      ( rom_req           ),
-    .we_o       (                   ),
-    .addr_o     ( rom_addr          ),
-    .wdata_o    (                   ),
-    .wstrb_o    (                   ),
-    .rdata_i    ( rom_data_q        ),
-    .rvalid_i   ( rom_rvalid        ),
-    .rerror_i   ( '0                )
-  );
-
-  cheshire_bootrom #(
-    .AddrWidth  ( 16         ),
-    .DataWidth  ( 32         )
-  ) i_bootrom (
-    .clk_i,
-    .rst_ni,
-    .req_i      ( rom_req    ),
-    .addr_i     ( rom_addr   ),
-    .data_o     ( rom_data_d )
-  );
-
-  // Data register
-  `FF(rom_data_q, rom_data_d, '0, clk_i, rst_ni)
-
-  // As the bootrom can answer in the same clock cycle the valid signal is
-  // just the one clock cycle delayed version of the request signal
-  `FF(rom_rvalid, rom_req, '0, clk_i, rst_ni)
 
   ////////////
   //  PLIC  //
   ////////////
 
   rv_plic #(
-      .reg_req_t  ( reg_a48_d32_req_t ),
-      .reg_rsp_t  ( reg_a48_d32_rsp_t )
+    .reg_req_t  ( reg_req_t ),
+    .reg_rsp_t  ( reg_rsp_t )
   ) i_plic (
-      .clk_i,
-      .rst_ni,
-      .reg_req_i  ( regbus_out_req[RegbusOutPlic] ),
-      .reg_rsp_o  ( regbus_out_rsp[RegbusOutPlic] ),
-      .intr_src_i ( irq               ),
-      .irq_o      ( eip               ),
-      .irq_id_o   (                   ),
-      .msip_o     (                   )
+    .clk_i,
+    .rst_ni,
+    .reg_req_i  ( reg_out_req[RegOut.plic] ),
+    .reg_rsp_o  ( reg_out_rsp[RegOut.plic] ),
+    .intr_src_i ( intr ),
+    .irq_o      ( irq  ),
+    .irq_id_o   ( ),
+    .msip_o     ( )
   );
-
-  // Interrupt ID 0 is a dummy interrupt meaning "no interrupt"
-  assign irq.zero = 1'b0;
 
   /////////////
   //  CLINT  //
   /////////////
 
   clint #(
-    .reg_req_t    ( reg_a48_d32_req_t ),
-    .reg_rsp_t    ( reg_a48_d32_rsp_t )
+    .reg_req_t  ( reg_req_t ),
+    .reg_rsp_t  ( reg_rsp_t )
   ) i_clint (
     .clk_i,
     .rst_ni,
-    .testmode_i,
-    .reg_req_i    ( regbus_out_req[RegbusOutClint] ),
-    .reg_rsp_o    ( regbus_out_rsp[RegbusOutClint] ),
-    .rtc_i        ( rtc_i             ),
-    .timer_irq_o  ( mstip             ),
-    .ipi_o        ( mssip             )
+    .testmode_i   ( test_mode_i ),
+    .reg_req_i    ( reg_out_req[RegOut.clint] ),
+    .reg_rsp_o    ( reg_out_rsp[RegOut.clint] ),
+    .rtc_i,
+    .timer_irq_o  ( time_irq ),
+    .ipi_o        ( ipi      )
   );
+
+  ////////////////
+  //  Boot ROM  //
+  ////////////////
+
+  if (Cfg.Bootrom) begin : gen_bootrom
+
+    logic [15:0]  bootrom_addr;
+    logic [31:0]  bootrom_data, bootrom_data_q;
+    logic         bootrom_req,  bootrom_req_q;
+    logic         bootrom_we,   bootrom_we_q;
+
+    // Delay response by one cycle to fulfill mem protocol
+    `FF(bootrom_data_q, bootrom_data, '0, clk_i, rst_ni)
+    `FF(bootrom_req_q,  bootrom_req,  '0, clk_i, rst_ni)
+    `FF(bootrom_we_q,   bootrom_we,   '0, clk_i, rst_ni)
+
+    reg_to_mem #(
+      .AW     ( 16 ),
+      .DW     ( 32 ),
+      .req_t  ( reg_req_t ),
+      .rsp_t  ( reg_rsp_t )
+    ) i_reg_to_bootrom (
+      .clk_i,
+      .rst_ni,
+      .reg_req_i  ( reg_out_req[RegOut.bootrom] ),
+      .reg_rsp_o  ( reg_out_rsp[RegOut.bootrom] ),
+      .req_o      ( bootrom_req  ),
+      .gnt_i      ( bootrom_req  ),
+      .we_o       ( bootrom_we   ),
+      .addr_o     ( bootrom_addr ),
+      .wdata_o    ( ),
+      .wstrb_o    ( ),
+      .rdata_i    ( bootrom_data_q ),
+      .rvalid_i   ( bootrom_req_q  ),
+      .rerror_i   ( bootrom_we_q   )
+    );
+
+    cheshire_bootrom #(
+      .AddrWidth  ( 16 ),
+      .DataWidth  ( 32 )
+    ) i_bootrom (
+      .clk_i,
+      .rst_ni,
+      .req_i    ( bootrom_req  ),
+      .addr_i   ( bootrom_addr ),
+      .data_o   ( bootrom_data )
+    );
+
+  end
+
+  ////////////
+  //  UART  //
+  ////////////
+
+  if (Cfg.Uart) begin : gen_uart
+
+    reg_uart_wrap #(
+      .AddrWidth  ( Cfg.AddrWidth ),
+      .reg_req_t  ( reg_req_t ),
+      .reg_rsp_t  ( reg_rsp_t )
+    ) i_uart (
+      .clk_i,
+      .rst_ni,
+      .reg_req_i  ( reg_out_req[RegOut.uart] ),
+      .reg_rsp_o  ( reg_out_rsp[RegOut.uart] ),
+      .intr_o     ( intr.uart ),
+      .out2_no    ( ),
+      .out1_no    ( ),
+      .rts_no     ( uart_rts_no ),
+      .dtr_no     ( uart_dtr_no ),
+      .cts_ni     ( uart_cts_ni ),
+      .dsr_ni     ( uart_dsr_ni ),
+      .dcd_ni     ( uart_dcd_ni ),
+      .rin_ni     ( uart_rin_ni ),
+      .sin_i      ( uart_rx_i   ),
+      .sout_o     ( uart_tx_o   )
+    );
+
+  end else begin : gen_no_uart
+
+    assign uart_rts_no  = 0;
+    assign uart_dtr_no  = 0;
+    assign uart_tx_o    = 0;
+
+    assign intr.uart  = 0;
+
+  end
+
+  ///////////
+  //  I2C  //
+  ///////////
+
+  if (Cfg.I2c) begin : gen_i2c
+
+    i2c #(
+      .reg_req_t  ( reg_req_t ),
+      .reg_rsp_t  ( reg_rsp_t )
+    ) i_i2c (
+      .clk_i,
+      .rst_ni,
+      .reg_req_i                ( reg_out_req[RegOut.i2c] ),
+      .reg_rsp_o                ( reg_out_rsp[RegOut.i2c] ),
+      .cio_scl_i                ( i2c_scl_i    ),
+      .cio_scl_o                ( i2c_scl_o    ),
+      .cio_scl_en_o             ( i2c_scl_en_o ),
+      .cio_sda_i                ( i2c_sda_i    ),
+      .cio_sda_o                ( i2c_sda_o    ),
+      .cio_sda_en_o             ( i2c_sda_en_o ),
+      .intr_fmt_threshold_o     ( intr.i2c_fmt_threshold    ),
+      .intr_rx_threshold_o      ( intr.i2c_rx_threshold     ),
+      .intr_fmt_overflow_o      ( intr.i2c_fmt_overflow     ),
+      .intr_rx_overflow_o       ( intr.i2c_rx_overflow      ),
+      .intr_nak_o               ( intr.i2c_nak              ),
+      .intr_scl_interference_o  ( intr.i2c_scl_interference ),
+      .intr_sda_interference_o  ( intr.i2c_sda_interference ),
+      .intr_stretch_timeout_o   ( intr.i2c_stretch_timeout  ),
+      .intr_sda_unstable_o      ( intr.i2c_sda_unstable     ),
+      .intr_cmd_complete_o      ( intr.i2c_cmd_complete     ),
+      .intr_tx_stretch_o        ( intr.i2c_tx_stretch       ),
+      .intr_tx_overflow_o       ( intr.i2c_tx_overflow      ),
+      .intr_acq_full_o          ( intr.i2c_acq_full         ),
+      .intr_unexp_stop_o        ( intr.i2c_unexp_stop       ),
+      .intr_host_timeout_o      ( intr.i2c_host_timeout     )
+    );
+
+  end else begin : gen_no_i2c
+
+    assign i2c_scl_o    = 0;
+    assign i2c_scl_en_o = 0;
+    assign i2c_sda_o    = 0;
+    assign i2c_sda_en_o = 0;
+
+    assign intr.i2c_fmt_threshold     = 0;
+    assign intr.i2c_rx_threshold      = 0;
+    assign intr.i2c_fmt_overflow      = 0;
+    assign intr.i2c_rx_overflow       = 0;
+    assign intr.i2c_nak               = 0;
+    assign intr.i2c_scl_interference  = 0;
+    assign intr.i2c_sda_interference  = 0;
+    assign intr.i2c_stretch_timeout   = 0;
+    assign intr.i2c_sda_unstable      = 0;
+    assign intr.i2c_cmd_complete      = 0;
+    assign intr.i2c_tx_stretch        = 0;
+    assign intr.i2c_tx_overflow       = 0;
+    assign intr.i2c_acq_full          = 0;
+    assign intr.i2c_unexp_stop        = 0;
+    assign intr.i2c_host_timeout      = 0;
+
+  end
+
+  ////////////////
+  //  SPI Host  //
+  ////////////////
+
+  if (Cfg.SpiHost) begin : gen_spi_host
+
+    // Last CS is an internal dummy for devices that need it
+    logic spih_csb_dummy, spih_csb_dummy_en;
+
+    spi_host #(
+      .reg_req_t  ( reg_req_t ),
+      .reg_rsp_t  ( reg_rsp_t )
+    ) i_spi_host (
+      .clk_i,
+      .rst_ni,
+      .reg_req_i        ( reg_out_req[RegOut.spi_host] ),
+      .reg_rsp_o        ( reg_out_rsp[RegOut.spi_host] ),
+      .cio_sck_o        ( spih_sck_o    ),
+      .cio_sck_en_o     ( spih_sck_en_o ),
+      .cio_csb_o        ( {spih_csb_dummy,    spih_csb_o   } ),
+      .cio_csb_en_o     ( {spih_csb_dummy_en, spih_csb_en_o} ),
+      .cio_sd_o         ( spih_sd_o     ),
+      .cio_sd_en_o      ( spih_sd_en_o  ),
+      .cio_sd_i         ( spih_sd_i     ),
+      .intr_error_o     ( intr.spih_error     ),
+      .intr_spi_event_o ( intr.spih_spi_event )
+    );
+
+  end else begin : gen_no_spi_host
+
+    assign spih_sck_o     = 0;
+    assign spih_sck_en_o  = 0;
+    assign spih_csb_o     = '1;
+    assign spih_csb_en_o  = '0;
+    assign spih_sd_o      = '0;
+    assign spih_sd_en_o   = '0;
+
+    assign intr.spih_error      = 0;
+    assign intr.spih_spi_event  = 0;
+
+  end
+
+  ////////////
+  //  GPIO  //
+  ////////////
+
+  if (Cfg.Gpio) begin : gen_gpio
+
+    gpio #(
+      .reg_req_t   ( reg_req_t ),
+      .reg_rsp_t   ( reg_rsp_t ),
+      .GpioAsyncOn ( Cfg.GpioInputSyncs )
+    ) i_gpio (
+      .clk_i,
+      .rst_ni,
+      .reg_req_i     ( reg_out_req[RegOut.gpio] ),
+      .reg_rsp_o     ( reg_out_rsp[RegOut.gpio] ),
+      .intr_gpio_o   ( intr.gpio ),
+      .cio_gpio_i    ( gpio_i    ),
+      .cio_gpio_o    ( gpio_o    ),
+      .cio_gpio_en_o ( gpio_en_o )
+    );
+
+  end else begin : gen_no_gpio
+
+    assign gpio_o     = '0;
+    assign gpio_en_o  = '0;
+
+    assign intr.gpio  = '0;
+
+  end
+
+  ///////////
+  //  DMA  //
+  ///////////
+
+  if(Cfg.Dma) begin : gen_dma
+
+    axi_slv_req_t dma_amo_req, dma_cut_req;
+    axi_slv_rsp_t dma_amo_rsp, dma_cut_rsp;
+
+    axi_riscv_atomics_structs #(
+      .AxiAddrWidth     ( Cfg.AddrWidth    ),
+      .AxiDataWidth     ( Cfg.AxiDataWidth ),
+      .AxiIdWidth       ( AxiSlvIdWidth    ),
+      .AxiUserWidth     ( Cfg.AxiUserWidth ),
+      .AxiMaxReadTxns   ( Cfg.DmaConfMaxReadTxns  ),
+      .AxiMaxWriteTxns  ( Cfg.DmaConfMaxWriteTxns ),
+      .AxiUserAsId      ( 1 ),
+      .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
+      .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
+      .RiscvWordWidth   ( 64 ),
+      .NAxiCuts         ( Cfg.DmaConfAmoNumCuts ),
+      .axi_req_t        ( axi_slv_req_t ),
+      .axi_rsp_t        ( axi_slv_rsp_t )
+    ) i_dma_conf_atomics (
+      .clk_i,
+      .rst_ni,
+      .axi_slv_req_i ( axi_out_req[AxiOut.dma] ),
+      .axi_slv_rsp_o ( axi_out_rsp[AxiOut.dma] ),
+      .axi_mst_req_o ( dma_amo_req ),
+      .axi_mst_rsp_i ( dma_amo_rsp )
+    );
+
+    axi_cut #(
+      .Bypass     ( ~Cfg.DmaConfAmoPostCut ),
+      .aw_chan_t  ( axi_slv_aw_chan_t ),
+      .w_chan_t   ( axi_slv_w_chan_t  ),
+      .b_chan_t   ( axi_slv_b_chan_t  ),
+      .ar_chan_t  ( axi_slv_ar_chan_t ),
+      .r_chan_t   ( axi_slv_r_chan_t  ),
+      .axi_req_t  ( axi_slv_req_t ),
+      .axi_resp_t ( axi_slv_rsp_t )
+    ) i_dma_conf_atomics_cut (
+      .clk_i,
+      .rst_ni,
+      .slv_req_i  ( dma_amo_req ),
+      .slv_resp_o ( dma_amo_rsp ),
+      .mst_req_o  ( dma_cut_req ),
+      .mst_resp_i ( dma_cut_rsp )
+    );
+
+    dma_core_wrap #(
+      .AxiAddrWidth   ( Cfg.AddrWidth     ),
+      .AxiDataWidth   ( Cfg.AxiDataWidth  ),
+      .AxiIdWidth     ( Cfg.AxiMstIdWidth ),
+      .AxiUserWidth   ( Cfg.AxiUserWidth  ),
+      .AxiSlvIdWidth  ( AxiSlvIdWidth     ),
+      .axi_mst_req_t  ( axi_mst_req_t ),
+      .axi_mst_rsp_t  ( axi_mst_rsp_t ),
+      .axi_slv_req_t  ( axi_slv_req_t ),
+      .axi_slv_rsp_t  ( axi_slv_rsp_t )
+    ) i_dma (
+      .clk_i,
+      .rst_ni,
+      .testmode_i     ( test_mode_i ),
+      .axi_mst_req_o  ( axi_in_req[AxiIn.dma] ),
+      .axi_mst_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
+      .axi_slv_req_i  ( dma_cut_req ),
+      .axi_slv_rsp_o  ( dma_cut_rsp )
+    );
+
+  end
+
+  ///////////////////
+  //  Serial Link  //
+  ///////////////////
+
+  // TODO: connect isolation IO properly
+
+  if(Cfg.SerialLink) begin : gen_serial_link
+
+    axi_slv_req_t slink_tx_uar_req;
+    axi_slv_rsp_t slink_tx_uar_rsp;
+
+    axi_mst_req_t slink_tx_idr_req;
+    axi_mst_rsp_t slink_tx_idr_rsp;
+
+    // TX outgoing channels: Remap address and set serial link user bit
+    always_comb begin
+      slink_tx_uar_req          = axi_out_req[AxiOut.slink];
+      slink_tx_uar_req.aw.addr  = (Cfg.SlinkTxAddrDomain    & ~Cfg.SlinkTxAddrMask) |
+                                  (slink_tx_uar_req.aw.addr &  Cfg.SlinkTxAddrMask);
+      slink_tx_uar_req.ar.addr  = (Cfg.SlinkTxAddrDomain    & ~Cfg.SlinkTxAddrMask) |
+                                  (slink_tx_uar_req.ar.addr &  Cfg.SlinkTxAddrMask);
+      slink_tx_uar_req.aw.user |= (addr_t'(1) << Cfg.SlinkUserAmoBit);
+      slink_tx_uar_req.ar.user |= (addr_t'(1) << Cfg.SlinkUserAmoBit);
+      slink_tx_uar_req.w.user  |= (addr_t'(1) << Cfg.SlinkUserAmoBit);
+    end
+
+    // TX incoming channels: unset serial link user bit
+    always_comb begin
+      axi_out_rsp[AxiOut.slink]         = slink_tx_uar_rsp;
+      axi_out_rsp[AxiOut.slink].r.user &= ~(addr_t'(1) << Cfg.SlinkUserAmoBit);
+      axi_out_rsp[AxiOut.slink].b.user &= ~(addr_t'(1) << Cfg.SlinkUserAmoBit);
+    end
+
+    // TX: Remap wider slave ID to narrower master ID
+    axi_id_remap #(
+      .AxiSlvPortIdWidth    ( AxiSlvIdWidth         ),
+      .AxiSlvPortMaxUniqIds ( Cfg.SlinkMaxUniqIds   ),
+      .AxiMaxTxnsPerId      ( Cfg.SlinkMaxTxnsPerId ),
+      .AxiMstPortIdWidth    ( Cfg.AxiMstIdWidth     ),
+      .slv_req_t            ( axi_slv_req_t ),
+      .slv_resp_t           ( axi_slv_rsp_t ),
+      .mst_req_t            ( axi_mst_req_t ),
+      .mst_resp_t           ( axi_mst_rsp_t )
+    ) i_serial_link_tx_id_remap (
+      .clk_i,
+      .rst_ni,
+      .slv_req_i  ( slink_tx_uar_req ),
+      .slv_resp_o ( slink_tx_uar_rsp ),
+      .mst_req_o  ( slink_tx_idr_req ),
+      .mst_resp_i ( slink_tx_idr_rsp )
+    );
+
+    serial_link #(
+      .axi_req_t    ( axi_mst_req_t ),
+      .axi_rsp_t    ( axi_mst_rsp_t ),
+      .cfg_req_t    ( reg_req_t ),
+      .cfg_rsp_t    ( reg_rsp_t ),
+      .aw_chan_t    ( axi_mst_aw_chan_t ),
+      .ar_chan_t    ( axi_mst_ar_chan_t ),
+      .r_chan_t     ( axi_mst_r_chan_t  ),
+      .w_chan_t     ( axi_mst_w_chan_t  ),
+      .b_chan_t     ( axi_mst_b_chan_t  ),
+      .hw2reg_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t ),
+      .reg2hw_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t ),
+      .NumChannels  ( SlinkNumChan   ),
+      .NumLanes     ( SlinkNumLanes  ),
+      .MaxClkDiv    ( SlinkMaxClkDiv )
+    ) i_serial_link (
+      .clk_i,
+      .rst_ni,
+      .clk_sl_i       ( clk_i  ),
+      .rst_sl_ni      ( rst_ni ),
+      .clk_reg_i      ( clk_i  ),
+      .rst_reg_ni     ( rst_ni ),
+      .testmode_i     ( test_mode_i ),
+      .axi_in_req_i   ( slink_tx_idr_req ),
+      .axi_in_rsp_o   ( slink_tx_idr_rsp ),
+      .axi_out_req_o  ( axi_in_req[AxiIn.slink]   ),
+      .axi_out_rsp_i  ( axi_in_rsp[AxiIn.slink]   ),
+      .cfg_req_i      ( reg_out_req[RegOut.slink] ),
+      .cfg_rsp_o      ( reg_out_rsp[RegOut.slink] ),
+      .ddr_rcv_clk_i  ( slink_rcv_clk_i ),
+      .ddr_rcv_clk_o  ( slink_rcv_clk_o ),
+      .ddr_i          ( slink_i ),
+      .ddr_o          ( slink_o ),
+      .isolated_i     ( '0 ),
+      .isolate_o      ( ),
+      .clk_ena_o      ( ),
+      .reset_no       ( )
+    );
+
+  end else begin : gen_no_serial_link
+
+    assign slink_rcv_clk_o  = 0;
+    assign slink_o          = '0;
+
+  end
+
+  ///////////
+  //  VGA  //
+  ///////////
+
+  if (Cfg.Vga) begin : gen_vga
+
+    axi_vga #(
+      .RedWidth     ( Cfg.VgaRedWidth    ),
+      .GreenWidth   ( Cfg.VgaGreenWidth  ),
+      .BlueWidth    ( Cfg.VgaBlueWidth   ),
+      .HCountWidth  ( Cfg.VgaHCountWidth ),
+      .VCountWidth  ( Cfg.VgaVCountWidth ),
+      .AXIAddrWidth ( Cfg.AddrWidth    ),
+      .AXIDataWidth ( Cfg.AxiDataWidth ),
+      .AXIStrbWidth ( AxiStrbWidth     ),
+      .axi_req_t    ( axi_mst_req_t ),
+      .axi_resp_t   ( axi_mst_rsp_t ),
+      .reg_req_t    ( reg_req_t ),
+      .reg_resp_t   ( reg_rsp_t )
+    ) i_axi_vga (
+      .clk_i,
+      .rst_ni,
+      .test_mode_en_i ( test_mode_i ),
+      .reg_req_i      ( reg_out_req[RegOut.vga] ),
+      .reg_rsp_o      ( reg_out_rsp[RegOut.vga] ),
+      .axi_req_o      ( axi_in_req[AxiIn.vga]   ),
+      .axi_resp_i     ( axi_in_rsp[AxiIn.vga]   ),
+      .hsync_o        ( vga_hsync_o ),
+      .vsync_o        ( vga_vsync_o ),
+      .red_o          ( vga_red_o   ),
+      .green_o        ( vga_green_o ),
+      .blue_o         ( vga_blue_o  )
+    );
+
+  end else begin : gen_no_vga
+
+    assign vga_hsync_o  = 0;
+    assign vga_vsync_o  = 0;
+    assign vga_red_o    = '0;
+    assign vga_green_o  = '0;
+    assign vga_blue_o   = '0;
+
+  end
+
+  //////////////////
+  //  Assertions  //
+  //////////////////
+
+  `ASSERT_INIT(NoDualCoreSupport, ~Cfg.DualCore)
+
+  // TODO: check that CVA6 and Cheshire config agree
+  // TODO: check that all interconnect params agree
+  // TODO: check that params with min/max values are within legal range
+  // TODO: check that CLINT and PLIC target counts are both `NumIntHarts + Cfg.NumExtHarts`
+  // TODO: check that (for now) `NumIntHarts == 1`
+  // TODO: check that available user bits suffice to identify all masters
+  // TODO: check that atomics user domain is nonzero
+  // TODO: check that `ext` (IO) and internal types agree
+  // TODO: many other things I most likely forgot
+  // TODO: check that LLC only exists if its output is connected (the reverse is allowed)
 
 endmodule

@@ -46,6 +46,13 @@ static inline void set_mie(int enable) {
         asm volatile("csrci mstatus, 8" ::: "memory");
 }
 
+// Get cycle count since reset
+static inline volatile uint64_t get_mcycle() {
+    volatile uint64_t mcycle;
+    asm volatile("csrr %0, mcycle" : "=r"(mcycle) :: "memory");
+    return mcycle;
+}
+
 // This may also be used to invoke code that does not return.
 static inline volatile uint64_t invoke(void *code) {
     volatile uint64_t (*code_fun_ptr)(void) = code;

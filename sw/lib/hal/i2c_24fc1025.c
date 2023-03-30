@@ -6,12 +6,14 @@
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-#include "hal/i2c_24xx1025.h"
+#include "hal/i2c_24fc1025.h"
 #include "i2c_regs.h"
 #include "util.h"
 #include "params.h"
 
-int i2c_24xx1025_init(dif_i2c_t *i2c, uint64_t core_freq) {
+#include "dif/clint.h"
+
+int i2c_24fc1025_init(dif_i2c_t *i2c, uint64_t core_freq) {
     // Check for legal arguments
     CHECK_ASSERT(0x11, i2c != 0);
     CHECK_ASSERT(0x12, core_freq != 0);
@@ -24,13 +26,13 @@ int i2c_24xx1025_init(dif_i2c_t *i2c, uint64_t core_freq) {
     CHECK_CALL(dif_i2c_reset_fmt_fifo(i2c))
     CHECK_CALL(dif_i2c_reset_rx_fifo(i2c))
     CHECK_CALL(dif_i2c_reset_tx_fifo(i2c))
-    // Set up timing: worst case 24xx1025 @1.7V
+    // Set up timing: worst case 24FC1025 @1.8V
     dif_i2c_timing_config_t timing_config = {
         .clock_period_nanos = (uint64_t)(1e9) / core_freq, // From system-side clock
         .lowest_target_device_speed = kDifI2cSpeedFast,    // Fast mode: up to 400 kBaud
-        .scl_period_nanos = 1000000 / 333,                 // run at 333 kBaud to meet t_sda_rise
-        .sda_fall_nanos = 300,                             // From 24xx1025 datasheet
-        .sda_rise_nanos = 1000                             // From 24xx1025 datasheet
+        .scl_period_nanos = 1000000 / 400,                 // Max supported speed
+        .sda_fall_nanos = 300,                             // From 24FC1025 datasheet
+        .sda_rise_nanos = 100                              // From 24FC1025 datasheet
     };
     // Configure I2C
     dif_i2c_config_t config;
@@ -42,15 +44,16 @@ int i2c_24xx1025_init(dif_i2c_t *i2c, uint64_t core_freq) {
     return 0;
 }
 
-static inline int __i2c_24xx1025_access_chunk(dif_i2c_t *i2c, void* buf, uint64_t addr,
+static inline int __i2c_24fc1025_access_chunk(dif_i2c_t *i2c, void* buf, uint64_t addr,
                                               uint64_t len, int write) {
     // Wait for all FIFOs to be vacated
     uint8_t lfmt, lrx, ltx, lacq;
     do CHECK_CALL(dif_i2c_get_fifo_levels(i2c, &lfmt, &lrx, &ltx, &lacq))
     while (lfmt || lrx || ltx || lacq);
     // Disable host until TX FIFO contains entire TX data to prevent (fatal) TX stalls
+    clint_spin_ticks(1);
     CHECK_CALL(dif_i2c_host_set_enabled(i2c, kDifToggleDisabled))
-    // 0xA0 identifies an 24xx1025 on the bus, followed by block and chip selects.
+    // 0xA0 identifies an 24FC1025 on the bus, followed by block and chip selects.
     // We overflow addresses to that device's upper block first, then further devices if any.
     uint64_t ctrl_waddr = 0xA0 | ((addr & 0x10000) >> 1) | ((addr & 0x1100000) >> 4);
     // Write address
@@ -71,7 +74,7 @@ static inline int __i2c_24xx1025_access_chunk(dif_i2c_t *i2c, void* buf, uint64_
         CHECK_CALL(dif_i2c_host_set_enabled(i2c, kDifToggleEnabled))
         // If our length exceeded half the FIFO, invoke another half transfer
         if (len > half_fill)
-            CHECK_CALL(__i2c_24xx1025_access_chunk(i2c, buf + len, addr + len, len - half_fill, 1))
+            CHECK_CALL(__i2c_24fc1025_access_chunk(i2c, buf + len, addr + len, len - half_fill, 1))
     }
     else {
         // Request read of len bytes
@@ -91,7 +94,7 @@ static inline int __i2c_24xx1025_access_chunk(dif_i2c_t *i2c, void* buf, uint64_
     return 0;
 }
 
-static inline int __i2c_24xx1025_access(void *priv, void *buf, uint64_t addr,
+static inline int __i2c_24fc1025_access(void *priv, void *buf, uint64_t addr,
                                         uint64_t len, int write) {
     // Ensure that FIFO size divides device pages (and hence is a power of two)
     CHECK_ASSERT(0x13, 128 % I2C_PARAM_FIFO_DEPTH == 0);
@@ -102,21 +105,21 @@ static inline int __i2c_24xx1025_access(void *priv, void *buf, uint64_t addr,
     uint64_t offs = 0;
     if (addr_offs) {
         offs = I2C_PARAM_FIFO_DEPTH - addr_offs;
-        CHECK_CALL(__i2c_24xx1025_access_chunk(i2c, buf, addr, offs, write))
+        CHECK_CALL(__i2c_24fc1025_access_chunk(i2c, buf, addr, offs, write))
     }
     // Copy start-aligned chunks
     for (; offs < len; offs += I2C_PARAM_FIFO_DEPTH) {
         uint64_t chunk_len = MIN(I2C_PARAM_FIFO_DEPTH, len - offs);
-        CHECK_CALL(__i2c_24xx1025_access_chunk(i2c, buf + offs, addr + offs, chunk_len, write))
+        CHECK_CALL(__i2c_24fc1025_access_chunk(i2c, buf + offs, addr + offs, chunk_len, write))
     }
     // Nothing went wrong
     return 0;
 }
 
-int i2c_24xx1025_read(void *priv, void* buf, uint64_t addr, uint64_t len) {
-    return __i2c_24xx1025_access(priv, buf, addr, len, 0);
+int i2c_24fc1025_read(void *priv, void* buf, uint64_t addr, uint64_t len) {
+    return __i2c_24fc1025_access(priv, buf, addr, len, 0);
 }
 
-int i2c_24xx1025_write(void *priv, void* buf, uint64_t addr, uint64_t len) {
-    return __i2c_24xx1025_access(priv, buf, addr, len, 1);
+int i2c_24fc1025_write(void *priv, void* buf, uint64_t addr, uint64_t len) {
+    return __i2c_24fc1025_access(priv, buf, addr, len, 1);
 }

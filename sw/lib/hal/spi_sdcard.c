@@ -223,12 +223,13 @@ int spi_sdcard_init(spi_sdcard_t *handle, uint64_t core_freq) {
     CHECK_ASSERT(0x18, handle->spi_freq <= core_freq)
 
     // Initialize handle
-    mmio_region_t spi_host_base = (mmio_region_t){.base = (void *)&__base_spim};
+    mmio_region_t spi_host_base = (mmio_region_t){.base = (void *)&__base_spih};
     CHECK_CALL(dif_spi_host_init(spi_host_base, &handle->spi_host))
     // Reset SPI host
     dif_spi_host_reset(&handle->spi_host);
-    // Configure SPI host for s25fs512s
+    // Configure SPI host for SD card
     dif_spi_host_config_t config = {
+        // TODO: what are appropriate values for these?
         //.chip_select = {.idle = 0xF, .lead = 0xF, .trail = 0xF},
         .cpha = 0,
         .cpol = 0,

@@ -15,12 +15,13 @@ RISCV_CC      ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-gcc
 RISCV_OBJCOPY ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-objcopy
 RISCV_OBJDUMP ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-objdump
 
+CHS_LD_DIR    ?= $(CHS_SW_DIR)/link
+
 RISCV_FLAGS   ?= -DOT_PLATFORM_RV32 -march=rv64gc_zifencei -mabi=lp64d -mstrict-align -O2 -Wall -static -ffunction-sections -fdata-sections -frandom-seed=cheshire -fuse-linker-plugin -flto -Wl,-flto
 RISCV_CCFLAGS ?= $(RISCV_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
-RISCV_LDFLAGS ?= $(RISCV_FLAGS) -nostartfiles -Wl,--gc-sections
+RISCV_LDFLAGS ?= $(RISCV_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_LD_DIR)
 RISCV_ARFLAGS ?= --plugin=$(shell find $(shell dirname $(RISCV_GCC_BINROOT))/libexec/gcc/riscv64-unknown-elf/**/liblto_plugin.so)
 
-CHS_LD_DIR    ?= $(CHS_SW_DIR)/link
 
 chs-sw-all: chs-sw-libs chs-sw-headers chs-sw-tests
 
@@ -85,11 +86,13 @@ chs-sw-headers: $(CHS_SW_GEN_HDRS)
 # Compilation #
 ###############
 
+# TODO: track headers with gcc -MM!
+
 # All objects require up-to-date patches and headers
-%.o: %.c $(CHS_ROOT)/.deps $(CHS_SW_GEN_HDRS)
+%.o: %.c $(CHS_SW_GEN_HDRS)
 	$(RISCV_CC) $(CHS_SW_INCLUDES) $(RISCV_CCFLAGS) -c $< -o $@
 
-%.o: %.S $(CHS_ROOT)/.deps $(CHS_SW_GEN_HDRS)
+%.o: %.S $(CHS_SW_GEN_HDRS)
 	$(RISCV_CC) $(CHS_SW_INCLUDES) $(RISCV_CCFLAGS) -c $< -o $@
 
 define chs_ld_elf_rule
@@ -110,6 +113,9 @@ $(foreach link,$(patsubst $(CHS_LD_DIR)/%.ld,%,$(wildcard $(CHS_LD_DIR)/*.ld)),$
 %.dtb: %.dts
 	@$(DTC) -I dts -O dtb -o $@ $<
 
+%.memh: %.elf
+	$(RISCV_OBJCOPY) -O verilog $< $@
+
 #########
 # Tests #
 #########
@@ -118,5 +124,6 @@ CHS_TEST_SRCS_S     = $(wildcard $(CHS_SW_DIR)/tests/*.S)
 CHS_TEST_SRCS_C     = $(wildcard $(CHS_SW_DIR)/tests/*.c)
 CHS_TEST_DRAM_DUMP  = $(CHS_TEST_SRCS_S:.S=.dram.dump) $(CHS_TEST_SRCS_C:.c=.dram.dump)
 CHS_TEST_SPM_DUMP   = $(CHS_TEST_SRCS_S:.S=.spm.dump)  $(CHS_TEST_SRCS_C:.c=.spm.dump)
+CHS_TEST_SPM_MEMH   = $(CHS_TEST_SRCS_S:.S=.rom.memh)  $(CHS_TEST_SRCS_C:.c=.rom.memh)
 
-chs-sw-tests: $(CHS_TEST_DRAM_DUMP) $(CHS_TEST_SPM_DUMP)
+chs-sw-tests: $(CHS_TEST_DRAM_DUMP) $(CHS_TEST_SPM_DUMP) $(CHS_TEST_SPM_MEMH)

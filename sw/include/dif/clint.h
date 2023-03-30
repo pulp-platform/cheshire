@@ -16,6 +16,9 @@ void clint_spin_until(uint64_t tgt_mtime);
 
 void clint_spin_ticks(uint64_t ticks);
 
+// This assumes a stable clock
+uint64_t clint_get_core_freq(uint64_t ref_freq, uint64_t num_ticks);
+
 void clint_set_mtimecmpx(uint64_t timer_idx, uint64_t value);
 
 // PRE: requires an appropriate trap handler catching the timer interrupt
