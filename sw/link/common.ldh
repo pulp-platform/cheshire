@@ -17,7 +17,7 @@ MEMORY {
   extrom (rx)   : ORIGIN = 0x00000000, LENGTH = 48K
   spm (rwx)     : ORIGIN = 0x10000000, LENGTH = 64K
   /* We  assume at least 8 MiB of DRAM (minimum for Linux). */
-  dram (rwx)    : ORIGIN = 0x10000000, LENGTH = 8M
+  dram (rwx)    : ORIGIN = 0x80000000, LENGTH = 8M
 }
 
 SECTIONS {
@@ -25,8 +25,9 @@ SECTIONS {
   /DISCARD/ : { *(.riscv.attributes) *(.comment) }
 
   /* Global and stack pointer */
+  /* By default, keep the calling context (boot ROM) stack pointer */
   __global_pointer$ = ADDR(.misc) + SIZEOF(.misc) / 2;
-  __stack_pointer$  = ORIGIN(spm) + LENGTH(spm) - 8;
+  __stack_pointer$  = 0;
 
   /* Further addresses */
   __base_dma      = 0x01000000;

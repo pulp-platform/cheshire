@@ -49,7 +49,7 @@ static inline void set_mie(int enable) {
 // Get cycle count since reset
 static inline volatile uint64_t get_mcycle() {
     volatile uint64_t mcycle;
-    asm volatile("csrr %0, mcycle" : "=r"(mcycle) :: "memory");
+    asm volatile("csrr %0, mcycle" : "=r"(mcycle)::"memory");
     return mcycle;
 }
 
@@ -62,10 +62,15 @@ static inline volatile uint64_t invoke(void *code) {
 }
 
 // If a call yields a nonzero return, return that immediately as an int
-#define CHECK_CALL(call) { int __ccret = (volatile int)(call); if (__ccret) return __ccret; }
+#define CHECK_CALL(call) \
+    { \
+        int __ccret = (volatile int)(call); \
+        if (__ccret) return __ccret; \
+    }
 
 // If a condition; if it is untrue, ummediately return an error code
-#define CHECK_ASSERT(ret, cond) if (!(cond)) return (ret);
+#define CHECK_ASSERT(ret, cond) \
+    if (!(cond)) return (ret);
 
 #define MIN(a, b) (((a) <= (b)) ? (a) : (b))
 

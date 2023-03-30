@@ -4,6 +4,7 @@
 //
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
+// Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 // TODO: Avoid hardcoding in addresses and offsets
 // TODO: park non-0 harts here and adapt to new parameterization
@@ -12,9 +13,8 @@
 
 // Minimal bootrom loader
 .global _start
-.global _exit
 _start:
-    // Init stack and global pointer with safe, linked vales
+    // Init stack and global pointer with safe, linked values
     la sp, __stack_pointer$
     .option push
     .option norelax
@@ -87,16 +87,15 @@ _boot:
     li t1, 0
     fence
     fence.i
-    jal main
+    call main
 
-// If main returns, we end up here.
-// Save the return value to scratch register 2 and wait forever.
+// If main returns, we end up here
+.global _exit
 _exit:
+    // Save the return value to scratch register 2 and wait forever
     slli a0, a0, 1
     ori  a0, a0, 1
     la t0, __base_regs
     sw a0, 8(t0)     // regs.SCRATCH[2]
-
-_exit_wait_loop:
-    wfi
-    j _exit_wait_loop
+1:  wfi
+    j 1b

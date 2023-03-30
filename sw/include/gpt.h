@@ -14,7 +14,7 @@ typedef int (*gpt_read_t)(void *priv, void *buf, uint64_t addr, uint64_t len);
 
 int gpt_check_signature(gpt_read_t read, void *priv);
 
-int gpt_find_boot_partition(gpt_read_t read, void *priv,
-                            uint64_t *lba_begin, uint64_t *lba_end, uint64_t max_lbas);
+int gpt_find_boot_partition(gpt_read_t read, void *priv, uint64_t *lba_begin, uint64_t *lba_end,
+                            uint64_t max_lbas);
 
-int gpt_boot_part_else_raw(gpt_read_t read, void *priv, void* code_buf, uint64_t max_lbas);
+int gpt_boot_part_else_raw(gpt_read_t read, void *priv, void *code_buf, uint64_t max_lbas);

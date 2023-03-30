@@ -9,18 +9,21 @@
 
 set TESTBENCH tb_cheshire_soc
 
-set flags "-permissive -suppress 3009 -suppress 8386"
+# Set voptargs only if not already set to make overridable.
+# Default on fast simulation flags.
+if {![info exists VOPTARGS]} {
+    set VOPTARGS "-O5 +acc=p+tb_cheshire_soc. +noacc=p+cheshire_soc. +acc=r+stream_xbar"
+}
+
+set flags "-permissive -suppress 3009 -suppress 8386 -error 7"
 
 set pargs ""
-if ([info exists BOOTMODE]) { append pargs "+BOOTMODE=${BOOTMODE} " }
-if ([info exists PRELMODE]) { append pargs "+PRELMODE=${PRELMODE} " }
-if ([info exists TESTMODE]) { append pargs "+TESTMODE=${TESTMODE} " }
-if ([info exists BINARY])   { append pargs "+BINARY=${BINARY} " }
-if ([info exists IMAGE])    { append pargs "+IMAGE=${IMAGE} " }
+if {[info exists BOOTMODE]} { append pargs "+BOOTMODE=${BOOTMODE} " }
+if {[info exists PRELMODE]} { append pargs "+PRELMODE=${PRELMODE} " }
+if {[info exists BINARY]}   { append pargs "+BINARY=${BINARY} " }
+if {[info exists IMAGE]}    { append pargs "+IMAGE=${IMAGE} " }
 
-eval "vsim -c ${TESTBENCH} -t 1ps -voptargs=+acc" ${pargs} ${flags}
+eval "vsim -c ${TESTBENCH} -t 1ps -vopt -voptargs=\"${VOPTARGS}\"" ${pargs} ${flags}
 
 set StdArithNoWarnings 1
 set NumericStdNoWarnings 1
-
-log -r *

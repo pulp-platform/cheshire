@@ -13,22 +13,17 @@ module tb_cheshire_soc;
   string      boot_hex;
   logic [1:0] boot_mode;
   logic [1:0] preload_mode;
-  logic       test_mode;
   bit [31:0]  exit_code;
 
   initial begin
     // Fetch plusargs or use safe (fail-fast) defaults
     if (!$value$plusargs("BOOTMODE=%d", boot_mode))     boot_mode     = 0;
     if (!$value$plusargs("PRELMODE=%d", preload_mode))  preload_mode  = 0;
-    if (!$value$plusargs("TESTMODE=%d", test_mode))     test_mode     = 0;
     if (!$value$plusargs("BINARY=%s",   preload_elf))   preload_elf   = "";
     if (!$value$plusargs("IMAGE=%s",    boot_hex))      boot_hex      = "";
 
-    // Set test and boot mode
-    fix.set_test_mode(boot_mode);
+    // Set boot mode and preload boot image if there is one
     fix.set_boot_mode(boot_mode);
-
-    // Preload boot image if there is one
     fix.i2c_eeprom_preload(boot_hex);
     fix.spih_norflash_preload(boot_hex);
 

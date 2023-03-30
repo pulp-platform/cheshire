@@ -28,4 +28,4 @@ extern void *__base_dma;
 extern void *__base_spm;
 
 // Maximum number of LBAs to copy to SPM for boot (48 KiB)
-static const uint64_t __BOOT_SPM_MAX_LBAS = 2*48;
+static const uint64_t __BOOT_SPM_MAX_LBAS = 2 * 48;

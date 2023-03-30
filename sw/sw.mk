@@ -105,7 +105,7 @@ endef
 $(foreach link,$(patsubst $(CHS_LD_DIR)/%.ld,%,$(wildcard $(CHS_LD_DIR)/*.ld)),$(eval $(call chs_ld_elf_rule,$(link))))
 
 %.dump: %.elf
-	$(RISCV_OBJDUMP) -d $< > $@
+	$(RISCV_OBJDUMP) -d -S $< > $@
 
 %.bin: %.elf
 	$(RISCV_OBJCOPY) -O binary $< $@
@@ -116,14 +116,33 @@ $(foreach link,$(patsubst $(CHS_LD_DIR)/%.ld,%,$(wildcard $(CHS_LD_DIR)/*.ld)),$
 %.memh: %.elf
 	$(RISCV_OBJCOPY) -O verilog $< $@
 
+###################
+# GPT test images #
+###################
+
+# Create a GPT disk image from a (firmware) ROM; we add dummy partitions to test our GPT boot code.
+%.gpt.bin: %.rom.bin
+	rm -f $@
+	truncate -s $$(( $$(stat --printf="%s" $<) + 85*512)) $@
+	parted -a none $@ --script -- mktable gpt \
+	    mkpart dummy0   fat32   37s   40s \
+	    mkpart firmware fat16   42s  -43s \
+	    mkpart dummy1   fat32  -41s  -38s
+	dd if=$< of=$@ bs=512 seek=42 conv=notrunc
+
+# Create hex file from .gpt image
+%.gpt.memh: %.gpt.bin
+	$(RISCV_OBJCOPY) -I binary -O verilog $< $@
+
 #########
 # Tests #
 #########
 
-CHS_TEST_SRCS_S     = $(wildcard $(CHS_SW_DIR)/tests/*.S)
-CHS_TEST_SRCS_C     = $(wildcard $(CHS_SW_DIR)/tests/*.c)
-CHS_TEST_DRAM_DUMP  = $(CHS_TEST_SRCS_S:.S=.dram.dump) $(CHS_TEST_SRCS_C:.c=.dram.dump)
-CHS_TEST_SPM_DUMP   = $(CHS_TEST_SRCS_S:.S=.spm.dump)  $(CHS_TEST_SRCS_C:.c=.spm.dump)
-CHS_TEST_SPM_MEMH   = $(CHS_TEST_SRCS_S:.S=.rom.memh)  $(CHS_TEST_SRCS_C:.c=.rom.memh)
+CHS_SW_TEST_SRCS_S  	= $(wildcard $(CHS_SW_DIR)/tests/*.S)
+CHS_SW_TEST_SRCS_C     	= $(wildcard $(CHS_SW_DIR)/tests/*.c)
+CHS_SW_TEST_DRAM_DUMP  	= $(CHS_SW_TEST_SRCS_S:.S=.dram.dump) $(CHS_SW_TEST_SRCS_C:.c=.dram.dump)
+CHS_SW_TEST_SPM_DUMP   	= $(CHS_SW_TEST_SRCS_S:.S=.spm.dump)  $(CHS_SW_TEST_SRCS_C:.c=.spm.dump)
+CHS_SW_TEST_SPM_ROMH   	= $(CHS_SW_TEST_SRCS_S:.S=.rom.memh)  $(CHS_SW_TEST_SRCS_C:.c=.rom.memh)
+CHS_SW_TEST_SPM_GPTH   	= $(CHS_SW_TEST_SRCS_S:.S=.gpt.memh)  $(CHS_SW_TEST_SRCS_C:.c=.gpt.memh)
 
-chs-sw-tests: $(CHS_TEST_DRAM_DUMP) $(CHS_TEST_SPM_DUMP) $(CHS_TEST_SPM_MEMH)
+chs-sw-tests: $(CHS_SW_TEST_DRAM_DUMP) $(CHS_SW_TEST_SPM_DUMP) $(CHS_SW_TEST_SPM_ROMH) $(CHS_SW_TEST_SPM_GPTH)
