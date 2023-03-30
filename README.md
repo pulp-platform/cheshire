@@ -10,22 +10,22 @@ This project is still considered to be in early development; some parts may not 
 
 To build different parts of the project, run `make` followed by these targets:
 
-* `chs-hw-all`: generated hardware, including IPs and boot ROM
-* `chs-sw-all`: software running on our hardware
-* `chs-sim-all`(†): scripts and external models for simulation
-* `chs-xilinx-all`: scripts for Xilinx FPGA implementation
+* `hw-all`: generated hardware, including IPs and boot ROM
+* `sw-all`: software running on our hardware
+* `sim-all`(†): scripts and external models for simulation
+* `xilinx-all`: scripts for Xilinx FPGA implementation
 
-† *`chs-sim-all` will download externally provided peripheral simulation models, some proprietary and with non-free license terms, from their publically accessible sources; see `Makefile` for details. By running `chs-sim-all` or the default target `all`, you accept this.*
+† *`sim-all` will download externally provided peripheral simulation models, some proprietary and with non-free license terms, from their publically accessible sources; see `Makefile` for details. By running `sim-all` or the default target `all`, you accept this.*
 
-Running `chs-hw-all` is *required* at least once to correctly configure IPs we depend on. On reconfiguring any generated hardware or changing IP versions, `chs-hw-all` should be rerun.
+Running `hw-all` is *required* at least once to correctly configure IPs we depend on. On reconfiguring any generated hardware or changing IP versions, `hw-all` should be rerun.
 
 To run all build targets above (†):
 
 ```
-make chs-all
+make all
 ```
 
-If you have access to our internal servers, you can run `make chs-nonfree-init` to fetch additional resources we cannot make publically accessible. Note that these are *not required* to use anything provided in this repository.
+If you have access to our internal servers, you can run `make nonfree-init` to fetch additional resources we cannot make publically accessible. Note that these are *not required* to use anything provided in this repository.
 
 ## License
 

@@ -11,7 +11,7 @@ stages:
 
 init:
   stage: nonfree
-  script: make chs-nonfree-init
+  script: make nonfree-init
   artifacts:
     paths: [ nonfree/ci.yml ]
 

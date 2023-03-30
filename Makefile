@@ -7,4 +7,15 @@
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 CHS_ROOT ?= .
+
 include cheshire.mk
+
+# Inside the repo, forward (prefixed) all and nonfree targets
+all:
+	@$(MAKE) chs-all
+
+%-all:
+	@$(MAKE) chs-$*-all
+
+nonfree-%:
+	@$(MAKE) chs-nonfree-$*
