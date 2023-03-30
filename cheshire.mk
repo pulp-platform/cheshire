@@ -10,6 +10,7 @@ BENDER        ?= bender
 PYTHON3       ?= python3
 REGGEN        ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
 
+
 CHS_ROOT ?= $(shell $(BENDER) path cheshire)
 
 PLICOPT        = -s 20 -t 2 -p 7
@@ -44,6 +45,7 @@ include $(CHS_ROOT)/sw/sw.mk
 ###############
 
 # SoC registers
+
 $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv: $(CHS_ROOT)/hw/regs/cheshire_regs.hjson
 	$(REGGEN) -r $< --outdir $(dir $@)
 
@@ -67,6 +69,7 @@ $(shell $(BENDER) path axi_vga)/.generated: Bender.yml
 
 # Custom serial link
 $(shell $(BENDER) path serial_link)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
+
 	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
 	$(MAKE) -C $(shell $(BENDER) path serial_link) update-regs
 	touch $@
@@ -98,6 +101,7 @@ chs-bootrom-all: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv
 # Simulation #
 ##############
 
+
 $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: Bender.yml
 	$(BENDER) script vsim -t sim -t cv64a6_imafdc_sv39 -t test -t cva6 --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
@@ -107,6 +111,7 @@ $(CHS_ROOT)/target/sim/models:
 
 # Download (partially non-free) simulation models from publically available sources;
 # by running these targets or targets depending on them, you accept this (see README.md).
+
 $(CHS_ROOT)/target/sim/models/s25fs512s.sv: Bender.yml | $(CHS_ROOT)/target/sim/models
 	wget --no-check-certificate https://freemodelfoundry.com/fmf_vlog_models/flash/s25fs512s.sv -O $@
 	touch $@
@@ -124,6 +129,7 @@ chs-sim-all: $(CHS_ROOT)/target/sim/models/s25fs512s.sv
 chs-sim-all: $(CHS_ROOT)/target/sim/models/24FC1025.v
 chs-sim-all: $(CHS_ROOT)/target/sim/models/uart_tb_rx.sv
 chs-sim-all: $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
+
 
 #############
 # FPGA Flow #
