@@ -35,9 +35,9 @@ package cheshire_pkg;
   } jtag_idcode_t;
 
   // PULP Platform manufacturer and default Cheshire part number
-  localparam [10:0] JtagPulpManufacturer  = 12'h6d9;
-  localparam [15:0] JtagCheshirePartNum   = 16'hc5e5;
-  localparam [ 3:0] JtagCheshireVersion   = 4'h1;
+  localparam bit [10:0] JtagPulpManufacturer  = 12'h6d9;
+  localparam bit [15:0] JtagCheshirePartNum   = 16'hc5e5;
+  localparam bit [ 3:0] JtagCheshireVersion   = 4'h1;
   localparam jtag_idcode_t CheshireIdCode = '{
     _one          : 1,
     manufacturer  : JtagPulpManufacturer,
@@ -229,7 +229,7 @@ package cheshire_pkg;
     aw_bt   idx;
     doub_bt start;
     doub_bt pte;
-  } arul_bt;
+  } arul_t;
 
   // AXI Xbar slave indices and map
   typedef struct packed {
@@ -242,7 +242,7 @@ package cheshire_pkg;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
-    arul_bt [aw_bt'(-1):0] map;
+    arul_t [aw_bt'(-1):0] map;
   } axi_out_t;
 
   function automatic axi_out_t gen_axi_out(cheshire_cfg_t cfg);
@@ -302,7 +302,7 @@ package cheshire_pkg;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
-    arul_bt [aw_bt'(-1):0] map;
+    arul_t [aw_bt'(-1):0] map;
   } reg_out_t;
 
   function automatic reg_out_t gen_reg_out(cheshire_cfg_t cfg);

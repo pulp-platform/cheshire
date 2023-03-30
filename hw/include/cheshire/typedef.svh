@@ -10,6 +10,10 @@
 `include "axi/typedef.svh"
 `include "register_interface/typedef.svh"
 
+`define CHESHIRE_TYPEDEF_AXI_CT(__name, __addr_t, __id_t, __data_t, __strb_t, __user_t) \
+  `AXI_TYPEDEF_ALL_CT(__name, __name``_req_t, __name``_rsp_t, \
+      __addr_t, __id_t, __data_t, __strb_t, __user_t)
+
 `define CHESHIRE_TYPEDEF_AXI(__name, __name_llc, __addr_t, __cfg) \
   localparam cheshire_pkg::axi_in_t __name``__AxiIn = cheshire_pkg::gen_axi_in(__cfg); \
   localparam type __name``_data_t    = logic [__cfg.AxiDataWidth   -1:0]; \
@@ -19,11 +23,11 @@
   localparam type __name``_slv_id_t  = logic [__cfg.AxiMstIdWidth + \
       $clog2(__name``__AxiIn.num_in)-1:0]; \
   localparam type __name_llc``_id_t  = logic [$bits(__name``_slv_id_t)+__cfg.LlcNotBypass-1:0]; \
-  `AXI_TYPEDEF_ALL_CT(__name``_mst, __name``_mst_req_t, __name``_mst_rsp_t, __addr_t, \
+  `CHESHIRE_TYPEDEF_AXI_CT(__name``_mst, __addr_t, \
       __name``_mst_id_t, __name``_data_t, __name``_strb_t, __name``_user_t) \
-  `AXI_TYPEDEF_ALL_CT(__name``_slv, __name``_slv_req_t, __name``_slv_rsp_t, __addr_t, \
+  `CHESHIRE_TYPEDEF_AXI_CT(__name``_slv, __addr_t, \
       __name``_slv_id_t, __name``_data_t, __name``_strb_t, __name``_user_t) \
-  `AXI_TYPEDEF_ALL_CT(__name_llc, __name_llc``_req_t, __name_llc``_rsp_t, __addr_t, \
+  `CHESHIRE_TYPEDEF_AXI_CT(__name``_llc, __addr_t, \
       __name``_llc_id_t, __name``_data_t, __name``_strb_t, __name``_user_t) \
 
 `define CHESHIRE_TYPEDEF_REG(__name, __addr_t) \

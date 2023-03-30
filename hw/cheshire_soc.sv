@@ -157,7 +157,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   function automatic addr_rule_t [AxiOut.num_rules-1:0] gen_axi_map();
     addr_rule_t [AxiOut.num_rules-1:0] ret;
     for (int i = 0; i < AxiOut.num_rules; ++i)
-      ret[i] = '{idx: AxiOut.map[i].idx, start_addr: AxiOut.map[i].start, end_addr: AxiOut.map[i].pte};
+      ret[i] = '{idx: AxiOut.map[i].idx,
+          start_addr: AxiOut.map[i].start, end_addr: AxiOut.map[i].pte};
     return ret;
   endfunction
 
@@ -238,7 +239,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   /////////////////
 
   // Define types needed
-  `AXI_TYPEDEF_ALL_CT(axi_d32, axi_d32_req_t, axi_d32_rsp_t, addr_t, axi_slv_id_t, logic [31:0], logic [3:0], axi_user_t)
+  `CHESHIRE_TYPEDEF_AXI_CT(axi_d32, addr_t, axi_slv_id_t, logic [31:0], logic [3:0], axi_user_t)
 
   // Generate indices and get maps for all ports
   localparam reg_out_t  RegOut = gen_reg_out(Cfg);
@@ -247,7 +248,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   function automatic addr_rule_t [RegOut.num_rules-1:0] gen_reg_map();
     addr_rule_t [RegOut.num_rules-1:0] ret;
     for (int i = 0; i < RegOut.num_rules; ++i)
-      ret[i] = '{idx: RegOut.map[i].idx, start_addr: RegOut.map[i].start, end_addr: RegOut.map[i].pte};
+      ret[i] = '{idx: RegOut.map[i].idx,
+          start_addr: RegOut.map[i].start, end_addr: RegOut.map[i].pte};
     return ret;
   endfunction
 
@@ -529,14 +531,14 @@ module cheshire_soc import cheshire_pkg::*; #(
   // TODO: Implement X interface support
 
   // CVA6 has a canonical ID width of 4
-  localparam Cva6IdWidth = 4;
+  localparam int unsigned Cva6IdWidth = 4;
   typedef logic [Cva6IdWidth-1:0] cva6_id_t;
-  `AXI_TYPEDEF_ALL_CT(axi_cva6, axi_cva6_req_t, axi_cva6_rsp_t, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
+  `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
 
   localparam ariane_pkg::ariane_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
 
   // Boot from boot ROM only if available, otherwise from platform ROM
-  localparam [63:0] BootAddr = 64'(Cfg.Bootrom ? AmBrom : Cfg.PlatformRom);
+  localparam logic [63:0] BootAddr = 64'(Cfg.Bootrom ? AmBrom : Cfg.PlatformRom);
 
   // Debug interface for internal harts
   dm::hartinfo_t [NumIntHarts-1:0] dbg_int_info;
