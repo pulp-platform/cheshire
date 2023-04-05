@@ -18,6 +18,14 @@ static inline volatile uint32_t *reg32(void *base, int offs) {
     return (volatile uint32_t *)(base + offs);
 }
 
+static inline volatile uint64_t axi_read(void *addr) {
+    return *(volatile uint64_t *)(long)(addr);
+}
+
+static inline volatile void axi_write(void *addr, uint64_t value) {
+    *(volatile uint64_t *)(long)(addr) = value;
+}
+
 static inline void fence() {
     asm volatile("fence" ::: "memory");
 }
