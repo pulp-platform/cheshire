@@ -9,7 +9,8 @@
 # Contraints files selection
 switch $::env(BOARD) {
   "genesys2" - "kc705" - "vc707" - "vcu128" {
-    add_files -fileset constrs_1 -norecurse constraints/$::env(BOARD).xdc
+    import_files -fileset constrs_1 -norecurse constraints/$::env(BOARD).xdc
+    import_files -fileset constrs_1 -norecurse constraints/cheshire.xdc
   }
   default {
       exit 1
@@ -22,7 +23,9 @@ switch $::env(BOARD) {
     set ips { "xilinx/xlnx_mig_7_ddr3/xlnx_mig_7_ddr3.srcs/sources_1/ip/xlnx_mig_7_ddr3/xlnx_mig_7_ddr3.xci" }
   }
   "vcu128" {
-    set ips { "xilinx/xlnx_mig_ddr4/xlnx_mig_ddr4.srcs/sources_1/ip/xlnx_mig_ddr4/xlnx_mig_ddr4.xci" "xilinx/xlnx_sim_clk_gen/xlnx_sim_clk_gen.srcs/sources_1/ip/xlnx_sim_clk_gen/xlnx_sim_clk_gen.xci" }
+    set ips { "xilinx/xlnx_mig_ddr4/xlnx_mig_ddr4.srcs/sources_1/ip/xlnx_mig_ddr4/xlnx_mig_ddr4.xci" \
+              "xilinx/xlnx_sim_clk_gen/xlnx_sim_clk_gen.srcs/sources_1/ip/xlnx_sim_clk_gen/xlnx_sim_clk_gen.xci" \
+            }
   }
   default {
     set ips {}
@@ -37,8 +40,6 @@ add_files -fileset sim_1 -norecurse src/tb.sv
 set_property top ${project}_top_xilinx [current_fileset]
 
 update_compile_order -fileset sources_1
-
-add_files -fileset constrs_1 -norecurse constraints/$project.xdc
 
 set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
 set_property strategy Performance_ExtraTimingOpt [get_runs impl_1]
@@ -66,6 +67,7 @@ report_clock_interaction                                                -file re
 
 # Instantiate ILA
 set DEBUG [llength [get_nets -hier -filter {MARK_DEBUG == 1}]]
+set DEBUG 0
 if ($DEBUG) {
     # Create core
     puts "Creating debug core..."
@@ -102,7 +104,7 @@ if ($DEBUG) {
         set netNameLast $netName
     }
     # Need to save save constraints before implementing the core
-    set_property target_constrs_file cheshire.srcs/constrs_1/imports/constraints/$::env(BOARD).xdc [current_fileset -constrset]
+    # set_property target_constrs_file cheshire.srcs/constrs_1/imports/constraints/$::env(BOARD).xdc [current_fileset -constrset]
     save_constraints -force
     implement_debug_core
     write_debug_probes -force probes.ltx

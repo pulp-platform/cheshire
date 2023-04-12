@@ -3,8 +3,8 @@
 `define USE_DDR4
 `define USE_JTAG
 `define USE_JTAG_VDDGND
-// DRAM runs at 100MHz
-`define DDR_CLK_DIVIDER 4'h2
+// DRAM runs at 200MHz
+`define DDR_CLK_DIVIDER 4'h4
 `endif
 
 `ifdef TARGET_GENESYS2

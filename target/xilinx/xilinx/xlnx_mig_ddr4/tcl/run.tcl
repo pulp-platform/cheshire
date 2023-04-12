@@ -20,9 +20,11 @@ set_property -dict [list CONFIG.C0.DDR4_AxiSelection {true} \
                          CONFIG.C0.DDR4_AxiAddressWidth {32} \
                          CONFIG.C0.DDR4_AxiIDWidth {6} \
                          CONFIG.C0.DDR4_AxiNarrowBurst {0} \
+                         CONFIG.C0.DDR4_Clamshell {true} \
                          CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram} \
                          CONFIG.C0_CLOCK_BOARD_INTERFACE {default_100mhz_clk} \
                          CONFIG.RESET_BOARD_INTERFACE {Custom} \
+                         CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {200} \
                    ] [get_ips $ipName]
 
 generate_target {instantiation_template} [get_files ./$ipName.srcs/sources_1/ip/$ipName/$ipName.xci]

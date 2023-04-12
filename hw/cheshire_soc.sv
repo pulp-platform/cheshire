@@ -41,11 +41,11 @@ module cheshire_soc import cheshire_pkg::*; #(
   output  logic [CheshireCfg.VgaBlueWidth-1:0]    vga_blue_o,
 
   // JTAG Interface
-  input   logic               jtag_tck_i,
-  input   logic               jtag_trst_ni,
-  input   logic               jtag_tms_i,
-  input   logic               jtag_tdi_i,
-  output  logic               jtag_tdo_o,
+  (* mark_debug = "true" *) input   logic               jtag_tck_i,
+  (* mark_debug = "true" *) input   logic               jtag_trst_ni,
+  (* mark_debug = "true" *) input   logic               jtag_tms_i,
+  (* mark_debug = "true" *) input   logic               jtag_tdi_i,
+  (* mark_debug = "true" *) output  logic               jtag_tdo_o,
 
   // UART Interface
   output logic                uart_tx_o,
@@ -368,7 +368,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   // Debug Transfer Module + Debug Module Interface
   dmi_jtag #(
-    .IdcodeValue      ( IDCode )
+    .IdcodeValue      ( 32'h20002001 )
   ) i_dmi_jtag (
     .clk_i,
     .rst_ni,

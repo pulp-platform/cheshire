@@ -16,14 +16,17 @@
 set_property DONT_TOUCH TRUE [get_cells i_sys_clk_div/i_clk_bypass_mux]
 
 # The pin of which we get the 100 MHz single ended clock from the MIG
-set MIG_CLK_SRC {i_dram_wrapper/clk_o}
+set MIG_CLK_SRC {i_dram_wrapper/addn_clk_1_o}
 
 #####################
 # Timing Parameters #
 #####################
 
-# 100 MHz FPGA diff clock
-set FPGA_TCK 10.0
+# 333 MHz dram clock
+set FPGA_TCK 3.0
+
+# 200 MHz Dram clock
+set DRAM_TCK 5.0
 
 # 25 MHz SoC clock
 set SOC_TCK 40.0

@@ -21,16 +21,16 @@ module cheshire_top_xilinx
 `endif
 
 `ifdef USE_JTAG
-  input logic         jtag_tck_i,
-  input logic         jtag_tms_i,
-  input logic         jtag_tdi_i,
-  output logic        jtag_tdo_o,
+  (* mark_debug = "true" *) input logic         jtag_tck_i,
+  (* mark_debug = "true" *) input logic         jtag_tms_i,
+  (* mark_debug = "true" *) input logic         jtag_tdi_i,
+  (* mark_debug = "true" *) output logic        jtag_tdo_o,
 `ifdef USE_JTAG_TRSTN
-  input logic         jtag_trst_ni,
+  (* mark_debug = "true" *) input logic         jtag_trst_ni,
 `endif
 `ifdef USE_JTAG_VDDGND
-  output logic        jtag_vdd_o,
-  output logic        jtag_gnd_o,
+  (* mark_debug = "true" *) output logic        jtag_vdd_o,
+  (* mark_debug = "true" *) output logic        jtag_gnd_o,
 `endif
 `endif
 
@@ -84,7 +84,8 @@ module cheshire_top_xilinx
 
 );
 
-  wire dram_clock_out;
+  wire dram_clock_out; // 333 MHz
+  wire dram_addn_clk_1_out; // 200 MHz
   wire dram_sync_reset;
   wire soc_clk;
 
@@ -114,7 +115,7 @@ module cheshire_top_xilinx
 `endif
 
   // Give VDD and GND to JTAG
-`ifndef USE_JTAG_VDDGND
+`ifdef USE_JTAG_VDDGND
   assign jtag_vdd_o  = '1;
   assign jtag_gnd_o  = '0;
 `endif
@@ -132,7 +133,7 @@ module cheshire_top_xilinx
     .DEFAULT_DIV_VALUE     ( `DDR_CLK_DIVIDER ),
     .ENABLE_CLOCK_IN_RESET ( 1'b0             )
   ) i_sys_clk_div (
-    .clk_i                 ( dram_clock_out    ),
+    .clk_i                 ( dram_addn_clk_1_out ),
     .rst_ni                ( ~dram_sync_reset  ),
     .en_i                  ( 1'b1              ),
     .test_mode_en_i        ( testmode_i        ),
@@ -215,6 +216,7 @@ module cheshire_top_xilinx
     .aresetn                   ( arst_n                 ),
     // Clk rst out
     .clk_o                     ( dram_clock_out         ),
+    .addn_clk_1_o              ( dram_addn_clk_1_out    ),
     .sync_rst_o                ( dram_sync_reset        ),
     // Axi
     .s_axi_awid                ( dram_req.aw.id         ),

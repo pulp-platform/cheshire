@@ -48,6 +48,7 @@ module dram_wrapper (
     output                             s_axi_rvalid,
     // Clk out (referenced in constraints file)
     (* dont_touch = "yes" *) output    clk_o,
+    (* dont_touch = "yes" *) output    addn_clk_1_o,
     output                             sync_rst_o,
     // Phy interface for DDR4
     `ifdef USE_DDR4
@@ -56,6 +57,9 @@ module dram_wrapper (
 );
 
 `ifdef USE_DDR4
+
+// Todo use a reset synchronizer to synch on addn_ui_clkout1?
+
 xlnx_mig_ddr4 i_dram (
     // Rst
     .   sys_rst                     ( sys_rst        ),
@@ -120,7 +124,7 @@ xlnx_mig_ddr4 i_dram (
     .   c0_ddr4_s_axi_ctrl_rresp    (                ),
     // Others
     .   c0_init_calib_complete      (                ), // keep open
-    .   addn_ui_clkout1             (                ),
+    .   addn_ui_clkout1             ( addn_clk_1_o   ),
     .   dbg_clk                     (                ),
     .   c0_ddr4_interrupt           (                ),
     .   dbg_bus                     (                ),
