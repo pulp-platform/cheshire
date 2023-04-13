@@ -273,14 +273,14 @@ package cheshire_pkg;
     ret.num_rules = r + cfg.AxiExtNumRules + cfg.RegExtNumRules;
     // Append external AXI rules to map
     for (int k = 0; k < cfg.AxiExtNumRules; ++k) begin
-      r++;
       ret.map[r] = '{ret.ext_base + cfg.AxiExtRegionIdx[k],
           cfg.AxiExtRegionStart[k], cfg.AxiExtRegionEnd[k]};
+      r++;
     end
     // Append external reg rules to map; these are directed to the reg demux
     for (int j = 0; j < cfg.RegExtNumRules; ++j) begin
-      r++;
       ret.map[r] = '{1, cfg.RegExtRegionStart[j], cfg.RegExtRegionEnd[j]};
+      r++;
     end
     return ret;
   endfunction
@@ -324,10 +324,10 @@ package cheshire_pkg;
     ret.num_out   = i + cfg.RegExtNumSlv;
     ret.num_rules = r + cfg.RegExtNumRules;
     // Append external slaves at end of map
-    for (int k = 0; k < cfg.AxiExtNumRules; ++k) begin
-      r++;
+    for (int k = 0; k < cfg.RegExtNumRules; ++k) begin
       ret.map[r] = '{ret.ext_base + cfg.RegExtRegionIdx[k],
           cfg.RegExtRegionStart[k], cfg.RegExtRegionEnd[k]};
+      r++;
       end
     return ret;
   endfunction
