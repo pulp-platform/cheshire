@@ -4,21 +4,24 @@
 //
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
+// Paul Scheffler <paulsc@iis.ee.ethz.ch>
+
+// TODO: Avoid hardcoding in addresses and offsets
+// TODO: park non-0 harts here and adapt to new parameterization
 
 .section .text._start
 
-// Minimal bootrom crt0
+// Minimal bootrom loader
 .global _start
-.global _exit
 _start:
-    // Init stack and global pointer
+    // Init stack and global pointer with safe, linked values
     la sp, __stack_pointer$
     .option push
     .option norelax
     la gp, __global_pointer$
     .option pop
 
-    // Reset all the registers
+    // Reset all integer GPRs; we do *not* assume FP in the boot ROM.
     li x1, 0
     li x4, 0
     li x5, 0
@@ -47,34 +50,52 @@ _start:
     li x28, 0
     li x29, 0
     li x30, 0
+    li x31, 0
 
-    // Configure the LLC to all SPM
-    la t0, __base_axi_llc
+    // If LLC present: Wait for end of BIST, then extend stack and set to all SPM
+    la t0, __base_regs
+    lw t0, 28(t0)   // regs.HW_FEATURES
+    andi t0, t0, 2  // regs.HW_FEATURES.llc
+    beqz t0, _prom_check_run
+    la t0, __base_llc
+_wait_llc_bist:
+    lw t1, 72(t0)   // llc.BIST_STATUS_DONE_BIT
+    beqz t1, _wait_llc_bist
     li t1, -1
-    sw t1, 0(t0)    // CFG_SPM_LOW  = 0xFFFFFFFF
-    sw t1, 4(t0)    // CFG_SPM_HIGH = 0xFFFFFFFF
+    sw t1, 0(t0)    // llc.CFG_SPM_LOW
+    sw t1, 4(t0)    // llc.CFG_SPM_HIGH
     li t1, 1
-    sw t1, 16(t0)   // COMMIT_CFG = 0x1
+    sw t1, 16(t0)   // llc.CFG_COMMIT
+    // Correct stack to start at end of SPM
+    la t0, __base_regs
+    la sp, __base_spm
+    lw t0, 32(t0)   // regs.LLC_SIZE
+    add sp, sp, t0
+    addi sp, sp, -8
+
+// Enter Platform ROM if present.
+_prom_check_run:
+    // Note that we have internal access to SPM here *if and only if* there is an LLC.
+    la t0, __base_regs
+    lw t0, 24(t0)   // regs.PLATFORM_ROM
+    beqz t0, _boot
+    jalr t0
+
+// Reset regs, full fence, then jump to main
+_boot:
     li t0, 0
     li t1, 0
-
-    // Boldly flush everything
+    fence
     fence.i
+    call main
 
-    jal main
-
-    // Main returned - save return value and mark as done
-    j _exit
-
-// If main returns we end up here
-// Save the return value to the scratch register 0
-// and wait forever
+// If main returns, we end up here
+.global _exit
 _exit:
+    // Save the return value to scratch register 2 and wait forever
     slli a0, a0, 1
     ori  a0, a0, 1
-    la t0, __base_cheshire_regs
-    sw a0, 4(t0)
-
-_exit_wait_loop:
-    wfi
-    j _exit_wait_loop
+    la t0, __base_regs
+    sw a0, 8(t0)     // regs.SCRATCH[2]
+1:  wfi
+    j 1b

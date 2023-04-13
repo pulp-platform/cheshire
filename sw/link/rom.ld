@@ -13,7 +13,7 @@ SECTIONS {
     *(.text._start)
     *(.text)
     *(.text.*)
-  } > spm
+  } > spm AT>extrom
 
   .misc : ALIGN(16) {
     *(.rodata)
@@ -24,7 +24,7 @@ SECTIONS {
     *(.srodata.*)
     *(.sdata)
     *(.sdata.*)
-  } > spm
+  } > spm AT>extrom
 
   . = ALIGN(32);
   __bss_start = .;
@@ -33,12 +33,12 @@ SECTIONS {
     *(.bss.*)
     *(.sbss)
     *(.sbss.*)
-  } > spm
+  } > spm AT>extrom
   . = ALIGN(32);
   __bss_end = .;
 
   .bulk : ALIGN(16) {
     *(.bulk)
     *(.bulk.*)
-  } > spm
+  } > spm AT>extrom
 }

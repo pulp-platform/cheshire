@@ -9,72 +9,53 @@
 # Override this as needed
 RISCV_GCC_BINROOT ?= $(dir $(shell which riscv64-unknown-elf-gcc))
 
-BENDER        ?= bender
-PYTHON3       ?= python3
 DTC           ?= dtc
 RISCV_AR      ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-ar
 RISCV_CC      ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-gcc
 RISCV_OBJCOPY ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-objcopy
 RISCV_OBJDUMP ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-objdump
-REGGEN        ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
 
-RISCV_FLAGS   ?= -march=rv64gc_zifencei -mabi=lp64d -O2 -Wall -static -ffunction-sections -fdata-sections -frandom-seed=cheshire
+CHS_LD_DIR    ?= $(CHS_SW_DIR)/link
+
+RISCV_FLAGS   ?= -DOT_PLATFORM_RV32 -march=rv64gc_zifencei -mabi=lp64d -mstrict-align -O2 -Wall -static -ffunction-sections -fdata-sections -frandom-seed=cheshire -fuse-linker-plugin -flto -Wl,-flto
 RISCV_CCFLAGS ?= $(RISCV_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
-RISCV_LDFLAGS ?= $(RISCV_FLAGS) -nostartfiles -Wl,--gc-sections
+RISCV_LDFLAGS ?= $(RISCV_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_LD_DIR)
+RISCV_ARFLAGS ?= --plugin=$(shell find $(shell dirname $(RISCV_GCC_BINROOT))/libexec/gcc/riscv64-unknown-elf/**/liblto_plugin.so)
 
-TOP_DIR       ?= $(shell git rev-parse --show-toplevel)
-CHS_SW_DIR    ?= $(TOP_DIR)/$(CHS_ROOT)/sw
-CHS_LD_DIR 	  ?= $(CHS_SW_DIR)/link
 
 chs-sw-all: chs-sw-libs chs-sw-headers chs-sw-tests
 
 .PRECIOUS: %.elf %.dtb
-.PHONY: chs-sw-clean chs-sw-all chs-sw-libs chs-sw-headers chs-sw-tests
-
-chs-sw-clean:
-	rm -f $(CHS_SW_DIR)/lib/*.{a,o}
-	rm -f $(CHS_SW_DIR)/tests/*.{dump,elf,o}
+.PHONY: chs-sw-all chs-sw-libs chs-sw-headers chs-sw-tests
 
 ################
 # Dependencies #
 ################
 
-CHS_SW_DEPS_INCS  = -I$(shell $(BENDER) path axi_llc)/sw/include
-CHS_SW_DEPS_INCS += -I$(CHS_SW_DIR)/deps/opentitan
-CHS_SW_DEPS_INCS += -I$(CHS_SW_DIR)/deps/printf
-CHS_SW_DEPS_SRCS  = $(wildcard $(shell $(BENDER) path axi_llc)/sw/lib/*.c)
-CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/opentitan/sw/device/lib/base/bitfield.c
-CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/opentitan/sw/device/lib/base/memory.c
-CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/opentitan/sw/device/lib/base/mmio.c
-CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/opentitan/sw/device/lib/dif/dif_i2c.c
-CHS_SW_DEPS_SRCS += $(wildcard $(CHS_SW_DIR)/deps/printf/*.c)
-
-ifeq ($(CHS_ROOT), .)
-	git-update := git submodule update --init --recursive $(CHS_SW_DIR)/deps/*
-else
-	git-update :=
-endif
-
-# Apply existing patches whenever deps (including patches) change
-$(CHS_SW_DIR)/deps/.patched: $(wildcard $(CHS_SW_DIR)/deps/*.patch wildcard $(CHS_SW_DIR)/deps/*/.git)
-	$(git-update)
-	-patch --forward $(CHS_SW_DIR)/deps/opentitan/sw/device/lib/dif/dif_i2c.c $(CHS_SW_DIR)/deps/dif_i2c.c.patch
-	touch $@
+CHS_SW_DEPS_INCS  = -I$(CHS_SW_DIR)/deps/printf
+CHS_SW_DEPS_INCS += -I$(CHS_LLC_DIR)/sw/include
+CHS_SW_DEPS_INCS += -I$(CHS_OTP_DIR)
+CHS_SW_DEPS_INCS += -I$(CHS_OTP_DIR)/sw/include
+CHS_SW_DEPS_SRCS  = $(CHS_SW_DIR)/deps/printf/printf.c
+CHS_SW_DEPS_SRCS += $(CHS_LLC_DIR)/sw/lib/axi_llc_reg32.c
+CHS_SW_DEPS_SRCS += $(wildcard $(CHS_OTP_DIR)/sw/device/lib/base/*.c)
+CHS_SW_DEPS_SRCS += $(wildcard $(CHS_OTP_DIR)/sw/device/lib/dif/*.c)
+CHS_SW_DEPS_SRCS += $(wildcard $(CHS_OTP_DIR)/sw/device/lib/dif/autogen/*.c)
 
 #############
 # Libraries #
 #############
 
 CHS_SW_INCLUDES   ?= -I$(CHS_SW_DIR)/include $(CHS_SW_DEPS_INCS)
-CHS_SW_LIB_SRCS_S  = $(wildcard $(CHS_SW_DIR)/lib/*.S)
-CHS_SW_LIB_SRCS_C  = $(wildcard $(CHS_SW_DIR)/lib/*.c)
+CHS_SW_LIB_SRCS_S  = $(wildcard $(CHS_SW_DIR)/lib/*.S $(CHS_SW_DIR)/lib/**/*.S)
+CHS_SW_LIB_SRCS_C  = $(wildcard $(CHS_SW_DIR)/lib/*.c $(CHS_SW_DIR)/lib/**/*.c)
 CHS_SW_LIB_SRCS_O  = $(CHS_SW_DEPS_SRCS:.c=.o) $(CHS_SW_LIB_SRCS_S:.S=.o) $(CHS_SW_LIB_SRCS_C:.c=.o)
 
 CHS_SW_LIBS = $(CHS_SW_DIR)/lib/libcheshire.a
 
 $(CHS_SW_DIR)/lib/libcheshire.a: $(CHS_SW_LIB_SRCS_O)
 	rm -f $@
-	$(RISCV_AR) -rcsv $@ $^
+	$(RISCV_AR) $(RISCV_ARFLAGS) -rcsv $@ $^
 
 chs-sw-libs: $(CHS_SW_LIBS)
 
@@ -82,37 +63,36 @@ chs-sw-libs: $(CHS_SW_LIBS)
 # Header generation #
 #####################
 
-define chs_hdr_gen_rule
-.PRECIOUS: $$(CHS_SW_DIR)/include/$(1).h
-GEN_HDRS += $$(CHS_SW_DIR)/include/$(1).h
+define chs_sw_gen_hdr_rule
+.PRECIOUS: $$(CHS_SW_DIR)/include/regs/$(1).h
+CHS_SW_GEN_HDRS += $$(CHS_SW_DIR)/include/regs/$(1).h
 
-$$(CHS_SW_DIR)/include/$(1).h: $(2)
+$$(CHS_SW_DIR)/include/regs/$(1).h: $(2)
+	@mkdir -p $$(dir $$@)
 	$$(REGGEN) --cdefines $$< > $$@
 endef
 
-OT_PERI_DIR = $(shell $(BENDER) path opentitan_peripherals)
-SLINK_DIR =  $(shell bender path serial_link)
-VGA_DIR = $(shell bender path axi_vga)
-LLC_DIR = $(shell bender path axi_llc)
+$(eval $(call chs_sw_gen_hdr_rule,clint,$(CHS_CLINT_DIR)/src/clint.hjson $(CHS_CLINT_DIR)/.generated))
+$(eval $(call chs_sw_gen_hdr_rule,serial_link,$(CHS_ROOT)/hw/serial_link.hjson $(CHS_SLINK_DIR)/.generated))
+$(eval $(call chs_sw_gen_hdr_rule,axi_vga,$(CHS_VGA_DIR)/data/axi_vga.hjson $(CHS_VGA_DIR)/.generated))
+$(eval $(call chs_sw_gen_hdr_rule,axi_llc,$(CHS_LLC_DIR)/data/axi_llc_regs.hjson))
+$(eval $(call chs_sw_gen_hdr_rule,cheshire,$(CHS_ROOT)/hw/regs/cheshire_regs.hjson))
 
-$(eval $(call chs_hdr_gen_rule,i2c_regs,$(OT_PERI_DIR)/src/i2c/data/i2c.hjson $(OT_PERI_DIR)/.generated))
-$(eval $(call chs_hdr_gen_rule,spi_regs,$(OT_PERI_DIR)/src/spi_host/data/spi_host.hjson $(OT_PERI_DIR)/.generated))
-$(eval $(call chs_hdr_gen_rule,serial_link_regs,$(TOP_DIR)/$(CHS_ROOT)/hw/serial_link.hjson $(SLINK_DIR)/.generated))
-$(eval $(call chs_hdr_gen_rule,axi_vga_regs,$(VGA_DIR)/data/axi_vga.hjson $(VGA_DIR)/.generated))
-$(eval $(call chs_hdr_gen_rule,axi_llc_regs,$(LLC_DIR)/data/axi_llc_regs.hjson))
-$(eval $(call chs_hdr_gen_rule,cheshire_regs,$(TOP_DIR)/$(CHS_ROOT)/hw/regs/cheshire_regs.hjson))
-
-chs-sw-headers: $(GEN_HDRS)
+# Generate headers for OT peripherals in the bendered repo itself
+CHS_SW_GEN_HDRS += $(CHS_OTP_DIR)/.generated
+chs-sw-headers: $(CHS_SW_GEN_HDRS)
 
 ###############
 # Compilation #
 ###############
 
+# TODO: track headers with gcc -MM!
+
 # All objects require up-to-date patches and headers
-%.o: %.c $(CHS_SW_DIR)/deps/.patched $(GEN_HDRS)
+%.o: %.c $(CHS_SW_GEN_HDRS)
 	$(RISCV_CC) $(CHS_SW_INCLUDES) $(RISCV_CCFLAGS) -c $< -o $@
 
-%.o: %.S $(CHS_SW_DIR)/deps/.patched $(GEN_HDRS)
+%.o: %.S $(CHS_SW_GEN_HDRS)
 	$(RISCV_CC) $(CHS_SW_INCLUDES) $(RISCV_CCFLAGS) -c $< -o $@
 
 define chs_ld_elf_rule
@@ -125,7 +105,7 @@ endef
 $(foreach link,$(patsubst $(CHS_LD_DIR)/%.ld,%,$(wildcard $(CHS_LD_DIR)/*.ld)),$(eval $(call chs_ld_elf_rule,$(link))))
 
 %.dump: %.elf
-	$(RISCV_OBJDUMP) -d $< > $@
+	$(RISCV_OBJDUMP) -d -S $< > $@
 
 %.bin: %.elf
 	$(RISCV_OBJCOPY) -O binary $< $@
@@ -133,13 +113,36 @@ $(foreach link,$(patsubst $(CHS_LD_DIR)/%.ld,%,$(wildcard $(CHS_LD_DIR)/*.ld)),$
 %.dtb: %.dts
 	@$(DTC) -I dts -O dtb -o $@ $<
 
+%.memh: %.elf
+	$(RISCV_OBJCOPY) -O verilog $< $@
+
+###################
+# GPT test images #
+###################
+
+# Create a GPT disk image from a (firmware) ROM; we add dummy partitions to test our GPT boot code.
+%.gpt.bin: %.rom.bin
+	rm -f $@
+	truncate -s $$(( $$(stat --printf="%s" $<) + 85*512)) $@
+	parted -a none $@ --script -- mktable gpt \
+	    mkpart dummy0   fat32   37s   40s \
+	    mkpart firmware fat16   42s  -43s \
+	    mkpart dummy1   fat32  -41s  -38s
+	dd if=$< of=$@ bs=512 seek=42 conv=notrunc
+
+# Create hex file from .gpt image
+%.gpt.memh: %.gpt.bin
+	$(RISCV_OBJCOPY) -I binary -O verilog $< $@
+
 #########
 # Tests #
 #########
 
-TEST_SRCS_S     = $(wildcard $(CHS_SW_DIR)/tests/*.S)
-TEST_SRCS_C     = $(wildcard $(CHS_SW_DIR)/tests/*.c)
-TEST_DRAM_DUMP  = $(TEST_SRCS_S:.S=.dram.dump) $(TEST_SRCS_C:.c=.dram.dump)
-TEST_SPM_DUMP   = $(TEST_SRCS_S:.S=.spm.dump)  $(TEST_SRCS_C:.c=.spm.dump)
+CHS_SW_TEST_SRCS_S  	= $(wildcard $(CHS_SW_DIR)/tests/*.S)
+CHS_SW_TEST_SRCS_C     	= $(wildcard $(CHS_SW_DIR)/tests/*.c)
+CHS_SW_TEST_DRAM_DUMP  	= $(CHS_SW_TEST_SRCS_S:.S=.dram.dump) $(CHS_SW_TEST_SRCS_C:.c=.dram.dump)
+CHS_SW_TEST_SPM_DUMP   	= $(CHS_SW_TEST_SRCS_S:.S=.spm.dump)  $(CHS_SW_TEST_SRCS_C:.c=.spm.dump)
+CHS_SW_TEST_SPM_ROMH   	= $(CHS_SW_TEST_SRCS_S:.S=.rom.memh)  $(CHS_SW_TEST_SRCS_C:.c=.rom.memh)
+CHS_SW_TEST_SPM_GPTH   	= $(CHS_SW_TEST_SRCS_S:.S=.gpt.memh)  $(CHS_SW_TEST_SRCS_C:.c=.gpt.memh)
 
-chs-sw-tests: $(TEST_DRAM_DUMP) $(TEST_SPM_DUMP)
+chs-sw-tests: $(CHS_SW_TEST_DRAM_DUMP) $(CHS_SW_TEST_SPM_DUMP) $(CHS_SW_TEST_SPM_ROMH) $(CHS_SW_TEST_SPM_GPTH)

@@ -194,7 +194,7 @@ extern "C" char read_section(long long address, const svOpenArrayHandle buffer, 
   
   // check that the address points to a section
   if (!mems.count(address)) {
-    printf("[elfloader] ERROR: No section found for address %p\n", address);
+    printf("[ELF] ERROR: No section found for address %p\n", address);
     return -1;
   }
   
@@ -202,7 +202,7 @@ extern "C" char read_section(long long address, const svOpenArrayHandle buffer, 
   long long int len_tmp = len;
   for (auto &datum : mems.find(address)->second) {
     if(len_tmp-- == 0){
-      printf("[elfloader] ERROR: Copied 0x%lx bytes. Buffer is full but there is still data available.\n", len);
+      printf("[ELF] ERROR: Copied 0x%lx bytes. Buffer is full but there is still data available.\n", len);
       return -1;
     }
 
@@ -222,12 +222,12 @@ static void load_elf(char *buf, size_t size)
   char *shstrtab = NULL;
 
   if(size < eh->e_phoff + (eh->e_phnum * sizeof(P))){
-    printf("[elfloader] ERROR: Filesize is smaller than advertised program headers (0x%lx vs 0x%lx)\n", size, eh->e_phoff + (eh->e_phnum * sizeof(P)));
+    printf("[ELF] ERROR: Filesize is smaller than advertised program headers (0x%lx vs 0x%lx)\n", size, eh->e_phoff + (eh->e_phnum * sizeof(P)));
     return;
   }
 
   entry = eh->e_entry;
-  printf("[elfloader] INFO: Entrypoint at %p\n", entry);
+  printf("[ELF] INFO: Entrypoint at %p\n", entry);
 
   // Iterate over all program header entries
   for (unsigned int i = 0; i < eh->e_phnum; i++) {
@@ -241,26 +241,26 @@ static void load_elf(char *buf, size_t size)
       }
 
       if(ph[i].p_memsz > ph[i].p_filesz){
-        printf("[elfloader] WARNING: The section starting @ %p contains 0x%lx zero bytes which will NOT get preloaded!\n",
+        printf("[ELF] WARNING: The section starting @ %p contains 0x%lx zero bytes which will NOT be preloaded!\n",
                ph[i].p_paddr, (ph[i].p_memsz - ph[i].p_filesz));
       }
     }
   }
 
   if(size < eh->e_shoff + (eh->e_shnum * sizeof(Sh))){
-    printf("[elfloader] ERROR: Filesize is smaller than advertised section headers (0x%lx vs 0x%lx)\n",
+    printf("[ELF] ERROR: Filesize is smaller than advertised section headers (0x%lx vs 0x%lx)\n",
            size, eh->e_shoff + (eh->e_shnum * sizeof(Sh)));
     return;
   }
 
   if(eh->e_shstrndx >= eh->e_shnum){
-    printf("[elfloader] ERROR: Malformed ELF file. The index of the section header strings is out of bounds (0x%lx vs max 0x%lx)",
+    printf("[ELF] ERROR: Malformed ELF file. The index of the section header strings is out of bounds (0x%lx vs max 0x%lx)",
            eh->e_shstrndx, eh->e_shnum);
     return;
   }
   
   if(size < sh[eh->e_shstrndx].sh_offset + sh[eh->e_shstrndx].sh_size){
-    printf("[elfloader] ERROR: Filesize is smaller than advertised size of section name table (0x%lx vs 0x%lx)\n",
+    printf("[ELF] ERROR: Filesize is smaller than advertised size of section name table (0x%lx vs 0x%lx)\n",
            size, sh[eh->e_shstrndx].sh_offset + sh[eh->e_shstrndx].sh_size);
     return;
   }
@@ -276,14 +276,14 @@ static void load_elf(char *buf, size_t size)
 
     // Is this the string table?
     if(strcmp(shstrtab + sh[i].sh_name, ".strtab") == 0){
-      printf("[elfloader] INFO: Found string table at offset 0x%lx\n", sh[i].sh_offset);
+      printf("[ELF] INFO: Found string table at offset 0x%lx\n", sh[i].sh_offset);
       strtabidx = i;
       continue;
     }
 
     // Is this the symbol table?
     if(strcmp(shstrtab + sh[i].sh_name, ".symtab") == 0){
-      printf("[elfloader] INFO: Found symbol table at offset 0x%lx\n", sh[i].sh_offset);
+      printf("[ELF] INFO: Found symbol table at offset 0x%lx\n", sh[i].sh_offset);
       symtabidx = i;
       continue;
     }
@@ -300,13 +300,13 @@ extern "C" char read_elf(const char *filename)
   size_t size = 0;
 
   if(fd == -1){
-    printf("[elfloader] ERROR: Unable to open file %s\n", filename);
+    printf("[ELF] ERROR: Unable to open file %s\n", filename);
     retval = -1;
     goto exit;
   }
 
   if(fstat(fd, &s) < 0) {
-    printf("[elfloader] ERROR: Unable to read stats for file %s\n", filename);
+    printf("[ELF] ERROR: Unable to read stats for file %s\n", filename);
     retval = -1;
     goto exit_fd;
   }
@@ -314,24 +314,24 @@ extern "C" char read_elf(const char *filename)
   size = s.st_size;
 
   if(size < sizeof(Elf64_Ehdr)){
-    printf("[elfloader] ERROR: File %s is too small to contain a valid ELF header (0x%lx vs 0x%lx)\n", filename, size, sizeof(Elf64_Ehdr));
+    printf("[ELF] ERROR: File %s is too small to contain a valid ELF header (0x%lx vs 0x%lx)\n", filename, size, sizeof(Elf64_Ehdr));
     retval = -1;
     goto exit_fd;
   }
 
   buf = (char *) mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
   if(buf == MAP_FAILED){
-    printf("[elfloader] ERROR: Unable to memory map file %s\n", filename);
+    printf("[ELF] ERROR: Unable to memory map file %s\n", filename);
     retval = -1;
     goto exit_fd;
   }
 
-  printf("[elfloader] INFO: File %s was memory mapped to %p\n", filename, buf);
+  printf("[ELF] INFO: File %s was memory mapped to %p\n", filename, buf);
 
   eh64 = (Elf64_Ehdr *) buf;
 
   if(!(IS_ELF32(*eh64) || IS_ELF64(*eh64))){
-    printf("[elfloader] ERROR: File %s does not contain a valid ELF signature\n", filename);
+    printf("[ELF] ERROR: File %s does not contain a valid ELF signature\n", filename);
     retval = -1;
     goto exit_mmap;
   }

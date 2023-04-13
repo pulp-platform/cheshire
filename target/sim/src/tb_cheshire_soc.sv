@@ -9,62 +9,51 @@ module tb_cheshire_soc;
 
   cheshire_soc_fixture fix();
 
-  string binary;
-  logic [1:0]  bootmode;
-  logic        testmode;
-  logic [63:0] entry;
-  longint      entry_int;
-  int          exit_status = 0;
+  string      preload_elf;
+  string      boot_hex;
+  logic [1:0] boot_mode;
+  logic [1:0] preload_mode;
+  bit [31:0]  exit_code;
 
   initial begin
+    // Fetch plusargs or use safe (fail-fast) defaults
+    if (!$value$plusargs("BOOTMODE=%d", boot_mode))     boot_mode     = 0;
+    if (!$value$plusargs("PRELMODE=%d", preload_mode))  preload_mode  = 0;
+    if (!$value$plusargs("BINARY=%s",   preload_elf))   preload_elf   = "";
+    if (!$value$plusargs("IMAGE=%s",    boot_hex))      boot_hex      = "";
 
-    if ($value$plusargs("BOOTMODE=%d", bootmode)) begin
-      fix.set_bootmode(bootmode);
-    end else begin
-      // If no BOOTMODE is provided, use default JTAG (2'h11)
-      fix.set_bootmode(3);
-    end
+    // Set boot mode and preload boot image if there is one
+    fix.set_boot_mode(boot_mode);
+    fix.i2c_eeprom_preload(boot_hex);
+    fix.spih_norflash_preload(boot_hex);
 
-    if ($value$plusargs("TESTMODE=%d", testmode)) begin
-      fix.set_testmode(testmode);
-    end else begin
-      // If no BOOTMODE is provided, use default JTAG
-      fix.set_testmode(0);
-    end
-
+    // Wait for reset
     fix.wait_for_reset();
 
-    // Load binaries into memory (if any)
-    if ($value$plusargs("BINARY=%s", binary)) begin
-      $display("[tb_cheshire_soc] BINARY = %s", binary);
-      fix.load_binary(binary);
-
-      // Obtain the entry point from the ELF file
-      void'(fix.get_entry(entry_int));
-      entry = entry_int[63:0];
-
+    // Preload in idle mode or wait for completion in autonomous boot
+    if (boot_mode == 0) begin
+      // Idle boot: preload with the specified mode
+      case (preload_mode)
+        0: begin      // JTAG
+          fix.jtag_init();
+          fix.jtag_elf_run(preload_elf);
+          fix.jtag_wait_for_eoc(exit_code);
+        end 1: begin  // Serial Link
+          fix.slink_elf_run(preload_elf);
+          fix.slink_wait_for_eoc(exit_code);
+        end 2: begin  // UART
+          fix.uart_debug_elf_run_and_wait(preload_elf, exit_code);
+        end default: begin
+          $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);
+        end
+      endcase
+    end else if (boot_mode == 1) begin
+      $fatal(1, "Unsupported boot mode %d (SD Card)!", boot_mode);
     end else begin
-      // If no ELF file is provided jump to the beginning of the SPM
-      entry = cheshire_pkg::SpmBase;
+      // Autonomous boot: Only poll return code
+      fix.jtag_init();
+      fix.jtag_wait_for_eoc(exit_code);
     end
-
-    fix.jtag_init();
-
-    fix.jtag_cfg_llc_spm();
-
-    fix.sl_preload();
-
-    // Preload the sections from an ELF file
-    //fix.jtag_preload();
-    
-    // Check the preloaded sections
-    //fix.jtag_preload_check();
-
-    // Run from entrypoint
-    fix.jtag_run(entry);
-
-    // Wait for the application to write the return value to the first scratch register
-    fix.jtag_wait_for_eoc(cheshire_pkg::ScratchRegsBase + 64'h4, exit_status);
 
     $finish;
   end

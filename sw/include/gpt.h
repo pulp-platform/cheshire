@@ -4,45 +4,17 @@
 //
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
+// Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 #pragma once
 
-#include "opentitan_qspi.h"
 #include <stdint.h>
 
-// LBA 0: Protective MBR
-// ignored here
+typedef int (*gpt_read_t)(void *priv, void *buf, uint64_t addr, uint64_t len);
 
-// Partition Table Header (LBA 1)
-typedef struct gpt_header {
-    uint64_t signature;
-    uint32_t revision;
-    uint32_t header_size; //! little endian, usually 0x5c = 92
-    uint32_t header_crc32;
-    uint32_t reserved; //! must be 0
-    uint64_t my_lba;
-    uint64_t alternate_lba;
-    uint64_t first_usable_lba;
-    uint64_t last_usable_lba;
-    uint8_t disk_guid[16];
-    uint64_t partition_entry_lba;
-    uint32_t nr_partition_entries;
-    uint32_t size_partition_entry; //! usually 0x80 = 128
-    uint32_t partition_entry_crc32;
-} gpt_header_t;
+int gpt_check_signature(gpt_read_t read, void *priv);
 
-// Partition Entries (LBA 2-33)
-typedef struct partition_entry {
-    uint8_t partition_type_guid[16];
-    uint8_t partition_guid[16];
-    uint64_t starting_lba;
-    uint64_t ending_lba; //! inclusive
-    uint64_t attributes;
-    uint8_t partition_name[72]; //! utf16 encoded
-} partition_entry_t;
+int gpt_find_boot_partition(gpt_read_t read, void *priv, uint64_t *lba_begin, uint64_t *lba_end,
+                            uint64_t max_lbas);
 
-// Print info about partitions
-int gpt_info(opentitan_qspi_t *spi);
-
-// Find partition and load it to the destination
-int gpt_find_partition(opentitan_qspi_t *spi, unsigned int part, unsigned int *start_lba);
+int gpt_boot_part_else_raw(gpt_read_t read, void *priv, void *code_buf, uint64_t max_lbas);
