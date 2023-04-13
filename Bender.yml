@@ -7,6 +7,9 @@ package:
   authors:
     - "Nicole Narr <narrn@student.ethz.ch>"
     - "Christopher Reinwardt <creinwar@student.ethz.ch>"
+    - "Paul Scheffler <paulsc@iis.ee.ethz.ch>"
+    - "Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>"
+    - "Thomas Benz <tbenz@iis.ee.ethz.ch>"
 
 dependencies:
   axi:                      { git: "https://github.com/pulp-platform/axi.git",                   version: =0.39.0-beta.4 }
