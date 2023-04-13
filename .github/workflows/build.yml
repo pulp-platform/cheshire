@@ -10,8 +10,6 @@ on: [ push, pull_request, workflow_dispatch ]
 
 jobs:
 
-  # TODO: somehow handle reproducible boot ROM builds
-  # TODO: migrate to and/or replicate on docker
   build:
     strategy:
       matrix:
@@ -43,12 +41,9 @@ jobs:
           echo "PATH=$PATH:/tools/riscv/bin" >> ${GITHUB_ENV}
       -
         name: Install Bender
-        run: |
-          sudo mkdir -p /tools/bender && sudo chmod 777 /tools/bender
-          cd /tools/bender && curl --proto '=https' --tlsv1.2 -sSf https://pulp-platform.github.io/bender/init | bash -s -- ${BENDER_VERSION}
-          echo "PATH=$PATH:/tools/bender" >> ${GITHUB_ENV}
-        env:
-          BENDER_VERSION: 0.27.0
+        uses: pulp-platform/pulp-actions/bender-install@v2
+        with:
+          version: 0.27.1
       -
         name: Build target
         run: make ${{ matrix.target }}-all
