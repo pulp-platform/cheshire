@@ -10,44 +10,13 @@ on: [ push, pull_request, workflow_dispatch ]
 
 jobs:
 
-  mirror:
+  mirror-and-check:
     runs-on: ubuntu-latest
     steps:
-    -
-      name: Full checkout
-      run: git clone --bare https://token:${{ github.token }}@github.com/${{ github.repository }} ${{ github.workspace }}
-    -
-      name: Push to mirror
-      run: |
-        git remote add gitlab https://token:${{ secrets.GITLAB_TOKEN }}@iis-git.ee.ethz.ch/github-mirror/cheshire.git
-        git push --force --mirror gitlab
-
-  check:
-    runs-on: ubuntu-latest
-    needs: [mirror]
-    steps:
-    -
-      name: Checkout
-      uses: actions/checkout@v3
-      with:
-        submodules: recursive
-    -
-      name: Install Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
-    -
-      name: Install Python requirements
-      run: |
-        cd ${{ github.workspace }}/.github
-        pip install -r requirements.txt
-    -
-      name: Poll results
-      # Pull request SHAs point to a merged commit that is not mirrored
-      run: |
-        export SHA=${{ github.sha }}
-        if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then export SHA=${{ github.event.pull_request.head.sha }}; fi
-        .github/gitlab-ci.py
-      env:
-        TOKEN: ${{ secrets.GITLAB_TOKEN }}
-        PIPELINES: "https://iis-git.ee.ethz.ch/api/v4/projects/3478/pipelines"
+      -
+        name: Mirror and check
+        uses: pulp-platform/pulp-actions/gitlab-ci@v2
+        with:
+          domain: iis-git.ee.ethz.ch
+          repo: github-mirror/cheshire
+          token: ${{ secrets.GITLAB_TOKEN }}
