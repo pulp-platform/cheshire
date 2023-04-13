@@ -4,122 +4,84 @@
 //
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
+// Paul Scheffler <paulsc@student.ethz.ch>
 
-#include "axi_llc_reg32.h"
-#include "cheshire_regs.h"
+#include <stdint.h>
+#include "util.h"
+#include "params.h"
+#include "regs/cheshire.h"
+#include "regs/serial_link.h"
+#include "spi_host_regs.h"
+#include "dif/clint.h"
+#include "hal/i2c_24fc1025.h"
+#include "hal/spi_s25fs512s.h"
+#include "hal/spi_sdcard.h"
+#include "hal/uart_debug.h"
 #include "gpt.h"
-#include "opentitan_qspi.h"
-#include "printf.h"
-#include "sd.h"
-#include "uart.h"
 
-#define DRAM 0x80000000
-
-#define DT_LEN 0x8
-#define FW_LEN 0x1800
-
-#define SPI_SCLK_TARGET 12500000
-
-#define UART_BAUD 115200
-
-extern void *__base_cheshire_regs;
-extern void *__base_axi_llc;
-extern void *__base_spim;
-extern void *__base_spm;
-
-void llc_info(void *base) {
-    printf("[axi_llc] AXI LLC Version   :       0x%lx\r\n", axi_llc_reg32_get_version(base));
-    printf("[axi_llc] Set Associativity :       %d\r\n", axi_llc_reg32_get_set_asso(base));
-    printf("[axi_llc] Num Blocks        :       %d\r\n", axi_llc_reg32_get_num_blocks(base));
-    printf("[axi_llc] Num Lines         :       %d\r\n", axi_llc_reg32_get_num_lines(base));
-    printf("[axi_llc] BIST Outcome      :       %d\r\n", axi_llc_reg32_get_bist_out(base));
+int boot_passive(uint64_t core_freq) {
+    // Initialize UART with debug settings
+    uart_debug_init(&__base_uart, core_freq);
+    // scratch[0] provides an entry point, scratch[1] a start signal
+    volatile uint32_t *scratch = reg32(&__base_regs, CHESHIRE_SCRATCH_0_REG_OFFSET);
+    // While we poll bit 2 of scratch[2], check for incoming UART debug requests
+    while (!(scratch[2] & 2))
+        if (uart_debug_check(&__base_uart)) return uart_debug_serve(&__base_uart);
+    // No UART (or JTAG) requests came in, but scratch[2][2] was set --> run code at scratch[1:0]
+    scratch[2] = 0;
+    return invoke((void *)(uintptr_t)(((uint64_t)scratch[1] << 32) | scratch[0]));
 }
 
-void sd_boot(unsigned int core_freq) {
-    opentitan_qspi_t spi;
-    unsigned int dt_lba = 0, fw_lba = 0;
-    int ret = 0;
-
-    // Setup the SPI Host
-    opentitan_qspi_init((volatile unsigned int *)&__base_spim, core_freq, core_freq / 2, &spi);
-
-    opentitan_qspi_probe(&spi);
-
-    // Init at 400 kHz
-    opentitan_qspi_set_speed(&spi, 400000);
-
-    opentitan_qspi_set_mode(&spi, 0);
-
-    // Initialize the SD Card
-    do {
-        ret = sd_init(&spi);
-    } while (ret);
-
-    opentitan_qspi_set_speed(&spi, SPI_SCLK_TARGET);
-
-    // Print info of SD Card
-    gpt_info(&spi);
-
-    // Get the start LBAs of the first two partitions (DT and firmware)
-    gpt_find_partition(&spi, 0, &dt_lba);
-    gpt_find_partition(&spi, 1, &fw_lba);
-
-    // Copy Device Tree to SPM
-    sd_copy_blocks(&spi, dt_lba, (unsigned char *)&__base_spm, DT_LEN);
-
-    printf("Copied device tree to 0x%lx\r\n", (unsigned long int)&__base_spm);
-
-    // Copy firmware to DRAM
-    sd_copy_blocks(&spi, fw_lba, (unsigned char *)DRAM, FW_LEN);
-
-    printf("Copied firmware to 0x%lx\r\n", (unsigned long int)DRAM);
-
-    void (*cheshire_entry)(unsigned long int, unsigned long int, unsigned long int) =
-        (void (*)(unsigned long int, unsigned long int, unsigned long int))DRAM;
-
-    asm volatile("fence.i\n" ::: "memory");
-
-    cheshire_entry(0, (unsigned long int)&__base_spm, 0);
-
-    return;
+int boot_spi_sdcard(uint64_t core_freq, uint64_t rtc_freq) {
+    // Initialize device handle
+    spi_sdcard_t device = {
+        .spi_freq = 24 * 1000 * 1000, // 24MHz (maximum is 25MHz)
+        .csid = 0,
+        .csid_dummy = SPI_HOST_PARAM_NUM_C_S - 1 // Last physical CS is designated dummy
+    };
+    CHECK_CALL(spi_sdcard_init(&device, core_freq))
+    // Wait for device to be initialized (1ms, round up extra tick to be sure)
+    clint_spin_until((1000 * rtc_freq) / (1000 * 1000) + 1);
+    return gpt_boot_part_else_raw(spi_sdcard_read_checkcrc, &device, &__base_spm,
+                                  __BOOT_SPM_MAX_LBAS);
 }
 
-int main(void) {
-    volatile uint32_t *bootmode = (uint32_t *)(((uint64_t)&__base_cheshire_regs) + CHESHIRE_BOOT_MODE_REG_OFFSET);
-    volatile uint32_t *reset_freq = (uint32_t *)(((uint64_t)&__base_cheshire_regs) + CHESHIRE_RESET_FREQ_REG_OFFSET);
+int boot_spi_s25fs512s(uint64_t core_freq, uint64_t rtc_freq) {
+    // Initialize device handle
+    spi_s25fs512s_t device = {
+        .spi_freq = MIN(40 * 1000 * 1000, core_freq / 4), // Up to quarter core freq or 40MHz
+        .csid = 1};
+    CHECK_CALL(spi_s25fs512s_init(&device, core_freq))
+    // Wait for device to be initialized (t_PU = 300us, round up extra tick to be sure)
+    clint_spin_until((350 * rtc_freq) / (1000 * 1000) + 1);
+    return gpt_boot_part_else_raw(spi_s25fs512s_single_read, &device, &__base_spm,
+                                  __BOOT_SPM_MAX_LBAS);
+}
 
-    // Initiate our window to the world around us
-    init_uart(*reset_freq, UART_BAUD);
+int boot_i2c_24fc1025(uint64_t core_freq) {
+    // Initialize device handle
+    dif_i2c_t i2c;
+    CHECK_CALL(i2c_24fc1025_init(&i2c, core_freq))
+    return gpt_boot_part_else_raw(i2c_24fc1025_read, &i2c, &__base_spm, __BOOT_SPM_MAX_LBAS);
+}
 
-    // Print AXI LLC status
-    llc_info((void *)&__base_axi_llc);
-
-    // Decide what to do
-    switch (*bootmode) {
-    // Normal boot over SD Card
+int main() {
+    // Read boot mode and reference frequency
+    uint32_t bootmode = *reg32(&__base_regs, CHESHIRE_BOOT_MODE_REG_OFFSET);
+    uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
+    // Compute the boot core frequency using the reference clock
+    uint64_t core_freq = clint_get_core_freq(rtc_freq, 10);
+    // In case of reentry, store return in scratch0 as is convention
+    switch (bootmode) {
     case 0:
-        printf_("Bootmode 0: Booting from SD Card\r\n");
-        sd_boot(*reset_freq);
-        break; // We will never reach this
-
+        return boot_passive(core_freq);
     case 1:
-        printf_("Bootmode 1: Doing nothing :)\r\n");
-        break;
-
+        return boot_spi_sdcard(core_freq, rtc_freq);
     case 2:
-        printf_("Bootmode 2: Doing nothing :)\r\n");
-        break;
-
+        return boot_spi_s25fs512s(core_freq, rtc_freq);
     case 3:
-        printf_("Bootmode 3: Doing nothing :)\r\n");
-        break;
-
+        return boot_i2c_24fc1025(core_freq);
     default:
-        printf_("Bootmode %d: Doing nothing :)\r\n", *bootmode);
-        break;
-    }
-
-    while (1) {
-        asm volatile("wfi\n" :::);
+        return boot_passive(core_freq);
     }
 }

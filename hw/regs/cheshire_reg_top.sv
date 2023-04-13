@@ -32,7 +32,7 @@ module cheshire_reg_top #(
   // register signals
   logic           reg_we;
   logic           reg_re;
-  logic [AW-1:0]  reg_addr;
+  logic [BlockAw-1:0]  reg_addr;
   logic [DW-1:0]  reg_wdata;
   logic [DBW-1:0] reg_be;
   logic [DW-1:0]  reg_rdata;
@@ -53,7 +53,7 @@ module cheshire_reg_top #(
 
   assign reg_we = reg_intf_req.valid & reg_intf_req.write;
   assign reg_re = reg_intf_req.valid & ~reg_intf_req.write;
-  assign reg_addr = reg_intf_req.addr;
+  assign reg_addr = reg_intf_req.addr[BlockAw-1:0];
   assign reg_wdata = reg_intf_req.wdata;
   assign reg_be = reg_intf_req.wstrb;
   assign reg_intf_rsp.rdata = reg_rdata;
@@ -67,7 +67,6 @@ module cheshire_reg_top #(
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic [15:0] version_qs;
   logic [31:0] scratch_0_qs;
   logic [31:0] scratch_0_wd;
   logic scratch_0_we;
@@ -82,38 +81,38 @@ module cheshire_reg_top #(
   logic scratch_3_we;
   logic [1:0] boot_mode_qs;
   logic boot_mode_re;
-  logic status_clock_lock_qs;
-  logic status_clock_lock_re;
-  logic status_uart_present_qs;
-  logic status_uart_present_re;
-  logic status_spi_present_qs;
-  logic status_spi_present_re;
-  logic status_i2c_present_qs;
-  logic status_i2c_present_re;
-  logic status_dma_present_qs;
-  logic status_dma_present_re;
-  logic status_ddr_link_present_qs;
-  logic status_ddr_link_present_re;
-  logic status_dram_present_qs;
-  logic status_dram_present_re;
-  logic status_vga_present_qs;
-  logic status_vga_present_re;
-  logic [31:0] vga_red_width_qs;
-  logic vga_red_width_re;
-  logic [31:0] vga_green_width_qs;
-  logic vga_green_width_re;
-  logic [31:0] vga_blue_width_qs;
-  logic vga_blue_width_re;
-  logic [31:0] reset_freq_qs;
-  logic reset_freq_re;
+  logic [31:0] rtc_freq_qs;
+  logic rtc_freq_re;
+  logic [31:0] platform_rom_qs;
+  logic platform_rom_re;
+  logic hw_features_bootrom_qs;
+  logic hw_features_bootrom_re;
+  logic hw_features_llc_qs;
+  logic hw_features_llc_re;
+  logic hw_features_uart_qs;
+  logic hw_features_uart_re;
+  logic hw_features_spi_host_qs;
+  logic hw_features_spi_host_re;
+  logic hw_features_i2c_qs;
+  logic hw_features_i2c_re;
+  logic hw_features_gpio_qs;
+  logic hw_features_gpio_re;
+  logic hw_features_dma_qs;
+  logic hw_features_dma_re;
+  logic hw_features_serial_link_qs;
+  logic hw_features_serial_link_re;
+  logic hw_features_vga_qs;
+  logic hw_features_vga_re;
+  logic [31:0] llc_size_qs;
+  logic llc_size_re;
+  logic [7:0] vga_params_red_width_qs;
+  logic vga_params_red_width_re;
+  logic [7:0] vga_params_green_width_qs;
+  logic vga_params_green_width_re;
+  logic [7:0] vga_params_blue_width_qs;
+  logic vga_params_blue_width_re;
 
   // Register instances
-  // R[version]: V(False)
-
-  // constant-only read
-  assign version_qs = 16'h2;
-
-
 
   // Subregister 0 of Multireg scratch
   // R[scratch_0]: V(False)
@@ -240,208 +239,253 @@ module cheshire_reg_top #(
   );
 
 
-  // R[status]: V(True)
-
-  //   F[clock_lock]: 0:0
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_status_clock_lock (
-    .re     (status_clock_lock_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.clock_lock.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_clock_lock_qs)
-  );
-
-
-  //   F[uart_present]: 1:1
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_status_uart_present (
-    .re     (status_uart_present_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.uart_present.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_uart_present_qs)
-  );
-
-
-  //   F[spi_present]: 2:2
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_status_spi_present (
-    .re     (status_spi_present_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.spi_present.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_spi_present_qs)
-  );
-
-
-  //   F[i2c_present]: 3:3
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_status_i2c_present (
-    .re     (status_i2c_present_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.i2c_present.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_i2c_present_qs)
-  );
-
-
-  //   F[dma_present]: 4:4
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_status_dma_present (
-    .re     (status_dma_present_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.dma_present.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_dma_present_qs)
-  );
-
-
-  //   F[ddr_link_present]: 5:5
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_status_ddr_link_present (
-    .re     (status_ddr_link_present_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.ddr_link_present.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_ddr_link_present_qs)
-  );
-
-
-  //   F[dram_present]: 6:6
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_status_dram_present (
-    .re     (status_dram_present_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.dram_present.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_dram_present_qs)
-  );
-
-
-  //   F[vga_present]: 7:7
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_status_vga_present (
-    .re     (status_vga_present_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.vga_present.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_vga_present_qs)
-  );
-
-
-  // R[vga_red_width]: V(True)
+  // R[rtc_freq]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_vga_red_width (
-    .re     (vga_red_width_re),
+  ) u_rtc_freq (
+    .re     (rtc_freq_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.vga_red_width.d),
+    .d      (hw2reg.rtc_freq.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (vga_red_width_qs)
+    .qs     (rtc_freq_qs)
   );
 
 
-  // R[vga_green_width]: V(True)
+  // R[platform_rom]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_vga_green_width (
-    .re     (vga_green_width_re),
+  ) u_platform_rom (
+    .re     (platform_rom_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.vga_green_width.d),
+    .d      (hw2reg.platform_rom.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (vga_green_width_qs)
+    .qs     (platform_rom_qs)
   );
 
 
-  // R[vga_blue_width]: V(True)
+  // R[hw_features]: V(True)
+
+  //   F[bootrom]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_hw_features_bootrom (
+    .re     (hw_features_bootrom_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_features.bootrom.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (hw_features_bootrom_qs)
+  );
+
+
+  //   F[llc]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_hw_features_llc (
+    .re     (hw_features_llc_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_features.llc.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (hw_features_llc_qs)
+  );
+
+
+  //   F[uart]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_hw_features_uart (
+    .re     (hw_features_uart_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_features.uart.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (hw_features_uart_qs)
+  );
+
+
+  //   F[spi_host]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_hw_features_spi_host (
+    .re     (hw_features_spi_host_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_features.spi_host.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (hw_features_spi_host_qs)
+  );
+
+
+  //   F[i2c]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_hw_features_i2c (
+    .re     (hw_features_i2c_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_features.i2c.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (hw_features_i2c_qs)
+  );
+
+
+  //   F[gpio]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_hw_features_gpio (
+    .re     (hw_features_gpio_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_features.gpio.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (hw_features_gpio_qs)
+  );
+
+
+  //   F[dma]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_hw_features_dma (
+    .re     (hw_features_dma_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_features.dma.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (hw_features_dma_qs)
+  );
+
+
+  //   F[serial_link]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_hw_features_serial_link (
+    .re     (hw_features_serial_link_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_features.serial_link.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (hw_features_serial_link_qs)
+  );
+
+
+  //   F[vga]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_hw_features_vga (
+    .re     (hw_features_vga_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_features.vga.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (hw_features_vga_qs)
+  );
+
+
+  // R[llc_size]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_vga_blue_width (
-    .re     (vga_blue_width_re),
+  ) u_llc_size (
+    .re     (llc_size_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.vga_blue_width.d),
+    .d      (hw2reg.llc_size.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (vga_blue_width_qs)
+    .qs     (llc_size_qs)
   );
 
 
-  // R[reset_freq]: V(True)
+  // R[vga_params]: V(True)
 
+  //   F[red_width]: 7:0
   prim_subreg_ext #(
-    .DW    (32)
-  ) u_reset_freq (
-    .re     (reset_freq_re),
+    .DW    (8)
+  ) u_vga_params_red_width (
+    .re     (vga_params_red_width_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.reset_freq.d),
+    .d      (hw2reg.vga_params.red_width.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (reset_freq_qs)
+    .qs     (vga_params_red_width_qs)
+  );
+
+
+  //   F[green_width]: 15:8
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_vga_params_green_width (
+    .re     (vga_params_green_width_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.vga_params.green_width.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (vga_params_green_width_qs)
+  );
+
+
+  //   F[blue_width]: 23:16
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_vga_params_blue_width (
+    .re     (vga_params_blue_width_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.vga_params.blue_width.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (vga_params_blue_width_qs)
   );
 
 
 
 
-  logic [10:0] addr_hit;
+  logic [9:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == CHESHIRE_VERSION_OFFSET);
-    addr_hit[ 1] = (reg_addr == CHESHIRE_SCRATCH_0_OFFSET);
-    addr_hit[ 2] = (reg_addr == CHESHIRE_SCRATCH_1_OFFSET);
-    addr_hit[ 3] = (reg_addr == CHESHIRE_SCRATCH_2_OFFSET);
-    addr_hit[ 4] = (reg_addr == CHESHIRE_SCRATCH_3_OFFSET);
-    addr_hit[ 5] = (reg_addr == CHESHIRE_BOOT_MODE_OFFSET);
-    addr_hit[ 6] = (reg_addr == CHESHIRE_STATUS_OFFSET);
-    addr_hit[ 7] = (reg_addr == CHESHIRE_VGA_RED_WIDTH_OFFSET);
-    addr_hit[ 8] = (reg_addr == CHESHIRE_VGA_GREEN_WIDTH_OFFSET);
-    addr_hit[ 9] = (reg_addr == CHESHIRE_VGA_BLUE_WIDTH_OFFSET);
-    addr_hit[10] = (reg_addr == CHESHIRE_RESET_FREQ_OFFSET);
+    addr_hit[0] = (reg_addr == CHESHIRE_SCRATCH_0_OFFSET);
+    addr_hit[1] = (reg_addr == CHESHIRE_SCRATCH_1_OFFSET);
+    addr_hit[2] = (reg_addr == CHESHIRE_SCRATCH_2_OFFSET);
+    addr_hit[3] = (reg_addr == CHESHIRE_SCRATCH_3_OFFSET);
+    addr_hit[4] = (reg_addr == CHESHIRE_BOOT_MODE_OFFSET);
+    addr_hit[5] = (reg_addr == CHESHIRE_RTC_FREQ_OFFSET);
+    addr_hit[6] = (reg_addr == CHESHIRE_PLATFORM_ROM_OFFSET);
+    addr_hit[7] = (reg_addr == CHESHIRE_HW_FEATURES_OFFSET);
+    addr_hit[8] = (reg_addr == CHESHIRE_LLC_SIZE_OFFSET);
+    addr_hit[9] = (reg_addr == CHESHIRE_VGA_PARAMS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -449,110 +493,114 @@ module cheshire_reg_top #(
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[ 0] & (|(CHESHIRE_PERMIT[ 0] & ~reg_be))) |
-               (addr_hit[ 1] & (|(CHESHIRE_PERMIT[ 1] & ~reg_be))) |
-               (addr_hit[ 2] & (|(CHESHIRE_PERMIT[ 2] & ~reg_be))) |
-               (addr_hit[ 3] & (|(CHESHIRE_PERMIT[ 3] & ~reg_be))) |
-               (addr_hit[ 4] & (|(CHESHIRE_PERMIT[ 4] & ~reg_be))) |
-               (addr_hit[ 5] & (|(CHESHIRE_PERMIT[ 5] & ~reg_be))) |
-               (addr_hit[ 6] & (|(CHESHIRE_PERMIT[ 6] & ~reg_be))) |
-               (addr_hit[ 7] & (|(CHESHIRE_PERMIT[ 7] & ~reg_be))) |
-               (addr_hit[ 8] & (|(CHESHIRE_PERMIT[ 8] & ~reg_be))) |
-               (addr_hit[ 9] & (|(CHESHIRE_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(CHESHIRE_PERMIT[10] & ~reg_be)))));
+              ((addr_hit[0] & (|(CHESHIRE_PERMIT[0] & ~reg_be))) |
+               (addr_hit[1] & (|(CHESHIRE_PERMIT[1] & ~reg_be))) |
+               (addr_hit[2] & (|(CHESHIRE_PERMIT[2] & ~reg_be))) |
+               (addr_hit[3] & (|(CHESHIRE_PERMIT[3] & ~reg_be))) |
+               (addr_hit[4] & (|(CHESHIRE_PERMIT[4] & ~reg_be))) |
+               (addr_hit[5] & (|(CHESHIRE_PERMIT[5] & ~reg_be))) |
+               (addr_hit[6] & (|(CHESHIRE_PERMIT[6] & ~reg_be))) |
+               (addr_hit[7] & (|(CHESHIRE_PERMIT[7] & ~reg_be))) |
+               (addr_hit[8] & (|(CHESHIRE_PERMIT[8] & ~reg_be))) |
+               (addr_hit[9] & (|(CHESHIRE_PERMIT[9] & ~reg_be)))));
   end
 
-  assign scratch_0_we = addr_hit[1] & reg_we & !reg_error;
+  assign scratch_0_we = addr_hit[0] & reg_we & !reg_error;
   assign scratch_0_wd = reg_wdata[31:0];
 
-  assign scratch_1_we = addr_hit[2] & reg_we & !reg_error;
+  assign scratch_1_we = addr_hit[1] & reg_we & !reg_error;
   assign scratch_1_wd = reg_wdata[31:0];
 
-  assign scratch_2_we = addr_hit[3] & reg_we & !reg_error;
+  assign scratch_2_we = addr_hit[2] & reg_we & !reg_error;
   assign scratch_2_wd = reg_wdata[31:0];
 
-  assign scratch_3_we = addr_hit[4] & reg_we & !reg_error;
+  assign scratch_3_we = addr_hit[3] & reg_we & !reg_error;
   assign scratch_3_wd = reg_wdata[31:0];
 
-  assign boot_mode_re = addr_hit[5] & reg_re & !reg_error;
+  assign boot_mode_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_clock_lock_re = addr_hit[6] & reg_re & !reg_error;
+  assign rtc_freq_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign status_uart_present_re = addr_hit[6] & reg_re & !reg_error;
+  assign platform_rom_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign status_spi_present_re = addr_hit[6] & reg_re & !reg_error;
+  assign hw_features_bootrom_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign status_i2c_present_re = addr_hit[6] & reg_re & !reg_error;
+  assign hw_features_llc_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign status_dma_present_re = addr_hit[6] & reg_re & !reg_error;
+  assign hw_features_uart_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign status_ddr_link_present_re = addr_hit[6] & reg_re & !reg_error;
+  assign hw_features_spi_host_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign status_dram_present_re = addr_hit[6] & reg_re & !reg_error;
+  assign hw_features_i2c_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign status_vga_present_re = addr_hit[6] & reg_re & !reg_error;
+  assign hw_features_gpio_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign vga_red_width_re = addr_hit[7] & reg_re & !reg_error;
+  assign hw_features_dma_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign vga_green_width_re = addr_hit[8] & reg_re & !reg_error;
+  assign hw_features_serial_link_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign vga_blue_width_re = addr_hit[9] & reg_re & !reg_error;
+  assign hw_features_vga_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign reset_freq_re = addr_hit[10] & reg_re & !reg_error;
+  assign llc_size_re = addr_hit[8] & reg_re & !reg_error;
+
+  assign vga_params_red_width_re = addr_hit[9] & reg_re & !reg_error;
+
+  assign vga_params_green_width_re = addr_hit[9] & reg_re & !reg_error;
+
+  assign vga_params_blue_width_re = addr_hit[9] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[15:0] = version_qs;
-      end
-
-      addr_hit[1]: begin
         reg_rdata_next[31:0] = scratch_0_qs;
       end
 
-      addr_hit[2]: begin
+      addr_hit[1]: begin
         reg_rdata_next[31:0] = scratch_1_qs;
       end
 
-      addr_hit[3]: begin
+      addr_hit[2]: begin
         reg_rdata_next[31:0] = scratch_2_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[3]: begin
         reg_rdata_next[31:0] = scratch_3_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[4]: begin
         reg_rdata_next[1:0] = boot_mode_qs;
       end
 
+      addr_hit[5]: begin
+        reg_rdata_next[31:0] = rtc_freq_qs;
+      end
+
       addr_hit[6]: begin
-        reg_rdata_next[0] = status_clock_lock_qs;
-        reg_rdata_next[1] = status_uart_present_qs;
-        reg_rdata_next[2] = status_spi_present_qs;
-        reg_rdata_next[3] = status_i2c_present_qs;
-        reg_rdata_next[4] = status_dma_present_qs;
-        reg_rdata_next[5] = status_ddr_link_present_qs;
-        reg_rdata_next[6] = status_dram_present_qs;
-        reg_rdata_next[7] = status_vga_present_qs;
+        reg_rdata_next[31:0] = platform_rom_qs;
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[31:0] = vga_red_width_qs;
+        reg_rdata_next[0] = hw_features_bootrom_qs;
+        reg_rdata_next[1] = hw_features_llc_qs;
+        reg_rdata_next[2] = hw_features_uart_qs;
+        reg_rdata_next[3] = hw_features_spi_host_qs;
+        reg_rdata_next[4] = hw_features_i2c_qs;
+        reg_rdata_next[5] = hw_features_gpio_qs;
+        reg_rdata_next[6] = hw_features_dma_qs;
+        reg_rdata_next[7] = hw_features_serial_link_qs;
+        reg_rdata_next[8] = hw_features_vga_qs;
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[31:0] = vga_green_width_qs;
+        reg_rdata_next[31:0] = llc_size_qs;
       end
 
       addr_hit[9]: begin
-        reg_rdata_next[31:0] = vga_blue_width_qs;
-      end
-
-      addr_hit[10]: begin
-        reg_rdata_next[31:0] = reset_freq_qs;
+        reg_rdata_next[7:0] = vga_params_red_width_qs;
+        reg_rdata_next[15:8] = vga_params_green_width_qs;
+        reg_rdata_next[23:16] = vga_params_blue_width_qs;
       end
 
       default: begin

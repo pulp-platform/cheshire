@@ -68,6 +68,10 @@ extern "C" {
 // AXI LLC Version (upper 32 bit)
 #define AXI_LLC_VERSION_HIGH_REG_OFFSET 0x44
 
+// Status register of the BIST
+#define AXI_LLC_BIST_STATUS_REG_OFFSET 0x48
+#define AXI_LLC_BIST_STATUS_DONE_BIT 0
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

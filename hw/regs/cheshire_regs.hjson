@@ -5,6 +5,7 @@
 //
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
+// Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 {
   name: "cheshire"
@@ -14,189 +15,107 @@
   ],
   regwidth: 32
   registers: [
-    { name: "VERSION"
-      desc: "Version register, should read 2."
-      swaccess: "ro"
-      hwaccess: "none"
-      fields: [
-        {
-          bits: "15:0"
-          resval: "2"
-          name: "VERSION"
-          desc: '''
-                System version.
-                '''
-        }
-      ]
-    }
+
     { multireg:
-      { name: "SCRATCH"
-        desc: "Scratch register for SW to write to."
+      { name:     "scratch"
+        desc:     "Registers for use by software"
         swaccess: "rw"
         hwaccess: "none"
-        count: "4"
-        cname: "scratch"
+        count:    "4"
+        cname:    "scratch"
         fields: [
-          { bits: "31:0"
-            resval: "0"
-            name: "SCRATCH"
-            desc: '''
-                  Scratch register for software to read/write.
-                  '''
-          }
+          { bits: "31:0", resval: "0", name: "scratch", desc: "Registers for use by software" }
         ]
       }
     }
-    { name: "BOOT_MODE",
-      desc: "Selected boot mode exposed as a register.",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwqe:     "true",
-      hwext:    "true",
+
+    { name:     "boot_mode"
+      desc:     "Method to load boot code (connected to input pins)"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwqe:     "true"
+      hwext:    "true"
       fields: [
         { bits: "1:0"
-          name: "MODE"
-          desc: "Selected boot mode."
+          name: "boot_mode"
+          desc: "Method to load boot code (connected to input pins)"
           enum: [
-               { value: "0", name: "SD Boot", desc: "Bootrom reads GPT header from SD Card and loads DT and FW from parts 1 and 2" },
-               { value: "1", name: "Reserved_1", desc: "Bootrom prints LLC config and halts." },
-               { value: "2", name: "Reserved_2", desc: "Bootrom prints LLC config and halts." },
-               { value: "3", name: "Reserved_3", desc: "Bootrom prints LLC config and halts." }
+            { value: "0", name: "passive",       desc: "Wait for external preload and launch"  }
+            { value: "1", name: "spi_sdcard",    desc: "Boot from SD Card in SPI mode"         }
+            { value: "2", name: "spi_s25fs512s", desc: "Boot from S25FS512S SPI NOR flash"     }
+            { value: "3", name: "i2c_24xx1025",  desc: "Boot from 24xx1025 I2C EEPROM"         }
           ]
         }
       ]
     }
-    { name: "STATUS",
-      desc: "Clock frequency lock exposed as a register.",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwqe:     "true",
-      hwext:    "true",
+
+    { name:     "rtc_freq"
+      desc:     "Frequency (Hz) configured for RTC"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwqe:     "true"
+      hwext:    "true"
       fields: [
-        { bits: "0"
-          name: "CLOCK_LOCK"
-          desc: "Clocl frequency lock exposed as a register."
-          enum: [
-               { value: "0", name: "Unlocked", desc: "Clock is not locked to reference frequency." },
-               { value: "1", name: "Locked", desc: "Clock is locked to reference frequency." },
-          ]
-        }
-        {
-          bits: "1"
-          name: "UART_PRESENT"
-          desc: "UART presence exposed as a register."
-          enum: [
-               { value: "0", name: "Not present", desc: "UART is not present" },
-               { value: "1", name: "Present", desc: "UART is present." },
-          ]
-        }
-        {
-          bits: "2"
-          name: "SPI_PRESENT"
-          desc: "SPI presence exposed as a register."
-          enum: [
-               { value: "0", name: "Not present", desc: "SPI is not present" },
-               { value: "1", name: "Present", desc: "SPI is present." },
-          ]
-        }
-        {
-          bits: "3"
-          name: "I2C_PRESENT"
-          desc: "I2C presence exposed as a register."
-          enum: [
-               { value: "0", name: "Not present", desc: "I2C is not present" },
-               { value: "1", name: "Present", desc: "I2C is present." },
-          ]
-        }
-        {
-          bits: "4"
-          name: "DMA_PRESENT"
-          desc: "DMA presence exposed as a register."
-          enum: [
-               { value: "0", name: "Not present", desc: "DMA is not present" },
-               { value: "1", name: "Present", desc: "DMA is present." },
-          ]
-        }
-        {
-          bits: "5"
-          name: "DDR_LINK_PRESENT"
-          desc: "DDR Link presence exposed as a register."
-          enum: [
-               { value: "0", name: "Not present", desc: "DDR Link is not present" },
-               { value: "1", name: "Present", desc: "DDR Link is present." },
-          ]
-        }
-        {
-          bits: "6"
-          name: "DRAM_PRESENT"
-          desc: "DRAM presence exposed as a register."
-          enum: [
-               { value: "0", name: "Not present", desc: "DRAM is not present" },
-               { value: "1", name: "Present", desc: "DRAM is present." },
-          ]
-        }
-        {
-          bits: "7"
-          name: "VGA_PRESENT"
-          desc: "VGA presence exposed as a register."
-          enum: [
-               { value: "0", name: "Not present", desc: "VGA is not present" },
-               { value: "1", name: "Present", desc: "VGA is present." },
-          ]
-        }
+        { bits: "31:0", name: "ref_freq", desc: "Frequency (Hz) configured for RTC" }
       ]
     }
-    { name: "VGA_RED_WIDTH",
-      desc: "Selected VGA red width exposed as a register.",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwqe:     "true",
-      hwext:    "true",
+
+    { name:     "platform_rom"
+      desc:     "Address of platform ROM"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwqe:     "true"
+      hwext:    "true"
       fields: [
-        { bits: "31:0"
-          name: "VGA_RED_WIDTH"
-          desc: "Selected VGA red width."
-        }
+        { bits: "31:0", name: "platform_rom", desc: "Address of platform ROM" }
       ]
     }
-    { name: "VGA_GREEN_WIDTH",
-      desc: "Selected VGA green width exposed as a register.",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwqe:     "true",
-      hwext:    "true",
+
+    { name:     "hw_features"
+      desc:     "Specifies which hardware features are available"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwqe:     "true"
+      hwext:    "true"
       fields: [
-        { bits: "31:0"
-          name: "VGA_GREEN_WIDTH"
-          desc: "Selected VGA green width."
-        }
+        { bits: "0",  name: "bootrom",      desc: "Whether boot ROM is available"     }
+        { bits: "1",  name: "llc",          desc: "Whether LLC is available"          }
+        { bits: "2",  name: "uart",         desc: "Whether UART is available"         }
+        { bits: "3",  name: "spi_host",     desc: "Whether SPI host is available"     }
+        { bits: "4",  name: "i2c",          desc: "Whether I2C is available"          }
+        { bits: "5",  name: "gpio",         desc: "Whether I2C is available"          }
+        { bits: "6",  name: "dma",          desc: "Whether DMA is available"          }
+        { bits: "7",  name: "serial_link",  desc: "Whether serial link is available"  }
+        { bits: "8",  name: "vga",          desc: "Whether VGA is available"          }
+
       ]
     }
-    { name: "VGA_BLUE_WIDTH",
-      desc: "Selected VGA blue width exposed as a register.",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwqe:     "true",
-      hwext:    "true",
+
+    { name:     "llc_size"
+      desc:     "Total size of LLC in bytes"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwqe:     "true"
+      hwext:    "true"
       fields: [
-        { bits: "31:0"
-          name: "VGA_BLUE_WIDTH"
-          desc: "Selected VGA blue width."
-        }
+        { bits: "31:0", name: "llc_size", desc: "Total size of LLC in bytes" }
+
       ]
     }
-    { name: "RESET_FREQ",
-      desc: "Clock frequency after coming out of reset.",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwqe:     "true",
-      hwext:    "true",
+
+    { name:     "vga_params"
+      desc:     "VGA hardware parameters"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwqe:     "true"
+      hwext:    "true"
       fields: [
-        { bits: "31:0"
-          name: "RESET_FREQ"
-          desc: "Clock frequency after reset."
-        }
+        { bits: "7:0",    name: "red_width",    desc: "Red channel width"   }
+        { bits: "15:8",   name: "green_width",  desc: "Green channel width" }
+        { bits: "23:16",  name: "blue_width",   desc: "Blue channel width"  }
+
       ]
     }
+
   ]
 }

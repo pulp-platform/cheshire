@@ -8,13 +8,17 @@
 # Nonfree repository
 nonfree/
 
-# Bender files
+# Dependency files
+.deps
 .bender/
 
 # Software build files
 *.bin
 *.dump
+*.memh
 *.elf
+*.gpt
+*.gpth
 *.o
 *.a
 sw/deps/.patched
