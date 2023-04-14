@@ -17,26 +17,16 @@ jobs:
       name: Checkout
       uses: actions/checkout@v3
     -
-      name: Install Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
-    -
-      name: Install Python requirements
-      run: |
-        cd .github
-        pip install -r requirements.txt
-    -
-      name: Intall license linter
-      run: |
-        cd .github
-        git clone https://github.com/lowRISC/misc-linters.git
-    -
       name: Check license
-      run: |
-        echo "::add-matcher::.github/license-checker-matcher.json"
-        bash -c "set -e; .github/misc-linters/licence-checker/licence-checker.py --config .github/license-checker.hjson"
-        echo "::remove-matcher owner=license-checker-matcher::"
+      uses: pulp-platform/pulp-actions/lint-license@v2
+      with:
+        license: |
+          Copyright (\d{4}(-\d{4})?\s)?(ETH Zurich and University of Bologna|lowRISC contributors).
+          (Solderpad Hardware License, Version 0.51|Licensed under the Apache License, Version 2.0), see LICENSE for details.
+          SPDX-License-Identifier: (SHL-0.51|Apache-2.0)
+        # Exclude generated headers (no license checker support for optional lines)
+        exclude_paths: |
+          sw/include/regs/*.h
 
   lint-sv:
     runs-on: ubuntu-latest
@@ -66,7 +56,16 @@ jobs:
       with:
         extensions: 'c,h,cpp'
         clangFormatVersion: 14
-        style: '{IndentWidth: 4, ColumnLimit: 100, AlignEscapedNewlines: DontAlign, SortIncludes: false, AllowShortFunctionsOnASingleLine: None, AllowShortIfStatementsOnASingleLine: true, AllowShortLoopsOnASingleLine: true}'
+        style: >
+          {
+          IndentWidth: 4,
+          ColumnLimit: 100,
+          AlignEscapedNewlines: DontAlign,
+          SortIncludes: false,
+          AllowShortFunctionsOnASingleLine: None,
+          AllowShortIfStatementsOnASingleLine: true,
+          AllowShortLoopsOnASingleLine: true
+          }
         exclude: |
           ./sw/include/regs/*.h
           ./target/sim/src/elfloader.cpp
