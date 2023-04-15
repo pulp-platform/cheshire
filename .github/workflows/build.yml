@@ -15,7 +15,7 @@ jobs:
       matrix:
         target: [sw, hw, sim, xilinx]
       fail-fast: false
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       -
         name: Checkout
@@ -33,12 +33,11 @@ jobs:
         run: pip install -r .github/requirements.txt
       -
         name: Install RISC-V GCC toolchain
-        run: |
-          curl -Ls -o riscv-gcc.tar.gz https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2023.01.31/riscv64-elf-ubuntu-20.04-nightly-2023.01.31-nightly.tar.gz
-          sudo mkdir -p /tools/riscv && sudo chmod 777 /tools/riscv
-          tar -C /tools/riscv -xf riscv-gcc.tar.gz --strip-components=1
-          rm riscv-gcc.tar.gz
-          echo "PATH=$PATH:/tools/riscv/bin" >> ${GITHUB_ENV}
+        uses: pulp-platform/pulp-actions/riscv-gcc-install@v2
+        with:
+          distro: ubuntu-22.04
+          nightly-date: '2023.03.14'
+          target: riscv64-elf
       -
         name: Install Bender
         uses: pulp-platform/pulp-actions/bender-install@v2
