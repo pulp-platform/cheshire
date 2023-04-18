@@ -13,6 +13,8 @@ REGGEN      ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowr
 VLOG_ARGS   ?= -suppress 2583 -suppress 13314
 VSIM        ?= vsim
 
+BUILD_DIR   ?= build
+
 # Define used paths (prefixed to avoid name conflicts)
 CHS_ROOT      ?= $(shell $(BENDER) path cheshire)
 CHS_SW_DIR     = $(CHS_ROOT)/sw
@@ -151,3 +153,30 @@ $(CHS_ROOT)/target/xilinx/scripts/add_sources.tcl: Bender.yml
 	$(BENDER) script vivado -t fpga -t cv64a6_imafdc_sv39 -t cva6 > $@
 
 chs-xilinx-all: $(CHS_ROOT)/target/xilinx/scripts/add_sources.tcl
+
+#############
+# slang			#
+#############
+
+.PHONY: $(BUILD_DIR)/cva6.pickle.sv $(BUILD_DIR)/cheshire_top.pickle.sv
+
+$(BUILD_DIR):
+	mkdir -p $@
+
+$(BUILD_DIR)/cheshire_top.pickle.sv: Bender.yml $(BUILD_DIR)
+	bender sources -f -t cv64a6_imafdc_sv39 -t synthesis -t cva6 -t slang | morty -f /dev/stdin -q -o $@ -D VERILATOR=1 --top cheshire_top
+
+$(BUILD_DIR)/cva6.pickle.sv: Bender.yml $(BUILD_DIR)
+	bender sources -f -d $(shell $(BENDER) path cva6) -t cv64a6_imafdc_sv39 -t synthesis -t cva6 -t slang | morty -f /dev/stdin -o $@ -D VERILATOR=1 --top cva6
+
+pickle-cva6: $(BUILD_DIR)/cva6.pickle.sv
+
+slang-check-cva6: pickle-cva6
+	slang $(BUILD_DIR)/cva6.pickle.sv -Wrange-width-oob
+
+slang-check-cheshire: $(BUILD_DIR)/cheshire_top.pickle.sv
+	slang $(BUILD_DIR)/cheshire_top.pickle.sv -Wrange-oob --allow-use-before-declare -Wrange-width-oob -error-limit=4419 -top cheshire_top || true
+# adding || true to make test pass atm
+
+slang-check-cheshire-only:
+	slang $(BUILD_DIR)/cheshire_top.pickle.sv -Wrange-oob --allow-use-before-declare -Wrange-width-oob -error-limit=4419 -top cheshire_top

@@ -49,3 +49,7 @@ sources:
     files:
       - target/xilinx/src/fan_ctrl.sv
       - target/xilinx/src/cheshire_top_xilinx.sv
+  
+  - target: slang
+    files:
+      - target/slang/cheshire_top.sv
