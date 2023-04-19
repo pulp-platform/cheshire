@@ -168,6 +168,8 @@ $(BUILD_DIR)/cheshire_top.pickle.sv: Bender.yml $(BUILD_DIR)
 	cat target/slang/reg_bus_interface_ugly_copy.sv >> $@
 	sed "s/      req_q <= (store_req_t'.*/      req_q <= (store_req_t'{mode: axi_llc_pkg::tag_mode_e'(2'b0), default: '0});/g" $(BUILD_DIR)/cheshire_top.pickle.sv > $(BUILD_DIR)/cheshire_top.pickle_2.sv
 	mv $(BUILD_DIR)/cheshire_top.pickle_2.sv $(BUILD_DIR)/cheshire_top.pickle.sv
+	sed "s/module slib_mv_filter #(parameter WIDTH = 4, THRESHOLD = 10).*/module slib_mv_filter #(parameter WIDTH = 4, parameter THRESHOLD = 10) (/g" $(BUILD_DIR)/cheshire_top.pickle.sv > $(BUILD_DIR)/cheshire_top.pickle_2.sv
+	mv $(BUILD_DIR)/cheshire_top.pickle_2.sv $(BUILD_DIR)/cheshire_top.pickle.sv
 
 $(BUILD_DIR)/cva6.pickle.sv: Bender.yml $(BUILD_DIR)
 	bender sources -f -d $(shell $(BENDER) path cva6) -t cv64a6_imafdc_sv39 -t synthesis -t cva6 -t slang | morty -f /dev/stdin -o $@ -D VERILATOR=1 --top cva6
