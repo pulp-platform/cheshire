@@ -33,3 +33,11 @@ target/sim/vsim/modelsim.ini
 target/sim/vsim/transcript
 target/sim/vsim/vsim.wlf
 target/sim/vsim/work/
+
+# VSIM generated files
+target/svase/vsim/compile.*.tcl
+target/svase/vsim/*.log
+target/svase/vsim/modelsim.ini
+target/svase/vsim/transcript
+target/svase/vsim/vsim.wlf
+target/svase/vsim/work/

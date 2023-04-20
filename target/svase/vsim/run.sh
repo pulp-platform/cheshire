@@ -1,0 +1,1 @@
+questa-2022.3 vsim -c -do "set PRELMODE ${PM}; set BOOTMODE 0; set IMAGE ${IMG}; set BINARY ../../../sw/tests/helloworld.spm.elf; source svase.compile.tcl; source compile.cheshire_soc.tcl; source start.cheshire_soc.tcl; run -all"

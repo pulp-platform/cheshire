@@ -185,3 +185,9 @@ slang-check-cheshire: $(BUILD_DIR)/cheshire_top.pickle.sv
 
 slang-check-cheshire-only:
 	slang $(BUILD_DIR)/cheshire_top.pickle.sv -Wrange-oob --allow-use-before-declare -Wrange-width-oob -error-limit=4419 -top cheshire_top
+
+$(CHS_ROOT)/target/svase/vsim/compile.cheshire_soc.tcl: Bender.yml
+	$(BENDER) script vsim -t sim -t cv64a6_imafdc_sv39 -t test -t cva6 --vlog-arg="$(VLOG_ARGS)" > $@
+	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
+
+chs-sim-all: $(CHS_ROOT)/target/svase/vsim/compile.cheshire_soc.tcl
