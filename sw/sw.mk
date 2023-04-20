@@ -134,6 +134,29 @@ $(foreach link,$(patsubst $(CHS_LD_DIR)/%.ld,%,$(wildcard $(CHS_LD_DIR)/*.ld)),$
 %.gpt.memh: %.gpt.bin
 	$(RISCV_OBJCOPY) -I binary -O verilog $< $@
 
+##########################
+# Linux disk (TEST ONLY) #
+##########################
+
+$(CHS_SW_DIR)/boot/fw_payload.dtb.elf: $(CHS_SW_DIR)/boot/install64/fw_payload.elf $(CHS_SW_DIR)/boot/cheshire.dtb
+	$(RISCV_OBJCOPY) --add-section .spm=$(word 2,$^) --change-section-address .spm=0x80800000 --set-section-flags .spm=alloc,load,code $< $@
+
+chs-sw-linux: $(CHS_SW_DIR)/boot/fw_payload.dtb.elf $(CHS_SW_DIR)/boot/linux.gpt.bin $(CHS_SW_DIR)/boot/spl.spm.dump $(CHS_SW_DIR)/boot/install64/fw_payload.dump
+
+$(CHS_SW_DIR)/boot/linux.gpt.bin: $(CHS_SW_DIR)/boot/spl.rom.bin $(CHS_SW_DIR)/boot/cheshire.dtb $(CHS_SW_DIR)/boot/install64/fw_payload.bin $(CHS_SW_DIR)/boot/install64/uImage
+	truncate -s 16M $@
+	sgdisk --clear -g --set-alignment=1 \
+		--new=1:64:96 --change-name=1:firmware \
+		--new=2:128:159 --typecode=2:b000 \
+		--new=3:2048:8191 --typecode=3:3000 \
+		--new=4:8192:24575 --typecode=4:8300 \
+		--new=5:24576:0 --typecode=5:8200 \
+		$@
+	dd if=$(word 1,$^) of=$@ bs=512 seek=64 conv=notrunc
+	dd if=$(word 2,$^) of=$@ bs=512 seek=128 conv=notrunc
+	dd if=$(word 3,$^) of=$@ bs=512 seek=2048 conv=notrunc
+	dd if=$(word 4,$^) of=$@ bs=512 seek=8192 conv=notrunc
+
 #########
 # Tests #
 #########
