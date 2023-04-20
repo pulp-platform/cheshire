@@ -107,7 +107,7 @@ module cheshire_soc_fixture;
     .axi_ext_slv_req_t  ( axi_slv_req_t ),
     .axi_ext_slv_rsp_t  ( axi_slv_rsp_t ),
     .reg_ext_req_t      ( reg_req_t ),
-    .reg_ext_rsp_t      ( reg_req_t )
+    .reg_ext_rsp_t      ( reg_rsp_t )
   ) i_dut (
     .clk_i              ( clk       ),
     .rst_ni             ( rst_n     ),
