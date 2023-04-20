@@ -1,3 +1,6 @@
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
 interface REG_BUS #(
   /// The width of the address.
   parameter int ADDR_WIDTH = -1,
