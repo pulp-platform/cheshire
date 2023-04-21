@@ -199,7 +199,8 @@ package cheshire_pkg;
   localparam doub_bt AmSpm    = 'h1000_0000;  // Cached region at bottom, uncached on top
 
   // Static masks
-  localparam doub_bt AmSpmRegionMask = 'h03FF_FFFF;
+  localparam doub_bt AmSpmBaseUncached = 'h1400_0000;
+  localparam doub_bt AmSpmRegionMask   = 'h03FF_FFFF;
 
   // AXI Xbar master indices
   typedef struct packed {
