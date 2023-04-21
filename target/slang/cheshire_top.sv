@@ -25,10 +25,10 @@ module cheshire_top import cheshire_top_pkg::*; import cheshire_pkg::*;
     input   logic [1:0]         boot_mode_i,
 
     // Serial Link
-    input   logic [3:0]         slink_i,
-    output  logic [3:0]         slink_o,
-    input   logic               slink_rcv_clk_i,
-    output  logic               slink_trx_clk_o,
+    input   logic [SlinkNumChan-1:0]         slink_i,
+    output  logic [SlinkNumChan-1:0]         slink_o,
+    input   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]              slink_rcv_clk_i,
+    output  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]              slink_trx_clk_o,
 
     // VGA Controller
     output  logic                                 vga_hsync_o,
@@ -59,8 +59,8 @@ module cheshire_top import cheshire_top_pkg::*; import cheshire_pkg::*;
     // SPI Host Interface
     output logic                spih_sck_o,
     output logic                spih_sck_en_no,
-    output logic [ 1:0]         spih_csb_o,
-    output logic [ 1:0]         spih_csb_en_no,
+    output logic [ SpihNumCs-1:0]         spih_csb_o,
+    output logic [ SpihNumCs-1:0]         spih_csb_en_no,
     output logic [ 3:0]         spih_sd_o,
     output logic [ 3:0]         spih_sd_en_no,
     input  logic [ 3:0]         spih_sd_i,

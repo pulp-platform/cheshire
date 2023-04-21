@@ -5,13 +5,24 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
+package cheshire_top_pkg_svase;
 
-module cheshire_soc_fixture;
+  `include "cheshire/typedef.svh"
+
+  import cheshire_pkg::*;
+
+  localparam cheshire_cfg_t DutCfg = DefaultCfg;
+  `CHESHIRE_TYPEDEF_ALL(, DutCfg)
+
+endpackage
+
+
+module cheshire_soc_fixture_svase;
 
   `include "cheshire/typedef.svh"
   `include "axi/assign.svh"
-
   import cheshire_pkg::*;
+  import cheshire_top_pkg_svase::*;
 
   ///////////
   //  DPI  //
@@ -26,8 +37,6 @@ module cheshire_soc_fixture;
   //  Parameters  //
   //////////////////
 
-  localparam cheshire_cfg_t DutCfg = DefaultCfg;
-  `CHESHIRE_TYPEDEF_ALL(, DutCfg)
   localparam int unsigned AxiStrbWidth = DutCfg.AxiDataWidth/8;
   localparam int unsigned AxiStrbBits  = $clog2(DutCfg.AxiDataWidth/8);
 

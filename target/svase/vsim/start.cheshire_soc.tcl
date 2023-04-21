@@ -7,12 +7,12 @@
 # Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-set TESTBENCH tb_cheshire_soc
+set TESTBENCH tb_cheshire_soc_svase
 
 # Set voptargs only if not already set to make overridable.
 # Default on fast simulation flags.
 if {![info exists VOPTARGS]} {
-    set VOPTARGS "-O5 +acc=p+tb_cheshire_soc. +noacc=p+cheshire_soc. +acc=r+stream_xbar"
+    set VOPTARGS "-O5 +acc=p+tb_cheshire_soc_svase. +noacc=p+cheshire_soc__7215545183804607260. +acc=r+stream_xbar"
 }
 
 set flags "-permissive -suppress 3009 -suppress 8386 -error 7"
