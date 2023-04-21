@@ -220,8 +220,8 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   // Connect external masters
   if (Cfg.AxiExtNumMst > 0) begin : gen_ext_axi_mst
-    assign axi_in_req[AxiOut.num_out-1:AxiOut.ext_base] = axi_ext_mst_req_i;
-    assign axi_ext_mst_rsp_o = axi_in_rsp[AxiOut.num_out-1:AxiOut.ext_base];
+    assign axi_in_req[AxiIn.num_in-1:AxiIn.ext_base] = axi_ext_mst_req_i;
+    assign axi_ext_mst_rsp_o = axi_in_rsp[AxiIn.num_in-1:AxiIn.ext_base];
   end else begin : gen_no_ext_axi_mst
     assign axi_ext_mst_rsp_o = '0;
   end
