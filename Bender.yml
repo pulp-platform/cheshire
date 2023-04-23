@@ -56,6 +56,6 @@ sources:
 
   - target: svase
     files:
-      - target/svase/src/cheshire_svase.sv
+      - target/svase/src/cheshire_sv2v.v
       - target/svase/src/fixture_cheshire_soc_svase.sv
       - target/svase/src/tb_cheshire_soc_svase.sv

@@ -106,18 +106,19 @@ module cheshire_soc_fixture_svase;
   //  DUT  //
   ///////////
 
-  cheshire_soc__7215545183804607260 #(
-    .Cfg                ( DutCfg ),
-    .ExtHartinfo        ( '0 ),
-    .axi_ext_llc_req_t  ( axi_llc_req_t ),
-    .axi_ext_llc_rsp_t  ( axi_llc_rsp_t ),
-    .axi_ext_mst_req_t  ( axi_mst_req_t ),
-    .axi_ext_mst_rsp_t  ( axi_mst_rsp_t ),
-    .axi_ext_slv_req_t  ( axi_slv_req_t ),
-    .axi_ext_slv_rsp_t  ( axi_slv_rsp_t ),
-    .reg_ext_req_t      ( reg_req_t ),
-    .reg_ext_rsp_t      ( reg_req_t )
-  ) i_dut (
+  // #(
+  //   .Cfg                ( DutCfg ),
+  //   .ExtHartinfo        ( '0 ),
+  //   .axi_ext_llc_req_t  ( axi_llc_req_t ),
+  //   .axi_ext_llc_rsp_t  ( axi_llc_rsp_t ),
+  //   .axi_ext_mst_req_t  ( axi_mst_req_t ),
+  //   .axi_ext_mst_rsp_t  ( axi_mst_rsp_t ),
+  //   .axi_ext_slv_req_t  ( axi_slv_req_t ),
+  //   .axi_ext_slv_rsp_t  ( axi_slv_rsp_t ),
+  //   .reg_ext_req_t      ( reg_req_t ),
+  //   .reg_ext_rsp_t      ( reg_req_t )
+  // ) 
+  cheshire_soc__7215545183804607260 i_dut (
     .clk_i              ( clk       ),
     .rst_ni             ( rst_n     ),
     .test_mode_i        ( test_mode ),
