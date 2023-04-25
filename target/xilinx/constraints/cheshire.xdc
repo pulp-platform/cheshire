@@ -86,8 +86,8 @@ set_false_path -hold -from [get_ports jtag_trst_ni]
 # MIG #
 #######
 
-set_max_delay  -from i_dram_wrapper/i_dram/inst/div_clk_rst_r1_reg $FPGA_TCK
-set_false_path -hold -from i_dram_wrapper/i_dram/inst/div_clk_rst_r1_reg
+#set_max_delay  -from i_dram_wrapper/i_dram/inst/div_clk_rst_r1_reg $FPGA_TCK
+set_false_path -from i_dram_wrapper/i_dram/inst/div_clk_rst_r1_reg
 
 ########
 # SPIM #
@@ -148,9 +148,9 @@ set_false_path -hold -from i_dram_wrapper/i_dram/inst/div_clk_rst_r1_reg
 ########
 
 # cdc_fifo_gray
-set_max_delay -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_src]] -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_dst]] 10
-set_min_delay -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_src]] -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_dst]] 5
-set_false_path -hold -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_src]] -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_dst]]
+#set_max_delay -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_src]] -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_dst]] 10
+#set_min_delay -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_src]] -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_dst]] 5
+set_false_path -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_src]] -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_dst]]
 
 # cdc_fifo_gray syncs
 set_property KEEP_HIERARCHY SOFT [get_cells i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*i_sync]
