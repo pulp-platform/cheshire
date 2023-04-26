@@ -10,7 +10,7 @@
 ###################
 
 # Testmode is set to 0 during normal use
-set_case_analysis 0 [get_ports testmode_i]
+set_case_analysis 0 [get_ports test_mode_i]
 
 # Preserve the output mux of the clock divider
 set_property DONT_TOUCH TRUE [get_cells i_sys_clk_div/i_clk_bypass_mux]
@@ -37,7 +37,6 @@ set I2C_IO_SPEED 312.5
 # UART speed is at most 5 Mb/s
 set UART_IO_SPEED 200.0
 
-
 ##########
 # Clocks #
 ##########
@@ -49,7 +48,6 @@ create_generated_clock -name clk_soc -source [get_pins $MIG_CLK_SRC] -divide_by 
 create_clock -period $JTAG_TCK -name clk_jtag [get_ports jtag_tck_i]
 set_input_jitter clk_jtag 1.000
 
-
 ################
 # Clock Groups #
 ################
@@ -57,14 +55,12 @@ set_input_jitter clk_jtag 1.000
 # JTAG Clock is asynchronous to all other clocks
 set_clock_groups -name jtag_async -asynchronous -group [get_clocks clk_jtag]
 
-
 #######################
 # Placement Overrides #
 #######################
 
 # Accept suboptimal BUFG-BUFG cascades
 set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets i_sys_clk_div/i_clk_mux/clk0_i]
-
 
 ########
 # JTAG #
@@ -79,14 +75,12 @@ set_output_delay -max -clock clk_jtag [expr 0.20 * $JTAG_TCK] [get_ports jtag_td
 set_max_delay  -from [get_ports jtag_trst_ni] $JTAG_TCK
 set_false_path -hold -from [get_ports jtag_trst_ni]
 
-
 #######
 # MIG #
 #######
 
 set_max_delay  -from [get_pins i_dram/u_xlnx_mig_7_ddr3_mig/u_ddr3_infrastructure/rstdiv0_sync_r1_reg_rep/C] $FPGA_TCK
 set_false_path -hold -from [get_pins i_dram/u_xlnx_mig_7_ddr3_mig/u_ddr3_infrastructure/rstdiv0_sync_r1_reg_rep/C]
-
 
 ########
 # SPIM #
@@ -107,7 +101,6 @@ set_false_path -hold -from [get_ports {i2c_scl_io i2c_sda_io}]
 set_max_delay [expr $I2C_IO_SPEED * 0.35] -to [get_ports {i2c_scl_io i2c_sda_io}]
 set_false_path -hold -to [get_ports {i2c_scl_io i2c_sda_io}]
 
-
 ########
 # UART #
 ########
@@ -125,19 +118,18 @@ set_false_path -hold -to [get_ports uart_tx_o]
 set_output_delay -min -clock clk_soc [expr $SOC_TCK * 0.10] [get_ports vga*]
 set_output_delay -max -clock clk_soc [expr $SOC_TCK * 0.35] [get_ports vga*]
 
-
 ############
 # Switches #
 ############
 
-set_input_delay -min -clock clk_soc [expr $SOC_TCK * 0.10] [get_ports {boot_mode* fan_sw* testmode_i}]
-set_input_delay -max -clock clk_soc [expr $SOC_TCK * 0.35] [get_ports {boot_mode* fan_sw* testmode_i}]
+set_input_delay -min -clock clk_soc [expr $SOC_TCK * 0.10] [get_ports {boot_mode* fan_sw* test_mode_i}]
+set_input_delay -max -clock clk_soc [expr $SOC_TCK * 0.35] [get_ports {boot_mode* fan_sw* test_mode_i}]
 
 set_output_delay -min -clock clk_soc [expr $SOC_TCK * 0.10] [get_ports fan_pwm]
 set_output_delay -max -clock clk_soc [expr $SOC_TCK * 0.35] [get_ports fan_pwm]
 
-set_max_delay [expr 2 * $SOC_TCK] -from [get_ports {boot_mode* fan_sw* testmode_i}]
-set_false_path -hold -from [get_ports {boot_mode* fan_sw* testmode_i}]
+set_max_delay [expr 2 * $SOC_TCK] -from [get_ports {boot_mode* fan_sw* test_mode_i}]
+set_false_path -hold -from [get_ports {boot_mode* fan_sw* test_mode_i}]
 
 set_max_delay [expr 2 * $SOC_TCK] -to [get_ports fan_pwm]
 set_false_path -hold -to [get_ports fan_pwm]
@@ -146,15 +138,12 @@ set_false_path -hold -to [get_ports fan_pwm]
 # CDCs #
 ########
 
-# cdc_fifo_gray
-set_max_delay -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_src]] -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_dst]] 10
-set_min_delay -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_src]] -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_dst]] 5
-set_false_path -hold -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_src]] -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_dst]]
-
-# cdc_fifo_gray syncs
+# cdc_fifo_gray: Disable hold checks, limit datapath delay and bus skew
 set_property KEEP_HIERARCHY SOFT [get_cells i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*i_sync]
-set_max_delay -through [get_pins i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*i_sync/serial_i] $FPGA_TCK 
-set_false_path -hold    -through [get_pins i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*i_sync/serial_i]
+set_false_path -hold -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_*]] -through [get_pins -of_objects [get_cells i_axi_cdc_mig/i_axi_cdc_*]]
+set_max_delay -datapath -from [get_pins i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*reg*/C] -to [get_pins i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_dst_*/*i_sync/reg*/D] $FPGA_TCK
+set_max_delay -datapath -from [get_pins i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*reg*/C] -to [get_pins i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_src_*/*i_sync/reg*/D] $FPGA_TCK
+set_max_delay -datapath -from [get_pins i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*reg*/C] -to [get_pins i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] $FPGA_TCK
 
 ###################
 # Reset Generator #
