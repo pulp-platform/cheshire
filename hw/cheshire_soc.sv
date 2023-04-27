@@ -10,7 +10,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Cheshire config
   parameter cheshire_cfg_t Cfg = '0,
   // Debug info for external harts
-  parameter dm::hartinfo_t [iomsb(Cfg.NumExtDbgHarts)-1:0] ExtHartinfo = '0,
+  parameter dm::hartinfo_t [iomsb(Cfg.NumExtDbgHarts):0] ExtHartinfo = '0,
   // Interconnect types (must agree with Cheshire config)
   parameter type axi_ext_llc_req_t  = logic,
   parameter type axi_ext_llc_rsp_t  = logic,
