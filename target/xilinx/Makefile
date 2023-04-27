@@ -65,9 +65,9 @@ clean:
 # Clean only top and copy back the IPs output here
 rebuild_top:
 	${MAKE} clean
-	rm scripts/add_sources.tcl
+	rm -f scripts/add_sources.tcl
 	find xilinx -wholename "**/*.srcs/**/*.xci" | xargs -n 1 -I {} cp {} .
-	${MAKE} out/cheshire_top_xilinx.bit
+	${MAKE} $(bit)
 
 # Bender
 scripts/add_sources.tcl: ../../Bender.yml

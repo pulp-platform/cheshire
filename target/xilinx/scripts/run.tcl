@@ -67,7 +67,6 @@ report_clock_interaction                                                -file re
 
 # Instantiate ILA
 set DEBUG [llength [get_nets -hier -filter {MARK_DEBUG == 1}]]
-set DEBUG 0
 if ($DEBUG) {
     # Create core
     puts "Creating debug core..."

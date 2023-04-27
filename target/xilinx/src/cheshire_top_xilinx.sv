@@ -210,6 +210,15 @@ module cheshire_top_xilinx
   // DRAM MIG //
   //////////////
 
+    `ila(ila_cpu_resetn, cpu_resetn)
+    `ila(ila_arst_n, arst_n)
+    `ila(ila_axi_dram_ar_valid, dram_req.ar_valid)
+    `ila(ila_axi_dram_ar_ready, dram_resp.ar_ready)
+    `ila(ila_axi_dram_ar_addr, dram_req.ar.addr[29:0])
+    `ila(ila_axi_dram_r_ready, dram_req.r_ready)
+    `ila(ila_axi_dram_r_valid, dram_resp.r_valid)
+    `ila(ila_axi_dram_r_data, dram_resp.r.data)
+
     dram_wrapper i_dram_wrapper (
     // Rst
     .sys_rst                   ( cpu_resetn             ),

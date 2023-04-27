@@ -54,3 +54,7 @@ ddr3_dq, \
 ddr3_dqs_n, \
 ddr3_dqs_p
 */
+
+`define ila(__name, __signal)  \
+    (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [$bits(__signal)-1:0] __name; \
+    assign __name = __signal;
