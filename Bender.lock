@@ -1,7 +1,7 @@
 packages:
   apb:
-    revision: c520038920355e7cf63dd0abb033d6bc80f035ec
-    version: 0.2.2
+    revision: 56ca84b687c9f6dc650e2a7cb221cb2bd4b2a456
+    version: 0.2.3
     source:
       Git: https://github.com/pulp-platform/apb.git
     dependencies:
@@ -61,8 +61,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: 4dc9413990622dcbf4b37a19f792834c800da5c7
-    version: 1.28.0
+    revision: 4ac82b420e46fd0005513ca2283cb3c905e7599a
+    version: 1.29.0
     source:
       Git: https://github.com/pulp-platform/common_cells
     dependencies:
@@ -136,8 +136,8 @@ packages:
     - common_cells
     - tech_cells_generic
   serial_link:
-    revision: 58fb2e2df77f50822fa9a5ac68d55c8e7ac477ef
-    version: 1.0.0
+    revision: f79be97dbd96707b822dd6c2ed7ca87b54bd4378
+    version: 1.0.1
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:
