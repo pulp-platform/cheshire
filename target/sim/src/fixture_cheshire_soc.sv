@@ -43,7 +43,7 @@ module cheshire_soc_fixture;
   localparam int unsigned UartBaudRate    = 115200;
   localparam int unsigned UartParityEna   = 0;
   localparam int unsigned UartBurstBytes  = 256;
-  localparam int unsigned UartWaitCycles  = 50;
+  localparam int unsigned UartWaitCycles  = 60;
 
   localparam int unsigned SlinkMaxWaitAx    = 100;
   localparam int unsigned SlinkMaxWaitR     = 5;
@@ -182,7 +182,7 @@ module cheshire_soc_fixture;
     .UserWidth          ( DutCfg.AxiUserWidth ),
     .axi_req_t          ( axi_llc_req_t ),
     .axi_rsp_t          ( axi_llc_rsp_t ),
-    .WarnUninitialized  ( 1 ),
+    .WarnUninitialized  ( 0 ),
     .ClearErrOnAccess   ( 1 ),
     .ApplDelay          ( ClkPeriodSys * TAppl ),
     .AcqDelay           ( ClkPeriodSys * TTest )

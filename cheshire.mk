@@ -122,7 +122,7 @@ chs-bootrom-all: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/bootr
 ##############
 
 $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: Bender.yml
-	$(BENDER) script vsim -t sim -t cv64a6_imafdc_sv39 -t test -t cva6 --vlog-arg="$(VLOG_ARGS)" > $@
+	$(BENDER) script vsim -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
 $(CHS_ROOT)/target/sim/models:
@@ -148,6 +148,6 @@ chs-sim-all: $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 #############
 
 $(CHS_ROOT)/target/xilinx/scripts/add_sources.tcl: Bender.yml
-	$(BENDER) script vivado -t fpga -t cv64a6_imafdc_sv39 -t cva6 > $@
+	$(BENDER) script vivado -t fpga -t cv64a6_imafdcsclic_sv39 -t cva6 > $@
 
 chs-xilinx-all: $(CHS_ROOT)/target/xilinx/scripts/add_sources.tcl

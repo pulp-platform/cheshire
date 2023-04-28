@@ -18,7 +18,7 @@ _start:
     mv t1, sp
     la t0, __stack_pointer$
     beqz t0, 1f
-    mv t1, t0
+    mv sp, t0
 1:  .option push
     .option norelax
     la t0, __global_pointer$
