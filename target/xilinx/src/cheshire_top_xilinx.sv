@@ -10,10 +10,12 @@
 module cheshire_top_xilinx 
   import cheshire_pkg::*;
 (
+`ifdef USE_RESET
+  input logic         cpu_reset,
+`endif
+`ifdef USE_RESETN
   input logic         cpu_resetn,
-
-  output logic        uart_tx_o,
-  input logic         uart_rx_i,
+`endif
 
 `ifdef USE_SWITCHES
   input logic         testmode_i,
@@ -82,7 +84,22 @@ module cheshire_top_xilinx
   `DDR4_INTF
 `endif
 
+`ifdef USE_DDR3
+  `DDR3_INTF
+`endif
+
+  output logic        uart_tx_o,
+  input logic         uart_rx_i
+
 );
+
+  `ifdef USE_RESET
+  logic cpu_resetn;
+  assign cpu_resetn = ~cpu_reset;
+  `elsif USE_RESETN
+  logic cpu_reset;
+  assign cpu_reset  = ~cpu_resetn;
+  `endif
 
   wire dram_clock_out; // 333 MHz
   wire dram_addn_clk_1_out; // 200 MHz
@@ -111,7 +128,7 @@ module cheshire_top_xilinx
   logic         testmode_i;
   logic [1:0]   boot_mode_i;
   assign testmode_i  = '0;
-  assign boot_mode_i = '0;
+  assign boot_mode_i = 2'b10;
 `endif
 
   // Give VDD and GND to JTAG
@@ -210,8 +227,7 @@ module cheshire_top_xilinx
   // DRAM MIG //
   //////////////
 
-    `ila(ila_cpu_resetn, cpu_resetn)
-    `ila(ila_arst_n, arst_n)
+    `ila(ila_rst_n, rst_n)
     `ila(ila_axi_dram_ar_valid, dram_req.ar_valid)
     `ila(ila_axi_dram_ar_ready, dram_resp.ar_ready)
     `ila(ila_axi_dram_ar_addr, dram_req.ar.addr[29:0])
@@ -221,8 +237,8 @@ module cheshire_top_xilinx
 
     dram_wrapper i_dram_wrapper (
     // Rst
-    .sys_rst                   ( cpu_resetn             ),
-    .aresetn                   ( arst_n                 ),
+    .sys_rst                   ( cpu_reset              ),
+    .aresetn                   ( rst_n                 ),
     // Clk rst out
     .clk_o                     ( dram_clock_out         ),
     .addn_clk_1_o              ( dram_addn_clk_1_out    ),

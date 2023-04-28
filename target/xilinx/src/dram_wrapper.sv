@@ -3,6 +3,12 @@
 module dram_wrapper (
     // System reset
     input                              sys_rst,
+    
+    // Phy interface for DDR4
+    `ifdef USE_DDR4
+    `DDR4_INTF
+    `endif
+    
     // Slave Interface Write Address Ports
     input                              aresetn,
     input  [5:0]                       s_axi_awid,
@@ -49,11 +55,7 @@ module dram_wrapper (
     // Clk out (referenced in constraints file)
     (* dont_touch = "yes" *) output    clk_o,
     (* dont_touch = "yes" *) output    addn_clk_1_o,
-    output                             sync_rst_o,
-    // Phy interface for DDR4
-    `ifdef USE_DDR4
-    `DDR4_INTF
-    `endif
+    output                             sync_rst_o
 );
 
 `ifdef USE_DDR4

@@ -32,10 +32,13 @@ endif
 VIVADOFLAGS ?= -nojournal -mode batch -source scripts/prologue.tcl
 
 ip-dir      := xilinx
+ips-names   := xlnx_mig_ddr4 xlnx_sim_clk_gen
 ips         := xlnx_mig_ddr4.xci xlnx_sim_clk_gen.xci
 bender-targets := -t $(BOARD) $(addprefix -t ,$(basename $(ips))) # Used to add defines through bender
 
 all: $(mcs)
+
+include sim/simulate.mk
 
 # Generate mcs from bitstream
 $(mcs): $(bit)
@@ -71,7 +74,6 @@ rebuild_top:
 
 # Bender
 scripts/add_sources.tcl: ../../Bender.yml
-	$(BENDER) script vivado -t fpga -t cv64a6_imafdc_sv39 -t cva6 $(bender-targets) > $@
+	$(BENDER) script vivado -t cv64a6_imafdc_sv39 -t cva6 $(bender-targets) > $@
 
-.PHONY:
-	clean
+.PHONY: clean sim
