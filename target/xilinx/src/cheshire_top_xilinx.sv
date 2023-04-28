@@ -92,7 +92,7 @@ module cheshire_top_xilinx
     RegAmoNumCuts     : 1,
     RegAmoPostCut     : 1,
     // RTC
-    RtcFreq           : 32768,
+    RtcFreq           : 1000000,
     // Features
     Bootrom           : 1,
     Uart              : 1,
