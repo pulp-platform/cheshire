@@ -16,8 +16,8 @@ void clint_spin_until(uint64_t tgt_mtime);
 
 void clint_spin_ticks(uint64_t ticks);
 
-// This assumes a stable clock
-uint64_t clint_get_core_freq(uint64_t ref_freq, uint64_t num_ticks);
+// This assumes a stable clock; ref_time_inv is the measurement period's *inverse*
+uint64_t clint_get_core_freq(uint64_t ref_freq, uint64_t ref_time_inv);
 
 void clint_set_mtimecmpx(uint64_t timer_idx, uint64_t value);
 

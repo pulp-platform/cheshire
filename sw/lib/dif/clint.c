@@ -25,8 +25,9 @@ void clint_spin_ticks(uint64_t ticks) {
     clint_spin_until(clint_get_mtime() + ticks);
 }
 
-uint64_t clint_get_core_freq(uint64_t ref_freq, uint64_t num_ticks) {
+uint64_t clint_get_core_freq(uint64_t ref_freq, uint64_t ref_time_inv) {
     uint64_t end_mcycle, start_mcycle;
+    uint64_t num_ticks = ref_freq / ref_time_inv;
     uint64_t end_mtime = clint_get_mtime(), start_mtime;
     // Capture start times until we observe an RTC tick rollover
     do {

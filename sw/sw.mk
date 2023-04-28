@@ -111,7 +111,7 @@ $(foreach link,$(patsubst $(CHS_LD_DIR)/%.ld,%,$(wildcard $(CHS_LD_DIR)/*.ld)),$
 	$(RISCV_OBJCOPY) -O binary $< $@
 
 %.dtb: %.dts
-	@$(DTC) -I dts -O dtb -o $@ $<
+	$(DTC) -I dts -O dtb -o $@ $<
 
 %.memh: %.elf
 	$(RISCV_OBJCOPY) -O verilog $< $@

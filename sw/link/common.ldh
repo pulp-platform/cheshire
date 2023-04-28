@@ -43,4 +43,5 @@ SECTIONS {
   __base_vga      = 0x03007000;
   __base_plic     = 0x04000000;
   __base_spm      = ORIGIN(spm);
+  __base_dram     = ORIGIN(dram);
 }

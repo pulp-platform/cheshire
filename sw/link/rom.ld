@@ -9,13 +9,11 @@
 INCLUDE common.ldh
 
 SECTIONS {
-  .text : {
+  /* Put all LOAD sections in one contiguous output section */
+  .misc : {
     *(.text._start)
     *(.text)
     *(.text.*)
-  } > spm AT>extrom
-
-  .misc : ALIGN(16) {
     *(.rodata)
     *(.rodata.*)
     *(.data)
@@ -24,8 +22,11 @@ SECTIONS {
     *(.srodata.*)
     *(.sdata)
     *(.sdata.*)
+    *(.bulk)
+    *(.bulk.*)
   } > spm AT>extrom
 
+  /* BSS is not loaded, but initialized by CRT0 */
   . = ALIGN(32);
   __bss_start = .;
   .bss : {
@@ -33,12 +34,7 @@ SECTIONS {
     *(.bss.*)
     *(.sbss)
     *(.sbss.*)
-  } > spm AT>extrom
+  } > spm
   . = ALIGN(32);
   __bss_end = .;
-
-  .bulk : ALIGN(16) {
-    *(.bulk)
-    *(.bulk.*)
-  } > spm AT>extrom
 }

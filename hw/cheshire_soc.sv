@@ -566,16 +566,27 @@ module cheshire_soc import cheshire_pkg::*; #(
   ) i_core_cva6 (
     .clk_i,
     .rst_ni,
-    .boot_addr_i  ( BootAddr ),
-    .hart_id_i    ( '0 ),
-    .irq_i        ( {irq[NumIrqHarts], irq[0]} ),
-    .ipi_i        ( ipi[0] ),
-    .time_irq_i   ( time_irq[0] ),
-    .debug_req_i  ( dbg_int_req[0] ),
-    .cvxif_req_o  (  ),
-    .cvxif_resp_i ( '0 ),
-    .axi_req_o    ( core_out_req ),
-    .axi_resp_i   ( core_out_rsp )
+    .boot_addr_i      ( BootAddr ),
+    .hart_id_i        ( '0 ),
+    .irq_i            ( {irq[NumIrqHarts], irq[0]} ),
+    .ipi_i            ( ipi[0] ),
+    .time_irq_i       ( time_irq[0] ),
+    .debug_req_i      ( dbg_int_req[0] ),
+    .clic_irq_valid_i ( '0 ),
+    .clic_irq_id_i    ( '0 ),
+    .clic_irq_level_i ( '0 ),
+    .clic_irq_priv_i  ( '0 ),
+    .clic_irq_shv_i   ( '0 ),
+    .clic_irq_ready_o ( ),
+    .clic_kill_req_i  ( '0 ),
+    .clic_kill_ack_o  ( ),
+    .rvfi_o           ( ),
+    .cvxif_req_o      ( ),
+    .cvxif_resp_i     ( '0 ),
+    .l15_req_o        ( ),
+    .l15_rtrn_i       ( '0 ),
+    .axi_req_o        ( core_out_req ),
+    .axi_resp_i       ( core_out_rsp )
   );
 
   // Map user to AMO domain as we are an atomics-capable master.
