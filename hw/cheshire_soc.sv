@@ -263,8 +263,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   axi_d32_req_t axi_reg_d32_req;
   axi_d32_rsp_t axi_reg_d32_rsp;
 
-  reg_req_t reg_in_req;
-  reg_rsp_t reg_in_rsp;
+  reg_req_t reg_in_req, reg_filtered_req;
+  reg_rsp_t reg_in_rsp, reg_filtered_rsp;
 
   reg_req_t [RegOut.num_out-1:0] reg_out_req;
   reg_rsp_t [RegOut.num_out-1:0] reg_out_rsp;
@@ -378,6 +378,18 @@ module cheshire_soc import cheshire_pkg::*; #(
     .default_idx_i    ( (cf_math_pkg::idx_width(RegOut.num_out))'(RegOut.err) )
   );
 
+  reg_filter_empty_writes #(
+    .req_t   ( reg_req_t ),
+    .rsp_t   ( reg_rsp_t )
+  ) i_filter_empty_writes (
+    .clk_i,
+    .rst_ni,
+    .in_req_i ( reg_in_req ),
+    .in_rsp_o ( reg_in_rsp ),
+    .out_req_o( reg_filtered_req ),
+    .out_rsp_i( reg_filtered_rsp )
+  );
+
   reg_demux #(
     .NoPorts  ( RegOut.num_out ),
     .req_t    ( reg_req_t ),
@@ -386,8 +398,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .clk_i,
     .rst_ni,
     .in_select_i  ( reg_select  ),
-    .in_req_i     ( reg_in_req  ),
-    .in_rsp_o     ( reg_in_rsp  ),
+    .in_req_i     ( reg_filtered_req  ),
+    .in_rsp_o     ( reg_filtered_rsp  ),
     .out_req_o    ( reg_out_req ),
     .out_rsp_i    ( reg_out_rsp )
   );

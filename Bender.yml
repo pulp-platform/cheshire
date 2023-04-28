@@ -20,7 +20,7 @@ dependencies:
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                 version: 0.1.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells",              version: 1.29.0 }
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                  rev: 437ffa9    } # TODO: master commit; use next release once out
-  register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",    version: 0.4.0  }
+  register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",    rev: "e99e009"  }
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",             version: 0.7.0  }
   tech_cells_generic:       { git: "https://github.com/pulp-platform/tech_cells_generic.git",    version: 0.2.11 }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",           version: 1.0.1  }
