@@ -81,8 +81,8 @@ int gpt_boot_part_else_raw(gpt_read_t read, void *priv, void *code_buf, uint64_t
     uint64_t len = 0x200 * (lba_end - lba_begin + 1);
     CHECK_CALL(read(priv, code_buf, addr, len));
     // Write pointers for used read function to scratch registers for use in SPL
-    *reg32(&__base_regs, CHESHIRE_SCRATCH_0_REG_OFFSET) = (uintptr_t)((void*) read) | 1;
-    *reg32(&__base_regs, CHESHIRE_SCRATCH_1_REG_OFFSET) = (uintptr_t) priv;
+    *reg32(&__base_regs, CHESHIRE_SCRATCH_0_REG_OFFSET) = (uintptr_t)((void *)read) | 1;
+    *reg32(&__base_regs, CHESHIRE_SCRATCH_1_REG_OFFSET) = (uintptr_t)priv;
     // Invoke code
     return invoke((void *)code_buf);
 }
