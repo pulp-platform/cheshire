@@ -43,7 +43,7 @@ int boot_spi_sdcard(uint64_t core_freq, uint64_t rtc_freq) {
     // Wait for device to be initialized (1ms, round up extra tick to be sure)
     clint_spin_until((1000 * rtc_freq) / (1000 * 1000) + 1);
     return gpt_boot_part_else_raw(spi_sdcard_read_checkcrc, &device, &__base_spm,
-                                  __BOOT_SPM_MAX_LBAS);
+                                  __BOOT_SPM_MAX_LBAS, __BOOT_ZSL_TYPE_GUID, 0);
 }
 
 int boot_spi_s25fs512s(uint64_t core_freq, uint64_t rtc_freq) {
@@ -55,14 +55,15 @@ int boot_spi_s25fs512s(uint64_t core_freq, uint64_t rtc_freq) {
     // Wait for device to be initialized (t_PU = 300us, round up extra tick to be sure)
     clint_spin_until((350 * rtc_freq) / (1000 * 1000) + 1);
     return gpt_boot_part_else_raw(spi_s25fs512s_single_read, &device, &__base_spm,
-                                  __BOOT_SPM_MAX_LBAS);
+                                  __BOOT_SPM_MAX_LBAS, __BOOT_ZSL_TYPE_GUID, 0);
 }
 
 int boot_i2c_24fc1025(uint64_t core_freq) {
     // Initialize device handle
     dif_i2c_t i2c;
     CHECK_CALL(i2c_24fc1025_init(&i2c, core_freq))
-    return gpt_boot_part_else_raw(i2c_24fc1025_read, &i2c, &__base_spm, __BOOT_SPM_MAX_LBAS);
+    return gpt_boot_part_else_raw(i2c_24fc1025_read, &i2c, &__base_spm, __BOOT_SPM_MAX_LBAS,
+                                  __BOOT_ZSL_TYPE_GUID, 0);
 }
 
 int main() {

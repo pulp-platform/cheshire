@@ -81,4 +81,3 @@ static inline void* volatile gprw(void* gp) {
     if (!(cond)) return (ret);
 
 #define MIN(a, b) (((a) <= (b)) ? (a) : (b))
-
