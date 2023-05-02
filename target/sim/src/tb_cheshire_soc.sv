@@ -7,7 +7,7 @@
 
 module tb_cheshire_soc;
 
-  cheshire_soc_fixture fix();
+  fixture_cheshire_soc fix();
 
   string      preload_elf;
   string      boot_hex;
@@ -23,26 +23,26 @@ module tb_cheshire_soc;
     if (!$value$plusargs("IMAGE=%s",    boot_hex))      boot_hex      = "";
 
     // Set boot mode and preload boot image if there is one
-    fix.set_boot_mode(boot_mode);
-    fix.i2c_eeprom_preload(boot_hex);
-    fix.spih_norflash_preload(boot_hex);
+    fix.vip.set_boot_mode(boot_mode);
+    fix.vip.i2c_eeprom_preload(boot_hex);
+    fix.vip.spih_norflash_preload(boot_hex);
 
     // Wait for reset
-    fix.wait_for_reset();
+    fix.vip.wait_for_reset();
 
     // Preload in idle mode or wait for completion in autonomous boot
     if (boot_mode == 0) begin
       // Idle boot: preload with the specified mode
       case (preload_mode)
         0: begin      // JTAG
-          fix.jtag_init();
-          fix.jtag_elf_run(preload_elf);
-          fix.jtag_wait_for_eoc(exit_code);
+          fix.vip.jtag_init();
+          fix.vip.jtag_elf_run(preload_elf);
+          fix.vip.jtag_wait_for_eoc(exit_code);
         end 1: begin  // Serial Link
-          fix.slink_elf_run(preload_elf);
-          fix.slink_wait_for_eoc(exit_code);
+          fix.vip.slink_elf_run(preload_elf);
+          fix.vip.slink_wait_for_eoc(exit_code);
         end 2: begin  // UART
-          fix.uart_debug_elf_run_and_wait(preload_elf, exit_code);
+          fix.vip.uart_debug_elf_run_and_wait(preload_elf, exit_code);
         end default: begin
           $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);
         end
@@ -51,8 +51,8 @@ module tb_cheshire_soc;
       $fatal(1, "Unsupported boot mode %d (SD Card)!", boot_mode);
     end else begin
       // Autonomous boot: Only poll return code
-      fix.jtag_init();
-      fix.jtag_wait_for_eoc(exit_code);
+      fix.vip.jtag_init();
+      fix.vip.jtag_wait_for_eoc(exit_code);
     end
 
     $finish;
