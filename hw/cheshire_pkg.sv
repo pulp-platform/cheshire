@@ -72,8 +72,8 @@ package cheshire_pkg;
     doub_bt NumExtDbgHarts;
     shrt_bt NumExtIntrs;
     dw_bt   Core1UserAmoBit;
+    dw_bt   CoreMaxTxns;
     dw_bt   CoreMaxTxnsPerId;
-    dw_bt   CoreMaxUniqIds;
     // AXI parameters
     aw_bt   AddrWidth;
     dw_bt   AxiDataWidth;
@@ -341,6 +341,39 @@ package cheshire_pkg;
   //  CVA6  //
   ////////////
 
+  // CVA6 imposes an ID width of 4, but only 6 of 16 IDs are ever used
+  localparam int unsigned Cva6IdWidth = 4;
+  localparam int unsigned Cva6IdsUsed = 6;
+  typedef logic [Cva6IdWidth-1:0] cva6_id_t;
+  typedef int unsigned cva6_id_map_t [Cva6IdsUsed-1:0][0:1];
+
+  // Symbols for used CVA6 IDs
+  typedef enum cva6_id_t {
+    Cva6IdBypMmu    = 'b1000,
+    Cva6IdBypLoad   = 'b1001,
+    Cva6IdBypStore  = 'b1010,
+    Cva6IdBypAmo    = 'b1011,
+    Cva6IdICache    = 'b0000,
+    Cva6IdDCache    = 'b1100
+  } cva6_id_e;
+
+  // Choose static colocation of IDs based on how heavily used and/or critical they are
+  function automatic cva6_id_map_t gen_cva6_id_map(cheshire_cfg_t cfg);
+    case (cfg.AxiMstIdWidth)
+      // Provide exclusive ID to I-cache to prevent fetch blocking
+      1: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 0}, '{Cva6IdBypStore, 0},
+                  '{Cva6IdBypAmo, 0}, '{Cva6IdICache,  1}, '{Cva6IdDCache,   0}};
+      // Colocate Load/Store and MMU/AMO bypasses, respectively
+      2: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 1}, '{Cva6IdBypStore, 1},
+                  '{Cva6IdBypAmo, 0}, '{Cva6IdICache,  2}, '{Cva6IdDCache,   3}};
+      // Compress output ID space without any serialization
+      3: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 1}, '{Cva6IdBypStore, 2},
+                  '{Cva6IdBypAmo, 3}, '{Cva6IdICache,  4}, '{Cva6IdDCache,   5}};
+      // With 4b of ID or more, no remapping is necessary
+      default: return '{default: '{0, 0}};
+    endcase
+  endfunction
+
   function automatic ariane_pkg::ariane_cfg_t gen_cva6_cfg(cheshire_cfg_t cfg);
     doub_bt SizeSpm = get_llc_size(cfg);
     doub_bt SizeLlcOut = cfg.LlcOutRegionEnd - cfg.LlcOutRegionStart;
@@ -387,8 +420,8 @@ package cheshire_pkg;
     Cva6ExtCieOnTop   : 0,
     // Harts
     DualCore          : 0,  // Only one core, but rest of config allows for two
+    CoreMaxTxns       : 8,
     CoreMaxTxnsPerId  : 4,
-    CoreMaxUniqIds    : 4,
     // Interconnect
     AddrWidth         : 48,
     AxiDataWidth      : 64,
