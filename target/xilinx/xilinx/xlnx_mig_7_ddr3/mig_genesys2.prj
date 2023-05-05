@@ -10,9 +10,9 @@
     <XADC_En>Enabled</XADC_En>
     <TargetFPGA>xc7k325t-ffg900/-2</TargetFPGA>
     <Version>4.1</Version>
-    <SystemClock>Differential</SystemClock>
+    <SystemClock>No Buffer</SystemClock>
     <ReferenceClock>Use System Clock</ReferenceClock>
-    <SysResetPolarity>ACTIVE LOW</SysResetPolarity>
+    <SysResetPolarity>ACTIVE HIGH</SysResetPolarity>
     <BankSelectionFlag>FALSE</BankSelectionFlag>
     <InternalVref>0</InternalVref>
     <dci_hr_inouts_inputs>50 Ohms</dci_hr_inouts_inputs>
@@ -116,9 +116,6 @@
             <Pin VCCAUX_IO="HIGH" IOSTANDARD="LVCMOS15" PADName="AG5" SLEW="" name="ddr3_reset_n" IN_TERM="" />
             <Pin VCCAUX_IO="HIGH" IOSTANDARD="SSTL15" PADName="AG13" SLEW="" name="ddr3_we_n" IN_TERM="" />
         </PinSelection>
-        <System_Clock>
-            <Pin PADName="AD12/AD11(CC_P/N)" Bank="33" name="sys_clk_p/n" />
-        </System_Clock>
         <System_Control>
             <Pin PADName="No connect" Bank="Select Bank" name="sys_rst" />
             <Pin PADName="No connect" Bank="Select Bank" name="init_calib_complete" />

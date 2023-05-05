@@ -113,7 +113,7 @@ $(foreach link,$(patsubst $(CHS_SW_LD_DIR)/%.ld,%,$(wildcard $(CHS_SW_LD_DIR)/*.
 	$(CHS_SW_OBJCOPY) -O binary $< $@
 
 %.dtb: %.dts
-	$(CHS_SW_DTC) -I dts -O dtb -o $@ $<
+	$(CHS_SW_DTC) -I dts -O dtb -i $(CHS_SW_DIR)/boot -o $@ $<
 
 %.memh: %.elf
 	$(CHS_SW_OBJCOPY) -O verilog $< $@
@@ -134,7 +134,7 @@ $(foreach link,$(patsubst $(CHS_SW_LD_DIR)/%.ld,%,$(wildcard $(CHS_SW_LD_DIR)/*.
 	$(CHS_SW_OBJCOPY) -I binary -O verilog $< $@
 
 # Create full Linux disk image
-$(CHS_SW_DIR)/boot/linux.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CHS_SW_DIR)/boot/cheshire.dtb $(CHS_SW_DIR)/boot/install64/fw_payload.bin $(CHS_SW_DIR)/boot/install64/uImage
+$(CHS_SW_DIR)/boot/linux-${BOARD}.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CHS_SW_DIR)/boot/cheshire_$(BOARD).dtb $(CHS_SW_DIR)/boot/install64/fw_payload.bin $(CHS_SW_DIR)/boot/install64/uImage
 	truncate -s $(CHS_SW_DISK_SIZE) $@
 	sgdisk --clear -g --set-alignment=1 \
 		--new=1:64:96 --typecode=1:$(CHS_SW_ZSL_TGUID) \

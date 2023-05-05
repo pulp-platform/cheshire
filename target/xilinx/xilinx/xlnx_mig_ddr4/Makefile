@@ -2,5 +2,5 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-PROJECT:=xlnx_protocol_checker
+PROJECT:=xlnx_mig_ddr4
 include ../common.mk

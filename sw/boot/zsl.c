@@ -60,7 +60,7 @@ int main(void) {
     void *priv = (void *)(uintptr_t)*reg32(&__base_regs, CHESHIRE_SCRATCH_1_REG_OFFSET);
 
     // Initialize UART
-    uart_init(&__base_uart, core_freq, 115200);
+    uart_init(&__base_uart, core_freq, __BAUDRATE);
 
     // Print boot-critical cat, and also parameters
     printf(" /\\___/\\       Boot mode:       %d\r\n"
