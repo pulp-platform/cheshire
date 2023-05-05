@@ -25,3 +25,4 @@ clean:
 	rm -rf vivado*.str
 	rm -rf xgui
 	rm -rf .Xil
+	rm -rf tmp
