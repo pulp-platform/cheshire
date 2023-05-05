@@ -1,11 +1,115 @@
-#### This file is a general .xdc for the Genesys 2 Rev. H
-#### To use it in a project:
-#### - uncomment the lines corresponding to used pins
-#### - rename the used ports (in each line, after get_ports) according to the top level signal names in the project
+##############################
+# BOARD SPECIFIC CONSTRAINTS #
+##############################
+
+#####################
+# Timing Parameters #
+#####################
+
+# 50 MHz SoC clock
+create_generated_clock -name soc_clk -divide_by 1 -source [get_pins i_xlnx_clk_wiz/inst/mmcm_adv_inst/CLKOUT1] [get_nets soc_clk]
+set soc_clk soc_clk
+set SOC_TCK 20.0
+
+# I2C High-speed mode is 3.2 Mb/s
+set I2C_IO_SPEED 312.5
+
+##########
+# Basics #
+##########
+
+# Testmode is set to 0 during normal use
+set_case_analysis 0 [get_ports testmode_i]
+
+#############
+# Sys clock #
+#############
+
+# 200 MHz ref clock
+set SYS_TCK 5
+create_clock -period $SYS_TCK -name sys_clk [get_pins u_ibufg_sys_clk/O]
+set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_pins u_ibufg_sys_clk/O]
+
+#############
+# Mig clock #
+#############
+
+# Dram axi clock : 200 MHz
+set MIG_TCK 5
+create_generated_clock -source [get_pins i_dram_wrapper/i_dram/u_xlnx_mig_7_ddr3_mig/u_ddr3_infrastructure/gen_mmcm.mmcm_i/CLKFBOUT] \
+ -divide_by 1 -add -master_clock clk_pll_i -name dram_axi_clk [get_pins i_dram_wrapper/i_dram/ui_clk]
+# Aynch reset in
+set MIG_RST_I [get_pin i_dram_wrapper/i_dram/aresetn]
+set_false_path -hold -setup -through $MIG_RST_I
+# Synch reset out
+set MIG_RST_O [get_pins i_dram_wrapper/i_dram/ui_clk]
+set_false_path -hold -through $MIG_RST_O
+set_max_delay -through $MIG_RST_O $MIG_TCK
+
+########
+# CDCs #
+########
+
+set_max_delay -datapath \
+ -from [get_pins i_dram_wrapper/gen_cdc.i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*reg*/C] \
+  -to [get_pins i_dram_wrapper/gen_cdc.i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*i_sync/reg*/D] $MIG_TCK
+
+set_max_delay -datapath \
+ -from [get_pins i_dram_wrapper/gen_cdc.i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*reg*/C] \
+  -to [get_pins i_dram_wrapper/gen_cdc.i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] $MIG_TCK
+
+
+#######
+# VGA #
+#######
+
+set_output_delay -min -clock $soc_clk [expr $SOC_TCK * 0.10] [get_ports vga*]
+set_output_delay -max -clock $soc_clk [expr $SOC_TCK * 0.35] [get_ports vga*]
+
+############
+# Switches #
+############
+
+set_input_delay -min -clock $soc_clk [expr $SOC_TCK * 0.10] [get_ports {boot_mode* fan_sw* testmode_i}]
+set_input_delay -max -clock $soc_clk [expr $SOC_TCK * 0.35] [get_ports {boot_mode* fan_sw* testmode_i}]
+
+set_output_delay -min -clock $soc_clk [expr $SOC_TCK * 0.10] [get_ports fan_pwm]
+set_output_delay -max -clock $soc_clk [expr $SOC_TCK * 0.35] [get_ports fan_pwm]
+
+set_max_delay [expr 2 * $SOC_TCK] -from [get_ports {boot_mode* fan_sw* testmode_i}]
+set_false_path -hold -from [get_ports {boot_mode* fan_sw* testmode_i}]
+
+set_max_delay [expr 2 * $SOC_TCK] -to [get_ports fan_pwm]
+set_false_path -hold -to [get_ports fan_pwm]
+
+########
+# SPIM #
+########
+
+set_input_delay  -min -clock $soc_clk [expr 0.10 * $SOC_TCK] [get_ports {sd_d_* sd_cd_i}]
+set_input_delay  -max -clock $soc_clk [expr 0.35 * $SOC_TCK] [get_ports {sd_d_* sd_cd_i}]
+set_output_delay -min -clock $soc_clk [expr 0.10 * $SOC_TCK] [get_ports {sd_d_* sd_*_o}]
+set_output_delay -max -clock $soc_clk [expr 0.20 * $SOC_TCK] [get_ports {sd_d_* sd_*_o}]
+
+#######
+# I2C #
+#######
+
+set_max_delay [expr $I2C_IO_SPEED * 0.35] -from [get_ports {i2c_scl_io i2c_sda_io}]
+set_false_path -hold -from [get_ports {i2c_scl_io i2c_sda_io}]
+
+set_max_delay [expr $I2C_IO_SPEED * 0.35] -to [get_ports {i2c_scl_io i2c_sda_io}]
+set_false_path -hold -to [get_ports {i2c_scl_io i2c_sda_io}]
+
+#################################################################################
+
+###############
+# ASSIGN PINS #
+###############
 
 ## Clock Signal
-set_property -dict { PACKAGE_PIN AD11  IOSTANDARD LVDS     } [get_ports { sysclk_n }]; #IO_L12N_T1_MRCC_33 Sch=sysclk_n
-set_property -dict { PACKAGE_PIN AD12  IOSTANDARD LVDS     } [get_ports { sysclk_p }]; #IO_L12P_T1_MRCC_33 Sch=sysclk_p
+set_property -dict { PACKAGE_PIN AD11  IOSTANDARD LVDS     } [get_ports { sys_clk_n }]; #IO_L12N_T1_MRCC_33 Sch=sysclk_n
+set_property -dict { PACKAGE_PIN AD12  IOSTANDARD LVDS     } [get_ports { sys_clk_p }]; #IO_L12P_T1_MRCC_33 Sch=sysclk_p
 
 ## Buttons
 #set_property -dict { PACKAGE_PIN E18   IOSTANDARD LVCMOS12 } [get_ports { btnc }]; #IO_25_17 Sch=btnc
@@ -33,7 +137,7 @@ set_property -dict { PACKAGE_PIN K19   IOSTANDARD LVCMOS12 } [get_ports { fan_sw
 set_property -dict { PACKAGE_PIN N19   IOSTANDARD LVCMOS12 } [get_ports { fan_sw[2] }]; #IO_L19P_T3_A22_15 Sch=sw[4]
 set_property -dict { PACKAGE_PIN P19   IOSTANDARD LVCMOS12 } [get_ports { fan_sw[3] }]; #IO_25_15 Sch=sw[5]
 #set_property -dict { PACKAGE_PIN P26   IOSTANDARD LVCMOS33 } [get_ports { sw[6] }]; #IO_L10P_T1_D14_14 Sch=sw[6]
-set_property -dict { PACKAGE_PIN P27   IOSTANDARD LVCMOS33 } [get_ports { test_mode_i }]; #IO_L8P_T1_D11_14 Sch=sw[7]
+set_property -dict { PACKAGE_PIN P27   IOSTANDARD LVCMOS33 } [get_ports { testmode_i }]; #IO_L8P_T1_D11_14 Sch=sw[7]
 
 ## USB HIDs For Both Mouse and Keyboard
 #set_property -dict { PACKAGE_PIN AD23  IOSTANDARD LVCMOS33  PULLUP true } [get_ports { ps2_clk_0 }]; #IO_L12P_T1_MRCC_12 Sch=ps2_clk[0]
