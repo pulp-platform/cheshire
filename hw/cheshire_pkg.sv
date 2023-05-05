@@ -61,7 +61,11 @@ package cheshire_pkg;
     shrt_bt Cva6BTBEntries;
     shrt_bt Cva6BHTEntries;
     shrt_bt Cva6NrPMPEntries;
+    // To reduce parameterization entropy, the range [0x2.., 0x8..) is defined to contain exactly
+    // one cached, idempotent, and executable (CIE) and one non-CIE region. The parameters below
+    // control the CIE region's size and whether it abuts with the top or bottom of this range.
     doub_bt Cva6ExtCieLength;
+    bit     Cva6ExtCieOnTop;
     // Hart parameters
     bit     DualCore;
     doub_bt NumExtIrqHarts;
@@ -340,18 +344,20 @@ package cheshire_pkg;
   function automatic ariane_pkg::ariane_cfg_t gen_cva6_cfg(cheshire_cfg_t cfg);
     doub_bt SizeSpm = get_llc_size(cfg);
     doub_bt SizeLlcOut = cfg.LlcOutRegionEnd - cfg.LlcOutRegionStart;
+    doub_bt CieBase   = cfg.Cva6ExtCieOnTop ? 64'h8000_0000 - cfg.Cva6ExtCieLength : 64'h2000_0000;
+    doub_bt NoCieBase = cfg.Cva6ExtCieOnTop ? 64'h2000_0000 : 64'h2000_0000 + cfg.Cva6ExtCieLength;
     return ariane_pkg::ariane_cfg_t'{
       RASDepth              : cfg.Cva6RASDepth,
       BTBEntries            : cfg.Cva6BTBEntries,
       BHTEntries            : cfg.Cva6BHTEntries,
       NrNonIdempotentRules  : 2,   // Periphs, ExtNonCIE
-      NonIdempotentAddrBase : {64'h0000_0000, 64'h4000_0000},
+      NonIdempotentAddrBase : {64'h0000_0000, NoCieBase},
       NonIdempotentLength   : {64'h1000_0000, 64'h6000_0000 - cfg.Cva6ExtCieLength},
       NrExecuteRegionRules  : 5,   // Debug, Bootrom, AllSPM, LLCOut, ExtCIE
-      ExecuteRegionAddrBase : {AmDbg, AmBrom, AmSpm, cfg.LlcOutRegionStart, 64'h2000_0000},
+      ExecuteRegionAddrBase : {AmDbg, AmBrom, AmSpm, cfg.LlcOutRegionStart, CieBase},
       ExecuteRegionLength   : {64'h40000, 64'h40000, 2*SizeSpm, SizeLlcOut, cfg.Cva6ExtCieLength},
       NrCachedRegionRules   : 3,   // CachedSPM, LLCOut, ExtCIE
-      CachedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart,  64'h2000_0000},
+      CachedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart,  CieBase},
       CachedRegionLength    : {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength},
       AxiCompliant          : 1,
       SwapEndianess         : 0,
@@ -377,7 +383,8 @@ package cheshire_pkg;
     Cva6BTBEntries    : ariane_pkg::ArianeDefaultConfig.BTBEntries,
     Cva6BHTEntries    : ariane_pkg::ArianeDefaultConfig.BHTEntries,
     Cva6NrPMPEntries  : 0,
-    Cva6ExtCieLength  : 'h2000_0000,
+    Cva6ExtCieLength  : 'h2000_0000,  // [0x2.., 0x4..) is CIE, [0x4.., 0x8..) is non-CIE
+    Cva6ExtCieOnTop   : 0,
     // Harts
     DualCore          : 0,  // Only one core, but rest of config allows for two
     CoreMaxTxnsPerId  : 4,
