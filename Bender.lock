@@ -52,6 +52,14 @@ packages:
     - axi
     - common_cells
     - register_interface
+  clic:
+    revision: ce0d748f28246c0635b225d9c8beb7b76eac8708
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/clic
+    dependencies:
+    - common_cells
+    - register_interface
   clint:
     revision: e1357c1d0edddde458aec58363473605f51e539e
     version: 0.1.0
@@ -108,6 +116,15 @@ packages:
     - axi
     - common_cells
     - common_verification
+    - register_interface
+  irq_router:
+    revision: d1d31350b24f3965b3a51e1bc96c71eb34e94db3
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/irq_router
+    dependencies:
+    - axi
+    - common_cells
     - register_interface
   opentitan_peripherals:
     revision: 2a237bafa523627acd5c50332ad092ef821f4dac

@@ -72,6 +72,8 @@ module cheshire_top_xilinx
     Cva6RASDepth      : ariane_pkg::ArianeDefaultConfig.RASDepth,
     Cva6BTBEntries    : ariane_pkg::ArianeDefaultConfig.BTBEntries,
     Cva6BHTEntries    : ariane_pkg::ArianeDefaultConfig.BHTEntries,
+    Cva6CLICNumInterruptSrc : ariane_pkg::ArianeDefaultConfig.CLICNumInterruptSrc,
+    Cva6CLICIntCtlBits      : ariane_pkg::ArianeDefaultConfig.CLICIntCtlBits,
     Cva6NrPMPEntries  : 0,
     Cva6ExtCieLength  : 'h2000_0000,
     // Harts
@@ -488,6 +490,7 @@ module cheshire_top_xilinx
     .seip_ext_o         ( ),
     .mtip_ext_o         ( ),
     .msip_ext_o         ( ),
+    .intr_distributed_o ( ),
     .dbg_active_o       ( ),
     .dbg_ext_req_o      ( ),
     .dbg_ext_unavail_i  ( '0 ),
