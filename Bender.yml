@@ -26,6 +26,8 @@ dependencies:
   register_interface:       { git: "https://github.com/pulp-platform/register_interface",     rev: 50270f7    }  # TODO: master commit; use next release once out
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg",              version: 0.7.0  }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link",            version: 1.0.1  }
+  clic:                     { git: "https://github.com/pulp-platform/clic",                   rev: "bed98f8"  }  # branch: xnxti-2
+  irq_router:               { git: "https://github.com/pulp-platform/irq_router",             rev: "d1d3135"  }
 
 export_include_dirs:
   - hw/include
