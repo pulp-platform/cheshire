@@ -82,7 +82,7 @@ $(CHS_ROOT)/hw/regs/axi_rt_reg_pkg.sv $(CHS_ROOT)/hw/regs/axi_rt_reg_top.sv: $(C
 	$(REGTOOL) -r $< --outdir $(dir $@)
 
 # CLINT
-CLINTCORES = 1
+CLINTCORES ?= 1
 include $(CLINTROOT)/clint.mk
 $(CLINTROOT)/.generated:
 	flock -x $@ $(MAKE) clint
