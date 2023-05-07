@@ -87,6 +87,7 @@ module fixture_cheshire_soc;
     .seip_ext_o         ( ),
     .mtip_ext_o         ( ),
     .msip_ext_o         ( ),
+    .intr_distributed_o ( ),
     .dbg_active_o       ( ),
     .dbg_ext_req_o      ( ),
     .dbg_ext_unavail_i  ( '0 ),

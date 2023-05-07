@@ -18,8 +18,14 @@ package cheshire_pkg;
   endfunction
 
   // Parameters defined by generated hardware (regenerate to adapt)
-  localparam int unsigned NumIntIntrs     = 51; // Must agree with struct below
-  localparam int unsigned NumExtIntrs     = rv_plic_reg_pkg::NumSrc - NumIntIntrs;
+
+  // Internal interrupts within cheshire. They must agree with the struct below
+  localparam int unsigned NumIntIntrs = 51;
+  // External interrupts within cheshire. Since it is a fixed number, make sure
+  // PLIC and CLIC have enough interrupt lines to host all the internal and
+  // external interrupts.
+  localparam int unsigned NumExtIntrs = 32;
+
   localparam int unsigned SpihNumCs       = spi_host_reg_pkg::NumCS - 1;  // Last CS is dummy
   localparam int unsigned SlinkNumChan    = serial_link_single_channel_reg_pkg::NumChannels;
   localparam int unsigned SlinkNumLanes   = serial_link_single_channel_reg_pkg::NumBits/2;
@@ -60,6 +66,8 @@ package cheshire_pkg;
     shrt_bt Cva6RASDepth;
     shrt_bt Cva6BTBEntries;
     shrt_bt Cva6BHTEntries;
+    word_bt Cva6CLICNumInterruptSrc;
+    word_bt Cva6CLICIntCtlBits;
     shrt_bt Cva6NrPMPEntries;
     // To reduce parameterization entropy, the range [0x2.., 0x8..) is defined to contain exactly
     // one cached, idempotent, and executable (CIE) and one non-CIE region. The parameters below
@@ -117,6 +125,8 @@ package cheshire_pkg;
     bit     SerialLink;
     bit     Vga;
     bit     AxiRt;
+    bit     Clic;
+    bit     IrqRouter;
     // Parameters for Debug Module
     jtag_idcode_t DbgIdCode;
     dw_bt   DbgMaxReqs;
@@ -308,6 +318,8 @@ package cheshire_pkg;
     aw_bt slink;
     aw_bt vga;
     aw_bt axirt;
+    aw_bt clic;
+    aw_bt irq_router;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
@@ -318,10 +330,10 @@ package cheshire_pkg;
     reg_out_t ret = '{err: 0, clint: 1, plic: 2, regs: 3, default: '0};
     int unsigned i = 3, r = 2;
     ret.map[0] = '{1, 'h0204_0000, 'h0208_0000};
-    ret.map[1] = '{2, 'h0400_0000, 'h0800_0000};
+    ret.map[1] = '{2, 'h0208_0000, 'h020c_0000};
     ret.map[2] = '{3, AmRegs,  AmRegs + 'h1000};
     if (cfg.Bootrom)  begin i++; ret.bootrom  = i; r++; ret.map[r] = '{i, AmBrom, AmBrom + 'h40000}; end
-    if (cfg.LlcNotBypass) begin i++; ret.llc  = i; r++; ret.map[r] = '{i, AmLlc,    AmLlc + 'h1000}; end
+    if (cfg.LlcNotBypass)   begin i++; ret.llc  = i; r++; ret.map[r] = '{i, AmLlc,    AmLlc + 'h1000}; end
     if (cfg.Uart)     begin i++; ret.uart     = i; r++; ret.map[r] = '{i, 'h0300_2000, 'h0300_3000}; end
     if (cfg.I2c)      begin i++; ret.i2c      = i; r++; ret.map[r] = '{i, 'h0300_3000, 'h0300_4000}; end
     if (cfg.SpiHost)  begin i++; ret.spi_host = i; r++; ret.map[r] = '{i, 'h0300_4000, 'h0300_5000}; end
@@ -329,6 +341,8 @@ package cheshire_pkg;
     if (cfg.SerialLink) begin i++; ret.slink  = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
     if (cfg.Vga)      begin i++; ret.vga      = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
     if (cfg.AxiRt)    begin i++; ret.axirt    = i; r++; ret.map[r] = '{i, 'h0300_8000, 'h0300_9000}; end
+    if (cfg.Clic)     begin i++; ret.clic     = i; r++; ret.map[r] = '{i, 'h020c_4000, 'h0210_0000}; end
+    if (cfg.IrqRouter) begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0210_0000, 'h0214_0000}; end
     i++; r++;
     ret.ext_base  = i;
     ret.num_out   = i + cfg.RegExtNumSlv;
@@ -397,10 +411,10 @@ package cheshire_pkg;
       NrCachedRegionRules   : 3,   // CachedSPM, LLCOut, ExtCIE
       CachedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart,  CieBase},
       CachedRegionLength    : {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength},
+      CLICNumInterruptSrc   : cfg.Cva6CLICNumInterruptSrc,
+      CLICIntCtlBits        : cfg.Cva6CLICIntCtlBits,
       AxiCompliant          : 1,
       SwapEndianess         : 0,
-      CLICNumInterruptSrc   : 0,
-      CLICIntCtlBits        : 0,
       DmBaseAddress         : AmDbg,
       NrPMPEntries          : cfg.Cva6NrPMPEntries
     };
@@ -420,6 +434,8 @@ package cheshire_pkg;
     Cva6RASDepth      : ariane_pkg::ArianeDefaultConfig.RASDepth,
     Cva6BTBEntries    : ariane_pkg::ArianeDefaultConfig.BTBEntries,
     Cva6BHTEntries    : ariane_pkg::ArianeDefaultConfig.BHTEntries,
+    Cva6CLICNumInterruptSrc : ariane_pkg::ArianeDefaultConfig.CLICNumInterruptSrc,
+    Cva6CLICIntCtlBits      : ariane_pkg::ArianeDefaultConfig.CLICIntCtlBits,
     Cva6NrPMPEntries  : 0,
     Cva6ExtCieLength  : 'h2000_0000,  // [0x2.., 0x4..) is CIE, [0x4.., 0x8..) is non-CIE
     Cva6ExtCieOnTop   : 0,
@@ -451,6 +467,8 @@ package cheshire_pkg;
     Dma               : 1,
     SerialLink        : 1,
     Vga               : 1,
+    Clic              : 1,
+    IrqRouter         : 0,
     // Debug
     DbgIdCode         : CheshireIdCode,
     DbgMaxReqs        : 4,

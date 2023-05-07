@@ -5,6 +5,7 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
+// Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
 module cheshire_soc import cheshire_pkg::*; #(
   // Cheshire config
@@ -44,6 +45,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   output logic [iomsb(Cfg.NumExtIrqHarts):0] seip_ext_o,
   output logic [iomsb(Cfg.NumExtIrqHarts):0] mtip_ext_o,
   output logic [iomsb(Cfg.NumExtIrqHarts):0] msip_ext_o,
+  output logic [iomsb(Cfg.NumExtIrqHarts*(NumExtIntrs+NumIntIntrs)):0] intr_distributed_o,
   // Debug interface to external harts
   output logic                                dbg_active_o,
   output logic [iomsb(Cfg.NumExtDbgHarts):0]  dbg_ext_req_o,
@@ -109,29 +111,194 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  Interrupts  //
   //////////////////
 
+  // Number of Harts in cheshire
   localparam int unsigned NumIntHarts = 1 + Cfg.DualCore;
   localparam int unsigned NumIrqHarts = NumIntHarts + Cfg.NumExtIrqHarts;
 
-  cheshire_intr_t           intr;
-  logic [NumIrqHarts-1:0]   time_irq, ipi;
-  logic [2*NumIrqHarts-1:0] irq;
+  // Interrupt signals
+  cheshire_intr_t           irqs;
+
+  // CLINT interrupts
+  logic [NumIrqHarts-1:0]   mti, msi;
+
+  // PLIC interrupts
+  logic [rv_plic_reg_pkg::NumSrc-1:0] plic_irqs;
+  logic [2*NumIrqHarts-1:0] xei;
 
   // Collect external interrupts
-  assign intr.ext   = intr_ext_i;
-  assign intr.zero  = 0;
+  assign irqs.ext = intr_ext_i;
+  assign irqs.zero = 0;
 
-  // Forward IRQs to external interruptible harts if any
+  reg_req_t [RegOut.num_out-1:0] reg_out_req;
+  reg_rsp_t [RegOut.num_out-1:0] reg_out_rsp;
+
+  ////////////
+  //  CLIC  //
+  ////////////
+
+  // standard clint interrupts signals
+  logic [15:0] clint_irqs; // standard 16 clint interrupts, RISC-V Privilege
+                           // Spec. v. 20211203, pag. 39
+
+  // core interface signals
+  logic                                           core_irq_valid, core_irq_ready;
+  logic                                           core_irq_shv;
+  logic [$clog2(Cfg.Cva6CLICNumInterruptSrc)-1:0] core_irq_id;
+  logic [7:0]                                     core_irq_level;
+  logic [1:0]                                     core_irq_priv;
+  logic                                           core_irq_kill_req;
+  logic                                           core_irq_kill_ack;
+  // clic interrupts
+  logic [Cfg.Cva6CLICNumInterruptSrc-1:0] clic_irqs;
+
+  if (Cfg.Clic) begin : gen_clic
+
+    // interrupts
+    assign clint_irqs = {
+      {4{1'b0}},              // reserved
+      xei[0],                 // mei
+      1'b0,                   // reserved
+      xei[1],                 // sei
+      1'b0,                   // reserved, sei, reserved, mei
+      mti[0],                 // mti
+      {3{1'b0}},              // reserved, sti, reserved
+      msi,                    // msi
+      {3{1'b0}}               // reserved, ssi, reserved
+    };
+
+    clic #(
+      .N_SOURCE  (Cfg.Cva6CLICNumInterruptSrc),
+      .INTCTLBITS(Cfg.Cva6CLICIntCtlBits),
+      .reg_req_t (reg_req_t),
+      .reg_rsp_t (reg_rsp_t),
+      .SSCLIC    (1),
+      .USCLIC    (0)
+    ) i_clic (
+      .clk_i,
+      .rst_ni,
+      // Bus Interface
+      .reg_req_i( reg_out_req[RegOut.clic] ),
+      .reg_rsp_o( reg_out_rsp[RegOut.clic] ),
+      // Interrupt Sources
+      .intr_src_i (clic_irqs),
+      // Interrupt notification to core
+      .irq_valid_o(core_irq_valid),
+      .irq_ready_i(core_irq_ready),
+      .irq_id_o   (core_irq_id),
+      .irq_level_o(core_irq_level),
+      .irq_shv_o  (core_irq_shv),
+      .irq_priv_o (core_irq_priv),
+      .irq_kill_req_o (core_irq_kill_req),
+      .irq_kill_ack_i (core_irq_kill_ack)
+    );
+
+  end else begin : gen_no_clic
+
+    assign core_irq_valid    = '0;
+    assign core_irq_id       = '0;
+    assign core_irq_level    = '0;
+    assign core_irq_shv      = '0;
+    assign core_irq_priv     = '0;
+    assign core_irq_kill_req = '0;
+
+    assign clic_irqs = '0;
+
+  end
+
+  ////////////////////////
+  //  Interrupt router  //
+  ////////////////////////
+
+  // Distribute cheshire interrupts to targets.
+  localparam int unsigned NumIntrTargets = 2 + Cfg.NumExtIrqHarts; // CLIC_0, PLIC + external harts
+  logic [(NumIntIntrs+NumExtIntrs)*NumIntrTargets-1:0] irqs_distributed;
+
+  if (Cfg.IrqRouter) begin : gen_irq_router
+
+    irq_router #(
+        .reg_req_t      (reg_req_t),
+        .reg_rsp_t      (reg_rsp_t),
+        .NumIntrSrc     (NumIntIntrs+NumExtIntrs),
+        .NumIntrTargets (NumIntrTargets)
+    ) i_irq_router (
+        .clk_i,
+        .rst_ni,
+        .reg_req_i (reg_out_req[RegOut.irq_router]),
+        .reg_rsp_o (reg_out_rsp[RegOut.irq_router]),
+        // Collect shared interrupts only
+        .irqs_i    (irqs[NumIntIntrs+NumExtIntrs-1:0]),
+        .irqs_distributed_o (irqs_distributed)
+    );
+
+    // When only the PLIC is enabled, CVA6's interface has level sensitive
+    // interrupts. Route each interrupt through the PLIC.
+
+    // When also the CLIC is enabled, the programmer has to distribute the
+    // interrupts to either one *or* the other controller.
+
+    // PLIC interrupts
+    assign plic_irqs = irqs_distributed[2*(NumIntIntrs+NumExtIntrs)-1:(NumIntIntrs+NumExtIntrs)];
+
+    // If any, CLIC interrupts
+    if (Cfg.Clic) begin : gen_clic_irqs_irq_router
+
+    assign clic_irqs = {
+        {(Cfg.Cva6CLICNumInterruptSrc - (NumIntIntrs + NumExtIntrs) - 16){1'b0}},
+        irqs_distributed[(NumIntIntrs+NumExtIntrs)-1:0], // (NumClicInterrupts-16)-NumIntIntrs,
+                                                         // platform defined 16
+                                                         // interrupts from
+                                                         // RISCV Privileged
+                                                         // Specification
+        clint_irqs
+      };
+
+    end
+
+  end else begin : gen_no_irq_router
+
+    assign irqs_distributed = '0;
+
+    // When only the PLIC is enabled, CVA6 has level sensitive interrupts. Route
+    // each interrupt through the PLIC.
+
+    // PLIC interrupts
+    assign plic_irqs = {
+      {(rv_plic_reg_pkg::NumSrc - (NumIntIntrs + NumExtIntrs)){1'b0}},
+      irqs
+    };
+
+    // When also the CLIC is enabled, it takes external interrupts through the
+    // PLIC output.
+    if (Cfg.Clic) begin : gen_clic_irqs_no_irq_router
+    assign clic_irqs = {
+        {(Cfg.Cva6CLICNumInterruptSrc - 16){1'b0}},
+        clint_irqs
+      };
+    end
+
+  end
+
+  // Forward IRQs to external interruptible harts if any. Note: this
+  // configuration does not support handshake-based interface for the
+  // interruptible harts
   if (Cfg.NumExtIrqHarts != 0) begin : gen_ext_irqs
+    // We forward clint and plic outputs to external harts requesting them, if
+    // any.
     // We assume that machine and supervisor external interrupts are stacked
-    assign meip_ext_o = irq      [NumIrqHarts-1:NumIntHarts];
-    assign seip_ext_o = irq      [2*NumIrqHarts-1:NumIrqHarts+NumIntHarts];
-    assign mtip_ext_o = time_irq [NumIrqHarts-1:NumIntHarts];
-    assign msip_ext_o = ipi      [NumIrqHarts-1:NumIntHarts];
+    assign meip_ext_o = xei [NumIrqHarts-1:NumIntHarts];
+    assign seip_ext_o = xei [2*NumIrqHarts-1:NumIrqHarts+NumIntHarts];
+    assign mtip_ext_o = mti [NumIrqHarts-1:NumIntHarts];
+    assign msip_ext_o = msi [NumIrqHarts-1:NumIntHarts];
+    // We forward the interrupts lines from the router to external harts
+    // requesting them, if any
+    assign intr_distributed_o = irqs_distributed[NumIntrTargets*(NumIntIntrs+NumExtIntrs)-1
+                                :2*(NumIntIntrs+NumExtIntrs)];
   end else begin : gen_no_ext_irqs
     assign meip_ext_o = '0;
     assign seip_ext_o = '0;
     assign mtip_ext_o = '0;
     assign msip_ext_o = '0;
+    assign intr_distributed_o = '0;
   end
 
   ////////////////
@@ -265,10 +432,6 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   reg_req_t reg_in_req;
   reg_rsp_t reg_in_rsp;
-
-  reg_req_t [RegOut.num_out-1:0] reg_out_req;
-  reg_rsp_t [RegOut.num_out-1:0] reg_out_rsp;
-
 
   // Shim atomics, which are not supported in reg
   // TODO: should we use a filter instead here?
@@ -565,27 +728,27 @@ module cheshire_soc import cheshire_pkg::*; #(
   ) i_core_cva6 (
     .clk_i,
     .rst_ni,
-    .boot_addr_i      ( BootAddr ),
-    .hart_id_i        ( '0 ),
-    .irq_i            ( {irq[NumIrqHarts], irq[0]} ),
-    .ipi_i            ( ipi[0] ),
-    .time_irq_i       ( time_irq[0] ),
-    .debug_req_i      ( dbg_int_req[0] ),
-    .clic_irq_valid_i ( '0 ),
-    .clic_irq_id_i    ( '0 ),
-    .clic_irq_level_i ( '0 ),
-    .clic_irq_priv_i  ( '0 ),
-    .clic_irq_shv_i   ( '0 ),
-    .clic_irq_ready_o ( ),
-    .clic_kill_req_i  ( '0 ),
-    .clic_kill_ack_o  ( ),
-    .rvfi_o           ( ),
-    .cvxif_req_o      ( ),
-    .cvxif_resp_i     ( '0 ),
-    .l15_req_o        ( ),
-    .l15_rtrn_i       ( '0 ),
-    .axi_req_o        ( core_out_req ),
-    .axi_resp_i       ( core_out_rsp )
+    .boot_addr_i  ( BootAddr ),
+    .hart_id_i    ( '0 ),
+    .irq_i        ( {xei[NumIrqHarts], xei[0]} ),
+    .ipi_i        ( msi[0] ),
+    .time_irq_i   ( mti[0] ),
+    .debug_req_i  ( dbg_int_req[0] ),
+    .clic_irq_valid_i     ( core_irq_valid      ),
+    .clic_irq_id_i        ( core_irq_id         ),
+    .clic_irq_level_i     ( core_irq_level      ),
+    .clic_irq_priv_i      ( riscv::priv_lvl_t'(core_irq_priv) ),
+    .clic_irq_shv_i       ( core_irq_shv        ),
+    .clic_irq_ready_o     ( core_irq_ready      ),
+    .clic_kill_req_i      ( core_irq_kill_req   ),
+    .clic_kill_ack_o      ( core_irq_kill_ack   ),
+    .rvfi_o               (  ),
+    .cvxif_req_o          (  ),
+    .cvxif_resp_i         ( '0 ),
+    .l15_req_o            (  ),
+    .l15_rtrn_i           ( '0 ),
+    .axi_req_o            ( core_out_req ),
+    .axi_resp_i           ( core_out_rsp )
   );
 
   // Map user to AMO domain as we are an atomics-capable master.
@@ -898,10 +1061,10 @@ module cheshire_soc import cheshire_pkg::*; #(
   ) i_plic (
     .clk_i,
     .rst_ni,
-    .reg_req_i  ( reg_out_req[RegOut.plic] ),
-    .reg_rsp_o  ( reg_out_rsp[RegOut.plic] ),
-    .intr_src_i ( intr[NumIntIntrs+NumExtIntrs-1:0] ),  // Do not connect Ext IOMSB if it exists
-    .irq_o      ( irq ),
+    .reg_req_i  ( reg_out_req[RegOut.plic]  ),
+    .reg_rsp_o  ( reg_out_rsp[RegOut.plic]  ),
+    .intr_src_i ( plic_irqs ),
+    .irq_o      ( xei                       ),
     .irq_id_o   ( ),
     .msip_o     ( )
   );
@@ -920,8 +1083,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .reg_req_i    ( reg_out_req[RegOut.clint] ),
     .reg_rsp_o    ( reg_out_rsp[RegOut.clint] ),
     .rtc_i,
-    .timer_irq_o  ( time_irq ),
-    .ipi_o        ( ipi      )
+    .timer_irq_o  ( mti ),
+    .ipi_o        ( msi )
   );
 
   //////////////
@@ -1078,7 +1241,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .rst_ni,
       .reg_req_i  ( reg_out_req[RegOut.uart] ),
       .reg_rsp_o  ( reg_out_rsp[RegOut.uart] ),
-      .intr_o     ( intr.uart ),
+      .intr_o     ( irqs.uart ),
       .out2_no    ( ),
       .out1_no    ( ),
       .rts_no     ( uart_rts_no ),
@@ -1097,7 +1260,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign uart_dtr_no  = 0;
     assign uart_tx_o    = 0;
 
-    assign intr.uart  = 0;
+    assign irqs.uart  = 0;
 
   end
 
@@ -1121,21 +1284,21 @@ module cheshire_soc import cheshire_pkg::*; #(
       .cio_sda_i                ( i2c_sda_i    ),
       .cio_sda_o                ( i2c_sda_o    ),
       .cio_sda_en_o             ( i2c_sda_en_o ),
-      .intr_fmt_threshold_o     ( intr.i2c_fmt_threshold    ),
-      .intr_rx_threshold_o      ( intr.i2c_rx_threshold     ),
-      .intr_fmt_overflow_o      ( intr.i2c_fmt_overflow     ),
-      .intr_rx_overflow_o       ( intr.i2c_rx_overflow      ),
-      .intr_nak_o               ( intr.i2c_nak              ),
-      .intr_scl_interference_o  ( intr.i2c_scl_interference ),
-      .intr_sda_interference_o  ( intr.i2c_sda_interference ),
-      .intr_stretch_timeout_o   ( intr.i2c_stretch_timeout  ),
-      .intr_sda_unstable_o      ( intr.i2c_sda_unstable     ),
-      .intr_cmd_complete_o      ( intr.i2c_cmd_complete     ),
-      .intr_tx_stretch_o        ( intr.i2c_tx_stretch       ),
-      .intr_tx_overflow_o       ( intr.i2c_tx_overflow      ),
-      .intr_acq_full_o          ( intr.i2c_acq_full         ),
-      .intr_unexp_stop_o        ( intr.i2c_unexp_stop       ),
-      .intr_host_timeout_o      ( intr.i2c_host_timeout     )
+      .intr_fmt_threshold_o     ( irqs.i2c_fmt_threshold    ),
+      .intr_rx_threshold_o      ( irqs.i2c_rx_threshold     ),
+      .intr_fmt_overflow_o      ( irqs.i2c_fmt_overflow     ),
+      .intr_rx_overflow_o       ( irqs.i2c_rx_overflow      ),
+      .intr_nak_o               ( irqs.i2c_nak              ),
+      .intr_scl_interference_o  ( irqs.i2c_scl_interference ),
+      .intr_sda_interference_o  ( irqs.i2c_sda_interference ),
+      .intr_stretch_timeout_o   ( irqs.i2c_stretch_timeout  ),
+      .intr_sda_unstable_o      ( irqs.i2c_sda_unstable     ),
+      .intr_cmd_complete_o      ( irqs.i2c_cmd_complete     ),
+      .intr_tx_stretch_o        ( irqs.i2c_tx_stretch       ),
+      .intr_tx_overflow_o       ( irqs.i2c_tx_overflow      ),
+      .intr_acq_full_o          ( irqs.i2c_acq_full         ),
+      .intr_unexp_stop_o        ( irqs.i2c_unexp_stop       ),
+      .intr_host_timeout_o      ( irqs.i2c_host_timeout     )
     );
 
   end else begin : gen_no_i2c
@@ -1145,21 +1308,21 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign i2c_sda_o    = 0;
     assign i2c_sda_en_o = 0;
 
-    assign intr.i2c_fmt_threshold     = 0;
-    assign intr.i2c_rx_threshold      = 0;
-    assign intr.i2c_fmt_overflow      = 0;
-    assign intr.i2c_rx_overflow       = 0;
-    assign intr.i2c_nak               = 0;
-    assign intr.i2c_scl_interference  = 0;
-    assign intr.i2c_sda_interference  = 0;
-    assign intr.i2c_stretch_timeout   = 0;
-    assign intr.i2c_sda_unstable      = 0;
-    assign intr.i2c_cmd_complete      = 0;
-    assign intr.i2c_tx_stretch        = 0;
-    assign intr.i2c_tx_overflow       = 0;
-    assign intr.i2c_acq_full          = 0;
-    assign intr.i2c_unexp_stop        = 0;
-    assign intr.i2c_host_timeout      = 0;
+    assign irqs.i2c_fmt_threshold     = 0;
+    assign irqs.i2c_rx_threshold      = 0;
+    assign irqs.i2c_fmt_overflow      = 0;
+    assign irqs.i2c_rx_overflow       = 0;
+    assign irqs.i2c_nak               = 0;
+    assign irqs.i2c_scl_interference  = 0;
+    assign irqs.i2c_sda_interference  = 0;
+    assign irqs.i2c_stretch_timeout   = 0;
+    assign irqs.i2c_sda_unstable      = 0;
+    assign irqs.i2c_cmd_complete      = 0;
+    assign irqs.i2c_tx_stretch        = 0;
+    assign irqs.i2c_tx_overflow       = 0;
+    assign irqs.i2c_acq_full          = 0;
+    assign irqs.i2c_unexp_stop        = 0;
+    assign irqs.i2c_host_timeout      = 0;
 
   end
 
@@ -1187,8 +1350,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .cio_sd_o         ( spih_sd_o     ),
       .cio_sd_en_o      ( spih_sd_en_o  ),
       .cio_sd_i         ( spih_sd_i     ),
-      .intr_error_o     ( intr.spih_error     ),
-      .intr_spi_event_o ( intr.spih_spi_event )
+      .intr_error_o     ( irqs.spih_error     ),
+      .intr_spi_event_o ( irqs.spih_spi_event )
     );
 
   end else begin : gen_no_spi_host
@@ -1200,8 +1363,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign spih_sd_o      = '0;
     assign spih_sd_en_o   = '0;
 
-    assign intr.spih_error      = 0;
-    assign intr.spih_spi_event  = 0;
+    assign irqs.spih_error      = 0;
+    assign irqs.spih_spi_event  = 0;
 
   end
 
@@ -1220,7 +1383,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .rst_ni,
       .reg_req_i     ( reg_out_req[RegOut.gpio] ),
       .reg_rsp_o     ( reg_out_rsp[RegOut.gpio] ),
-      .intr_gpio_o   ( intr.gpio ),
+      .intr_gpio_o   ( irqs.gpio ),
       .cio_gpio_i    ( gpio_i    ),
       .cio_gpio_o    ( gpio_o    ),
       .cio_gpio_en_o ( gpio_en_o )
@@ -1231,7 +1394,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign gpio_o     = '0;
     assign gpio_en_o  = '0;
 
-    assign intr.gpio  = '0;
+    assign irqs.gpio  = '0;
 
   end
 
