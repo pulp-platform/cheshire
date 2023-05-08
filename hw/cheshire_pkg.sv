@@ -93,8 +93,8 @@ package cheshire_pkg;
     bit     RegAmoPostCut;
     // External AXI ports (at most 8 ports and rules)
     bit     [2:0] AxiExtNumMst;
-    bit     [2:0] AxiExtNumSlv;
-    bit     [2:0] AxiExtNumRules;
+    bit     [3:0] AxiExtNumSlv;
+    bit     [3:0] AxiExtNumRules;
     byte_bt [7:0] AxiExtRegionIdx;
     doub_bt [7:0] AxiExtRegionStart;
     doub_bt [7:0] AxiExtRegionEnd;
