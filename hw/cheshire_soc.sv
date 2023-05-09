@@ -257,11 +257,11 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   logic [cf_math_pkg::idx_width(RegOut.num_out)-1:0] reg_select;
 
-  axi_slv_req_t axi_reg_amo_req, axi_reg_cut_req;
-  axi_slv_rsp_t axi_reg_amo_rsp, axi_reg_cut_rsp;
+  axi_slv_lite_req_t axi_reg_lite_req;
+  axi_slv_lite_rsp_t axi_reg_lite_rsp;
 
-  axi_d32_req_t axi_reg_d32_req;
-  axi_d32_rsp_t axi_reg_d32_rsp;
+  axi_d32_lite_req_t axi_reg_d32_req;
+  axi_d32_lite_rsp_t axi_reg_d32_rsp;
 
   reg_req_t reg_in_req;
   reg_rsp_t reg_in_rsp;
@@ -269,97 +269,66 @@ module cheshire_soc import cheshire_pkg::*; #(
   reg_req_t [RegOut.num_out-1:0] reg_out_req;
   reg_rsp_t [RegOut.num_out-1:0] reg_out_rsp;
 
-
-  // Shim atomics, which are not supported in reg
-  // TODO: should we use a filter instead here?
-  axi_riscv_atomics_structs #(
-    .AxiAddrWidth     ( Cfg.AddrWidth    ),
-    .AxiDataWidth     ( Cfg.AxiDataWidth ),
-    .AxiIdWidth       ( AxiSlvIdWidth    ),
-    .AxiUserWidth     ( Cfg.AxiUserWidth ),
-    .AxiMaxReadTxns   ( Cfg.RegMaxReadTxns  ),
-    .AxiMaxWriteTxns  ( Cfg.RegMaxWriteTxns ),
-    .AxiUserAsId      ( 1 ),
-    .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
-    .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-    .RiscvWordWidth   ( 64 ),
-    .NAxiCuts         ( Cfg.RegAmoNumCuts ),
-    .axi_req_t        ( axi_slv_req_t ),
-    .axi_rsp_t        ( axi_slv_rsp_t )
-  ) i_reg_atomics (
-    .clk_i,
-    .rst_ni,
-    .axi_slv_req_i ( axi_out_req[AxiOut.reg_demux] ),
-    .axi_slv_rsp_o ( axi_out_rsp[AxiOut.reg_demux] ),
-    .axi_mst_req_o ( axi_reg_amo_req ),
-    .axi_mst_rsp_i ( axi_reg_amo_rsp )
-  );
-
-  axi_cut #(
-    .Bypass     ( ~Cfg.RegAmoPostCut ),
-    .aw_chan_t  ( axi_slv_aw_chan_t ),
-    .w_chan_t   ( axi_slv_w_chan_t  ),
-    .b_chan_t   ( axi_slv_b_chan_t  ),
-    .ar_chan_t  ( axi_slv_ar_chan_t ),
-    .r_chan_t   ( axi_slv_r_chan_t  ),
-    .axi_req_t  ( axi_slv_req_t ),
-    .axi_resp_t ( axi_slv_rsp_t )
-  ) i_reg_atomics_cut (
-    .clk_i,
-    .rst_ni,
-    .slv_req_i  ( axi_reg_amo_req ),
-    .slv_resp_o ( axi_reg_amo_rsp ),
-    .mst_req_o  ( axi_reg_cut_req ),
-    .mst_resp_i ( axi_reg_cut_rsp )
-  );
-
-  // Convert to 32-bit reg datawidth
-  axi_dw_converter #(
-    .AxiSlvPortDataWidth  ( Cfg.AxiDataWidth ),
-    .AxiMstPortDataWidth  ( 32 ),
+  // atomic filtering done inside axi_to_axi_lite conversion
+  axi_to_axi_lite #(
     .AxiAddrWidth         ( Cfg.AddrWidth ),
-    .AxiIdWidth           ( AxiSlvIdWidth ),
-    .aw_chan_t            ( axi_slv_aw_chan_t ),
-    .mst_w_chan_t         ( axi_d32_w_chan_t  ),
-    .slv_w_chan_t         ( axi_slv_w_chan_t  ),
-    .b_chan_t             ( axi_slv_b_chan_t  ),
-    .ar_chan_t            ( axi_slv_ar_chan_t ),
-    .mst_r_chan_t         ( axi_d32_r_chan_t  ),
-    .slv_r_chan_t         ( axi_slv_r_chan_t  ),
-    .axi_mst_req_t        ( axi_d32_req_t ),
-    .axi_mst_resp_t       ( axi_d32_rsp_t ),
-    .axi_slv_req_t        ( axi_slv_req_t ),
-    .axi_slv_resp_t       ( axi_slv_rsp_t )
-  ) i_reg_axi_dw_converter (
+    .AxiDataWidth         ( Cfg.AxiDataWidth ),
+    .AxiIdWidth           ( AxiSlvIdWidth    ),
+    .AxiUserWidth         ( Cfg.AxiUserWidth ),
+    .AxiMaxWriteTxns      ( Cfg.RegMaxReadTxns  ),
+    .AxiMaxReadTxns       ( Cfg.RegMaxWriteTxns ),
+    .full_req_t           ( axi_slv_req_t ),
+    .full_resp_t          ( axi_slv_rsp_t ),
+    .lite_req_t           ( axi_slv_lite_req_t ),
+    .lite_resp_t          ( axi_slv_lite_rsp_t )
+  ) i_reg_axi_to_axi_lite (
     .clk_i,
     .rst_ni,
-    .slv_req_i  ( axi_reg_cut_req ),
-    .slv_resp_o ( axi_reg_cut_rsp ),
-    .mst_req_o  ( axi_reg_d32_req ),
-    .mst_resp_i ( axi_reg_d32_rsp )
+    .test_i         ( test_mode_i ),
+    .slv_req_i      ( axi_out_req[AxiOut.reg_demux] ),
+    .slv_resp_o     ( axi_out_rsp[AxiOut.reg_demux] ),
+    .mst_req_o      ( axi_reg_lite_req ),
+    .mst_resp_i     ( axi_reg_lite_rsp )
   );
 
-  // Convert from AXI to reg protocol
-  axi_to_reg #(
-    .ADDR_WIDTH         ( Cfg.AddrWidth ),
-    .DATA_WIDTH         ( 32 ),
-    .ID_WIDTH           ( AxiSlvIdWidth    ),
-    .USER_WIDTH         ( Cfg.AxiUserWidth ),
-    .AXI_MAX_WRITE_TXNS ( Cfg.RegMaxReadTxns  ),
-    .AXI_MAX_READ_TXNS  ( Cfg.RegMaxWriteTxns ),
-    .DECOUPLE_W         ( 1 ),
-    .axi_req_t          ( axi_d32_req_t ),
-    .axi_rsp_t          ( axi_d32_rsp_t ),
-    .reg_req_t          ( reg_req_t ),
-    .reg_rsp_t          ( reg_rsp_t )
-  ) i_reg_axi_to_reg (
+  axi_lite_dw_converter #(
+    .AxiAddrWidth         ( Cfg.AddrWidth ),
+    .AxiSlvPortDataWidth  ( Cfg.AxiDataWidth ),
+    .AxiMstPortDataWidth  ( 32'd32 ),
+    .axi_lite_aw_t        ( axi_slv_lite_aw_chan_t ),
+    .axi_lite_slv_w_t     ( axi_slv_lite_w_chan_t ),
+    .axi_lite_mst_w_t     ( axi_d32_lite_w_chan_t ),
+    .axi_lite_b_t         ( axi_slv_lite_b_chan_t ),
+    .axi_lite_ar_t        ( axi_slv_lite_ar_chan_t ),
+    .axi_lite_slv_r_t     ( axi_slv_lite_r_chan_t ),
+    .axi_lite_mst_r_t     ( axi_d32_lite_r_chan_t ),
+    .axi_lite_slv_req_t   ( axi_slv_lite_req_t ),
+    .axi_lite_slv_res_t   ( axi_slv_lite_rsp_t ),
+    .axi_lite_mst_req_t   ( axi_d32_lite_req_t ),
+    .axi_lite_mst_res_t   ( axi_d32_lite_rsp_t )
+  ) i_reg_dw_converter (
     .clk_i,
     .rst_ni,
-    .testmode_i  ( test_mode_i ),
-    .axi_req_i   ( axi_reg_d32_req ),
-    .axi_rsp_o   ( axi_reg_d32_rsp ),
-    .reg_req_o   ( reg_in_req ),
-    .reg_rsp_i   ( reg_in_rsp )
+    .slv_req_i     ( axi_reg_lite_req ),
+    .slv_res_o     ( axi_reg_lite_rsp ),
+    .mst_req_o     ( axi_reg_d32_req ),
+    .mst_res_i     ( axi_reg_d32_rsp )
+  );
+
+  axi_lite_to_reg # (
+    .ADDR_WIDTH ( Cfg.AddrWidth ),
+    .DATA_WIDTH ( 32 ),
+    .axi_lite_req_t ( axi_d32_lite_req_t ),
+    .axi_lite_rsp_t ( axi_d32_lite_rsp_t ),
+    .reg_req_t      ( reg_req_t ),
+    .reg_rsp_t      ( reg_rsp_t )
+  ) i_reg_axi_lite_to_reg (
+    .clk_i,
+    .rst_ni,
+    .axi_lite_req_i ( axi_reg_d32_req ),
+    .axi_lite_rsp_o ( axi_reg_d32_rsp ),
+    .reg_req_o      ( reg_in_req ),
+    .reg_rsp_i      ( reg_in_rsp )
   );
 
   // Non-matching addresses are directed to an error slave
