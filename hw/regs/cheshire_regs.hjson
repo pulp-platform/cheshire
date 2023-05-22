@@ -87,7 +87,7 @@
         { bits: "6",  name: "dma",          desc: "Whether DMA is available"          }
         { bits: "7",  name: "serial_link",  desc: "Whether serial link is available"  }
         { bits: "8",  name: "vga",          desc: "Whether VGA is available"          }
-
+        { bits: "9",  name: "axirt",        desc: "Whether AXI RT is available"       }
       ]
     }
 

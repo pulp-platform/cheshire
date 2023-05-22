@@ -67,6 +67,10 @@ include $(CHS_SW_DIR)/sw.mk
 $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv: $(CHS_ROOT)/hw/regs/cheshire_regs.hjson
 	$(REGGEN) -r $< --outdir $(dir $@)
 
+# AXI RT registers
+$(CHS_ROOT)/hw/regs/axi_rt_reg_pkg.sv $(CHS_ROOT)/hw/regs/axi_rt_reg_top.sv: $(CHS_ROOT)/hw/regs/axi_rt_regs.hjson
+	$(REGGEN) -r $< --outdir $(dir $@)
+
 # CLINT
 CLINTCORES = 1
 include $(CHS_CLINT_DIR)/clint.mk
@@ -94,6 +98,7 @@ $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 	@touch $@
 
 chs-hw-all: $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv
+chs-hw-all: $(CHS_ROOT)/hw/regs/axi_rt_reg_pkg.sv $(CHS_ROOT)/hw/regs/axi_rt_reg_top.sv
 chs-hw-all: $(CHS_CLINT_DIR)/.generated
 chs-hw-all: $(CHS_OTP_DIR)/.generated
 chs-hw-all: $(CHS_VGA_DIR)/.generated

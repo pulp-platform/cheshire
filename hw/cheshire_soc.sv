@@ -165,8 +165,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   localparam addr_rule_t [AxiOut.num_rules-1:0] AxiMap = gen_axi_map();
 
   // Connectivity of Xbar
-  axi_mst_req_t [AxiIn.num_in-1:0]    axi_in_req;
-  axi_mst_rsp_t [AxiIn.num_in-1:0]    axi_in_rsp;
+  axi_mst_req_t [AxiIn.num_in-1:0]    axi_in_req, axi_post_rt_req;
+  axi_mst_rsp_t [AxiIn.num_in-1:0]    axi_in_rsp, axi_post_rt_rsp;
   axi_slv_req_t [AxiOut.num_out-1:0]  axi_out_req;
   axi_slv_rsp_t [AxiOut.num_out-1:0]  axi_out_rsp;
 
@@ -209,14 +209,85 @@ module cheshire_soc import cheshire_pkg::*; #(
     .clk_i,
     .rst_ni,
     .test_i                 ( test_mode_i ),
-    .slv_ports_req_i        ( axi_in_req  ),
-    .slv_ports_resp_o       ( axi_in_rsp  ),
+    .slv_ports_req_i        ( axi_post_rt_req  ),
+    .slv_ports_resp_o       ( axi_post_rt_rsp  ),
     .mst_ports_req_o        ( axi_out_req ),
     .mst_ports_resp_i       ( axi_out_rsp ),
     .addr_map_i             ( AxiMap ),
     .en_default_mst_port_i  ( '0 ),
     .default_mst_port_i     ( '0 )
   );
+
+  // connect AXI RT units -> one unit for each master
+
+  axi_rt_reg_pkg::axi_rt_hw2reg_t axi_rt_hw2reg;
+  axi_rt_reg_pkg::axi_rt_reg2hw_t axi_rt_reg2hw;
+
+  if (Cfg.AxiRt) begin : gen_axi_rt
+
+    /// rule type
+    typedef struct packed {
+      logic [0:0] idx;
+      addr_t      start_addr;
+      addr_t      end_addr;
+    } rt_rule_t;
+
+    localparam rt_rule_t [0:0] RtAddrmap = '{
+      '{ idx: 8'h00, start_addr: '0, end_addr: '1 }
+    };
+
+    for (genvar m = 0; m < AxiIn.num_in; m++) begin : gen_axi_rt_units
+      axi_rt_unit #(
+        .AddrWidth      ( Cfg.AddrWidth         ),
+        .DataWidth      ( Cfg.AxiDataWidth      ),
+        .IdWidth        ( Cfg.AxiMstIdWidth     ),
+        .UserWidth      ( Cfg.AxiUserWidth      ),
+        .NumPending     ( Cfg.AxiRtNumPending   ),
+        .WBufferDepth   ( Cfg.AxiRtWBufferDepth ),
+        .NumAddrRegions ( 1                     ),
+        .NumRules       ( 1                     ),
+        .PeriodWidth    ( 32                    ),
+        .BudgetWidth    ( 32                    ),
+        .rt_rule_t      ( rt_rule_t             ),
+        .addr_t         ( addr_t                ),
+        .aw_chan_t      ( axi_mst_aw_chan_t     ),
+        .w_chan_t       ( axi_mst_w_chan_t      ),
+        .axi_req_t      ( axi_mst_req_t         ),
+        .axi_resp_t     ( axi_mst_rsp_t         )
+      ) i_axi_rt_unit (
+        .clk_i,
+        .rst_ni,
+        .slv_req_i        ( axi_in_req      [m] ),
+        .slv_resp_o       ( axi_in_rsp      [m] ),
+        .mst_req_o        ( axi_post_rt_req [m] ),
+        .mst_resp_i       ( axi_post_rt_rsp [m] ),
+        .rt_enable_i      ( axi_rt_reg2hw.rt_enable   [m] ),
+        .rt_bypassed_o    ( axi_rt_hw2reg.rt_bypassed [m] ),
+        .len_limit_i      ( axi_rt_reg2hw.len_limit   [m] ),
+        .num_w_pending_o  ( /* NOT CONNECTED */ ),
+        .num_aw_pending_o ( /* NOT CONNECTED */ ),
+        .rt_rule_i        ( RtAddrmap           ),
+        .w_decode_error_o ( /* NOT CONNECTED */ ),
+        .r_decode_error_o ( /* NOT CONNECTED */ ),
+        .imtu_enable_i    ( axi_rt_reg2hw.imtu_enable [m] ),
+        .imtu_abort_i     ( axi_rt_reg2hw.imtu_abort  [m] ),
+        .w_budget_i       ( axi_rt_reg2hw.write_budget      [m] ),
+        .w_budget_left_o  ( axi_rt_hw2reg.write_budget_left [m] ),
+        .w_period_i       ( axi_rt_reg2hw.write_period      [m] ),
+        .w_period_left_o  ( axi_rt_hw2reg.write_period_left [m] ),
+        .r_budget_i       ( axi_rt_reg2hw.read_budget       [m] ),
+        .r_budget_left_o  ( axi_rt_hw2reg.read_budget_left  [m] ),
+        .r_period_i       ( axi_rt_reg2hw.read_period       [m] ),
+        .r_period_left_o  ( axi_rt_hw2reg.read_period_left  [m] ),
+        .isolate_o        ( axi_rt_hw2reg.isolate  [m] ),
+        .isolated_o       ( axi_rt_hw2reg.isolated [m] )
+      );
+    end
+  end else begin : gen_no_axi_rt
+    // bypass
+    assign axi_post_rt_req = axi_in_req;
+    assign axi_in_rsp      = axi_post_rt_rsp;
+  end
 
   // Connect external masters
   if (Cfg.AxiExtNumMst > 0) begin : gen_ext_axi_mst
@@ -860,7 +931,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       spi_host    : Cfg.SpiHost,
       dma         : Cfg.Dma,
       serial_link : Cfg.SerialLink,
-      vga         : Cfg.Vga
+      vga         : Cfg.Vga,
+      axirt       : Cfg.AxiRt
     },
     llc_size      : get_llc_size(Cfg),
     vga_params    : '{
@@ -917,6 +989,25 @@ module cheshire_soc import cheshire_pkg::*; #(
     .timer_irq_o  ( time_irq ),
     .ipi_o        ( ipi      )
   );
+
+  ////////////////
+  // AXI RT CFG //
+  ////////////////
+
+  if (Cfg.AxiRt) begin : gen_axi_rt_regs
+    axi_rt_reg_top #(
+      .reg_req_t  ( reg_req_t ),
+      .reg_rsp_t  ( reg_rsp_t )
+    ) i_axi_rt_regs (
+      .clk_i,
+      .rst_ni,
+      .reg_req_i  ( reg_out_req[RegOut.axirt] ),
+      .reg_rsp_o  ( reg_out_rsp[RegOut.axirt] ),
+      .hw2reg     ( axi_rt_hw2reg ),
+      .reg2hw     ( axi_rt_reg2hw ),
+      .devmode_i  ( 1'b1 )
+    );
+  end
 
   ////////////////
   //  Boot ROM  //
