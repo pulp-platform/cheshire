@@ -1,3 +1,9 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Jannis Schönleber, ETH Zurich
+
 VERILATOR_ROOT = $(CHS_ROOT)/target/verilator/install/verilator
 VERILATOR_SRC_PATH = $(CHS_ROOT)/target/verilator/src
 export VERILATOR_ROOT

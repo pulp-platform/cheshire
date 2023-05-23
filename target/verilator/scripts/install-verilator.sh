@@ -1,11 +1,10 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+# inspired from https://github.com/zchamski/core-v-verif/blob/046a50d58648bafdb2263dee53e1043e83057284/cva6/regress/install-verilator.sh
 # Copyright 2021 Thales DIS design services SAS
-#
-# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
-# You may obtain a copy of the License at https://solderpad.org/licenses/
-#
 # Original Author: Jean-Roch COULON - Thales
+# Heavily adapted by Jannis Schönleber - ETH Zurich
 
 set -e
 
