@@ -1,0 +1,7 @@
+IndentWidth: 4
+ColumnLimit: 100
+AlignEscapedNewlines: DontAlign
+SortIncludes: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
