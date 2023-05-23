@@ -151,3 +151,15 @@ $(CHS_ROOT)/target/xilinx/scripts/add_sources.tcl: Bender.yml
 	$(BENDER) script vivado -t fpga -t cv64a6_imafdcsclic_sv39 -t cva6 > $@
 
 chs-xilinx-all: $(CHS_ROOT)/target/xilinx/scripts/add_sources.tcl
+
+
+#############
+# Verilator #
+#############
+
+.PHONY: chs-source-env
+
+chs-install-verilator:
+	$(CHS_ROOT)/target/verilator/scripts/install-verilator.sh
+
+include $(CHS_ROOT)/target/verilator/verilator.mk

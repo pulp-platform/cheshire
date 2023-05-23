@@ -6,7 +6,7 @@
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-CHS_ROOT ?= .
+CHS_ROOT ?= $(shell pwd)
 
 include cheshire.mk
 

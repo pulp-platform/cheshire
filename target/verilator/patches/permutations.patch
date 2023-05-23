@@ -1,0 +1,59 @@
+--- target/verilator/build/cheshire_testharness.pickle.sv	2023-05-23 16:31:40.575735498 +0200
++++ target/verilator/build/cheshire_testharness.pickle_2.sv	2023-05-23 16:32:14.127033084 +0200
+@@ -2330,31 +2330,31 @@
+     longint unsigned rand_number = (A * seed + C) % M;
+ 
+     // do it for each round
+-    for (int unsigned r = 0; r < NoRounds; r++) begin
+-      // initialize the index array
+-      for (int unsigned i = 0; i < InpWidth; i++) begin
+-        indices[r][i] = i;
+-      end
+-      // do the shuffling
+-      for (int unsigned i = 0; i < InpWidth; i++) begin
+-        // get the 'random' number
+-        if (i > 0) begin
+-          rand_number = (A * rand_number + C) % M;
+-          index = rand_number % i;
+-        end
+-        // do the shuffling
+-        if (i != index) begin
+-          perm_array[r][i]     = perm_array[r][index];
+-          perm_array[r][index] = indices[r][i];
+-        end
+-      end
+-      // advance the PRG a bit
+-      rand_number = (A * rand_number + C) % M;
+-      advance     = rand_number % NoRounds;
+-      for (int unsigned i = 0; i < advance; i++) begin
+-        rand_number = (A * rand_number + C) % M;
+-      end
+-    end
++    // for (int unsigned r = 0; r < NoRounds; r++) begin
++    //   // initialize the index array
++    //   for (int unsigned i = 0; i < InpWidth; i++) begin
++    //     indices[r][i] = i;
++    //   end
++    //   // do the shuffling
++    //   for (int unsigned i = 0; i < InpWidth; i++) begin
++    //     // get the 'random' number
++    //     if (i > 0) begin
++    //       rand_number = (A * rand_number + C) % M;
++    //       index = rand_number % i;
++    //     end
++    //     // do the shuffling
++    //     if (i != index) begin
++    //       perm_array[r][i]     = perm_array[r][index];
++    //       perm_array[r][index] = indices[r][i];
++    //     end
++    //   end
++    //   // advance the PRG a bit
++    //   rand_number = (A * rand_number + C) % M;
++    //   advance     = rand_number % NoRounds;
++    //   for (int unsigned i = 0; i < advance; i++) begin
++    //     rand_number = (A * rand_number + C) % M;
++    //   end
++    // end
+     return perm_array;
+   endfunction : get_permutations
+ 

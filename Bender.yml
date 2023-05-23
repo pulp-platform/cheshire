@@ -49,3 +49,7 @@ sources:
     files:
       - target/xilinx/src/fan_ctrl.sv
       - target/xilinx/src/cheshire_top_xilinx.sv
+
+  - target: verilator
+    files:
+      - target/verilator/src/cheshire_testharness.sv
