@@ -38,7 +38,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   output reg_ext_req_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_req_o,
   input  reg_ext_rsp_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_rsp_i,
   // Interrupts from external devices
-  input  logic [iomsb(Cfg.NumExtIntrs):0] intr_ext_i,
+  input  logic [iomsb(NumExtIntrs):0] intr_ext_i,
   // Interrupts to external harts
   output logic [iomsb(Cfg.NumExtIrqHarts):0] meip_ext_o,
   output logic [iomsb(Cfg.NumExtIrqHarts):0] seip_ext_o,
@@ -900,8 +900,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .rst_ni,
     .reg_req_i  ( reg_out_req[RegOut.plic] ),
     .reg_rsp_o  ( reg_out_rsp[RegOut.plic] ),
-    .intr_src_i ( intr ),
-    .irq_o      ( irq  ),
+    .intr_src_i ( intr[NumIntIntrs+NumExtIntrs-1:0] ),  // Do not connect Ext IOMSB if it exists
+    .irq_o      ( irq ),
     .irq_id_o   ( ),
     .msip_o     ( )
   );

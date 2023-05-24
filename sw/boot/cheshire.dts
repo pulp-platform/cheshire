@@ -86,7 +86,7 @@
       mmc@0 {
         compatible = "mmc-spi-slot";
         reg = <0>;
-        spi-max-frequency = <12500000>;
+        spi-max-frequency = <25000000>;
         voltage-ranges = <3300 3300>;
         disable-wp;
       };
@@ -108,7 +108,7 @@
       interrupt-controller;
       interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9>;
       riscv,max-priority = <7>;
-      riscv,ndev = <19>;
+      riscv,ndev = <51>;
       reg = <0x0 0x4000000 0x0 0x4000000>;
     };
   };
