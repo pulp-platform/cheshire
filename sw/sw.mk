@@ -138,7 +138,7 @@ $(foreach link,$(patsubst $(CHS_LD_DIR)/%.ld,%,$(wildcard $(CHS_LD_DIR)/*.ld)),$
 $(CHS_SW_DIR)/boot/linux.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CHS_SW_DIR)/boot/cheshire.dtb $(CHS_SW_DIR)/boot/install64/fw_payload.bin $(CHS_SW_DIR)/boot/install64/uImage
 	truncate -s $(CHS_DISK_SIZE) $@
 	sgdisk --clear -g --set-alignment=1 \
-		--new=1:64:96 --typecode=1:$(CHS_ZSL_TGUID) --name=1:"firmware" \
+		--new=1:64:96 --typecode=1:$(CHS_ZSL_TGUID) \
 		--new=2:128:159 --typecode=2:$(CHS_DTB_TGUID) \
 		--new=3:2048:8191 --typecode=3:$(CHS_FW_TGUID) \
 		--new=4:8192:24575 --typecode=4:8300 \
