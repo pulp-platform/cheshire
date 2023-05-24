@@ -61,11 +61,10 @@ static inline volatile uint64_t invoke(void *code) {
 }
 
 // Set global pointer and return prior value. Use with caution.
-static inline void* volatile gprw(void* gp) {
-    void* volatile ret;
+static inline void *volatile gprw(void *gp) {
+    void *volatile ret;
     asm volatile("mv %0, gp" : "=r"(ret)::"memory");
-    if (gp)
-        asm volatile("mv gp, %0" :: "r"(gp):"memory", "gp");
+    if (gp) asm volatile("mv gp, %0" ::"r"(gp) : "memory", "gp");
     return ret;
 }
 

@@ -37,7 +37,7 @@ int gpt_find_partition(gpt_read_t read, void *priv, int64_t *part_idx, uint64_t 
         uint64_t lba_end;
     } dim;
     int64_t p;
-    uint64_t guid [2];
+    uint64_t guid[2];
     for (p = 0; p < hf.count; ++p) {
         // Read first two partition fields for size
         uint64_t pe_offs = 0x200 * hf.lba + p * hf.size;
@@ -75,8 +75,8 @@ int gpt_boot_part_else_raw(gpt_read_t read, void *priv, void *code_buf, uint64_t
     uint64_t lba_begin = 0, lba_end = max_lbas - 1;
     int64_t part_idx;
     if (gpt_check_signature(read, priv))
-        CHECK_CALL(gpt_find_partition(read, priv, &part_idx, &lba_begin, &lba_end, max_lbas,
-                                      tguid, pguid))
+        CHECK_CALL(
+            gpt_find_partition(read, priv, &part_idx, &lba_begin, &lba_end, max_lbas, tguid, pguid))
     // Copy code to SPM (end is *inclusive*, not past-the-end)
     uint64_t addr = 0x200 * lba_begin;
     uint64_t len = 0x200 * (lba_end - lba_begin + 1);
