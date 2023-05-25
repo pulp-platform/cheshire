@@ -110,8 +110,8 @@ packages:
     - common_verification
     - register_interface
   opentitan_peripherals:
-    revision: b4cbaaa948fd592d0eaf4233ced9d1dd011017a8
-    version: null
+    revision: cd3153de2783abd3d03d0595e6c4b32413c62f14
+    version: 0.4.0
     source:
       Git: https://github.com/pulp-platform/opentitan_peripherals
     dependencies:
