@@ -15,8 +15,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: 5e85c7e5ee38a797b9ef6bbed0cf0d4fde473c67
-    version: null
+    revision: f24b1faf7bcf651f1aabdef5e8f99ce2fd817c2e
+    version: 0.39.0-beta.9
     source:
       Git: https://github.com/pulp-platform/axi
     dependencies:
