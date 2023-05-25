@@ -28,7 +28,7 @@ CHS_SW_CCFLAGS ?= $(CHS_SW_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-b
 CHS_SW_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_SW_LD_DIR)
 CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
 
-CHS_SW_ALL += $(CHS_SW_LIBS) $(CHS_SW_GEN_HDRS) $(CHS_SW_TESTS)
+CHS_SW_ALL += $(CHS_SW_LIBS) $(CHS_SW_GEN_HDRS) $(CHS_SW_TESTS) $(CHS_SW_TOOLS)
 
 .PRECIOUS: %.elf %.dtb
 
@@ -160,6 +160,14 @@ $(CHS_SW_DIR)/boot/linux.%.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CHS_SW_DIR)
 	dd if=$(word 2,$^) of=$@ bs=512 seek=128 conv=notrunc
 	dd if=$(word 3,$^) of=$@ bs=512 seek=2048 conv=notrunc
 	dd if=$(word 4,$^) of=$@ bs=512 seek=8192 conv=notrunc
+
+#################
+# Sotware Tools #
+#################
+
+# This program can be used to flash bootable disks using preloaded images.
+# `util/flash_disk.sh` utilizes it to flash disk images preloaded over JTAG.
+CHS_SW_TOOLS += sw/boot/flash.spm.elf
 
 #########
 # Tests #

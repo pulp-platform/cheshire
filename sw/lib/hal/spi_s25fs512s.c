@@ -11,9 +11,6 @@
 #include "util.h"
 #include "params.h"
 
-
-#include "printf.h"
-
 int spi_s25fs512s_init(spi_s25fs512s_t *handle, uint64_t core_freq) {
     // Check for legal arguments
     CHECK_ASSERT(0x11, handle != 0)
@@ -64,7 +61,8 @@ int spi_s25fs512s_single_read(void *priv, void *buf, uint64_t addr, uint64_t len
     // Copy in chunks (no alignment necessary)
     for (uint64_t offs = 0; offs < len; offs += 4 * SPI_HOST_PARAM_RX_DEPTH) {
         uint64_t chunk_len = MIN(4 * SPI_HOST_PARAM_RX_DEPTH, len - offs);
-        CHECK_CALL(__spi_s25fs512s_single_read_chunk(handle, (uint8_t*) buf + offs, addr + offs, chunk_len))
+        CHECK_CALL(__spi_s25fs512s_single_read_chunk(handle, (uint8_t *)buf + offs, addr + offs,
+                                                     chunk_len))
     }
     // Nothing went wrong
     return 0;
@@ -81,7 +79,6 @@ static inline int __spi_s25fs512s_poll_wip(spi_s25fs512s_t *handle) {
         CHECK_CALL(dif_spi_host_transaction(&handle->spi_host, handle->csid, segs, 2))
     } while (status_reg_1 & 1);
     // Return actual status for error checking, masking away non-error bits
-    printf("POLL RESULT: 0x%x", status_reg_1);
     return status_reg_1 & 0x60;
 }
 
@@ -96,7 +93,7 @@ static inline int __spi_s25fs512s_set_wen(spi_s25fs512s_t *handle) {
 // This should work with any sector size, but caller must ensure correct sector size
 // At the correct location! We always assume 256B pages (ensure before calling).
 static inline int __spi_s25fs512s_single_flash_sector(spi_s25fs512s_t *handle, void *buf,
-                                                    uint64_t sector_addr, uint64_t sector_size) {
+                                                      uint64_t sector_addr, uint64_t sector_size) {
     // If this is a 4KiB overlay sector, first erase the 4KiB sectors.
     // Do for every 64 sectors (min #sectors for compatibility) as no effect on regular sectors.
     uint64_t sector_alignment = (sector_addr >> 18) % 64;
@@ -105,7 +102,7 @@ static inline int __spi_s25fs512s_single_flash_sector(spi_s25fs512s_t *handle, v
     int addr_4kib = sector_addr;
     if (sector_alignment == 63) {
         // Eight 4KiB sectors may be *at end* of this sector
-        addr_4kib = sector_addr + sector_size - (8*4096);
+        addr_4kib = sector_addr + sector_size - (8 * 4096);
     } else if (sector_alignment != 0) {
         // Regular sector; no 4KiB erase necessary
         erase_4kib = 0;
@@ -144,7 +141,8 @@ static inline int __spi_s25fs512s_single_flash_sector(spi_s25fs512s_t *handle, v
                           .mode = kDifSpiHostAddrMode4b,
                           .address = sector_addr + p}}},
             {kDifSpiHostSegmentTypeTx,
-             {.tx = {.width = kDifSpiHostWidthStandard, .buf = (uint8_t*) buf + p, .length = 256}}}};
+             {.tx = {
+                  .width = kDifSpiHostWidthStandard, .buf = (uint8_t *)buf + p, .length = 256}}}};
         CHECK_CALL(__spi_s25fs512s_set_wen(handle))
         CHECK_CALL(dif_spi_host_transaction(&handle->spi_host, handle->csid, segs, 3))
         // Poll WIP until program is complete
@@ -171,7 +169,7 @@ int spi_s25fs512s_single_flash(void *priv, void *buf, uint64_t sector, uint64_t 
         {kDifSpiHostSegmentTypeAddress,
          {.address = {.width = kDifSpiHostWidthStandard,
                       .mode = kDifSpiHostAddrMode4b,
-                      .address = 0x00800004 }}},  // CR3V address
+                      .address = 0x00800004}}}, // CR3V address
         {kDifSpiHostSegmentTypeRx,
          {.rx = {.width = kDifSpiHostWidthStandard, .buf = &cr3v, .length = 1}}}};
     CHECK_CALL(__spi_s25fs512s_set_wen(handle))
@@ -180,7 +178,8 @@ int spi_s25fs512s_single_flash(void *priv, void *buf, uint64_t sector, uint64_t 
     CHECK_CALL(__spi_s25fs512s_poll_wip(handle))
     // Flash the requested sectors
     for (uint64_t s = 0; s < num_sectors; ++s) {
-        CHECK_CALL(__spi_s25fs512s_single_flash_sector(handle, (uint8_t*) buf + (s << 18), (sector + s) << 18, 256 * 1024));
+        CHECK_CALL(__spi_s25fs512s_single_flash_sector(handle, (uint8_t *)buf + (s << 18),
+                                                       (sector + s) << 18, 256 * 1024));
     }
     // Nothing went wrong
     return 0;

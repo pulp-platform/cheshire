@@ -53,7 +53,7 @@ int flash_i2c_24fc1025(uint64_t core_freq, void *img_base) {
     dif_i2c_t i2c;
     CHECK_CALL(i2c_24fc1025_init(&i2c, core_freq))
     // Write half of a single 256 KiB sector (entire capacity)
-    return i2c_24fc1025_write(&i2c, img_base, 0, 128*1024);
+    return i2c_24fc1025_write(&i2c, img_base, 0, 128 * 1024);
 }
 
 int main() {

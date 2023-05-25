@@ -247,7 +247,7 @@ static int __spi_sdcard_read_blocks(spi_sdcard_t *handle, void *buf, uint64_t bl
     // TODO: handle CRC error for prior commands here?
     CHECK_CALL(__spi_sdcard_cmd(handle, cmd, kSpiSdcardRespR1, &rx, 1))
     // Align target buffer with block boundaries
-    buf -= first_offs;
+    buf = (uint8_t *)buf - first_offs;
     // Read blocks
     for (uint64_t b = 0; b < len; ++b) {
         // Poll bytes until we get a token
@@ -260,8 +260,8 @@ static int __spi_sdcard_read_blocks(spi_sdcard_t *handle, void *buf, uint64_t bl
         // Read block in chunks of at most FIFO size
         int first_block = (b == 0 && first_offs != 0);
         int last_block = (b == len - 1 && last_len != 512);
-        void *block_dst = buf + 512 * b;
-        void *block_buf = (first_block || last_block) ? block_swap : block_dst;
+        uint8_t *block_dst = (uint8_t *)buf + 512 * b;
+        uint8_t *block_buf = (first_block || last_block) ? block_swap : block_dst;
         for (uint64_t offs = 0; offs < 512; offs += 4 * SPI_HOST_PARAM_RX_DEPTH) {
             uint64_t chunk_len = MIN(4 * SPI_HOST_PARAM_RX_DEPTH, 512 - offs);
             CHECK_CALL(__spi_sdcard_xfer_csaat(handle, block_buf + offs, NULL, chunk_len))
@@ -328,7 +328,7 @@ int spi_sdcard_write_blocks(spi_sdcard_t *handle, void *buf, uint64_t block, uin
         // Send token
         CHECK_CALL(__spi_sdcard_xfer_csaat(handle, NULL, &tok, 1));
         // Write block in chunks of at most FIFO size
-        void *block_src = buf + 512 * b;
+        uint8_t *block_src = (uint8_t *)buf + 512 * b;
         for (uint64_t offs = 0; offs < 512; offs += 4 * SPI_HOST_PARAM_RX_DEPTH) {
             uint64_t chunk_len = MIN(4 * SPI_HOST_PARAM_RX_DEPTH, 512 - offs);
             CHECK_CALL(__spi_sdcard_xfer_csaat(handle, NULL, block_src + offs, chunk_len))
