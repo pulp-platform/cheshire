@@ -35,3 +35,7 @@ int spi_sdcard_init(spi_sdcard_t *handle, uint64_t core_freq);
 int spi_sdcard_read_checkcrc(void *priv, void *buf, uint64_t addr, uint64_t len);
 
 int spi_sdcard_read_ignorecrc(void *priv, void *buf, uint64_t addr, uint64_t len);
+
+// Transfer whole 512B blocks, aligned on the SD card. CRC must be computed if enabled at the time.
+int spi_sdcard_write_blocks(spi_sdcard_t *handle, void *buf, uint64_t block, uint64_t len,
+                            int compute_crc);
