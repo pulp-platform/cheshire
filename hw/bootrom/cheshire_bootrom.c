@@ -10,6 +10,7 @@
 #include "util.h"
 #include "params.h"
 #include "regs/cheshire.h"
+#include "spi_host_regs.h"
 #include "dif/clint.h"
 #include "hal/i2c_24fc1025.h"
 #include "hal/spi_s25fs512s.h"
