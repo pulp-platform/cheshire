@@ -106,7 +106,7 @@ package cheshire_pkg;
     doub_bt [7:0] RegExtRegionEnd;
     // Real-time clock speed
     word_bt RtcFreq;
-    // Address of platfrom ROM
+    // Address of platform ROM
     word_bt PlatformRom;
     // Enabled hardware features
     bit     Bootrom;
@@ -117,6 +117,7 @@ package cheshire_pkg;
     bit     Dma;
     bit     SerialLink;
     bit     Vga;
+    bit     AxiRt;
     // Parameters for Debug Module
     jtag_idcode_t DbgIdCode;
     dw_bt   DbgMaxReqs;
@@ -158,6 +159,9 @@ package cheshire_pkg;
     bit     DmaConfAmoPostCut;
     // Parameters for GPIO
     bit     GpioInputSyncs;
+    // Parameters for AXI RT
+    word_bt AxiRtNumPending;
+    word_bt AxiRtWBufferDepth;
   } cheshire_cfg_t;
 
   // Defined interrupts
@@ -271,7 +275,7 @@ package cheshire_pkg;
     if (cfg.Dma)          begin i++; r++; ret.dma = i; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
     if (cfg.SerialLink)   begin i++; r++; ret.slink = i;
         ret.map[r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
-    // External port indices start after iternal ones
+    // External port indices start after internal ones
     i++; r++;
     ret.ext_base  = i;
     ret.num_out   = i + cfg.AxiExtNumSlv;
@@ -304,6 +308,7 @@ package cheshire_pkg;
     aw_bt gpio;
     aw_bt slink;
     aw_bt vga;
+    aw_bt axirt;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
@@ -324,6 +329,7 @@ package cheshire_pkg;
     if (cfg.Gpio)     begin i++; ret.gpio     = i; r++; ret.map[r] = '{i, 'h0300_5000, 'h0300_6000}; end
     if (cfg.SerialLink) begin i++; ret.slink  = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
     if (cfg.Vga)      begin i++; ret.vga      = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
+    if (cfg.AxiRt)    begin i++; ret.axirt    = i; r++; ret.map[r] = '{i, 'h0300_8000, 'h0300_9000}; end
     i++; r++;
     ret.ext_base  = i;
     ret.num_out   = i + cfg.RegExtNumSlv;
@@ -454,6 +460,9 @@ package cheshire_pkg;
     DmaConfAmoPostCut   : 1,
     // GPIOs
     GpioInputSyncs    : 1,
+    // AXI RT
+    AxiRtNumPending   : 16,
+    AxiRtWBufferDepth : 16,
     // All non-set values should be zero
     default: '0
   };

@@ -1,0 +1,248 @@
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+// Licensed under Solderpad Hardware License, Version 0.51, see LICENSE for details.
+//
+// Thomas Benz <tbenz@iis.ee.ethz.ch>
+
+
+{
+  name: "axi_rt"
+  clock_primary: "clk_i"
+  bus_interfaces: [
+    { protocol: "reg_iface", direction: "device" }
+  ],
+  regwidth: 32
+
+  param_list: [
+    { name: "NumMst",
+      desc: "Number of masters",
+      type: "int",
+      default: "24"
+    }
+  ],
+
+  registers: [
+
+    { multireg:
+      { name:     "rt_enable"
+        desc:     "Enable RT feature on master"
+        swaccess: "rw"
+        hwaccess: "hro"
+        count:    "NumMst"
+        cname:    "rt_enable"
+        resval:   "0"
+        fields: [
+          { bits: "0:0", name: "enable", desc: "Enable RT feature on master" }
+        ]
+      }
+    }
+
+    { multireg:
+      { name:     "rt_bypassed"
+        desc:     "Is the RT inactive?"
+        swaccess: "ro"
+        hwaccess: "hwo"
+        hwqe:     "true"
+        hwext:    "true"
+        count:    "NumMst"
+        cname:    "rt_bypassed"
+        fields: [
+          { bits: "0:0", name: "bypassed", desc: "Is the RT inactive?" }
+        ]
+      }
+    }
+
+    { multireg:
+      { name:     "len_limit"
+        desc:     "Fragmentation of the bursts in beats."
+        swaccess: "rw"
+        hwaccess: "hro"
+        count:    "NumMst"
+        cname:    "len_limit"
+        resval:   "0"
+        fields: [
+          { bits: "7:0", name: "len", desc: "Fragmentation of the bursts in beats." }
+        ]
+      }
+    }
+
+    { multireg:
+      { name:     "imtu_enable"
+        desc:     "Enables the IMTU."
+        swaccess: "rw"
+        hwaccess: "hro"
+        count:    "NumMst"
+        cname:    "imtu_enable"
+        resval:   "0"
+        fields: [
+          { bits: "0:0", name: "enable", desc: "Enables the IMTU." }
+        ]
+      }
+    }
+
+    { multireg:
+      { name:     "imtu_abort"
+        desc:     "Resets both the period and the budget."
+        swaccess: "rw"
+        hwaccess: "hro"
+        count:    "NumMst"
+        cname:    "imtu_abort"
+        resval:   "0"
+        fields: [
+          { bits: "0:0", name: "abort", desc: "Resets both the period and the budget." }
+        ]
+      }
+    }
+
+    { multireg:
+      { name:     "write_budget"
+        desc:     "The budget for the writes."
+        swaccess: "rw"
+        hwaccess: "hro"
+        count:    "NumMst"
+        cname:    "write_budget"
+        resval:   "0"
+        fields: [
+          { bits: "31:0", name: "write_budget", desc: "The budget for the writes." }
+        ]
+      }
+    }
+
+    { multireg:
+      { name:     "read_budget"
+        desc:     "The budget for the reads."
+        swaccess: "rw"
+        hwaccess: "hro"
+        count:    "NumMst"
+        cname:    "read_budget"
+        resval:   "0"
+        fields: [
+          { bits: "31:0", name: "read_budget", desc: "The budget for the reads." }
+        ]
+      }
+    }
+
+    { multireg:
+      { name:     "write_period"
+        desc:     "The period for the writes."
+        swaccess: "rw"
+        hwaccess: "hro"
+        count:    "NumMst"
+        cname:    "write_period"
+        resval:   "0"
+        fields: [
+          { bits: "31:0", name: "write_period", desc: "The period for the writes." }
+        ]
+      }
+    }
+
+    { multireg:
+      { name:     "read_period"
+        desc:     "The period for the reads."
+        swaccess: "rw"
+        hwaccess: "hro"
+        count:    "NumMst"
+        cname:    "read_period"
+        resval:   "0"
+        fields: [
+          { bits: "31:0", name: "read_period", desc: "The period for the reads." }
+        ]
+      }
+    }
+
+    { multireg:
+      { name:     "write_budget_left"
+        desc:     "The budget left for the writes."
+        swaccess: "ro"
+        hwaccess: "hwo"
+        hwqe:     "true"
+        hwext:    "true"
+        count:    "NumMst"
+        cname:    "write_budget_left"
+        resval:   "0"
+        fields: [
+          { bits: "31:0", name: "write_budget_left", desc: "The budget left for the writes." }
+        ]
+      }
+    }
+
+    { multireg:
+      { name:     "read_budget_left"
+        desc:     "The budget left for the reads."
+        swaccess: "ro"
+        hwaccess: "hwo"
+        hwqe:     "true"
+        hwext:    "true"
+        count:    "NumMst"
+        cname:    "read_budget_left"
+        resval:   "0"
+        fields: [
+          { bits: "31:0", name: "read_budget_left", desc: "The budget left for the reads." }
+        ]
+      }
+    }
+
+    { multireg:
+      { name:     "write_period_left"
+        desc:     "The period left for the writes."
+        swaccess: "ro"
+        hwaccess: "hwo"
+        hwqe:     "true"
+        hwext:    "true"
+        count:    "NumMst"
+        cname:    "write_period_left"
+        resval:   "0"
+        fields: [
+          { bits: "31:0", name: "write_period_left", desc: "The period left for the writes." }
+        ]
+      }
+    }
+
+    { multireg:
+      { name:     "read_period_left"
+        desc:     "The period left for the reads."
+        swaccess: "ro"
+        hwaccess: "hwo"
+        hwqe:     "true"
+        hwext:    "true"
+        count:    "NumMst"
+        cname:    "read_period_left"
+        resval:   "0"
+        fields: [
+          { bits: "31:0", name: "read_period_left", desc: "The period left for the reads." }
+        ]
+      }
+    }
+
+    { multireg:
+      { name:     "isolate"
+        desc:     "Is the interface requested to be isolated?"
+        swaccess: "ro"
+        hwaccess: "hwo"
+        hwqe:     "true"
+        hwext:    "true"
+        count:    "NumMst"
+        cname:    "isolate"
+        fields: [
+          { bits: "0:0", name: "isolate", desc: "Is the interface requested to be isolated?" }
+        ]
+      }
+    }
+
+    { multireg:
+      { name:     "isolated"
+        desc:     "Is the interface isolated?"
+        swaccess: "ro"
+        hwaccess: "hwo"
+        hwqe:     "true"
+        hwext:    "true"
+        count:    "NumMst"
+        cname:    "isolated"
+        fields: [
+          { bits: "0:0", name: "isolated", desc: "Is the interface isolated?" }
+        ]
+      }
+    }
+  ]
+}

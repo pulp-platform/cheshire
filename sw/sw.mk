@@ -80,6 +80,7 @@ $(eval $(call chs_sw_gen_hdr_rule,serial_link,$(CHS_ROOT)/hw/serial_link.hjson $
 $(eval $(call chs_sw_gen_hdr_rule,axi_vga,$(CHS_VGA_DIR)/data/axi_vga.hjson $(CHS_VGA_DIR)/.generated))
 $(eval $(call chs_sw_gen_hdr_rule,axi_llc,$(CHS_LLC_DIR)/data/axi_llc_regs.hjson))
 $(eval $(call chs_sw_gen_hdr_rule,cheshire,$(CHS_ROOT)/hw/regs/cheshire_regs.hjson))
+$(eval $(call chs_sw_gen_hdr_rule,axi_rt,$(CHS_ROOT)/hw/regs/axi_rt_regs.hjson))
 
 # Generate headers for OT peripherals in the bendered repo itself
 CHS_SW_GEN_HDRS += $(CHS_OTP_DIR)/.generated
