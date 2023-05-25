@@ -70,7 +70,6 @@ package cheshire_pkg;
     bit     DualCore;
     doub_bt NumExtIrqHarts;
     doub_bt NumExtDbgHarts;
-    shrt_bt NumExtIntrs;
     dw_bt   Core1UserAmoBit;
     dw_bt   CoreMaxTxns;
     dw_bt   CoreMaxTxnsPerId;
