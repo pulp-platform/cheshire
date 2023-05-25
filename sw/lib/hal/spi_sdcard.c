@@ -318,7 +318,7 @@ int spi_sdcard_write_blocks(spi_sdcard_t *handle, void *buf, uint64_t block, uin
     // TODO: in case of CMD25, issue ACMD23 for pre-erase here
     // CMD24 for single block transfer, CMD25 for multiple
     uint64_t cmd = __spi_sdcard_build_cmd((len > 1) ? 0x59 : 0x58, block);
-    uint8_t tok = (len > 1) ? 0xFE : 0xFC;
+    uint8_t tok = (len > 1) ? 0xFC : 0xFE;
     // TODO: handle CRC error for prior commands here?
     CHECK_CALL(__spi_sdcard_cmd(handle, cmd, kSpiSdcardRespR1, &rx, 1))
     // Insert safety dummy byte
@@ -329,15 +329,18 @@ int spi_sdcard_write_blocks(spi_sdcard_t *handle, void *buf, uint64_t block, uin
         CHECK_CALL(__spi_sdcard_xfer_csaat(handle, NULL, &tok, 1));
         // Write block in chunks of at most FIFO size
         void *block_src = buf + 512 * b;
-        for (uint64_t offs = 0; offs < 512; offs += 4 * SPI_HOST_PARAM_RX_DEPTH)
-            CHECK_CALL(__spi_sdcard_xfer_csaat(handle, NULL, block_src + offs, 512))
+        for (uint64_t offs = 0; offs < 512; offs += 4 * SPI_HOST_PARAM_RX_DEPTH) {
+            uint64_t chunk_len = MIN(4 * SPI_HOST_PARAM_RX_DEPTH, 512 - offs);
+            CHECK_CALL(__spi_sdcard_xfer_csaat(handle, NULL, block_src + offs, chunk_len))
+        }
         // Write CRC16 of block
         uint16_t crc = compute_crc ? __spi_sdcard_crc16((uint8_t *)block_src, 512) : 0;
         CHECK_CALL(__spi_sdcard_xfer_csaat(handle, NULL, &crc, 2))
-        // Get response and wait until no longer busy
+        // Get and check data response (should be 'data accepted')
+        CHECK_CALL(__spi_sdcard_xfer_csaat(handle, &rx, NULL, 1))
+        if ((rx & 0x1F) != 0x05) return 0x22;
+        // Wait until no longer busy
         CHECK_CALL(__spi_sdcard_cmd(handle, 0, kSpiSdcardRespR1b, &rx, 1))
-        // Verify that response is 'data accepted'
-        if ((rx & 0x1F) != 0x09) return 0x22;
     }
     // If this is a multi-block transfer, send stop tran to end the transaction and detach
     if (len > 1)
