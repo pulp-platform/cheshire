@@ -1,7 +1,7 @@
 packages:
   apb:
-    revision: 56ca84b687c9f6dc650e2a7cb221cb2bd4b2a456
-    version: 0.2.3
+    revision: 77ddf073f194d44b9119949d2421be59789e69ae
+    version: 0.2.4
     source:
       Git: https://github.com/pulp-platform/apb
     dependencies:
@@ -15,8 +15,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: 56533cbbdf9ea41ab1daaa164595faae3d7ace5a
-    version: 0.39.0-beta.8
+    revision: f24b1faf7bcf651f1aabdef5e8f99ce2fd817c2e
+    version: 0.39.0-beta.9
     source:
       Git: https://github.com/pulp-platform/axi
     dependencies:
@@ -110,8 +110,8 @@ packages:
     - common_verification
     - register_interface
   opentitan_peripherals:
-    revision: 2a237bafa523627acd5c50332ad092ef821f4dac
-    version: 0.3.1
+    revision: cd3153de2783abd3d03d0595e6c4b32413c62f14
+    version: 0.4.0
     source:
       Git: https://github.com/pulp-platform/opentitan_peripherals
     dependencies:

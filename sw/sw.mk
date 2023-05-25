@@ -16,12 +16,15 @@ RISCV_OBJCOPY ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-objcopy
 RISCV_OBJDUMP ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-objdump
 
 CHS_LD_DIR    ?= $(CHS_SW_DIR)/link
+CHS_ZSL_TGUID ?= 0269B26A-FD95-4CE4-98CF-941401412C62
+CHS_DTB_TGUID ?= BA442F61-2AEF-42DE-9233-E4D75D3ACB9D
+CHS_FW_TGUID  ?= 99EC86DA-3F5B-4B0D-8F4B-C4BACFA5F859
+CHS_DISK_SIZE ?= 16M
 
 RISCV_FLAGS   ?= -DOT_PLATFORM_RV32 -march=rv64gc_zifencei -mabi=lp64d -mstrict-align -O2 -Wall -static -ffunction-sections -fdata-sections -frandom-seed=cheshire -fuse-linker-plugin -flto -Wl,-flto
 RISCV_CCFLAGS ?= $(RISCV_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
 RISCV_LDFLAGS ?= $(RISCV_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_LD_DIR)
 RISCV_ARFLAGS ?= --plugin=$(shell find $(shell dirname $(RISCV_GCC_BINROOT))/libexec/gcc/riscv64-unknown-elf/**/liblto_plugin.so)
-
 
 chs-sw-all: chs-sw-libs chs-sw-headers chs-sw-tests
 
@@ -123,16 +126,28 @@ $(foreach link,$(patsubst $(CHS_LD_DIR)/%.ld,%,$(wildcard $(CHS_LD_DIR)/*.ld)),$
 # Create a GPT disk image from a (firmware) ROM; we add dummy partitions to test our GPT boot code.
 %.gpt.bin: %.rom.bin
 	rm -f $@
-	truncate -s $$(( $$(stat --printf="%s" $<) + 85*512)) $@
-	parted -a none $@ --script -- mktable gpt \
-	    mkpart dummy0   fat32   37s   40s \
-	    mkpart firmware fat16   42s  -43s \
-	    mkpart dummy1   fat32  -41s  -38s
+	truncate -s $$(( ($$(stat --printf="%s" $<)/512 + 85)*512 )) $@
+	sgdisk --clear -g --set-alignment=1 --new=1:37:40 --new=2:42:-9 --typecode=2:$(CHS_ZSL_TGUID) --new=3:-5:-2 $@
 	dd if=$< of=$@ bs=512 seek=42 conv=notrunc
 
 # Create hex file from .gpt image
 %.gpt.memh: %.gpt.bin
 	$(RISCV_OBJCOPY) -I binary -O verilog $< $@
+
+# Create full Linux disk image
+$(CHS_SW_DIR)/boot/linux.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CHS_SW_DIR)/boot/cheshire.dtb $(CHS_SW_DIR)/boot/install64/fw_payload.bin $(CHS_SW_DIR)/boot/install64/uImage
+	truncate -s $(CHS_DISK_SIZE) $@
+	sgdisk --clear -g --set-alignment=1 \
+		--new=1:64:96 --typecode=1:$(CHS_ZSL_TGUID) \
+		--new=2:128:159 --typecode=2:$(CHS_DTB_TGUID) \
+		--new=3:2048:8191 --typecode=3:$(CHS_FW_TGUID) \
+		--new=4:8192:24575 --typecode=4:8300 \
+		--new=5:24576:0 --typecode=5:8200 \
+		$@
+	dd if=$(word 1,$^) of=$@ bs=512 seek=64 conv=notrunc
+	dd if=$(word 2,$^) of=$@ bs=512 seek=128 conv=notrunc
+	dd if=$(word 3,$^) of=$@ bs=512 seek=2048 conv=notrunc
+	dd if=$(word 4,$^) of=$@ bs=512 seek=8192 conv=notrunc
 
 #########
 # Tests #

@@ -56,23 +56,27 @@ static inline volatile uint64_t get_mcycle() {
 // This may also be used to invoke code that does not return.
 static inline volatile uint64_t invoke(void *code) {
     volatile uint64_t (*code_fun_ptr)(void) = code;
-    fence();
     fencei();
     return code_fun_ptr();
 }
 
-// If a call yields a nonzero return, return that immediately as an int
+// Set global pointer and return prior value. Use with caution.
+static inline void *volatile gprw(void *gp) {
+    void *volatile ret;
+    asm volatile("mv %0, gp" : "=r"(ret)::"memory");
+    if (gp) asm volatile("mv gp, %0" ::"r"(gp) : "memory", "gp");
+    return ret;
+}
+
+// If a call yields a nonzero return, return that immediately as an int.
 #define CHECK_CALL(call) \
     { \
         int __ccret = (volatile int)(call); \
         if (__ccret) return __ccret; \
     }
 
-// If a condition; if it is untrue, ummediately return an error code
+// If a condition; if it is untrue, ummediately return an error code.
 #define CHECK_ASSERT(ret, cond) \
     if (!(cond)) return (ret);
 
 #define MIN(a, b) (((a) <= (b)) ? (a) : (b))
-
-// Apply this to functions that should be fast at the expense of code size
-#define FAST __attribute__((optimize("-O3"), flatten))
