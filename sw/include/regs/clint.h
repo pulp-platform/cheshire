@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 // Number of cores
-#define CLINT_PARAM_NUM_CORES 1
+#define CLINT_PARAM_NUM_CORES 4
 
 // Register width
 #define CLINT_PARAM_REG_WIDTH 32
@@ -27,12 +27,33 @@ extern "C" {
 // Machine Software Interrupt Pending
 #define CLINT_MSIP_REG_OFFSET 0x0
 #define CLINT_MSIP_P_0_BIT 0
+#define CLINT_MSIP_P_1_BIT 1
+#define CLINT_MSIP_P_2_BIT 2
+#define CLINT_MSIP_P_3_BIT 3
 
 // Machine Timer Compare
 #define CLINT_MTIMECMP_LOW0_REG_OFFSET 0x4000
 
 // Machine Timer Compare
 #define CLINT_MTIMECMP_HIGH0_REG_OFFSET 0x4004
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_LOW1_REG_OFFSET 0x4008
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_HIGH1_REG_OFFSET 0x400c
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_LOW2_REG_OFFSET 0x4010
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_HIGH2_REG_OFFSET 0x4014
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_LOW3_REG_OFFSET 0x4018
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_HIGH3_REG_OFFSET 0x401c
 
 // Timer Register Low
 #define CLINT_MTIME_LOW_REG_OFFSET 0xbff8
