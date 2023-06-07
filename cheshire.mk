@@ -72,7 +72,7 @@ $(CHS_ROOT)/hw/regs/axi_rt_reg_pkg.sv $(CHS_ROOT)/hw/regs/axi_rt_reg_top.sv: $(C
 	$(REGGEN) -r $< --outdir $(dir $@)
 
 # CLINT
-CLINTCORES = 1
+CLINTCORES = 4
 include $(CHS_CLINT_DIR)/clint.mk
 $(CHS_CLINT_DIR)/.generated: Bender.yml
 	$(MAKE) clint
