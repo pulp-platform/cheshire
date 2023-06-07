@@ -45,7 +45,7 @@ include $(CHS_ROOT)/.deps
 ######################
 
 CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-CHS_NONFREE_COMMIT ?= b5656f6
+CHS_NONFREE_COMMIT ?= 01b55f84
 
 nonfree-init:
 	git clone $(CHS_NONFREE_REMOTE) nonfree
