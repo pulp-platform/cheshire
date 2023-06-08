@@ -8,6 +8,7 @@
   `define USE_RESET
   `define USE_JTAG
   `define USE_JTAG_VDDGND
+  `define USE_VIO
   `define USE_DDR4
   // DRAM runs at 200MHz
   `define DDR_CLK_DIVIDER 4'h4
@@ -17,6 +18,8 @@
   `define USE_RESETN
   `define USE_JTAG
   `define USE_JTAG_TRSTN
+  `define USE_SD
+  `define USE_SWITCHES
   `define USE_DDR3
   // DRAM runs at 200MHz
   `define DDR_CLK_DIVIDER 4'h4

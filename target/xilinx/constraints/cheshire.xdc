@@ -13,7 +13,10 @@
 set_property DONT_TOUCH TRUE [get_cells i_sys_clk_div/i_clk_bypass_mux]
 
 # The net of which we get the 200 MHz single ended clock from the MIG
-set MIG_CLK_SRC {/dram_clock_out}
+set MIG_CLK_SRC [get_pins -filter {DIRECTION == OUT} -leaf -of_objects [get_nets dram_clock_out]]
+set MIG_RST_SRC [get_pins -filter {DIRECTION == OUT} -leaf -of_objects [get_nets dram_sync_reset]]
+
+set SOC_RST_SRC [get_pins -filter {DIRECTION == OUT} -leaf -of_objects [get_nets rst_n]]
 
 #####################
 # Timing Parameters #
@@ -42,8 +45,7 @@ set UART_IO_SPEED 200.0
 ##########
 
 # System Clock
-create_generated_clock -name clk_soc -source [get_nets $MIG_CLK_SRC] -divide_by 4 [get_pins i_sys_clk_div/i_clk_bypass_mux/i_BUFGMUX/O]
-
+create_generated_clock -name clk_soc -source $MIG_CLK_SRC -divide_by 4 [get_nets soc_clk]
 # JTAG Clock
 create_clock -period $JTAG_TCK -name clk_jtag [get_ports jtag_tck_i]
 set_input_jitter clk_jtag 1.000
@@ -79,8 +81,8 @@ set_false_path -hold -from [get_ports jtag_trst_ni]
 # MIG #
 #######
 
-set_max_delay  -from [get_pins i_dram_wrapper/i_dram/inst/div_clk_rst_r1_reg/C] $FPGA_TCK
-set_false_path -hold -from [get_pins i_dram_wrapper/i_dram/inst/div_clk_rst_r1_reg/C]
+set_max_delay  -from $MIG_RST_SRC $FPGA_TCK
+set_false_path -hold -from $MIG_RST_SRC
 
 ########
 # UART #
@@ -107,5 +109,5 @@ set_max_delay -datapath -from [get_pins i_dram_wrapper/i_axi_cdc_mig/i_axi_cdc_*
 # Reset Generator #
 ###################
 
-set_max_delay -from [get_pins {/dram_sync_reset}] $SOC_TCK
-set_false_path -hold -from [get_pins {/dram_sync_reset}]
+set_max_delay -from $SOC_RST_SRC $SOC_TCK
+set_false_path -hold -from $SOC_RST_SRC
