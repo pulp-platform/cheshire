@@ -279,7 +279,7 @@ module cheshire_top_xilinx
     .axi_soc_resp_t    (axi_llc_rsp_t)
   ) i_dram_wrapper (
     // Rst
-    .sys_rst_i                  ( cpu_reset   ),
+    .sys_rst_i                  ( sys_rst     ),
     .soc_resetn_i               ( rst_n       ),
     .soc_clk_i                  ( soc_clk     ),
     // Clk rst out
