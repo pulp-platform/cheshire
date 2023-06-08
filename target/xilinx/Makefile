@@ -26,7 +26,7 @@ ifeq ($(BOARD),vcu128)
 	VIVADO       ?= vitis-2020.2 vivado
 	XILINX_PART  ?= xcvu37p-fsvh2892-2L-e
 	XILINX_BOARD ?= xilinx.com:vcu128:part0:1.0
-	ips-names    := xlnx_mig_ddr4
+	ips-names    := xlnx_vio xlnx_mig_ddr4
 	bender-targets := $(bender-targets) -t bscane
 endif
 ifeq ($(BOARD),genesys2)

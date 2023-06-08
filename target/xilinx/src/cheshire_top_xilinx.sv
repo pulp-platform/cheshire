@@ -189,13 +189,27 @@ module cheshire_top_xilinx
   logic cpu_reset;
   assign cpu_reset  = ~cpu_resetn;
   `endif
+  logic sys_rst;
 
-  (* DONT_TOUCH = "yes" *)
-  wire dram_clock_out; // 200 MHz
-   (* DONT_TOUCH = "yes" *)
-  wire dram_sync_reset;
-  wire soc_clk;
-  logic rst_n;
+  (* dont_touch = "yes" *) wire dram_clock_out; // 200 MHz
+  (* dont_touch = "yes" *) wire dram_sync_reset;
+  (* dont_touch = "yes" *) wire soc_clk;
+  (* dont_touch = "yes" *) wire rst_n;
+
+  ///////////////////
+  // VIOs          // 
+  ///////////////////
+  
+`ifdef USE_VIO
+  logic vio_reset;
+  xlnx_vio (
+    .clk(soc_clk),
+    .probe_out0(vio_reset)
+  );
+  assign sys_rst = cpu_reset | vio_reset;
+`else
+  assign sys_rst = cpu_reset;
+`endif
 
   ///////////////////
   // GPIOs         // 

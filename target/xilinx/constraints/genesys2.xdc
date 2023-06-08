@@ -54,8 +54,8 @@ set_false_path -hold -to [get_ports {i2c_scl_io i2c_sda_io}]
 ###############
 
 ## Clock Signal
-set_property -dict { PACKAGE_PIN AD11  IOSTANDARD LVDS     } [get_ports { sysclk_n }]; #IO_L12N_T1_MRCC_33 Sch=sysclk_n
-set_property -dict { PACKAGE_PIN AD12  IOSTANDARD LVDS     } [get_ports { sysclk_p }]; #IO_L12P_T1_MRCC_33 Sch=sysclk_p
+# set_property -dict { PACKAGE_PIN AD11  IOSTANDARD LVDS     } [get_ports { sysclk_n }]; #IO_L12N_T1_MRCC_33 Sch=sysclk_n
+# set_property -dict { PACKAGE_PIN AD12  IOSTANDARD LVDS     } [get_ports { sysclk_p }]; #IO_L12P_T1_MRCC_33 Sch=sysclk_p
 
 ## Buttons
 #set_property -dict { PACKAGE_PIN E18   IOSTANDARD LVCMOS12 } [get_ports { btnc }]; #IO_25_17 Sch=btnc
@@ -83,7 +83,7 @@ set_property -dict { PACKAGE_PIN K19   IOSTANDARD LVCMOS12 } [get_ports { fan_sw
 set_property -dict { PACKAGE_PIN N19   IOSTANDARD LVCMOS12 } [get_ports { fan_sw[2] }]; #IO_L19P_T3_A22_15 Sch=sw[4]
 set_property -dict { PACKAGE_PIN P19   IOSTANDARD LVCMOS12 } [get_ports { fan_sw[3] }]; #IO_25_15 Sch=sw[5]
 #set_property -dict { PACKAGE_PIN P26   IOSTANDARD LVCMOS33 } [get_ports { sw[6] }]; #IO_L10P_T1_D14_14 Sch=sw[6]
-set_property -dict { PACKAGE_PIN P27   IOSTANDARD LVCMOS33 } [get_ports { test_mode_i }]; #IO_L8P_T1_D11_14 Sch=sw[7]
+set_property -dict { PACKAGE_PIN P27   IOSTANDARD LVCMOS33 } [get_ports { testmode_i }]; #IO_L8P_T1_D11_14 Sch=sw[7]
 
 ## USB HIDs For Both Mouse and Keyboard
 #set_property -dict { PACKAGE_PIN AD23  IOSTANDARD LVCMOS33  PULLUP true } [get_ports { ps2_clk_0 }]; #IO_L12P_T1_MRCC_12 Sch=ps2_clk[0]
