@@ -467,7 +467,7 @@ package cheshire_pkg;
     Dma               : 1,
     SerialLink        : 1,
     Vga               : 1,
-    Clic              : 1,
+    Clic              : 0,
     IrqRouter         : 0,
     // Debug
     DbgIdCode         : CheshireIdCode,
