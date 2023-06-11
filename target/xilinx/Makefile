@@ -14,6 +14,8 @@ PROJECT      ?= cheshire
 BOARD        ?= genesys2
 XILINX_PORT  ?= 3332
 XILINX_HOST  ?= bordcomputer
+
+FPGA_PATH    ?= xilinx_tcf/Digilent/200300A8C60DB
 ip-dir       := xilinx
 
 # Derive from board
