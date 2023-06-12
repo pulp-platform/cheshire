@@ -9,17 +9,24 @@ PROJECT      ?= cheshire
 BOARD        ?= genesys2
 XILINX_PART  ?= xc7k325tffg900-2
 XILINX_BOARD ?= digilentinc.com:genesys2:part0:1.1
+XILINX_PORT  ?= 3332
+XILINX_HOST  ?= bordcomputer
+FPGA_PATH    ?= xilinx_tcf/Digilent/200300A8C60DB
 
 out := out
 bit := $(out)/cheshire_top_xilinx.bit
 mcs := $(out)/cheshire_top_xilinx.mcs
+BIT ?= $(bit)
 
 
 VIVADOENV ?=  PROJECT=$(PROJECT)            \
               BOARD=$(BOARD)                \
               XILINX_PART=$(XILINX_PART)    \
               XILINX_BOARD=$(XILINX_BOARD)  \
-              BIT=$(bit)
+              PORT=$(XILINX_PORT)           \
+              HOST=$(XILINX_HOST)           \
+              FPGA_PATH=$(FPGA_PATH)        \
+              BIT=$(BIT)
 
 # select IIS-internal tool commands if we run on IIS machines
 ifneq (,$(wildcard /etc/iis.version))
@@ -28,7 +35,7 @@ else
 	VIVADO ?= vivado
 endif
 
-VIVADOFLAGS ?= -nojournal -mode batch -source scripts/prologue.tcl
+VIVADOFLAGS ?= -nojournal -mode batch
 
 ip-dir  := xilinx
 ips     :=  xlnx_mig_7_ddr3.xci
@@ -41,7 +48,7 @@ $(mcs): $(bit)
 
 $(bit): $(ips)
 	@mkdir -p $(out)
-	$(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/run.tcl
+	$(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/prologue.tcl -source scripts/run.tcl
 	cp $(PROJECT).runs/impl_1/$(PROJECT)* ./$(out)
 
 $(ips):
@@ -53,7 +60,7 @@ gui:
 	@echo "Starting $(vivado) GUI"
 	@$(VIVADOENV) $(VIVADO) -nojournal -mode gui $(PROJECT).xpr &
 
-program: #$(bit)
+program:
 	@echo "Programming board $(BOARD) ($(XILINX_PART))"
 	$(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/program.tcl
 
