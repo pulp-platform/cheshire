@@ -23,10 +23,10 @@ typedef struct {
 static const uint64_t __spi_sdcard_init_clock = 200000;
 
 // How many cycles to wait for a non-yielding R1b response
-static const uint64_t __spi_sdcard_r1b_timeout = 10000;
+static const uint64_t __spi_sdcard_r1b_timeout = 100000;
 
 // How many cycles to wait for another data block
-static const uint64_t __spi_sdcard_data_timeout = 10000;
+static const uint64_t __spi_sdcard_data_timeout = 100000;
 
 // Sets up only this device; other functions may be used with own setup if requirements are met.
 // This assumes the power-up period of 1ms will be elapsed *before* issuing further commands.
