@@ -20,8 +20,8 @@
 #include "gpt.h"
 #include "printf.h"
 
-int flash_spi_sdcard(uint64_t core_freq, uint64_t rtc_freq,
-                     void* img_base, uint64_t sector, uint64_t len) {
+int flash_spi_sdcard(uint64_t core_freq, uint64_t rtc_freq, void *img_base, uint64_t sector,
+                     uint64_t len) {
     // Initialize device handle
     spi_sdcard_t device = {
         .spi_freq = 24 * 1000 * 1000, // 24MHz (maximum is 25MHz)
@@ -35,8 +35,8 @@ int flash_spi_sdcard(uint64_t core_freq, uint64_t rtc_freq,
     return spi_sdcard_write_blocks(&device, img_base, sector, len, 1);
 }
 
-int flash_spi_s25fs512s(uint64_t core_freq, uint64_t rtc_freq,
-                        void* img_base, uint64_t sector, uint64_t len) {
+int flash_spi_s25fs512s(uint64_t core_freq, uint64_t rtc_freq, void *img_base, uint64_t sector,
+                        uint64_t len) {
     // Initialize device handle
     spi_s25fs512s_t device = {
         .spi_freq = MIN(40 * 1000 * 1000, core_freq / 4), // Up to quarter core freq or 40MHz
@@ -48,13 +48,12 @@ int flash_spi_s25fs512s(uint64_t core_freq, uint64_t rtc_freq,
     return spi_s25fs512s_single_flash(&device, img_base, sector, len);
 }
 
-int flash_i2c_24fc1025(uint64_t core_freq,
-                       void* img_base, uint64_t sector, uint64_t len) {
+int flash_i2c_24fc1025(uint64_t core_freq, void *img_base, uint64_t sector, uint64_t len) {
     // Initialize device handle
     dif_i2c_t i2c;
     CHECK_CALL(i2c_24fc1025_init(&i2c, core_freq))
     // Write sectors
-    return i2c_24fc1025_write(&i2c, img_base, sector, 512*len);
+    return i2c_24fc1025_write(&i2c, img_base, sector, 512 * len);
 }
 
 int main() {
@@ -65,12 +64,12 @@ int main() {
     // Get arguments from scratch registers
     volatile uint32_t *scratch = reg32(&__base_regs, CHESHIRE_SCRATCH_0_REG_OFFSET);
     uint64_t target = scratch[0];
-    void* img_base = (void*)(uintptr_t) scratch[1];
+    void *img_base = (void *)(uintptr_t)scratch[1];
     uint64_t sector = scratch[2];
     uint64_t len = scratch[3];
     // Flash chosen disk
-    printf("[FLASH] Write buffer at 0x%x of length %d to target %d, sector %d ... ",
-           img_base, len, target, sector);
+    printf("[FLASH] Write buffer at 0x%x of length %d to target %d, sector %d ... ", img_base, len,
+           target, sector);
     switch (target) {
     case 1:
         ret = flash_spi_sdcard(core_freq, rtc_freq, img_base, sector, len);
@@ -81,7 +80,9 @@ int main() {
     default:
         ret = -1;
     }
-    if (ret) printf("ERROR (%d)\r\n", ret);
-    else printf("OK\r\n");
+    if (ret)
+        printf("ERROR (%d)\r\n", ret);
+    else
+        printf("OK\r\n");
     return ret;
 }
