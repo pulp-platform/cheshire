@@ -31,14 +31,16 @@ chs-all: chs-sw-all chs-hw-all chs-sim-all chs-xilinx-all
 # Dependencies #
 ################
 
-# Ensure both Bender dependencies and submodules are checked out
+# Ensure both Bender dependencies and (essential) submodules are checked out
 $(CHS_ROOT)/.deps:
 	$(BENDER) checkout
-	git submodule update --init --recursive
+	git submodule update --init --recursive sw/deps/printf
 	@touch $@
 
 # Make sure dependencies are more up-to-date than any targets run
+ifeq ($(shell stat $(CHS_ROOT)/.deps),)
 include $(CHS_ROOT)/.deps
+endif
 
 ######################
 # Nonfree components #
