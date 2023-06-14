@@ -10,8 +10,8 @@ BENDER       ?= bender
 
 PROJECT      ?= cheshire
 
-# Board in      {vcu128, genesys2}
-BOARD        ?= genesys2
+# Board in      {vcu128, genesys2, zcu102}
+BOARD        ?= zcu102
 XILINX_PORT  ?= 3332
 XILINX_HOST  ?= bordcomputer
 FPGA_PATH    ?= xilinx_tcf/Digilent/200300A8C60DB
@@ -34,6 +34,13 @@ ifeq ($(BOARD),genesys2)
 	XILINX_BOARD ?= digilentinc.com:genesys2:part0:1.1
 	ips-names    := xlnx_mig_7_ddr3
 	FPGA_PATH    ?= xilinx_tcf/Digilent/200300A8C60DB
+endif
+ifeq ($(BOARD),zcu102)
+	VIVADO		 ?= vitis-2020.2 vivado
+	XILINX_PART  ?= xczu9eg-ffvb1156-2-e
+	XILINX_BOARD ?= xilinx.com:zcu102:part0:3.4
+	ip-names	 := xlnx_mig_ddr4
+	bender-targets := $(bender-targets) -t bscane
 endif
 
 # Derive from ips

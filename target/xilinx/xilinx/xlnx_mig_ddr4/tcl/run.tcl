@@ -14,23 +14,45 @@ set_property board_part $boardName [current_project]
 
 create_ip -name ddr4 -vendor xilinx.com -library ip -version 2.2 -module_name $ipName
 
-set_property -dict [list CONFIG.RESET_BOARD_INTERFACE {Custom} \
-                         CONFIG.C0_CLOCK_BOARD_INTERFACE {default_100mhz_clk} \
-                         CONFIG.C0.DDR4_Clamshell {true} \
-                         CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram} \
-                         CONFIG.C0.DDR4_InputClockPeriod {10000} \
-                         CONFIG.C0.DDR4_CLKOUT0_DIVIDE {3} \
-                         CONFIG.C0.DDR4_MemoryPart {MT40A512M16HA-075E} \
-                         CONFIG.C0.DDR4_DataWidth {72} \
-                         CONFIG.C0.DDR4_DataMask {NO_DM_NO_DBI} \
-                         CONFIG.C0.DDR4_Ecc {true} \
-                         CONFIG.C0.DDR4_AxiSelection {true} \
-                         CONFIG.C0.DDR4_AxiDataWidth {512} \
-                         CONFIG.C0.DDR4_AxiAddressWidth {32} \
-                         CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {200} \
-                         CONFIG.C0.BANK_GROUP_WIDTH {1} \
-                         CONFIG.C0.CS_WIDTH {2} \
-                    ] [get_ips $ipName]
+if {$::env(BOARD) eq "vcu128"} {
+  puts "THERE"
+  set_property -dict [list CONFIG.RESET_BOARD_INTERFACE {Custom} \
+                           CONFIG.C0_CLOCK_BOARD_INTERFACE {default_100mhz_clk} \
+                           CONFIG.C0.DDR4_Clamshell {true} \
+                           CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram} \
+                           CONFIG.C0.DDR4_InputClockPeriod {10000} \
+                           CONFIG.C0.DDR4_CLKOUT0_DIVIDE {3} \
+                           CONFIG.C0.DDR4_MemoryPart {MT40A512M16HA-075E} \
+                           CONFIG.C0.DDR4_DataWidth {72} \
+                           CONFIG.C0.DDR4_DataMask {NO_DM_NO_DBI} \
+                           CONFIG.C0.DDR4_Ecc {true} \
+                           CONFIG.C0.DDR4_AxiSelection {true} \
+                           CONFIG.C0.DDR4_AxiDataWidth {512} \
+                           CONFIG.C0.DDR4_AxiAddressWidth {32} \
+                           CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {200} \
+                           CONFIG.C0.BANK_GROUP_WIDTH {1} \
+                           CONFIG.C0.CS_WIDTH {2} \
+                      ] [get_ips $ipName]
+} elseif {$::env(BOARD) eq "zcu102"} {
+  puts "HERE"
+  set_property -dict [list CONFIG.RESET_BOARD_INTERFACE {reset} \
+                           CONFIG.C0_CLOCK_BOARD_INTERFACE {user_si570_sysclk} \
+                           CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram_062} \
+                           CONFIG.C0.DDR4_TimePeriod {833} \
+                           CONFIG.C0.DDR4_InputClockPeriod {3332} \
+                           CONFIG.C0.DDR4_CLKOUT0_DIVIDE {5} \
+                           CONFIG.C0.DDR4_MemoryPart {MT40A256M16LY-062E} \
+                           CONFIG.C0.DDR4_DataWidth {16} \
+                           CONFIG.C0.DDR4_CasWriteLatency {12} \
+                           CONFIG.C0.DDR4_AxiDataWidth {128} \
+                           CONFIG.C0.DDR4_AxiAddressWidth {29} \
+                           CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
+                           CONFIG.C0.BANK_GROUP_WIDTH {1} \
+                           CONFIG.C0.DDR4_AxiSelection {true} \
+                     ] [get_ips $ipName]
+}
+
+puts "END"
 
 generate_target {instantiation_template} [get_files ./$ipName.srcs/sources_1/ip/$ipName/$ipName.xci]
 generate_target all [get_files  ./$ipName.srcs/sources_1/ip/$ipName/$ipName.xci]

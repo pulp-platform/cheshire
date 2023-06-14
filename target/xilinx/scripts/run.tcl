@@ -6,7 +6,7 @@
 
 # Contraints files selection
 switch $::env(BOARD) {
-  "genesys2" - "kc705" - "vc707" - "vcu128" {
+  "genesys2" - "kc705" - "vc707" - "vcu128" - "zcu102" {
     import_files -fileset constrs_1 -norecurse constraints/cheshire.xdc
     import_files -fileset constrs_1 -norecurse constraints/$::env(BOARD).xdc
   }
@@ -23,6 +23,9 @@ switch $::env(BOARD) {
   "vcu128" {
     set ips { "xilinx/xlnx_mig_ddr4/xlnx_mig_ddr4.srcs/sources_1/ip/xlnx_mig_ddr4/xlnx_mig_ddr4.xci" \
               "xilinx/xlnx_vio/xlnx_vio.srcs/sources_1/ip/xlnx_vio/xlnx_vio.xci" }
+  }
+  "zcu102" {
+    set ips { "xilinx/xlnx_mig_ddr4/xlnx_mig_ddr4.srcs/sources_1/ip/xlnx_mig_ddr4/xlnx_mig_ddr4.xci"}
   }
   default {
     set ips {}

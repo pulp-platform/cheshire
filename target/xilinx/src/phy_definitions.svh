@@ -26,6 +26,15 @@
   `define USE_FAN
 `endif
 
+`ifdef TARGET_ZCU102
+  `define USE_RESETN
+  `define USE_JTAG
+  `define USE_DDR4
+  // DRAM runs at 100MHz
+  `define DDR_CLK_DIVIDER 4'h4
+  `define USE_FAN
+`endif
+
 `define DDR4_INTF \
   /* Diff clock */ \
   input                c0_sys_clk_p, \
