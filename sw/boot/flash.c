@@ -71,14 +71,22 @@ int main() {
     printf("[FLASH] Write buffer at 0x%x of length %d to target %d, sector %d ... ", img_base, len,
            target, sector);
     switch (target) {
-    case 1:
+    case 1: {
         ret = flash_spi_sdcard(core_freq, rtc_freq, img_base, sector, len);
-    case 2:
+        break;
+    }
+    case 2: {
         ret = flash_spi_s25fs512s(core_freq, rtc_freq, img_base, sector, len);
-    case 3:
+        break;
+    }
+    case 3: {
         ret = flash_i2c_24fc1025(core_freq, img_base, sector, len);
-    default:
+        break;
+    }
+    default: {
         ret = -1;
+        break;
+    }
     }
     if (ret)
         printf("ERROR (%d)\r\n", ret);
