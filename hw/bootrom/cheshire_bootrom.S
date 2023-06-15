@@ -62,6 +62,7 @@ _start:
     andi t0, t0, 2  // regs.HW_FEATURES.llc
     beqz t0, _prom_check_run
     la t0, __base_llc
+    // Only configure half of LLC as SPM
 _wait_llc_bist:
     lw t1, 72(t0)   // llc.BIST_STATUS_DONE_BIT
     beqz t1, _wait_llc_bist

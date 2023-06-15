@@ -148,6 +148,9 @@ package cheshire_pkg;
     shrt_bt LlcSetAssoc;
     shrt_bt LlcNumLines;
     shrt_bt LlcNumBlocks;
+    bit     LlcCachePartition;
+    shrt_bt LlcMaxPartition;
+    axi_llc_pkg::algorithm_e LlcRemapHash;
     dw_bt   LlcMaxReadTxns;
     dw_bt   LlcMaxWriteTxns;
     aw_bt   LlcAmoNumCuts;
@@ -155,6 +158,8 @@ package cheshire_pkg;
     bit     LlcOutConnect;
     doub_bt LlcOutRegionStart;
     doub_bt LlcOutRegionEnd;
+    dw_bt   LlcUserMsb;
+    dw_bt   LlcUserLsb;
     // Parameters for VGA
     byte_bt VgaRedWidth;
     byte_bt VgaGreenWidth;
@@ -270,6 +275,7 @@ package cheshire_pkg;
   localparam doub_bt AmLlc    = 'h0300_1000;
   localparam doub_bt AmSlink  = 'h0300_6000;
   localparam doub_bt AmBusErr = 'h0300_8000;
+  localparam doub_bt AmTagger = 'h0300_A000;
   localparam doub_bt AmSpm    = 'h1000_0000;  // Cached region at bottom, uncached on top
   localparam doub_bt AmClic   = 'h0800_0000;
 
@@ -386,6 +392,7 @@ package cheshire_pkg;
     aw_bt irq_router;
     aw_bt [2**MaxCoresWidth-1:0] bus_err;
     aw_bt [2**MaxCoresWidth-1:0] clic;
+    aw_bt [2**MaxCoresWidth-1:0] tagger;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
@@ -413,6 +420,9 @@ package cheshire_pkg;
     end
     if (cfg.BusErr) for (int j = 0; j < 2 + cfg.NumCores; j++) begin
       i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, AmBusErr + j*'h40,  AmBusErr + (j+1)*'h40};
+    end
+    if (cfg.LlcCachePartition) for (int j = 0; j < cfg.NumCores; j++) begin
+      i++; ret.tagger[j]    = i; r++; ret.map[r] = '{i, AmTagger + j*'h40, AmTagger + (j+1)*'h40};
     end
     i++; r++;
     ret.ext_base  = i;
@@ -567,7 +577,7 @@ package cheshire_pkg;
     // Interconnect
     AddrWidth         : 48,
     AxiDataWidth      : 64,
-    AxiUserWidth      : 2,  // AMO(2)
+    AxiUserWidth      : 2,  // Convention: bit 0 for core(s), bit 1 for serial link
     AxiMstIdWidth     : 2,
     AxiMaxMstTrans    : 24,
     AxiMaxSlvTrans    : 24,
@@ -615,6 +625,12 @@ package cheshire_pkg;
     LlcOutConnect     : 1,
     LlcOutRegionStart : 'h8000_0000,
     LlcOutRegionEnd   : 'h1_0000_0000,
+    LlcUserMsb        : 0,
+    LlcUserLsb        : 0,
+    // LLC Partitioning
+    LlcCachePartition : 0,
+    LlcMaxPartition   : 0,
+    LlcRemapHash      : axi_llc_pkg::Modulo,
     // VGA: RGB332
     VgaRedWidth       : 3,
     VgaGreenWidth     : 3,
