@@ -147,6 +147,9 @@ package cheshire_pkg;
     shrt_bt LlcSetAssoc;
     shrt_bt LlcNumLines;
     shrt_bt LlcNumBlocks;
+    bit     LlcCachePartition;
+    shrt_bt LlcMaxPartition;
+    axi_llc_pkg::algorithm_e LlcRemapHash;
     dw_bt   LlcMaxReadTxns;
     dw_bt   LlcMaxWriteTxns;
     aw_bt   LlcAmoNumCuts;
@@ -154,6 +157,8 @@ package cheshire_pkg;
     bit     LlcOutConnect;
     doub_bt LlcOutRegionStart;
     doub_bt LlcOutRegionEnd;
+    dw_bt   LlcUserAmoMsb;
+    dw_bt   LlcUserAmoLsb;
     // Parameters for VGA
     byte_bt VgaRedWidth;
     byte_bt VgaGreenWidth;
@@ -384,6 +389,7 @@ package cheshire_pkg;
     aw_bt irq_router;
     aw_bt [2**MaxCoresWidth-1:0] bus_err;
     aw_bt [2**MaxCoresWidth-1:0] clic;
+    aw_bt tagger;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
@@ -404,6 +410,7 @@ package cheshire_pkg;
     if (cfg.Gpio)         begin i++; ret.gpio       = i; r++; ret.map[r] = '{i, 'h0300_5000, 'h0300_6000}; end
     if (cfg.SerialLink)   begin i++; ret.slink      = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
     if (cfg.Vga)          begin i++; ret.vga        = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
+    if (cfg.LlcCachePartition)   begin i++; ret.tagger   = i; r++; ret.map[r] = '{i, 'h0300_a000, 'h0300_b000}; end
     if (cfg.IrqRouter)    begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
     if (cfg.AxiRt)        begin i++; ret.axirt      = i; r++; ret.map[r] = '{i, 'h020c_0000, 'h0210_0000}; end
     if (cfg.Clic) for (int j = 0; j < cfg.NumCores; j++) begin
@@ -521,7 +528,7 @@ package cheshire_pkg;
     // Interconnect
     AddrWidth         : 48,
     AxiDataWidth      : 64,
-    AxiUserWidth      : 2,  // AMO(2)
+    AxiUserWidth      : 2,  // Convention: bit 0 for core(s), bit 1 for serial link
     AxiMstIdWidth     : 2,
     AxiMaxMstTrans    : 24,
     AxiMaxSlvTrans    : 24,
@@ -568,6 +575,12 @@ package cheshire_pkg;
     LlcOutConnect     : 1,
     LlcOutRegionStart : 'h8000_0000,
     LlcOutRegionEnd   : 'h1_0000_0000,
+    LlcUserAmoMsb     : 6,
+    LlcUserAmoLsb     : 2,
+    // LLC Partitioning
+    LlcCachePartition : 0,
+    LlcMaxPartition   : 0,
+    LlcRemapHash      : axi_llc_pkg::Modulo,
     // VGA: RGB332
     VgaRedWidth       : 3,
     VgaGreenWidth     : 3,
