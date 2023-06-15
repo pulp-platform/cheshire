@@ -10,7 +10,7 @@ else
 endif
 
 all:
-	$(VIVADO) -mode gui -source tcl/run.tcl
+	$(VIVADO) -mode batch -source tcl/run.tcl
 
 gui:
 	$(VIVADO) -mode gui -source tcl/run.tcl &

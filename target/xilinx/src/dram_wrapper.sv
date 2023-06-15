@@ -298,135 +298,59 @@ module dram_wrapper #(
 
 `ifdef USE_DDR4
 
-  `ifdef TARGET_VCU128
-
-    xlnx_mig_ddr4 i_dram (
-      // Rst
-      .sys_rst                   (sys_rst_i),
-      .c0_ddr4_aresetn           (soc_resetn_i),
-      // Clk rst out
-      .c0_ddr4_ui_clk            (dram_axi_clk),
-      .c0_ddr4_ui_clk_sync_rst   (dram_rst_o),
-      // Axi
-      .c0_ddr4_s_axi_awid        (spill_dram_req_awid),
-      .c0_ddr4_s_axi_awaddr      (spill_dram_req_awaddr),
-      .c0_ddr4_s_axi_awlen       (spill_dram_req.aw.len),
-      .c0_ddr4_s_axi_awsize      (spill_dram_req.aw.size),
-      .c0_ddr4_s_axi_awburst     (spill_dram_req.aw.burst),
-      .c0_ddr4_s_axi_awlock      (spill_dram_req.aw.lock),
-      .c0_ddr4_s_axi_awcache     (spill_dram_req.aw.cache),
-      .c0_ddr4_s_axi_awprot      (spill_dram_req.aw.prot),
-      .c0_ddr4_s_axi_awqos       (spill_dram_req.aw.qos),
-      .c0_ddr4_s_axi_awvalid     (spill_dram_req.aw_valid),
-      .c0_ddr4_s_axi_awready     (spill_dram_rsp.aw_ready),
-      .c0_ddr4_s_axi_wdata       (spill_dram_req.w.data),
-      .c0_ddr4_s_axi_wstrb       (spill_dram_req.w.strb),
-      .c0_ddr4_s_axi_wlast       (spill_dram_req.w.last),
-      .c0_ddr4_s_axi_wvalid      (spill_dram_req.w_valid),
-      .c0_ddr4_s_axi_wready      (spill_dram_rsp.w_ready),
-      .c0_ddr4_s_axi_bready      (spill_dram_req.b_ready),
-      .c0_ddr4_s_axi_bid         (spill_dram_rsp_bid),
-      .c0_ddr4_s_axi_bresp       (spill_dram_rsp.b.resp),
-      .c0_ddr4_s_axi_bvalid      (spill_dram_rsp.b_valid),
-      .c0_ddr4_s_axi_arid        (spill_dram_req_arid),
-      .c0_ddr4_s_axi_araddr      (spill_dram_req_araddr),
-      .c0_ddr4_s_axi_arlen       (spill_dram_req.ar.len),
-      .c0_ddr4_s_axi_arsize      (spill_dram_req.ar.size),
-      .c0_ddr4_s_axi_arburst     (spill_dram_req.ar.burst),
-      .c0_ddr4_s_axi_arlock      (spill_dram_req.ar.lock),
-      .c0_ddr4_s_axi_arcache     (spill_dram_req.ar.cache),
-      .c0_ddr4_s_axi_arprot      (spill_dram_req.ar.prot),
-      .c0_ddr4_s_axi_arqos       (spill_dram_req.ar.qos),
-      .c0_ddr4_s_axi_arvalid     (spill_dram_req.ar_valid),
-      .c0_ddr4_s_axi_arready     (spill_dram_rsp.ar_ready),
-      .c0_ddr4_s_axi_rready      (spill_dram_req.r_ready),
-      .c0_ddr4_s_axi_rid         (spill_dram_rsp_rid),
-      .c0_ddr4_s_axi_rdata       (spill_dram_rsp.r.data),
-      .c0_ddr4_s_axi_rresp       (spill_dram_rsp.r.resp),
-      .c0_ddr4_s_axi_rlast       (spill_dram_rsp.r.last),
-      .c0_ddr4_s_axi_rvalid      (spill_dram_rsp.r_valid),
-      // Axi ctrl
-      .c0_ddr4_s_axi_ctrl_awvalid('0),
-      .c0_ddr4_s_axi_ctrl_awready(),
-      .c0_ddr4_s_axi_ctrl_awaddr ('0),
-      .c0_ddr4_s_axi_ctrl_wvalid ('0),
-      .c0_ddr4_s_axi_ctrl_wready (),
-      .c0_ddr4_s_axi_ctrl_wdata  ('0),
-      .c0_ddr4_s_axi_ctrl_bvalid (),
-      .c0_ddr4_s_axi_ctrl_bready ('0),
-      .c0_ddr4_s_axi_ctrl_bresp  (),
-      .c0_ddr4_s_axi_ctrl_arvalid('0),
-      .c0_ddr4_s_axi_ctrl_arready(),
-      .c0_ddr4_s_axi_ctrl_araddr ('0),
-      .c0_ddr4_s_axi_ctrl_rvalid (),
-      .c0_ddr4_s_axi_ctrl_rready ('0),
-      .c0_ddr4_s_axi_ctrl_rdata  (),
-      .c0_ddr4_s_axi_ctrl_rresp  (),
-      // Others
-      .c0_init_calib_complete    (),  // keep open
-      .addn_ui_clkout1           (dram_clk_o),
-      .dbg_clk                   (),
-      .c0_ddr4_interrupt         (),
-      .dbg_bus                   (),
-      // Phy
-      .*
-    );
-
-  `elsif TARGET_ZCU102
-    xlnx_mig_ddr4 i_dram (
-      // Rst
-      .sys_rst                   (sys_rst_i),
-      .c0_ddr4_aresetn           (soc_resetn_i),
-      // Clk rst out
-      .c0_ddr4_ui_clk            (dram_axi_clk),
-      .c0_ddr4_ui_clk_sync_rst   (dram_rst_o),
-      // Axi
-      .c0_ddr4_s_axi_awid        (spill_dram_req_awid),
-      .c0_ddr4_s_axi_awaddr      (spill_dram_req_awaddr),
-      .c0_ddr4_s_axi_awlen       (spill_dram_req.aw.len),
-      .c0_ddr4_s_axi_awsize      (spill_dram_req.aw.size),
-      .c0_ddr4_s_axi_awburst     (spill_dram_req.aw.burst),
-      .c0_ddr4_s_axi_awlock      (spill_dram_req.aw.lock),
-      .c0_ddr4_s_axi_awcache     (spill_dram_req.aw.cache),
-      .c0_ddr4_s_axi_awprot      (spill_dram_req.aw.prot),
-      .c0_ddr4_s_axi_awqos       (spill_dram_req.aw.qos),
-      .c0_ddr4_s_axi_awvalid     (spill_dram_req.aw_valid),
-      .c0_ddr4_s_axi_awready     (spill_dram_rsp.aw_ready),
-      .c0_ddr4_s_axi_wdata       (spill_dram_req.w.data),
-      .c0_ddr4_s_axi_wstrb       (spill_dram_req.w.strb),
-      .c0_ddr4_s_axi_wlast       (spill_dram_req.w.last),
-      .c0_ddr4_s_axi_wvalid      (spill_dram_req.w_valid),
-      .c0_ddr4_s_axi_wready      (spill_dram_rsp.w_ready),
-      .c0_ddr4_s_axi_bready      (spill_dram_req.b_ready),
-      .c0_ddr4_s_axi_bid         (spill_dram_rsp_bid),
-      .c0_ddr4_s_axi_bresp       (spill_dram_rsp.b.resp),
-      .c0_ddr4_s_axi_bvalid      (spill_dram_rsp.b_valid),
-      .c0_ddr4_s_axi_arid        (spill_dram_req_arid),
-      .c0_ddr4_s_axi_araddr      (spill_dram_req_araddr),
-      .c0_ddr4_s_axi_arlen       (spill_dram_req.ar.len),
-      .c0_ddr4_s_axi_arsize      (spill_dram_req.ar.size),
-      .c0_ddr4_s_axi_arburst     (spill_dram_req.ar.burst),
-      .c0_ddr4_s_axi_arlock      (spill_dram_req.ar.lock),
-      .c0_ddr4_s_axi_arcache     (spill_dram_req.ar.cache),
-      .c0_ddr4_s_axi_arprot      (spill_dram_req.ar.prot),
-      .c0_ddr4_s_axi_arqos       (spill_dram_req.ar.qos),
-      .c0_ddr4_s_axi_arvalid     (spill_dram_req.ar_valid),
-      .c0_ddr4_s_axi_arready     (spill_dram_rsp.ar_ready),
-      .c0_ddr4_s_axi_rready      (spill_dram_req.r_ready),
-      .c0_ddr4_s_axi_rid         (spill_dram_rsp_rid),
-      .c0_ddr4_s_axi_rdata       (spill_dram_rsp.r.data),
-      .c0_ddr4_s_axi_rresp       (spill_dram_rsp.r.resp),
-      .c0_ddr4_s_axi_rlast       (spill_dram_rsp.r.last),
-      .c0_ddr4_s_axi_rvalid      (spill_dram_rsp.r_valid),
-      // Others
-      .c0_init_calib_complete    (),  // keep open
-      .addn_ui_clkout1           (dram_clk_o),
-      .dbg_clk                   (),
-      .dbg_bus                   (),
-      // Phy
-      .*
-    );
-  `endif
+  xlnx_mig_ddr4 i_dram (
+    // Rst
+    .sys_rst                   (sys_rst_i),
+    .c0_ddr4_aresetn           (soc_resetn_i),
+    // Clk rst out
+    .c0_ddr4_ui_clk            (dram_axi_clk),
+    .c0_ddr4_ui_clk_sync_rst   (dram_rst_o),
+    // Axi
+    .c0_ddr4_s_axi_awid        (spill_dram_req_awid),
+    .c0_ddr4_s_axi_awaddr      (spill_dram_req_awaddr),
+    .c0_ddr4_s_axi_awlen       (spill_dram_req.aw.len),
+    .c0_ddr4_s_axi_awsize      (spill_dram_req.aw.size),
+    .c0_ddr4_s_axi_awburst     (spill_dram_req.aw.burst),
+    .c0_ddr4_s_axi_awlock      (spill_dram_req.aw.lock),
+    .c0_ddr4_s_axi_awcache     (spill_dram_req.aw.cache),
+    .c0_ddr4_s_axi_awprot      (spill_dram_req.aw.prot),
+    .c0_ddr4_s_axi_awqos       (spill_dram_req.aw.qos),
+    .c0_ddr4_s_axi_awvalid     (spill_dram_req.aw_valid),
+    .c0_ddr4_s_axi_awready     (spill_dram_rsp.aw_ready),
+    .c0_ddr4_s_axi_wdata       (spill_dram_req.w.data),
+    .c0_ddr4_s_axi_wstrb       (spill_dram_req.w.strb),
+    .c0_ddr4_s_axi_wlast       (spill_dram_req.w.last),
+    .c0_ddr4_s_axi_wvalid      (spill_dram_req.w_valid),
+    .c0_ddr4_s_axi_wready      (spill_dram_rsp.w_ready),
+    .c0_ddr4_s_axi_bready      (spill_dram_req.b_ready),
+    .c0_ddr4_s_axi_bid         (spill_dram_rsp_bid),
+    .c0_ddr4_s_axi_bresp       (spill_dram_rsp.b.resp),
+    .c0_ddr4_s_axi_bvalid      (spill_dram_rsp.b_valid),
+    .c0_ddr4_s_axi_arid        (spill_dram_req_arid),
+    .c0_ddr4_s_axi_araddr      (spill_dram_req_araddr),
+    .c0_ddr4_s_axi_arlen       (spill_dram_req.ar.len),
+    .c0_ddr4_s_axi_arsize      (spill_dram_req.ar.size),
+    .c0_ddr4_s_axi_arburst     (spill_dram_req.ar.burst),
+    .c0_ddr4_s_axi_arlock      (spill_dram_req.ar.lock),
+    .c0_ddr4_s_axi_arcache     (spill_dram_req.ar.cache),
+    .c0_ddr4_s_axi_arprot      (spill_dram_req.ar.prot),
+    .c0_ddr4_s_axi_arqos       (spill_dram_req.ar.qos),
+    .c0_ddr4_s_axi_arvalid     (spill_dram_req.ar_valid),
+    .c0_ddr4_s_axi_arready     (spill_dram_rsp.ar_ready),
+    .c0_ddr4_s_axi_rready      (spill_dram_req.r_ready),
+    .c0_ddr4_s_axi_rid         (spill_dram_rsp_rid),
+    .c0_ddr4_s_axi_rdata       (spill_dram_rsp.r.data),
+    .c0_ddr4_s_axi_rresp       (spill_dram_rsp.r.resp),
+    .c0_ddr4_s_axi_rlast       (spill_dram_rsp.r.last),
+    .c0_ddr4_s_axi_rvalid      (spill_dram_rsp.r_valid),
+    // Others
+    .c0_init_calib_complete    (),  // keep open
+    .addn_ui_clkout1           (dram_clk_o),
+    .dbg_clk                   (),
+    .dbg_bus                   (),
+    // Phy
+    .*
+  );
 `endif  // USE_DDR4
 
 

@@ -23,10 +23,10 @@ bender-targets := -t $(BOARD) -t cv64a6_imafdcsclic_sv39 -t cva6
 # Select board specific variables
 ifeq ($(BOARD),vcu128)
     # The bordcomputer only has hw-server 2020.2 for now
-	VIVADO       ?= vitis-2020.2 vivado
-	XILINX_PART  ?= xcvu37p-fsvh2892-2L-e
-	XILINX_BOARD ?= xilinx.com:vcu128:part0:1.0
-	ips-names    := xlnx_vio xlnx_mig_ddr4
+	VIVADO         ?= vitis-2020.2 vivado
+	XILINX_PART    ?= xcvu37p-fsvh2892-2L-e
+	XILINX_BOARD   ?= xilinx.com:vcu128:part0:1.0
+	ips-names      := xlnx_vio xlnx_mig_ddr4
 	bender-targets := $(bender-targets) -t bscane
 endif
 ifeq ($(BOARD),genesys2)
@@ -36,11 +36,10 @@ ifeq ($(BOARD),genesys2)
 	FPGA_PATH    ?= xilinx_tcf/Digilent/200300A8C60DB
 endif
 ifeq ($(BOARD),zcu102)
-	VIVADO		 ?= vitis-2020.2 vivado
-	XILINX_PART  ?= xczu9eg-ffvb1156-2-e
-	XILINX_BOARD ?= xilinx.com:zcu102:part0:3.4
-	ip-names	 := xlnx_mig_ddr4
-	bender-targets := $(bender-targets) -t bscane
+	VIVADO ?= vitis-2020.2 vivado
+	XILINX_PART    ?= xczu9eg-ffvb1156-2-e
+	XILINX_BOARD   ?= xilinx.com:zcu102:part0:3.4
+	ips-names      := xlnx_mig_ddr4
 endif
 
 # Derive from ips
@@ -68,7 +67,8 @@ else
 	VIVADO ?= vivado
 endif
 
-VIVADOFLAGS ?= -nojournal -mode batch
+MODE        ?= batch
+VIVADOFLAGS ?= -nojournal -mode $(MODE)
 
 all: $(bit)
 
@@ -80,6 +80,7 @@ $(mcs): $(bit)
 	$(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/write_cfgmem.tcl -tclargs $@ $^
 
 $(bit): $(ips) scripts/add_sources.tcl
+	echo $(ips)
 	@mkdir -p $(out)
 	$(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/prologue.tcl -source scripts/run.tcl
 	cp $(PROJECT).runs/impl_1/$(PROJECT)* ./$(out)
