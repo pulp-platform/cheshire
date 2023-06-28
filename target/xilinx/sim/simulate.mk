@@ -28,8 +28,8 @@ VIVADOENV_SIM := $(VIVADOENV) \
 VLOG_ARGS := -suppress 2583 -suppress 13314
 
 # Fetch example projects at IIS (containing SRAM behavioral models)
-sim/ips/%_ex/questa/compile.do:
-	tar -xvf /usr/scratch2/wuerzburg/cykoenig/export/$*_ex.tar -C sim/ips
+#sim/ips/%_ex/questa/compile.do:
+#	tar -xvf /usr/scratch2/wuerzburg/cykoenig/export/$*_ex.tar -C sim/ips
 
 # Generate simulation libraries
 $(XILINX_SIMLIB_PATH)/modelsim.ini:

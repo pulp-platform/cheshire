@@ -8,6 +8,7 @@
   `define USE_RESET
   `define USE_JTAG
   `define USE_JTAG_VDDGND
+  `define USE_QSPI
   `define USE_VIO
   `define USE_DDR4
   // DRAM runs at 200MHz

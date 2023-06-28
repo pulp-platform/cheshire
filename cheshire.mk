@@ -11,7 +11,7 @@ PYTHON3     ?= python3
 REGGEN      ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
 
 VLOG_ARGS   ?= -suppress 2583 -suppress 13314
-VSIM        ?= vsim
+VSIM        ?= questa-2022.3 vsim
 
 # Define used paths (prefixed to avoid name conflicts)
 CHS_ROOT      ?= $(shell $(BENDER) path cheshire)

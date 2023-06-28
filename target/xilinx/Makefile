@@ -11,7 +11,7 @@ BENDER       ?= bender
 PROJECT      ?= cheshire
 
 # Board in      {vcu128, genesys2}
-BOARD        ?= genesys2
+BOARD        ?= vcu128
 XILINX_PORT  ?= 3332
 XILINX_HOST  ?= bordcomputer
 FPGA_PATH    ?= xilinx_tcf/Digilent/200300A8C60DB
@@ -27,7 +27,7 @@ ifeq ($(BOARD),vcu128)
 	XILINX_PART  ?= xcvu37p-fsvh2892-2L-e
 	XILINX_BOARD ?= xilinx.com:vcu128:part0:1.0
 	ips-names    := xlnx_vio xlnx_mig_ddr4
-	bender-targets := $(bender-targets) -t bscane
+	bender-targets := $(bender-targets)
 endif
 ifeq ($(BOARD),genesys2)
 	XILINX_PART  ?= xc7k325tffg900-2

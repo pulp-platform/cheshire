@@ -56,15 +56,6 @@ module cheshire_top_xilinx
   output logic        fan_pwm,
 `endif
 
-`ifdef USE_QSPI
-  output logic        qspi_clk,
-  input  logic        qspi_dq0,
-  input  logic        qspi_dq1,
-  input  logic        qspi_dq2,
-  input  logic        qspi_dq3,
-  output logic        qspi_cs_b,
-`endif
-
 `ifdef USE_VGA
   // VGA Colour signals
   output logic [4:0]  vga_b,
@@ -336,14 +327,14 @@ module cheshire_top_xilinx
   // SPI Adaption //
   //////////////////
 
-  logic spi_sck_soc;
-  logic [1:0] spi_cs_soc;
-  logic [3:0] spi_sd_soc_out;
-  logic [3:0] spi_sd_soc_in;
+  logic                 spi_sck_soc;
+  logic [SpihNumCs-1:0] spi_cs_soc;
+  logic [3:0]           spi_sd_soc_out;
+  logic [3:0]           spi_sd_soc_in;
 
-  logic spi_sck_en;
-  logic [1:0] spi_cs_en;
-  logic [3:0] spi_sd_en;
+  logic                 spi_sck_en;
+  logic [SpihNumCs-1:0] spi_cs_en;
+  logic [3:0]           spi_sd_en;
 
 `ifdef USE_SD
   // Assert reset low => Apply power to the SD Card
@@ -364,11 +355,68 @@ module cheshire_top_xilinx
   assign spi_sd_soc_in[3] = 1'b0;
 `endif
 
+
 `ifdef USE_QSPI
-  assign qspi_clk  = spi_sck_en    ? spi_sck_soc       : 1'b1;
-  assign qspi_cs_b = spi_cs_soc[0];
-  assign spi_sd_soc_in[1] = qspi_dq0;
+  logic                 qspi_clk;
+  logic                 qspi_clk_ts;
+  logic [3:0]           qspi_dqi;
+  logic [3:0]           qspi_dqo_ts;
+  logic [3:0]           qspi_dqo;
+  logic                 qspi_cs_b;
+  logic                 qspi_cs_b_ts;
+
+  assign qspi_clk      = spi_sck_soc;
+  assign qspi_cs_b     = spi_cs_soc;
+  assign qspi_dqo      = spi_sd_soc_out;
+  assign spi_sd_soc_in = qspi_dqi;
+  // Tristate - Enable
+  assign qspi_clk_ts  = ~(spi_sck_en);
+  assign qspi_cs_b_ts = ~(spi_cs_en);
+  assign qspi_dqo_ts  = ~(spi_sd_en);
 `endif
+
+  ///////////////
+  // STARTUPE3 //
+  ///////////////
+
+// STARTUPE3: STARTUP Block
+//            UltraScale
+// Xilinx HDL Language Template, version 2023.1
+
+STARTUPE3 #(
+   .PROG_USR("FALSE"),    // Activate program event security feature. Requires encrypted bitstreams.
+   .SIM_CCLK_FREQ(0.0)    // Set the Configuration Clock Frequency (ns) for simulation.
+)
+STARTUPE3_inst (
+   .CFGCLK    (),         // CONFIG 1-bit output: Configuration main clock output.
+   .CFGMCLK   (),         // CONFIG 1-bit output: Configuration internal oscillator clock output.
+//   .DI        (qspi_dqi),
+   .EOS       (),         // CONFIG 1-bit output: Active-High output signal indicating the End Of Startup.
+   .PREQ      (),         // CONFIG 1-bit output: PROGRAM request to fabric output.
+//   .DO        (qspi_dqo),
+//   .DTS       (qspi_dqo_ts),
+//   .FCSBO     (qspi_cs_b),
+//   .FCSBTS    (qspi_cs_b_ts),
+   .GSR       (1'b0),
+   .GTS       (1'b0),
+   .KEYCLEARB (1'b1),
+   .PACK      (1'b0),
+//   .USRCCLKO  (qspi_clk),
+//   .USRCCLKTS (qspi_clk_ts),
+   .USRDONEO  (1'b1),
+   .USRDONETS (1'b1)
+);
+
+// ILA for SPI inteface
+`ila( clk,     qspi_clk     );
+`ila( clk_ts,  qspi_clk_ts  );
+//`ila( dqi,     qspi_dqi     );
+`ila( mosi,    qspi_dqo     );
+`ila( mosi_ts, qspi_dqo_ts  );
+`ila( cs,      qspi_cs_b    );
+`ila( cs_ts,   qspi_cs_b_ts );
+
+// End of STARTUPE3_inst instantiation
 
   /////////////////////////
   // "RTC" Clock Divider //
