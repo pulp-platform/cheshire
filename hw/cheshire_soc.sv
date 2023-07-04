@@ -1105,10 +1105,14 @@ module cheshire_soc import cheshire_pkg::*; #(
         .NumRules       ( 1  ),
         .PeriodWidth    ( 32 ),
         .BudgetWidth    ( 32 ),
+        .CutDecErrors   ( 1'b1 ),
         .rt_rule_t      ( rt_rule_t ),
         .addr_t         ( addr_t    ),
         .aw_chan_t      ( axi_mst_aw_chan_t ),
         .w_chan_t       ( axi_mst_w_chan_t  ),
+        .b_chan_t       ( axi_mst_b_chan_t  ),
+        .ar_chan_t      ( axi_mst_ar_chan_t ),
+        .r_chan_t       ( axi_mst_r_chan_t  ),
         .axi_req_t      ( axi_mst_req_t ),
         .axi_resp_t     ( axi_mst_rsp_t )
       ) i_axi_rt_unit (

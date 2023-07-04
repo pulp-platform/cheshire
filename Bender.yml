@@ -17,6 +17,7 @@ dependencies:
   axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",                version: 0.2.1  }
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.7.0  }
   axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",                version: 0.1.1  }
+  axi-rt:                   { git: "git@iis-git.ee.ethz.ch:bslk/axi-rt.git",                      version: 0.0.2-beta }
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                  version: 0.1.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           version: 1.29.0 }
   common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.0  }

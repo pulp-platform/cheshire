@@ -1,7 +1,7 @@
 packages:
   apb:
-    revision: 77ddf073f194d44b9119949d2421be59789e69ae
-    version: 0.2.4
+    revision: 56ca84b687c9f6dc650e2a7cb221cb2bd4b2a456
+    version: 0.2.3
     source:
       Git: https://github.com/pulp-platform/apb
     dependencies:
@@ -23,6 +23,14 @@ packages:
     - common_cells
     - common_verification
     - tech_cells_generic
+  axi-rt:
+    revision: a14e1926f1ccedbc8fc739444ce86c1e09195fe5
+    version: 0.0.2-beta
+    source:
+      Git: git@iis-git.ee.ethz.ch:bslk/axi-rt.git
+    dependencies:
+    - axi
+    - common_cells
   axi_llc:
     revision: 559bcbd09a5a884dbe31e2d72fd95d024e357f39
     version: 0.2.1
