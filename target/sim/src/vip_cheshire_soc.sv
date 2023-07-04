@@ -672,7 +672,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     if (SlinkAxiDebug) $display("[SLINK] - Sending AW ");
     slink_axi_driver.send_aw(ax);
     do begin
-      w.w_strb = (~('1 << size_bytes)) << addr[AxiStrbBits-1:0];
+      w.w_strb = i == 0 ? (~('1 << size_bytes)) << addr[AxiStrbBits-1:0] : '1;
       w.w_data = beats[i];
       w.w_last = (i == ax.ax_len);
       if (SlinkAxiDebug) $display("[SLINK] - Sending W (%0d)", i);
@@ -740,7 +740,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   // Load a binary
   task automatic slink_elf_preload(input string binary, output doub_bt entry);
-    longint sec_addr, sec_len;
+    longint sec_addr, sec_len, bus_offset;
     $display("[SLINK] Preloading ELF binary: %s", binary);
     if (read_elf(binary))
       $fatal(1, "[SLINK] Failed to load ELF!");
@@ -748,11 +748,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       byte bf[] = new [sec_len];
       $display("[SLINK] Preloading section at 0x%h (%0d bytes)", sec_addr, sec_len);
       if (read_section(sec_addr, bf, sec_len)) $fatal(1, "[SLINK] Failed to read ELF section!");
-      jtag_write(dm::SBCS, JtagInitSbcs, 1, 1);
-      // Write address as 64-bit double
-      jtag_write(dm::SBAddress1, sec_addr[63:32]);
-      jtag_write(dm::SBAddress0, sec_addr[31:0]);
       // Write section as fixed-size bursts
+      bus_offset = sec_addr[AxiStrbBits-1:0];
       for (longint i = 0; i <= sec_len ; i += SlinkBurstBytes) begin
         axi_data_t beats [$];
         if (i != 0)
@@ -760,10 +757,17 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
         // Assemble beats for current burst from section buffer
         for (int b = 0; b < SlinkBurstBytes; b += AxiStrbWidth) begin
           axi_data_t beat;
-          // We handle incomplete bursts, but do assume bus-aligned sections
-          if (i+b >= sec_len) break;
+          // We handle incomplete bursts
+          if (i+b-bus_offset >= sec_len) break;
           for (int e = 0; e < AxiStrbWidth; ++e)
-            beat[8*e +: 8] = bf [i+b+e];
+            if (i+b+e < bus_offset) begin
+              beat[8*e +: 8] = '0;
+            end else if (i+b+e-bus_offset >= sec_len) begin
+              beat[8*e +: 8] = '0;
+            end else begin
+              beat[8*e +: 8] = bf [i+b+e-bus_offset];
+            end
+
           beats.push_back(beat);
         end
         // Write this burst
@@ -776,7 +780,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   // Run a binary
   task automatic slink_elf_run(input string binary);
-    dm::dmstatus_t status;
     doub_bt entry;
     // Wait for bootrom to ungate Serial Link
     if (DutCfg.LlcNotBypass) begin
