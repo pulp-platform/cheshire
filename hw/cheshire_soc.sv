@@ -894,11 +894,11 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Map user to AMO domain as we are an atomics-capable master.
   // As we are core 0, the core 1 and serial link AMO bits should *not* be set.
   always_comb begin
-    core_ur_req         = core_out_req;
-    core_ur_req.aw.user = Cfg.AxiUserAmoDomain;
-    core_ur_req.ar.user = Cfg.AxiUserAmoDomain;
-    core_ur_req.w.user  = Cfg.AxiUserAmoDomain;
-    core_out_rsp        = core_ur_rsp;
+    core_ur_req                                              = core_out_req;
+    core_ur_req.aw.user[Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.AxiUserAmoCoreBase;
+    core_ur_req.ar.user[Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.AxiUserAmoCoreBase;
+    core_ur_req.w.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.AxiUserAmoCoreBase;
+    core_out_rsp                                             = core_ur_rsp;
   end
 
   // CVA6's ID encoding is wasteful; remap it statically pack into available bits

@@ -92,7 +92,7 @@ package cheshire_pkg;
     // A '0 user signal indicates no atomics.
     dw_bt   AxiUserAmoMsb;
     dw_bt   AxiUserAmoLsb;
-    doub_bt AxiUserAmoDomain;
+    doub_bt AxiUserAmoCoreBase; // AMO ID for Core 0, additional cores increasing
     // Reg parameters
     dw_bt   RegMaxReadTxns;
     dw_bt   RegMaxWriteTxns;
@@ -426,12 +426,13 @@ package cheshire_pkg;
     // Interconnect
     AddrWidth         : 48,
     AxiDataWidth      : 64,
-    AxiUserWidth      : 2,  // Convention: bit 0 for core(s), bit 1 for serial link
+    AxiUserWidth      : 2,  // ATOPS(2)
     AxiMstIdWidth     : 2,
     AxiMaxMstTrans    : 8,
     AxiMaxSlvTrans    : 8,
-    AxiUserAmoMsb     : 1,
-    AxiUserAmoLsb     : 0,
+    AxiUserAmoMsb     : 1,  // Convention: bit 0 for core(s), bit 1 for serial link
+    AxiUserAmoLsb     : 0,  // Convention: bit 0 for core(s), bit 1 for serial link
+    AxiUserAmoCoreBase : 0, // Convention: cores start at 0
     RegMaxReadTxns    : 8,
     RegMaxWriteTxns   : 8,
     RegAmoNumCuts     : 1,
