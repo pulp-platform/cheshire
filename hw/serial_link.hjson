@@ -97,10 +97,10 @@
     },
     { multireg:
       {
-        name: "TX_PHY_CTRL1",
+        name: "TX_PHY_CLK_DIV",
         desc: "Holds clock divider factor for forwarded clock of the TX Phys",
         count: "NumChannels",
-        cname: "TX_PHY_CTRL1",
+        cname: "TX_PHY_CLK_DIV",
         swaccess: "rw",
         hwaccess: "hro",
         compact: false,
@@ -115,10 +115,10 @@
     },
     { multireg:
       {
-        name: "TX_PHY_CTRL2",
+        name: "TX_PHY_CLK_START",
         desc: "Controls duty cycle and phase of rising and falling edge in TX Phys",
         count: "NumChannels",
-        cname: "TX_PHY_CTRL2",
+        cname: "TX_PHY_CLK_START",
         compact: false,
         swaccess: "rw",
         hwaccess: "hro",
@@ -127,7 +127,20 @@
             name: "clk_shift_start",
             desc: "Positive Edge of divided, shifted clock",
             resval: 2
-          },
+          }
+        ]
+      }
+    },
+    { multireg:
+      {
+        name: "TX_PHY_CLK_END",
+        desc: "Controls duty cycle and phase of falling edge in TX Phys",
+        count: "NumChannels",
+        cname: "TX_PHY_CLK_END",
+        compact: false,
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
           { bits: "Log2MaxClkDiv:0",
             name: "clk_shift_end",
             desc: "Negative Edge of divided, shifted clock",
