@@ -129,8 +129,8 @@ packages:
     - common_cells
     - common_verification
   riscv-dbg:
-    revision: 122510063a02e0d012f0497ffdbafca53d4e716b
-    version: 0.7.0
+    revision: 138d74bcaa90c70180c12215db3776813d2a95f2
+    version: 0.8.0
     source:
       Git: https://github.com/pulp-platform/riscv-dbg
     dependencies:

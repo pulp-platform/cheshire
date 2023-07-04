@@ -28,14 +28,14 @@ package cheshire_pkg;
 
   // Default JTAG ID code type
   typedef struct packed {
-    bit         _one;
-    bit [10:0]  manufacturer;
-    bit [15:0]  part_num;
     bit [ 3:0]  version;
+    bit [15:0]  part_num;
+    bit [10:0]  manufacturer;
+    bit         _one;
   } jtag_idcode_t;
 
   // PULP Platform manufacturer and default Cheshire part number
-  localparam bit [10:0] JtagPulpManufacturer  = 12'h6d9;
+  localparam bit [10:0] JtagPulpManufacturer  = 11'h6d9;
   localparam bit [15:0] JtagCheshirePartNum   = 16'hc5e5;
   localparam bit [ 3:0] JtagCheshireVersion   = 4'h1;
   localparam jtag_idcode_t CheshireIdCode = '{
