@@ -24,7 +24,7 @@ dependencies:
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA",                   rev: 437ffa9    }  # TODO: master commit; use next release once out
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals",  version: 0.4.0  }
   register_interface:       { git: "https://github.com/pulp-platform/register_interface",     rev: 50270f7    }  # TODO: master commit; use next release once out
-  riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg",              version: 0.7.0  }
+  riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg",              version: 0.8.0  }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link",            version: 1.0.1  }
 
 export_include_dirs:
