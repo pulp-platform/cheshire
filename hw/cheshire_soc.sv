@@ -117,6 +117,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Defined interrupts
   typedef struct packed {
     logic [iomsb(NumExtIntrs):0] ext;
+    logic [5:0] bus_err; // VGA, DMA, CVA6
     logic [31:0] gpio;
     logic spih_spi_event;
     logic spih_error;
@@ -633,6 +634,52 @@ module cheshire_soc import cheshire_pkg::*; #(
     .rsp_o  ( reg_out_rsp[RegOut.err] )
   );
 
+  reg_req_t [3:0] bus_err_req;
+  reg_rsp_t [3:0] bus_err_rsp;
+  if (Cfg.BusErr) begin : gen_bus_err_reg_demux
+    logic [1:0] bus_err_select;
+
+    always_comb begin
+      bus_err_select = '0;
+      if (reg_out_req[RegOut.bus_err].addr[11:6] == 6'h0) begin
+        bus_err_select = 2'b01;
+      end else if (reg_out_req[RegOut.bus_err].addr[11:6] == 6'h1) begin
+        bus_err_select = 2'b01;
+      end else if (reg_out_req[RegOut.bus_err].addr[11:6] == 6'h2) begin
+        bus_err_select = 2'b10;
+      end else if (reg_out_req[RegOut.bus_err].addr[11:6] == 6'h3) begin
+        bus_err_select = 2'b11;
+      end
+
+    end
+
+    reg_demux #(
+      .NoPorts  ( 4 ), // VGA, DMA, CVA6, err
+      .req_t    ( reg_req_t ),
+      .rsp_t    ( reg_rsp_t )
+    ) i_reg_demux (
+      .clk_i,
+      .rst_ni,
+      .in_select_i  ( bus_err_select ),
+      .in_req_i     ( reg_out_req[RegOut.bus_err] ),
+      .in_rsp_o     ( reg_out_rsp[RegOut.bus_err] ),
+      .out_req_o    ( bus_err_req ),
+      .out_rsp_i    ( bus_err_rsp )
+    );
+
+    reg_err_slv #(
+      .DW       ( 32 ),
+      .ERR_VAL  ( 32'hBADCAB1E ),
+      .req_t    ( reg_req_t ),
+      .rsp_t    ( reg_rsp_t )
+    ) i_bus_err_slv (
+      .req_i  ( bus_err_req[0] ),
+      .rsp_o  ( bus_err_rsp[0] )
+    );
+  end else begin : gen_no_bus_err
+    assign irqs.bus_err = '0;
+  end
+
   // Connect external slaves
   if (Cfg.RegExtNumSlv > 0) begin : gen_ext_reg_slv
     assign reg_ext_slv_req_o = reg_out_req[RegOut.num_out-1:RegOut.ext_base];
@@ -818,6 +865,31 @@ module cheshire_soc import cheshire_pkg::*; #(
     .axi_req_o        ( core_out_req ),
     .axi_resp_i       ( core_out_rsp )
   );
+
+  if (Cfg.BusErr) begin : gen_cva6_bus_err
+    axi_err_unit_wrap #(
+      .AddrWidth         ( Cfg.AddrWidth     ),
+      .IdWidth           ( Cfg.AxiMstIdWidth ),
+      .UserErrBits       ( 0                 ),
+      .UserErrBitsOffset ( 0                 ),
+      .NumOutstanding    ( Cfg.CoreMaxTxns   ),
+      .NumStoredErrors   ( 4                 ),
+      .DropOldest        ( 1'b0              ),
+      .axi_req_t         ( axi_cva6_req_t    ),
+      .axi_rsp_t         ( axi_cva6_rsp_t    ),
+      .reg_req_t         ( reg_req_t         ),
+      .reg_rsp_t         ( reg_rsp_t         )
+    ) i_cva6_err (
+      .clk_i,
+      .rst_ni,
+      .testmode_i ( test_mode_i       ),
+      .axi_req_i  ( core_out_req      ),
+      .axi_rsp_i  ( core_out_rsp      ),
+      .err_irq_o  ( irqs.bus_err[1:0] ),
+      .reg_req_i  ( bus_err_req[1]    ),
+      .reg_rsp_o  ( bus_err_rsp[1]    )
+    );
+  end
 
   // Map user to AMO domain as we are an atomics-capable master.
   // As we are core 0, the core 1 and serial link AMO bits should *not* be set.
@@ -1538,6 +1610,42 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_slv_rsp_o  ( dma_cut_rsp )
     );
 
+    if (Cfg.BusErr) begin : gen_dma_bus_err
+      axi_err_unit_wrap #(
+        .AddrWidth         ( Cfg.AddrWidth     ),
+        .IdWidth           ( Cfg.AxiMstIdWidth ),
+        .UserErrBits       ( 0                 ),
+        .UserErrBitsOffset ( 0                 ),
+        .NumOutstanding    ( Cfg.CoreMaxTxns   ),
+        .NumStoredErrors   ( 4                 ),
+        .DropOldest        ( 1'b0              ),
+        .axi_req_t         ( axi_mst_req_t     ),
+        .axi_rsp_t         ( axi_mst_rsp_t     ),
+        .reg_req_t         ( reg_req_t         ),
+        .reg_rsp_t         ( reg_rsp_t         )
+      ) i_dma_err (
+        .clk_i,
+        .rst_ni,
+        .testmode_i ( test_mode_i           ),
+        .axi_req_i  ( axi_in_req[AxiIn.dma] ),
+        .axi_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
+        .err_irq_o  ( irqs.bus_err[3:2]     ),
+        .reg_req_i  ( bus_err_req[2]        ),
+        .reg_rsp_o  ( bus_err_rsp[2]        )
+      );
+    end
+  end else if (Cfg.BusErr) begin : gen_dma_err_slv
+
+    assign irqs.bus_err[3:2] = '0;
+    reg_err_slv #(
+      .DW       ( 32 ),
+      .ERR_VAL  ( 32'hBADCAB1E ),
+      .req_t    ( reg_req_t ),
+      .rsp_t    ( reg_rsp_t )
+    ) i_dma_err_slv (
+      .req_i  ( bus_err_req[2] ),
+      .rsp_o  ( bus_err_rsp[2] )
+    );
   end
 
   ///////////////////
@@ -1672,6 +1780,31 @@ module cheshire_soc import cheshire_pkg::*; #(
       .blue_o         ( vga_blue_o  )
     );
 
+    if (Cfg.BusErr) begin : gen_vga_bus_err
+      axi_err_unit_wrap #(
+        .AddrWidth         ( Cfg.AddrWidth     ),
+        .IdWidth           ( Cfg.AxiMstIdWidth ),
+        .UserErrBits       ( 0                 ),
+        .UserErrBitsOffset ( 0                 ),
+        .NumOutstanding    ( Cfg.CoreMaxTxns   ),
+        .NumStoredErrors   ( 4                 ),
+        .DropOldest        ( 1'b0              ),
+        .axi_req_t         ( axi_mst_req_t     ),
+        .axi_rsp_t         ( axi_mst_rsp_t     ),
+        .reg_req_t         ( reg_req_t         ),
+        .reg_rsp_t         ( reg_rsp_t         )
+      ) i_vga_err (
+        .clk_i,
+        .rst_ni,
+        .testmode_i ( test_mode_i           ),
+        .axi_req_i  ( axi_in_req[AxiIn.vga] ),
+        .axi_rsp_i  ( axi_in_rsp[AxiIn.vga] ),
+        .err_irq_o  ( irqs.bus_err[5:4]     ),
+        .reg_req_i  ( bus_err_req[3]        ),
+        .reg_rsp_o  ( bus_err_rsp[3]        )
+      );
+    end
+
   end else begin : gen_no_vga
 
     assign vga_hsync_o  = 0;
@@ -1680,6 +1813,18 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign vga_green_o  = '0;
     assign vga_blue_o   = '0;
 
+    if (Cfg.BusErr) begin : gen_vga_err_slv
+      assign irqs.bus_err[5:4] = '0;
+      reg_err_slv #(
+        .DW       ( 32 ),
+        .ERR_VAL  ( 32'hBADCAB1E ),
+        .req_t    ( reg_req_t ),
+        .rsp_t    ( reg_rsp_t )
+      ) i_vga_err_slv (
+        .req_i  ( bus_err_req[3] ),
+        .rsp_o  ( bus_err_rsp[3] )
+      );
+    end
   end
 
   //////////////////

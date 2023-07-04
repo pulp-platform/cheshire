@@ -20,7 +20,7 @@ package cheshire_pkg;
   // Parameters defined by generated hardware (regenerate to adapt)
 
   // Internal interrupts within cheshire. They must agree with the struct below
-  localparam int unsigned NumIntIntrs = 51;
+  localparam int unsigned NumIntIntrs = 57;
 
   // Number of privilege contexts
   localparam int unsigned NumPrivilegeContexts = 2; // Machine, Supervisor
@@ -127,6 +127,7 @@ package cheshire_pkg;
     bit     AxiRt;
     bit     Clic;
     bit     IrqRouter;
+    bit     BusErr;
     // Parameters for Debug Module
     jtag_idcode_t DbgIdCode;
     dw_bt   DbgMaxReqs;
@@ -295,6 +296,7 @@ package cheshire_pkg;
     aw_bt axirt;
     aw_bt clic;
     aw_bt irq_router;
+    aw_bt bus_err;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
@@ -307,17 +309,18 @@ package cheshire_pkg;
     ret.map[0] = '{1, 'h0204_0000, 'h0208_0000};
     ret.map[1] = '{2, 'h0400_0000, 'h0800_0000};
     ret.map[2] = '{3, AmRegs,  AmRegs + 'h1000};
-    if (cfg.Bootrom)  begin i++; ret.bootrom  = i; r++; ret.map[r] = '{i, AmBrom, AmBrom + 'h40000}; end
-    if (cfg.LlcNotBypass)   begin i++; ret.llc  = i; r++; ret.map[r] = '{i, AmLlc,    AmLlc + 'h1000}; end
-    if (cfg.Uart)     begin i++; ret.uart     = i; r++; ret.map[r] = '{i, 'h0300_2000, 'h0300_3000}; end
-    if (cfg.I2c)      begin i++; ret.i2c      = i; r++; ret.map[r] = '{i, 'h0300_3000, 'h0300_4000}; end
-    if (cfg.SpiHost)  begin i++; ret.spi_host = i; r++; ret.map[r] = '{i, 'h0300_4000, 'h0300_5000}; end
-    if (cfg.Gpio)     begin i++; ret.gpio     = i; r++; ret.map[r] = '{i, 'h0300_5000, 'h0300_6000}; end
-    if (cfg.SerialLink) begin i++; ret.slink  = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
-    if (cfg.Vga)      begin i++; ret.vga      = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
-    if (cfg.AxiRt)    begin i++; ret.axirt    = i; r++; ret.map[r] = '{i, 'h0300_8000, 'h0300_9000}; end
-    if (cfg.Clic)     begin i++; ret.clic     = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
-    if (cfg.IrqRouter) begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0210_0000, 'h0214_0000}; end
+    if (cfg.Bootrom)      begin i++; ret.bootrom    = i; r++; ret.map[r] = '{i, AmBrom, AmBrom + 'h40000}; end
+    if (cfg.LlcNotBypass) begin i++; ret.llc        = i; r++; ret.map[r] = '{i, AmLlc,    AmLlc + 'h1000}; end
+    if (cfg.Uart)         begin i++; ret.uart       = i; r++; ret.map[r] = '{i, 'h0300_2000, 'h0300_3000}; end
+    if (cfg.I2c)          begin i++; ret.i2c        = i; r++; ret.map[r] = '{i, 'h0300_3000, 'h0300_4000}; end
+    if (cfg.SpiHost)      begin i++; ret.spi_host   = i; r++; ret.map[r] = '{i, 'h0300_4000, 'h0300_5000}; end
+    if (cfg.Gpio)         begin i++; ret.gpio       = i; r++; ret.map[r] = '{i, 'h0300_5000, 'h0300_6000}; end
+    if (cfg.SerialLink)   begin i++; ret.slink      = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
+    if (cfg.Vga)          begin i++; ret.vga        = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
+    if (cfg.AxiRt)        begin i++; ret.axirt      = i; r++; ret.map[r] = '{i, 'h0300_8000, 'h0300_9000}; end
+    if (cfg.Clic)         begin i++; ret.clic       = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
+    if (cfg.IrqRouter)    begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0210_0000, 'h0214_0000}; end
+    if (cfg.BusErr)       begin i++; ret.bus_err    = i; r++; ret.map[r] = '{i, 'h0300_9000, 'h0300_a000}; end
     i++; r++;
     ret.ext_base  = i;
     ret.num_out   = i + cfg.RegExtNumSlv;
@@ -446,6 +449,7 @@ package cheshire_pkg;
     Vga               : 1,
     Clic              : 0,
     IrqRouter         : 0,
+    BusErr            : 1,
     // Debug
     DbgIdCode         : CheshireIdCode,
     DbgMaxReqs        : 4,
