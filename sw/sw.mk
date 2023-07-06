@@ -7,24 +7,25 @@
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 # Override this as needed
-RISCV_GCC_BINROOT ?= $(dir $(shell which riscv64-unknown-elf-gcc))
+CHS_SW_GCC_BINROOT ?= $(dir $(shell which riscv64-unknown-elf-gcc))
+CHS_SW_DTC     ?= dtc
 
-DTC           ?= dtc
-RISCV_AR      ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-ar
-RISCV_CC      ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-gcc
-RISCV_OBJCOPY ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-objcopy
-RISCV_OBJDUMP ?= $(RISCV_GCC_BINROOT)/riscv64-unknown-elf-objdump
+CHS_SW_AR      := $(CHS_SW_GCC_BINROOT)/riscv64-unknown-elf-ar
+CHS_SW_CC      := $(CHS_SW_GCC_BINROOT)/riscv64-unknown-elf-gcc
+CHS_SW_OBJCOPY := $(CHS_SW_GCC_BINROOT)/riscv64-unknown-elf-objcopy
+CHS_SW_OBJDUMP := $(CHS_SW_GCC_BINROOT)/riscv64-unknown-elf-objdump
+CHS_SW_LTOPLUG := $(shell find $(shell dirname $(CHS_SW_GCC_BINROOT))/libexec/gcc/riscv64-unknown-elf/**/liblto_plugin.so)
 
-CHS_LD_DIR    ?= $(CHS_SW_DIR)/link
-CHS_ZSL_TGUID ?= 0269B26A-FD95-4CE4-98CF-941401412C62
-CHS_DTB_TGUID ?= BA442F61-2AEF-42DE-9233-E4D75D3ACB9D
-CHS_FW_TGUID  ?= 99EC86DA-3F5B-4B0D-8F4B-C4BACFA5F859
-CHS_DISK_SIZE ?= 16M
+CHS_SW_LD_DIR    := $(CHS_SW_DIR)/link
+CHS_SW_ZSL_TGUID := 0269B26A-FD95-4CE4-98CF-941401412C62
+CHS_SW_DTB_TGUID := BA442F61-2AEF-42DE-9233-E4D75D3ACB9D
+CHS_SW_FW_TGUID  := 99EC86DA-3F5B-4B0D-8F4B-C4BACFA5F859
+CHS_SW_DISK_SIZE ?= 16M
 
-RISCV_FLAGS   ?= -DOT_PLATFORM_RV32 -march=rv64gc_zifencei -mabi=lp64d -mstrict-align -O2 -Wall -static -ffunction-sections -fdata-sections -frandom-seed=cheshire -fuse-linker-plugin -flto -Wl,-flto
-RISCV_CCFLAGS ?= $(RISCV_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
-RISCV_LDFLAGS ?= $(RISCV_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_LD_DIR)
-RISCV_ARFLAGS ?= --plugin=$(shell find $(shell dirname $(RISCV_GCC_BINROOT))/libexec/gcc/riscv64-unknown-elf/**/liblto_plugin.so)
+CHS_SW_FLAGS   ?= -DOT_PLATFORM_RV32 -march=rv64gc_zifencei -mabi=lp64d -mstrict-align -O2 -Wall -static -ffunction-sections -fdata-sections -frandom-seed=cheshire -fuse-linker-plugin -flto -Wl,-flto
+CHS_SW_CCFLAGS ?= $(CHS_SW_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
+CHS_SW_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_SW_LD_DIR)
+CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
 
 chs-sw-all: chs-sw-libs chs-sw-headers chs-sw-tests
 
@@ -58,7 +59,7 @@ CHS_SW_LIBS = $(CHS_SW_DIR)/lib/libcheshire.a
 
 $(CHS_SW_DIR)/lib/libcheshire.a: $(CHS_SW_LIB_SRCS_O)
 	rm -f $@
-	$(RISCV_AR) $(RISCV_ARFLAGS) -rcsv $@ $^
+	$(CHS_SW_AR) $(CHS_SW_ARFLAGS) -rcsv $@ $^
 
 chs-sw-libs: $(CHS_SW_LIBS)
 
@@ -94,31 +95,31 @@ chs-sw-headers: $(CHS_SW_GEN_HDRS)
 
 # All objects require up-to-date patches and headers
 %.o: %.c $(CHS_SW_GEN_HDRS)
-	$(RISCV_CC) $(CHS_SW_INCLUDES) $(RISCV_CCFLAGS) -c $< -o $@
+	$(CHS_SW_CC) $(CHS_SW_INCLUDES) $(CHS_SW_CCFLAGS) -c $< -o $@
 
 %.o: %.S $(CHS_SW_GEN_HDRS)
-	$(RISCV_CC) $(CHS_SW_INCLUDES) $(RISCV_CCFLAGS) -c $< -o $@
+	$(CHS_SW_CC) $(CHS_SW_INCLUDES) $(CHS_SW_CCFLAGS) -c $< -o $@
 
 define chs_ld_elf_rule
 .PRECIOUS: %.$(1).elf
 
-%.$(1).elf: $$(CHS_LD_DIR)/$(1).ld %.o $$(CHS_SW_LIBS)
-	$$(RISCV_CC) $$(CHS_SW_INCLUDES) -T$$< $$(RISCV_LDFLAGS) -o $$@ $$*.o $$(CHS_SW_LIBS)
+%.$(1).elf: $$(CHS_SW_LD_DIR)/$(1).ld %.o $$(CHS_SW_LIBS)
+	$$(CHS_SW_CC) $$(CHS_SW_INCLUDES) -T$$< $$(CHS_SW_LDFLAGS) -o $$@ $$*.o $$(CHS_SW_LIBS)
 endef
 
-$(foreach link,$(patsubst $(CHS_LD_DIR)/%.ld,%,$(wildcard $(CHS_LD_DIR)/*.ld)),$(eval $(call chs_ld_elf_rule,$(link))))
+$(foreach link,$(patsubst $(CHS_SW_LD_DIR)/%.ld,%,$(wildcard $(CHS_SW_LD_DIR)/*.ld)),$(eval $(call chs_ld_elf_rule,$(link))))
 
 %.dump: %.elf
-	$(RISCV_OBJDUMP) -d -S $< > $@
+	$(CHS_SW_OBJDUMP) -d -S $< > $@
 
 %.bin: %.elf
-	$(RISCV_OBJCOPY) -O binary $< $@
+	$(CHS_SW_OBJCOPY) -O binary $< $@
 
 %.dtb: %.dts
-	$(DTC) -I dts -O dtb -o $@ $<
+	$(CHS_SW_DTC) -I dts -O dtb -o $@ $<
 
 %.memh: %.elf
-	$(RISCV_OBJCOPY) -O verilog $< $@
+	$(CHS_SW_OBJCOPY) -O verilog $< $@
 
 ###################
 # GPT test images #
@@ -128,20 +129,20 @@ $(foreach link,$(patsubst $(CHS_LD_DIR)/%.ld,%,$(wildcard $(CHS_LD_DIR)/*.ld)),$
 %.gpt.bin: %.rom.bin
 	rm -f $@
 	truncate -s $$(( ($$(stat --printf="%s" $<)/512 + 85)*512 )) $@
-	sgdisk --clear -g --set-alignment=1 --new=1:37:40 --new=2:42:-9 --typecode=2:$(CHS_ZSL_TGUID) --new=3:-5:-2 $@
+	sgdisk --clear -g --set-alignment=1 --new=1:37:40 --new=2:42:-9 --typecode=2:$(CHS_SW_ZSL_TGUID) --new=3:-5:-2 $@
 	dd if=$< of=$@ bs=512 seek=42 conv=notrunc
 
 # Create hex file from .gpt image
 %.gpt.memh: %.gpt.bin
-	$(RISCV_OBJCOPY) -I binary -O verilog $< $@
+	$(CHS_SW_OBJCOPY) -I binary -O verilog $< $@
 
 # Create full Linux disk image
 $(CHS_SW_DIR)/boot/linux.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CHS_SW_DIR)/boot/cheshire.dtb $(CHS_SW_DIR)/boot/install64/fw_payload.bin $(CHS_SW_DIR)/boot/install64/uImage
-	truncate -s $(CHS_DISK_SIZE) $@
+	truncate -s $(CHS_SW_DISK_SIZE) $@
 	sgdisk --clear -g --set-alignment=1 \
-		--new=1:64:96 --typecode=1:$(CHS_ZSL_TGUID) \
-		--new=2:128:159 --typecode=2:$(CHS_DTB_TGUID) \
-		--new=3:2048:8191 --typecode=3:$(CHS_FW_TGUID) \
+		--new=1:64:96 --typecode=1:$(CHS_SW_ZSL_TGUID) \
+		--new=2:128:159 --typecode=2:$(CHS_SW_DTB_TGUID) \
+		--new=3:2048:8191 --typecode=3:$(CHS_SW_FW_TGUID) \
 		--new=4:8192:24575 --typecode=4:8300 \
 		--new=5:24576:0 --typecode=5:8200 \
 		$@
