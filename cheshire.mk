@@ -17,11 +17,11 @@ VSIM        ?= vsim
 CHS_ROOT      ?= $(shell $(BENDER) path cheshire)
 CHS_SW_DIR     = $(CHS_ROOT)/sw
 CHS_HW_DIR     = $(CHS_ROOT)/hw
-CHS_OTP_DIR    = $(shell $(BENDER) path opentitan_peripherals)
-CHS_CLINT_DIR  = $(shell $(BENDER) path clint)
-CHS_SLINK_DIR  = $(shell $(BENDER) path serial_link)
-CHS_VGA_DIR    = $(shell $(BENDER) path axi_vga)
-CHS_LLC_DIR    = $(shell $(BENDER) path axi_llc)
+CHS_OTP_DIR   := $(shell $(BENDER) path opentitan_peripherals)
+CHS_CLINT_DIR := $(shell $(BENDER) path clint)
+CHS_SLINK_DIR := $(shell $(BENDER) path serial_link)
+CHS_VGA_DIR   := $(shell $(BENDER) path axi_vga)
+CHS_LLC_DIR   := $(shell $(BENDER) path axi_llc)
 
 .PHONY: chs-all nonfree-init chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-xilinx-all
 
@@ -31,15 +31,17 @@ chs-all: chs-sw-all chs-hw-all chs-sim-all chs-xilinx-all
 # Dependencies #
 ################
 
+BENDER_ROOT ?= $(CHS_ROOT)
+
 # Ensure both Bender dependencies and (essential) submodules are checked out
-$(CHS_ROOT)/.deps:
+$(BENDER_ROOT)/.chs_deps:
 	$(BENDER) checkout
-	git submodule update --init --recursive sw/deps/printf
+	cd $(CHS_ROOT) && git submodule update --init --recursive sw/deps/printf
 	@touch $@
 
 # Make sure dependencies are more up-to-date than any targets run
-ifeq ($(shell stat $(CHS_ROOT)/.deps),)
-include $(CHS_ROOT)/.deps
+ifeq ($(shell test -f $(BENDER_ROOT)/.chs_deps && echo 1),)
+-include $(BENDER_ROOT)/.chs_deps
 endif
 
 ######################
