@@ -16,7 +16,8 @@ CHS_SW_OBJCOPY := $(CHS_SW_GCC_BINROOT)/riscv64-unknown-elf-objcopy
 CHS_SW_OBJDUMP := $(CHS_SW_GCC_BINROOT)/riscv64-unknown-elf-objdump
 CHS_SW_LTOPLUG := $(shell find $(shell dirname $(CHS_SW_GCC_BINROOT))/libexec/gcc/riscv64-unknown-elf/**/liblto_plugin.so)
 
-CHS_SW_LD_DIR    := $(CHS_SW_DIR)/link
+CHS_SW_DIR       ?= $(CHS_ROOT)/sw
+CHS_SW_LD_DIR    ?= $(CHS_SW_DIR)/link
 CHS_SW_ZSL_TGUID := 0269B26A-FD95-4CE4-98CF-941401412C62
 CHS_SW_DTB_TGUID := BA442F61-2AEF-42DE-9233-E4D75D3ACB9D
 CHS_SW_FW_TGUID  := 99EC86DA-3F5B-4B0D-8F4B-C4BACFA5F859
@@ -38,13 +39,13 @@ chs-sw-all: chs-sw-libs chs-sw-headers chs-sw-tests
 
 CHS_SW_DEPS_INCS  = -I$(CHS_SW_DIR)/deps/printf
 CHS_SW_DEPS_INCS += -I$(CHS_LLC_DIR)/sw/include
-CHS_SW_DEPS_INCS += -I$(CHS_OTP_DIR)
-CHS_SW_DEPS_INCS += -I$(CHS_OTP_DIR)/sw/include
+CHS_SW_DEPS_INCS += -I$(OTPROOT)
+CHS_SW_DEPS_INCS += -I$(OTPROOT)/sw/include
 CHS_SW_DEPS_SRCS  = $(CHS_SW_DIR)/deps/printf/printf.c
 CHS_SW_DEPS_SRCS += $(CHS_LLC_DIR)/sw/lib/axi_llc_reg32.c
-CHS_SW_DEPS_SRCS += $(wildcard $(CHS_OTP_DIR)/sw/device/lib/base/*.c)
-CHS_SW_DEPS_SRCS += $(wildcard $(CHS_OTP_DIR)/sw/device/lib/dif/*.c)
-CHS_SW_DEPS_SRCS += $(wildcard $(CHS_OTP_DIR)/sw/device/lib/dif/autogen/*.c)
+CHS_SW_DEPS_SRCS += $(wildcard $(OTPROOT)/sw/device/lib/base/*.c)
+CHS_SW_DEPS_SRCS += $(wildcard $(OTPROOT)/sw/device/lib/dif/*.c)
+CHS_SW_DEPS_SRCS += $(wildcard $(OTPROOT)/sw/device/lib/dif/autogen/*.c)
 
 #############
 # Libraries #
@@ -73,18 +74,18 @@ CHS_SW_GEN_HDRS += $$(CHS_SW_DIR)/include/regs/$(1).h
 
 $$(CHS_SW_DIR)/include/regs/$(1).h: $(2)
 	@mkdir -p $$(dir $$@)
-	$$(REGGEN) --cdefines $$< > $$@
+	$$(REGTOOL) --cdefines $$< > $$@
 endef
 
-$(eval $(call chs_sw_gen_hdr_rule,clint,$(CHS_CLINT_DIR)/src/clint.hjson $(CHS_CLINT_DIR)/.generated))
+$(eval $(call chs_sw_gen_hdr_rule,clint,$(CLINTROOT)/src/clint.hjson $(CLINTROOT)/.generated))
 $(eval $(call chs_sw_gen_hdr_rule,serial_link,$(CHS_ROOT)/hw/serial_link.hjson $(CHS_SLINK_DIR)/.generated))
-$(eval $(call chs_sw_gen_hdr_rule,axi_vga,$(CHS_VGA_DIR)/data/axi_vga.hjson $(CHS_VGA_DIR)/.generated))
+$(eval $(call chs_sw_gen_hdr_rule,axi_vga,$(AXI_VGA_ROOT)/data/axi_vga.hjson $(AXI_VGA_ROOT)/.generated))
 $(eval $(call chs_sw_gen_hdr_rule,axi_llc,$(CHS_LLC_DIR)/data/axi_llc_regs.hjson))
 $(eval $(call chs_sw_gen_hdr_rule,cheshire,$(CHS_ROOT)/hw/regs/cheshire_regs.hjson))
 $(eval $(call chs_sw_gen_hdr_rule,axi_rt,$(CHS_ROOT)/hw/regs/axi_rt_regs.hjson))
 
 # Generate headers for OT peripherals in the bendered repo itself
-CHS_SW_GEN_HDRS += $(CHS_OTP_DIR)/.generated
+CHS_SW_GEN_HDRS += $(OTPROOT)/.generated
 chs-sw-headers: $(CHS_SW_GEN_HDRS)
 
 ###############

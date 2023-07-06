@@ -9,7 +9,6 @@
 nonfree/
 
 # Dependency files
-.chs_deps
 .bender/
 
 # Software build files
