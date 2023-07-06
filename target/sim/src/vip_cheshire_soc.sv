@@ -14,6 +14,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter cheshire_cfg_t DutCfg           = '0,
   parameter type          axi_ext_llc_req_t = logic,
   parameter type          axi_ext_llc_rsp_t = logic,
+  parameter type          axi_ext_mst_req_t = logic,
+  parameter type          axi_ext_mst_rsp_t = logic,
   // Timing
   parameter time          ClkPeriodSys      = 5ns,
   parameter time          ClkPeriodJtag     = 20ns,
@@ -44,6 +46,9 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   // External AXI LLC (DRAM) port
   input  axi_ext_llc_req_t axi_llc_mst_req,
   output axi_ext_llc_rsp_t axi_llc_mst_rsp,
+  // External virtual AXI ports
+  input axi_ext_mst_req_t axi_ext_mst_req,
+  output axi_ext_mst_rsp_t axi_ext_mst_rsp,
   // JTAG interface
   output logic jtag_tck,
   output logic jtag_trst_n,
@@ -547,14 +552,52 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   axi_mst_req_t slink_axi_mst_req, slink_axi_slv_req;
   axi_mst_rsp_t slink_axi_mst_rsp, slink_axi_slv_rsp;
 
+  // AXI driver port
   AXI_BUS_DV #(
     .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
     .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
     .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
     .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
-  ) slink_mst (
+  ) axi_drv_mst_dv (
     .clk_i  ( clk )
   );
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
+    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
+  ) axi_drv_mst ();
+
+  `AXI_ASSIGN (axi_drv_mst, axi_drv_mst_dv)
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
+    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
+  ) axi_ext_mst ();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
+    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
+  ) axi_mux_slvs [1:0] ();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth+1 ),
+    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
+  ) axi_mux_mst();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
+    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
+  ) slink_mst();
 
   AXI_BUS_DV #(
     .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
@@ -565,13 +608,50 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .clk_i  ( clk )
   );
 
+  `AXI_ASSIGN_FROM_REQ(axi_ext_mst, axi_ext_mst_req)
+  `AXI_ASSIGN_TO_RESP(axi_ext_mst_rsp, axi_ext_mst)
+
   `AXI_ASSIGN_TO_REQ(slink_axi_mst_req, slink_mst)
   `AXI_ASSIGN_FROM_RESP(slink_mst, slink_axi_mst_rsp)
 
   `AXI_ASSIGN_FROM_REQ(slink_slv, slink_axi_slv_req)
   `AXI_ASSIGN_TO_RESP(slink_axi_slv_rsp, slink_slv)
 
-  // Mirror instance of serial link, reflecting another chip
+  `AXI_ASSIGN(axi_mux_slvs[0], axi_drv_mst)
+  `AXI_ASSIGN(axi_mux_slvs[1], axi_ext_mst)
+
+  // Multiplex internal and external AXI requests
+  axi_mux_intf #(
+    .SLV_AXI_ID_WIDTH ( DutCfg.AxiMstIdWidth   ),
+    .MST_AXI_ID_WIDTH ( DutCfg.AxiMstIdWidth+1 ),
+    .AXI_ADDR_WIDTH   ( DutCfg.AddrWidth       ),
+    .AXI_DATA_WIDTH   ( DutCfg.AxiDataWidth    ),
+    .AXI_USER_WIDTH   ( DutCfg.AxiUserWidth    ),
+    .NO_SLV_PORTS     ( 2 )
+  ) i_axi_mux_slink (
+    .clk_i  ( clk ),
+    .rst_ni ( rst_n ),
+    .test_i ( '0 ),
+    .slv ( axi_mux_slvs ),
+    .mst ( axi_mux_mst  )
+  );
+
+  // TODO: really needed?
+  axi_id_remap_intf #(
+    .AXI_SLV_PORT_ID_WIDTH (DutCfg.AxiMstIdWidth+1),
+    .AXI_SLV_PORT_MAX_UNIQ_IDS (DutCfg.SlinkMaxUniqIds),
+    .AXI_MAX_TXNS_PER_ID   (DutCfg.SlinkMaxTxnsPerId),
+    .AXI_MST_PORT_ID_WIDTH (DutCfg.AxiMstIdWidth),
+    .AXI_ADDR_WIDTH (DutCfg.AddrWidth),
+    .AXI_DATA_WIDTH (DutCfg.AxiDataWidth),
+    .AXI_USER_WIDTH (DutCfg.AxiUserWidth)
+  ) i_axi_id_remap (
+    .clk_i  ( clk ),
+    .rst_ni ( rst_n ),
+    .slv ( axi_mux_mst ),
+    .mst ( slink_mst )
+  );
+
   serial_link #(
     .axi_req_t    ( axi_mst_req_t ),
     .axi_rsp_t    ( axi_mst_rsp_t ),
@@ -643,7 +723,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .TT ( ClkPeriodSys * TTest )
   ) slink_axi_driver_t;
 
-  slink_axi_driver_t slink_axi_driver = new (slink_mst);
+  slink_axi_driver_t slink_axi_driver = new (axi_drv_mst_dv);
 
   initial begin
     @(negedge rst_n);

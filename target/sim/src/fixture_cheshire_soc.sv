@@ -151,7 +151,14 @@ module fixture_cheshire_soc;
   vip_cheshire_soc #(
     .DutCfg            ( DutCfg ),
     .axi_ext_llc_req_t ( axi_llc_req_t ),
-    .axi_ext_llc_rsp_t ( axi_llc_rsp_t )
-  ) vip (.*);
+    .axi_ext_llc_rsp_t ( axi_llc_rsp_t ),
+    .axi_ext_mst_req_t ( axi_mst_req_t ),
+    .axi_ext_mst_rsp_t ( axi_mst_rsp_t )
+  ) vip (
+    // The external axi driver is unconnected in cheshire
+    .axi_ext_mst_req ( '0 ),
+    .axi_ext_mst_rsp ( ),
+    .*
+  );
 
 endmodule
