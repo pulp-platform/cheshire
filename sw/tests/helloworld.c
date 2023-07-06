@@ -4,8 +4,7 @@
 //
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
-//
-// Simple payload to test bootmodes
+// Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 #include "regs/cheshire.h"
 #include "dif/clint.h"
