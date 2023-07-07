@@ -84,28 +84,23 @@ $(CHS_ROOT)/hw/regs/axi_rt_reg_pkg.sv $(CHS_ROOT)/hw/regs/axi_rt_reg_top.sv: $(C
 # CLINT
 CLINTCORES = 1
 include $(CLINTROOT)/clint.mk
-$(CLINTROOT)/.generated: Bender.yml
-	$(MAKE) clint
-	@touch $@
+$(CLINTROOT)/.generated:
+	flock -x $@ $(MAKE) clint
 
 # OpenTitan peripherals
 include $(OTPROOT)/otp.mk
-$(OTPROOT)/.generated: $(CHS_ROOT)/hw/rv_plic.cfg.hjson Bender.yml
-	cp $< $(dir $@)/src/rv_plic/
-	$(MAKE) -j1 otp
-	@touch $@
+$(OTPROOT)/.generated: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
+	flock -x $@ sh -c "cp $< $(dir $@)/src/rv_plic/; $(MAKE) -j1 otp"
 
 # AXI VGA
 include $(AXI_VGA_ROOT)/axi_vga.mk
-$(AXI_VGA_ROOT)/.generated: Bender.yml
-	$(MAKE) axi_vga
-	@touch $@
+$(AXI_VGA_ROOT)/.generated:
+	flock -x $@ $(MAKE) axi_vga
 
 # Custom serial link
 $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
-	$(MAKE) -C $(CHS_SLINK_DIR) update-regs
-	@touch $@
+	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs
 
 chs-hw-all: $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv
 chs-hw-all: $(CHS_ROOT)/hw/regs/axi_rt_reg_pkg.sv $(CHS_ROOT)/hw/regs/axi_rt_reg_top.sv
