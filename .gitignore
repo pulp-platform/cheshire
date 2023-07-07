@@ -9,7 +9,6 @@
 nonfree/
 
 # Dependency files
-.deps
 .bender/
 
 # Software build files

@@ -10,7 +10,7 @@ CHS_ROOT ?= .
 
 include cheshire.mk
 
-# Inside the repo, forward (prefixed) all and nonfree targets
+# Inside the repo, forward (prefixed) all, nonfree, and clean targets
 all:
 	@$(MAKE) chs-all
 
@@ -19,3 +19,6 @@ all:
 
 nonfree-%:
 	@$(MAKE) chs-nonfree-$*
+
+clean-%:
+	@$(MAKE) chs-clean-$*
