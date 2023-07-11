@@ -47,22 +47,22 @@ static inline void set_mie(int enable) {
 }
 
 // Get cycle count since reset
-static inline volatile uint64_t get_mcycle() {
-    volatile uint64_t mcycle;
+static inline uint64_t get_mcycle() {
+    uint64_t mcycle;
     asm volatile("csrr %0, mcycle" : "=r"(mcycle)::"memory");
     return mcycle;
 }
 
 // This may also be used to invoke code that does not return.
-static inline volatile uint64_t invoke(void *code) {
-    volatile uint64_t (*code_fun_ptr)(void) = code;
+static inline uint64_t invoke(void *code) {
+    uint64_t (*code_fun_ptr)(void) = code;
     fencei();
     return code_fun_ptr();
 }
 
 // Set global pointer and return prior value. Use with caution.
-static inline void *volatile gprw(void *gp) {
-    void *volatile ret;
+static inline void *gprw(void *gp) {
+    void *ret;
     asm volatile("mv %0, gp" : "=r"(ret)::"memory");
     if (gp) asm volatile("mv gp, %0" ::"r"(gp) : "memory", "gp");
     return ret;
