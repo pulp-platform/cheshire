@@ -362,8 +362,8 @@ module cheshire_top_xilinx
   logic [3:0]           qspi_dqi;
   logic [3:0]           qspi_dqo_ts;
   logic [3:0]           qspi_dqo;
-  logic                 qspi_cs_b;
-  logic                 qspi_cs_b_ts;
+  logic [SpihNumCs-1:0] qspi_cs_b;
+  logic [SpihNumCs-1:0] qspi_cs_b_ts;
 
   assign qspi_clk      = spi_sck_soc;
   assign qspi_cs_b     = spi_cs_soc;
@@ -373,50 +373,36 @@ module cheshire_top_xilinx
   assign qspi_clk_ts  = ~(spi_sck_en);
   assign qspi_cs_b_ts = ~(spi_cs_en);
   assign qspi_dqo_ts  = ~(spi_sd_en);
-`endif
 
   ///////////////
   // STARTUPE3 //
   ///////////////
 
-// STARTUPE3: STARTUP Block
-//            UltraScale
-// Xilinx HDL Language Template, version 2023.1
+  STARTUPE3 #(
+     .PROG_USR("FALSE"),    // Activate program event security feature. Requires encrypted bitstreams.
+     .SIM_CCLK_FREQ(0.0)    // Set the Configuration Clock Frequency (ns) for simulation.
+  )
+  STARTUPE3_inst (
+     .CFGCLK    (),         // CONFIG 1-bit output: Configuration main clock output.
+     .CFGMCLK   (),         // CONFIG 1-bit output: Configuration internal oscillator clock output.
+     .DI        (qspi_dqi),
+     .EOS       (),         // CONFIG 1-bit output: Active-High output signal indicating the End Of Startup.
+     .PREQ      (),         // CONFIG 1-bit output: PROGRAM request to fabric output.
+     .DO        (qspi_dqo),
+     .DTS       (qspi_dqo_ts),
+     .FCSBO     (qspi_cs_b[1]),
+     .FCSBTS    (qspi_cs_b_ts[1]),
+     .GSR       (1'b0),
+     .GTS       (1'b0),
+     .KEYCLEARB (1'b1),
+     .PACK      (1'b0),
+     .USRCCLKO  (qspi_clk),
+     .USRCCLKTS (qspi_clk_ts),
+     .USRDONEO  (1'b1),
+     .USRDONETS (1'b1)
+  );
 
-STARTUPE3 #(
-   .PROG_USR("FALSE"),    // Activate program event security feature. Requires encrypted bitstreams.
-   .SIM_CCLK_FREQ(0.0)    // Set the Configuration Clock Frequency (ns) for simulation.
-)
-STARTUPE3_inst (
-   .CFGCLK    (),         // CONFIG 1-bit output: Configuration main clock output.
-   .CFGMCLK   (),         // CONFIG 1-bit output: Configuration internal oscillator clock output.
-//   .DI        (qspi_dqi),
-   .EOS       (),         // CONFIG 1-bit output: Active-High output signal indicating the End Of Startup.
-   .PREQ      (),         // CONFIG 1-bit output: PROGRAM request to fabric output.
-//   .DO        (qspi_dqo),
-//   .DTS       (qspi_dqo_ts),
-//   .FCSBO     (qspi_cs_b),
-//   .FCSBTS    (qspi_cs_b_ts),
-   .GSR       (1'b0),
-   .GTS       (1'b0),
-   .KEYCLEARB (1'b1),
-   .PACK      (1'b0),
-//   .USRCCLKO  (qspi_clk),
-//   .USRCCLKTS (qspi_clk_ts),
-   .USRDONEO  (1'b1),
-   .USRDONETS (1'b1)
-);
-
-// ILA for SPI inteface
-`ila( clk,     qspi_clk     );
-`ila( clk_ts,  qspi_clk_ts  );
-//`ila( dqi,     qspi_dqi     );
-`ila( mosi,    qspi_dqo     );
-`ila( mosi_ts, qspi_dqo_ts  );
-`ila( cs,      qspi_cs_b    );
-`ila( cs_ts,   qspi_cs_b_ts );
-
-// End of STARTUPE3_inst instantiation
+`endif
 
   /////////////////////////
   // "RTC" Clock Divider //
@@ -538,6 +524,7 @@ STARTUPE3_inst (
     .i2c_scl_i            ( i2c_scl_soc_in        ),
     .i2c_scl_en_o         ( i2c_scl_en            ),
 // SPI Uses internal signals that are always defined
+`ifdef USE_QSPI
     .spih_sck_o           ( spi_sck_soc           ),
     .spih_sck_en_o        ( spi_sck_en            ),
     .spih_csb_o           ( spi_cs_soc            ),
@@ -545,6 +532,7 @@ STARTUPE3_inst (
     .spih_sd_o            ( spi_sd_soc_out        ),
     .spih_sd_en_o         ( spi_sd_en             ),
     .spih_sd_i            ( spi_sd_soc_in         ),
+`endif
 `ifdef USE_VGA
     .vga_hsync_o          ( vga_hs                ),
     .vga_vsync_o          ( vga_vs                ),
