@@ -86,7 +86,7 @@ static inline int __i2c_24fc1025_access_chunk(dif_i2c_t *i2c, void *buf, uint64_
         do CHECK_CALL(dif_i2c_get_fifo_levels(i2c, &lfmt, &lrx, &ltx, &lacq))
         while (lrx < len);
         // Transfer chunk to memory destination
-        for (int b = 0; b < len; b++) CHECK_CALL(dif_i2c_read_byte(i2c, buf + b))
+        for (uint64_t b = 0; b < len; b++) CHECK_CALL(dif_i2c_read_byte(i2c, buf + b))
     }
     // Nothing went wrong
     return 0;
