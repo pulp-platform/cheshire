@@ -20,8 +20,27 @@
 #include "gpt.h"
 #include "printf.h"
 
+#define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
+
+
+int dump_spi_sd_card(spi_sdcard_t *device, uint64_t sector) {
+    uint8_t read_buf[512];
+    for(int i = 0; i < 512; i++) read_buf[i] = 0;
+
+    CHECK_CALL(spi_sdcard_read_checkcrc(device, read_buf, sector, 512));
+    for (int i = 0; i < 512; i++) {
+        if (i % 64 == 0)
+            printf("\r\n%04x : ", sector * 512 + i);
+        printf("%02x", read_buf[i]);
+    }
+    printf("\r\n");
+}
+
 int flash_spi_sdcard(uint64_t core_freq, uint64_t rtc_freq, void *img_base, uint64_t sector,
                      uint64_t len) {
+    const uint32_t n_per_call = 500;
+    uint32_t n_done = 0;
+
     // Initialize device handle
     spi_sdcard_t device = {
         .spi_freq = 24 * 1000 * 1000, // 24MHz (maximum is 25MHz)
@@ -31,8 +50,21 @@ int flash_spi_sdcard(uint64_t core_freq, uint64_t rtc_freq, void *img_base, uint
     CHECK_CALL(spi_sdcard_init(&device, core_freq))
     // Wait for device to be initialized (1ms, round up extra tick to be sure)
     clint_spin_until((1000 * rtc_freq) / (1000 * 1000) + 1);
+
+    //if (len == 0) return 0;
+
+    do {
+        printf("[FLASH SD_CARD] %u/%u\r", n_done,len);
+        CHECK_CALL(spi_sdcard_write_blocks(&device, img_base, sector + n_done, MIN(n_per_call, len%n_done), 1));
+        n_done += n_per_call;
+    } while (n_done < len);
+
+    printf("[FLASH SD_CARD] %u/%u\r\n", len,len);
+
+    dump_spi_sd_card(&device, 128);
+
     // Write sectors
-    return spi_sdcard_write_blocks(&device, img_base, sector, len, 1);
+    return 0;
 }
 
 int flash_spi_s25fs512s(uint64_t core_freq, uint64_t rtc_freq, void *img_base, uint64_t sector,
@@ -61,14 +93,16 @@ int main() {
     // Read reference frequency and compute core frequency
     uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
     uint64_t core_freq = clint_get_core_freq(rtc_freq, 2500);
+    // Initialize UART
+    uart_init(&__base_uart, core_freq, 115200);
     // Get arguments from scratch registers
     volatile uint32_t *scratch = reg32(&__base_regs, CHESHIRE_SCRATCH_0_REG_OFFSET);
-    uint64_t target = scratch[0];
-    void *img_base = (void *)(uintptr_t)scratch[1];
-    uint64_t sector = scratch[2];
-    uint64_t len = scratch[3];
+    uint64_t target = 1;// scratch[0];
+    void *img_base = (void*) 0x80000000; // (void *)(uintptr_t)scratch[1];
+    uint64_t sector = 0; // scratch[2];
+    uint64_t len = 0;//32768; // scratch[3];
     // Flash chosen disk
-    printf("[FLASH] Write buffer at 0x%x of length %d to target %d, sector %d ... ", img_base, len,
+    printf("[FLASH] Write buffer at 0x%x of length %d to target %d, sector %d ... \r\n", img_base, len,
            target, sector);
     switch (target) {
     case 1: {
