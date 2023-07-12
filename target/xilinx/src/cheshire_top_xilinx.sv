@@ -72,14 +72,10 @@ module cheshire_top_xilinx
     Cva6RASDepth      : ariane_pkg::ArianeDefaultConfig.RASDepth,
     Cva6BTBEntries    : ariane_pkg::ArianeDefaultConfig.BTBEntries,
     Cva6BHTEntries    : ariane_pkg::ArianeDefaultConfig.BHTEntries,
-    Cva6CLICNumInterruptSrc : ariane_pkg::ArianeDefaultConfig.CLICNumInterruptSrc,
-    Cva6CLICIntCtlBits      : ariane_pkg::ArianeDefaultConfig.CLICIntCtlBits,
     Cva6NrPMPEntries  : 0,
     Cva6ExtCieLength  : 'h2000_0000,
     // Harts
     DualCore          : 0,  // Only one core, but rest of config allows for two
-    NumExtIrqHarts    : 0,
-    NumExtRouterTargets : 0,
     CoreMaxTxns       : 8,
     CoreMaxTxnsPerId  : 4,
     // Interconnect
@@ -106,8 +102,6 @@ module cheshire_top_xilinx
     Dma               : 1,
     SerialLink        : 0,
     Vga               : 1,
-    Clic              : 0,
-    IrqRouter         : 0,
     // Debug
     DbgIdCode         : CheshireIdCode,
     DbgMaxReqs        : 4,
@@ -467,7 +461,6 @@ module cheshire_top_xilinx
   cheshire_soc #(
     .Cfg                ( FPGACfg ),
     .ExtHartinfo        ( '0 ),
-    .NumExtIntrs        ( '0 ),
     .axi_ext_llc_req_t  ( axi_llc_req_t ),
     .axi_ext_llc_rsp_t  ( axi_llc_rsp_t ),
     .axi_ext_mst_req_t  ( axi_mst_req_t ),
@@ -491,11 +484,10 @@ module cheshire_top_xilinx
     .reg_ext_slv_req_o  ( ),
     .reg_ext_slv_rsp_i  ( '0 ),
     .intr_ext_i         ( '0 ),
-    .meip_ext_o         ( ),
-    .seip_ext_o         ( ),
+    .intr_ext_o         ( ),
+    .xeip_ext_o         ( ),
     .mtip_ext_o         ( ),
     .msip_ext_o         ( ),
-    .intr_distributed_o ( ),
     .dbg_active_o       ( ),
     .dbg_ext_req_o      ( ),
     .dbg_ext_unavail_i  ( '0 ),
