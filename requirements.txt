@@ -4,3 +4,5 @@ mako
 pyyaml
 tabulate
 yapf
+mkdocs
+mkdocs-material

@@ -11,6 +11,9 @@ nonfree/
 # Dependency files
 .bender/
 
+# Documentation site
+site/
+
 # Software build files
 *.bin
 *.dump

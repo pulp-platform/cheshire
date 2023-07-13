@@ -1,0 +1,31 @@
+# Copyright 2020 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+site_name: Cheshire
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.expand
+    - navigation.tracking
+    #- navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - navigation.footer
+
+repo_url: https://github.com/pulp-platform/cheshire
+repo_name: pulp-platform/cheshire
+
+nav:
+- Home:
+  - index.md
+  - Getting Started: gs.md
+- Targets:
+  - tg/index.md
+  - Simulation: tg/sim.md
+  - Xilinx FPGAs: tg/xilinx.md
+- User Manual:
+  - um/index.md
+  - Architecture: um/arch.md
+  - Software Stack: um/sw.md
