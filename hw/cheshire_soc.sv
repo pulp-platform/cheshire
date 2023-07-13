@@ -148,7 +148,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   assign intr.intn.zero  = 0;
 
   // External interrupts must be synchronized to this domain
-  for (genvar i = 0; i < iomsb(Cfg.NumExtInIntrs); i++) begin : gen_ext_in_intr_syncs
+  for (genvar i = 0; i <= iomsb(Cfg.NumExtInIntrs); i++) begin : gen_ext_in_intr_syncs
     sync #(
       .STAGES     ( NumExtIntrSyncs ),
       .ResetValue ( 1'b0 )
