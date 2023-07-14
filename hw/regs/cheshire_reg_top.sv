@@ -105,6 +105,10 @@ module cheshire_reg_top #(
   logic hw_features_vga_re;
   logic hw_features_axirt_qs;
   logic hw_features_axirt_re;
+  logic hw_features_clic_qs;
+  logic hw_features_clic_re;
+  logic hw_features_irq_router_qs;
+  logic hw_features_irq_router_re;
   logic [31:0] llc_size_qs;
   logic llc_size_re;
   logic [7:0] vga_params_red_width_qs;
@@ -425,6 +429,36 @@ module cheshire_reg_top #(
   );
 
 
+  //   F[clic]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_hw_features_clic (
+    .re     (hw_features_clic_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_features.clic.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (hw_features_clic_qs)
+  );
+
+
+  //   F[irq_router]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_hw_features_irq_router (
+    .re     (hw_features_irq_router_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_features.irq_router.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (hw_features_irq_router_qs)
+  );
+
+
   // R[llc_size]: V(True)
 
   prim_subreg_ext #(
@@ -560,6 +594,10 @@ module cheshire_reg_top #(
 
   assign hw_features_axirt_re = addr_hit[7] & reg_re & !reg_error;
 
+  assign hw_features_clic_re = addr_hit[7] & reg_re & !reg_error;
+
+  assign hw_features_irq_router_re = addr_hit[7] & reg_re & !reg_error;
+
   assign llc_size_re = addr_hit[8] & reg_re & !reg_error;
 
   assign vga_params_red_width_re = addr_hit[9] & reg_re & !reg_error;
@@ -611,6 +649,8 @@ module cheshire_reg_top #(
         reg_rdata_next[7] = hw_features_serial_link_qs;
         reg_rdata_next[8] = hw_features_vga_qs;
         reg_rdata_next[9] = hw_features_axirt_qs;
+        reg_rdata_next[10] = hw_features_clic_qs;
+        reg_rdata_next[11] = hw_features_irq_router_qs;
       end
 
       addr_hit[8]: begin

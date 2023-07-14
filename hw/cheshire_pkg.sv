@@ -5,6 +5,8 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
+// Thomas Benz <tbenz@iis.ee.ethz.ch>
+// Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
 package cheshire_pkg;
 
@@ -18,8 +20,6 @@ package cheshire_pkg;
   endfunction
 
   // Parameters defined by generated hardware (regenerate to adapt)
-  localparam int unsigned NumIntIntrs     = 51; // Must agree with struct below
-  localparam int unsigned NumExtIntrs     = rv_plic_reg_pkg::NumSrc - NumIntIntrs;
   localparam int unsigned SpihNumCs       = spi_host_reg_pkg::NumCS - 1;  // Last CS is dummy
   localparam int unsigned SlinkNumChan    = serial_link_single_channel_reg_pkg::NumChannels;
   localparam int unsigned SlinkNumLanes   = serial_link_single_channel_reg_pkg::NumBits/2;
@@ -73,6 +73,12 @@ package cheshire_pkg;
     dw_bt   Core1UserAmoBit;
     dw_bt   CoreMaxTxns;
     dw_bt   CoreMaxTxnsPerId;
+    // Interrupt parameters
+    doub_bt NumExtInIntrs;
+    shrt_bt NumExtClicIntrs;
+    byte_bt NumExtOutIntrTgts;
+    shrt_bt NumExtOutIntrs;
+    shrt_bt ClicIntCtlBits;
     // AXI parameters
     aw_bt   AddrWidth;
     dw_bt   AxiDataWidth;
@@ -117,6 +123,8 @@ package cheshire_pkg;
     bit     SerialLink;
     bit     Vga;
     bit     AxiRt;
+    bit     Clic;
+    bit     IrqRouter;
     // Parameters for Debug Module
     jtag_idcode_t DbgIdCode;
     dw_bt   DbgMaxReqs;
@@ -163,9 +171,12 @@ package cheshire_pkg;
     word_bt AxiRtWBufferDepth;
   } cheshire_cfg_t;
 
+  //////////////////
+  //  Interrupts  //
+  //////////////////
+
   // Defined interrupts
   typedef struct packed {
-    logic [iomsb(NumExtIntrs):0] ext;
     logic [31:0] gpio;
     logic spih_spi_event;
     logic spih_error;
@@ -186,7 +197,31 @@ package cheshire_pkg;
     logic i2c_fmt_threshold;
     logic uart;
     logic zero;
-  } cheshire_intr_t;
+  } cheshire_int_intr_t;
+
+  typedef struct packed {
+    logic [3:0] _rsvd_15to12;
+    logic       meip;
+    logic       _rsvd_10;
+    logic       seip;
+    logic       _rsvd_8;
+    logic       mtip;
+    logic [2:0] _rsvd_6to4;
+    logic       msip;
+    logic [2:0] _rsvd_2to0;
+  } cheshire_core_ip_t;
+
+  typedef struct packed {
+    logic s;
+    logic m;
+  } cheshire_xeip_t;
+
+  // Interrupt parameters
+  localparam int unsigned NumExtIntrSyncs = 2;
+  localparam int unsigned NumIntIntrs     = $bits(cheshire_int_intr_t);
+  localparam int unsigned NumIrqCtxts     = $bits(cheshire_xeip_t);
+  localparam int unsigned NumCoreIrqs     = $bits(cheshire_core_ip_t);
+  localparam int unsigned NumExtPlicIntrs = rv_plic_reg_pkg::NumSrc - NumIntIntrs;
 
   ////////////////////
   //  Interconnect  //
@@ -308,6 +343,8 @@ package cheshire_pkg;
     aw_bt slink;
     aw_bt vga;
     aw_bt axirt;
+    aw_bt clic;
+    aw_bt irq_router;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
@@ -329,6 +366,8 @@ package cheshire_pkg;
     if (cfg.SerialLink) begin i++; ret.slink  = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
     if (cfg.Vga)      begin i++; ret.vga      = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
     if (cfg.AxiRt)    begin i++; ret.axirt    = i; r++; ret.map[r] = '{i, 'h0300_8000, 'h0300_9000}; end
+    if (cfg.Clic)     begin i++; ret.clic     = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
+    if (cfg.IrqRouter) begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0210_0000, 'h0214_0000}; end
     i++; r++;
     ret.ext_base  = i;
     ret.num_out   = i + cfg.RegExtNumSlv;
@@ -399,8 +438,8 @@ package cheshire_pkg;
       CachedRegionLength    : {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength},
       AxiCompliant          : 1,
       SwapEndianess         : 0,
-      CLICNumInterruptSrc   : 0,
-      CLICIntCtlBits        : 0,
+      CLICNumInterruptSrc   : NumCoreIrqs + NumIntIntrs + cfg.NumExtClicIntrs,
+      CLICIntCtlBits        : cfg.ClicIntCtlBits,
       DmBaseAddress         : AmDbg,
       NrPMPEntries          : cfg.Cva6NrPMPEntries
     };
@@ -427,6 +466,12 @@ package cheshire_pkg;
     DualCore          : 0,  // Only one core, but rest of config allows for two
     CoreMaxTxns       : 8,
     CoreMaxTxnsPerId  : 4,
+    // Interrupts
+    NumExtInIntrs     : 0,
+    NumExtClicIntrs   : NumExtPlicIntrs,
+    NumExtOutIntrTgts : 0,
+    NumExtOutIntrs    : 0,
+    ClicIntCtlBits    : ariane_pkg::ArianeDefaultConfig.CLICIntCtlBits,
     // Interconnect
     AddrWidth         : 48,
     AxiDataWidth      : 64,
@@ -451,6 +496,9 @@ package cheshire_pkg;
     Dma               : 1,
     SerialLink        : 1,
     Vga               : 1,
+    AxiRt             : 0,
+    Clic              : 0,
+    IrqRouter         : 0,
     // Debug
     DbgIdCode         : CheshireIdCode,
     DbgMaxReqs        : 4,
