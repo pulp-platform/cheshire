@@ -1,6 +1,6 @@
 # Getting Started
 
-First, we discuss the Cheshire's project structure, its build dependencies, and how to build different parts of it.
+We first discuss the Cheshire's project structure, its dependencies, and how to build it.
 
 ## Repository structure
 
@@ -54,5 +54,4 @@ The following additional targets are not invoked by the above, but also availabl
 
 ## Targets
 
-A *target* refers to an end use of Cheshire, be it in simulation, FPGA implementation, or ASIC integration. Your next steps will depend on your desired target; see the [Targets](tg/index.md) chapter for more information.
-
+A *target* is an end use for Cheshire. Each target requires different steps from here; read the page for your desired target in the following [Targets](tg/index.md) chapter.

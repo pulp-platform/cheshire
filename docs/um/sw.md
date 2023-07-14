@@ -3,3 +3,6 @@
 ## Boot Flow
 
 ## Linux
+
+
+## Baremetal programming
