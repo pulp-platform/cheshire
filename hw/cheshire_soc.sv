@@ -763,6 +763,32 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_resp_i       ( core_out_rsp )
     );
 
+    if (Cfg.BusErr) begin : gen_cva6_bus_err
+      axi_err_unit_wrap #(
+        .AddrWidth         ( Cfg.AddrWidth     ),
+        .IdWidth           ( Cfg.AxiMstIdWidth ),
+        .UserErrBits       ( 0                 ),
+        .UserErrBitsOffset ( 0                 ),
+        .NumOutstanding    ( Cfg.CoreMaxTxns   ),
+        .NumStoredErrors   ( 4                 ),
+        .DropOldest        ( 1'b0              ),
+        .axi_req_t         ( axi_cva6_req_t    ),
+        .axi_rsp_t         ( axi_cva6_rsp_t    ),
+        .reg_req_t         ( reg_req_t         ),
+        .reg_rsp_t         ( reg_rsp_t         )
+      ) i_cva6_err (
+        .clk_i,
+        .rst_ni,
+        .testmode_i ( test_mode_i            ),
+        .axi_req_i  ( core_out_req           ),
+        .axi_rsp_i  ( core_out_rsp           ),
+        .err_irq_o  ( intr.intn.bus_err[1:0] ),
+        .reg_req_i  ( bus_err_req[1]         ),
+        .reg_rsp_o  ( bus_err_rsp[1]         )
+      );
+    end
+
+
     // Generate CLIC for core if enabled
     if (Cfg.Clic) begin : gen_clic
 
