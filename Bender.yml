@@ -29,6 +29,7 @@ dependencies:
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.0  }
   clic:                     { git: "https://github.com/pulp-platform/clic.git",                   version: 2.0.0  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             rev: d1d3135    }  # TODO: master commit; use next release once out
+  bus_err_unit:             { git: "git@iis-git.ee.ethz.ch:carfield/bus_err_unit.git",            rev: "47a6436"  } # branch: main
 
 export_include_dirs:
   - hw/include

@@ -60,6 +60,14 @@ packages:
     - axi
     - common_cells
     - register_interface
+  bus_err_unit:
+    revision: 47a6436dc4b4b7f4a44f7786033b22c6d01530b2
+    version: null
+    source:
+      Git: git@iis-git.ee.ethz.ch:carfield/bus_err_unit.git
+    dependencies:
+    - common_cells
+    - register_interface
   clic:
     revision: 8ed76ffc779a435d0ed034f3068e4c3334fe2ecf
     version: 2.0.0
