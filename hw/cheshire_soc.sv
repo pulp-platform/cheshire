@@ -906,11 +906,12 @@ module cheshire_soc import cheshire_pkg::*; #(
   );
 
   axi_mst_req_t axi_dbg_req;
+
   always_comb begin
     axi_in_req[AxiIn.dbg]         = axi_dbg_req;
-    axi_in_req[AxiIn.dbg].aw_user = Cfg.AxiUserDefault;
-    axi_in_req[AxiIn.dbg].w_user  = Cfg.AxiUserDefault;
-    axi_in_req[AxiIn.dbg].ar_user = Cfg.AxiUserDefault;
+    axi_in_req[AxiIn.dbg].aw.user = Cfg.AxiUserDefault;
+    axi_in_req[AxiIn.dbg].w.user  = Cfg.AxiUserDefault;
+    axi_in_req[AxiIn.dbg].ar.user = Cfg.AxiUserDefault;
   end
 
   // Debug module system bus access to AXI crossbar
@@ -936,7 +937,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .mem_rsp_error_o ( dbg_sba_err    ),
     .slv_aw_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
     .slv_ar_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
-    .axi_req_o       ( axi_dbg_req    ),
+    .axi_req_o       ( axi_dbg_req           ),
     .axi_rsp_i       ( axi_in_rsp[AxiIn.dbg] )
   );
 
@@ -1433,11 +1434,12 @@ module cheshire_soc import cheshire_pkg::*; #(
     );
 
     axi_mst_req_t axi_dma_req;
+
     always_comb begin
       axi_in_req[AxiIn.dma]         = axi_dma_req;
-      axi_in_req[AxiIn.dma].aw_user = Cfg.AxiUserDefault;
-      axi_in_req[AxiIn.dma].w_user  = Cfg.AxiUserDefault;
-      axi_in_req[AxiIn.dma].ar_user = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dma].aw.user = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dma].w.user  = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dma].ar.user = Cfg.AxiUserDefault;
     end
 
     dma_core_wrap #(
@@ -1454,7 +1456,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clk_i,
       .rst_ni,
       .testmode_i     ( test_mode_i ),
-      .axi_mst_req_o  ( axi_dma_req ),
+      .axi_mst_req_o  ( axi_dma_req           ),
       .axi_mst_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
       .axi_slv_req_i  ( dma_cut_req ),
       .axi_slv_rsp_o  ( dma_cut_rsp )
@@ -1567,11 +1569,12 @@ module cheshire_soc import cheshire_pkg::*; #(
   if (Cfg.Vga) begin : gen_vga
 
     axi_mst_req_t axi_vga_req;
+
     always_comb begin
       axi_in_req[AxiIn.vga]         = axi_vga_req;
-      axi_in_req[AxiIn.vga].aw_user = Cfg.AxiUserDefault;
-      axi_in_req[AxiIn.vga].w_user  = Cfg.AxiUserDefault;
-      axi_in_req[AxiIn.vga].ar_user = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.vga].aw.user = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.vga].w.user  = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.vga].ar.user = Cfg.AxiUserDefault;
     end
 
     axi_vga #(
@@ -1593,8 +1596,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .test_mode_en_i ( test_mode_i ),
       .reg_req_i      ( reg_out_req[RegOut.vga] ),
       .reg_rsp_o      ( reg_out_rsp[RegOut.vga] ),
-      .axi_req_o      ( axi_vga_req ),
-      .axi_resp_i     ( axi_in_rsp[AxiIn.vga]   ),
+      .axi_req_o      ( axi_vga_req           ),
+      .axi_resp_i     ( axi_in_rsp[AxiIn.vga] ),
       .hsync_o        ( vga_hsync_o ),
       .vsync_o        ( vga_vsync_o ),
       .red_o          ( vga_red_o   ),
