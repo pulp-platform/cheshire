@@ -697,9 +697,11 @@ module cheshire_soc import cheshire_pkg::*; #(
   // As we are core 0, the core 1 and serial link AMO bits should *not* be set.
   always_comb begin
     core_ur_req         = core_out_req;
-    core_ur_req.aw.user = Cfg.AxiUserAmoDomain;
-    core_ur_req.ar.user = Cfg.AxiUserAmoDomain;
-    core_ur_req.w.user  = Cfg.AxiUserAmoDomain;
+    core_ur_req.aw.user = Cfg.AxiUserDefault;
+    core_ur_req.ar.user = Cfg.AxiUserDefault;
+    core_ur_req.w.user  = Cfg.AxiUserDefault;
+    // TODO: for additional cores, assign user bits between LSB and MSB accordingly
+    // TODO: for any other features, assign user bits accordingly
     core_out_rsp        = core_ur_rsp;
   end
 
@@ -846,6 +848,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   ) i_dbg_slv_axi_to_mem (
     .clk_i,
     .rst_ni,
+    .test_i       ( test_mode_i ),
     .busy_o       ( ),
     .axi_req_i    ( dbg_slv_axi_cut_req ),
     .axi_resp_o   ( dbg_slv_axi_cut_rsp ),
@@ -902,6 +905,15 @@ module cheshire_soc import cheshire_pkg::*; #(
     .dmi_resp_o           ( dbg_dmi_rsp       )
   );
 
+  axi_mst_req_t axi_dbg_req;
+
+  always_comb begin
+    axi_in_req[AxiIn.dbg]         = axi_dbg_req;
+    axi_in_req[AxiIn.dbg].aw.user = Cfg.AxiUserDefault;
+    axi_in_req[AxiIn.dbg].w.user  = Cfg.AxiUserDefault;
+    axi_in_req[AxiIn.dbg].ar.user = Cfg.AxiUserDefault;
+  end
+
   // Debug module system bus access to AXI crossbar
   axi_from_mem #(
     .MemAddrWidth ( Cfg.AddrWidth    ),
@@ -925,7 +937,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .mem_rsp_error_o ( dbg_sba_err    ),
     .slv_aw_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
     .slv_ar_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
-    .axi_req_o       ( axi_in_req[AxiIn.dbg] ),
+    .axi_req_o       ( axi_dbg_req           ),
     .axi_rsp_i       ( axi_in_rsp[AxiIn.dbg] )
   );
 
@@ -1421,6 +1433,15 @@ module cheshire_soc import cheshire_pkg::*; #(
       .mst_resp_i ( dma_cut_rsp )
     );
 
+    axi_mst_req_t axi_dma_req;
+
+    always_comb begin
+      axi_in_req[AxiIn.dma]         = axi_dma_req;
+      axi_in_req[AxiIn.dma].aw.user = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dma].w.user  = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dma].ar.user = Cfg.AxiUserDefault;
+    end
+
     dma_core_wrap #(
       .AxiAddrWidth   ( Cfg.AddrWidth     ),
       .AxiDataWidth   ( Cfg.AxiDataWidth  ),
@@ -1435,7 +1456,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clk_i,
       .rst_ni,
       .testmode_i     ( test_mode_i ),
-      .axi_mst_req_o  ( axi_in_req[AxiIn.dma] ),
+      .axi_mst_req_o  ( axi_dma_req           ),
       .axi_mst_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
       .axi_slv_req_i  ( dma_cut_req ),
       .axi_slv_rsp_o  ( dma_cut_rsp )
@@ -1547,6 +1568,15 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   if (Cfg.Vga) begin : gen_vga
 
+    axi_mst_req_t axi_vga_req;
+
+    always_comb begin
+      axi_in_req[AxiIn.vga]         = axi_vga_req;
+      axi_in_req[AxiIn.vga].aw.user = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.vga].w.user  = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.vga].ar.user = Cfg.AxiUserDefault;
+    end
+
     axi_vga #(
       .RedWidth     ( Cfg.VgaRedWidth    ),
       .GreenWidth   ( Cfg.VgaGreenWidth  ),
@@ -1566,8 +1596,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .test_mode_en_i ( test_mode_i ),
       .reg_req_i      ( reg_out_req[RegOut.vga] ),
       .reg_rsp_o      ( reg_out_rsp[RegOut.vga] ),
-      .axi_req_o      ( axi_in_req[AxiIn.vga]   ),
-      .axi_resp_i     ( axi_in_rsp[AxiIn.vga]   ),
+      .axi_req_o      ( axi_vga_req           ),
+      .axi_resp_i     ( axi_in_rsp[AxiIn.vga] ),
       .hsync_o        ( vga_hsync_o ),
       .vsync_o        ( vga_vsync_o ),
       .red_o          ( vga_red_o   ),
