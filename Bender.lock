@@ -69,8 +69,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: 0989ff73d0315922791bf42137c0ce0cbb4a76ca
-    version: 1.30.0
+    revision: 53b0b58af2db5bd3c850a7038fae170ed78326bb
+    version: 1.31.1
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -169,3 +169,11 @@ packages:
       Git: https://github.com/pulp-platform/tech_cells_generic.git
     dependencies:
     - common_verification
+  unbent:
+    revision: 791420b326c6455595b4444c02f05f180b99dd06
+    version: 0.1.1
+    source:
+      Git: https://github.com/pulp-platform/unbent.git
+    dependencies:
+    - common_cells
+    - register_interface
