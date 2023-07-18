@@ -846,6 +846,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   ) i_dbg_slv_axi_to_mem (
     .clk_i,
     .rst_ni,
+    .test_i       ( test_mode_i ),
     .busy_o       ( ),
     .axi_req_i    ( dbg_slv_axi_cut_req ),
     .axi_resp_o   ( dbg_slv_axi_cut_rsp ),
