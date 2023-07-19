@@ -551,29 +551,22 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   // AXI driver port
   AXI_BUS_DV #(
-    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
-    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
-    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
+    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth       ),
+    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth    ),
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth-1 ),
+    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth    )
   ) axi_drv_mst_dv (
     .clk_i  ( clk )
   );
 
   AXI_BUS #(
-    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
-    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
-    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
+    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth       ),
+    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth    ),
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth-1 ),
+    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth    )
   ) axi_drv_mst ();
 
   `AXI_ASSIGN (axi_drv_mst, axi_drv_mst_dv)
-
-  AXI_BUS #(
-    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
-    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth+1 ),
-    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
-  ) axi_mux_mst();
 
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
@@ -599,8 +592,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   // Multiplex internal and external AXI requests
   axi_mux_intf #(
-    .SLV_AXI_ID_WIDTH ( DutCfg.AxiMstIdWidth   ),
-    .MST_AXI_ID_WIDTH ( DutCfg.AxiMstIdWidth+1 ),
+    .SLV_AXI_ID_WIDTH ( DutCfg.AxiMstIdWidth-1 ),
+    .MST_AXI_ID_WIDTH ( DutCfg.AxiMstIdWidth   ),
     .AXI_ADDR_WIDTH   ( DutCfg.AddrWidth       ),
     .AXI_DATA_WIDTH   ( DutCfg.AxiDataWidth    ),
     .AXI_USER_WIDTH   ( DutCfg.AxiUserWidth    ),
@@ -610,23 +603,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .rst_ni ( rst_n ),
     .test_i ( '0 ),
     .slv    ( {axi_drv_mst, axi_ext_mst} ),
-    .mst    ( axi_mux_mst  )
-  );
-
-  // TODO: really needed?
-  axi_id_remap_intf #(
-    .AXI_SLV_PORT_ID_WIDTH (DutCfg.AxiMstIdWidth+1),
-    .AXI_SLV_PORT_MAX_UNIQ_IDS (DutCfg.SlinkMaxUniqIds),
-    .AXI_MAX_TXNS_PER_ID   (DutCfg.SlinkMaxTxnsPerId),
-    .AXI_MST_PORT_ID_WIDTH (DutCfg.AxiMstIdWidth),
-    .AXI_ADDR_WIDTH (DutCfg.AddrWidth),
-    .AXI_DATA_WIDTH (DutCfg.AxiDataWidth),
-    .AXI_USER_WIDTH (DutCfg.AxiUserWidth)
-  ) i_axi_id_remap (
-    .clk_i  ( clk ),
-    .rst_ni ( rst_n ),
-    .slv ( axi_mux_mst ),
-    .mst ( slink_mst )
+    .mst    ( slink_mst  )
   );
 
   serial_link #(
@@ -694,7 +671,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   typedef axi_test::axi_driver #(
     .AW ( DutCfg.AddrWidth     ),
     .DW ( DutCfg.AxiDataWidth  ),
-    .IW ( DutCfg.AxiMstIdWidth ),
+    .IW ( DutCfg.AxiMstIdWidth-1 ),
     .UW ( DutCfg.AxiUserWidth  ),
     .TA ( ClkPeriodSys * TAppl ),
     .TT ( ClkPeriodSys * TTest )

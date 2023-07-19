@@ -151,7 +151,7 @@ module fixture_cheshire_soc;
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
     .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth-1 ),
     .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
   ) axi_unused_ext_mst ();
 
