@@ -148,16 +148,26 @@ module fixture_cheshire_soc;
   //  VIP  //
   ///////////
 
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
+    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
+  ) axi_unused_ext_mst ();
+
+  assign axi_unused_ext_mst.aw_valid = '0;
+  assign axi_unused_ext_mst.w_valid  = '0;
+  assign axi_unused_ext_mst.b_ready  = '1;
+  assign axi_unused_ext_mst.ar_valid = '0;
+  assign axi_unused_ext_mst.r_ready  = '1;
+
   vip_cheshire_soc #(
     .DutCfg            ( DutCfg ),
     .axi_ext_llc_req_t ( axi_llc_req_t ),
-    .axi_ext_llc_rsp_t ( axi_llc_rsp_t ),
-    .axi_ext_mst_req_t ( axi_mst_req_t ),
-    .axi_ext_mst_rsp_t ( axi_mst_rsp_t )
+    .axi_ext_llc_rsp_t ( axi_llc_rsp_t )
   ) vip (
     // The external axi driver is unconnected in cheshire
-    .axi_ext_mst_req ( '0 ),
-    .axi_ext_mst_rsp ( ),
+    .axi_ext_mst (axi_unused_ext_mst),
     .*
   );
 

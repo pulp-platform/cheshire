@@ -14,8 +14,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter cheshire_cfg_t DutCfg           = '0,
   parameter type          axi_ext_llc_req_t = logic,
   parameter type          axi_ext_llc_rsp_t = logic,
-  parameter type          axi_ext_mst_req_t = logic,
-  parameter type          axi_ext_mst_rsp_t = logic,
   // Timing
   parameter time          ClkPeriodSys      = 5ns,
   parameter time          ClkPeriodJtag     = 20ns,
@@ -47,8 +45,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   input  axi_ext_llc_req_t axi_llc_mst_req,
   output axi_ext_llc_rsp_t axi_llc_mst_rsp,
   // External virtual AXI ports
-  input axi_ext_mst_req_t axi_ext_mst_req,
-  output axi_ext_mst_rsp_t axi_ext_mst_rsp,
+  AXI_BUS.Slave axi_ext_mst,
   // JTAG interface
   output logic jtag_tck,
   output logic jtag_trst_n,
@@ -574,20 +571,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
     .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
-    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
-  ) axi_ext_mst ();
-
-  AXI_BUS #(
-    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
-    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
-    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
-  ) axi_mux_slvs [1:0] ();
-
-  AXI_BUS #(
-    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
-    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
     .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth+1 ),
     .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
   ) axi_mux_mst();
@@ -608,17 +591,11 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .clk_i  ( clk )
   );
 
-  `AXI_ASSIGN_FROM_REQ(axi_ext_mst, axi_ext_mst_req)
-  `AXI_ASSIGN_TO_RESP(axi_ext_mst_rsp, axi_ext_mst)
-
   `AXI_ASSIGN_TO_REQ(slink_axi_mst_req, slink_mst)
   `AXI_ASSIGN_FROM_RESP(slink_mst, slink_axi_mst_rsp)
 
   `AXI_ASSIGN_FROM_REQ(slink_slv, slink_axi_slv_req)
   `AXI_ASSIGN_TO_RESP(slink_axi_slv_rsp, slink_slv)
-
-  `AXI_ASSIGN(axi_mux_slvs[0], axi_drv_mst)
-  `AXI_ASSIGN(axi_mux_slvs[1], axi_ext_mst)
 
   // Multiplex internal and external AXI requests
   axi_mux_intf #(
@@ -632,8 +609,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .clk_i  ( clk ),
     .rst_ni ( rst_n ),
     .test_i ( '0 ),
-    .slv ( axi_mux_slvs ),
-    .mst ( axi_mux_mst  )
+    .slv    ( {axi_drv_mst, axi_ext_mst} ),
+    .mst    ( axi_mux_mst  )
   );
 
   // TODO: really needed?
