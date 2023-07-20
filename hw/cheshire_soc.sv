@@ -647,9 +647,9 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     cheshire_intr_clic_t clic_intr;
 
-    // Connect interrupts to routed fanout, PLIC, and CLIC
+    // Connect interrupts to CLIC
     assign clic_intr = '{
-      intr: intr_routed[IntrRtdCoreBase+0][NumClicIntrs-1:0],
+      intr: intr_routed[IntrRtdCoreBase+0][NumClicSysIntrs-1:0],
       core: '{
         meip: xeip[0].m,
         seip: xeip[0].s,

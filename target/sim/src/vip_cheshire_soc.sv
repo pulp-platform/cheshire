@@ -14,6 +14,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter cheshire_cfg_t DutCfg           = '0,
   parameter type          axi_ext_llc_req_t = logic,
   parameter type          axi_ext_llc_rsp_t = logic,
+  parameter type          axi_ext_mst_req_t = logic,
+  parameter type          axi_ext_mst_rsp_t = logic,
   // Timing
   parameter time          ClkPeriodSys      = 5ns,
   parameter time          ClkPeriodJtag     = 20ns,
@@ -31,6 +33,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter int unsigned  SlinkMaxWaitR     = 5,
   parameter int unsigned  SlinkMaxWaitResp  = 20,
   parameter int unsigned  SlinkBurstBytes   = 1024,
+  parameter int unsigned  SlinkMaxTxns      = 32,
+  parameter int unsigned  SlinkMaxTxnsPerId = 16,
   parameter bit           SlinkAxiDebug     = 0,
   // Derived Parameters;  *do not override*
   parameter int unsigned  AxiStrbWidth      = DutCfg.AxiDataWidth/8,
@@ -44,6 +48,9 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   // External AXI LLC (DRAM) port
   input  axi_ext_llc_req_t axi_llc_mst_req,
   output axi_ext_llc_rsp_t axi_llc_mst_rsp,
+  // External serial link AXI port
+  input  axi_ext_mst_req_t axi_slink_mst_req,
+  output axi_ext_mst_rsp_t axi_slink_mst_rsp,
   // JTAG interface
   output logic jtag_tck,
   output logic jtag_trst_n,
@@ -552,9 +559,23 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
     .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
     .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
-  ) slink_mst (
+  ) slink_mst_vip_dv (
     .clk_i  ( clk )
   );
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
+    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
+  ) slink_mst_ext(), slink_mst_vip(), slink_mst();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth       ),
+    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth    ),
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth+1 ),
+    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth    )
+  ) slink_mst_mux();
 
   AXI_BUS_DV #(
     .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
@@ -564,6 +585,44 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   ) slink_slv (
     .clk_i  ( clk )
   );
+
+  // Multiplex internal and external AXI requests
+  axi_mux_intf #(
+    .SLV_AXI_ID_WIDTH ( DutCfg.AxiMstIdWidth   ),
+    .MST_AXI_ID_WIDTH ( DutCfg.AxiMstIdWidth+1 ),
+    .AXI_ADDR_WIDTH   ( DutCfg.AddrWidth       ),
+    .AXI_DATA_WIDTH   ( DutCfg.AxiDataWidth    ),
+    .AXI_USER_WIDTH   ( DutCfg.AxiUserWidth    ),
+    .NO_SLV_PORTS     ( 2 )
+  ) i_axi_mux_slink (
+    .clk_i  ( clk ),
+    .rst_ni ( rst_n ),
+    .test_i ( test_mode ),
+    .slv    ( '{slink_mst_vip, slink_mst_ext} ),
+    .mst    ( slink_mst_mux  )
+  );
+
+  // Serialize away added AXI index bits
+  axi_id_serialize_intf #(
+    .AXI_SLV_PORT_ID_WIDTH        ( DutCfg.AxiMstIdWidth+1  ),
+    .AXI_SLV_PORT_MAX_TXNS        ( SlinkMaxTxns            ),
+    .AXI_MST_PORT_ID_WIDTH        ( DutCfg.AxiMstIdWidth    ),
+    .AXI_MST_PORT_MAX_UNIQ_IDS    ( 2**DutCfg.AxiMstIdWidth ),
+    .AXI_MST_PORT_MAX_TXNS_PER_ID ( SlinkMaxTxnsPerId       ),
+    .AXI_ADDR_WIDTH               ( DutCfg.AddrWidth    ),
+    .AXI_DATA_WIDTH               ( DutCfg.AxiDataWidth ),
+    .AXI_USER_WIDTH               ( DutCfg.AxiUserWidth )
+  ) i_axi_id_serialize_slink (
+    .clk_i  ( clk ),
+    .rst_ni ( rst_n ),
+    .slv    ( slink_mst_mux ),
+    .mst    ( slink_mst )
+  );
+
+  `AXI_ASSIGN (slink_mst_vip, slink_mst_vip_dv)
+
+  `AXI_ASSIGN_FROM_REQ(slink_mst_ext, axi_slink_mst_req)
+  `AXI_ASSIGN_TO_RESP(axi_slink_mst_rsp, slink_mst_ext)
 
   `AXI_ASSIGN_TO_REQ(slink_axi_mst_req, slink_mst)
   `AXI_ASSIGN_FROM_RESP(slink_mst, slink_axi_mst_rsp)
@@ -643,7 +702,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .TT ( ClkPeriodSys * TTest )
   ) slink_axi_driver_t;
 
-  slink_axi_driver_t slink_axi_driver = new (slink_mst);
+  slink_axi_driver_t slink_axi_driver = new (slink_mst_vip_dv);
 
   initial begin
     @(negedge rst_n);
