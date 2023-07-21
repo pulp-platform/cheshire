@@ -17,6 +17,7 @@ theme:
 markdown_extensions:
   - toc:
       toc_depth: 2
+  - markdown_grid_tables:
 
 repo_url: https://github.com/pulp-platform/cheshire
 repo_name: pulp-platform/cheshire

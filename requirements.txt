@@ -6,3 +6,4 @@ tabulate
 yapf
 mkdocs
 mkdocs-material
+markdown-grid-tables

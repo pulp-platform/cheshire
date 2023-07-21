@@ -15,6 +15,4 @@ Each included target has a *documentation page* in this chapter:
 
 ## External Targets
 
-For integration into other SoCs, Cheshire may be included either as a Bender dependency or Git submodule. The use of Bender for dependency management is strongly encouraged.
-
-For further information and best pratices, see [SoC Integration](integr.md).
+For integration into other SoCs, Cheshire may be included either as a Bender dependency or Git submodule. For further information and best pratices, see [SoC Integration](integr.md).

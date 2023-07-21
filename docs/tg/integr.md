@@ -17,6 +17,5 @@ include $(shell bender path cheshire)/cheshire.mk
 
 All of Cheshire's build targets are now available with the prefix `chs-`. You can leverage this to ensure your Cheshire build is up to date and rebuild hardware and software whenever necessary. You can change the default value of any build parameter, replace source files to adapt Cheshire, or reuse parts of its build system, such as the software stack or the register and ROM generators.
 
-
 ## Instantiating Cheshire
 
