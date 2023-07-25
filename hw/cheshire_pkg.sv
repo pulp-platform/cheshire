@@ -246,7 +246,7 @@ package cheshire_pkg;
 
   // AXI Xbar master indices
   typedef struct packed {
-    aw_bt cores;
+    aw_bt [3:0] cores;
     aw_bt dbg;
     aw_bt dma;
     aw_bt slink;
@@ -256,8 +256,10 @@ package cheshire_pkg;
   } axi_in_t;
 
   function automatic axi_in_t gen_axi_in(cheshire_cfg_t cfg);
-    axi_in_t ret = '{cores: 0, dbg: 1, default: '0};
-    int unsigned i = 1;
+    axi_in_t ret = '{default: '0};
+    int unsigned i = 0;
+    for (int j = 0; j < cfg.NumCores; j++) begin ret.cores[i] = i; i++; end
+    ret.dbg = i;
     if (cfg.Dma)        begin i++; ret.dma   = i; end
     if (cfg.SerialLink) begin i++; ret.slink = i; end
     if (cfg.Vga)        begin i++; ret.vga   = i; end
@@ -343,7 +345,7 @@ package cheshire_pkg;
     aw_bt slink;
     aw_bt vga;
     aw_bt axirt;
-    aw_bt clic;
+    aw_bt [3:0] clic;
     aw_bt irq_router;
     aw_bt ext_base;
     aw_bt num_out;
@@ -366,8 +368,12 @@ package cheshire_pkg;
     if (cfg.SerialLink) begin i++; ret.slink  = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
     if (cfg.Vga)      begin i++; ret.vga      = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
     if (cfg.AxiRt)    begin i++; ret.axirt    = i; r++; ret.map[r] = '{i, 'h0300_8000, 'h0300_9000}; end
-    if (cfg.Clic)     begin i++; ret.clic     = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
-    if (cfg.IrqRouter) begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0210_0000, 'h0214_0000}; end
+    if (cfg.IrqRouter) begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
+    if (cfg.Clic)     begin
+      for (int j = 0; j < cfg.NumCores; j++) begin
+        i++; ret.clic[j] = i; r++; ret.map[r] = '{i, 'h0800_0000 + j * 'h4_0000, 'h0800_0000 + (j + 1) * 'h4_0000};
+      end
+    end
     i++; r++;
     ret.ext_base  = i;
     ret.num_out   = i + cfg.RegExtNumSlv;
