@@ -24,10 +24,6 @@ AXI_VGA_ROOT := $(shell $(BENDER) path axi_vga)
 
 REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
 
-.PHONY: chs-all chs-nonfree-init chs-clean-deps chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-xilinx-all
-
-chs-all: chs-sw-all chs-hw-all chs-sim-all chs-xilinx-all
-
 ################
 # Dependencies #
 ################
@@ -85,29 +81,29 @@ $(CHS_ROOT)/hw/regs/axi_rt_reg_pkg.sv $(CHS_ROOT)/hw/regs/axi_rt_reg_top.sv: $(C
 CLINTCORES ?= 1
 include $(CLINTROOT)/clint.mk
 $(CLINTROOT)/.generated:
-	flock -x $@ $(MAKE) clint
+	flock -x $@ $(MAKE) clint && touch $@
 
 # OpenTitan peripherals
 include $(OTPROOT)/otp.mk
 $(OTPROOT)/.generated: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
-	flock -x $@ sh -c "cp $< $(dir $@)/src/rv_plic/; $(MAKE) -j1 otp"
+	flock -x $@ sh -c "cp $< $(dir $@)/src/rv_plic/; $(MAKE) -j1 otp" && touch $@
 
 # AXI VGA
 include $(AXI_VGA_ROOT)/axi_vga.mk
 $(AXI_VGA_ROOT)/.generated:
-	flock -x $@ $(MAKE) axi_vga
+	flock -x $@ $(MAKE) axi_vga && touch $@
 
 # Custom serial link
 $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
-	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs
+	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs && touch $@
 
-chs-hw-all: $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv
-chs-hw-all: $(CHS_ROOT)/hw/regs/axi_rt_reg_pkg.sv $(CHS_ROOT)/hw/regs/axi_rt_reg_top.sv
-chs-hw-all: $(CLINTROOT)/.generated
-chs-hw-all: $(OTPROOT)/.generated
-chs-hw-all: $(AXI_VGA_ROOT)/.generated
-chs-hw-all: $(CHS_SLINK_DIR)/.generated
+CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv
+CHS_HW_ALL += $(CHS_ROOT)/hw/regs/axi_rt_reg_pkg.sv $(CHS_ROOT)/hw/regs/axi_rt_reg_top.sv
+CHS_HW_ALL += $(CLINTROOT)/.generated
+CHS_HW_ALL += $(OTPROOT)/.generated
+CHS_HW_ALL += $(AXI_VGA_ROOT)/.generated
+CHS_HW_ALL += $(CHS_SLINK_DIR)/.generated
 
 #####################
 # Generate Boot ROM #
@@ -125,7 +121,7 @@ $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.elf: $(CHS_ROOT)/hw/bootrom/cheshire_boo
 $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.bin $(CHS_ROOT)/util/gen_bootrom.py
 	$(CHS_ROOT)/util/gen_bootrom.py --sv-module cheshire_bootrom $< > $@
 
-chs-bootrom-all: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.dump
+CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.dump
 
 ##############
 # Simulation #
@@ -149,9 +145,9 @@ $(CHS_ROOT)/target/sim/models/24FC1025.v: Bender.yml | $(CHS_ROOT)/target/sim/mo
 	unzip -p 24xx1025_Verilog_Model.zip 24FC1025.v > $@
 	rm 24xx1025_Verilog_Model.zip
 
-chs-sim-all: $(CHS_ROOT)/target/sim/models/s25fs512s.v
-chs-sim-all: $(CHS_ROOT)/target/sim/models/24FC1025.v
-chs-sim-all: $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
+CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
+CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
+CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 
 #############
 # FPGA Flow #
@@ -160,4 +156,19 @@ chs-sim-all: $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 $(CHS_ROOT)/target/xilinx/scripts/add_sources.tcl: Bender.yml
 	$(BENDER) script vivado -t fpga -t cv64a6_imafdcsclic_sv39 -t cva6 > $@
 
-chs-xilinx-all: $(CHS_ROOT)/target/xilinx/scripts/add_sources.tcl
+CHS_XILINX_ALL += $(CHS_ROOT)/target/xilinx/scripts/add_sources.tcl
+
+#################################
+# Phonies (KEEP AT END OF FILE) #
+#################################
+
+.PHONY: chs-all chs-nonfree-init chs-clean-deps chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-xilinx-all
+
+CHS_ALL += $(CHS_SW_ALL) $(CHS_HW_ALL) $(CHS_SIM_ALL) $(CHS_XILINX_ALL)
+
+chs-all:         $(CHS_ALL)
+chs-sw-all:      $(CHS_SW_ALL)
+chs-hw-all:      $(CHS_HW_ALL)
+chs-bootrom-all: $(CHS_BOOTROM_ALL)
+chs-sim-all:     $(CHS_SIM_ALL)
+chs-xilinx-all:  $(CHS_XILINX_ALL)
