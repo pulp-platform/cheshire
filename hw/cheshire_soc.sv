@@ -111,7 +111,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  Interrupts  //
   //////////////////
 
-  localparam int unsigned NumIntHarts     = 1 + Cfg.DualCore;
+  localparam int unsigned NumIntHarts     = Cfg.NumCores;
   localparam int unsigned NumIrqHarts     = NumIntHarts + Cfg.NumExtIrqHarts;
   localparam int unsigned NumRtdIntrTgts  = 1 + NumIntHarts + Cfg.NumExtOutIntrTgts;
   localparam int unsigned NumClicSysIntrs = NumIntIntrs + Cfg.NumExtClicIntrs;
@@ -1618,8 +1618,6 @@ module cheshire_soc import cheshire_pkg::*; #(
   //////////////////
   //  Assertions  //
   //////////////////
-
-  `ASSERT_INIT(NoDualCoreSupport, ~Cfg.DualCore)
 
   // TODO: check that CVA6 and Cheshire config agree
   // TODO: check that all interconnect params agree

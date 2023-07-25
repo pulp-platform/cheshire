@@ -67,7 +67,7 @@ package cheshire_pkg;
     doub_bt Cva6ExtCieLength;
     bit     Cva6ExtCieOnTop;
     // Hart parameters
-    bit     DualCore;
+    bit [3:0] NumCores;
     doub_bt NumExtIrqHarts;
     doub_bt NumExtDbgHarts;
     dw_bt   Core1UserAmoBit;
@@ -463,7 +463,7 @@ package cheshire_pkg;
     Cva6ExtCieLength  : 'h2000_0000,  // [0x2.., 0x4..) is CIE, [0x4.., 0x8..) is non-CIE
     Cva6ExtCieOnTop   : 0,
     // Harts
-    DualCore          : 0,  // Only one core, but rest of config allows for two
+    NumCores          : 1,  // Only one core, but rest of config allows for two
     CoreMaxTxns       : 8,
     CoreMaxTxnsPerId  : 4,
     // Interrupts
