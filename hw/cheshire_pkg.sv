@@ -246,7 +246,7 @@ package cheshire_pkg;
 
   // AXI Xbar master indices
   typedef struct packed {
-    aw_bt [3:0] cores;
+    aw_bt [15:0] cores;
     aw_bt dbg;
     aw_bt dma;
     aw_bt slink;
@@ -345,7 +345,7 @@ package cheshire_pkg;
     aw_bt slink;
     aw_bt vga;
     aw_bt axirt;
-    aw_bt [3:0] clic;
+    aw_bt [15:0] clic;
     aw_bt irq_router;
     aw_bt ext_base;
     aw_bt num_out;
