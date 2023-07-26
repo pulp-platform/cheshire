@@ -28,10 +28,9 @@ CHS_SW_CCFLAGS ?= $(CHS_SW_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-b
 CHS_SW_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_SW_LD_DIR)
 CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
 
-chs-sw-all: chs-sw-libs chs-sw-headers chs-sw-tests
+CHS_SW_ALL += $(CHS_SW_LIBS) $(CHS_SW_GEN_HDRS) $(CHS_SW_TESTS)
 
 .PRECIOUS: %.elf %.dtb
-.PHONY: chs-sw-all chs-sw-libs chs-sw-headers chs-sw-tests
 
 ################
 # Dependencies #
@@ -62,8 +61,6 @@ $(CHS_SW_DIR)/lib/libcheshire.a: $(CHS_SW_LIB_SRCS_O)
 	rm -f $@
 	$(CHS_SW_AR) $(CHS_SW_ARFLAGS) -rcsv $@ $^
 
-chs-sw-libs: $(CHS_SW_LIBS)
-
 #####################
 # Header generation #
 #####################
@@ -86,7 +83,6 @@ $(eval $(call chs_sw_gen_hdr_rule,axi_rt,$(CHS_ROOT)/hw/regs/axi_rt_regs.hjson))
 
 # Generate headers for OT peripherals in the bendered repo itself
 CHS_SW_GEN_HDRS += $(OTPROOT)/.generated
-chs-sw-headers: $(CHS_SW_GEN_HDRS)
 
 ###############
 # Compilation #
@@ -163,4 +159,4 @@ CHS_SW_TEST_SPM_DUMP   	= $(CHS_SW_TEST_SRCS_S:.S=.spm.dump)  $(CHS_SW_TEST_SRCS
 CHS_SW_TEST_SPM_ROMH   	= $(CHS_SW_TEST_SRCS_S:.S=.rom.memh)  $(CHS_SW_TEST_SRCS_C:.c=.rom.memh)
 CHS_SW_TEST_SPM_GPTH   	= $(CHS_SW_TEST_SRCS_S:.S=.gpt.memh)  $(CHS_SW_TEST_SRCS_C:.c=.gpt.memh)
 
-chs-sw-tests: $(CHS_SW_TEST_DRAM_DUMP) $(CHS_SW_TEST_SPM_DUMP) $(CHS_SW_TEST_SPM_ROMH) $(CHS_SW_TEST_SPM_GPTH)
+CHS_SW_TESTS = $(CHS_SW_TEST_DRAM_DUMP) $(CHS_SW_TEST_SPM_DUMP) $(CHS_SW_TEST_SPM_ROMH) $(CHS_SW_TEST_SPM_GPTH)
