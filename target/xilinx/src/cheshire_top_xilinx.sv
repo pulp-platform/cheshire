@@ -75,7 +75,7 @@ module cheshire_top_xilinx
     Cva6NrPMPEntries  : 0,
     Cva6ExtCieLength  : 'h2000_0000,
     // Harts
-    DualCore          : 0,  // Only one core, but rest of config allows for two
+    NumCores          : 1,
     CoreMaxTxns       : 8,
     CoreMaxTxnsPerId  : 4,
     // Interconnect
