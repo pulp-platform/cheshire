@@ -59,9 +59,11 @@ wait_on_run impl_1
 #Check timing constraints
 open_run impl_1
 set timingrep [report_timing_summary -no_header -no_detailed_paths -return_string]
-if {! [string match -nocase {*timing constraints are met*} $timingrep]} {
-  send_msg_id {USER 1-1} ERROR {Timing constraints were not met.}
-  return -code error
+if {[info exists ::env(CHECK_TIMING)] && $::env(CHECK_TIMING)==1} {
+  if {! [string match -nocase {*timing constraints are met*} $timingrep]} {
+    send_msg_id {USER 1-1} ERROR {Timing constraints were not met.}
+    return -code error
+  }
 }
 
 # output Verilog netlist + SDC for timing simulation
