@@ -469,7 +469,7 @@ package cheshire_pkg;
     Cva6ExtCieLength  : 'h2000_0000,  // [0x2.., 0x4..) is CIE, [0x4.., 0x8..) is non-CIE
     Cva6ExtCieOnTop   : 0,
     // Harts
-    NumCores          : 1,  // Only one core, but rest of config allows for two
+    NumCores          : 1,
     CoreMaxTxns       : 8,
     CoreMaxTxnsPerId  : 4,
     // Interrupts
