@@ -742,9 +742,9 @@ module cheshire_soc import cheshire_pkg::*; #(
       .rst_ni,
       .boot_addr_i      ( BootAddr ),
       .hart_id_i        ( 64'(i) ),
-      .irq_i            ( xeip[0] ),
-      .ipi_i            ( msip[0] ),
-      .time_irq_i       ( mtip[0] ),
+      .irq_i            ( xeip[i] ),
+      .ipi_i            ( msip[i] ),
+      .time_irq_i       ( mtip[i] ),
       .debug_req_i      ( dbg_int_req[i] ),
       .clic_irq_valid_i ( clic_irq_valid ),
       .clic_irq_id_i    ( clic_irq_id    ),
@@ -770,12 +770,12 @@ module cheshire_soc import cheshire_pkg::*; #(
 
       // Connect interrupts to CLIC
       assign clic_intr = '{
-        intr: intr_routed[IntrRtdCoreBase+0][NumClicSysIntrs-1:0],
+        intr: intr_routed[IntrRtdCoreBase+i][NumClicSysIntrs-1:0],
         core: '{
-          meip: xeip[0].m,
-          seip: xeip[0].s,
-          mtip: mtip[0],
-          msip: msip[0],
+          meip: xeip[i].m,
+          seip: xeip[i].s,
+          mtip: mtip[i],
+          msip: msip[i],
           default: '0
         }
       };
