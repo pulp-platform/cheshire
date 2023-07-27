@@ -689,7 +689,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_resp_i       ( core_out_rsp )
     );
 
-    if (Cfg.BusErr) begin : gen_cva6_bus_err
+    // TODO @michaero @nwistoff: Add bus error unit for each core (currently only core 0)
+    if (Cfg.BusErr && i == 0) begin : gen_cva6_bus_err
       axi_err_unit_wrap #(
         .AddrWidth         ( Cfg.AddrWidth     ),
         .IdWidth           ( Cfg.AxiMstIdWidth ),
