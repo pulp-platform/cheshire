@@ -40,6 +40,7 @@ sources:
   - hw/regs/axi_rt_reg_top.sv
   - hw/cheshire_pkg.sv
   - hw/cheshire_soc.sv
+  - target/xilinx/src/spi_flash_filter.sv
 
   - target: any(simulation, test)
     files:

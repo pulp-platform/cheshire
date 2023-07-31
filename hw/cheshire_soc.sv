@@ -1305,6 +1305,14 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   if (Cfg.SpiHost) begin : gen_spi_host
 
+    logic                 spi_chs_sck;
+    logic                 spi_chs_sck_en;
+    logic [SpihNumCs-1:0] spi_chs_csb;
+    logic [SpihNumCs-1:0] spi_chs_csb_en;
+    logic [ 3:0]          spi_chs_sdo;
+    logic [ 3:0]          spi_chs_sdo_en;
+    logic [ 3:0]          spi_chs_sdi;
+
     // Last CS is an internal dummy for devices that need it
     logic spih_csb_dummy, spih_csb_dummy_en;
 
@@ -1316,15 +1324,39 @@ module cheshire_soc import cheshire_pkg::*; #(
       .rst_ni,
       .reg_req_i        ( reg_out_req[RegOut.spi_host] ),
       .reg_rsp_o        ( reg_out_rsp[RegOut.spi_host] ),
-      .cio_sck_o        ( spih_sck_o    ),
-      .cio_sck_en_o     ( spih_sck_en_o ),
-      .cio_csb_o        ( {spih_csb_dummy,    spih_csb_o   } ),
-      .cio_csb_en_o     ( {spih_csb_dummy_en, spih_csb_en_o} ),
-      .cio_sd_o         ( spih_sd_o     ),
-      .cio_sd_en_o      ( spih_sd_en_o  ),
-      .cio_sd_i         ( spih_sd_i     ),
+      .cio_sck_o        ( spi_chs_sck    ),
+      .cio_sck_en_o     ( spi_chs_sck_en ),
+      .cio_csb_o        ( {spih_csb_dummy,    spi_chs_csb   } ),
+      .cio_csb_en_o     ( {spih_csb_dummy_en, spi_chs_csb_en} ),
+      .cio_sd_o         ( spi_chs_sdo    ),
+      .cio_sd_en_o      ( spi_chs_sdo_en ),
+      .cio_sd_i         ( spi_chs_sdi    ),
       .intr_error_o     ( intr.intn.spih_error     ),
       .intr_spi_event_o ( intr.intn.spih_spi_event )
+    );
+
+
+    spi_flash_filter #(
+      .SpihNumCs (SpihNumCs)
+    ) i_spi_flash_filter (
+      .clk_i,
+      .rst_ni,
+      // Flash Side
+      .spih_sck_o,
+      .spih_sck_en_o,
+      .spih_csb_o,
+      .spih_csb_en_o,
+      .spih_sd_o,
+      .spih_sd_en_o,
+      .spih_sd_i,
+      // CHS Side
+      .spi_chs_sck,
+      .spi_chs_sck_en,
+      .spi_chs_csb,
+      .spi_chs_csb_en,
+      .spi_chs_sdo,
+      .spi_chs_sdo_en,
+      .spi_chs_sdi
     );
 
   end else begin : gen_no_spi_host
