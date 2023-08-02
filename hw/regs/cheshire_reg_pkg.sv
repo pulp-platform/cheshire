@@ -7,7 +7,7 @@
 package cheshire_reg_pkg;
 
   // Address widths within the block
-  parameter int BlockAw = 6;
+  parameter int BlockAw = 7;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -91,16 +91,28 @@ package cheshire_reg_pkg;
   } cheshire_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_0_OFFSET = 6'h 0;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_1_OFFSET = 6'h 4;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_2_OFFSET = 6'h 8;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_3_OFFSET = 6'h c;
-  parameter logic [BlockAw-1:0] CHESHIRE_BOOT_MODE_OFFSET = 6'h 10;
-  parameter logic [BlockAw-1:0] CHESHIRE_RTC_FREQ_OFFSET = 6'h 14;
-  parameter logic [BlockAw-1:0] CHESHIRE_PLATFORM_ROM_OFFSET = 6'h 18;
-  parameter logic [BlockAw-1:0] CHESHIRE_HW_FEATURES_OFFSET = 6'h 1c;
-  parameter logic [BlockAw-1:0] CHESHIRE_LLC_SIZE_OFFSET = 6'h 20;
-  parameter logic [BlockAw-1:0] CHESHIRE_VGA_PARAMS_OFFSET = 6'h 24;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_0_OFFSET = 7'h 0;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_1_OFFSET = 7'h 4;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_2_OFFSET = 7'h 8;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_3_OFFSET = 7'h c;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_4_OFFSET = 7'h 10;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_5_OFFSET = 7'h 14;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_6_OFFSET = 7'h 18;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_7_OFFSET = 7'h 1c;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_8_OFFSET = 7'h 20;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_9_OFFSET = 7'h 24;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_10_OFFSET = 7'h 28;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_11_OFFSET = 7'h 2c;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_12_OFFSET = 7'h 30;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_13_OFFSET = 7'h 34;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_14_OFFSET = 7'h 38;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_15_OFFSET = 7'h 3c;
+  parameter logic [BlockAw-1:0] CHESHIRE_BOOT_MODE_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] CHESHIRE_RTC_FREQ_OFFSET = 7'h 44;
+  parameter logic [BlockAw-1:0] CHESHIRE_PLATFORM_ROM_OFFSET = 7'h 48;
+  parameter logic [BlockAw-1:0] CHESHIRE_HW_FEATURES_OFFSET = 7'h 4c;
+  parameter logic [BlockAw-1:0] CHESHIRE_LLC_SIZE_OFFSET = 7'h 50;
+  parameter logic [BlockAw-1:0] CHESHIRE_VGA_PARAMS_OFFSET = 7'h 54;
 
   // Reset values for hwext registers and their fields
   parameter logic [1:0] CHESHIRE_BOOT_MODE_RESVAL = 2'h 0;
@@ -116,6 +128,18 @@ package cheshire_reg_pkg;
     CHESHIRE_SCRATCH_1,
     CHESHIRE_SCRATCH_2,
     CHESHIRE_SCRATCH_3,
+    CHESHIRE_SCRATCH_4,
+    CHESHIRE_SCRATCH_5,
+    CHESHIRE_SCRATCH_6,
+    CHESHIRE_SCRATCH_7,
+    CHESHIRE_SCRATCH_8,
+    CHESHIRE_SCRATCH_9,
+    CHESHIRE_SCRATCH_10,
+    CHESHIRE_SCRATCH_11,
+    CHESHIRE_SCRATCH_12,
+    CHESHIRE_SCRATCH_13,
+    CHESHIRE_SCRATCH_14,
+    CHESHIRE_SCRATCH_15,
     CHESHIRE_BOOT_MODE,
     CHESHIRE_RTC_FREQ,
     CHESHIRE_PLATFORM_ROM,
@@ -125,17 +149,29 @@ package cheshire_reg_pkg;
   } cheshire_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] CHESHIRE_PERMIT [10] = '{
-    4'b 1111, // index[0] CHESHIRE_SCRATCH_0
-    4'b 1111, // index[1] CHESHIRE_SCRATCH_1
-    4'b 1111, // index[2] CHESHIRE_SCRATCH_2
-    4'b 1111, // index[3] CHESHIRE_SCRATCH_3
-    4'b 0001, // index[4] CHESHIRE_BOOT_MODE
-    4'b 1111, // index[5] CHESHIRE_RTC_FREQ
-    4'b 1111, // index[6] CHESHIRE_PLATFORM_ROM
-    4'b 0011, // index[7] CHESHIRE_HW_FEATURES
-    4'b 1111, // index[8] CHESHIRE_LLC_SIZE
-    4'b 0111  // index[9] CHESHIRE_VGA_PARAMS
+  parameter logic [3:0] CHESHIRE_PERMIT [22] = '{
+    4'b 1111, // index[ 0] CHESHIRE_SCRATCH_0
+    4'b 1111, // index[ 1] CHESHIRE_SCRATCH_1
+    4'b 1111, // index[ 2] CHESHIRE_SCRATCH_2
+    4'b 1111, // index[ 3] CHESHIRE_SCRATCH_3
+    4'b 1111, // index[ 4] CHESHIRE_SCRATCH_4
+    4'b 1111, // index[ 5] CHESHIRE_SCRATCH_5
+    4'b 1111, // index[ 6] CHESHIRE_SCRATCH_6
+    4'b 1111, // index[ 7] CHESHIRE_SCRATCH_7
+    4'b 1111, // index[ 8] CHESHIRE_SCRATCH_8
+    4'b 1111, // index[ 9] CHESHIRE_SCRATCH_9
+    4'b 1111, // index[10] CHESHIRE_SCRATCH_10
+    4'b 1111, // index[11] CHESHIRE_SCRATCH_11
+    4'b 1111, // index[12] CHESHIRE_SCRATCH_12
+    4'b 1111, // index[13] CHESHIRE_SCRATCH_13
+    4'b 1111, // index[14] CHESHIRE_SCRATCH_14
+    4'b 1111, // index[15] CHESHIRE_SCRATCH_15
+    4'b 0001, // index[16] CHESHIRE_BOOT_MODE
+    4'b 1111, // index[17] CHESHIRE_RTC_FREQ
+    4'b 1111, // index[18] CHESHIRE_PLATFORM_ROM
+    4'b 0011, // index[19] CHESHIRE_HW_FEATURES
+    4'b 1111, // index[20] CHESHIRE_LLC_SIZE
+    4'b 0111  // index[21] CHESHIRE_VGA_PARAMS
   };
 
 endpackage

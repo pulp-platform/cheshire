@@ -14,6 +14,13 @@ _start:
     // Globally disable Machine and Supervisor interrupts
     csrrc x0, mstatus, 10
 
+    // Park SMP harts
+    csrr t0, mhartid
+    beqz t0, 2f
+1:
+    wfi
+    j 1b
+2:
     // Init stack and global pointer iff linked as nonzero
     mv t1, sp
     la t0, __stack_pointer$

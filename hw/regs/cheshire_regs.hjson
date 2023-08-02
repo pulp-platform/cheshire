@@ -21,7 +21,7 @@
         desc:     "Registers for use by software"
         swaccess: "rw"
         hwaccess: "none"
-        count:    "4"
+        count:    "16"
         cname:    "scratch"
         fields: [
           { bits: "31:0", resval: "0", name: "scratch", desc: "Registers for use by software" }
