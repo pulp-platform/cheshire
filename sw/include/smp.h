@@ -9,15 +9,6 @@
 #define NONSMP_HART 0
 #endif
 
-// The maximum number of HARTs this code supports
-#ifndef MAX_HARTS
-#define MAX_HARTS 256
-#endif
-
-// CLINT base address
-#define CLINT_ADDR 0x2000000
-#define CLINT_END_HART_IPI CLINT_ADDR + (MAX_HARTS * 4)
-
 // Let non-SMP hart continue and all other harts jump (and loop) in smp_resume
 #define smp_pause(reg1, reg2) \
     li reg2, 0x8; \
@@ -26,27 +17,33 @@
     csrr reg2, mhartid; \
     bne reg1, reg2, 1f
 
-#define smp_resume(reg1, reg2) \
-    li reg1, CLINT_ADDR; \
+#define smp_resume(reg1, reg2, reg3) \
+    la reg1, __base_clint; \
+    la reg3, __base_regs; \
+    lw reg3, 88(reg3); /* regs.NUM_HARTS */ \
+    slli reg3, reg3, 2; \
+    add reg3, reg1, reg3; \
     1:; \
     li reg2, 1; \
     sw reg2, 0(reg1); \
     addi reg1, reg1, 4; \
-    li reg2, CLINT_END_HART_IPI; \
-    blt reg1, reg2, 1b; \
+    blt reg1, reg3, 1b; \
     2:; \
     wfi; \
     csrr reg2, mip; \
     andi reg2, reg2, 0x8; \
     beqz reg2, 2b; \
-    li reg1, CLINT_ADDR; \
+    la reg1, __base_clint; \
     csrr reg2, mhartid; \
     slli reg2, reg2, 2; \
     add reg2, reg2, reg1; \
     sw zero, 0(reg2); \
+    la reg3, __base_regs; \
+    lw reg3, 88(reg3); /* regs.NUM_HARTS */ \
+    slli reg3, reg3, 2; \
+    add reg3, reg1, reg3; \
     3:; \
     lw reg2, 0(reg1); \
     bnez reg2, 3b; \
     addi reg1, reg1, 4; \
-    li reg2, CLINT_END_HART_IPI; \
-    blt reg1, reg2, 3b
+    blt reg1, reg3, 3b

@@ -994,7 +994,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       red_width   : Cfg.VgaRedWidth,
       green_width : Cfg.VgaGreenWidth,
       blue_width  : Cfg.VgaBlueWidth
-    }
+    },
+    num_harts     : Cfg.NumCores
   };
 
   cheshire_reg_top #(

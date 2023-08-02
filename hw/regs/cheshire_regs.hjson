@@ -119,5 +119,16 @@
       ]
     }
 
+    { name:     "num_harts"
+      desc:     "Number of harts"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwqe:     "true"
+      hwext:    "true"
+      fields: [
+        { bits: "31:0", name: "num_harts", desc: "Number of harts" }
+      ]
+    }
+
   ]
 }

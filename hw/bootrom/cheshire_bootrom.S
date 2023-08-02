@@ -94,7 +94,7 @@ boot_next_stage:
     sw a0, 20(t0)   // regs.SCRATCH[5]
     fence
     // Resume SMP harts
-    smp_resume(t0, t1)
+    smp_resume(t0, t1, t2)
     // Load boot address from global scratch registers
     la t0, __base_regs
     lw t1, 20(t0)   // regs.SCRATCH[5]

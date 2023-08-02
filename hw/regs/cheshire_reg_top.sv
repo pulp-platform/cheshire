@@ -153,6 +153,8 @@ module cheshire_reg_top #(
   logic vga_params_green_width_re;
   logic [7:0] vga_params_blue_width_qs;
   logic vga_params_blue_width_re;
+  logic [31:0] num_harts_qs;
+  logic num_harts_re;
 
   // Register instances
 
@@ -882,9 +884,25 @@ module cheshire_reg_top #(
   );
 
 
+  // R[num_harts]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_num_harts (
+    .re     (num_harts_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.num_harts.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (num_harts_qs)
+  );
 
 
-  logic [21:0] addr_hit;
+
+
+  logic [22:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CHESHIRE_SCRATCH_0_OFFSET);
@@ -909,6 +927,7 @@ module cheshire_reg_top #(
     addr_hit[19] = (reg_addr == CHESHIRE_HW_FEATURES_OFFSET);
     addr_hit[20] = (reg_addr == CHESHIRE_LLC_SIZE_OFFSET);
     addr_hit[21] = (reg_addr == CHESHIRE_VGA_PARAMS_OFFSET);
+    addr_hit[22] = (reg_addr == CHESHIRE_NUM_HARTS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -937,7 +956,8 @@ module cheshire_reg_top #(
                (addr_hit[18] & (|(CHESHIRE_PERMIT[18] & ~reg_be))) |
                (addr_hit[19] & (|(CHESHIRE_PERMIT[19] & ~reg_be))) |
                (addr_hit[20] & (|(CHESHIRE_PERMIT[20] & ~reg_be))) |
-               (addr_hit[21] & (|(CHESHIRE_PERMIT[21] & ~reg_be)))));
+               (addr_hit[21] & (|(CHESHIRE_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(CHESHIRE_PERMIT[22] & ~reg_be)))));
   end
 
   assign scratch_0_we = addr_hit[0] & reg_we & !reg_error;
@@ -1025,6 +1045,8 @@ module cheshire_reg_top #(
   assign vga_params_green_width_re = addr_hit[21] & reg_re & !reg_error;
 
   assign vga_params_blue_width_re = addr_hit[21] & reg_re & !reg_error;
+
+  assign num_harts_re = addr_hit[22] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -1129,6 +1151,10 @@ module cheshire_reg_top #(
         reg_rdata_next[7:0] = vga_params_red_width_qs;
         reg_rdata_next[15:8] = vga_params_green_width_qs;
         reg_rdata_next[23:16] = vga_params_blue_width_qs;
+      end
+
+      addr_hit[22]: begin
+        reg_rdata_next[31:0] = num_harts_qs;
       end
 
       default: begin

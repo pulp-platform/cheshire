@@ -119,6 +119,9 @@ extern "C" {
 #define CHESHIRE_VGA_PARAMS_BLUE_WIDTH_FIELD \
   ((bitfield_field32_t) { .mask = CHESHIRE_VGA_PARAMS_BLUE_WIDTH_MASK, .index = CHESHIRE_VGA_PARAMS_BLUE_WIDTH_OFFSET })
 
+// Number of harts
+#define CHESHIRE_NUM_HARTS_REG_OFFSET 0x58
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
