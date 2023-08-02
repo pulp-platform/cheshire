@@ -79,6 +79,7 @@ package cheshire_pkg;
     byte_bt NumExtOutIntrTgts;
     shrt_bt NumExtOutIntrs;
     shrt_bt ClicIntCtlBits;
+    shrt_bt NumExtIntrSyncs;
     // AXI parameters
     aw_bt   AddrWidth;
     dw_bt   AxiDataWidth;
@@ -219,7 +220,6 @@ package cheshire_pkg;
   } cheshire_xeip_t;
 
   // Interrupt parameters
-  localparam int unsigned NumExtIntrSyncs = 2;
   localparam int unsigned NumIntIntrs     = $bits(cheshire_int_intr_t);
   localparam int unsigned NumIrqCtxts     = $bits(cheshire_xeip_t);
   localparam int unsigned NumCoreIrqs     = $bits(cheshire_core_ip_t);
@@ -476,6 +476,7 @@ package cheshire_pkg;
     NumExtOutIntrTgts : 0,
     NumExtOutIntrs    : 0,
     ClicIntCtlBits    : ariane_pkg::ArianeDefaultConfig.CLICIntCtlBits,
+    NumExtIntrSyncs   : 2,
     // Interconnect
     AddrWidth         : 48,
     AxiDataWidth      : 64,
