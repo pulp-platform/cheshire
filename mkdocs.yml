@@ -18,6 +18,11 @@ markdown_extensions:
   - toc:
       toc_depth: 2
   - markdown_grid_tables:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
 
 repo_url: https://github.com/pulp-platform/cheshire
 repo_name: pulp-platform/cheshire

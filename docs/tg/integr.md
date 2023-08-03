@@ -15,7 +15,10 @@ If you use GNU Make to build your project and Bender to handle dependencies, you
 include $(shell bender path cheshire)/cheshire.mk
 ```
 
-All of Cheshire's build targets are now available with the prefix `chs-`. You can leverage this to ensure your Cheshire build is up to date and rebuild hardware and software whenever necessary. You can change the default value of any build parameter, replace source files to adapt Cheshire, or reuse parts of its build system, such as the software stack or the register and ROM generators.
+All of Cheshire's build targets are now available with the prefix `chs-`. Alternatively, the variables `CHS_*` provide the non-phony targets built by each of these targets.
+
+You can leverage this to ensure your Cheshire build is up to date and rebuild hardware and software whenever necessary. You can change the default value of any build parameter, replace source files to adapt Cheshire, or reuse parts of its build system, such as the software stack or the register and ROM generators.
 
 ## Instantiating Cheshire
 
+Almost all features of Cheshire can be included/excluded or scaled through parameterization. We empose an internal memory map and reasonable constraints on all parameters, but within these constraints, Cheshire can scale to fit numerous scenarios.
