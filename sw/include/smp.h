@@ -15,7 +15,7 @@
     csrw mie, reg2; \
     li reg1, NONSMP_HART; \
     csrr reg2, mhartid; \
-    bne reg1, reg2, 1f
+    bne reg1, reg2, 2f
 
 #define smp_resume(reg1, reg2, reg3) \
     la reg1, __base_clint; \
