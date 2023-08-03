@@ -7,20 +7,14 @@
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 // TODO: Avoid hardcoding in addresses and offsets
-// TODO: park non-0 harts here and adapt to new parameterization
+
+#include "smp.h"
 
 .section .text._start
 
 // Minimal bootrom loader
 .global _start
 _start:
-    // Init stack and global pointer with safe, linked values
-    la sp, __stack_pointer$
-    .option push
-    .option norelax
-    la gp, __global_pointer$
-    .option pop
-
     // Reset all integer GPRs; we do *not* assume FP in the boot ROM.
     li x1, 0
     li x4, 0
@@ -52,9 +46,19 @@ _start:
     li x30, 0
     li x31, 0
 
+    // Pause SMP harts
+    smp_pause(t0, t1)
+
+    // Init stack and global pointer with safe, linked values
+    la sp, __stack_pointer$
+    .option push
+    .option norelax
+    la gp, __global_pointer$
+    .option pop
+
     // If LLC present: Wait for end of BIST, then extend stack and set to all SPM
     la t0, __base_regs
-    lw t0, 28(t0)   // regs.HW_FEATURES
+    lw t0, 76(t0)   // regs.HW_FEATURES
     andi t0, t0, 2  // regs.HW_FEATURES.llc
     beqz t0, _prom_check_run
     la t0, __base_llc
@@ -69,7 +73,7 @@ _wait_llc_bist:
     // Correct stack to start at end of SPM
     la t0, __base_regs
     la sp, __base_spm
-    lw t0, 32(t0)   // regs.LLC_SIZE
+    lw t0, 80(t0)   // regs.LLC_SIZE
     add sp, sp, t0
     addi sp, sp, -8
 
@@ -77,9 +81,32 @@ _wait_llc_bist:
 _prom_check_run:
     // Note that we have internal access to SPM here *if and only if* there is an LLC.
     la t0, __base_regs
-    lw t0, 24(t0)   // regs.PLATFORM_ROM
+    lw t0, 72(t0)   // regs.PLATFORM_ROM
     beqz t0, _boot
     jalr t0
+
+.global boot_next_stage
+boot_next_stage:
+    // Non-SMP hart: Write boot address into global scratch registers
+    la t0, __base_regs
+    sw a0, 16(t0)   // regs.SCRATCH[4]
+    srli a0, a0, 32
+    sw a0, 20(t0)   // regs.SCRATCH[5]
+    fence
+    // Resume SMP harts
+    smp_resume(t0, t1, t2)
+    // Load boot address from global scratch registers
+    la t0, __base_regs
+    lwu t1, 20(t0)  // regs.SCRATCH[5]
+    slli t1, t1, 32
+    lwu t0, 16(t0)  // regs.SCRATCH[4]
+    or t0, t0, t1
+    // Store hartid to a0
+    csrr a0, mhartid
+    // Jump to boot address
+    jalr ra, 0(t0)
+    // We should never get here
+    ret
 
 // Reset regs, full fence, then jump to main
 _boot:

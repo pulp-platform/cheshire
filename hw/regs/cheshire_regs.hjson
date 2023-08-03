@@ -21,7 +21,7 @@
         desc:     "Registers for use by software"
         swaccess: "rw"
         hwaccess: "none"
-        count:    "4"
+        count:    "16"
         cname:    "scratch"
         fields: [
           { bits: "31:0", resval: "0", name: "scratch", desc: "Registers for use by software" }
@@ -116,6 +116,17 @@
         { bits: "15:8",   name: "green_width",  desc: "Green channel width" }
         { bits: "23:16",  name: "blue_width",   desc: "Blue channel width"  }
 
+      ]
+    }
+
+    { name:     "num_harts"
+      desc:     "Number of harts"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwqe:     "true"
+      hwext:    "true"
+      fields: [
+        { bits: "31:0", name: "num_harts", desc: "Number of harts" }
       ]
     }
 

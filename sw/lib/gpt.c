@@ -86,5 +86,5 @@ int gpt_boot_part_else_raw(gpt_read_t read, void *priv, void *code_buf, uint64_t
     *reg32(&__base_regs, CHESHIRE_SCRATCH_1_REG_OFFSET) = (uintptr_t)priv;
     *reg32(&__base_regs, CHESHIRE_SCRATCH_3_REG_OFFSET) = (uintptr_t)gprw(0);
     // Invoke code
-    return invoke((void *)code_buf);
+    return boot_next_stage((void *)code_buf);
 }
