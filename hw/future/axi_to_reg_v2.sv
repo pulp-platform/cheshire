@@ -117,7 +117,7 @@ module axi_to_reg_v2 #(
       .rst_ni,
       .req_i     ( mem_req    [i]      ),
       .add_i     ( mem_addr   [i]      ),
-      .wen_i     ( mem_we     [i]      ),
+      .wen_i     ( !mem_we    [i]      ),
       .wdata_i   ( mem_wdata  [i]      ),
       .be_i      ( mem_strb   [i]      ),
       .id_i      ( '0                  ),
