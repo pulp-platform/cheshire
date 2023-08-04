@@ -43,9 +43,9 @@ module axi_to_reg_v2 #(
   // how many times is the AXI bus wider than the regbus?
   localparam int unsigned NumBanks = AxiDataWidth / RegDataWidth;
 
-  typedef logic [AxiAddrWidth-1  :0] addr_t;
-  typedef logic [RegDataWidth-1  :0] reg_data_t;
-  typedef logic [RegDataWidth/8-1:0] reg_strb_t;
+  localparam type addr_t     = logic [AxiAddrWidth-1  :0];
+  localparam type reg_data_t = logic [RegDataWidth-1  :0];
+  localparam type reg_strb_t = logic [RegDataWidth/8-1:0];
 
   // TCDM BUS
   logic      [NumBanks-1:0] mem_req;
@@ -74,10 +74,7 @@ module axi_to_reg_v2 #(
     .NumBanks     ( NumBanks      ),
     .BufDepth     ( 32'd1         ),
     .HideStrb     ( 1'b0          ),
-    .OutFifoDepth ( 32'd1         ),
-    .addr_t       ( addr_t        ),
-    .mem_data_t   ( reg_data_t    ),
-    .mem_strb_t   ( reg_strb_t    )
+    .OutFifoDepth ( 32'd1         )
   ) i_axi_to_detailed_mem (
     .clk_i,
     .rst_ni,
