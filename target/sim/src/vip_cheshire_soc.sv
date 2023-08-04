@@ -256,6 +256,71 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     $display("[JTAG] Initialization success");
   endtask
 
+  // Halt the core and preload a binary
+  task automatic jtag_elf_halt_load(input string binary, output doub_bt entry );
+    dm::dmstatus_t status;
+    // Wait until bootrom initialized LLC
+    if (DutCfg.LlcNotBypass) begin
+      word_bt regval;
+      $display("[JTAG] Wait for LLC configuration");
+      jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
+    end
+    // Halt hart 0
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, default: '0});
+    do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
+    while (~status.allhalted);
+    $display("[JTAG] Halted hart 0");
+    // Preload binary
+    jtag_elf_preload(binary, entry);
+  endtask
+
+  task automatic jtag_write_reg(input logic [31:0] start_addr, input doub_bt value);
+    logic [63:0]      rdata;
+
+    $display("[JTAG] Start writing at %x ", start_addr);
+    jtag_write(dm::SBCS, JtagInitSbcs, 1, 1);
+    // Write address
+    jtag_write(dm::SBAddress0, start_addr);
+    // Write data
+    jtag_write(dm::SBData1, value[63:32]);
+    jtag_write(dm::SBData0, value[31:0]);
+
+    //Check correctess
+    jtag_read_reg(start_addr, rdata);
+    if(rdata!=value) begin
+      $fatal(1,"rdata at %x: %x" , start_addr, rdata);
+    end else begin
+      $display("W/R sanity check at %x ok! : %x", start_addr, rdata);
+    end
+  endtask
+
+  task automatic jtag_read_reg;
+    input logic [31:0] addr;
+    output logic [63:0] rdata;
+
+    automatic dm::sbcs_t sbcs = '{
+      sbautoincrement: 1'b1,
+      sbreadondata   : 1'b1,
+      default        : 1'b0
+    };
+
+    sbcs.sbreadonaddr = 1;
+    jtag_dbg.write_dmi(dm::SBCS, sbcs);
+    do jtag_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+    jtag_dbg.write_dmi(dm::SBAddress0, addr);
+    do jtag_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+    jtag_dbg.read_dmi_exp_backoff(dm::SBData1, rdata[63:32]);
+    // Wait until SBA is free to read another 32 bits
+    do jtag_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+    jtag_dbg.read_dmi_exp_backoff(dm::SBData0, rdata[31:0]);
+    // Wait until SBA is free to read another 32 bits
+    do jtag_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+  endtask // execute_application
+
   // Load a binary
   task automatic jtag_elf_preload(input string binary, output doub_bt entry);
     longint sec_addr, sec_len;
