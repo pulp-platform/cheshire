@@ -177,6 +177,8 @@ package cheshire_pkg;
     // Parameters for AXI RT
     word_bt AxiRtNumPending;
     word_bt AxiRtWBufferDepth;
+    word_bt AxiRtNumAddrRegions;
+    bit     AxiRtCutPaths;
   } cheshire_cfg_t;
 
   //////////////////
@@ -395,7 +397,7 @@ package cheshire_pkg;
     if (cfg.Gpio)         begin i++; ret.gpio       = i; r++; ret.map[r] = '{i, 'h0300_5000, 'h0300_6000}; end
     if (cfg.SerialLink)   begin i++; ret.slink      = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
     if (cfg.Vga)          begin i++; ret.vga        = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
-    if (cfg.AxiRt)        begin i++; ret.axirt      = i; r++; ret.map[r] = '{i, 'h0300_8000, 'h0300_9000}; end
+    if (cfg.AxiRt)        begin i++; ret.axirt      = i; r++; ret.map[r] = '{i, 'h0300_8000, 'h0300_a000}; end // sufficient for 16 managers, 4 regions each
     if (cfg.IrqRouter)    begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
     if (cfg.Clic) for (int j = 0; j < cfg.NumCores; j++) begin
       i++; ret.clic[j]    = i; r++; ret.map[r] = '{i, AmClic + j*'h40000, AmClic + (j+1)*'h40000};
@@ -579,8 +581,10 @@ package cheshire_pkg;
     // GPIOs
     GpioInputSyncs    : 1,
     // AXI RT
-    AxiRtNumPending   : 16,
-    AxiRtWBufferDepth : 16,
+    AxiRtNumPending     : 16,
+    AxiRtWBufferDepth   : 16,
+    AxiRtNumAddrRegions : 2,
+    AxiRtCutPaths       : 1,
     // All non-set values should be zero
     default: '0
   };
