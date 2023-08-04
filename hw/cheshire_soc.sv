@@ -1054,86 +1054,45 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   if (Cfg.AxiRt) begin : gen_axi_rt
 
-    // Connect AXI RT units, one for each master
-    axi_rt_reg_pkg::axi_rt_hw2reg_t axi_rt_hw2reg;
-    axi_rt_reg_pkg::axi_rt_reg2hw_t axi_rt_reg2hw;
-
-    // Rule type
-    typedef struct packed {
-      logic [0:0] idx;
-      addr_t      start_addr;
-      addr_t      end_addr;
-    } rt_rule_t;
-
-    localparam rt_rule_t [0:0] RtAddrmap = '{
-      '{ idx: 8'h00, start_addr: '0, end_addr: '1 }
-    };
-
-    for (genvar i = 0; i < AxiIn.num_in; i++) begin : gen_axi_rt_units
-      axi_rt_unit #(
-        .AddrWidth      ( Cfg.AddrWidth     ),
-        .DataWidth      ( Cfg.AxiDataWidth  ),
-        .IdWidth        ( Cfg.AxiMstIdWidth ),
-        .UserWidth      ( Cfg.AxiUserWidth  ),
-        .NumPending     ( Cfg.AxiRtNumPending   ),
-        .WBufferDepth   ( Cfg.AxiRtWBufferDepth ),
-        .NumAddrRegions ( 1  ),
-        .NumRules       ( 1  ),
-        .PeriodWidth    ( 32 ),
-        .BudgetWidth    ( 32 ),
-        .rt_rule_t      ( rt_rule_t ),
-        .addr_t         ( addr_t    ),
-        .aw_chan_t      ( axi_mst_aw_chan_t ),
-        .w_chan_t       ( axi_mst_w_chan_t  ),
-        .axi_req_t      ( axi_mst_req_t ),
-        .axi_resp_t     ( axi_mst_rsp_t )
-      ) i_axi_rt_unit (
-        .clk_i,
-        .rst_ni,
-        .slv_req_i        ( axi_in_req [i] ),
-        .slv_resp_o       ( axi_in_rsp [i] ),
-        .mst_req_o        ( axi_rt_in_req [i] ),
-        .mst_resp_i       ( axi_rt_in_rsp [i] ),
-        .rt_enable_i      ( axi_rt_reg2hw.rt_enable   [i] ),
-        .rt_bypassed_o    ( axi_rt_hw2reg.rt_bypassed [i] ),
-        .len_limit_i      ( axi_rt_reg2hw.len_limit   [i] ),
-        .num_w_pending_o  ( ),
-        .num_aw_pending_o ( ),
-        .rt_rule_i        ( RtAddrmap ),
-        .w_decode_error_o ( ),
-        .r_decode_error_o ( ),
-        .imtu_enable_i    ( axi_rt_reg2hw.imtu_enable [i] ),
-        .imtu_abort_i     ( axi_rt_reg2hw.imtu_abort  [i] ),
-        .w_budget_i       ( axi_rt_reg2hw.write_budget      [i] ),
-        .w_budget_left_o  ( axi_rt_hw2reg.write_budget_left [i] ),
-        .w_period_i       ( axi_rt_reg2hw.write_period      [i] ),
-        .w_period_left_o  ( axi_rt_hw2reg.write_period_left [i] ),
-        .r_budget_i       ( axi_rt_reg2hw.read_budget       [i] ),
-        .r_budget_left_o  ( axi_rt_hw2reg.read_budget_left  [i] ),
-        .r_period_i       ( axi_rt_reg2hw.read_period       [i] ),
-        .r_period_left_o  ( axi_rt_hw2reg.read_period_left  [i] ),
-        .isolate_o        ( axi_rt_hw2reg.isolate  [i] ),
-        .isolated_o       ( axi_rt_hw2reg.isolated [i] )
-      );
-    end
-
-    axi_rt_reg_top #(
-      .reg_req_t  ( reg_req_t ),
-      .reg_rsp_t  ( reg_rsp_t )
-    ) i_axi_rt_regs (
+    axi_rt_unit_top #(
+      .NumManagers      ( AxiIn.num_in  ),
+      .AddrWidth        ( Cfg.AddrWidth ),
+      .DataWidth        ( Cfg.AxiDataWidth  ),
+      .IdWidth          ( Cfg.AxiMstIdWidth ),
+      .UserWidth        ( Cfg.AxiUserWidth  ),
+      .NumPending       ( Cfg.AxiRtNumPending     ),
+      .WBufferDepth     ( Cfg.AxiRtWBufferDepth   ),
+      .NumAddrRegions   ( Cfg.AxiRtNumAddrRegions ),
+      .PeriodWidth      ( 32'd32 ),
+      .BudgetWidth      ( 32'd32 ),
+      .RegIdWidth       ( AxiSlvIdWidth     ),
+      .CutSplitterPaths ( Cfg.AxiRtCutPaths ),
+      .CutDecErrors     ( 1'b0 ),
+      .aw_chan_t        ( axi_mst_aw_chan_t ),
+      .w_chan_t         ( axi_mst_w_chan_t  ),
+      .b_chan_t         ( axi_mst_b_chan_t  ),
+      .ar_chan_t        ( axi_mst_ar_chan_t ),
+      .r_chan_t         ( axi_mst_r_chan_t  ),
+      .axi_req_t        ( axi_mst_req_t ),
+      .axi_resp_t       ( axi_mst_rsp_t ),
+      .req_req_t        ( reg_req_t ),
+      .req_rsp_t        ( reg_rsp_t )
+    ) i_axi_rt_unit_top (
       .clk_i,
       .rst_ni,
+      .slv_req_i  ( axi_in_req    ),
+      .slv_resp_o ( axi_in_rsp    ),
+      .mst_req_o  ( axi_rt_in_req ),
+      .mst_resp_i ( axi_rt_in_rsp ),
       .reg_req_i  ( reg_out_req[RegOut.axirt] ),
       .reg_rsp_o  ( reg_out_rsp[RegOut.axirt] ),
-      .hw2reg     ( axi_rt_hw2reg ),
-      .reg2hw     ( axi_rt_reg2hw ),
-      .devmode_i  ( 1'b1 )
+      .reg_id_i   ( reg_id )
     );
 
   end else begin : gen_no_axi_rt
 
-    assign axi_rt_in_req  = axi_in_req;
-    assign axi_in_rsp     = axi_rt_in_rsp;
+    assign axi_rt_in_req = axi_in_req;
+    assign axi_in_rsp    = axi_rt_in_rsp;
 
   end
 
