@@ -6,13 +6,18 @@
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-module fixture_cheshire_soc;
+module fixture_cheshire_soc #(
+  /// The selected simulation configuration from the `tb_cheshire_pkg`.
+  parameter int unsigned SelectedCfg = 32'd0
+);
 
   `include "cheshire/typedef.svh"
 
   import cheshire_pkg::*;
+  import tb_cheshire_pkg::*;
 
-  localparam cheshire_cfg_t DutCfg = DefaultCfg;
+  localparam cheshire_cfg_t DutCfg = TbCheshireConfigs[SelectedCfg];
+
   `CHESHIRE_TYPEDEF_ALL(, DutCfg)
 
   ///////////

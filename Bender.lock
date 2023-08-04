@@ -43,6 +43,15 @@ packages:
     - axi
     - common_cells
     - common_verification
+  axi_rt:
+    revision: b243310dd33b31e4e2ca5229aac20df25cfc45d5
+    version: 0.0.0-alpha
+    source:
+      Git: https://github.com/pulp-platform/axi_rt.git
+    dependencies:
+    - axi
+    - common_cells
+    - register_interface
   axi_vga:
     revision: 07be187d1e954d8090031b32d236ad76dc62ce45
     version: 0.1.1
@@ -108,8 +117,8 @@ packages:
     dependencies:
     - common_cells
   idma:
-    revision: 2c64e0773fab5a54757646715485fcdf3432c7c1
-    version: 0.5.0
+    revision: ca1b28816a3706be0bf9ce01378246d5346384f0
+    version: 0.5.1
     source:
       Git: https://github.com/pulp-platform/iDMA.git
     dependencies:
@@ -136,8 +145,8 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: 3b2bf592100b769977c76e51812c55cd742882f6
-    version: 0.4.1
+    revision: d7693be4aef1fc7e7eb2b00b41c42e87d959866c
+    version: 0.4.2
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:
@@ -163,15 +172,15 @@ packages:
     - common_cells
     - register_interface
   tech_cells_generic:
-    revision: 298b7297d220ba2601d0f24f684f97ff32f61123
-    version: 0.2.12
+    revision: 7968dd6e6180df2c644636bc6d2908a49f2190cf
+    version: 0.2.13
     source:
       Git: https://github.com/pulp-platform/tech_cells_generic.git
     dependencies:
     - common_verification
   unbent:
-    revision: 791420b326c6455595b4444c02f05f180b99dd06
-    version: 0.1.1
+    revision: 89ea12018002e6fae51f88e25320e79f57db8073
+    version: 0.1.5
     source:
       Git: https://github.com/pulp-platform/unbent.git
     dependencies:

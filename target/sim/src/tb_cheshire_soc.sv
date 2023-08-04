@@ -5,9 +5,12 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 
-module tb_cheshire_soc;
+module tb_cheshire_soc #(
+  /// The selected simulation configuration from the `tb_cheshire_pkg`.
+  parameter int unsigned SelectedCfg = 32'd0
+);
 
-  fixture_cheshire_soc fix();
+  fixture_cheshire_soc #(.SelectedCfg(SelectedCfg)) fix();
 
   string      preload_elf;
   string      boot_hex;

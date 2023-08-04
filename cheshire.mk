@@ -20,6 +20,7 @@ CHS_LLC_DIR   := $(shell $(BENDER) path axi_llc)
 # Define paths used in dependencies
 OTPROOT      := $(shell $(BENDER) path opentitan_peripherals)
 CLINTROOT    := $(shell $(BENDER) path clint)
+AXIRTROOT    := $(shell $(BENDER) path axi_rt)
 AXI_VGA_ROOT := $(shell $(BENDER) path axi_vga)
 IDMA_ROOT    := $(shell $(BENDER) path idma)
 
@@ -52,7 +53,7 @@ chs-clean-deps:
 ######################
 
 CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-CHS_NONFREE_COMMIT ?= 1c70a67
+CHS_NONFREE_COMMIT ?= 6a5809a
 
 chs-nonfree-init:
 	git clone $(CHS_NONFREE_REMOTE) $(CHS_ROOT)/nonfree
@@ -74,10 +75,6 @@ include $(CHS_ROOT)/sw/sw.mk
 $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv: $(CHS_ROOT)/hw/regs/cheshire_regs.hjson
 	$(REGTOOL) -r $< --outdir $(dir $@)
 
-# AXI RT registers
-$(CHS_ROOT)/hw/regs/axi_rt_reg_pkg.sv $(CHS_ROOT)/hw/regs/axi_rt_reg_top.sv: $(CHS_ROOT)/hw/regs/axi_rt_regs.hjson
-	$(REGTOOL) -r $< --outdir $(dir $@)
-
 # CLINT
 CLINTCORES ?= 1
 include $(CLINTROOT)/clint.mk
@@ -88,6 +85,13 @@ $(CLINTROOT)/.generated:
 include $(OTPROOT)/otp.mk
 $(OTPROOT)/.generated: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
 	flock -x $@ sh -c "cp $< $(dir $@)/src/rv_plic/; $(MAKE) -j1 otp" && touch $@
+
+# AXI RT
+AXIRT_NUM_MGRS ?= 8
+AXIRT_NUM_SUBS ?= 2
+include $(AXIRTROOT)/axirt.mk
+$(AXIRTROOT)/.generated: axirt_regs
+	touch $@
 
 # AXI VGA
 include $(AXI_VGA_ROOT)/axi_vga.mk
@@ -100,9 +104,9 @@ $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs && touch $@
 
 CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv
-CHS_HW_ALL += $(CHS_ROOT)/hw/regs/axi_rt_reg_pkg.sv $(CHS_ROOT)/hw/regs/axi_rt_reg_top.sv
 CHS_HW_ALL += $(CLINTROOT)/.generated
 CHS_HW_ALL += $(OTPROOT)/.generated
+CHS_HW_ALL += $(AXIRTROOT)/.generated
 CHS_HW_ALL += $(AXI_VGA_ROOT)/.generated
 CHS_HW_ALL += $(CHS_SLINK_DIR)/.generated
 
@@ -129,7 +133,7 @@ CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/boo
 ##############
 
 $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: Bender.yml
-	$(BENDER) script vsim -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 --vlog-arg="$(VLOG_ARGS)" > $@
+	$(BENDER) script vsim -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 -t rtl --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
 $(CHS_ROOT)/target/sim/models:
