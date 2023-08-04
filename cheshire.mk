@@ -86,11 +86,11 @@ $(OTPROOT)/.generated: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
 	flock -x $@ sh -c "cp $< $(dir $@)/src/rv_plic/; $(MAKE) -j1 otp" && touch $@
 
 # AXI RT
-AXIRT_NUM_MGRS ?= 16
+AXIRT_NUM_MGRS ?= 8
 AXIRT_NUM_SUBS ?= 2
 include $(AXIRTROOT)/axirt.mk
-$(AXIRTROOT)/.generated:
-	flock -x $@ $(MAKE) axirt_regs AXIRT_NUM_MGRS=$(AXIRT_NUM_MGRS) AXIRT_NUM_SUBS=$(AXIRT_NUM_SUBS) && touch $@
+$(AXIRTROOT)/.generated: axirt_regs
+	touch $@
 
 # AXI VGA
 include $(AXI_VGA_ROOT)/axi_vga.mk
