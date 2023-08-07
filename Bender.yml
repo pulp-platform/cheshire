@@ -33,6 +33,7 @@ export_include_dirs:
   - hw/include
 
 sources:
+  - hw/future/axi_to_reg_v2.sv
   - hw/bootrom/cheshire_bootrom.sv
   - hw/regs/cheshire_reg_pkg.sv
   - hw/regs/cheshire_reg_top.sv

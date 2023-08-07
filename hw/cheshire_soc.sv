@@ -307,11 +307,11 @@ module cheshire_soc import cheshire_pkg::*; #(
   axi_slv_req_t axi_reg_amo_req, axi_reg_cut_req;
   axi_slv_rsp_t axi_reg_amo_rsp, axi_reg_cut_rsp;
 
-  axi_d32_req_t axi_reg_d32_req;
-  axi_d32_rsp_t axi_reg_d32_rsp;
 
   reg_req_t reg_in_req;
   reg_rsp_t reg_in_rsp;
+
+  logic[AxiSlvIdWidth-1:0] reg_id;
 
   reg_req_t [RegOut.num_out-1:0] reg_out_req;
   reg_rsp_t [RegOut.num_out-1:0] reg_out_rsp;
@@ -359,53 +359,26 @@ module cheshire_soc import cheshire_pkg::*; #(
     .mst_resp_i ( axi_reg_cut_rsp )
   );
 
-  // Convert to 32-bit reg datawidth
-  axi_dw_converter #(
-    .AxiSlvPortDataWidth  ( Cfg.AxiDataWidth ),
-    .AxiMstPortDataWidth  ( 32 ),
-    .AxiAddrWidth         ( Cfg.AddrWidth ),
-    .AxiIdWidth           ( AxiSlvIdWidth ),
-    .aw_chan_t            ( axi_slv_aw_chan_t ),
-    .mst_w_chan_t         ( axi_d32_w_chan_t  ),
-    .slv_w_chan_t         ( axi_slv_w_chan_t  ),
-    .b_chan_t             ( axi_slv_b_chan_t  ),
-    .ar_chan_t            ( axi_slv_ar_chan_t ),
-    .mst_r_chan_t         ( axi_d32_r_chan_t  ),
-    .slv_r_chan_t         ( axi_slv_r_chan_t  ),
-    .axi_mst_req_t        ( axi_d32_req_t ),
-    .axi_mst_resp_t       ( axi_d32_rsp_t ),
-    .axi_slv_req_t        ( axi_slv_req_t ),
-    .axi_slv_resp_t       ( axi_slv_rsp_t )
-  ) i_reg_axi_dw_converter (
-    .clk_i,
-    .rst_ni,
-    .slv_req_i  ( axi_reg_cut_req ),
-    .slv_resp_o ( axi_reg_cut_rsp ),
-    .mst_req_o  ( axi_reg_d32_req ),
-    .mst_resp_i ( axi_reg_d32_rsp )
-  );
-
   // Convert from AXI to reg protocol
-  axi_to_reg #(
-    .ADDR_WIDTH         ( Cfg.AddrWidth ),
-    .DATA_WIDTH         ( 32 ),
-    .ID_WIDTH           ( AxiSlvIdWidth    ),
-    .USER_WIDTH         ( Cfg.AxiUserWidth ),
-    .AXI_MAX_WRITE_TXNS ( Cfg.RegMaxReadTxns  ),
-    .AXI_MAX_READ_TXNS  ( Cfg.RegMaxWriteTxns ),
-    .DECOUPLE_W         ( 1 ),
-    .axi_req_t          ( axi_d32_req_t ),
-    .axi_rsp_t          ( axi_d32_rsp_t ),
-    .reg_req_t          ( reg_req_t ),
-    .reg_rsp_t          ( reg_rsp_t )
-  ) i_reg_axi_to_reg (
+  axi_to_reg_v2 #(
+    .AxiAddrWidth ( Cfg.AddrWidth    ),
+    .AxiDataWidth ( Cfg.AxiDataWidth ),
+    .AxiIdWidth   ( AxiSlvIdWidth    ),
+    .AxiUserWidth ( Cfg.AxiUserWidth ),
+    .RegDataWidth ( 32'd32 ),
+    .axi_req_t    ( axi_slv_req_t ),
+    .axi_rsp_t    ( axi_slv_rsp_t ),
+    .reg_req_t    ( reg_req_t ),
+    .reg_rsp_t    ( reg_rsp_t )
+  ) i_axi_to_reg_v2 (
     .clk_i,
     .rst_ni,
-    .testmode_i  ( test_mode_i ),
-    .axi_req_i   ( axi_reg_d32_req ),
-    .axi_rsp_o   ( axi_reg_d32_rsp ),
-    .reg_req_o   ( reg_in_req ),
-    .reg_rsp_i   ( reg_in_rsp )
+    .axi_req_i ( axi_reg_cut_req ),
+    .axi_rsp_o ( axi_reg_cut_rsp ),
+    .reg_req_o ( reg_in_req ),
+    .reg_rsp_i ( reg_in_rsp ),
+    .reg_id_o  ( reg_id     ),
+    .busy_o    ( )
   );
 
   // Non-matching addresses are directed to an error slave
