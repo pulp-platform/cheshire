@@ -25,6 +25,8 @@ extern void *__base_vga;
 extern void *__base_clint;
 extern void *__base_plic;
 extern void *__base_dma;
+extern void *__base_axirt;
+extern void *__base_axirtgrd;
 extern void *__base_spm;
 extern void *__base_dram;
 
