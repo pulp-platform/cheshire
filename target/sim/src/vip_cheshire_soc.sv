@@ -286,7 +286,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     jtag_write(dm::SBData0, value[31:0]);
 
     //Check correctess
-    jtag_read_reg(start_addr, rdata);
+    jtag_read_reg(start_addr, rdata, 20);
     if(rdata!=value) begin
       $fatal(1,"rdata at %x: %x" , start_addr, rdata);
     end else begin
@@ -294,32 +294,18 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     end
   endtask
 
-  task automatic jtag_read_reg;
-    input logic [31:0] addr;
-    output logic [63:0] rdata;
-
-    automatic dm::sbcs_t sbcs = '{
-      sbautoincrement: 1'b1,
-      sbreadondata   : 1'b1,
-      default        : 1'b0
-    };
-
-    sbcs.sbreadonaddr = 1;
-    jtag_dbg.write_dmi(dm::SBCS, sbcs);
-    do jtag_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-    jtag_dbg.write_dmi(dm::SBAddress0, addr);
-    do jtag_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-    jtag_dbg.read_dmi_exp_backoff(dm::SBData1, rdata[63:32]);
-    // Wait until SBA is free to read another 32 bits
-    do jtag_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-    jtag_dbg.read_dmi_exp_backoff(dm::SBData0, rdata[31:0]);
-    // Wait until SBA is free to read another 32 bits
-    do jtag_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-    while (sbcs.sbbusy);
-  endtask // execute_application
+  task automatic jtag_read_reg(
+    input doub_bt addr,
+    output word_bt data,
+    input int unsigned idle_cycles
+  );
+    automatic dm::sbcs_t sbcs = dm::sbcs_t'{sbreadonaddr: 1'b1, sbaccess: 2, default: '0};
+    jtag_write(dm::SBCS, sbcs, 0, 1);
+    jtag_write(dm::SBAddress1, addr[63:32]);
+    jtag_write(dm::SBAddress0, addr[31:0]);
+    jtag_dbg.wait_idle(idle_cycles);
+    jtag_dbg.read_dmi_exp_backoff(dm::SBData0, data);
+  endtask
 
   // Load a binary
   task automatic jtag_elf_preload(input string binary, output doub_bt entry);
