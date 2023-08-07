@@ -25,7 +25,7 @@ int main(void) {
     __axirt_claim(1, 1);
     for (int m = 0; m < AXI_RT_PARAM_NUM_MRG; m++) {
         __axirt_set_len_limit(8, m);
-        __axirt_set_region(0,           0xffffffff,         0, m);
+        __axirt_set_region(0, 0xffffffff, 0, m);
         __axirt_set_region(0x100000000, 0xffffffffffffffff, 1, m);
         __axirt_set_budget(0x10000000, 0, m);
         __axirt_set_budget(0x10000000, 1, m);
