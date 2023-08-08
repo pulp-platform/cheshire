@@ -78,6 +78,8 @@ module cheshire_top_xilinx
     NumCores          : 1,
     CoreMaxTxns       : 8,
     CoreMaxTxnsPerId  : 4,
+    // Interrupts
+    NumExtIntrSyncs   : 2,
     // Interconnect
     AddrWidth         : 48,
     AxiDataWidth      : 64,
