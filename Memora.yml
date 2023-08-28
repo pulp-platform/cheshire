@@ -1,0 +1,14 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+cache_root_dir: /usr/scratch2/wuerzburg/cykoenig/memora/cheshire
+artifacts:
+  # Used in targets/xilinx/xilinx/Makefile
+  xlnx_clk_wiz:
+    inputs:
+      - target/xilinx/xilinx/xlnx_clk_wiz/Makefile
+      - target/xilinx/xilinx/xlnx_clk_wiz/tcl
+      - target/xilinx/xilinx/xlnx_clk_wiz/.command
+    outputs:
+      - target/xilinx/xilinx/xlnx_clk_wiz/

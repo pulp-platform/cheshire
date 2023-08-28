@@ -3,4 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 PROJECT:=xlnx_mig_ddr4
+ARTIFACTS_IN:=Makefile tcl/run.tcl
+
 include ../common.mk

@@ -9,8 +9,9 @@
 CHS_XIL_DIR  ?= $(CHS_ROOT)/target/xilinx
 VIVADO       ?= vitis-2020.2 vivado
 
-PROJECT      ?= cheshire
-ip-dir       := $(CHS_XIL_DIR)/xilinx
+PROJECT       ?= cheshire
+ip-dir        := $(CHS_XIL_DIR)/xilinx
+USE_ARTIFACTS ?= 0
 
 # Select board specific variables
 ifeq ($(BOARD),vcu128)
@@ -30,7 +31,7 @@ ifeq ($(BOARD),genesys2)
 	XILINX_PORT  ?= 3332
 	XILINX_HOST  ?= bordcomputer
 	FPGA_PATH    ?= xilinx_tcf/Digilent/200300A8C60DB
-	ips-names    := xlnx_mig_7_ddr3 xlnx_clk_wiz xlnx_vio
+	ips-names    := xlnx_clk_wiz xlnx_vio xlnx_mig_7_ddr3
 endif
 ifeq ($(BOARD),zcu102)
 	XILINX_PART    ?= xczu9eg-ffvb1156-2-e
@@ -85,7 +86,7 @@ $(bit): $(ips) $(CHS_XIL_DIR)/scripts/add_sources.tcl
 	@echo $@
 	@echo $(CHS_XIL_DIR)
 	@echo "Generating IP $(basename $@)"
-	IP_NAME=$(basename $(notdir $@)) ; cd $(ip-dir)/$$IP_NAME && $(MAKE) clean && $(VIVADOENV) VIVADO="$(VIVADO)" $(MAKE)
+	IP_NAME=$(basename $(notdir $@)) ; cd $(ip-dir)/$$IP_NAME && make clean && USE_ARTIFACTS=$(USE_ARTIFACTS) VIVADOENV="$(subst ",\",$(VIVADOENV))" VIVADO="$(VIVADO)" make
 	IP_NAME=$(basename $(notdir $@)) ; cp $(ip-dir)/$$IP_NAME/$$IP_NAME.srcs/sources_1/ip/$$IP_NAME/$$IP_NAME.xci $@
 
 chs-xil-gui:
