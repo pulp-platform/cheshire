@@ -12,15 +12,7 @@ VLOG_ARGS ?= -suppress 2583 -suppress 13314
 VSIM      ?= vsim
 
 # Define used paths (prefixed to avoid name conflicts)
-CHS_ROOT      ?= $(shell $(BENDER) path cheshire)
-CHS_REG_DIR   := $(shell $(BENDER) path register_interface)
-CHS_SLINK_DIR := $(shell $(BENDER) path serial_link)
-CHS_LLC_DIR   := $(shell $(BENDER) path axi_llc)
-
-# Define paths used in dependencies
-OTPROOT      := $(shell $(BENDER) path opentitan_peripherals)
-CLINTROOT    := $(shell $(BENDER) path clint)
-AXI_VGA_ROOT := $(shell $(BENDER) path axi_vga)
+CHS_ROOT ?= $(shell $(BENDER) path cheshire)
 
 REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
 
@@ -31,15 +23,19 @@ REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
 BENDER_ROOT ?= $(CHS_ROOT)/.bender
 
 # Ensure both Bender dependencies and (essential) submodules are checked out
-$(BENDER_ROOT)/.chs_deps:
+$(BENDER_ROOT)/.chs_deps: Bender.lock
 	$(BENDER) checkout
 	cd $(CHS_ROOT) && git submodule update --init --recursive sw/deps/printf
-	@touch $@
+	echo "CHS_ROOT := $(CHS_ROOT)" > $@
+	echo "CHS_REG_DIR := $(shell $(BENDER) path register_interface)" >> $@
+	echo "CHS_SLINK_DIR := $(shell $(BENDER) path serial_link)" >> $@
+	echo "CHS_LLC_DIR := $(shell $(BENDER) path axi_llc)" >> $@
+	echo "OTPROOT := $(shell $(BENDER) path opentitan_peripherals)" >> $@
+	echo "CLINTROOT := $(shell $(BENDER) path clint)" >> $@
+	echo "AXIRTROOT := $(shell $(BENDER) path axi_rt)" >> $@
+	echo "AXI_VGA_ROOT := $(shell $(BENDER) path axi_vga)" >> $@
 
-# Make sure dependencies are more up-to-date than any targets run
-ifeq ($(shell test -f $(BENDER_ROOT)/.chs_deps && echo 1),)
--include $(BENDER_ROOT)/.chs_deps
-endif
+include $(BENDER_ROOT)/.chs_deps
 
 # Running this target will reset dependencies (without updating the checked-in Bender.lock)
 chs-clean-deps:
@@ -79,16 +75,19 @@ $(CHS_ROOT)/hw/regs/axi_rt_reg_pkg.sv $(CHS_ROOT)/hw/regs/axi_rt_reg_top.sv: $(C
 
 # CLINT
 CLINTCORES ?= 1
+$(CLINTROOT)/clint.mk: $(BENDER_ROOT)/.chs_deps
 include $(CLINTROOT)/clint.mk
 $(CLINTROOT)/.generated:
 	flock -x $@ $(MAKE) clint && touch $@
 
 # OpenTitan peripherals
+$(OTPROOT)/otp.mk: $(BENDER_ROOT)/.chs_deps
 include $(OTPROOT)/otp.mk
 $(OTPROOT)/.generated: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
 	flock -x $@ sh -c "cp $< $(dir $@)/src/rv_plic/; $(MAKE) -j1 otp" && touch $@
 
 # AXI VGA
+$(AXI_VGA_ROOT)/axi_vga.mk: $(BENDER_ROOT)/.chs_deps
 include $(AXI_VGA_ROOT)/axi_vga.mk
 $(AXI_VGA_ROOT)/.generated:
 	flock -x $@ $(MAKE) axi_vga && touch $@
