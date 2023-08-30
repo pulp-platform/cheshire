@@ -1,6 +1,6 @@
 # Simulation
 
-This page describes how to simulate Cheshire to *execute baremetal code*. Please first read [Getting Started](../gs.md) to make sure to make sure have all dependencies and built the hardware, software, and simulation scripts.
+This page describes how to simulate Cheshire to *execute baremetal programs*. Please first read [Getting Started](../gs.md) to make sure to make sure have all dependencies and built the hardware, software, and simulation scripts.
 
 We currently provide working setups for:
 
@@ -10,18 +10,18 @@ We plan on supporting more simulators in the future. If your situation requires 
 
 ## Testbench
 
-We provide a SystemVerilog testbench for `cheshire_soc` running baremetal code. This code is either preloaded through simulated interface drivers or read from external memory models by the boot ROM and then executed, depending on how the  `PRELMODE` and `BOOTMODE` variables are set:
+We provide a SystemVerilog testbench for `cheshire_soc` running baremetal programs. This code is either preloaded through simulated interface drivers or read from external memory models by the boot ROM and then executed, depending on how the  `PRELMODE` and `BOOTMODE` variables are set:
 
-  | `BOOTMODE` | `PRELMODE` | Action                                   |
-  | ---- | - | ------------------------------------------------------- |
-  | 0    | 0 | Preload through JTAG                                    |
-  | 0    | 1 | Preload through serial link                             |
-  | 0    | 2 | Preload through UART                                    |
-  | 1-3  | - | Autonomous boot, see [Boot ROM](../um/arch.md#boot-rom) |
+  | `BOOTMODE` | `PRELMODE` | Action                                                |
+  | ---------- | ---------- | ----------------------------------------------------- |
+  | 0          | 0          | Preload through JTAG                                  |
+  | 0          | 1          | Preload through serial link                           |
+  | 0          | 2          | Preload through UART                                  |
+  | 1-3        | -          | Autonomous boot, see [Boot ROM](../um/sw.md#boot-rom) |
 
-Preloading boot modes expect an ELF executable to be passed through `BINARY`, while autonomous boot modes expect a disk image (GPT formatted or raw code) to be passed through `IMAGE`. For more information on how to build software for Cheshire and its boot process, see [Software](../um/sw.md).
+Preloading boot modes expect an ELF executable to be passed through `BINARY`, while autonomous boot modes expect a disk image (GPT formatted or raw code) to be passed through `IMAGE`. For more information on how to build software for Cheshire and its boot process, see [Software Stack](../um/sw.md).
 
-For simulation of Cheshire in other designs, we provide the module `cheshire_vip` encapsulating all verification IPs and their interfaces.
+For simulation of Cheshire in other designs, we provide the module `cheshire_vip` encapsulating all verification IPs and their interfaces. For details, see [Verifying Cheshire In-System](integr.md#verifying-cheshire-in-system).
 
 ## QuestaSim
 

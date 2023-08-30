@@ -9,7 +9,7 @@ The project is structured as follows:
 | Directory | Description                              | Documentation              |
 | --------- | ---------------------------------------- | ---------------------------|
 | `hw`      | Hardware sources as SystemVerilog RTL    | [Architecture](um/arch.md) |
-| `sw`      | Software stack, build setup, and tests   | [Software](um/sw.md)       |
+| `sw`      | Software stack, build setup, and tests   | [Software Stack](um/sw.md) |
 | `target`  | Simulation, FPGA, and ASIC target setups | [Targets](tg/index.md)     |
 | `util`    | Utility scripts                          |                            |
 | `doc`     | Documentation                            | [Home](index.md)           |
@@ -22,8 +22,8 @@ To *build* Cheshire, you will need:
 - GNU Make `>= 3.82`
 - Bender `>= 0.27.1`
 - Python `>= 3.9`
-- Python packages in `requirements.txt`
 - RISCV GCC `>= 11.2.0`
+- Python packages in `requirements.txt`
 
 Depending on your desired target, additional dependencies may be needed.
 
@@ -50,7 +50,7 @@ The following additional targets are not invoked by the above, but also availabl
 
 - `bootrom-all`: Rebuilds the boot ROM. This is not done by default as reproducible builds (as checked by CI) can only be guaranteed for fixed compiler versions.
 - `nonfree-init`: Clones our internal repository with nonfree resources we cannot release, including our internal CI. *This is not necessary to use Cheshire*.
-- `clean-deps`: Removes checked-out bender dependencies and submodules. This is useful if references to dependencies are updated.
+- `clean-deps`: Removes checked-out bender dependencies and submodules. This is useful when references to dependencies are updated.
 
 ## Targets
 

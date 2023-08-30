@@ -1,6 +1,6 @@
 # Xilinx FGPAs
 
-This page describes how to map Cheshire on Xilinx FPGAs to *execute baremetal code* or *boot CVA6 Linux*. Please first read [Getting Started](../gs.md) to make sure have all dependencies and built the hardware, software, and Xilinx FPGA scripts. Additionally, for on-chip debugging you need:
+This page describes how to map Cheshire on Xilinx FPGAs to *execute baremetal programs* or *boot CVA6 Linux*. Please first read [Getting Started](../gs.md) to make sure have all dependencies and built the hardware, software, and Xilinx FPGA scripts. Additionally, for on-chip debugging you need:
 
 - OpenOCD `>= 0.10.0`
 
@@ -25,11 +25,11 @@ make -C target/xilinx
 Before flashing the bitstream to your device, take note of the position of onboard switches, which control important functionality:
 
 
-  | Switch | Function                                          |
-  | ------ | ------------------------------------------------- |
-  | 1 .. 0 | Boot mode; see [Boot ROM](../um/arch.md#boot-rom) |
-  | 5 .. 2 | Fan level; *do not* keep at 0                     |
-  | 7      | Test mode; *leave at zero*                        |
+  | Switch | Function                                        |
+  | ------ | ------------------------------------------------|
+  | 1 .. 0 | Boot mode; see [Boot ROM](../um/sw.md#boot-rom) |
+  | 5 .. 2 | Fan level; *do not* keep at 0                   |
+  | 7      | Test mode; *leave at zero*                      |
 
 The reset, JTAG TAP, UART, I2C, and VGA are all connected to their onboard logic or ports. The UART has *no flow control*. The microSD slot is connected to chip select 0 of the SPI host peripheral. Serial link and GPIOs are currently not available.
 
@@ -65,7 +65,7 @@ minicom -cD /dev/ttyUSBX
 
 Make sure that hardware flow control matches your board's setup (usually *off*).
 
-In the following examples, we will use the `helloworld` test. As in simulation, you can replace this with any baremetal program of your choosing or design; see [Baremetal Programming](../um/sw#baremetal-programming).
+In the following examples, we will use the `helloworld` test. As in simulation, you can replace this with any baremetal program of your choosing or design; see [Baremetal Programs](../um/sw.md#baremetal-programs).
 
 ### JTAG Preloading
 
@@ -99,7 +99,7 @@ Insert your SD card and reset into boot mode 1. You should see a `Hello World!` 
 
 ## Booting Linux
 
-To boot Linux, we must load the *OpenSBI* firmware, which takes over M mode and launches the U-boot bootloader. U-boot then loads Linux. For more details, see [Boot Flow](../um/sw#boot-flow).
+To boot Linux, we must load the *OpenSBI* firmware, which takes over M mode and launches the U-boot bootloader. U-boot then loads Linux. For more details, see [Boot Flow](../um/sw.md#boot-flow).
 
 Clone the `cheshire` branch of CVA6 SDK and build the firmware (OpenSBI + U-boot) and Linux images (*this will take about 30 minutes*):
 
@@ -110,7 +110,7 @@ make -C sw/deps/cva6-sdk images
 
 In principle, we can boot Linux through JTAG by loading all images into memory, launching OpenSBI, and instructing U-boot to load the kernel directly from memory. Here, we focus on autonomous boot from SD card.
 
-In this case, OpenSBI is loaded by a regular baremetal program called the [Zero-Stage Loader]() (ZSL). The [boot ROM]() loads the ZSL from SD card, which then loads the device tree and firmware from other SD card partitions into memory and launches OpenSBI.
+In this case, OpenSBI is loaded by a regular baremetal program called the [Zero-Stage Loader](../um/sw.md#zero-stage-loader) (ZSL). The [boot ROM](../um/sw.md#boot-rom) loads the ZSL from SD card, which then loads the device tree and firmware from other SD card partitions into memory and launches OpenSBI.
 
 To create a full Linux disk image from the ZSL, device tree, firmware, and Linux, run:
 

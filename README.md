@@ -1,6 +1,6 @@
 # Cheshire
 
-Cheshire is a minimal Linux-capable host platform built around the RISC-V [CVA6]() core. Its goal is to provide a *lightweight*, *configurable*, *autonomously booting* host to systems that need one, from minimal Linux-capable SoCs to manycore compute accelerators.
+Cheshire is a minimal Linux-capable host platform built around the RISC-V [CVA6](https://github.com/openhwgroup/cva6) core. Its goal is to provide a *lightweight*, *configurable*, *autonomously booting* host to systems that need one, from minimal Linux-capable SoCs to manycore compute accelerators.
 
 Cheshire is developed as part of the PULP project, a joint effort between ETH Zurich and the University of Bologna.
 

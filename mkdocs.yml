@@ -16,7 +16,7 @@ theme:
 
 markdown_extensions:
   - toc:
-      toc_depth: 2
+      toc_depth: 3
   - markdown_grid_tables:
   - pymdownx.superfences:
       custom_fences:
