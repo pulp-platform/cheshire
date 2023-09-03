@@ -9,6 +9,9 @@
 #pragma once
 
 #include <stdint.h>
+#include <io.h>
+#include <params.h>
+#include <regs/system_timer.h>
 
 static inline volatile uint8_t *reg8(void *base, int offs) {
     return (volatile uint8_t *)(base + offs);
@@ -80,3 +83,19 @@ static inline void *gprw(void *gp) {
     if (!(cond)) return (ret);
 
 #define MIN(a, b) (((a) <= (b)) ? (a) : (b))
+
+static inline void chs_playgnd_reset_timer() {
+     writed(1, CHS_PLAYGND_SYSTEM_TIMER_BASE_ADDR + TIMER_RESET_LO_OFFSET);
+}
+
+static inline void chs_playgnd_start_timer() {
+     writed(1, CHS_PLAYGND_SYSTEM_TIMER_BASE_ADDR + TIMER_START_LO_OFFSET);
+}
+
+static inline void chs_playgnd_stop_timer() {
+    writed(0, CHS_PLAYGND_SYSTEM_TIMER_BASE_ADDR + TIMER_CFG_LO_OFFSET);
+}
+
+static inline uint32_t chs_playgnd_get_timer_count(){
+    return readd(CHS_PLAYGND_SYSTEM_TIMER_BASE_ADDR + TIMER_CNT_LO_OFFSET);
+}

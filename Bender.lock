@@ -3,7 +3,7 @@ packages:
     revision: 77ddf073f194d44b9119949d2421be59789e69ae
     version: 0.2.4
     source:
-      Git: https://github.com/pulp-platform/apb
+      Git: https://github.com/pulp-platform/apb.git
     dependencies:
     - common_cells
   apb_uart:
@@ -178,6 +178,12 @@ packages:
       Git: https://github.com/pulp-platform/tech_cells_generic.git
     dependencies:
     - common_verification
+  timer_unit:
+    revision: 4c69615c89db9397a9747d6f6d6a36727854f0bc
+    version: 1.0.3
+    source:
+      Git: https://github.com/pulp-platform/timer_unit.git
+    dependencies: []
   unbent:
     revision: 791420b326c6455595b4444c02f05f180b99dd06
     version: 0.1.1

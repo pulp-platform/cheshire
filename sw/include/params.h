@@ -12,6 +12,10 @@
 
 #pragma once
 
+#define CHS_PLAYGND_PERIPHS_BASE_ADDR        0x20000000
+#define CHS_PLAYGND_SYSTEM_TIMER_OFFSET      0x4000
+#define CHS_PLAYGND_SYSTEM_TIMER_BASE_ADDR   (CHS_PLAYGND_PERIPHS_BASE_ADDR + CHS_PLAYGND_SYSTEM_TIMER_OFFSET)
+
 // Base addresses provided at link time
 extern void *__base_bootrom;
 extern void *__base_regs;

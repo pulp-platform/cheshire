@@ -11,6 +11,7 @@
 
 module cheshire_top_xilinx
   import cheshire_pkg::*;
+  import cheshire_ext_playground_pkg::*;
 (
 `ifdef USE_RESET
   input logic         cpu_reset,
@@ -102,7 +103,10 @@ module cheshire_top_xilinx
     Cva6BTBEntries    : ariane_pkg::ArianeDefaultConfig.BTBEntries,
     Cva6BHTEntries    : ariane_pkg::ArianeDefaultConfig.BHTEntries,
     Cva6NrPMPEntries  : 0,
-    Cva6ExtCieLength  : 'h2000_0000,
+    Cva6ExtCieLength  : 'h1000_0000, // [0x2000_0000, 0x7000_0000) is non-CIE,
+                                     // [0x7000_0000, 0x8000_0000) is CIE
+
+    Cva6ExtCieOnTop   : 1,
     // Harts
     NumCores          : 1,
     CoreMaxTxns       : 8,
@@ -122,6 +126,14 @@ module cheshire_top_xilinx
     RegMaxWriteTxns   : 8,
     RegAmoNumCuts     : 1,
     RegAmoPostCut     : 1,
+    // External AXI ports (at most 8 ports and rules)
+    AxiExtNumMst      : 1, // For the playground, traffic DMA(s)
+    AxiExtNumSlv      : 2, // For the playground, traffic DMA(s) (config port), system timer
+    AxiExtNumRules    : 2,
+    // External AXI region map
+    AxiExtRegionIdx   : '{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, Dsa0SlvIdx, PeriphsSlvIdx },
+    AxiExtRegionStart : '{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, Dsa0Base,   PeriphsBase   },
+    AxiExtRegionEnd   : '{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, Dsa0End,    PeriphsEnd    },
     // RTC
     RtcFreq           : 1000000,
     // Features
@@ -133,6 +145,10 @@ module cheshire_top_xilinx
     Dma               : 1,
     SerialLink        : 0,
     Vga               : 1,
+    AxiRt             : 1,
+    Clic              : 0,
+    IrqRouter         : 0,
+    BusErr            : 1,
     // Debug
     DbgIdCode         : CheshireIdCode,
     DbgMaxReqs        : 4,
@@ -201,7 +217,7 @@ module cheshire_top_xilinx
   (* dont_touch = "yes" *) wire rst_n;
 
   ///////////////////
-  // GPIOs         // 
+  // GPIOs         //
   ///////////////////
 
   // Tie off signals if no switches on the board
@@ -501,6 +517,13 @@ module cheshire_top_xilinx
   // Cheshire SoC //
   //////////////////
 
+  // External slaves
+  axi_slv_req_t [FPGACfg.AxiExtNumSlv-1:0] axi_ext_slv_req;
+  axi_slv_rsp_t [FPGACfg.AxiExtNumSlv-1:0] axi_ext_slv_rsp;
+  // External masters
+  axi_mst_req_t [FPGACfg.AxiExtNumMst-1:0] axi_ext_mst_req;
+  axi_mst_rsp_t [FPGACfg.AxiExtNumMst-1:0] axi_ext_mst_rsp;
+
   cheshire_soc #(
     .Cfg                ( FPGACfg ),
     .ExtHartinfo        ( '0 ),
@@ -520,10 +543,10 @@ module cheshire_top_xilinx
     .rtc_i              ( rtc_clk_q       ),
     .axi_llc_mst_req_o  ( axi_llc_mst_req ),
     .axi_llc_mst_rsp_i  ( axi_llc_mst_rsp ),
-    .axi_ext_mst_req_i  ( '0 ),
-    .axi_ext_mst_rsp_o  ( ),
-    .axi_ext_slv_req_o  ( ),
-    .axi_ext_slv_rsp_i  ( '0 ),
+    .axi_ext_mst_req_i  ( axi_ext_mst_req ),
+    .axi_ext_mst_rsp_o  ( axi_ext_mst_rsp ),
+    .axi_ext_slv_req_o  ( axi_ext_slv_req ),
+    .axi_ext_slv_rsp_i  ( axi_ext_slv_rsp ),
     .reg_ext_slv_req_o  ( ),
     .reg_ext_slv_rsp_i  ( '0 ),
     .intr_ext_i         ( '0 ),
@@ -573,6 +596,30 @@ module cheshire_top_xilinx
 `endif
     .uart_tx_o,
     .uart_rx_i
+  );
+
+  // Playground module
+  cheshire_ext_playground #(
+    .Cfg                ( FPGACfg ),
+    .axi_ext_mst_req_t  ( axi_mst_req_t ),
+    .axi_ext_mst_rsp_t  ( axi_mst_rsp_t ),
+    .axi_ext_slv_req_t  ( axi_slv_req_t ),
+    .axi_ext_slv_rsp_t  ( axi_slv_rsp_t ),
+    .reg_ext_req_t      ( reg_req_t ),
+    .reg_ext_rsp_t      ( reg_rsp_t )
+  ) i_chs_ext_playgnd (
+    .clk_i              ( soc_clk    ),
+    .rst_ni             ( rst_n      ),
+    .test_mode_i        ( testmode_i ),
+    .rtc_i              ( rtc_clk_q  ),
+    // TODO: connect master ports
+    .axi_ext_mst_req_o  ( axi_ext_mst_req ),
+    .axi_ext_mst_rsp_i  ( axi_ext_mst_rsp ),
+    .axi_ext_slv_req_i  ( axi_ext_slv_req ),
+    .axi_ext_slv_rsp_o  ( axi_ext_slv_rsp ),
+    // Unused
+    .reg_ext_slv_req_i  ( '0 ),
+    .reg_ext_slv_rsp_o  ( )
   );
 
 endmodule

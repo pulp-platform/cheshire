@@ -30,6 +30,8 @@ dependencies:
   clic:                     { git: "https://github.com/pulp-platform/clic.git",                   version: 2.0.0  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             rev: d1d3135    }  # TODO: master commit; use next release once out
   unbent:                   { git: "https://github.com/pulp-platform/unbent.git",                 version: 0.1.1  }
+  timer_unit:               { git: "https://github.com/pulp-platform/timer_unit.git",             version: 1.0.2  }
+  apb:                      { git: "https://github.com/pulp-platform/apb.git",                    version: 0.2.3  }
 
 export_include_dirs:
   - hw/include
@@ -40,6 +42,8 @@ sources:
   - hw/regs/cheshire_reg_pkg.sv
   - hw/regs/cheshire_reg_top.sv
   - hw/cheshire_pkg.sv
+  - hw/cheshire_ext_playground_pkg.sv
+  - hw/cheshire_ext_playground.sv
   - hw/cheshire_soc.sv
 
   - target: any(simulation, test)
