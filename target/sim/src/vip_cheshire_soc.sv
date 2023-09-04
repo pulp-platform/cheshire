@@ -332,16 +332,19 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   byte_bt uart_boot_byte;
   logic   uart_boot_ena;
   logic   uart_boot_eoc;
+  logic   uart_reading_byte;
 
   initial begin
-    uart_rx       = 1;
-    uart_boot_eoc = 0;
-    uart_boot_ena = 0;
+    uart_rx           = 1;
+    uart_boot_eoc     = 0;
+    uart_boot_ena     = 0;
+    uart_reading_byte = 0;
   end
 
   task automatic uart_read_byte(output byte_bt bite);
     // Start bit
     @(negedge uart_tx);
+    uart_reading_byte = 1;
     #(UartBaudPeriod/2);
     // 8-bit byte
     for (int i = 0; i < 8; i++) begin
@@ -356,6 +359,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     end
     // Stop bit
     #UartBaudPeriod;
+    uart_reading_byte=0;
   endtask
 
   task automatic uart_write_byte(input byte_bt bite);
