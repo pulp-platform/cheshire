@@ -20,7 +20,7 @@
 #define smp_resume(reg1, reg2, reg3) \
     la reg1, __base_clint; \
     la reg3, __base_regs; \
-    lw reg3, 88(reg3); /* regs.NUM_HARTS */ \
+    lw reg3, 76(reg3); /* regs.NUM_INT_HARTS */ \
     slli reg3, reg3, 2; \
     add reg3, reg1, reg3; \
     1:; \
@@ -39,7 +39,7 @@
     add reg2, reg2, reg1; \
     sw zero, 0(reg2); \
     la reg3, __base_regs; \
-    lw reg3, 88(reg3); /* regs.NUM_HARTS */ \
+    lw reg3, 76(reg3); /* regs.NUM_INT_HARTS */ \
     slli reg3, reg3, 2; \
     add reg3, reg1, reg3; \
     3:; \

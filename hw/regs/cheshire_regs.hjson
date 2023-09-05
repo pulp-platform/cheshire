@@ -71,6 +71,17 @@
       ]
     }
 
+    { name:     "num_int_harts"
+      desc:     "Number of internal harts"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwqe:     "true"
+      hwext:    "true"
+      fields: [
+        { bits: "31:0", name: "num_harts", desc: "Number of internal harts" }
+      ]
+    }
+
     { name:     "hw_features"
       desc:     "Specifies which hardware features are available"
       swaccess: "ro"
@@ -90,6 +101,7 @@
         { bits: "9",  name: "axirt",        desc: "Whether AXI RT is available"       }
         { bits: "10", name: "clic",         desc: "Whether CLIC is available"         }
         { bits: "11", name: "irq_router",   desc: "Whether IRQ router is available"   }
+        { bits: "12", name: "bus_err",      desc: "Whether UNBENT is available"       }
       ]
     }
 
@@ -116,17 +128,6 @@
         { bits: "15:8",   name: "green_width",  desc: "Green channel width" }
         { bits: "23:16",  name: "blue_width",   desc: "Blue channel width"  }
 
-      ]
-    }
-
-    { name:     "num_harts"
-      desc:     "Number of harts"
-      swaccess: "ro"
-      hwaccess: "hwo"
-      hwqe:     "true"
-      hwext:    "true"
-      fields: [
-        { bits: "31:0", name: "num_harts", desc: "Number of harts" }
       ]
     }
 

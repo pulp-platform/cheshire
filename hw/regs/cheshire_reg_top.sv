@@ -121,6 +121,8 @@ module cheshire_reg_top #(
   logic rtc_freq_re;
   logic [31:0] platform_rom_qs;
   logic platform_rom_re;
+  logic [31:0] num_int_harts_qs;
+  logic num_int_harts_re;
   logic hw_features_bootrom_qs;
   logic hw_features_bootrom_re;
   logic hw_features_llc_qs;
@@ -145,6 +147,8 @@ module cheshire_reg_top #(
   logic hw_features_clic_re;
   logic hw_features_irq_router_qs;
   logic hw_features_irq_router_re;
+  logic hw_features_bus_err_qs;
+  logic hw_features_bus_err_re;
   logic [31:0] llc_size_qs;
   logic llc_size_re;
   logic [7:0] vga_params_red_width_qs;
@@ -153,8 +157,6 @@ module cheshire_reg_top #(
   logic vga_params_green_width_re;
   logic [7:0] vga_params_blue_width_qs;
   logic vga_params_blue_width_re;
-  logic [31:0] num_harts_qs;
-  logic num_harts_re;
 
   // Register instances
 
@@ -639,6 +641,22 @@ module cheshire_reg_top #(
   );
 
 
+  // R[num_int_harts]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_num_int_harts (
+    .re     (num_int_harts_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.num_int_harts.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (num_int_harts_qs)
+  );
+
+
   // R[hw_features]: V(True)
 
   //   F[bootrom]: 0:0
@@ -821,6 +839,21 @@ module cheshire_reg_top #(
   );
 
 
+  //   F[bus_err]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_hw_features_bus_err (
+    .re     (hw_features_bus_err_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_features.bus_err.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (hw_features_bus_err_qs)
+  );
+
+
   // R[llc_size]: V(True)
 
   prim_subreg_ext #(
@@ -884,22 +917,6 @@ module cheshire_reg_top #(
   );
 
 
-  // R[num_harts]: V(True)
-
-  prim_subreg_ext #(
-    .DW    (32)
-  ) u_num_harts (
-    .re     (num_harts_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.num_harts.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (num_harts_qs)
-  );
-
-
 
 
   logic [22:0] addr_hit;
@@ -924,10 +941,10 @@ module cheshire_reg_top #(
     addr_hit[16] = (reg_addr == CHESHIRE_BOOT_MODE_OFFSET);
     addr_hit[17] = (reg_addr == CHESHIRE_RTC_FREQ_OFFSET);
     addr_hit[18] = (reg_addr == CHESHIRE_PLATFORM_ROM_OFFSET);
-    addr_hit[19] = (reg_addr == CHESHIRE_HW_FEATURES_OFFSET);
-    addr_hit[20] = (reg_addr == CHESHIRE_LLC_SIZE_OFFSET);
-    addr_hit[21] = (reg_addr == CHESHIRE_VGA_PARAMS_OFFSET);
-    addr_hit[22] = (reg_addr == CHESHIRE_NUM_HARTS_OFFSET);
+    addr_hit[19] = (reg_addr == CHESHIRE_NUM_INT_HARTS_OFFSET);
+    addr_hit[20] = (reg_addr == CHESHIRE_HW_FEATURES_OFFSET);
+    addr_hit[21] = (reg_addr == CHESHIRE_LLC_SIZE_OFFSET);
+    addr_hit[22] = (reg_addr == CHESHIRE_VGA_PARAMS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1014,39 +1031,41 @@ module cheshire_reg_top #(
 
   assign platform_rom_re = addr_hit[18] & reg_re & !reg_error;
 
-  assign hw_features_bootrom_re = addr_hit[19] & reg_re & !reg_error;
+  assign num_int_harts_re = addr_hit[19] & reg_re & !reg_error;
 
-  assign hw_features_llc_re = addr_hit[19] & reg_re & !reg_error;
+  assign hw_features_bootrom_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign hw_features_uart_re = addr_hit[19] & reg_re & !reg_error;
+  assign hw_features_llc_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign hw_features_spi_host_re = addr_hit[19] & reg_re & !reg_error;
+  assign hw_features_uart_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign hw_features_i2c_re = addr_hit[19] & reg_re & !reg_error;
+  assign hw_features_spi_host_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign hw_features_gpio_re = addr_hit[19] & reg_re & !reg_error;
+  assign hw_features_i2c_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign hw_features_dma_re = addr_hit[19] & reg_re & !reg_error;
+  assign hw_features_gpio_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign hw_features_serial_link_re = addr_hit[19] & reg_re & !reg_error;
+  assign hw_features_dma_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign hw_features_vga_re = addr_hit[19] & reg_re & !reg_error;
+  assign hw_features_serial_link_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign hw_features_axirt_re = addr_hit[19] & reg_re & !reg_error;
+  assign hw_features_vga_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign hw_features_clic_re = addr_hit[19] & reg_re & !reg_error;
+  assign hw_features_axirt_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign hw_features_irq_router_re = addr_hit[19] & reg_re & !reg_error;
+  assign hw_features_clic_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign llc_size_re = addr_hit[20] & reg_re & !reg_error;
+  assign hw_features_irq_router_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign vga_params_red_width_re = addr_hit[21] & reg_re & !reg_error;
+  assign hw_features_bus_err_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign vga_params_green_width_re = addr_hit[21] & reg_re & !reg_error;
+  assign llc_size_re = addr_hit[21] & reg_re & !reg_error;
 
-  assign vga_params_blue_width_re = addr_hit[21] & reg_re & !reg_error;
+  assign vga_params_red_width_re = addr_hit[22] & reg_re & !reg_error;
 
-  assign num_harts_re = addr_hit[22] & reg_re & !reg_error;
+  assign vga_params_green_width_re = addr_hit[22] & reg_re & !reg_error;
+
+  assign vga_params_blue_width_re = addr_hit[22] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -1129,6 +1148,10 @@ module cheshire_reg_top #(
       end
 
       addr_hit[19]: begin
+        reg_rdata_next[31:0] = num_int_harts_qs;
+      end
+
+      addr_hit[20]: begin
         reg_rdata_next[0] = hw_features_bootrom_qs;
         reg_rdata_next[1] = hw_features_llc_qs;
         reg_rdata_next[2] = hw_features_uart_qs;
@@ -1141,20 +1164,17 @@ module cheshire_reg_top #(
         reg_rdata_next[9] = hw_features_axirt_qs;
         reg_rdata_next[10] = hw_features_clic_qs;
         reg_rdata_next[11] = hw_features_irq_router_qs;
-      end
-
-      addr_hit[20]: begin
-        reg_rdata_next[31:0] = llc_size_qs;
+        reg_rdata_next[12] = hw_features_bus_err_qs;
       end
 
       addr_hit[21]: begin
-        reg_rdata_next[7:0] = vga_params_red_width_qs;
-        reg_rdata_next[15:8] = vga_params_green_width_qs;
-        reg_rdata_next[23:16] = vga_params_blue_width_qs;
+        reg_rdata_next[31:0] = llc_size_qs;
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[31:0] = num_harts_qs;
+        reg_rdata_next[7:0] = vga_params_red_width_qs;
+        reg_rdata_next[15:8] = vga_params_green_width_qs;
+        reg_rdata_next[23:16] = vga_params_blue_width_qs;
       end
 
       default: begin

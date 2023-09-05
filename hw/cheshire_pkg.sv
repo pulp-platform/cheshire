@@ -19,6 +19,12 @@ package cheshire_pkg;
       return (width != 32'd0) ? unsigned'(width-1) : 32'd0;
   endfunction
 
+  // Parameterization constants
+  localparam int unsigned MaxCoresWidth     = 5;
+  localparam int unsigned MaxExtAxiMstWidth = 4;
+  localparam int unsigned MaxExtAxiSlvWidth = 4;
+  localparam int unsigned MaxExtRegSlvWidth = 4;
+
   // Parameters defined by generated hardware (regenerate to adapt)
   localparam int unsigned SpihNumCs       = spi_host_reg_pkg::NumCS - 1;  // Last CS is dummy
   localparam int unsigned SlinkNumChan    = serial_link_single_channel_reg_pkg::NumChannels;
@@ -67,7 +73,7 @@ package cheshire_pkg;
     doub_bt Cva6ExtCieLength;
     bit     Cva6ExtCieOnTop;
     // Hart parameters
-    bit [3:0] NumCores;
+    bit [MaxCoresWidth-1:0] NumCores;
     doub_bt NumExtIrqHarts;
     doub_bt NumExtDbgHarts;
     dw_bt   Core1UserAmoBit;
@@ -97,19 +103,19 @@ package cheshire_pkg;
     dw_bt   RegMaxWriteTxns;
     aw_bt   RegAmoNumCuts;
     bit     RegAmoPostCut;
-    // External AXI ports (at most 8 ports and rules)
-    bit     [2:0]  AxiExtNumMst;
-    bit     [3:0]  AxiExtNumSlv;
-    bit     [3:0]  AxiExtNumRules;
-    byte_bt [15:0] AxiExtRegionIdx;
-    doub_bt [15:0] AxiExtRegionStart;
-    doub_bt [15:0] AxiExtRegionEnd;
-    // External reg slaves (at most 8 ports and rules)
-    bit     [2:0] RegExtNumSlv;
-    bit     [2:0] RegExtNumRules;
-    byte_bt [7:0] RegExtRegionIdx;
-    doub_bt [7:0] RegExtRegionStart;
-    doub_bt [7:0] RegExtRegionEnd;
+    // External AXI ports (limited number of ports and rules)
+    bit     [MaxExtAxiMstWidth-1:0]     AxiExtNumMst;
+    bit     [MaxExtAxiSlvWidth-1:0]     AxiExtNumSlv;
+    bit     [MaxExtAxiSlvWidth-1:0]     AxiExtNumRules;
+    byte_bt [2**MaxExtAxiSlvWidth-1:0]  AxiExtRegionIdx;
+    doub_bt [2**MaxExtAxiSlvWidth-1:0]  AxiExtRegionStart;
+    doub_bt [2**MaxExtAxiSlvWidth-1:0]  AxiExtRegionEnd;
+    // External reg slaves (limited number of ports and rules)
+    bit     [MaxExtRegSlvWidth-1:0]     RegExtNumSlv;
+    bit     [MaxExtRegSlvWidth-1:0]     RegExtNumRules;
+    byte_bt [2**MaxExtRegSlvWidth-1:0]  RegExtRegionIdx;
+    doub_bt [2**MaxExtRegSlvWidth-1:0]  RegExtRegionStart;
+    doub_bt [2**MaxExtRegSlvWidth-1:0]  RegExtRegionEnd;
     // Real-time clock speed
     word_bt RtcFreq;
     // Address of platform ROM
@@ -177,9 +183,21 @@ package cheshire_pkg;
   //  Interrupts  //
   //////////////////
 
+  // Bus Error interrupts
+  typedef struct packed {
+    logic r;
+    logic w;
+  } axi_err_intr_t;
+
+  typedef struct packed {
+    axi_err_intr_t cores;
+    axi_err_intr_t dma;
+    axi_err_intr_t vga;
+  } cheshire_bus_err_intr_t;
+
   // Defined interrupts
   typedef struct packed {
-    logic [5:0] bus_err; // VGA, DMA, CVA6
+    cheshire_bus_err_intr_t bus_err;
     logic [31:0] gpio;
     logic spih_spi_event;
     logic spih_error;
@@ -234,21 +252,28 @@ package cheshire_pkg;
     return cfg.LlcSetAssoc * cfg.LlcNumLines * cfg.LlcNumBlocks * cfg.AxiDataWidth / 8;
   endfunction
 
-  // Static addresses
+  // Static addresses (defined here only if multiply used)
   localparam doub_bt AmDbg    = 'h0000_0000;  // Base of AXI peripherals
   localparam doub_bt AmBrom   = 'h0200_0000;  // Base of reg peripherals
   localparam doub_bt AmRegs   = 'h0300_0000;
   localparam doub_bt AmLlc    = 'h0300_1000;
   localparam doub_bt AmSlink  = 'h0300_6000;
+  localparam doub_bt AmBusErr = 'h0300_9000;
   localparam doub_bt AmSpm    = 'h1000_0000;  // Cached region at bottom, uncached on top
+  localparam doub_bt AmClic   = 'h0800_0000;
 
   // Static masks
   localparam doub_bt AmSpmBaseUncached = 'h1400_0000;
   localparam doub_bt AmSpmRegionMask   = 'h03FF_FFFF;
 
+  // Reg bus error unit indices
+  localparam int unsigned RegBusErrVga        = 0;
+  localparam int unsigned RegBusErrDma        = 1;
+  localparam int unsigned RegBusErrCoresBase  = 2;
+
   // AXI Xbar master indices
   typedef struct packed {
-    aw_bt [15:0] cores;
+    aw_bt [2**MaxCoresWidth-1:0] cores;
     aw_bt dbg;
     aw_bt dma;
     aw_bt slink;
@@ -347,9 +372,9 @@ package cheshire_pkg;
     aw_bt slink;
     aw_bt vga;
     aw_bt axirt;
-    aw_bt [15:0] clic;
     aw_bt irq_router;
-    aw_bt bus_err;
+    aw_bt [2**MaxCoresWidth-1:0] bus_err;
+    aw_bt [2**MaxCoresWidth-1:0] clic;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
@@ -371,12 +396,12 @@ package cheshire_pkg;
     if (cfg.SerialLink)   begin i++; ret.slink      = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
     if (cfg.Vga)          begin i++; ret.vga        = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
     if (cfg.AxiRt)        begin i++; ret.axirt      = i; r++; ret.map[r] = '{i, 'h0300_8000, 'h0300_9000}; end
-    if (cfg.BusErr)       begin i++; ret.bus_err    = i; r++; ret.map[r] = '{i, 'h0300_9000, 'h0300_a000}; end
     if (cfg.IrqRouter)    begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
-    if (cfg.Clic)         begin
-      for (int j = 0; j < cfg.NumCores; j++) begin
-        i++; ret.clic[j] = i; r++; ret.map[r] = '{i, 'h0800_0000 + j * 'h4_0000, 'h0800_0000 + (j + 1) * 'h4_0000};
-      end
+    if (cfg.Clic) for (int j = 0; j < cfg.NumCores; j++) begin
+      i++; ret.clic[j]    = i; r++; ret.map[r] = '{i, AmClic + j*'h40000, AmClic + (j+1)*'h40000};
+    end
+    if (cfg.BusErr) for (int j = 0; j < 2 + cfg.NumCores; j++) begin
+      i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, AmBusErr + j*'h40,  AmBusErr + (j+1)*'h40};
     end
     i++; r++;
     ret.ext_base  = i;
