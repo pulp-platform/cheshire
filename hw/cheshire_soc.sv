@@ -421,6 +421,69 @@ module cheshire_soc import cheshire_pkg::*; #(
     .rsp_o  ( reg_out_rsp[RegOut.err] )
   );
 
+  reg_req_t [Cfg.NumCores+3-1:0] bus_err_req;
+  reg_rsp_t [Cfg.NumCores+3-1:0] bus_err_rsp;
+  logic [Cfg.NumCores-1:0][1:0] bus_err_cores;
+
+  if (Cfg.BusErr) begin : gen_bus_err_reg_demux
+    logic [$clog2(Cfg.NumCores+3)-1:0] bus_err_select;
+
+    // Addr map:
+    // 0300_9000-0300_9040: VGA [1]
+    // 0300_9040-0300_9080: DMA [2] (iDMA should support internal error handling)
+    // 0300_9080-0300_90C0: core0 [3]
+    // 0300_90C0-0300_9100: core1 [4]
+    // 0300_91XX-0300_91XX: corei [i+3]
+
+    logic [1:0] core_bus_err_intr;
+    assign intr.intn.bus_err[5:4] = core_bus_err_intr;
+
+    always_comb begin
+      bus_err_select = '0;
+      core_bus_err_intr = bus_err_cores[0];
+
+      case (reg_out_req[RegOut.bus_err].addr[11:6])
+        6'h0: bus_err_select = 1; // VGA
+        6'h1: bus_err_select = 2; // DMA
+        6'h2: bus_err_select = 3; // core0
+        default: bus_err_select = '0;
+      endcase
+      for (int i = 1; i < Cfg.NumCores; i++) begin
+        if (reg_out_req[RegOut.bus_err].addr[11:6] == i+2) begin
+          bus_err_select = i+3;
+        end
+        core_bus_err_intr[0] |= bus_err_cores[i][0];
+        core_bus_err_intr[1] |= bus_err_cores[i][1];
+      end
+    end
+
+    reg_demux #(
+      .NoPorts  ( Cfg.NumCores+3 ), // VGA, DMA, CVA6, err
+      .req_t    ( reg_req_t ),
+      .rsp_t    ( reg_rsp_t )
+    ) i_reg_demux (
+      .clk_i,
+      .rst_ni,
+      .in_select_i  ( bus_err_select ),
+      .in_req_i     ( reg_out_req[RegOut.bus_err] ),
+      .in_rsp_o     ( reg_out_rsp[RegOut.bus_err] ),
+      .out_req_o    ( bus_err_req ),
+      .out_rsp_i    ( bus_err_rsp )
+    );
+
+    reg_err_slv #(
+      .DW       ( 32 ),
+      .ERR_VAL  ( 32'hBADCAB1E ),
+      .req_t    ( reg_req_t ),
+      .rsp_t    ( reg_rsp_t )
+    ) i_bus_err_slv (
+      .req_i  ( bus_err_req[0] ),
+      .rsp_o  ( bus_err_rsp[0] )
+    );
+  end else begin : gen_no_bus_err
+    assign intr.intn.bus_err = '0;
+  end
+
   // Connect external slaves
   if (Cfg.RegExtNumSlv > 0) begin : gen_ext_reg_slv
     assign reg_ext_slv_req_o = reg_out_req[RegOut.num_out-1:RegOut.ext_base];
@@ -615,6 +678,32 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_req_o        ( core_out_req ),
       .axi_resp_i       ( core_out_rsp )
     );
+
+    if (Cfg.BusErr) begin : gen_cva6_bus_err
+      axi_err_unit_wrap #(
+        .AddrWidth         ( Cfg.AddrWidth     ),
+        .IdWidth           ( Cva6IdWidth       ),
+        .UserErrBits       ( 0                 ),
+        .UserErrBitsOffset ( 0                 ),
+        .NumOutstanding    ( Cfg.CoreMaxTxns   ),
+        .NumStoredErrors   ( 4                 ),
+        .DropOldest        ( 1'b0              ),
+        .axi_req_t         ( axi_cva6_req_t    ),
+        .axi_rsp_t         ( axi_cva6_rsp_t    ),
+        .reg_req_t         ( reg_req_t         ),
+        .reg_rsp_t         ( reg_rsp_t         )
+      ) i_cva6_err (
+        .clk_i,
+        .rst_ni,
+        .testmode_i ( test_mode_i      ),
+        .axi_req_i  ( core_out_req     ),
+        .axi_rsp_i  ( core_out_rsp     ),
+        .err_irq_o  ( bus_err_cores[i] ),
+        .reg_req_i  ( bus_err_req[i+3] ),
+        .reg_rsp_o  ( bus_err_rsp[i+3] )
+      );
+    end
+
 
     // Generate CLIC for core if enabled
     if (Cfg.Clic) begin : gen_clic
@@ -1438,6 +1527,42 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_slv_rsp_o  ( dma_cut_rsp )
     );
 
+    if (Cfg.BusErr) begin : gen_dma_bus_err
+      axi_err_unit_wrap #(
+        .AddrWidth         ( Cfg.AddrWidth     ),
+        .IdWidth           ( Cfg.AxiMstIdWidth ),
+        .UserErrBits       ( 0                 ),
+        .UserErrBitsOffset ( 0                 ),
+        .NumOutstanding    ( Cfg.CoreMaxTxns   ),
+        .NumStoredErrors   ( 4                 ),
+        .DropOldest        ( 1'b0              ),
+        .axi_req_t         ( axi_mst_req_t     ),
+        .axi_rsp_t         ( axi_mst_rsp_t     ),
+        .reg_req_t         ( reg_req_t         ),
+        .reg_rsp_t         ( reg_rsp_t         )
+      ) i_dma_err (
+        .clk_i,
+        .rst_ni,
+        .testmode_i ( test_mode_i            ),
+        .axi_req_i  ( axi_in_req[AxiIn.dma]  ),
+        .axi_rsp_i  ( axi_in_rsp[AxiIn.dma]  ),
+        .err_irq_o  ( intr.intn.bus_err[3:2] ),
+        .reg_req_i  ( bus_err_req[2]         ),
+        .reg_rsp_o  ( bus_err_rsp[2]         )
+      );
+    end
+  end else if (Cfg.BusErr) begin : gen_dma_err_slv
+
+    assign intr.intn.bus_err[3:2] = '0;
+    reg_err_slv #(
+      .DW       ( 32 ),
+      .ERR_VAL  ( 32'hBADCAB1E ),
+      .req_t    ( reg_req_t ),
+      .rsp_t    ( reg_rsp_t )
+    ) i_dma_err_slv (
+      .req_i  ( bus_err_req[2] ),
+      .rsp_o  ( bus_err_rsp[2] )
+    );
   end
 
   ///////////////////
@@ -1581,6 +1706,31 @@ module cheshire_soc import cheshire_pkg::*; #(
       .blue_o         ( vga_blue_o  )
     );
 
+    if (Cfg.BusErr) begin : gen_vga_bus_err
+      axi_err_unit_wrap #(
+        .AddrWidth         ( Cfg.AddrWidth     ),
+        .IdWidth           ( Cfg.AxiMstIdWidth ),
+        .UserErrBits       ( 0                 ),
+        .UserErrBitsOffset ( 0                 ),
+        .NumOutstanding    ( Cfg.CoreMaxTxns   ),
+        .NumStoredErrors   ( 4                 ),
+        .DropOldest        ( 1'b0              ),
+        .axi_req_t         ( axi_mst_req_t     ),
+        .axi_rsp_t         ( axi_mst_rsp_t     ),
+        .reg_req_t         ( reg_req_t         ),
+        .reg_rsp_t         ( reg_rsp_t         )
+      ) i_vga_err (
+        .clk_i,
+        .rst_ni,
+        .testmode_i ( test_mode_i            ),
+        .axi_req_i  ( axi_in_req[AxiIn.vga]  ),
+        .axi_rsp_i  ( axi_in_rsp[AxiIn.vga]  ),
+        .err_irq_o  ( intr.intn.bus_err[1:0] ),
+        .reg_req_i  ( bus_err_req[1]         ),
+        .reg_rsp_o  ( bus_err_rsp[1]         )
+      );
+    end
+
   end else begin : gen_no_vga
 
     assign vga_hsync_o  = 0;
@@ -1589,6 +1739,18 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign vga_green_o  = '0;
     assign vga_blue_o   = '0;
 
+    if (Cfg.BusErr) begin : gen_vga_err_slv
+      assign intr.intn.bus_err[1:0] = '0;
+      reg_err_slv #(
+        .DW       ( 32 ),
+        .ERR_VAL  ( 32'hBADCAB1E ),
+        .req_t    ( reg_req_t ),
+        .rsp_t    ( reg_rsp_t )
+      ) i_vga_err_slv (
+        .req_i  ( bus_err_req[3] ),
+        .rsp_o  ( bus_err_rsp[3] )
+      );
+    end
   end
 
   //////////////////
