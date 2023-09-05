@@ -26,6 +26,10 @@ package cheshire_reg_pkg;
   } cheshire_hw2reg_platform_rom_reg_t;
 
   typedef struct packed {
+    logic [31:0] d;
+  } cheshire_hw2reg_num_int_harts_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic        d;
     } bootrom;
@@ -62,6 +66,9 @@ package cheshire_reg_pkg;
     struct packed {
       logic        d;
     } irq_router;
+    struct packed {
+      logic        d;
+    } bus_err;
   } cheshire_hw2reg_hw_features_reg_t;
 
   typedef struct packed {
@@ -80,19 +87,15 @@ package cheshire_reg_pkg;
     } blue_width;
   } cheshire_hw2reg_vga_params_reg_t;
 
-  typedef struct packed {
-    logic [31:0] d;
-  } cheshire_hw2reg_num_harts_reg_t;
-
   // HW -> register type
   typedef struct packed {
-    cheshire_hw2reg_boot_mode_reg_t boot_mode; // [165:164]
-    cheshire_hw2reg_rtc_freq_reg_t rtc_freq; // [163:132]
-    cheshire_hw2reg_platform_rom_reg_t platform_rom; // [131:100]
-    cheshire_hw2reg_hw_features_reg_t hw_features; // [99:88]
-    cheshire_hw2reg_llc_size_reg_t llc_size; // [87:56]
-    cheshire_hw2reg_vga_params_reg_t vga_params; // [55:32]
-    cheshire_hw2reg_num_harts_reg_t num_harts; // [31:0]
+    cheshire_hw2reg_boot_mode_reg_t boot_mode; // [166:165]
+    cheshire_hw2reg_rtc_freq_reg_t rtc_freq; // [164:133]
+    cheshire_hw2reg_platform_rom_reg_t platform_rom; // [132:101]
+    cheshire_hw2reg_num_int_harts_reg_t num_int_harts; // [100:69]
+    cheshire_hw2reg_hw_features_reg_t hw_features; // [68:56]
+    cheshire_hw2reg_llc_size_reg_t llc_size; // [55:24]
+    cheshire_hw2reg_vga_params_reg_t vga_params; // [23:0]
   } cheshire_hw2reg_t;
 
   // Register offsets
@@ -115,19 +118,19 @@ package cheshire_reg_pkg;
   parameter logic [BlockAw-1:0] CHESHIRE_BOOT_MODE_OFFSET = 7'h 40;
   parameter logic [BlockAw-1:0] CHESHIRE_RTC_FREQ_OFFSET = 7'h 44;
   parameter logic [BlockAw-1:0] CHESHIRE_PLATFORM_ROM_OFFSET = 7'h 48;
-  parameter logic [BlockAw-1:0] CHESHIRE_HW_FEATURES_OFFSET = 7'h 4c;
-  parameter logic [BlockAw-1:0] CHESHIRE_LLC_SIZE_OFFSET = 7'h 50;
-  parameter logic [BlockAw-1:0] CHESHIRE_VGA_PARAMS_OFFSET = 7'h 54;
-  parameter logic [BlockAw-1:0] CHESHIRE_NUM_HARTS_OFFSET = 7'h 58;
+  parameter logic [BlockAw-1:0] CHESHIRE_NUM_INT_HARTS_OFFSET = 7'h 4c;
+  parameter logic [BlockAw-1:0] CHESHIRE_HW_FEATURES_OFFSET = 7'h 50;
+  parameter logic [BlockAw-1:0] CHESHIRE_LLC_SIZE_OFFSET = 7'h 54;
+  parameter logic [BlockAw-1:0] CHESHIRE_VGA_PARAMS_OFFSET = 7'h 58;
 
   // Reset values for hwext registers and their fields
   parameter logic [1:0] CHESHIRE_BOOT_MODE_RESVAL = 2'h 0;
   parameter logic [31:0] CHESHIRE_RTC_FREQ_RESVAL = 32'h 0;
   parameter logic [31:0] CHESHIRE_PLATFORM_ROM_RESVAL = 32'h 0;
-  parameter logic [11:0] CHESHIRE_HW_FEATURES_RESVAL = 12'h 0;
+  parameter logic [31:0] CHESHIRE_NUM_INT_HARTS_RESVAL = 32'h 0;
+  parameter logic [12:0] CHESHIRE_HW_FEATURES_RESVAL = 13'h 0;
   parameter logic [31:0] CHESHIRE_LLC_SIZE_RESVAL = 32'h 0;
   parameter logic [23:0] CHESHIRE_VGA_PARAMS_RESVAL = 24'h 0;
-  parameter logic [31:0] CHESHIRE_NUM_HARTS_RESVAL = 32'h 0;
 
   // Register index
   typedef enum int {
@@ -150,10 +153,10 @@ package cheshire_reg_pkg;
     CHESHIRE_BOOT_MODE,
     CHESHIRE_RTC_FREQ,
     CHESHIRE_PLATFORM_ROM,
+    CHESHIRE_NUM_INT_HARTS,
     CHESHIRE_HW_FEATURES,
     CHESHIRE_LLC_SIZE,
-    CHESHIRE_VGA_PARAMS,
-    CHESHIRE_NUM_HARTS
+    CHESHIRE_VGA_PARAMS
   } cheshire_id_e;
 
   // Register width information to check illegal writes
@@ -177,10 +180,10 @@ package cheshire_reg_pkg;
     4'b 0001, // index[16] CHESHIRE_BOOT_MODE
     4'b 1111, // index[17] CHESHIRE_RTC_FREQ
     4'b 1111, // index[18] CHESHIRE_PLATFORM_ROM
-    4'b 0011, // index[19] CHESHIRE_HW_FEATURES
-    4'b 1111, // index[20] CHESHIRE_LLC_SIZE
-    4'b 0111, // index[21] CHESHIRE_VGA_PARAMS
-    4'b 1111  // index[22] CHESHIRE_NUM_HARTS
+    4'b 1111, // index[19] CHESHIRE_NUM_INT_HARTS
+    4'b 0011, // index[20] CHESHIRE_HW_FEATURES
+    4'b 1111, // index[21] CHESHIRE_LLC_SIZE
+    4'b 0111  // index[22] CHESHIRE_VGA_PARAMS
   };
 
 endpackage

@@ -58,7 +58,7 @@ _start:
 
     // If LLC present: Wait for end of BIST, then extend stack and set to all SPM
     la t0, __base_regs
-    lw t0, 76(t0)   // regs.HW_FEATURES
+    lw t0, 80(t0)   // regs.HW_FEATURES
     andi t0, t0, 2  // regs.HW_FEATURES.llc
     beqz t0, _prom_check_run
     la t0, __base_llc
@@ -73,7 +73,7 @@ _wait_llc_bist:
     // Correct stack to start at end of SPM
     la t0, __base_regs
     la sp, __base_spm
-    lw t0, 80(t0)   // regs.LLC_SIZE
+    lw t0, 84(t0)   // regs.LLC_SIZE
     add sp, sp, t0
     addi sp, sp, -8
 

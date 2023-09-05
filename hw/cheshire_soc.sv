@@ -987,6 +987,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     boot_mode     : boot_mode_i,
     rtc_freq      : Cfg.RtcFreq,
     platform_rom  : Cfg.PlatformRom,
+    num_int_harts : NumIntHarts,
     hw_features   : '{
       bootrom     : Cfg.Bootrom,
       llc         : Cfg.LlcNotBypass,
@@ -999,15 +1000,15 @@ module cheshire_soc import cheshire_pkg::*; #(
       vga         : Cfg.Vga,
       axirt       : Cfg.AxiRt,
       clic        : Cfg.Clic,
-      irq_router  : Cfg.IrqRouter
+      irq_router  : Cfg.IrqRouter,
+      bus_err     : Cfg.BusErr
     },
     llc_size      : get_llc_size(Cfg),
     vga_params    : '{
       red_width   : Cfg.VgaRedWidth,
       green_width : Cfg.VgaGreenWidth,
       blue_width  : Cfg.VgaBlueWidth
-    },
-    num_harts     : NumIntHarts
+    }
   };
 
   cheshire_reg_top #(
