@@ -165,6 +165,16 @@ include $(CHS_XIL_DIR)/sim/simulate.mk
 CHS_XILINX_ALL += $(CHS_XIL_DIR)/scripts/add_sources.tcl
 CHS_LINUX_IMG  += $(CHS_SW_DIR)/boot/linux-${BOARD}.gpt.bin
 
+##############
+# Benchmarks #
+##############
+
+.PHONY: mibench
+mibench: $(CHS_SW_DIR)/benchmarks/mibench
+
+$(CHS_SW_DIR)/benchmarks/mibench:
+	git clone git@github.com:alex96295/mibench.git -b carfield $@
+
 #################################
 # Phonies (KEEP AT END OF FILE) #
 #################################

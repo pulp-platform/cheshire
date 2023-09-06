@@ -99,3 +99,10 @@ static inline void chs_playgnd_stop_timer() {
 static inline uint32_t chs_playgnd_get_timer_count(){
     return readd(CHS_PLAYGND_SYSTEM_TIMER_BASE_ADDR + TIMER_CNT_LO_OFFSET);
 }
+
+#ifdef DEBUG
+#define PRINTF(fmt, ...)                                                       \
+	printf("%s:%d: " fmt, __func__, __LINE__, ##__VA_ARGS__);
+#else
+#define PRINTF(...) ((void)0)
+#endif

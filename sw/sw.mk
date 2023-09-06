@@ -23,7 +23,7 @@ CHS_SW_DTB_TGUID := BA442F61-2AEF-42DE-9233-E4D75D3ACB9D
 CHS_SW_FW_TGUID  := 99EC86DA-3F5B-4B0D-8F4B-C4BACFA5F859
 CHS_SW_DISK_SIZE ?= 16M
 
-CHS_SW_FLAGS   ?= -DOT_PLATFORM_RV32 -march=rv64gc_zifencei -mabi=lp64d -mstrict-align -O2 -Wall -Wextra -static -ffunction-sections -fdata-sections -frandom-seed=cheshire -fuse-linker-plugin -flto -Wl,-flto
+CHS_SW_FLAGS   ?= -UDEBUG -DOT_PLATFORM_RV32 -march=rv64gc_zifencei -mabi=lp64d -mstrict-align -O2 -Wall -Wextra -static -ffunction-sections -fdata-sections -frandom-seed=cheshire -fuse-linker-plugin -flto -Wl,-flto
 CHS_SW_CCFLAGS ?= $(CHS_SW_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
 CHS_SW_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_SW_LD_DIR)
 CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
@@ -159,4 +159,27 @@ CHS_SW_TEST_SPM_DUMP   	= $(CHS_SW_TEST_SRCS_S:.S=.spm.dump)  $(CHS_SW_TEST_SRCS
 CHS_SW_TEST_SPM_ROMH   	= $(CHS_SW_TEST_SRCS_S:.S=.rom.memh)  $(CHS_SW_TEST_SRCS_C:.c=.rom.memh)
 CHS_SW_TEST_SPM_GPTH   	= $(CHS_SW_TEST_SRCS_S:.S=.gpt.memh)  $(CHS_SW_TEST_SRCS_C:.c=.gpt.memh)
 
-CHS_SW_TESTS = $(CHS_SW_TEST_DRAM_DUMP) $(CHS_SW_TEST_SPM_DUMP) $(CHS_SW_TEST_SPM_ROMH) $(CHS_SW_TEST_SPM_GPTH)
+CHS_SW_TESTS = $(CHS_SW_TEST_DRAM_DUMP) $(CHS_SW_TEST_SPM_DUMP) $(CHS_SW_TEST_SPM_ROMH) $(CHS_SW_TEST_SPM_GPTH) mibench-automotive
+
+# Benchmarks
+
+# Mibench
+MIBENCH_DIR := $(CHS_SW_DIR)/benchmarks/mibench
+CC       := $(CHS_SW_CC)
+OBJDUMP  := $(CHS_SW_OBJDUMP)
+INCLUDES := $(CHS_SW_INCLUDES)
+CCFLAGS  := $(CHS_SW_CCFLAGS)
+LDFLAGS  := $(CHS_SW_LDFLAGS)
+LDLIBS   += $(CHS_SW_LIBS)
+LDLIBS   += $(CHS_SW_LIBS)
+LDLINK   := -T$(CHS_LD_DIR)/spm.ld
+ELF_PREFIX := spm
+
+-include $(MIBENCH_DIR)/mibench.mk
+
+.PHONY: mibench-automotive mibench-automotive-basicmath mibench-automotive-bitcount mibench-automotive-qsort mibench-automotive-susan
+mibench-automotive: automotive
+mibench-automotive-basicmath: automotive-basicmath
+mibench-automotive-bitcount: automotive-bitcount
+mibench-automotive-qsort: automotive-qsort
+mibench-automotive-susan: automotive-susan
