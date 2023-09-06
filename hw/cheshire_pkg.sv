@@ -171,7 +171,12 @@ package cheshire_pkg;
     dw_bt   DmaConfMaxReadTxns;
     dw_bt   DmaConfMaxWriteTxns;
     aw_bt   DmaConfAmoNumCuts;
+    dw_bt   DmaNumAxInFlight;
+    dw_bt   DmaMemSysDepth;
+    aw_bt   DmaJobFifoDepth;
+    bit     DmaRAWCouplingAvail;
     bit     DmaConfAmoPostCut;
+    bit     DmaConfEnableTwoD;
     // Parameters for GPIO
     bit     GpioInputSyncs;
     // Parameters for AXI RT
@@ -514,8 +519,8 @@ package cheshire_pkg;
     AxiDataWidth      : 64,
     AxiUserWidth      : 2,  // AMO(2)
     AxiMstIdWidth     : 2,
-    AxiMaxMstTrans    : 8,
-    AxiMaxSlvTrans    : 8,
+    AxiMaxMstTrans    : 24,
+    AxiMaxSlvTrans    : 24,
     AxiUserAmoMsb     : 1, // Convention: lower AMO bits for cores, MSB for serial link
     AxiUserAmoLsb     : 0, // Convention: lower AMO bits for cores, MSB for serial link
     AxiUserDefault    : 0,
@@ -550,8 +555,8 @@ package cheshire_pkg;
     LlcSetAssoc       : 8,
     LlcNumLines       : 256,
     LlcNumBlocks      : 8,
-    LlcMaxReadTxns    : 8,
-    LlcMaxWriteTxns   : 8,
+    LlcMaxReadTxns    : 16,
+    LlcMaxWriteTxns   : 16,
     LlcAmoNumCuts     : 1,
     LlcAmoPostCut     : 1,
     LlcOutConnect     : 1,
@@ -576,7 +581,12 @@ package cheshire_pkg;
     DmaConfMaxReadTxns  : 4,
     DmaConfMaxWriteTxns : 4,
     DmaConfAmoNumCuts   : 1,
+    DmaNumAxInFlight    : 16,
+    DmaMemSysDepth      : 8,
+    DmaJobFifoDepth     : 2,
+    DmaRAWCouplingAvail : 1,
     DmaConfAmoPostCut   : 1,
+    DmaConfEnableTwoD   : 1,
     // GPIOs
     GpioInputSyncs    : 1,
     // AXI RT

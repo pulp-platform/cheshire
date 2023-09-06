@@ -236,13 +236,18 @@ The [Serial Link](https://github.com/pulp-platform/serial_link) is a fully digit
 
 ### DMA engine
 
-The [iDMA engine](https://github.com/pulp-platform/iDMA) enables high-throughput asynchronous transfers between any two subordinate address ranges in the system. It exposes the following parameters:
+The [iDMA engine](https://github.com/pulp-platform/iDMA) enables high-throughput asynchronous transfers between any two subordinate address ranges in the system. The hardware supports, if enabled, up to two dimensional transfers directly in hardware. It exposes the following parameters:
 
 | Parameter                    | Type / Range | Description                                       |
 | ---------------------------- | ------------ | ------------------------------------------------- |
 | `DmaConfMax(Read|Write)Txns` | `dw_bt`      | Max. number of outstanding requests to DMA config |
 | `DmaConfAmoNumCuts`          | `aw_bt`      | Number of timing cuts inside config AMO filter    |
+| `DmaNumAxInFlight`           | `dw_bt`      | Number of outstanding transfer the DMA launches   |
+| `DmaMemSysDepth`             | `dw_bt`      | The *approximate* depth of the memory system      |
+| `DmaJobFifoDepth`            | `aw_bt`      | The depth of the job FIFO                         |
+| `DmaRAWCouplingAvail`        | `bit`        | Whether the R-AW coupling feature is available    |
 | `DmaConfAmoPostCut`          | `bit`        | Whether to insert a cut after config AMO filter   |
+| `DmaConfEnableTwoD`          | `bit`        | Whether the 2D hardware extension is present      |
 
 ### I2C, SPI, GPIOs
 

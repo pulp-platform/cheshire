@@ -15,8 +15,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: bfee21757bf090ec8e358456314b0b0fd3c90809
-    version: 0.39.0
+    revision: fccffb5953ec8564218ba05e20adbedec845e014
+    version: 0.39.1
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -108,8 +108,8 @@ packages:
     dependencies:
     - common_cells
   idma:
-    revision: 437ffa9dac5dea0daccfd3e8ae604d4f6ae2cdf1
-    version: null
+    revision: 2c64e0773fab5a54757646715485fcdf3432c7c1
+    version: 0.5.0
     source:
       Git: https://github.com/pulp-platform/iDMA.git
     dependencies:

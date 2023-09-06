@@ -21,6 +21,7 @@ CHS_LLC_DIR   := $(shell $(BENDER) path axi_llc)
 OTPROOT      := $(shell $(BENDER) path opentitan_peripherals)
 CLINTROOT    := $(shell $(BENDER) path clint)
 AXI_VGA_ROOT := $(shell $(BENDER) path axi_vga)
+IDMA_ROOT    := $(shell $(BENDER) path idma)
 
 REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
 
