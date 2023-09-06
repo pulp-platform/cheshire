@@ -1686,7 +1686,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   end
 
   if (!(Cfg.Vga && Cfg.BusErr)) begin : gen_vga_bus_err_tie
-    assign intr.intn.bus_err.dma = '0;
+    assign intr.intn.bus_err.vga = '0;
   end
 
   //////////////////
