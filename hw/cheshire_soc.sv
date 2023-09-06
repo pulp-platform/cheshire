@@ -1423,6 +1423,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AxiIdWidth     ( Cfg.AxiMstIdWidth ),
       .AxiUserWidth   ( Cfg.AxiUserWidth  ),
       .AxiSlvIdWidth  ( AxiSlvIdWidth     ),
+      .IsTwoD         ( Cfg.DmaConfEnableTwoD ),
       .axi_mst_req_t  ( axi_mst_req_t ),
       .axi_mst_rsp_t  ( axi_mst_rsp_t ),
       .axi_slv_req_t  ( axi_slv_req_t ),
