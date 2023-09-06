@@ -707,14 +707,15 @@ module cheshire_soc import cheshire_pkg::*; #(
     end
 
     // Map user to AMO domain as we are an atomics-capable master.
-    // As we are core 0, the core 1 and serial link AMO bits should *not* be set.
+    // Within the provided AMO user range, we count up from the provided core AMO offset.
     always_comb begin
       core_ur_req         = core_out_req;
       core_ur_req.aw.user = Cfg.AxiUserDefault;
       core_ur_req.ar.user = Cfg.AxiUserDefault;
       core_ur_req.w.user  = Cfg.AxiUserDefault;
-      // TODO: for additional cores, assign user bits between LSB and MSB accordingly
-      // TODO: for any other features, assign user bits accordingly
+      core_ur_req.aw.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
+      core_ur_req.ar.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
+      core_ur_req.w.user  [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
       core_out_rsp        = core_ur_rsp;
     end
 
