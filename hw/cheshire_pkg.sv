@@ -76,7 +76,7 @@ package cheshire_pkg;
     bit [MaxCoresWidth-1:0] NumCores;
     doub_bt NumExtIrqHarts;
     doub_bt NumExtDbgHarts;
-    dw_bt   Core1UserAmoBit;
+    doub_bt CoreUserAmoOffs;
     dw_bt   CoreMaxTxns;
     dw_bt   CoreMaxTxnsPerId;
     // Interrupt parameters
@@ -501,6 +501,7 @@ package cheshire_pkg;
     NumCores          : 1,
     CoreMaxTxns       : 8,
     CoreMaxTxnsPerId  : 4,
+    CoreUserAmoOffs   : 0, // Convention: lower AMO bits for cores, MSB for serial link
     // Interrupts
     NumExtInIntrs     : 0,
     NumExtClicIntrs   : NumExtPlicIntrs,
@@ -515,8 +516,8 @@ package cheshire_pkg;
     AxiMstIdWidth     : 2,
     AxiMaxMstTrans    : 8,
     AxiMaxSlvTrans    : 8,
-    AxiUserAmoMsb     : 1,  // Convention: bit 0 for core(s), bit 1 for serial link
-    AxiUserAmoLsb     : 0,  // Convention: bit 0 for core(s), bit 1 for serial link
+    AxiUserAmoMsb     : 1, // Convention: lower AMO bits for cores, MSB for serial link
+    AxiUserAmoLsb     : 0, // Convention: lower AMO bits for cores, MSB for serial link
     AxiUserDefault    : 0,
     RegMaxReadTxns    : 8,
     RegMaxWriteTxns   : 8,
@@ -570,7 +571,7 @@ package cheshire_pkg;
     SlinkRegionEnd    : 'h2_0000_0000,
     SlinkTxAddrMask   : 'hFFFF_FFFF,
     SlinkTxAddrDomain : 'h0000_0000,
-    SlinkUserAmoBit   : 1,  // Upper atomics bit for serial link
+    SlinkUserAmoBit   : 1,  // Convention: lower AMO bits for cores, MSB for serial link
     // DMA config
     DmaConfMaxReadTxns  : 4,
     DmaConfMaxWriteTxns : 4,
