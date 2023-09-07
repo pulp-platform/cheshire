@@ -25,7 +25,7 @@ Almost all features of Cheshire can be included, excluded, or scaled through par
 
 We provide a SystemVerilog macros header in `hw/include/cheshire/typedef.svh` that simplifies defining necessary interface types for Cheshire. To define a configuration struct for Cheshire, we recommend defining a *function* in a system package that starts from the default configuration `DefaultCfg` in `cheshire_pkg` and changes only necessary parameters.
 
-Unused inputs and inputs of zero effective width should be tied so as to initiate data transfers or handshakes (usually `'0`).
+Unused inputs and inputs of zero effective width should be tied so as to not initiate data transfers or handshakes (usually `'0`).
 
 A minimal clean instantiation would look as follows:
 

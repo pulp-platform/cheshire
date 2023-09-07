@@ -4,13 +4,13 @@ Cheshire is a minimal Linux-capable host platform built around the RISC-V [CVA6]
 
 Cheshire is developed as part of the PULP project, a joint effort between ETH Zurich and the University of Bologna.
 
-## Getting started
+## Quick Start
 
 * To learn how to build and use Cheshire, see [Getting Started](https://pulp-platform.github.io/cheshire/gs/).
 * To learn about available simulation, FPGA, and ASIC targets, see [Targets](https://pulp-platform.github.io/cheshire/tg).
 * For detailed information on Cheshire's inner workings, consult the [User Manual](https://pulp-platform.github.io/cheshire/um/).
 
-If you are impatient and have all needed [dependencies](https://pulp-platform.github.io/cheshire/gs/#dependencies), you can run `make all`, then start QuestaSim in `target/sim/vsim` and run:
+If you are impatient and have all needed [dependencies](https://pulp-platform.github.io/cheshire/gs/#dependencies), you can run `make all`, then start QuestaSim in `target/sim/vsim` and run a [simulation](https://pulp-platform.github.io/cheshire/tg/sim) by typing:
 
 ```
 set BINARY ../../../sw/tests/helloworld.spm.elf

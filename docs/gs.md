@@ -20,10 +20,16 @@ The project is structured as follows:
 To *build* Cheshire, you will need:
 
 - GNU Make `>= 3.82`
-- Bender `>= 0.27.1`
 - Python `>= 3.9`
+- Bender `>= 0.27.1`
 - RISCV GCC `>= 11.2.0`
 - Python packages in `requirements.txt`
+
+We use [Bender](https://github.com/pulp-platform/bender) for hardware IP and dependency management; for more information on using Bender, please see its documentation. You can install Bender directly through the Rust package manager Cargo:
+
+```
+cargo install bender
+```
 
 Depending on your desired target, additional dependencies may be needed.
 
