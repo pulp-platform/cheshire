@@ -1,6 +1,7 @@
 # Copyright 2020 ETH Zurich and University of Bologna.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+
 site_name: Cheshire
 theme:
   name: material
@@ -9,20 +10,14 @@ theme:
   features:
     - navigation.expand
     - navigation.tracking
-    #- navigation.tabs
     - navigation.sections
     - navigation.indexes
     - navigation.footer
 
 markdown_extensions:
+  - markdown_grid_tables:
   - toc:
       toc_depth: 3
-  - markdown_grid_tables:
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
 
 repo_url: https://github.com/pulp-platform/cheshire
 repo_name: pulp-platform/cheshire

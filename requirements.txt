@@ -7,4 +7,3 @@ yapf
 mkdocs
 mkdocs-material
 markdown-grid-tables
-pymdown-extensions
