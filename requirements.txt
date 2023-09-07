@@ -1,0 +1,9 @@
+requests
+hjson
+mako
+pyyaml
+tabulate
+yapf
+mkdocs
+mkdocs-material
+markdown-grid-tables

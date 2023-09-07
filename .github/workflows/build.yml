@@ -30,7 +30,7 @@ jobs:
           cache: pip
       -
         name: Install Python requirements
-        run: pip install -r .github/requirements.txt
+        run: pip install -r requirements.txt
       -
         name: Install RISC-V GCC toolchain
         uses: pulp-platform/pulp-actions/riscv-gcc-install@v2

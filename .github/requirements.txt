@@ -1,6 +1,0 @@
-requests
-hjson
-mako
-pyyaml
-tabulate
-yapf

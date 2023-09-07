@@ -1,0 +1,35 @@
+# Copyright 2020 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Author: Paul Scheffler <paulsc@iis.ee.ethz.ch>
+
+name: publish-docs
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+
+  deploy:
+    runs-on: ubuntu-22.04
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      -
+        name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+          cache: pip
+      -
+        name: Install Python requirements
+        run: pip install -r requirements.txt
+      -
+        name: Deploy Documentation
+        run: mkdocs gh-deploy --force
