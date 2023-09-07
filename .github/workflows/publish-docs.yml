@@ -8,8 +8,7 @@ name: publish-docs
 
 on:
   push:
-    # TODO: set this to main
-    branches: [ aottaviano/update-readme ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
