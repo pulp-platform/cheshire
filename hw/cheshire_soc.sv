@@ -21,7 +21,16 @@ module cheshire_soc import cheshire_pkg::*; #(
   parameter type axi_ext_slv_req_t  = logic,
   parameter type axi_ext_slv_rsp_t  = logic,
   parameter type reg_ext_req_t      = logic,
-  parameter type reg_ext_rsp_t      = logic
+  parameter type reg_ext_rsp_t      = logic,
+  localparam int unsigned NumEip       = NumIrqCtxts * Cfg.NumExtIrqHarts,
+  localparam int unsigned AxiExtNumMst = Cfg.AxiExtNumMst,
+  localparam int unsigned AxiExtNumSlv = Cfg.AxiExtNumSlv,
+  localparam int unsigned RegExtNumSlv = Cfg.RegExtNumSlv,
+  localparam int unsigned NumExtInIntrs     = Cfg.NumExtInIntrs,
+  localparam int unsigned NumExtOutIntrTgts = Cfg.NumExtOutIntrTgts,
+  localparam int unsigned NumExtOutIntrs    = Cfg.NumExtOutIntrs,
+  localparam int unsigned NumExtIrqHarts = Cfg.NumExtIrqHarts,
+  localparam int unsigned NumExtDbgHarts = Cfg.NumExtDbgHarts
 ) (
   input  logic        clk_i,
   input  logic        rst_ni,
@@ -32,24 +41,24 @@ module cheshire_soc import cheshire_pkg::*; #(
   output axi_ext_llc_req_t axi_llc_mst_req_o,
   input  axi_ext_llc_rsp_t axi_llc_mst_rsp_i,
   // External AXI crossbar ports
-  input  axi_ext_mst_req_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_req_i,
-  output axi_ext_mst_rsp_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_rsp_o,
-  output axi_ext_slv_req_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_req_o,
-  input  axi_ext_slv_rsp_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_rsp_i,
+  input  axi_ext_mst_req_t [iomsb(AxiExtNumMst):0] axi_ext_mst_req_i,
+  output axi_ext_mst_rsp_t [iomsb(AxiExtNumMst):0] axi_ext_mst_rsp_o,
+  output axi_ext_slv_req_t [iomsb(AxiExtNumSlv):0] axi_ext_slv_req_o,
+  input  axi_ext_slv_rsp_t [iomsb(AxiExtNumSlv):0] axi_ext_slv_rsp_i,
   // External reg demux slaves
-  output reg_ext_req_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_req_o,
-  input  reg_ext_rsp_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_rsp_i,
+  output reg_ext_req_t [iomsb(RegExtNumSlv):0] reg_ext_slv_req_o,
+  input  reg_ext_rsp_t [iomsb(RegExtNumSlv):0] reg_ext_slv_rsp_i,
   // Interrupts from and to external targets
-  input  logic [iomsb(Cfg.NumExtInIntrs):0]                                   intr_ext_i,
-  output logic [iomsb(Cfg.NumExtOutIntrTgts):0][iomsb(Cfg.NumExtOutIntrs):0]  intr_ext_o,
+  input  logic [iomsb(NumExtInIntrs):0]                               intr_ext_i,
+  output logic [iomsb(NumExtOutIntrTgts):0][iomsb(NumExtOutIntrs):0]  intr_ext_o,
   // Interrupt requests to external harts
-  output logic [iomsb(NumIrqCtxts*Cfg.NumExtIrqHarts):0] xeip_ext_o,
-  output logic [iomsb(Cfg.NumExtIrqHarts):0]             mtip_ext_o,
-  output logic [iomsb(Cfg.NumExtIrqHarts):0]             msip_ext_o,
+  output logic [iomsb(NumEip):0]         xeip_ext_o,
+  output logic [iomsb(NumExtIrqHarts):0] mtip_ext_o,
+  output logic [iomsb(NumExtIrqHarts):0] msip_ext_o,
   // Debug interface to external harts
-  output logic                                dbg_active_o,
-  output logic [iomsb(Cfg.NumExtDbgHarts):0]  dbg_ext_req_o,
-  input  logic [iomsb(Cfg.NumExtDbgHarts):0]  dbg_ext_unavail_i,
+  output logic                           dbg_active_o,
+  output logic [iomsb(NumExtDbgHarts):0] dbg_ext_req_o,
+  input  logic [iomsb(NumExtDbgHarts):0] dbg_ext_unavail_i,
   // JTAG interface
   input  logic  jtag_tck_i,
   input  logic  jtag_trst_ni,
@@ -123,8 +132,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   // This routable type is as wide or wider than all targets.
   // It must be truncated before target connection.
   typedef struct packed {
-    logic [iomsb(Cfg.NumExtInIntrs):0] ext;
-    cheshire_int_intr_t                intn;
+    logic [iomsb(NumExtInIntrs):0] ext;
+    cheshire_int_intr_t            intn;
   } cheshire_intr_t;
 
   typedef struct packed {
@@ -301,8 +310,9 @@ module cheshire_soc import cheshire_pkg::*; #(
   endfunction
 
   localparam addr_rule_t [RegOut.num_rules-1:0] RegMap = gen_reg_map();
+  localparam int unsigned RegOutNumOut = RegOut.num_out;
 
-  logic [cf_math_pkg::idx_width(RegOut.num_out)-1:0] reg_select;
+  logic [cf_math_pkg::idx_width(RegOutNumOut)-1:0] reg_select;
 
   axi_slv_req_t axi_reg_amo_req, axi_reg_cut_req;
   axi_slv_rsp_t axi_reg_amo_rsp, axi_reg_cut_rsp;

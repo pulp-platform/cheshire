@@ -575,6 +575,13 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   ) slink_mst_ext(), slink_mst_vip(), slink_mst();
 
   AXI_BUS #(
+    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
+    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
+  ) slink_mst_mux_in [1:0] ();
+
+  AXI_BUS #(
     .AXI_ADDR_WIDTH ( DutCfg.AddrWidth       ),
     .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth    ),
     .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth+1 ),
@@ -602,9 +609,13 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .clk_i  ( clk ),
     .rst_ni ( rst_n ),
     .test_i ( test_mode ),
-    .slv    ( '{slink_mst_vip, slink_mst_ext} ),
-    .mst    ( slink_mst_mux  )
+    .slv    ( slink_mst_mux_in ),
+    .mst    ( slink_mst_mux    )
   );
+
+  // assign multiplexer input
+  assign slink_mst_mux_in[1] = slink_mst_vip;
+  assign slink_mst_mux_in[0] = slink_mst_ext;
 
   // Serialize away added AXI index bits
   axi_id_serialize_intf #(

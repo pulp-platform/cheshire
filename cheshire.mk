@@ -11,6 +11,12 @@ BENDER ?= bender
 VLOG_ARGS ?= -suppress 2583 -suppress 13314
 VSIM      ?= vsim
 
+VLOGAN_ARGS ?= -assert svaext -assert disable_cover -full64 -sysc=q -nc -q
+VCS_ARGS    ?= -full64 -debug_access+r -j 8 -CFLAGS "-Os"
+VLOGAN_BIN  ?= vcs-2022.06 vlogan
+VCS_BIN     ?= vcs-2022.06 vcs
+
+
 # Define used paths (prefixed to avoid name conflicts)
 CHS_ROOT      ?= $(shell $(BENDER) path cheshire)
 CHS_REG_DIR   := $(shell $(BENDER) path register_interface)
@@ -131,6 +137,16 @@ $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: Bender.yml
 	$(BENDER) script vsim -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
+$(CHS_ROOT)/target/sim/vcs/compile_vcs.sh: Bender.yml Bender.lock
+	$(BENDER) script vcs -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 --vlog-arg "\$(VLOGAN_ARGS)" --vlogan-bin "$(VLOGAN_BIN)" $(VLOGAN_REL_PATHS) > $@
+	chmod +x $@
+
+$(CHS_ROOT)/target/sim/vcs/bin/tb_cheshire_soc.vcs: $(CHS_ROOT)/target/sim/vcs/compile_vcs.sh
+	mkdir -p $(CHS_ROOT)/target/sim/vcs/bin
+	cd $(CHS_ROOT)/target/sim/vcs; ./compile_vcs.sh
+	cd $(CHS_ROOT)/target/sim/vcs; $(VCS_BIN) $(VCS_ARGS) tb_cheshire_soc -o bin/tb_cheshire_soc.vcs
+
+
 $(CHS_ROOT)/target/sim/models:
 	mkdir -p $@
 
@@ -148,6 +164,7 @@ $(CHS_ROOT)/target/sim/models/24FC1025.v: Bender.yml | $(CHS_ROOT)/target/sim/mo
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
+CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile_vcs.sh
 
 #############
 # FPGA Flow #
