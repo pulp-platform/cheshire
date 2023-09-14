@@ -1470,9 +1470,9 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   end
 
-  if (!(Cfg.Dma && Cfg.BusErr)) begin : gen_dma_bus_err_tie
-    assign intr.intn.bus_err.dma = '0;
-  end
+  //if (!(Cfg.Dma && Cfg.BusErr)) begin : gen_dma_bus_err_tie
+  //  assign intr.intn.bus_err.dma = '0;
+  //end
 
   ///////////////////
   //  Serial Link  //

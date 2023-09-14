@@ -16,8 +16,10 @@ module fixture_cheshire_soc #(
   import cheshire_pkg::*;
   import tb_cheshire_pkg::*;
 
-  localparam cheshire_cfg_t DutCfg = TbCheshireConfigs[SelectedCfg];
+  // localparam cheshire_cfg_t DutCfg = TbCheshireConfigs[SelectedCfg];
 
+  import cheshire_ext_playground_pkg::*;
+  localparam cheshire_cfg_t DutCfg = ChsPlaygndCfg;
   `CHESHIRE_TYPEDEF_ALL(, DutCfg)
 
   ///////////
@@ -62,6 +64,13 @@ module fixture_cheshire_soc #(
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o;
 
+  // External slaves
+  axi_slv_req_t [DutCfg.AxiExtNumSlv-1:0] axi_ext_slv_req;
+  axi_slv_rsp_t [DutCfg.AxiExtNumSlv-1:0] axi_ext_slv_rsp;
+  // External masters
+  axi_mst_req_t [DutCfg.AxiExtNumMst-1:0] axi_ext_mst_req;
+  axi_mst_rsp_t [DutCfg.AxiExtNumMst-1:0] axi_ext_mst_rsp;
+
   cheshire_soc #(
     .Cfg                ( DutCfg ),
     .ExtHartinfo        ( '0 ),
@@ -81,10 +90,10 @@ module fixture_cheshire_soc #(
     .rtc_i              ( rtc       ),
     .axi_llc_mst_req_o  ( axi_llc_mst_req ),
     .axi_llc_mst_rsp_i  ( axi_llc_mst_rsp ),
-    .axi_ext_mst_req_i  ( '0 ),
-    .axi_ext_mst_rsp_o  ( ),
-    .axi_ext_slv_req_o  ( ),
-    .axi_ext_slv_rsp_i  ( '0 ),
+    .axi_ext_mst_req_i  ( axi_ext_mst_req ),
+    .axi_ext_mst_rsp_o  ( axi_ext_mst_rsp ),
+    .axi_ext_slv_req_o  ( axi_ext_slv_req ),
+    .axi_ext_slv_rsp_i  ( axi_ext_slv_rsp ),
     .reg_ext_slv_req_o  ( ),
     .reg_ext_slv_rsp_i  ( '0 ),
     .intr_ext_i         ( '0 ),
@@ -134,6 +143,30 @@ module fixture_cheshire_soc #(
     .vga_red_o          ( ),
     .vga_green_o        ( ),
     .vga_blue_o         ( )
+  );
+
+  // Playground module
+  cheshire_ext_playground #(
+    .Cfg                ( DutCfg ),
+    .axi_ext_mst_req_t  ( axi_mst_req_t ),
+    .axi_ext_mst_rsp_t  ( axi_mst_rsp_t ),
+    .axi_ext_slv_req_t  ( axi_slv_req_t ),
+    .axi_ext_slv_rsp_t  ( axi_slv_rsp_t ),
+    .reg_ext_req_t      ( reg_req_t ),
+    .reg_ext_rsp_t      ( reg_rsp_t )
+  ) i_chs_ext_playgnd (
+    .clk_i              ( clk       ),
+    .rst_ni             ( rst_n     ),
+    .test_mode_i        ( test_mode ),
+    .rtc_i              ( rtc       ),
+    // TODO: connect master ports
+    .axi_ext_mst_req_o  ( axi_ext_mst_req ),
+    .axi_ext_mst_rsp_i  ( axi_ext_mst_rsp ),
+    .axi_ext_slv_req_i  ( axi_ext_slv_req ),
+    .axi_ext_slv_rsp_o  ( axi_ext_slv_rsp ),
+    // Unused
+    .reg_ext_slv_req_i  ( '0 ),
+    .reg_ext_slv_rsp_o  ( )
   );
 
   ////////////////////////

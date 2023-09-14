@@ -38,6 +38,8 @@ sources:
   - hw/bootrom/cheshire_bootrom.sv
   - hw/regs/cheshire_reg_pkg.sv
   - hw/regs/cheshire_reg_top.sv
+  - hw/cheshire_ext_playground_pkg.sv
+  - hw/cheshire_ext_playground.sv
   - hw/cheshire_pkg.sv
   - hw/cheshire_soc.sv
 
