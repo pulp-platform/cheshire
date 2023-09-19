@@ -179,8 +179,8 @@ packages:
     dependencies:
     - common_verification
   unbent:
-    revision: 791420b326c6455595b4444c02f05f180b99dd06
-    version: 0.1.1
+    revision: 89ea12018002e6fae51f88e25320e79f57db8073
+    version: 0.1.5
     source:
       Git: https://github.com/pulp-platform/unbent.git
     dependencies:
