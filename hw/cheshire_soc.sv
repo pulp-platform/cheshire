@@ -1411,12 +1411,35 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     axi_mst_req_t axi_dma_req;
 
+    axi_mst_req_t axi_fifo_dma_req;
+    axi_mst_rsp_t axi_fifo_dma_rsp;
+
     always_comb begin
       axi_in_req[AxiIn.dma]         = axi_dma_req;
       axi_in_req[AxiIn.dma].aw.user = Cfg.AxiUserDefault;
       axi_in_req[AxiIn.dma].w.user  = Cfg.AxiUserDefault;
       axi_in_req[AxiIn.dma].ar.user = Cfg.AxiUserDefault;
     end
+
+    axi_fifo #(
+      .Depth(1024),
+      .FallThrough (1'b0),
+      .aw_chan_t (axi_mst_aw_chan_t),
+      .w_chan_t  (axi_mst_w_chan_t),
+      .b_chan_t  (axi_mst_b_chan_t),
+      .ar_chan_t (axi_mst_ar_chan_t),
+      .r_chan_t  (axi_mst_r_chan_t),
+      .axi_req_t (axi_mst_req_t),
+      .axi_resp_t(axi_mst_rsp_t)
+    ) i_axi_fifo_dma (
+      .clk_i,
+      .rst_ni,
+      .test_i     ( 1'b0  ),
+      .slv_req_i  ( axi_fifo_dma_req ),
+      .slv_resp_o ( axi_fifo_dma_rsp ),
+      .mst_req_o  ( axi_dma_req           ),
+      .mst_resp_i ( axi_in_rsp[AxiIn.dma] )
+    );
 
     dma_core_wrap #(
       .AxiAddrWidth       ( Cfg.AddrWidth           ),
@@ -1437,8 +1460,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clk_i,
       .rst_ni,
       .testmode_i     ( test_mode_i ),
-      .axi_mst_req_o  ( axi_dma_req           ),
-      .axi_mst_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
+      .axi_mst_req_o  ( axi_fifo_dma_req ),
+      .axi_mst_rsp_i  ( axi_fifo_dma_rsp ),
       .axi_slv_req_i  ( dma_cut_req ),
       .axi_slv_rsp_o  ( dma_cut_rsp )
     );
