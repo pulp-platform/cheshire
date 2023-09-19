@@ -143,6 +143,11 @@ module cheshire_top_xilinx
     DmaConfMaxWriteTxns : 4,
     DmaConfAmoNumCuts   : 1,
     DmaConfAmoPostCut   : 1,
+    DmaConfEnableTwoD   : 1,
+    DmaNumAxInFlight    : 16,
+    DmaMemSysDepth      : 8,
+    DmaJobFifoDepth     : 2,
+    DmaRAWCouplingAvail : 1,
     // GPIOs
     GpioInputSyncs    : 1,
     // All non-set values should be zero

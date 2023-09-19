@@ -171,12 +171,12 @@ package cheshire_pkg;
     dw_bt   DmaConfMaxReadTxns;
     dw_bt   DmaConfMaxWriteTxns;
     aw_bt   DmaConfAmoNumCuts;
+    bit     DmaConfAmoPostCut;
+    bit     DmaConfEnableTwoD;
     dw_bt   DmaNumAxInFlight;
     dw_bt   DmaMemSysDepth;
     aw_bt   DmaJobFifoDepth;
     bit     DmaRAWCouplingAvail;
-    bit     DmaConfAmoPostCut;
-    bit     DmaConfEnableTwoD;
     // Parameters for GPIO
     bit     GpioInputSyncs;
     // Parameters for AXI RT
@@ -581,12 +581,12 @@ package cheshire_pkg;
     DmaConfMaxReadTxns  : 4,
     DmaConfMaxWriteTxns : 4,
     DmaConfAmoNumCuts   : 1,
+    DmaConfAmoPostCut   : 1,
+    DmaConfEnableTwoD   : 1,
     DmaNumAxInFlight    : 16,
     DmaMemSysDepth      : 8,
     DmaJobFifoDepth     : 2,
     DmaRAWCouplingAvail : 1,
-    DmaConfAmoPostCut   : 1,
-    DmaConfEnableTwoD   : 1,
     // GPIOs
     GpioInputSyncs    : 1,
     // AXI RT
