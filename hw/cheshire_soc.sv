@@ -1460,15 +1460,20 @@ module cheshire_soc import cheshire_pkg::*; #(
     end
 
     dma_core_wrap #(
-      .AxiAddrWidth   ( Cfg.AddrWidth     ),
-      .AxiDataWidth   ( Cfg.AxiDataWidth  ),
-      .AxiIdWidth     ( Cfg.AxiMstIdWidth ),
-      .AxiUserWidth   ( Cfg.AxiUserWidth  ),
-      .AxiSlvIdWidth  ( AxiSlvIdWidth     ),
-      .axi_mst_req_t  ( axi_mst_req_t ),
-      .axi_mst_rsp_t  ( axi_mst_rsp_t ),
-      .axi_slv_req_t  ( axi_slv_req_t ),
-      .axi_slv_rsp_t  ( axi_slv_rsp_t )
+      .AxiAddrWidth       ( Cfg.AddrWidth           ),
+      .AxiDataWidth       ( Cfg.AxiDataWidth        ),
+      .AxiIdWidth         ( Cfg.AxiMstIdWidth       ),
+      .AxiUserWidth       ( Cfg.AxiUserWidth        ),
+      .AxiSlvIdWidth      ( AxiSlvIdWidth           ),
+      .NumAxInFlight      ( Cfg.DmaNumAxInFlight    ),
+      .MemSysDepth        ( Cfg.DmaMemSysDepth      ),
+      .JobFifoDepth       ( Cfg.DmaJobFifoDepth     ),
+      .RAWCouplingAvail   ( Cfg.DmaRAWCouplingAvail ),
+      .IsTwoD             ( Cfg.DmaConfEnableTwoD   ),
+      .axi_mst_req_t      ( axi_mst_req_t           ),
+      .axi_mst_rsp_t      ( axi_mst_rsp_t           ),
+      .axi_slv_req_t      ( axi_slv_req_t           ),
+      .axi_slv_rsp_t      ( axi_slv_rsp_t           )
     ) i_dma (
       .clk_i,
       .rst_ni,
