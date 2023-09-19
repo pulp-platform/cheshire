@@ -634,8 +634,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       axi_err_unit_wrap #(
         .AddrWidth          ( Cfg.AddrWidth ),
         .IdWidth            ( Cva6IdWidth   ),
-        .UserErrBits        ( 0 ),
-        .UserErrBitsOffset  ( 0 ),
+        .UserErrBits        ( Cfg.AxiUserErrBits ),
+        .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
         .NumOutstanding     ( Cfg.CoreMaxTxns ),
         .NumStoredErrors    ( 4 ),
         .DropOldest         ( 1'b0 ),
@@ -1488,8 +1488,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       axi_err_unit_wrap #(
         .AddrWidth          ( Cfg.AddrWidth     ),
         .IdWidth            ( Cfg.AxiMstIdWidth ),
-        .UserErrBits        ( 0 ),
-        .UserErrBitsOffset  ( 0 ),
+        .UserErrBits        ( Cfg.AxiUserErrBits ),
+        .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
         .NumOutstanding     ( Cfg.CoreMaxTxns ),
         .NumStoredErrors    ( 4 ),
         .DropOldest         ( 1'b0 ),
@@ -1660,8 +1660,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       axi_err_unit_wrap #(
         .AddrWidth          ( Cfg.AddrWidth     ),
         .IdWidth            ( Cfg.AxiMstIdWidth ),
-        .UserErrBits        ( 0 ),
-        .UserErrBitsOffset  ( 0 ),
+        .UserErrBits        ( Cfg.AxiUserErrBits ),
+        .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
         .NumOutstanding     ( Cfg.CoreMaxTxns ),
         .NumStoredErrors    ( 4 ),
         .DropOldest         ( 1'b0 ),
