@@ -147,7 +147,7 @@ The internal interconnect exposes the following parameters:
 | `AxiMax(Mst|Slv)Trans`      | `shrt_bt`    | AXI4 maximum inflight transactions at crossbar    |
 | `AxiUserDefault`            | `doub_bt`    | AXI4 default user value amended by user features  |
 | `AxiUserAmo(Msb|Lsb)`       | `dw_bt`      | AXI4 user channel bit-range used by RISC-V AMOs   |
-| `AxiUserErr(Bits|Lsb)`      | `dw_bt`      | AXI4 user channel bit-range for custom Errors     |
+| `AxiUserErr(Bits|Lsb)`      | `dw_bt`      | AXI4 user channel bit-range for custom errors     |
 | `RegMax(Read|Write)Txns`    | `dw_bt`      | Max. inflight transactions at Regbus AMO filter   |
 | `RegAmoNumCuts`             | `aw_bt`      | Number of timing cuts inside Regbus AMO filter    |
 | `RegAmoPostCut`             | `bit`        | Whether to insert a cut after Regbus AMO filter   |
@@ -158,7 +158,7 @@ The internal interconnect exposes the following parameters:
 
 Both the AXI4 and Regbus interconnects support exposing a limited number of external manager and subordinate ports; this is the intended mechanism through which Cheshire can be integrated with wrapping SoCs' memory systems.
 
-The parameters `AxiUserDefault` and `AxiUserAmo(Msb|Lsb)` define the AXI4 default user channel assignment and ID slice for atomics, respectively.
+The parameter `AxiUserDefault` defines the default AXI4 user signal assignment. `AxiUserAmo(Msb|Lsb)` and `AxiUserErr(Bits|Lsb)` define which bits of the user signals identify RISC-V atomics managers and communicate custom errors, respectively.
 
 The AXI4 interconnect has two optional features. `AxiRt` adds traffic regulation units to each AXI4 manager to provide bandwidth and traffic control for real-time applications. `BusErr` adds the UNBENT bus error reporter to all managers spawning requests and imprecisely reports AXI4 error responses through a Regbus-mapped interface.
 
