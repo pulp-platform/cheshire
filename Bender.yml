@@ -16,14 +16,15 @@ dependencies:
   axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.0 }
   axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",                version: 0.2.1  }
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.8.1  }
+  axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: 0.0.0-alpha }
   axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",                version: 0.1.1  }
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                  version: 0.2.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           version: 1.29.0 }
   common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.0  }
   cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: pulp-v0.4.3 }
-  iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.5.0  }
+  iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.5.1  }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
-  register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",     version: 0.4.1  }
+  register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",     version: 0.4.2  }
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              version: 0.8.0  }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.0  }
   clic:                     { git: "https://github.com/pulp-platform/clic.git",                   version: 2.0.0  }
@@ -34,12 +35,9 @@ export_include_dirs:
   - hw/include
 
 sources:
-  - hw/future/axi_to_reg_v2.sv
   - hw/bootrom/cheshire_bootrom.sv
   - hw/regs/cheshire_reg_pkg.sv
   - hw/regs/cheshire_reg_top.sv
-  - hw/regs/axi_rt_reg_pkg.sv
-  - hw/regs/axi_rt_reg_top.sv
   - hw/cheshire_pkg.sv
   - hw/cheshire_soc.sv
 
@@ -48,6 +46,7 @@ sources:
       - target/sim/models/s25fs512s.v
       - target/sim/models/24FC1025.v
       - target/sim/src/vip_cheshire_soc.sv
+      - target/sim/src/tb_cheshire_pkg.sv
       - target/sim/src/fixture_cheshire_soc.sv
       - target/sim/src/tb_cheshire_soc.sv
 
