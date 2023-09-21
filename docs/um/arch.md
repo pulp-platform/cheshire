@@ -147,6 +147,7 @@ The internal interconnect exposes the following parameters:
 | `AxiMax(Mst|Slv)Trans`      | `shrt_bt`    | AXI4 maximum inflight transactions at crossbar    |
 | `AxiUserDefault`            | `doub_bt`    | AXI4 default user value amended by user features  |
 | `AxiUserAmo(Msb|Lsb)`       | `dw_bt`      | AXI4 user channel bit-range used by RISC-V AMOs   |
+| `AxiUserErr(Bits|Lsb)`      | `dw_bt`      | AXI4 user channel bit-range for custom Errors     |
 | `RegMax(Read|Write)Txns`    | `dw_bt`      | Max. inflight transactions at Regbus AMO filter   |
 | `RegAmoNumCuts`             | `aw_bt`      | Number of timing cuts inside Regbus AMO filter    |
 | `RegAmoPostCut`             | `bit`        | Whether to insert a cut after Regbus AMO filter   |
