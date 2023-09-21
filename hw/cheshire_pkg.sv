@@ -97,6 +97,8 @@ package cheshire_pkg;
     // A '0 user signal indicates no atomics.
     dw_bt   AxiUserAmoMsb;
     dw_bt   AxiUserAmoLsb;
+    dw_bt   AxiUserErrBits;
+    dw_bt   AxiUserErrLsb;
     doub_bt AxiUserDefault; // Default user assignment, adjusted by user features (AMO)
     // Reg parameters
     dw_bt   RegMaxReadTxns;
@@ -525,6 +527,8 @@ package cheshire_pkg;
     AxiMaxSlvTrans    : 24,
     AxiUserAmoMsb     : 1, // Convention: lower AMO bits for cores, MSB for serial link
     AxiUserAmoLsb     : 0, // Convention: lower AMO bits for cores, MSB for serial link
+    AxiUserErrBits    : 0,
+    AxiUserErrLsb     : 0,
     AxiUserDefault    : 0,
     RegMaxReadTxns    : 8,
     RegMaxWriteTxns   : 8,
