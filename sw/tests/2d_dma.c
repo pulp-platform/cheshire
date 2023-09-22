@@ -1,3 +1,11 @@
+// Copyright 2023 ETH Zurich and University of Bologna.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Thomas Benz <tbenz@iis.ee.ethz.ch>
+//
+// Playground binary
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <printf.h>
@@ -6,7 +14,7 @@
 #include "axirt.h"
 #include "regs/axi_rt.h"
 
-int main(void){
+int main(void) {
 
     // Size of transfer
     volatile uint64_t size_bytes = 256;

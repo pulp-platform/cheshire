@@ -145,13 +145,8 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-<<<<<<< HEAD
     revision: d7693be4aef1fc7e7eb2b00b41c42e87d959866c
     version: 0.4.2
-=======
-    revision: ed8c85111db11b8c4b9e37e4f792908e01cea2ba
-    version: null
->>>>>>> 43fe908... Bender.yml: Rollback
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:

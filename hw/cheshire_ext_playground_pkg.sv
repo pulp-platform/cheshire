@@ -16,11 +16,12 @@ package cheshire_ext_playground_pkg;
   // Number of slave peripherals
   localparam int unsigned ChsPlaygndNumPeriphs = 1;
 
-  // Number of slave mems  
+  // Number of slave mems
   localparam int unsigned ChsPlaygndNumAxiMems = 3;
-    
+
   // Total number of master and slaves
-  localparam int unsigned ChsPlaygndNumSlvDevices = ChsPlaygndNumDsaDma + ChsPlaygndNumPeriphs + ChsPlaygndNumAxiMems;
+  localparam int unsigned ChsPlaygndNumSlvDevices = ChsPlaygndNumDsaDma +
+                                                    ChsPlaygndNumPeriphs + ChsPlaygndNumAxiMems;
   localparam int unsigned ChsPlaygndNumMstDevices = ChsPlaygndNumDsaDma;
 
   // Narrow AXI widths
@@ -79,9 +80,12 @@ package cheshire_ext_playground_pkg;
     ret.AxiExtNumSlv      = 5; // For the playground, traffic DMA(s) (config port), system timer
     ret.AxiExtNumRules    = 5;
     // External AXI region map
-    ret.AxiExtRegionIdx   = '{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, MemCoreReadSlvIdx, MemDmaReadSlvIdx, MemWriteSlvIdx, Dsa0SlvIdx, PeriphsSlvIdx };
-    ret.AxiExtRegionStart = '{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, MemCoreReadBase,   MemDmaReadBase,   MemWriteBase,   Dsa0Base,   PeriphsBase   };
-    ret.AxiExtRegionEnd   = '{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, MemCoreReadEnd,    MemDmaReadEnd,    MemWriteEnd,    Dsa0End,    PeriphsEnd    };
+    ret.AxiExtRegionIdx   = '{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, MemCoreReadSlvIdx,
+                              MemDmaReadSlvIdx, MemWriteSlvIdx, Dsa0SlvIdx, PeriphsSlvIdx };
+    ret.AxiExtRegionStart = '{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, MemCoreReadBase,
+                              MemDmaReadBase,   MemWriteBase,   Dsa0Base,   PeriphsBase   };
+    ret.AxiExtRegionEnd   = '{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, MemCoreReadEnd,
+                              MemDmaReadEnd,    MemWriteEnd,    Dsa0End,    PeriphsEnd    };
     ret.BusErr            = 0;
     return ret;
   endfunction

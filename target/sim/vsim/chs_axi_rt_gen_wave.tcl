@@ -1,3 +1,9 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Thomas Benz <tbenz@iis.ee.ethz.ch>
+
 onerror {resume}
 quietly WaveActivateNextPane {} 0
 set RT_LOC "/tb_cheshire_soc/fix/dut/gen_axi_rt/i_axi_rt_unit_top"
