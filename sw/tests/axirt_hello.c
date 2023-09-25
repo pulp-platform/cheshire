@@ -23,16 +23,26 @@ int main(void) {
 
     // enable and configure axi rt
     __axirt_claim(1, 1);
-    for (int m = 0; m < AXI_RT_PARAM_NUM_MRG; m++) {
-        __axirt_set_len_limit(8, m);
-        __axirt_set_region(0, 0xffffffff, 0, m);
-        __axirt_set_region(0x100000000, 0xffffffffffffffff, 1, m);
-        __axirt_set_budget(0x10000000, 0, m);
-        __axirt_set_budget(0x10000000, 1, m);
-        __axirt_set_period(0x10000000, 0, m);
-        __axirt_set_period(0x10000000, 1, m);
-    }
-    __axirt_enable(0xffffffff);
+    __axirt_set_len_limit_group(2, 0);
+
+    // configure CVA6
+    __axirt_set_region(0, 0xffffffff, 0, 0);
+    __axirt_set_region(0x100000000, 0xffffffffffffffff, 1, 0);
+    __axirt_set_budget(8, 0, 0);
+    __axirt_set_budget(8, 1, 0);
+    __axirt_set_period(100, 0, 0);
+    __axirt_set_period(100, 1, 0);
+
+    // configure DMA
+    __axirt_set_region(0, 0xffffffff, 0, 2);
+    __axirt_set_region(0x100000000, 0xffffffffffffffff, 1, 2);
+    __axirt_set_budget(0x10000000, 0, 2);
+    __axirt_set_budget(0x10000000, 1, 2);
+    __axirt_set_period(0x10000000, 0, 2);
+    __axirt_set_period(0x10000000, 1, 2);
+
+    // enable RT unit for DMA and CVA6
+    __axirt_enable(0x5);
 
     // configure uart and write msg
     uart_init(&__base_uart, reset_freq, 115200);
