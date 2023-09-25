@@ -20,13 +20,6 @@ module fixture_cheshire_soc #(
 
   `CHESHIRE_TYPEDEF_ALL(, DutCfg)
 
-  import "DPI-C" function void format_cfg(input string cfg_str, input int length);
-
-  initial begin
-    static string cfg_str = $sformatf("%p", DutCfg);
-    format_cfg(cfg_str, cfg_str.len());
-  end
-
 
   ///////////
   //  DUT  //
