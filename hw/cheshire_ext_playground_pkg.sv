@@ -87,6 +87,7 @@ package cheshire_ext_playground_pkg;
     ret.AxiExtRegionEnd   = '{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, MemCoreReadEnd,
                               MemDmaReadEnd,    MemWriteEnd,    Dsa0End,    PeriphsEnd    };
     ret.BusErr            = 0;
+    ret.AxiRt             = 1;
     return ret;
   endfunction
 
