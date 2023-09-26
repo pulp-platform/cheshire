@@ -19,7 +19,7 @@ module tb_cfg_printer #(
     static int unsigned param_name_width = 24;
 
     // get the string
-    static string cfg_str  = $sformatf("%p", DutCfg);
+    static string  cfg_str = $sformatf("%p", DutCfg);
     static integer cfg_len = cfg_str.len();
 
     // temp variables
@@ -28,44 +28,51 @@ module tb_cfg_printer #(
     static bit          unnamed_array = 0;
     static bit          was_closed    = 0;
     static int unsigned unnamed_idx   = 0;
+    static string       padding       = "";
 
-    // terminate config string
+    // overwrite closing bracket to terminate config string
     cfg_str.putc(cfg_len-1, ",");
 
-    // parse each character individually
+    // parse each character individually, start from index 2 to omit the "'{"
     for (int i = 2; i < cfg_len; i++) begin
+      // go through the characters individually. The default case is to accumulate them in the
+      // `cfg_item` buffer.
 
-      // colon
+      // colon denotes the separation between named value and value
+      // Goal: print the padded key of a named value
       if (cfg_str[i] == ":") begin
-        // we print a key
-        automatic string padding = "";
 
-        // decide if we are in array mode
+        // decide if we are in array mode: print an indentation
         if (array_active) begin
           for (int p = 0; p < param_name_width - cfg_item.len() - 4; p++) begin
             padding = {padding, " "};
           end
           $write("    %s:%s", cfg_item, padding);
+        // print no indentation
         end else begin
           for (int p = 0; p < param_name_width - cfg_item.len(); p++) begin
             padding = {padding, " "};
           end
           $write("%s:%s", cfg_item, padding);
         end
+
+        // reset accumulator and padding
+        padding = "";
         cfg_item = "";
 
-        // differentiate between unnamed and named arrays
+        // we found a named key: we thus don't have an array of unnamed values
         if (array_active) begin
           unnamed_array = 0;
         end
 
-      // comma
+      // comma: finishes an entry. We print the value. In the case of unnamed values we add an
+      // increasing key.
       end else if (cfg_str[i] == ",") begin
         automatic longint unsigned value = cfg_item.atoi();
         automatic string unnamed_idx_str = $sformatf("%-0d", unnamed_idx);
         automatic string padding         = "";
 
-        // we print the unnamed array index
+        // we print the unnamed array index and the corresponding padding
         if (array_active & unnamed_array) begin
           for (int p = 0; p < param_name_width - unnamed_idx_str.len() - 4; p++) begin
             padding = {padding, " "};
@@ -73,10 +80,12 @@ module tb_cfg_printer #(
           $write("    %s:%s", unnamed_idx_str, padding);
         end
 
-        // we print a value
+        // we print a value: use a defined threshold to differentiate between unsigned and
+        // hex values
         if (value < int_hex_split) begin
           $write(" %d", value);
         end else begin
+          // some hex formatting increasing legibility
           automatic string hex_val = $sformatf("%h", value);
           $write("0x");
           for (int h = 0; h < hex_val.len(); h++) begin
@@ -86,6 +95,9 @@ module tb_cfg_printer #(
             $write("%s", hex_val[h]);
           end
         end
+
+        // reset accumulator and padding
+        padding = "";
         cfg_item = "";
 
         // array bookkeeping
@@ -106,7 +118,7 @@ module tb_cfg_printer #(
       end else if (cfg_str[i] == "'") begin
         continue;
 
-      // }: ignore
+      // }: close the bracket
       end else if (cfg_str[i] == "}") begin
         was_closed = 1;
 
@@ -117,7 +129,7 @@ module tb_cfg_printer #(
         unnamed_idx   = 0;
         $write("\n");
 
-      // append key or value
+      // default: append char to accumulator
       end else begin
         cfg_item = {cfg_item, cfg_str[i]};
       end

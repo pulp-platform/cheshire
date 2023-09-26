@@ -8,7 +8,9 @@
 
 module fixture_cheshire_soc #(
   /// The selected simulation configuration from the `tb_cheshire_pkg`.
-  parameter int unsigned SelectedCfg = 32'd0
+  parameter int unsigned SelectedCfg = 32'd0,
+  /// Print the Cheshire config at launch
+  parameter bit          PrintCfg = 1'b0
 );
 
   `include "cheshire/typedef.svh"
@@ -17,6 +19,30 @@ module fixture_cheshire_soc #(
   import tb_cheshire_pkg::*;
 
   localparam cheshire_cfg_t DutCfg = TbCheshireConfigs[SelectedCfg];
+
+  // print the configs
+  initial begin
+    if (PrintCfg) begin : gen_print_cfg
+      $display("\n\nAXI In Config");
+      $display("----------------------------------------------");
+      $display("%s", format_config($sformatf("%p", gen_axi_in(DutCfg)), 4096, 24));
+      $display("\n\nAXI Out Config");
+      $display("----------------------------------------------");
+      $display("%s", format_config($sformatf("%p", gen_axi_out(DutCfg)), 4096, 24));
+      $display("\n\nRegbus In Config");
+      $display("----------------------------------------------");
+      $display("%s", format_config($sformatf("%p", gen_reg_out(DutCfg)), 4096, 24));
+      $display("\n\nCVA6 ID Map");
+      $display("----------------------------------------------");
+      $display("%s", format_config($sformatf("%p", gen_cva6_id_map(DutCfg)), 4096, 24));
+      $display("\n\nCVA6 Config");
+      $display("----------------------------------------------");
+      $display("%s", format_config($sformatf("%p", gen_cva6_cfg(DutCfg)), 4096, 24));
+      $display("\n\nCheshire Config");
+      $display("----------------------------------------------");
+      $display("%s", format_config($sformatf("%p", DutCfg), 4096, 24));
+    end
+  end
 
   `CHESHIRE_TYPEDEF_ALL(, DutCfg)
 
