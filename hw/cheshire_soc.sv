@@ -1449,7 +1449,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .IdWidth            ( Cfg.AxiMstIdWidth ),
         .UserErrBits        ( Cfg.AxiUserErrBits ),
         .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
-        .NumOutstanding     ( Cfg.CoreMaxTxns ),
+        .NumOutstanding     ( Cfg.DmaNumAxInFlight+Cfg.DmaJobFifoDepth ),
         .NumStoredErrors    ( 4 ),
         .DropOldest         ( 1'b0 ),
         .axi_req_t          ( axi_mst_req_t ),
