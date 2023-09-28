@@ -586,8 +586,10 @@ module cheshire_soc import cheshire_pkg::*; #(
     logic clic_irq_valid, clic_irq_ready;
     logic clic_irq_kill_req, clic_irq_kill_ack;
     logic clic_irq_shv;
+    logic clic_irq_v;
     logic [$clog2(NumClicIntrs)-1:0] clic_irq_id;
     logic [7:0]        clic_irq_level;
+    logic [5:0]        clic_irq_vsid;
     riscv::priv_lvl_t  clic_irq_priv;
 
     cva6 #(
@@ -613,6 +615,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clic_irq_level_i ( clic_irq_level ),
       .clic_irq_priv_i  ( clic_irq_priv  ),
       .clic_irq_shv_i   ( clic_irq_shv   ),
+      .clic_irq_v_i     ( clic_irq_v     ),
+      .clic_irq_vsid_i  ( clic_irq_vsid  ),
       .clic_irq_ready_o ( clic_irq_ready ),
       .clic_kill_req_i  ( clic_irq_kill_req ),
       .clic_kill_ack_o  ( clic_irq_kill_ack ),
@@ -670,8 +674,11 @@ module cheshire_soc import cheshire_pkg::*; #(
         .INTCTLBITS ( Cfg.ClicIntCtlBits ),
         .reg_req_t  ( reg_req_t ),
         .reg_rsp_t  ( reg_rsp_t ),
-        .SSCLIC     ( 1 ),
-        .USCLIC     ( 0 )
+        .SSCLIC     ( Cfg.ClicUseSMode  ),
+        .USCLIC     ( Cfg.ClicUseUMode  ),
+        .VSCLIC     ( Cfg.ClicUseVsMode ),
+        .VSPRIO     ( Cfg.ClicUseVsModePrio ),
+        .N_VSCTXTS  ( Cfg.ClicNumVsCtxts )
       ) i_clic (
         .clk_i,
         .rst_ni,
@@ -684,6 +691,8 @@ module cheshire_soc import cheshire_pkg::*; #(
         .irq_level_o    ( clic_irq_level ),
         .irq_shv_o      ( clic_irq_shv   ),
         .irq_priv_o     ( clic_irq_priv  ),
+        .irq_v_o        ( clic_irq_v     ),
+        .irq_vsid_o     ( clic_irq_vsid  ),
         .irq_kill_req_o ( clic_irq_kill_req ),
         .irq_kill_ack_i ( clic_irq_kill_ack )
       );

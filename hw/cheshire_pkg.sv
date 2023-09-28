@@ -85,6 +85,11 @@ package cheshire_pkg;
     byte_bt NumExtOutIntrTgts;
     shrt_bt NumExtOutIntrs;
     shrt_bt ClicIntCtlBits;
+    bit     ClicUseSMode;
+    bit     ClicUseUMode;
+    bit     ClicUseVsMode;
+    bit     ClicUseVsModePrio;
+    byte_bt ClicNumVsCtxts;
     shrt_bt NumExtIntrSyncs;
     // AXI parameters
     aw_bt   AddrWidth;
@@ -563,6 +568,11 @@ package cheshire_pkg;
     NumExtOutIntrTgts : 0,
     NumExtOutIntrs    : 0,
     ClicIntCtlBits    : 8,
+    ClicUseSMode      : 0,
+    ClicUseUMode      : 0,
+    ClicUseVsMode     : 0,
+    ClicUseVsModePrio : 0,
+    ClicNumVsCtxts    : 0,
     NumExtIntrSyncs   : 2,
     // Interconnect
     AddrWidth         : 48,

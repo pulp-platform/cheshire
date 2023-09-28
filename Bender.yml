@@ -18,11 +18,11 @@ dependencies:
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.8.2  }
   axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: 0.0.0-alpha.4 }
   axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",                version: 0.1.1  }
-  clic:                     { git: "https://github.com/pulp-platform/clic.git",                   version: 2.0.0  }
+  clic:                     { git: "https://github.com/pulp-platform/clic.git",                   rev: "94e2a77"  } # branch: aottaviano/dev
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                  version: 0.2.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           version: 1.32.0 }
   common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.0  }
-  cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: pulp-v1.0.0 }
+  cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: "9b56333" } # branch: aottaviano/vclic
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.5.1  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
