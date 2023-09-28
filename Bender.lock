@@ -24,8 +24,8 @@ packages:
     - common_verification
     - tech_cells_generic
   axi_llc:
-    revision: 559bcbd09a5a884dbe31e2d72fd95d024e357f39
-    version: 0.2.1
+    revision: 7d7fc1349d4915a657de535a491bc26fbf0d2cfa
+    version: null
     source:
       Git: https://github.com/pulp-platform/axi_llc.git
     dependencies:
@@ -62,8 +62,8 @@ packages:
     - common_cells
     - register_interface
   clic:
-    revision: 8ed76ffc779a435d0ed034f3068e4c3334fe2ecf
-    version: 2.0.0
+    revision: 94e2a77143053f1a2a72c88989616c89e05854fc
+    version: null
     source:
       Git: https://github.com/pulp-platform/clic.git
     dependencies:
@@ -92,7 +92,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: a34c7aa3fa0e02f0fc3578558df71b2992ad0bb1
+    revision: 8ab94b8477a2dba4ec837d5d49841ee8ef973c32
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -171,6 +171,17 @@ packages:
     - axi
     - common_cells
     - register_interface
+  tagger:
+    revision: b288376b65b6bbd5feea196bb3c220f783d96e29
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/transaction-tagger.git
+    dependencies:
+    - axi
+    - common_cells
+    - common_verification
+    - register_interface
+    - tech_cells_generic
   tech_cells_generic:
     revision: 7968dd6e6180df2c644636bc6d2908a49f2190cf
     version: 0.2.13
@@ -179,10 +190,11 @@ packages:
     dependencies:
     - common_verification
   unbent:
-    revision: 89ea12018002e6fae51f88e25320e79f57db8073
-    version: 0.1.5
+    revision: e9c9d5cfb635f2d4668c816ce9235798cfecb297
+    version: 0.1.6
     source:
       Git: https://github.com/pulp-platform/unbent.git
     dependencies:
+    - axi
     - common_cells
     - register_interface

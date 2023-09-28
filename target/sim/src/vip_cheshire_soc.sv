@@ -256,6 +256,89 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     $display("[JTAG] Initialization success");
   endtask
 
+  // Halt the core and preload a binary
+  task automatic jtag_elf_halt_load(input string binary, output doub_bt entry );
+    dm::dmstatus_t status;
+    // Wait until bootrom initialized LLC
+    if (DutCfg.LlcNotBypass) begin
+      word_bt regval;
+      $display("[JTAG] Wait for LLC configuration");
+      jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
+    end
+    // Halt hart 0
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, default: '0});
+    do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
+    while (~status.allhalted);
+    $display("[JTAG] Halted hart 0");
+    // Preload binary
+    jtag_elf_preload(binary, entry);
+  endtask
+
+  task automatic jtag_write_reg32(input logic [31:0] start_addr, logic [63:0] value);
+    logic [31:0]      rdata;
+
+    automatic dm::sbcs_t sbcs = dm::sbcs_t'{sbreadonaddr: 1'b1, sbaccess: 2, default: '0};
+
+    $display("[JTAG] Start writing at %x ", start_addr);
+    jtag_write(dm::SBCS, sbcs, 0, 1);
+
+    // Write address
+    $display("[JTAG] Start writing address");
+    jtag_write(dm::SBAddress1, 'h0);
+    jtag_write(dm::SBAddress0, start_addr);
+
+    // Write data
+    $display("[JTAG] Start writing data");
+    jtag_write(dm::SBData0, value[31:0]);
+
+  endtask
+
+  task automatic jtag_read_reg32(
+    input logic [31:0] addr,
+    output logic [31:0] data,
+    input int unsigned idle_cycles
+  );
+    automatic dm::sbcs_t sbcs = dm::sbcs_t'{sbreadonaddr: 1'b1, sbaccess: 2, default: '0};
+    jtag_write(dm::SBCS, sbcs, 0, 1);
+    jtag_write(dm::SBAddress1, 'h0);
+    jtag_write(dm::SBAddress0, addr[31:0]);
+    jtag_dbg.wait_idle(idle_cycles);
+    jtag_dbg.read_dmi_exp_backoff(dm::SBData0, data);
+  endtask
+
+  task automatic jtag_write_reg(input logic [31:0] start_addr, input doub_bt value);
+    logic [63:0]      rdata;
+
+    $display("[JTAG] Start writing at %x ", start_addr);
+    jtag_write(dm::SBCS, JtagInitSbcs, 1, 1);
+    // Write address
+    jtag_write(dm::SBAddress0, start_addr);
+    // Write data
+    jtag_write(dm::SBData1, value[63:32]);
+    jtag_write(dm::SBData0, value[31:0]);
+
+    //Check correctess
+    jtag_read_reg(start_addr, rdata, 20);
+    if(rdata!=value) begin
+      $fatal(1,"rdata at %x: %x" , start_addr, rdata);
+    end else begin
+      $display("W/R sanity check at %x ok! : %x", start_addr, rdata);
+    end
+  endtask
+
+  task automatic jtag_read_reg(
+    input doub_bt addr,
+    output word_bt data,
+    input int unsigned idle_cycles
+  );
+    automatic dm::sbcs_t sbcs = dm::sbcs_t'{sbreadonaddr: 1'b1, sbaccess: 2, default: '0};
+    jtag_write(dm::SBCS, sbcs, 0, 1);
+    jtag_write(dm::SBAddress1, addr[63:32]);
+    jtag_write(dm::SBAddress0, addr[31:0]);
+    jtag_dbg.wait_idle(idle_cycles);
+    jtag_dbg.read_dmi_exp_backoff(dm::SBData0, data);
+  endtask
+
   // Load a binary
   task automatic jtag_elf_preload(input string binary, output doub_bt entry);
     longint sec_addr, sec_len;

@@ -495,6 +495,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     // This is necessary for routing in the LLC-internal interconnect.
     always_comb begin
       axi_llc_remap_req = axi_llc_cut_req;
+
       if (axi_llc_cut_req.aw.addr & ~AmSpmRegionMask == AmSpmBaseUncached & ~AmSpmRegionMask)
         axi_llc_remap_req.aw.addr  = AmSpm | (AmSpmRegionMask & axi_llc_cut_req.aw.addr);
       if (axi_llc_cut_req.ar.addr & ~AmSpmRegionMask == AmSpmBaseUncached & ~AmSpmRegionMask)
@@ -503,20 +504,25 @@ module cheshire_soc import cheshire_pkg::*; #(
     end
 
     axi_llc_reg_wrap #(
-      .SetAssociativity ( Cfg.LlcSetAssoc  ),
-      .NumLines         ( Cfg.LlcNumLines  ),
-      .NumBlocks        ( Cfg.LlcNumBlocks ),
-      .AxiIdWidth       ( AxiSlvIdWidth    ),
-      .AxiAddrWidth     ( Cfg.AddrWidth    ),
-      .AxiDataWidth     ( Cfg.AxiDataWidth ),
-      .AxiUserWidth     ( Cfg.AxiUserWidth ),
-      .slv_req_t        ( axi_slv_req_t ),
-      .slv_resp_t       ( axi_slv_rsp_t ),
-      .mst_req_t        ( axi_ext_llc_req_t ),
-      .mst_resp_t       ( axi_ext_llc_rsp_t ),
-      .reg_req_t        ( reg_req_t ),
-      .reg_resp_t       ( reg_rsp_t ),
-      .rule_full_t      ( addr_rule_t )
+      .SetAssociativity ( Cfg.LlcSetAssoc        ),
+      .NumLines         ( Cfg.LlcNumLines        ),
+      .NumBlocks        ( Cfg.LlcNumBlocks       ),
+      .CachePartition   ( Cfg.LlcCachePartition  ),
+      .MaxPartition     ( Cfg.LlcMaxPartition    ),
+      .RemapHash        ( Cfg.LlcRemapHash       ),
+      .AxiIdWidth       ( AxiSlvIdWidth          ),
+      .AxiAddrWidth     ( Cfg.AddrWidth          ),
+      .AxiDataWidth     ( Cfg.AxiDataWidth       ),
+      .AxiUserWidth     ( Cfg.AxiUserWidth       ),
+      .AxiUserIdMsb     ( Cfg.LlcUserMsb         ),
+      .AxiUserIdLsb     ( Cfg.LlcUserLsb         ),
+      .slv_req_t        ( axi_slv_req_t          ),
+      .slv_resp_t       ( axi_slv_rsp_t          ),
+      .mst_req_t        ( axi_ext_llc_req_t      ),
+      .mst_resp_t       ( axi_ext_llc_rsp_t      ),
+      .reg_req_t        ( reg_req_t              ),
+      .reg_resp_t       ( reg_rsp_t              ),
+      .rule_full_t      ( addr_rule_t            )
     ) i_llc (
       .clk_i,
       .rst_ni,
@@ -581,6 +587,9 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   assign intr.intn.bus_err.cores = core_bus_err_intr_comb;
 
+  axi_mst_req_t [AxiIn.num_in-1:0] tagger_req;
+  axi_mst_rsp_t [AxiIn.num_in-1:0] tagger_rsp;
+
   for (genvar i = 0; i < NumIntHarts; i++) begin : gen_cva6_cores
     axi_cva6_req_t core_out_req, core_ur_req;
     axi_cva6_rsp_t core_out_rsp, core_ur_rsp;
@@ -589,8 +598,10 @@ module cheshire_soc import cheshire_pkg::*; #(
     logic clic_irq_valid, clic_irq_ready;
     logic clic_irq_kill_req, clic_irq_kill_ack;
     logic clic_irq_shv;
+    logic clic_irq_v;
     logic [$clog2(NumClicIntrs)-1:0] clic_irq_id;
     logic [7:0]        clic_irq_level;
+    logic [5:0]        clic_irq_vsid;
     riscv::priv_lvl_t  clic_irq_priv;
 
     // Currently, we support only one core
@@ -618,6 +629,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clic_irq_level_i ( clic_irq_level ),
       .clic_irq_priv_i  ( clic_irq_priv  ),
       .clic_irq_shv_i   ( clic_irq_shv   ),
+      .clic_irq_v_i     ( clic_irq_v     ),
+      .clic_irq_vsid_i  ( clic_irq_vsid  ),
       .clic_irq_ready_o ( clic_irq_ready ),
       .clic_kill_req_i  ( clic_irq_kill_req ),
       .clic_kill_ack_o  ( clic_irq_kill_ack ),
@@ -677,8 +690,11 @@ module cheshire_soc import cheshire_pkg::*; #(
         .INTCTLBITS ( Cfg.ClicIntCtlBits ),
         .reg_req_t  ( reg_req_t ),
         .reg_rsp_t  ( reg_rsp_t ),
-        .SSCLIC     ( 1 ),
-        .USCLIC     ( 0 )
+        .SSCLIC     ( Cfg.ClicUseSMode  ),
+        .USCLIC     ( Cfg.ClicUseUMode  ),
+        .VSCLIC     ( Cfg.ClicUseVsMode ),
+        .VSPRIO     ( Cfg.ClicUseVsModePrio ),
+        .N_VSCTXTS  ( Cfg.ClicNumVsCtxts )
       ) i_clic (
         .clk_i,
         .rst_ni,
@@ -691,6 +707,8 @@ module cheshire_soc import cheshire_pkg::*; #(
         .irq_level_o    ( clic_irq_level ),
         .irq_shv_o      ( clic_irq_shv   ),
         .irq_priv_o     ( clic_irq_priv  ),
+        .irq_v_o        ( clic_irq_v     ),
+        .irq_vsid_o     ( clic_irq_vsid  ),
         .irq_kill_req_o ( clic_irq_kill_req ),
         .irq_kill_ack_i ( clic_irq_kill_ack )
       );
@@ -740,11 +758,38 @@ module cheshire_soc import cheshire_pkg::*; #(
     ) i_axi_id_serialize (
       .clk_i,
       .rst_ni,
-      .slv_req_i  ( core_ur_req ),
-      .slv_resp_o ( core_ur_rsp ),
-      .mst_req_o  ( axi_in_req[AxiIn.cores[i]] ),
-      .mst_resp_i ( axi_in_rsp[AxiIn.cores[i]] )
+      .slv_req_i  ( core_ur_req   ),
+      .slv_resp_o ( core_ur_rsp   ),
+      .mst_req_o  ( tagger_req[i] ),
+      .mst_resp_i ( tagger_rsp[i] )
     );
+
+    if (Cfg.LlcCachePartition) begin : gen_tagger
+        tagger #(
+          .DATA_WIDTH       ( Cfg.AxiDataWidth    ),
+          .ADDR_WIDTH       ( Cfg.AddrWidth       ),
+          .MAXPARTITION     ( Cfg.LlcMaxPartition ),
+          .AXI_USER_ID_MSB  ( Cfg.LlcUserMsb      ),
+          .AXI_USER_ID_LSB  ( Cfg.LlcUserLsb      ),
+          .TAGGER_GRAN      ( 3                   ),
+          .axi_req_t        ( axi_mst_req_t       ),
+          .axi_rsp_t        ( axi_mst_rsp_t       ),
+          .reg_req_t        ( reg_req_t           ),
+          .reg_rsp_t        ( reg_rsp_t           )
+        ) i_tagger (
+          .clk_i,
+          .rst_ni,
+          .slv_req_i        ( tagger_req[i]              ),
+          .slv_rsp_o        ( tagger_rsp[i]              ),
+          .mst_req_o        ( axi_in_req[AxiIn.cores[i]] ),
+          .mst_rsp_i        ( axi_in_rsp[AxiIn.cores[i]] ),
+          .cfg_req_i        ( reg_out_req[RegOut.tagger[i]] ),
+          .cfg_rsp_o        ( reg_out_rsp[RegOut.tagger[i]] )
+        );
+    end else begin : gen_no_tagger
+      assign axi_in_req[AxiIn.cores[i]] = tagger_req[i];
+      assign tagger_rsp[i] = axi_in_rsp[AxiIn.cores[i]];
+    end
   end
 
   /////////////////////////
