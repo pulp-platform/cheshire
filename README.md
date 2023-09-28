@@ -29,14 +29,16 @@ Unless specified otherwise in the respective file headers, all code checked into
 If you use Cheshire in your work, you can cite us:
 
 ```
-@misc{ottaviano2023cheshire,
-      title         = {Cheshire: A Lightweight, Linux-Capable RISC-V Host
-                       Platform for Domain-Specific Accelerator Plug-In},
-      author        = {Alessandro Ottaviano and Thomas Benz and
-                       Paul Scheffler and Luca Benini},
-      year          = {2023},
-      eprint        = {2305.04760},
-      archivePrefix = {arXiv},
-      primaryClass  = {cs.AR}
+@article{ottaviano2023cheshire,
+      title   = {Cheshire: A Lightweight, Linux-Capable RISC-V Host
+                 Platform for Domain-Specific Accelerator Plug-In},
+      author  = {Alessandro Ottaviano and Thomas Benz and
+                 Paul Scheffler and Luca Benini},
+      journal = {IEEE Transactions on Circuits and Systems II: Express Briefs},
+      year    = {2023},
+      volume  = {70},
+      number  = {10},
+      pages   = {3777-3781},
+      doi     = {10.1109/TCSII.2023.3289186}
 }
 ```
