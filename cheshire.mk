@@ -101,7 +101,7 @@ $(AXI_VGA_ROOT)/.generated:
 # Custom serial link
 $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
-	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs && touch $@
+	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs BENDER="$(BENDER)" && touch $@
 
 CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv
 CHS_HW_ALL += $(CLINTROOT)/.generated
@@ -134,7 +134,7 @@ CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/boo
 
 $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: Bender.yml
 	$(BENDER) script vsim -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 -t rtl --vlog-arg="$(VLOG_ARGS)" > $@
-	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
+	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
 $(CHS_ROOT)/target/sim/models:
 	mkdir -p $@

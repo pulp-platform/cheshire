@@ -6,7 +6,8 @@
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-CHS_ROOT ?= .
+CHS_ROOT ?= $(shell pwd)
+BENDER	 ?= bender -d $(CHS_ROOT)
 
 include cheshire.mk
 
