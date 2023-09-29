@@ -535,7 +535,7 @@ package cheshire_pkg;
     RegAmoNumCuts     : 1,
     RegAmoPostCut     : 1,
     // RTC
-    RtcFreq           : 32768,
+    RtcFreq           : 100*(10**6),
     // Features
     Bootrom           : 1,
     Uart              : 1,
