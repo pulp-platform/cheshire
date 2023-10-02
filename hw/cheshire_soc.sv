@@ -514,8 +514,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AxiAddrWidth     ( Cfg.AddrWidth          ),
       .AxiDataWidth     ( Cfg.AxiDataWidth       ),
       .AxiUserWidth     ( Cfg.AxiUserWidth       ),
-      .AxiUserIdMsb     ( Cfg.LlcUserAmoMsb      ),
-      .AxiUserIdLsb     ( Cfg.LlcUserAmoLsb      ),
+      .AxiUserIdMsb     ( Cfg.LlcUserMsb         ),
+      .AxiUserIdLsb     ( Cfg.LlcUserLsb         ),
       .slv_req_t        ( axi_slv_req_t          ),
       .slv_resp_t       ( axi_slv_rsp_t          ),
       .mst_req_t        ( axi_ext_llc_req_t      ),
@@ -756,13 +756,12 @@ module cheshire_soc import cheshire_pkg::*; #(
     );
 
     if (Cfg.LlcCachePartition) begin : gen_tagger
-      if (i == 0) begin : gen_wr_tagger
         tagger #(
           .DATA_WIDTH       ( Cfg.AxiDataWidth    ),
           .ADDR_WIDTH       ( Cfg.AddrWidth       ),
           .MAXPARTITION     ( Cfg.LlcMaxPartition ),
-          .AXI_USER_ID_MSB  ( Cfg.LlcUserAmoMsb   ),
-          .AXI_USER_ID_LSB  ( Cfg.LlcUserAmoLsb   ),
+          .AXI_USER_ID_MSB  ( Cfg.LlcUserMsb      ),
+          .AXI_USER_ID_LSB  ( Cfg.LlcUserLsb      ),
           .TAGGER_GRAN      ( 3                   ),
           .axi_req_t        ( axi_mst_req_t       ),
           .axi_rsp_t        ( axi_mst_rsp_t       ),
@@ -771,36 +770,13 @@ module cheshire_soc import cheshire_pkg::*; #(
         ) i_tagger (
           .clk_i,
           .rst_ni,
-          .slv_req_i        ( tagger_req[i]               ),
-          .slv_rsp_o        ( tagger_rsp[i]               ),
-          .mst_req_o        ( axi_in_req[AxiIn.cores[i]]  ),
-          .mst_rsp_i        ( axi_in_rsp[AxiIn.cores[i]]  ),
-          .cfg_req_i        ( reg_out_req[RegOut.tagger]  ),
-          .cfg_rsp_o        ( reg_out_rsp[RegOut.tagger]  )
+          .slv_req_i        ( tagger_req[i]              ),
+          .slv_rsp_o        ( tagger_rsp[i]              ),
+          .mst_req_o        ( axi_in_req[AxiIn.cores[i]] ),
+          .mst_rsp_i        ( axi_in_rsp[AxiIn.cores[i]] ),
+          .cfg_req_i        ( reg_out_req[RegOut.tagger[i]] ),
+          .cfg_rsp_o        ( reg_out_rsp[RegOut.tagger[i]] )
         );
-      end else begin : gen_r_tagger
-        tagger #(
-          .DATA_WIDTH       ( Cfg.AxiDataWidth    ),
-          .ADDR_WIDTH       ( Cfg.AddrWidth       ),
-          .MAXPARTITION     ( Cfg.LlcMaxPartition ),
-          .AXI_USER_ID_MSB  ( Cfg.LlcUserAmoMsb   ),
-          .AXI_USER_ID_LSB  ( Cfg.LlcUserAmoLsb   ),
-          .TAGGER_GRAN      ( 3                   ),
-          .axi_req_t        ( axi_mst_req_t       ),
-          .axi_rsp_t        ( axi_mst_rsp_t       ),
-          .reg_req_t        ( reg_req_t           ),
-          .reg_rsp_t        ( reg_rsp_t           )
-        ) i_tagger (
-          .clk_i,
-          .rst_ni,
-          .slv_req_i        ( tagger_req[i]               ),
-          .slv_rsp_o        ( tagger_rsp[i]               ),
-          .mst_req_o        ( axi_in_req[AxiIn.cores[i]]  ),
-          .mst_rsp_i        ( axi_in_rsp[AxiIn.cores[i]]  ),
-          .cfg_req_i        ( reg_out_req[RegOut.tagger]  ),
-          .cfg_rsp_o        (                             )
-        );
-      end
     end else begin : gen_no_tagger
       assign axi_in_req[AxiIn.cores[i]] = tagger_req[i];
       assign tagger_rsp[i] = axi_in_rsp[AxiIn.cores[i]];
