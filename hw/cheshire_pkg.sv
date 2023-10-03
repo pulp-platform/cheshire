@@ -426,7 +426,7 @@ package cheshire_pkg;
       i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, AmBusErr + j*'h40,  AmBusErr + (j+1)*'h40};
     end
     if (cfg.LlcCachePartition) for (int j = 0; j < cfg.NumCores; j++) begin
-      i++; ret.tagger[j]    = i; r++; ret.map[r] = '{i, AmTagger + j*'h40, AmTagger + (j+1)*'h40};
+      i++; ret.tagger[j]  = i; r++; ret.map[r] = '{i, AmTagger + j*'h100,  AmTagger + (j+1)*'h100};
     end
     i++; r++;
     ret.ext_base  = i;
