@@ -15,14 +15,6 @@ _start:
     // Globally disable Machine and Supervisor interrupts
     csrrc x0, mstatus, 10
 
-    // Park SMP harts
-    csrr t0, mhartid
-    beqz t0, 2f
-1:
-    wfi
-    j 1b
-2:
-
 _init_gp:
     // Init global pointer iff linked as nonzero
     .option push
@@ -52,31 +44,6 @@ _init_context:
     // Set trap vector
     la t0, _trap_handler_wrap
     csrrw x0, mtvec, t0
-
-    // Zero the .bss section
-    la t0, __bss_start      // t0 = bss start address
-    la t1, __bss_end        // t1 = bss end address
-    sub t2, t1, t0          // t2 = #bytes to zero
-    li a0, 0
-
-_zero_bss_loop:
-    addi t4, t2, -32
-    blez t2, _fp_init           // t2 <= 0? => No bss to zero
-    blt t4, x0, _zero_bss_rem   // t4 <  0? => Less than 4 words left
-    sd a0, 0(t0)
-    sd a0, 8(t0)
-    sd a0, 16(t0)
-    sd a0, 24(t0)
-    addi t2, t2, -32
-    addi t0, t0, 32
-    bgt t2, x0, _zero_bss_loop  // Still more to go
-    j _fp_init
-
-_zero_bss_rem:
-    sb a0, 0(t0)
-    addi t2, t2, -1
-    addi t0, t0, 1
-    bgt t2, x0, _zero_bss_rem
 
 _fp_init:
     // Set FS state to "Initial", enabling FP instructions
@@ -121,6 +88,41 @@ _fp_init:
     // Set FS state to "Clean"
     csrrc x0, mstatus, t1
 
+_smp_park:
+    // Park SMP harts
+    csrr t0, mhartid
+    beqz t0, 2f
+1:
+    wfi
+    j 1b
+2:
+
+    // Zero the .bss section
+    la t0, __bss_start      // t0 = bss start address
+    la t1, __bss_end        // t1 = bss end address
+    sub t2, t1, t0          // t2 = #bytes to zero
+    li a0, 0
+
+_zero_bss_loop:
+    addi t4, t2, -32
+    blez t2, _entry             // t2 <= 0? => No bss to zero
+    blt t4, x0, _zero_bss_rem   // t4 <  0? => Less than 4 words left
+    sd a0, 0(t0)
+    sd a0, 8(t0)
+    sd a0, 16(t0)
+    sd a0, 24(t0)
+    addi t2, t2, -32
+    addi t0, t0, 32
+    bgt t2, x0, _zero_bss_loop  // Still more to go
+    j _entry
+
+_zero_bss_rem:
+    sb a0, 0(t0)
+    addi t2, t2, -1
+    addi t0, t0, 1
+    bgt t2, x0, _zero_bss_rem
+
+_entry:
     // Full fence, then jump to main
     fence
     call main
