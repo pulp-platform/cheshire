@@ -5,6 +5,7 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
+// Emanuele Parisi <emanuele.parisi@unibo.it>
 
 .section .text._start
 
@@ -21,21 +22,30 @@ _start:
     wfi
     j 1b
 2:
-    // Init stack and global pointer iff linked as nonzero
-    mv t1, sp
-    la t0, __stack_pointer$
-    beqz t0, 1f
-    mv sp, t0
-1:  .option push
+
+_init_gp:
+    // Init global pointer iff linked as nonzero
+    .option push
     .option norelax
     la t0, __global_pointer$
-    beqz t0, 1f
+    beqz t0, _init_sp
     mv gp, t0
-1:  .option pop
+    .option pop
 
+_init_sp:
+    // Init stack pointer iff linked as nonzero
+    mv t0, sp
+    la t1, __stack_pointer$
+    beqz t1, _init_context
+    la t2, __stack_size$
+    csrr t3, mhartid
+    mul t3, t3, t2
+    sub sp, t1, t3
+
+_init_context:
     // Store existing stack, global, return pointers on new stack
     addi sp, sp, -24
-    sd t1, 0(sp)
+    sd t0, 0(sp)
     sd gp, 8(sp)
     sd ra, 16(sp)
 
