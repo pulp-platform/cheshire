@@ -89,14 +89,9 @@ _fp_init:
     csrrc x0, mstatus, t1
 
 _smp_park:
-    // Park SMP harts
-    csrr t0, mhartid
-    beqz t0, 2f
-1:
-    wfi
-    j 1b
-2:
+    call smp_pause
 
+_zero_bss_init:
     // Zero the .bss section
     la t0, __bss_start      // t0 = bss start address
     la t1, __bss_end        // t1 = bss end address
