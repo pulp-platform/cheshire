@@ -14,6 +14,7 @@
 #include "gpt.h"
 #include "dif/uart.h"
 #include "printf.h"
+#include "smp.h"
 
 // Type for firmware payload
 typedef int (*payload_t)(uint64_t, uint64_t, uint64_t);
@@ -80,9 +81,10 @@ int main(void) {
         load_part_or_spin(priv, __BOOT_FW_TYPE_GUID, __BOOT_ZSL_FW, "firmware", 8192);
     }
 
-    // Launch payload
+    // Resume SMP and launch payload
+    printf("[ZSL] Launch firmware at %lx with device tree at %lx\r\n", __BOOT_ZSL_FW, __BOOT_ZSL_DTB);
+    smp_resume();
     payload_t fw = __BOOT_ZSL_FW;
-    printf("[ZSL] Launch firmware at %lx with device tree at %lx\r\n", fw, __BOOT_ZSL_DTB);
     fencei();
     return fw(0, (uintptr_t)__BOOT_ZSL_DTB, 0);
 }
