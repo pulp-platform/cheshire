@@ -154,7 +154,11 @@ The internal interconnect exposes the following parameters:
 | `(Axi|Reg)ExtNum(Mst|Slv)`  | `0..15`      | AXI4 and Regbus number of external Mgrs. or Subs. |
 | `(Axi|Reg)ExtNumRules`      | `0..15`      | AXI4 and Regbus number of external address rules  |
 | `(Axi|Reg)ExtRegion*`       | `doub_bt`    | AXI4 and Regbus external address regions          |
-| `AxiRt*`                    | `word_bt`    | AXI4 real-time traffic regulation parameters      |
+| `AxiRtNumPending`           | `aw_bt`      | Number of outstanding transactions in RT units    |
+| `AxiRtWBufferDepth`         | `dw_bt`      | The depth of the AXI-RT write buffer              |
+| `AxiRtNumAddrRegions`       | `aw_bt`      | Number of address regions for every AXI manager   |
+| `AxiRtCutPaths`             | `bit`        | Enable internal cuts in the RT units              |
+| `AxiRtEnableChecks`         | `bit`        | Enable transaction checks within the RT units     |
 
 Both the AXI4 and Regbus interconnects support exposing a limited number of external manager and subordinate ports; this is the intended mechanism through which Cheshire can be integrated with wrapping SoCs' memory systems.
 

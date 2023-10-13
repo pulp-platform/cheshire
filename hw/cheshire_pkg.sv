@@ -186,6 +186,7 @@ package cheshire_pkg;
     dw_bt   AxiRtWBufferDepth;
     aw_bt   AxiRtNumAddrRegions;
     bit     AxiRtCutPaths;
+    bit     AxiRtEnableChecks;
   } cheshire_cfg_t;
 
   //////////////////
