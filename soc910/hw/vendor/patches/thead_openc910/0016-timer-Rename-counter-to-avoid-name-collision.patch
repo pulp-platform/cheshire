@@ -1,0 +1,61 @@
+From 1046683257fe1e41727e6a5e05ea0c12e63cf833 Mon Sep 17 00:00:00 2001
+From: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+Date: Thu, 2 Mar 2023 11:22:32 +0100
+Subject: [PATCH] timer: Rename counter to avoid name collision
+
+---
+ smart_run/logical/common/timer.v | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/smart_run/logical/common/timer.v b/smart_run/logical/common/timer.v
+index 82bb7fb..b2a432d 100644
+--- a/smart_run/logical/common/timer.v
++++ b/smart_run/logical/common/timer.v
+@@ -109,7 +109,7 @@ wire            timers_int_clear;
+ 
+ 
+ 
+-counter  timer_1 (
++thead_counter  timer_1 (
+   .interrupt              (timer_1_interrupt     ),
+   .pclk                   (pclk                  ),
+   .presetn                (presetn               ),
+@@ -129,7 +129,7 @@ counter  timer_1 (
+ 
+ 
+ 
+-counter  timer_2 (
++thead_counter  timer_2 (
+   .interrupt              (timer_2_interrupt     ),
+   .pclk                   (pclk             ),
+   .presetn                (presetn          ),
+@@ -149,7 +149,7 @@ counter  timer_2 (
+ 
+ 
+ 
+-counter  timer_3 (
++thead_counter  timer_3 (
+   .interrupt              (timer_3_interrupt     ),
+   .pclk                   (pclk             ),
+   .presetn                (presetn          ),
+@@ -169,7 +169,7 @@ counter  timer_3 (
+ 
+ 
+ 
+-counter  timer_4 (
++thead_counter  timer_4 (
+   .interrupt              (timer_4_interrupt     ),
+   .pclk                   (pclk             ),
+   .presetn                (presetn          ),
+@@ -507,7 +507,7 @@ end
+ 
+ endmodule
+ 
+-module counter(
++module thead_counter(
+   interrupt,
+   pclk,
+   presetn,
+-- 
+2.16.5
+

@@ -1,0 +1,55 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+package:
+  name: soc910
+  authors:
+  - Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+
+dependencies:
+  openc910: {path: ../vendor/thead_openc910}
+  axi:      { git: "https://github.com/pulp-platform/axi.git", version: 0.39.0 }
+  apb:      { git: "https://github.com/pulp-platform/apb.git", version: 0.2.4  }
+  # axi: {path: ../vendor/pulp_axi}
+  # axi_riscv_atomics: {path: ../vendor/pulp_axi_riscv_atomics}
+  # apb: {path: ../vendor/pulp_apb}
+  # apb_uart: {path: ../vendor/pulp_apb_uart}
+
+vendor_package:
+  - name: thead_openc910
+    target_dir: ../vendor/thead_openc910
+    upstream: { git: "https://github.com/T-head-Semi/openc910.git", rev: "414b50db7e93fe2003beae82610e4a7057303131" }
+    patch_dir: "../vendor/patches/thead_openc910"
+  - name: pulp_axi
+    target_dir: ../vendor/pulp_axi
+    upstream: { git: "https://github.com/pulp-platform/axi.git", rev: "4dacf05628849a6f8b17021444ddf1bbccfa3ad9" }
+    patch_dir: "../vendor/patches/pulp_axi"
+  - name: pulp_axi_riscv_atomics
+    target_dir: ../vendor/pulp_axi_riscv_atomics
+    upstream: { git: "https://github.com/pulp-platform/axi_riscv_atomics.git", rev: "430838a10a9bdf1e381d4fcb33907428f3273420" }
+    patch_dir: "../vendor/patches/pulp_axi_riscv_atomics"
+  - name: pulp_apb
+    target_dir: ../vendor/pulp_apb
+    upstream: { git: "https://github.com/pulp-platform/apb.git", rev: "56ca84b687c9f6dc650e2a7cb221cb2bd4b2a456" }
+    patch_dir: "../vendor/patches/pulp_apb"
+  - name: pulp_apb_uart
+    target_dir: ../vendor/pulp_apb_uart
+    upstream: { git: "https://github.com/pulp-platform/apb_uart.git", rev: "d573a8ee474df3760e64c8983fcd315731c67b0a" }
+    patch_dir: "../vendor/patches/pulp_apb_uart"
+
+sources:
+  - src/soc910_pkg.sv
+  - src/c910_axi_wrap.sv
+  - src/soc910.sv
+
+  - target: fpga
+    files:
+      - fpga/src/fan_ctrl.sv
+      - fpga/src/soc910_vcu128.sv
+
+  - target: test
+    files:
+      - test/uart.sv
+      - test/SimJTAG.sv
+      - test/soc910_testharness.sv
+      - test/soc910_tb.sv

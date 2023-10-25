@@ -545,7 +545,6 @@ module cheshire_soc import cheshire_pkg::*; #(
   /////////////
 
   // TODO: Implement X interface support
-
   `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
 
   localparam ariane_pkg::ariane_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
@@ -590,6 +589,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     riscv::priv_lvl_t  clic_irq_priv;
 
     // Currently, we support only one core
+  if (Cfg.Core == CVA6) begin : gen_cva6_core
     cva6 #(
       .ArianeCfg      ( Cva6Cfg ),
       .AxiAddrWidth   ( Cfg.AddrWidth ),
@@ -625,6 +625,27 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_req_o        ( core_out_req ),
       .axi_resp_i       ( core_out_rsp )
     );
+  end else begin : gen_c910_core
+    c910_axi_wrap #(
+      .axi_req_t        ( axi_cva6_req_t ),
+      .axi_rsp_t        ( axi_cva6_rsp_t )
+    ) i_c910_axi_wrap (
+      .clk_i,
+      .rst_ni,
+      // External interrupts
+      .ext_int_i        ( {39'b0, intr.ext}   ),
+      // JTAG
+      .jtag_tck_i       ( jtag_tck_i          ),
+      .jtag_tdi_i       ( jtag_tdi_i          ),
+      .jtag_tms_i       ( jtag_tms_i          ),
+      .jtag_tdo_o       ( jtag_tdo_o          ),
+      .jtag_tdo_oe_o    ( jtag_tdo_oe_o       ),
+      .jtag_trst_ni     ( jtag_trst_ni        ),
+      // AXI interface
+      .axi_req_o        ( core_out_req        ),
+      .axi_rsp_i        ( core_out_rsp        )
+    );
+  end
 
     if (Cfg.BusErr) begin : gen_cva6_bus_err
       axi_err_unit_wrap #(
@@ -743,236 +764,240 @@ module cheshire_soc import cheshire_pkg::*; #(
     );
   end
 
+
   /////////////////////////
   //  JTAG Debug Module  //
   /////////////////////////
 
-  localparam int unsigned NumDbgHarts = NumIntHarts + Cfg.NumExtDbgHarts;
+  if (Cfg.Core == CVA6) begin : gen_cva6_dm
+  
+    localparam int unsigned NumDbgHarts = NumIntHarts + Cfg.NumExtDbgHarts;
 
-  // Filter atomics and cut
-  axi_slv_req_t dbg_slv_axi_amo_req, dbg_slv_axi_cut_req;
-  axi_slv_rsp_t dbg_slv_axi_amo_rsp, dbg_slv_axi_cut_rsp;
+    // Filter atomics and cut
+    axi_slv_req_t dbg_slv_axi_amo_req, dbg_slv_axi_cut_req;
+    axi_slv_rsp_t dbg_slv_axi_amo_rsp, dbg_slv_axi_cut_rsp;
 
-  // Hart debug interface
-  dm::hartinfo_t [NumDbgHarts-1:0] dbg_info;
-  logic          [NumDbgHarts-1:0] dbg_unavail;
-  logic          [NumDbgHarts-1:0] dbg_req;
+    // Hart debug interface
+    dm::hartinfo_t [NumDbgHarts-1:0] dbg_info;
+    logic          [NumDbgHarts-1:0] dbg_unavail;
+    logic          [NumDbgHarts-1:0] dbg_req;
 
-  // Debug module slave interface
-  logic       dbg_slv_req;
-  addr_t      dbg_slv_addr;
-  axi_data_t  dbg_slv_addr_long;
-  logic       dbg_slv_we;
-  axi_data_t  dbg_slv_wdata;
-  axi_strb_t  dbg_slv_wstrb;
-  axi_data_t  dbg_slv_rdata;
-  logic       dbg_slv_rvalid;
+    // Debug module slave interface
+    logic       dbg_slv_req;
+    addr_t      dbg_slv_addr;
+    axi_data_t  dbg_slv_addr_long;
+    logic       dbg_slv_we;
+    axi_data_t  dbg_slv_wdata;
+    axi_strb_t  dbg_slv_wstrb;
+    axi_data_t  dbg_slv_rdata;
+    logic       dbg_slv_rvalid;
 
-  // Debug module system bus access interface
-  logic       dbg_sba_req;
-  addr_t      dbg_sba_addr;
-  axi_data_t  dbg_sba_addr_long;
-  logic       dbg_sba_we;
-  axi_data_t  dbg_sba_wdata;
-  axi_strb_t  dbg_sba_strb;
-  logic       dbg_sba_gnt;
-  axi_data_t  dbg_sba_rdata;
-  logic       dbg_sba_rvalid;
-  logic       dbg_sba_err;
+    // Debug module system bus access interface
+    logic       dbg_sba_req;
+    addr_t      dbg_sba_addr;
+    axi_data_t  dbg_sba_addr_long;
+    logic       dbg_sba_we;
+    axi_data_t  dbg_sba_wdata;
+    axi_strb_t  dbg_sba_strb;
+    logic       dbg_sba_gnt;
+    axi_data_t  dbg_sba_rdata;
+    logic       dbg_sba_rvalid;
+    logic       dbg_sba_err;
 
-  // JTAG DMI to debug module
-  logic           dbg_dmi_rst_n;
-  dm::dmi_req_t   dbg_dmi_req;
-  logic           dbg_dmi_req_ready, dbg_dmi_req_valid;
-  dm::dmi_resp_t  dbg_dmi_rsp;
-  logic           dbg_dmi_rsp_ready, dbg_dmi_rsp_valid;
+    // JTAG DMI to debug module
+    logic           dbg_dmi_rst_n;
+    dm::dmi_req_t   dbg_dmi_req;
+    logic           dbg_dmi_req_ready, dbg_dmi_req_valid;
+    dm::dmi_resp_t  dbg_dmi_rsp;
+    logic           dbg_dmi_rsp_ready, dbg_dmi_rsp_valid;
 
-  // Truncate and pad addresses as necessary
-  assign dbg_sba_addr       = dbg_sba_addr_long;
-  assign dbg_slv_addr_long  = dbg_slv_addr;
+    // Truncate and pad addresses as necessary
+    assign dbg_sba_addr       = dbg_sba_addr_long;
+    assign dbg_slv_addr_long  = dbg_slv_addr;
 
-  // Connect internal harts to debug interface
-  assign dbg_info    [NumIntHarts-1:0] = dbg_int_info;
-  assign dbg_unavail [NumIntHarts-1:0] = dbg_int_unavail;
-  assign dbg_int_req = dbg_req[NumIntHarts-1:0];
+    // Connect internal harts to debug interface
+    assign dbg_info    [NumIntHarts-1:0] = dbg_int_info;
+    assign dbg_unavail [NumIntHarts-1:0] = dbg_int_unavail;
+    assign dbg_int_req = dbg_req[NumIntHarts-1:0];
 
-  // Connect external harts to debug interface
-  if (Cfg.NumExtDbgHarts != 0) begin : gen_dbg_ext
-    assign dbg_info    [NumDbgHarts-1:NumIntHarts] = ExtHartinfo;
-    assign dbg_unavail [NumDbgHarts-1:NumIntHarts] = dbg_ext_unavail_i;
-    assign dbg_ext_req_o = dbg_req[NumDbgHarts-1:NumIntHarts];
-  end else begin : gen_no_dbg_ext
-    assign dbg_ext_req_o = '0;
+    // Connect external harts to debug interface
+    if (Cfg.NumExtDbgHarts != 0) begin : gen_dbg_ext
+      assign dbg_info    [NumDbgHarts-1:NumIntHarts] = ExtHartinfo;
+      assign dbg_unavail [NumDbgHarts-1:NumIntHarts] = dbg_ext_unavail_i;
+      assign dbg_ext_req_o = dbg_req[NumDbgHarts-1:NumIntHarts];
+    end else begin : gen_no_dbg_ext
+      assign dbg_ext_req_o = '0;
+    end
+
+    // Filter atomic accesses
+    axi_riscv_atomics_structs #(
+      .AxiAddrWidth     ( Cfg.AddrWidth    ),
+      .AxiDataWidth     ( Cfg.AxiDataWidth ),
+      .AxiIdWidth       ( AxiSlvIdWidth    ),
+      .AxiUserWidth     ( Cfg.AxiUserWidth ),
+      .AxiMaxReadTxns   ( Cfg.DbgMaxReadTxns  ),
+      .AxiMaxWriteTxns  ( Cfg.DbgMaxWriteTxns ),
+      .AxiUserAsId      ( 1 ),
+      .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
+      .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
+      .RiscvWordWidth   ( 64 ),
+      .NAxiCuts         ( Cfg.DbgAmoNumCuts ),
+      .axi_req_t        ( axi_slv_req_t ),
+      .axi_rsp_t        ( axi_slv_rsp_t )
+    ) i_dbg_slv_axi_atomics (
+      .clk_i,
+      .rst_ni,
+      .axi_slv_req_i ( axi_out_req[AxiOut.dbg] ),
+      .axi_slv_rsp_o ( axi_out_rsp[AxiOut.dbg] ),
+      .axi_mst_req_o ( dbg_slv_axi_amo_req ),
+      .axi_mst_rsp_i ( dbg_slv_axi_amo_rsp )
+    );
+
+    axi_cut #(
+      .Bypass     ( ~Cfg.DbgAmoPostCut ),
+      .aw_chan_t  ( axi_slv_aw_chan_t ),
+      .w_chan_t   ( axi_slv_w_chan_t  ),
+      .b_chan_t   ( axi_slv_b_chan_t  ),
+      .ar_chan_t  ( axi_slv_ar_chan_t ),
+      .r_chan_t   ( axi_slv_r_chan_t  ),
+      .axi_req_t  ( axi_slv_req_t ),
+      .axi_resp_t ( axi_slv_rsp_t )
+    ) i_dbg_slv_axi_atomics_cut (
+      .clk_i,
+      .rst_ni,
+      .slv_req_i  ( dbg_slv_axi_amo_req ),
+      .slv_resp_o ( dbg_slv_axi_amo_rsp ),
+      .mst_req_o  ( dbg_slv_axi_cut_req ),
+      .mst_resp_i ( dbg_slv_axi_cut_rsp )
+    );
+
+    // AXI access to debug module
+    axi_to_mem_interleaved #(
+      .axi_req_t  ( axi_slv_req_t ),
+      .axi_resp_t ( axi_slv_rsp_t ),
+      .AddrWidth  ( Cfg.AddrWidth    ),
+      .DataWidth  ( Cfg.AxiDataWidth ),
+      .IdWidth    ( AxiSlvIdWidth    ),
+      .NumBanks   ( 1 ),
+      .BufDepth   ( 4 )
+    ) i_dbg_slv_axi_to_mem (
+      .clk_i,
+      .rst_ni,
+      .test_i       ( test_mode_i ),
+      .busy_o       ( ),
+      .axi_req_i    ( dbg_slv_axi_cut_req ),
+      .axi_resp_o   ( dbg_slv_axi_cut_rsp ),
+      .mem_req_o    ( dbg_slv_req    ),
+      .mem_gnt_i    ( dbg_slv_req    ),
+      .mem_addr_o   ( dbg_slv_addr   ),
+      .mem_wdata_o  ( dbg_slv_wdata  ),
+      .mem_strb_o   ( dbg_slv_wstrb  ),
+      .mem_atop_o   ( ),
+      .mem_we_o     ( dbg_slv_we     ),
+      .mem_rvalid_i ( dbg_slv_rvalid ),
+      .mem_rdata_i  ( dbg_slv_rdata  )
+    );
+
+    // Read response is valid one cycle after request
+    `FF(dbg_slv_rvalid, dbg_slv_req, 1'b0, clk_i, rst_ni)
+
+    // Debug Module
+    dm_top #(
+      .NrHarts        ( NumDbgHarts ),
+      .BusWidth       ( Cfg.AxiDataWidth ),
+      .DmBaseAddress  ( AmDbg )
+    ) i_dbg_dm_top (
+      .clk_i,
+      .rst_ni,
+      .testmode_i           ( test_mode_i ),
+      .ndmreset_o           ( ),
+      .dmactive_o           ( dbg_active_o  ),
+      .debug_req_o          ( dbg_req       ),
+      .unavailable_i        ( dbg_unavail   ),
+      .hartinfo_i           ( dbg_info      ),
+      .slave_req_i          ( dbg_slv_req       ),
+      .slave_we_i           ( dbg_slv_we        ),
+      .slave_addr_i         ( dbg_slv_addr_long ),
+      .slave_be_i           ( dbg_slv_wstrb     ),
+      .slave_wdata_i        ( dbg_slv_wdata     ),
+      .slave_rdata_o        ( dbg_slv_rdata     ),
+      .master_req_o         ( dbg_sba_req       ),
+      .master_add_o         ( dbg_sba_addr_long ),
+      .master_we_o          ( dbg_sba_we        ),
+      .master_wdata_o       ( dbg_sba_wdata     ),
+      .master_be_o          ( dbg_sba_strb      ),
+      .master_gnt_i         ( dbg_sba_gnt       ),
+      .master_r_valid_i     ( dbg_sba_rvalid    ),
+      .master_r_rdata_i     ( dbg_sba_rdata     ),
+      .master_r_err_i       ( dbg_sba_err       ),
+      .master_r_other_err_i ( 1'b0 ),
+      .dmi_rst_ni           ( dbg_dmi_rst_n     ),
+      .dmi_req_valid_i      ( dbg_dmi_req_valid ),
+      .dmi_req_ready_o      ( dbg_dmi_req_ready ),
+      .dmi_req_i            ( dbg_dmi_req       ),
+      .dmi_resp_valid_o     ( dbg_dmi_rsp_valid ),
+      .dmi_resp_ready_i     ( dbg_dmi_rsp_ready ),
+      .dmi_resp_o           ( dbg_dmi_rsp       )
+    );
+
+    axi_mst_req_t axi_dbg_req;
+
+    always_comb begin
+      axi_in_req[AxiIn.dbg]         = axi_dbg_req;
+      axi_in_req[AxiIn.dbg].aw.user = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dbg].w.user  = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dbg].ar.user = Cfg.AxiUserDefault;
+    end
+
+    // Debug module system bus access to AXI crossbar
+    axi_from_mem #(
+      .MemAddrWidth ( Cfg.AddrWidth    ),
+      .AxiAddrWidth ( Cfg.AddrWidth    ),
+      .DataWidth    ( Cfg.AxiDataWidth ),
+      .MaxRequests  ( Cfg.DbgMaxReqs ),
+      .AxiProt      ( '0 ),
+      .axi_req_t    ( axi_mst_req_t ),
+      .axi_rsp_t    ( axi_mst_rsp_t )
+    ) i_dbg_sba_axi_from_mem (
+      .clk_i,
+      .rst_ni,
+      .mem_req_i       ( dbg_sba_req    ),
+      .mem_addr_i      ( dbg_sba_addr   ),
+      .mem_we_i        ( dbg_sba_we     ),
+      .mem_wdata_i     ( dbg_sba_wdata  ),
+      .mem_be_i        ( dbg_sba_strb   ),
+      .mem_gnt_o       ( dbg_sba_gnt    ),
+      .mem_rsp_valid_o ( dbg_sba_rvalid ),
+      .mem_rsp_rdata_o ( dbg_sba_rdata  ),
+      .mem_rsp_error_o ( dbg_sba_err    ),
+      .slv_aw_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
+      .slv_ar_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
+      .axi_req_o       ( axi_dbg_req           ),
+      .axi_rsp_i       ( axi_in_rsp[AxiIn.dbg] )
+    );
+
+    // Debug Transfer Module and JTAG interface
+    dmi_jtag #(
+      .IdcodeValue  ( Cfg.DbgIdCode )
+    ) i_dbg_dmi_jtag (
+      .clk_i,
+      .rst_ni,
+      .testmode_i       ( test_mode_i ),
+      .dmi_rst_no       ( dbg_dmi_rst_n     ),
+      .dmi_req_o        ( dbg_dmi_req       ),
+      .dmi_req_ready_i  ( dbg_dmi_req_ready ),
+      .dmi_req_valid_o  ( dbg_dmi_req_valid ),
+      .dmi_resp_i       ( dbg_dmi_rsp       ),
+      .dmi_resp_ready_o ( dbg_dmi_rsp_ready ),
+      .dmi_resp_valid_i ( dbg_dmi_rsp_valid ),
+      .tck_i            ( jtag_tck_i     ),
+      .tms_i            ( jtag_tms_i     ),
+      .trst_ni          ( jtag_trst_ni   ),
+      .td_i             ( jtag_tdi_i     ),
+      .td_o             ( jtag_tdo_o     ),
+      .tdo_oe_o         ( jtag_tdo_oe_o  )
+    );
   end
-
-  // Filter atomic accesses
-  axi_riscv_atomics_structs #(
-    .AxiAddrWidth     ( Cfg.AddrWidth    ),
-    .AxiDataWidth     ( Cfg.AxiDataWidth ),
-    .AxiIdWidth       ( AxiSlvIdWidth    ),
-    .AxiUserWidth     ( Cfg.AxiUserWidth ),
-    .AxiMaxReadTxns   ( Cfg.DbgMaxReadTxns  ),
-    .AxiMaxWriteTxns  ( Cfg.DbgMaxWriteTxns ),
-    .AxiUserAsId      ( 1 ),
-    .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
-    .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-    .RiscvWordWidth   ( 64 ),
-    .NAxiCuts         ( Cfg.DbgAmoNumCuts ),
-    .axi_req_t        ( axi_slv_req_t ),
-    .axi_rsp_t        ( axi_slv_rsp_t )
-  ) i_dbg_slv_axi_atomics (
-    .clk_i,
-    .rst_ni,
-    .axi_slv_req_i ( axi_out_req[AxiOut.dbg] ),
-    .axi_slv_rsp_o ( axi_out_rsp[AxiOut.dbg] ),
-    .axi_mst_req_o ( dbg_slv_axi_amo_req ),
-    .axi_mst_rsp_i ( dbg_slv_axi_amo_rsp )
-  );
-
-  axi_cut #(
-    .Bypass     ( ~Cfg.DbgAmoPostCut ),
-    .aw_chan_t  ( axi_slv_aw_chan_t ),
-    .w_chan_t   ( axi_slv_w_chan_t  ),
-    .b_chan_t   ( axi_slv_b_chan_t  ),
-    .ar_chan_t  ( axi_slv_ar_chan_t ),
-    .r_chan_t   ( axi_slv_r_chan_t  ),
-    .axi_req_t  ( axi_slv_req_t ),
-    .axi_resp_t ( axi_slv_rsp_t )
-  ) i_dbg_slv_axi_atomics_cut (
-    .clk_i,
-    .rst_ni,
-    .slv_req_i  ( dbg_slv_axi_amo_req ),
-    .slv_resp_o ( dbg_slv_axi_amo_rsp ),
-    .mst_req_o  ( dbg_slv_axi_cut_req ),
-    .mst_resp_i ( dbg_slv_axi_cut_rsp )
-  );
-
-  // AXI access to debug module
-  axi_to_mem_interleaved #(
-    .axi_req_t  ( axi_slv_req_t ),
-    .axi_resp_t ( axi_slv_rsp_t ),
-    .AddrWidth  ( Cfg.AddrWidth    ),
-    .DataWidth  ( Cfg.AxiDataWidth ),
-    .IdWidth    ( AxiSlvIdWidth    ),
-    .NumBanks   ( 1 ),
-    .BufDepth   ( 4 )
-  ) i_dbg_slv_axi_to_mem (
-    .clk_i,
-    .rst_ni,
-    .test_i       ( test_mode_i ),
-    .busy_o       ( ),
-    .axi_req_i    ( dbg_slv_axi_cut_req ),
-    .axi_resp_o   ( dbg_slv_axi_cut_rsp ),
-    .mem_req_o    ( dbg_slv_req    ),
-    .mem_gnt_i    ( dbg_slv_req    ),
-    .mem_addr_o   ( dbg_slv_addr   ),
-    .mem_wdata_o  ( dbg_slv_wdata  ),
-    .mem_strb_o   ( dbg_slv_wstrb  ),
-    .mem_atop_o   ( ),
-    .mem_we_o     ( dbg_slv_we     ),
-    .mem_rvalid_i ( dbg_slv_rvalid ),
-    .mem_rdata_i  ( dbg_slv_rdata  )
-  );
-
-  // Read response is valid one cycle after request
-  `FF(dbg_slv_rvalid, dbg_slv_req, 1'b0, clk_i, rst_ni)
-
-  // Debug Module
-  dm_top #(
-    .NrHarts        ( NumDbgHarts ),
-    .BusWidth       ( Cfg.AxiDataWidth ),
-    .DmBaseAddress  ( AmDbg )
-  ) i_dbg_dm_top (
-    .clk_i,
-    .rst_ni,
-    .testmode_i           ( test_mode_i ),
-    .ndmreset_o           ( ),
-    .dmactive_o           ( dbg_active_o  ),
-    .debug_req_o          ( dbg_req       ),
-    .unavailable_i        ( dbg_unavail   ),
-    .hartinfo_i           ( dbg_info      ),
-    .slave_req_i          ( dbg_slv_req       ),
-    .slave_we_i           ( dbg_slv_we        ),
-    .slave_addr_i         ( dbg_slv_addr_long ),
-    .slave_be_i           ( dbg_slv_wstrb     ),
-    .slave_wdata_i        ( dbg_slv_wdata     ),
-    .slave_rdata_o        ( dbg_slv_rdata     ),
-    .master_req_o         ( dbg_sba_req       ),
-    .master_add_o         ( dbg_sba_addr_long ),
-    .master_we_o          ( dbg_sba_we        ),
-    .master_wdata_o       ( dbg_sba_wdata     ),
-    .master_be_o          ( dbg_sba_strb      ),
-    .master_gnt_i         ( dbg_sba_gnt       ),
-    .master_r_valid_i     ( dbg_sba_rvalid    ),
-    .master_r_rdata_i     ( dbg_sba_rdata     ),
-    .master_r_err_i       ( dbg_sba_err       ),
-    .master_r_other_err_i ( 1'b0 ),
-    .dmi_rst_ni           ( dbg_dmi_rst_n     ),
-    .dmi_req_valid_i      ( dbg_dmi_req_valid ),
-    .dmi_req_ready_o      ( dbg_dmi_req_ready ),
-    .dmi_req_i            ( dbg_dmi_req       ),
-    .dmi_resp_valid_o     ( dbg_dmi_rsp_valid ),
-    .dmi_resp_ready_i     ( dbg_dmi_rsp_ready ),
-    .dmi_resp_o           ( dbg_dmi_rsp       )
-  );
-
-  axi_mst_req_t axi_dbg_req;
-
-  always_comb begin
-    axi_in_req[AxiIn.dbg]         = axi_dbg_req;
-    axi_in_req[AxiIn.dbg].aw.user = Cfg.AxiUserDefault;
-    axi_in_req[AxiIn.dbg].w.user  = Cfg.AxiUserDefault;
-    axi_in_req[AxiIn.dbg].ar.user = Cfg.AxiUserDefault;
-  end
-
-  // Debug module system bus access to AXI crossbar
-  axi_from_mem #(
-    .MemAddrWidth ( Cfg.AddrWidth    ),
-    .AxiAddrWidth ( Cfg.AddrWidth    ),
-    .DataWidth    ( Cfg.AxiDataWidth ),
-    .MaxRequests  ( Cfg.DbgMaxReqs ),
-    .AxiProt      ( '0 ),
-    .axi_req_t    ( axi_mst_req_t ),
-    .axi_rsp_t    ( axi_mst_rsp_t )
-  ) i_dbg_sba_axi_from_mem (
-    .clk_i,
-    .rst_ni,
-    .mem_req_i       ( dbg_sba_req    ),
-    .mem_addr_i      ( dbg_sba_addr   ),
-    .mem_we_i        ( dbg_sba_we     ),
-    .mem_wdata_i     ( dbg_sba_wdata  ),
-    .mem_be_i        ( dbg_sba_strb   ),
-    .mem_gnt_o       ( dbg_sba_gnt    ),
-    .mem_rsp_valid_o ( dbg_sba_rvalid ),
-    .mem_rsp_rdata_o ( dbg_sba_rdata  ),
-    .mem_rsp_error_o ( dbg_sba_err    ),
-    .slv_aw_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
-    .slv_ar_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
-    .axi_req_o       ( axi_dbg_req           ),
-    .axi_rsp_i       ( axi_in_rsp[AxiIn.dbg] )
-  );
-
-  // Debug Transfer Module and JTAG interface
-  dmi_jtag #(
-    .IdcodeValue  ( Cfg.DbgIdCode )
-  ) i_dbg_dmi_jtag (
-    .clk_i,
-    .rst_ni,
-    .testmode_i       ( test_mode_i ),
-    .dmi_rst_no       ( dbg_dmi_rst_n     ),
-    .dmi_req_o        ( dbg_dmi_req       ),
-    .dmi_req_ready_i  ( dbg_dmi_req_ready ),
-    .dmi_req_valid_o  ( dbg_dmi_req_valid ),
-    .dmi_resp_i       ( dbg_dmi_rsp       ),
-    .dmi_resp_ready_o ( dbg_dmi_rsp_ready ),
-    .dmi_resp_valid_i ( dbg_dmi_rsp_valid ),
-    .tck_i            ( jtag_tck_i     ),
-    .tms_i            ( jtag_tms_i     ),
-    .trst_ni          ( jtag_trst_ni   ),
-    .td_i             ( jtag_tdi_i     ),
-    .td_o             ( jtag_tdo_o     ),
-    .tdo_oe_o         ( jtag_tdo_oe_o  )
-  );
 
   /////////////////////
   //  Register File  //
@@ -1053,37 +1078,46 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  PLIC  //
   ////////////
 
-  rv_plic #(
-    .reg_req_t  ( reg_req_t ),
-    .reg_rsp_t  ( reg_rsp_t )
-  ) i_plic (
-    .clk_i,
-    .rst_ni,
-    .reg_req_i  ( reg_out_req[RegOut.plic] ),
-    .reg_rsp_o  ( reg_out_rsp[RegOut.plic] ),
-    .intr_src_i ( intr_routed[IntrRtdPlic][rv_plic_reg_pkg::NumSrc-1:0] ),
-    .irq_o      ( xeip ),
-    .irq_id_o   ( ),
-    .msip_o     ( )
-  );
+  if (Cfg.Core == CVA6) begin : gen_cva6_plic
+
+    rv_plic #(
+      .reg_req_t  ( reg_req_t ),
+      .reg_rsp_t  ( reg_rsp_t )
+    ) i_plic (
+      .clk_i,
+      .rst_ni,
+      .reg_req_i  ( reg_out_req[RegOut.plic] ),
+      .reg_rsp_o  ( reg_out_rsp[RegOut.plic] ),
+      .intr_src_i ( intr_routed[IntrRtdPlic][rv_plic_reg_pkg::NumSrc-1:0] ),
+      .irq_o      ( xeip ),
+      .irq_id_o   ( ),
+      .msip_o     ( )
+    );
+
+  end
+
 
   /////////////
   //  CLINT  //
   /////////////
 
-  clint #(
-    .reg_req_t  ( reg_req_t ),
-    .reg_rsp_t  ( reg_rsp_t )
-  ) i_clint (
-    .clk_i,
-    .rst_ni,
-    .testmode_i   ( test_mode_i ),
-    .reg_req_i    ( reg_out_req[RegOut.clint] ),
-    .reg_rsp_o    ( reg_out_rsp[RegOut.clint] ),
-    .rtc_i,
-    .timer_irq_o  ( mtip ),
-    .ipi_o        ( msip )
-  );
+  if (Cfg.Core == CVA6) begin : gen_cva6_clint
+
+    clint #(
+      .reg_req_t  ( reg_req_t ),
+      .reg_rsp_t  ( reg_rsp_t )
+    ) i_clint (
+      .clk_i,
+      .rst_ni,
+      .testmode_i   ( test_mode_i ),
+      .reg_req_i    ( reg_out_req[RegOut.clint] ),
+      .reg_rsp_o    ( reg_out_rsp[RegOut.clint] ),
+      .rtc_i,
+      .timer_irq_o  ( mtip ),
+      .ipi_o        ( msip )
+    );
+
+  end
 
   //////////////
   //  AXI RT  //

@@ -1,0 +1,891 @@
+From 6487ba7742335f550b27f3c72d67fdae2df2c4dc Mon Sep 17 00:00:00 2001
+From: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+Date: Fri, 18 Nov 2022 13:26:28 +0100
+Subject: [PATCH 05/10] fence.t: Reset all except CSRs and PC
+
+Signed-off-by: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+---
+ C910_RTL_FACTORY/gen_rtl/cp0/rtl/ct_cp0_regs.v     |  5 ++
+ C910_RTL_FACTORY/gen_rtl/cp0/rtl/ct_cp0_top.v      | 14 ++++-
+ C910_RTL_FACTORY/gen_rtl/cpu/rtl/ct_core.v         | 13 ++++
+ C910_RTL_FACTORY/gen_rtl/cpu/rtl/ct_top.v          |  8 ++-
+ C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_id_decd.v  |  3 +
+ C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_ir_decd.v  |  8 +++
+ C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_rf_dp.v    |  8 ++-
+ .../gen_rtl/idu/rtl/ct_idu_rf_pipe4_decd.v         | 29 ++++++++-
+ C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_top.v      |  4 ++
+ C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_debug.v    |  8 +--
+ C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_top.v      | 10 ++-
+ C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_vector.v   | 71 +++++++++++++---------
+ C910_RTL_FACTORY/gen_rtl/rst/rtl/ct_rst_top.v      | 33 +++++++++-
+ smart_run/logical/common/cpu_sub_system_axi.v      |  2 +-
+ 14 files changed, 173 insertions(+), 43 deletions(-)
+
+diff --git a/C910_RTL_FACTORY/gen_rtl/cp0/rtl/ct_cp0_regs.v b/C910_RTL_FACTORY/gen_rtl/cp0/rtl/ct_cp0_regs.v
+index bdc078b..9977798 100644
+--- a/C910_RTL_FACTORY/gen_rtl/cp0/rtl/ct_cp0_regs.v
++++ b/C910_RTL_FACTORY/gen_rtl/cp0/rtl/ct_cp0_regs.v
+@@ -156,6 +156,7 @@ module ct_cp0_regs(
+   cp0_yy_virtual_mode,
+   cpurst_b,
+   forever_cpuclk,
++  pipe4_fencet,
+   hpcp_cp0_data,
+   hpcp_cp0_int_vld,
+   hpcp_cp0_sce,
+@@ -250,6 +251,7 @@ input            cp0_sret;
+ input            cp0_yy_clk_en;                  
+ input            cpurst_b;                       
+ input            forever_cpuclk;                 
++input            pipe4_fencet;
+ input   [63 :0]  hpcp_cp0_data;                  
+ input            hpcp_cp0_int_vld;               
+ input            hpcp_cp0_sce;                   
+@@ -770,6 +772,7 @@ wire             fcsr_vxsat;
+ wire             fflags_local_en;                
+ wire    [63 :0]  fflags_value;                   
+ wire             forever_cpuclk;                 
++wire             pipe4_fencet;
+ wire             frm_local_en;                   
+ wire    [63 :0]  frm_value;                      
+ wire             fs_dirty_upd;                   
+@@ -3059,6 +3062,8 @@ begin
+     mrvbr_reg[38:0] <= 39'b0; 
+   else if(rst_sample)
+     mrvbr_reg[38:0] <= biu_cp0_rvba[39:1];
++  else if(pipe4_fencet)
++    mrvbr_reg[38:0] <= rtu_cp0_epc[39:1] + 30'h2;
+   else
+     mrvbr_reg[38:0] <= mrvbr_reg[38:0];
+ end
+diff --git a/C910_RTL_FACTORY/gen_rtl/cp0/rtl/ct_cp0_top.v b/C910_RTL_FACTORY/gen_rtl/cp0/rtl/ct_cp0_top.v
+index f80ccd3..a21ce7e 100644
+--- a/C910_RTL_FACTORY/gen_rtl/cp0/rtl/ct_cp0_top.v
++++ b/C910_RTL_FACTORY/gen_rtl/cp0/rtl/ct_cp0_top.v
+@@ -176,7 +176,9 @@ module ct_cp0_top(
+   cp0_yy_priv_mode,
+   cp0_yy_virtual_mode,
+   cpurst_b,
++  arch_rst_b,
+   forever_cpuclk,
++  pipe4_fencet,
+   had_cp0_xx_dbg,
+   hpcp_cp0_cmplt,
+   hpcp_cp0_data,
+@@ -198,6 +200,7 @@ module ct_cp0_top(
+   ifu_cp0_icache_read_data_vld,
+   ifu_cp0_ind_btb_inv_done,
+   ifu_cp0_rst_inv_req,
++  ifu_cp0_rst_mrvbr_req,
+   ifu_yy_xx_no_op,
+   lsu_cp0_dcache_done,
+   lsu_cp0_dcache_read_data,
+@@ -246,7 +249,9 @@ input            biu_cp0_ss_int;
+ input            biu_cp0_st_int;                 
+ input            biu_yy_xx_no_op;                
+ input            cpurst_b;                       
++input            arch_rst_b;
+ input            forever_cpuclk;                 
++input            pipe4_fencet;
+ input            had_cp0_xx_dbg;                 
+ input            hpcp_cp0_cmplt;                 
+ input   [63 :0]  hpcp_cp0_data;                  
+@@ -268,6 +273,7 @@ input   [127:0]  ifu_cp0_icache_read_data;
+ input            ifu_cp0_icache_read_data_vld;   
+ input            ifu_cp0_ind_btb_inv_done;       
+ input            ifu_cp0_rst_inv_req;            
++input            ifu_cp0_rst_mrvbr_req;
+ input            ifu_yy_xx_no_op;                
+ input            lsu_cp0_dcache_done;            
+ input   [127:0]  lsu_cp0_dcache_read_data;       
+@@ -619,7 +625,9 @@ wire             cp0_yy_hyper;
+ wire    [1  :0]  cp0_yy_priv_mode;               
+ wire             cp0_yy_virtual_mode;            
+ wire             cpurst_b;                       
++wire             arch_rst_b;
+ wire             forever_cpuclk;                 
++wire             pipe4_fencet;
+ wire             had_cp0_xx_dbg;                 
+ wire             hpcp_cp0_cmplt;                 
+ wire    [63 :0]  hpcp_cp0_data;                  
+@@ -641,6 +649,7 @@ wire    [127:0]  ifu_cp0_icache_read_data;
+ wire             ifu_cp0_icache_read_data_vld;   
+ wire             ifu_cp0_ind_btb_inv_done;       
+ wire             ifu_cp0_rst_inv_req;            
++wire             ifu_cp0_rst_mrvbr_req;
+ wire             ifu_yy_xx_no_op;                
+ wire             inst_lpmd_ex1_ex2;              
+ wire    [11 :0]  iui_regs_addr;                  
+@@ -952,8 +961,9 @@ ct_cp0_regs  x_ct_cp0_regs (
+   .cp0_yy_hyper                    (cp0_yy_hyper                   ),
+   .cp0_yy_priv_mode                (cp0_yy_priv_mode               ),
+   .cp0_yy_virtual_mode             (cp0_yy_virtual_mode            ),
+-  .cpurst_b                        (cpurst_b                       ),
++  .cpurst_b                        (arch_rst_b                     ),
+   .forever_cpuclk                  (forever_cpuclk                 ),
++  .pipe4_fencet                    (pipe4_fencet                   ),
+   .hpcp_cp0_data                   (hpcp_cp0_data                  ),
+   .hpcp_cp0_int_vld                (hpcp_cp0_int_vld               ),
+   .hpcp_cp0_sce                    (hpcp_cp0_sce                   ),
+@@ -965,7 +975,7 @@ ct_cp0_regs  x_ct_cp0_regs (
+   .ifu_cp0_icache_read_data        (ifu_cp0_icache_read_data       ),
+   .ifu_cp0_icache_read_data_vld    (ifu_cp0_icache_read_data_vld   ),
+   .ifu_cp0_ind_btb_inv_done        (ifu_cp0_ind_btb_inv_done       ),
+-  .ifu_cp0_rst_inv_req             (ifu_cp0_rst_inv_req            ),
++  .ifu_cp0_rst_inv_req             (ifu_cp0_rst_mrvbr_req          ),
+   .iui_regs_addr                   (iui_regs_addr                  ),
+   .iui_regs_csr_wr                 (iui_regs_csr_wr                ),
+   .iui_regs_csrw                   (iui_regs_csrw                  ),
+diff --git a/C910_RTL_FACTORY/gen_rtl/cpu/rtl/ct_core.v b/C910_RTL_FACTORY/gen_rtl/cpu/rtl/ct_core.v
+index 7672553..5f53196 100644
+--- a/C910_RTL_FACTORY/gen_rtl/cpu/rtl/ct_core.v
++++ b/C910_RTL_FACTORY/gen_rtl/cpu/rtl/ct_core.v
+@@ -184,6 +184,8 @@ module ct_core(
+   idu_hpcp_rf_pipe7_inst_vld,
+   idu_hpcp_rf_pipe7_lch_fail_vld,
+   idu_rst_b,
++  idu_arch_rst_b,
++  pipe4_fencet,
+   ifu_biu_r_ready,
+   ifu_biu_rd_addr,
+   ifu_biu_rd_burst,
+@@ -560,6 +562,8 @@ input            hpcp_ifu_cnt_en;
+ input            hpcp_lsu_cnt_en;                        
+ input            hpcp_rtu_cnt_en;                        
+ input            idu_rst_b;                              
++input            idu_arch_rst_b;
++output           pipe4_fencet;
+ input            ifu_rst_b;                              
+ input            lsu_rst_b;                              
+ input            mmu_cp0_cmplt;                          
+@@ -1359,6 +1363,7 @@ wire    [63 :0]  idu_lsu_rf_pipe4_src1;
+ wire             idu_lsu_rf_pipe4_st;                    
+ wire             idu_lsu_rf_pipe4_staddr;                
+ wire             idu_lsu_rf_pipe4_sync_fence;            
++wire             pipe4_fencet;
+ wire             idu_lsu_rf_pipe4_unalign_2nd;           
+ wire             idu_lsu_rf_pipe5_gateclk_sel;           
+ wire    [11 :0]  idu_lsu_rf_pipe5_sdiq_entry;            
+@@ -1394,6 +1399,7 @@ wire    [7  :0]  idu_lsu_vmb_create1_vl;
+ wire    [5  :0]  idu_lsu_vmb_create1_vreg;               
+ wire    [1  :0]  idu_lsu_vmb_create1_vsew;               
+ wire             idu_rst_b;                              
++wire             idu_arch_rst_b;
+ wire             idu_rtu_fence_idle;                     
+ wire             idu_rtu_ir_ereg0_alloc_vld;             
+ wire             idu_rtu_ir_ereg1_alloc_vld;             
+@@ -1556,6 +1562,7 @@ wire    [127:0]  ifu_cp0_icache_read_data;
+ wire             ifu_cp0_icache_read_data_vld;           
+ wire             ifu_cp0_ind_btb_inv_done;               
+ wire             ifu_cp0_rst_inv_req;                    
++wire             ifu_cp0_rst_mrvbr_req;
+ wire    [82 :0]  ifu_had_debug_info;                     
+ wire             ifu_had_no_inst;                        
+ wire             ifu_had_no_op;                          
+@@ -2519,6 +2526,7 @@ ct_ifu_top  x_ct_ifu_top (
+   .cp0_yy_clk_en                        (cp0_yy_clk_en                       ),
+   .cp0_yy_priv_mode                     (cp0_yy_priv_mode                    ),
+   .cpurst_b                             (ifu_rst_b                           ),
++  .arch_rst_b                           (idu_arch_rst_b                      ),
+   .forever_cpuclk                       (forever_cpuclk                      ),
+   .had_ifu_ir                           (had_ifu_ir                          ),
+   .had_ifu_ir_vld                       (had_ifu_ir_vld                      ),
+@@ -2554,6 +2562,7 @@ ct_ifu_top  x_ct_ifu_top (
+   .ifu_cp0_icache_read_data_vld         (ifu_cp0_icache_read_data_vld        ),
+   .ifu_cp0_ind_btb_inv_done             (ifu_cp0_ind_btb_inv_done            ),
+   .ifu_cp0_rst_inv_req                  (ifu_cp0_rst_inv_req                 ),
++  .ifu_cp0_rst_mrvbr_req                    (ifu_cp0_rst_mrvbr_req                   ),
+   .ifu_had_debug_info                   (ifu_had_debug_info                  ),
+   .ifu_had_no_inst                      (ifu_had_no_inst                     ),
+   .ifu_had_no_op                        (ifu_had_no_op                       ),
+@@ -2896,6 +2905,7 @@ ct_idu_top  x_ct_idu_top (
+   .idu_lsu_rf_pipe4_st                     (idu_lsu_rf_pipe4_st                    ),
+   .idu_lsu_rf_pipe4_staddr                 (idu_lsu_rf_pipe4_staddr                ),
+   .idu_lsu_rf_pipe4_sync_fence             (idu_lsu_rf_pipe4_sync_fence            ),
++  .pipe4_fencet                            (pipe4_fencet                           ),
+   .idu_lsu_rf_pipe4_unalign_2nd            (idu_lsu_rf_pipe4_unalign_2nd           ),
+   .idu_lsu_rf_pipe5_gateclk_sel            (idu_lsu_rf_pipe5_gateclk_sel           ),
+   .idu_lsu_rf_pipe5_sdiq_entry             (idu_lsu_rf_pipe5_sdiq_entry            ),
+@@ -4649,7 +4659,9 @@ ct_cp0_top  x_ct_cp0_top (
+   .cp0_yy_priv_mode                (cp0_yy_priv_mode               ),
+   .cp0_yy_virtual_mode             (cp0_yy_virtual_mode            ),
+   .cpurst_b                        (idu_rst_b                      ),
++  .arch_rst_b                      (idu_arch_rst_b                 ),
+   .forever_cpuclk                  (forever_cpuclk                 ),
++  .pipe4_fencet                    (pipe4_fencet                   ),
+   .had_cp0_xx_dbg                  (had_cp0_xx_dbg                 ),
+   .hpcp_cp0_cmplt                  (hpcp_cp0_cmplt                 ),
+   .hpcp_cp0_data                   (hpcp_cp0_data                  ),
+@@ -4671,6 +4683,7 @@ ct_cp0_top  x_ct_cp0_top (
+   .ifu_cp0_icache_read_data_vld    (ifu_cp0_icache_read_data_vld   ),
+   .ifu_cp0_ind_btb_inv_done        (ifu_cp0_ind_btb_inv_done       ),
+   .ifu_cp0_rst_inv_req             (ifu_cp0_rst_inv_req            ),
++  .ifu_cp0_rst_mrvbr_req               (ifu_cp0_rst_mrvbr_req              ),
+   .ifu_yy_xx_no_op                 (ifu_yy_xx_no_op                ),
+   .lsu_cp0_dcache_done             (lsu_cp0_dcache_done            ),
+   .lsu_cp0_dcache_read_data        (lsu_cp0_dcache_read_data       ),
+diff --git a/C910_RTL_FACTORY/gen_rtl/cpu/rtl/ct_top.v b/C910_RTL_FACTORY/gen_rtl/cpu/rtl/ct_top.v
+index fa05782..18299f8 100644
+--- a/C910_RTL_FACTORY/gen_rtl/cpu/rtl/ct_top.v
++++ b/C910_RTL_FACTORY/gen_rtl/cpu/rtl/ct_top.v
+@@ -480,6 +480,8 @@ wire             idu_hpcp_rf_pipe6_lch_fail_vld;
+ wire             idu_hpcp_rf_pipe7_inst_vld;          
+ wire             idu_hpcp_rf_pipe7_lch_fail_vld;      
+ wire             idu_rst_b;                           
++wire             idu_arch_rst_b;
++wire             pipe4_fencet;
+ wire             ifu_biu_r_ready;                     
+ wire    [39 :0]  ifu_biu_rd_addr;                     
+ wire    [1  :0]  ifu_biu_rd_burst;                    
+@@ -1013,6 +1015,8 @@ ct_core  x_ct_core (
+   .idu_hpcp_rf_pipe7_inst_vld           (idu_hpcp_rf_pipe7_inst_vld          ),
+   .idu_hpcp_rf_pipe7_lch_fail_vld       (idu_hpcp_rf_pipe7_lch_fail_vld      ),
+   .idu_rst_b                            (idu_rst_b                           ),
++  .idu_arch_rst_b                       (idu_arch_rst_b                      ),
++  .pipe4_fencet                         (pipe4_fencet                        ),
+   .ifu_biu_r_ready                      (ifu_biu_r_ready                     ),
+   .ifu_biu_rd_addr                      (ifu_biu_rd_addr                     ),
+   .ifu_biu_rd_burst                     (ifu_biu_rd_burst                    ),
+@@ -1995,6 +1999,7 @@ ct_rst_top  x_ct_rst_top (
+   .fpu_rst_b         (fpu_rst_b        ),
+   .had_rst_b         (had_rst_b        ),
+   .idu_rst_b         (idu_rst_b        ),
++  .idu_arch_rst_b    (idu_arch_rst_b   ),
+   .ifu_rst_b         (ifu_rst_b        ),
+   .lsu_rst_b         (lsu_rst_b        ),
+   .mmu_rst_b         (mmu_rst_b        ),
+@@ -2002,7 +2007,8 @@ ct_rst_top  x_ct_rst_top (
+   .pad_cpu_rst_b     (pad_cpu_rst_b    ),
+   .pad_yy_mbist_mode (pad_yy_mbist_mode),
+   .pad_yy_scan_mode  (pad_yy_scan_mode ),
+-  .pad_yy_scan_rst_b (pad_yy_scan_rst_b)
++  .pad_yy_scan_rst_b (pad_yy_scan_rst_b),
++  .pipe4_fencet      (pipe4_fencet     )
+ );
+ 
+ 
+diff --git a/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_id_decd.v b/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_id_decd.v
+index 9b0f456..0340e69 100644
+--- a/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_id_decd.v
++++ b/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_id_decd.v
+@@ -2420,6 +2420,9 @@ begin
+     11'b0_11011_00000:begin //sync.is
+       decd_cache_inst_type[TYPE_WIDTH-1:0]    = LSU;
+       end
++    11'b0_11100_00000:begin //fence.t
++      decd_cache_inst_type[TYPE_WIDTH-1:0]    = LSU;
++      end
+     default: begin                //invalid instruction
+       //deal in fence
+       decd_cache_illegal                      = 1'b1;  //invalid instruction exception
+diff --git a/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_ir_decd.v b/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_ir_decd.v
+index 0cee5a5..87921cc 100644
+--- a/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_ir_decd.v
++++ b/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_ir_decd.v
+@@ -47,6 +47,7 @@ module ct_idu_ir_decd(
+   x_vsetvl,
+   x_vsetvli,
+   x_vsew
++//   x_fencet
+ );
+ 
+ // &Ports; @27
+@@ -82,6 +83,7 @@ output          x_vmul;
+ output          x_vmul_unsplit;        
+ output          x_vsetvl;              
+ output          x_vsetvli;             
++// output          x_fencet;              
+ 
+ // &Regs; @28
+ 
+@@ -143,6 +145,7 @@ wire            decd_vmul_unsplit;
+ wire            decd_vmul_wide;        
+ wire            decd_vsetvl;           
+ wire            decd_vsetvli;          
++wire            decd_fencet;           
+ wire            x_alu_short;           
+ wire            x_bar;                 
+ wire    [3 :0]  x_bar_type;            
+@@ -175,6 +178,7 @@ wire            x_vmul_unsplit;
+ wire            x_vsetvl;              
+ wire            x_vsetvli;             
+ wire    [2 :0]  x_vsew;                
++wire            x_fencet;              
+ 
+ 
+ 
+@@ -210,6 +214,7 @@ assign x_fp                = !x_illegal && decd_fp_inst;
+ assign x_csr               = !x_illegal && decd_csr;
+ assign x_sync              = !x_illegal && decd_sync;
+ assign x_ecall             = !x_illegal && decd_ecall;
++assign x_fencet            = !x_illegal && decd_fencet;
+ 
+ //==========================================================
+ //                      Short ALU
+@@ -341,6 +346,7 @@ assign decd_store =
+   || ({x_opcode[31:27],x_opcode[14:12],x_opcode[6:0]} == 15'b00011_010_0101111) //sc.w
+   || ({x_opcode[31:27],x_opcode[14:12],x_opcode[6:0]} == 15'b00011_011_0101111) //sc.d
+   || (x_opcode[14:0] == 15'b000_00000_0001011) //cache extension instruction
++  || (x_opcode[31:0] == 32'h01c0000b)  //fence.t
+   || (x_opcode[14] ?  !x_type_vload : x_type_staddr)
+      && (({x_opcode[31:27],x_opcode[13:12],x_opcode[6:0]} == 14'b00000_10_0101111) //(v)amoadd.w
+       || ({x_opcode[31:27],x_opcode[13:12],x_opcode[6:0]} == 14'b00001_10_0101111) //(v)amoswap.w
+@@ -657,6 +663,8 @@ assign decd_unit_stride = (x_opcode[27:26]== 2'b0) && (x_opcode[31:29]== 3'b000)
+ 
+ assign decd_vamo = (x_opcode[6:0]== 7'b0101111) || |x_opcode[31:29];  //zvlsseg also use this signal for vmb
+ 
++assign decd_fencet = (x_opcode[6:0]== 7'b0001000);
++
+ // &ModuleEnd; @511
+ endmodule
+ 
+diff --git a/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_rf_dp.v b/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_rf_dp.v
+index 8ca6746..478cb0a 100644
+--- a/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_rf_dp.v
++++ b/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_rf_dp.v
+@@ -366,6 +366,7 @@ module ct_idu_rf_dp(
+   idu_lsu_rf_pipe4_st,
+   idu_lsu_rf_pipe4_staddr,
+   idu_lsu_rf_pipe4_sync_fence,
++  pipe4_fencet,
+   idu_lsu_rf_pipe4_unalign_2nd,
+   idu_lsu_rf_pipe5_sdiq_entry,
+   idu_lsu_rf_pipe5_src0,
+@@ -890,6 +891,7 @@ output  [63 :0]  idu_lsu_rf_pipe4_src1;
+ output           idu_lsu_rf_pipe4_st;                   
+ output           idu_lsu_rf_pipe4_staddr;               
+ output           idu_lsu_rf_pipe4_sync_fence;           
++output           pipe4_fencet;
+ output           idu_lsu_rf_pipe4_unalign_2nd;          
+ output  [11 :0]  idu_lsu_rf_pipe5_sdiq_entry;           
+ output  [63 :0]  idu_lsu_rf_pipe5_src0;                 
+@@ -1390,6 +1392,7 @@ wire    [63 :0]  idu_lsu_rf_pipe4_srcvm_vr1;
+ wire             idu_lsu_rf_pipe4_st;                   
+ wire             idu_lsu_rf_pipe4_staddr;               
+ wire             idu_lsu_rf_pipe4_sync_fence;           
++wire             pipe4_fencet;
+ wire             idu_lsu_rf_pipe4_unalign_2nd;          
+ wire    [11 :0]  idu_lsu_rf_pipe5_sdiq_entry;           
+ wire    [63 :0]  idu_lsu_rf_pipe5_src0;                 
+@@ -1530,6 +1533,7 @@ wire    [31 :0]  pipe4_decd_opcode;
+ wire    [3  :0]  pipe4_decd_shift;                      
+ wire             pipe4_decd_st;                         
+ wire             pipe4_decd_sync_fence;                 
++wire             pipe4_decd_fencet;
+ wire    [11 :0]  pipe6_decd_eu_sel;                     
+ wire    [19 :0]  pipe6_decd_func;                       
+ wire    [2  :0]  pipe6_decd_imm0;                       
+@@ -3196,7 +3200,8 @@ ct_idu_rf_pipe4_decd  x_ct_idu_rf_pipe4_decd (
+   .pipe4_decd_opcode         (pipe4_decd_opcode        ),
+   .pipe4_decd_shift          (pipe4_decd_shift         ),
+   .pipe4_decd_st             (pipe4_decd_st            ),
+-  .pipe4_decd_sync_fence     (pipe4_decd_sync_fence    )
++  .pipe4_decd_sync_fence     (pipe4_decd_sync_fence    ),
++  .pipe4_decd_fencet         (pipe4_decd_fencet        )
+ );
+ 
+ //decode input
+@@ -3254,6 +3259,7 @@ assign idu_lsu_rf_pipe4_src0[63:0]           = rf_pipe4_src0_data[63:0];
+ assign idu_lsu_rf_pipe4_src1[63:0]           = rf_pipe4_src1_data[63:0];
+ assign idu_lsu_rf_pipe4_srcvm_vr0[63:0]      = rf_pipe4_srcvm_vr0_data[63:0];
+ assign idu_lsu_rf_pipe4_srcvm_vr1[63:0]      = rf_pipe4_srcvm_vr1_data[63:0];
++assign pipe4_fencet                          = pipe4_decd_fencet;
+ assign idu_lsu_rf_pipe4_atomic               = pipe4_decd_atomic;
+ assign idu_lsu_rf_pipe4_sync_fence           = pipe4_decd_sync_fence;
+ assign idu_lsu_rf_pipe4_icc                  = pipe4_decd_icc;
+diff --git a/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_rf_pipe4_decd.v b/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_rf_pipe4_decd.v
+index 2b91d55..6fd7d2f 100644
+--- a/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_rf_pipe4_decd.v
++++ b/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_rf_pipe4_decd.v
+@@ -37,7 +37,8 @@ module ct_idu_rf_pipe4_decd(
+   pipe4_decd_opcode,
+   pipe4_decd_shift,
+   pipe4_decd_st,
+-  pipe4_decd_sync_fence
++  pipe4_decd_sync_fence,
++  pipe4_decd_fencet
+ );
+ 
+ // &Ports; @28
+@@ -64,6 +65,7 @@ output  [12:0]  pipe4_decd_offset_plus;
+ output  [3 :0]  pipe4_decd_shift;         
+ output          pipe4_decd_st;            
+ output          pipe4_decd_sync_fence;    
++output          pipe4_decd_fencet;
+ 
+ // &Regs; @29
+ reg             pipe4_decd_atomic;        
+@@ -84,6 +86,7 @@ reg     [11:0]  pipe4_decd_offset;
+ reg     [3 :0]  pipe4_decd_shift;         
+ reg             pipe4_decd_st;            
+ reg             pipe4_decd_sync_fence;    
++reg             pipe4_decd_fencet;
+ reg     [1 :0]  sfence_inst_mode;         
+ reg     [3 :0]  str_shift;                
+ 
+@@ -178,6 +181,7 @@ always @( decd_op[31:0]
+        or cp0_lsu_fencei_broad_dis
+        or fence_mode_sel[3:0])
+ begin
++pipe4_decd_fencet = 1'b0;
+ casez(decd_op[31:0])
+ //------------------------normal----------------------------
+   //  ..28..24..20..16..12...8...4...0
+@@ -1456,6 +1460,29 @@ casez(decd_op[31:0])
+     pipe4_decd_off_0_extend   = 1'b0;
+     pipe4_decd_lsfifo         = 1'b0;
+   end
++  //  ..28..24..20..16..12...8...4...0
++  32'b00000001110000000000000000001011:  //fence.t
++  begin
++    pipe4_decd_atomic         = 1'b0;
++    pipe4_decd_sync_fence     = 1'b0;
++    pipe4_decd_inst_flush     = 1'b0;
++    pipe4_decd_inst_share     = 1'b0;
++    pipe4_decd_icc            = 1'b0;
++    pipe4_decd_st             = 1'b0;
++    pipe4_decd_mmu_req        = 1'b0;
++    pipe4_decd_inst_type[1:0] = 2'b10; // (0: TLB 1: ICache *2: DCache 3: L2 )
++    pipe4_decd_inst_size[1:0] = 2'b11; // ([1]: inv [0]: clr)
++    pipe4_decd_inst_mode[1:0] = 2'b00; // all
++    pipe4_decd_fence_mode[3:0]= 4'b0000;
++    pipe4_decd_inst_fls       = 1'b0;
++    pipe4_decd_inst_vls       = 1'b0;
++    pipe4_decd_offset[11:0]   = 12'b0;
++    pipe4_decd_shift[3:0]     = 4'b1;
++    pipe4_decd_inst_str       = 1'b0;
++    pipe4_decd_off_0_extend   = 1'b0;
++    pipe4_decd_lsfifo         = 1'b0;
++    pipe4_decd_fencet         = 1'b1;
++  end
+   default:
+   begin
+     pipe4_decd_atomic         = 1'bx;
+diff --git a/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_top.v b/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_top.v
+index 3b7ed8a..d5ac566 100644
+--- a/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_top.v
++++ b/C910_RTL_FACTORY/gen_rtl/idu/rtl/ct_idu_top.v
+@@ -227,6 +227,7 @@ module ct_idu_top(
+   idu_lsu_rf_pipe4_st,
+   idu_lsu_rf_pipe4_staddr,
+   idu_lsu_rf_pipe4_sync_fence,
++  pipe4_fencet,
+   idu_lsu_rf_pipe4_unalign_2nd,
+   idu_lsu_rf_pipe5_gateclk_sel,
+   idu_lsu_rf_pipe5_sdiq_entry,
+@@ -1398,6 +1399,7 @@ output  [63 :0]  idu_lsu_rf_pipe4_src1;
+ output           idu_lsu_rf_pipe4_st;                    
+ output           idu_lsu_rf_pipe4_staddr;                
+ output           idu_lsu_rf_pipe4_sync_fence;            
++output           pipe4_fencet;
+ output           idu_lsu_rf_pipe4_unalign_2nd;           
+ output           idu_lsu_rf_pipe5_gateclk_sel;           
+ output  [11 :0]  idu_lsu_rf_pipe5_sdiq_entry;            
+@@ -2616,6 +2618,7 @@ wire    [63 :0]  idu_lsu_rf_pipe4_src1;
+ wire             idu_lsu_rf_pipe4_st;                    
+ wire             idu_lsu_rf_pipe4_staddr;                
+ wire             idu_lsu_rf_pipe4_sync_fence;            
++wire             pipe4_fencet;
+ wire             idu_lsu_rf_pipe4_unalign_2nd;           
+ wire             idu_lsu_rf_pipe5_gateclk_sel;           
+ wire    [11 :0]  idu_lsu_rf_pipe5_sdiq_entry;            
+@@ -6161,6 +6164,7 @@ ct_idu_rf_dp  x_ct_idu_rf_dp (
+   .idu_lsu_rf_pipe4_st                    (idu_lsu_rf_pipe4_st                   ),
+   .idu_lsu_rf_pipe4_staddr                (idu_lsu_rf_pipe4_staddr               ),
+   .idu_lsu_rf_pipe4_sync_fence            (idu_lsu_rf_pipe4_sync_fence           ),
++  .pipe4_fencet                           (pipe4_fencet                          ),
+   .idu_lsu_rf_pipe4_unalign_2nd           (idu_lsu_rf_pipe4_unalign_2nd          ),
+   .idu_lsu_rf_pipe5_sdiq_entry            (idu_lsu_rf_pipe5_sdiq_entry           ),
+   .idu_lsu_rf_pipe5_src0                  (idu_lsu_rf_pipe5_src0                 ),
+diff --git a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_debug.v b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_debug.v
+index 4c6adcf..4ce6c4f 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_debug.v
++++ b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_debug.v
+@@ -113,7 +113,7 @@ input   [5 :0]  lbuf_debug_st;
+ input           pcgen_debug_chgflw;                  
+ input   [13:0]  pcgen_debug_pcbus;                   
+ input           rtu_ifu_xx_dbgon;                    
+-input   [9 :0]  vector_debug_cur_st;                 
++input   [10:0]  vector_debug_cur_st;                 
+ input           vector_debug_reset_on;               
+ input           vfdsu_ifu_debug_ex2_wait;            
+ input           vfdsu_ifu_debug_idle;                
+@@ -211,8 +211,8 @@ wire    [3 :0]  pref_req_cur_st;
+ wire    [2 :0]  pref_wb_cur_st;                      
+ wire    [3 :0]  refill_cur_state;                    
+ wire            rtu_ifu_xx_dbgon;                    
+-wire    [9 :0]  vector_cur_st;                       
+-wire    [9 :0]  vector_debug_cur_st;                 
++wire    [10:0]  vector_cur_st;                       
++wire    [10:0]  vector_debug_cur_st;                 
+ wire            vector_debug_reset_on;               
+ wire            vfdsu_ex2_wait;                      
+ wire            vfdsu_idle;                          
+@@ -309,7 +309,7 @@ assign pref_wb_cur_st[2:0]     = ipb_debug_wb_cur_st[2:0];
+ //16-13-inv_cur_st
+ assign inv_cur_st[3:0]         = ifctrl_debug_inv_st[3:0];
+ //12-3-vector_cur_st
+-assign vector_cur_st[9:0]      = vector_debug_cur_st[9:0];
++assign vector_cur_st[10:0]     = vector_debug_cur_st[10:0];
+ //2-vfdsu_pipe_busy
+ assign vfdsu_pipe_busy         = vfdsu_ifu_debug_pipe_busy;
+ //1-vfdsu_ex2_wait
+diff --git a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_top.v b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_top.v
+index a17ee51..b141722 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_top.v
++++ b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_top.v
+@@ -57,6 +57,7 @@ module ct_ifu_top(
+   cp0_yy_clk_en,
+   cp0_yy_priv_mode,
+   cpurst_b,
++  arch_rst_b,
+   forever_cpuclk,
+   had_ifu_ir,
+   had_ifu_ir_vld,
+@@ -92,6 +93,7 @@ module ct_ifu_top(
+   ifu_cp0_icache_read_data_vld,
+   ifu_cp0_ind_btb_inv_done,
+   ifu_cp0_rst_inv_req,
++  ifu_cp0_rst_mrvbr_req,
+   ifu_had_debug_info,
+   ifu_had_no_inst,
+   ifu_had_no_op,
+@@ -257,6 +259,7 @@ input   [2  :0]  cp0_ifu_vsew;
+ input            cp0_yy_clk_en;                       
+ input   [1  :0]  cp0_yy_priv_mode;                    
+ input            cpurst_b;                            
++input            arch_rst_b;
+ input            forever_cpuclk;                      
+ input   [31 :0]  had_ifu_ir;                          
+ input            had_ifu_ir_vld;                      
+@@ -369,6 +372,7 @@ output  [127:0]  ifu_cp0_icache_read_data;
+ output           ifu_cp0_icache_read_data_vld;        
+ output           ifu_cp0_ind_btb_inv_done;            
+ output           ifu_cp0_rst_inv_req;                 
++output           ifu_cp0_rst_mrvbr_req;
+ output  [82 :0]  ifu_had_debug_info;                  
+ output           ifu_had_no_inst;                     
+ output           ifu_had_no_op;                       
+@@ -503,6 +507,7 @@ wire    [2  :0]  cp0_ifu_vsew;
+ wire             cp0_yy_clk_en;                       
+ wire    [1  :0]  cp0_yy_priv_mode;                    
+ wire             cpurst_b;                            
++wire             arch_rst_b;
+ wire             forever_cpuclk;                      
+ wire    [31 :0]  had_ifu_ir;                          
+ wire             had_ifu_ir_vld;                      
+@@ -1111,6 +1116,7 @@ wire    [127:0]  ifu_cp0_icache_read_data;
+ wire             ifu_cp0_icache_read_data_vld;        
+ wire             ifu_cp0_ind_btb_inv_done;            
+ wire             ifu_cp0_rst_inv_req;                 
++wire             ifu_cp0_rst_mrvbr_req;
+ wire    [82 :0]  ifu_had_debug_info;                  
+ wire             ifu_had_no_inst;                     
+ wire             ifu_had_no_op;                       
+@@ -1700,7 +1706,7 @@ wire             rtu_yy_xx_dbgon;
+ wire    [2  :0]  sfp_ifdp_hit_pc_lo;                  
+ wire    [3  :0]  sfp_ifdp_hit_type;                   
+ wire             sfp_ifdp_pc_hit;                     
+-wire    [9  :0]  vector_debug_cur_st;                 
++wire    [10 :0]  vector_debug_cur_st;                 
+ wire             vector_debug_reset_on;               
+ wire             vector_ifctrl_reset_on;              
+ wire             vector_ifctrl_sm_on;                 
+@@ -4284,8 +4290,10 @@ ct_ifu_vector  x_ct_ifu_vector (
+   .cp0_ifu_vbr            (cp0_ifu_vbr           ),
+   .cp0_yy_clk_en          (cp0_yy_clk_en         ),
+   .cpurst_b               (cpurst_b              ),
++  .arch_rst_b             (arch_rst_b            ),
+   .forever_cpuclk         (forever_cpuclk        ),
+   .ifu_cp0_rst_inv_req    (ifu_cp0_rst_inv_req   ),
++  .ifu_cp0_rst_mrvbr_req      (ifu_cp0_rst_mrvbr_req     ),
+   .ifu_xx_sync_reset      (ifu_xx_sync_reset     ),
+   .pad_yy_icg_scan_en     (pad_yy_icg_scan_en    ),
+   .rtu_ifu_xx_dbgon       (rtu_ifu_xx_dbgon      ),
+diff --git a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_vector.v b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_vector.v
+index 667be7f..8a2e039 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_vector.v
++++ b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_vector.v
+@@ -21,8 +21,10 @@ module ct_ifu_vector(
+   cp0_ifu_vbr,
+   cp0_yy_clk_en,
+   cpurst_b,
++  arch_rst_b,
+   forever_cpuclk,
+   ifu_cp0_rst_inv_req,
++  ifu_cp0_rst_mrvbr_req,
+   ifu_xx_sync_reset,
+   pad_yy_icg_scan_en,
+   rtu_ifu_xx_dbgon,
+@@ -45,14 +47,16 @@ input   [39:0]  cp0_ifu_rvbr;
+ input   [39:0]  cp0_ifu_vbr;            
+ input           cp0_yy_clk_en;          
+ input           cpurst_b;               
++input           arch_rst_b;
+ input           forever_cpuclk;         
+ input           pad_yy_icg_scan_en;     
+ input           rtu_ifu_xx_dbgon;       
+ input   [5 :0]  rtu_ifu_xx_expt_vec;    
+ input           rtu_ifu_xx_expt_vld;    
+ output          ifu_cp0_rst_inv_req;    
++output          ifu_cp0_rst_mrvbr_req;
+ output          ifu_xx_sync_reset;      
+-output  [9 :0]  vector_debug_cur_st;    
++output  [10:0]  vector_debug_cur_st;    
+ output          vector_debug_reset_on;  
+ output          vector_ifctrl_reset_on; 
+ output          vector_ifctrl_sm_on;    
+@@ -63,8 +67,8 @@ output          vector_pcgen_reset_on;
+ 
+ // &Regs; @24
+ reg     [38:0]  nonvec_pc;              
+-reg     [9 :0]  vec_cur_state;          
+-reg     [9 :0]  vec_next_state;         
++reg     [10:0]  vec_cur_state;          
++reg     [10:0]  vec_next_state;         
+ reg             vector_rst_inv_ff;      
+ 
+ // &Wires; @25
+@@ -74,10 +78,12 @@ wire    [39:0]  cp0_ifu_rvbr;
+ wire    [39:0]  cp0_ifu_vbr;            
+ wire            cp0_yy_clk_en;          
+ wire            cpurst_b;               
++wire            arch_rst_b;
+ wire    [1 :0]  expt_mode;              
+ wire    [38:0]  expt_virtual_pc;        
+ wire            forever_cpuclk;         
+ wire            ifu_cp0_rst_inv_req;    
++wire            ifu_cp0_rst_mrvbr_req;
+ wire            ifu_xx_sync_reset;      
+ wire            int_vld;                
+ wire            pad_yy_icg_scan_en;     
+@@ -89,7 +95,7 @@ wire    [5 :0]  rtu_ifu_xx_expt_vec;
+ wire            rtu_ifu_xx_expt_vld;    
+ wire            vec_sm_clk;             
+ wire            vec_sm_clk_en;          
+-wire    [9 :0]  vector_debug_cur_st;    
++wire    [10:0]  vector_debug_cur_st;    
+ wire            vector_debug_reset_on;  
+ wire            vector_ifctrl_reset_on; 
+ wire            vector_ifctrl_sm_on;    
+@@ -111,16 +117,17 @@ parameter PC_WIDTH = 40;
+ //                 Vector State Machine
+ //==========================================================
+ //-----------------parameter definition---------------------
+-parameter IDLE   = 10'b0000000001;
+-//parameter PHYADD = 10'b0000000010;
+-//parameter WAIT1  = 10'b0000000100;
+-//parameter CACHE  = 10'b0000001000;
+-//parameter CMP    = 10'b0000010000;
+-//parameter WAIT2  = 10'b0000100000;
+-//parameter MISS   = 10'b0001000000;
+-//parameter EXP    = 10'b0010000000;
+-parameter RESET  = 10'b0100000000;
+-parameter PCLOAD = 10'b1000000000;
++parameter IDLE       = 11'b00000000001;
++//parameter PHYADD = 11'b00000000010;
++//parameter WAIT1  = 11'b00000000100;
++//parameter CACHE  = 11'b00000001000;
++//parameter CMP    = 11'b00000010000;
++//parameter WAIT2  = 11'b00000100000;
++//parameter MISS   = 11'b00001000000;
++//parameter EXP    = 11'b00010000000;
++parameter RESET       = 11'b00100000000;
++parameter PCLOAD      = 11'b01000000000;
++parameter UARCH_RESET = 11'b10100000000;
+ 
+ //---------------------Gate Clock---------------------------
+ // &Instance("gated_clk_cell","x_vec_sm_clk"); @46
+@@ -142,7 +149,7 @@ gated_clk_cell  x_vec_sm_clk (
+ //           .module_en      (cp0_ifu_icg_en) @52
+ //         ); @53
+ assign vec_sm_clk_en = rtu_ifu_xx_expt_vld || 
+-                       (vec_cur_state[9:0] != IDLE);
++                       (vec_cur_state[10:0] != IDLE);
+ 
+ //---------------------FSM of Vector------------------------
+ //State Description:
+@@ -163,30 +170,33 @@ assign vec_sm_clk_en = rtu_ifu_xx_expt_vld ||
+ //when !cpurst_b , vec_cur_state turn to PHYADD
+ always @(posedge vec_sm_clk or negedge cpurst_b)
+ begin
+-  if(!cpurst_b)
+-    vec_cur_state[9:0] <= RESET;
+-  else if(rtu_ifu_xx_dbgon)
+-    vec_cur_state[9:0] <= IDLE;
++  if(!cpurst_b) begin
++    // if(arch_rst_b) begin
++    //   vec_cur_state[10:0] <= UARCH_RESET;
++    // end
++    vec_cur_state[10:0] <= arch_rst_b ? UARCH_RESET : RESET;
++  end else if(rtu_ifu_xx_dbgon)
++    vec_cur_state[10:0] <= IDLE;
+   else
+-    vec_cur_state[9:0] <= vec_next_state[9:0];
++    vec_cur_state[10:0] <= vec_next_state[10:0];
+ end
+ 
+ // &CombBeg; @84
+-always @( vec_cur_state[9:0]
++always @( vec_cur_state[10:0]
+        or cp0_ifu_rst_inv_done
+        or rtu_ifu_xx_expt_vld)
+ begin
+-case(vec_cur_state[9:0])
++case(vec_cur_state[10:0])
+   IDLE    : if(rtu_ifu_xx_expt_vld)
+-              vec_next_state[9:0] = PCLOAD;
++              vec_next_state[10:0] = PCLOAD;
+             else
+-              vec_next_state[9:0] = IDLE;
+-  RESET   : if(cp0_ifu_rst_inv_done)
+-              vec_next_state[9:0] = IDLE;
++              vec_next_state[10:0] = IDLE;
++  RESET, UARCH_RESET : if(cp0_ifu_rst_inv_done)
++              vec_next_state[10:0] = IDLE;
+             else
+-              vec_next_state[9:0] = RESET;
+-  PCLOAD  : vec_next_state[9:0] = IDLE;
+-  default : vec_next_state[9:0] = IDLE;
++              vec_next_state[10:0] = vec_cur_state[10:0];
++  PCLOAD  : vec_next_state[10:0] = IDLE;
++  default : vec_next_state[10:0] = IDLE;
+ endcase
+ // &CombEnd; @97
+ end
+@@ -204,6 +214,7 @@ end
+ 
+ assign ifu_xx_sync_reset         = vec_cur_state[8];
+ assign ifu_cp0_rst_inv_req       = vec_cur_state[8]  && !vector_rst_inv_ff;
++assign ifu_cp0_rst_mrvbr_req     = ifu_cp0_rst_inv_req && !vec_cur_state[10]; // Do not reset mrvbr when coming out of urst
+ assign vector_reset_on           = vec_cur_state[8];
+ assign vector_sm_on              = !(vec_cur_state[0]); //IDLE
+ assign pc_load                   = (!rtu_ifu_xx_dbgon) &&
+@@ -285,7 +296,7 @@ assign vector_ifctrl_sm_start = vector_sm_on && !vec_cur_state[8] ||
+                                 rtu_ifu_xx_expt_vld;
+ 
+ //Debug Infor
+-assign vector_debug_cur_st[9:0] = vec_cur_state[9:0];
++assign vector_debug_cur_st[10:0] = vec_cur_state[10:0];
+ assign vector_debug_reset_on    = vector_reset_on;
+ // &ModuleEnd; @185
+ endmodule
+diff --git a/C910_RTL_FACTORY/gen_rtl/rst/rtl/ct_rst_top.v b/C910_RTL_FACTORY/gen_rtl/rst/rtl/ct_rst_top.v
+index 129d49f..c0439e8 100644
+--- a/C910_RTL_FACTORY/gen_rtl/rst/rtl/ct_rst_top.v
++++ b/C910_RTL_FACTORY/gen_rtl/rst/rtl/ct_rst_top.v
+@@ -19,6 +19,7 @@ module ct_rst_top(
+   fpu_rst_b,
+   had_rst_b,
+   idu_rst_b,
++  idu_arch_rst_b,
+   ifu_rst_b,
+   lsu_rst_b,
+   mmu_rst_b,
+@@ -26,7 +27,8 @@ module ct_rst_top(
+   pad_cpu_rst_b,
+   pad_yy_mbist_mode,
+   pad_yy_scan_mode,
+-  pad_yy_scan_rst_b
++  pad_yy_scan_rst_b,
++  pipe4_fencet
+ );
+ 
+ // &Ports; @23
+@@ -36,9 +38,11 @@ input        pad_cpu_rst_b;
+ input        pad_yy_mbist_mode; 
+ input        pad_yy_scan_mode; 
+ input        pad_yy_scan_rst_b; 
++input        pipe4_fencet;
+ output       fpu_rst_b;        
+ output       had_rst_b;        
+ output       idu_rst_b;        
++output       idu_arch_rst_b;
+ output       ifu_rst_b;        
+ output       lsu_rst_b;        
+ output       mmu_rst_b;        
+@@ -47,9 +51,11 @@ output       mmu_rst_b;
+ reg          core_rst_ff_1st;  
+ reg          core_rst_ff_2nd;  
+ reg          core_rst_ff_3rd;  
++reg          core_uarch_rst_ff;
+ reg          fpurst_b;         
+ reg          hadrst_b;         
+ reg          idurst_b;         
++reg          iduarchrst_b;
+ reg          ifurst_b;         
+ reg          lsurst_b;         
+ reg          mmurst_b;         
+@@ -57,10 +63,12 @@ reg          mmurst_b;
+ // &Wires; @25
+ wire         async_corerst_b;  
+ wire         corerst_b;        
++wire         corearchrst_b;
+ wire         forever_coreclk;  
+ wire         fpu_rst_b;        
+ wire         had_rst_b;        
+ wire         idu_rst_b;        
++wire         idu_arch_rst_b;
+ wire         ifu_rst_b;        
+ wire         lsu_rst_b;        
+ wire         mmu_rst_b;        
+@@ -69,6 +77,7 @@ wire         pad_cpu_rst_b;
+ wire         pad_yy_mbist_mode; 
+ wire         pad_yy_scan_mode; 
+ wire         pad_yy_scan_rst_b; 
++wire         pipe4_fencet;
+ 
+ 
+ //==============================================================================
+@@ -92,7 +101,17 @@ begin
+   end
+ end
+ 
+-assign corerst_b =  pad_yy_scan_mode ? pad_yy_scan_rst_b : core_rst_ff_3rd;
++// Latche fence.t to avoid glitches
++always @(posedge forever_coreclk or negedge corearchrst_b)
++begin
++  if (!corearchrst_b)
++    core_uarch_rst_ff <= 1'b1;
++  else
++    core_uarch_rst_ff <= ~pipe4_fencet;
++end
++
++assign corearchrst_b =  pad_yy_scan_mode ? pad_yy_scan_rst_b : core_rst_ff_3rd;
++assign corerst_b = core_uarch_rst_ff & corearchrst_b;
+ 
+ always @(posedge forever_coreclk or negedge corerst_b)
+ begin
+@@ -114,6 +133,16 @@ end
+ 
+ assign idu_rst_b = pad_yy_scan_mode ? pad_yy_scan_rst_b : idurst_b;
+ 
++always @(posedge forever_coreclk or negedge corearchrst_b)
++begin
++  if (!corearchrst_b)
++    iduarchrst_b <= 1'b0;
++  else
++    iduarchrst_b <= corearchrst_b;
++end
++
++assign idu_arch_rst_b = pad_yy_scan_mode ? pad_yy_scan_rst_b : iduarchrst_b;
++
+ always @(posedge forever_coreclk or negedge corerst_b)
+ begin
+   if (!corerst_b)
+diff --git a/smart_run/logical/common/cpu_sub_system_axi.v b/smart_run/logical/common/cpu_sub_system_axi.v
+index ddabfb2..2b1dcac 100644
+--- a/smart_run/logical/common/cpu_sub_system_axi.v
++++ b/smart_run/logical/common/cpu_sub_system_axi.v
+@@ -225,7 +225,7 @@ rv_integration_platform  x_rv_integration_platform (
+     .pad_cpu_apb_base                             (`APB_BASE_ADDR                           ),
+     .pad_cpu_l2cache_flush_req                    (1'b0                                     ),
+     .pad_cpu_rst_b                                (pad_cpu_rst_b                            ),
+-    .pad_core0_rvba                               (40'b0                                    ),
++    .pad_core0_rvba                               (40'b0                                    ), // Reset vector base address
+     .pad_cpu_sys_cnt                              (pad_cpu_sys_cnt                          ),
+     .pad_had_jtg_tclk                             (pad_had_jtg_tclk                         ),
+     .pad_had_jtg_tdi                              (pad_had_jtg_tdi                          ),
+-- 
+2.16.5
+

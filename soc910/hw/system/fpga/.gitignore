@@ -1,0 +1,14 @@
+.Xil/
+reports/
+out/
+*.cache/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+work-fpga/
+*.log
+*.jou
+*.xci
+*.xpr
+scripts/add_sources.tcl

@@ -1,0 +1,33 @@
+From 06d6eef0c40211c702203448b17f4bc6c65ca06e Mon Sep 17 00:00:00 2001
+From: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+Date: Mon, 6 Feb 2023 14:36:49 +0100
+Subject: [PATCH] Bender.yml: Filter out tb for target fpga
+
+---
+ Bender.yml | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/Bender.yml b/Bender.yml
+index 7a83d88..cd118ef 100644
+--- a/Bender.yml
++++ b/Bender.yml
+@@ -509,7 +509,6 @@ sources:
+       - smart_run/logical/gpio/gpio_ctrl.v
+       # smart_run/logical/tb/tb_verilator.v
+       - smart_run/logical/tb/int_mnt.v
+-      - smart_run/logical/tb/tb.v
+       - smart_run/logical/apb/apb.v
+       - smart_run/logical/apb/apb_bridge.v
+       - smart_run/logical/mem/f_spsram_32768x128.v
+@@ -533,4 +532,8 @@ sources:
+       - smart_run/logical/uart/uart_apb_reg.v
+       - smart_run/logical/uart/uart_ctrl.v
+ 
++      - target: any(simulation, test)
++        files:
++          - smart_run/logical/tb/tb.v
++
+ # Todo: Add simulation sources
+-- 
+2.16.5
+

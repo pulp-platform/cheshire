@@ -1,0 +1,118 @@
+// Copyright 2023 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+//
+// Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+
+import uvm_pkg::*;
+
+`include "uvm_macros.svh"
+
+`define MAIN_MEM(P) dut.i_tc_sram.init_val[(``P``)]
+// `define USER_MEM(P) dut.i_sram.gen_cut[0].gen_mem.gen_mem_user.i_tc_sram_wrapper_user.i_tc_sram.init_val[(``P``)]
+
+import "DPI-C" function read_elf(input string filename);
+import "DPI-C" function byte get_section(output longint address, output longint len);
+import "DPI-C" context function void read_section(input longint address, inout byte buffer[]);
+
+module soc910_tb;
+
+static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
+
+localparam int unsigned CLOCK_PERIOD = 20ns;
+// toggle with RTC period
+localparam int unsigned RTC_CLOCK_PERIOD = 30.517us;
+
+logic clk_i;
+logic rst_ni;
+logic rtc_i;
+
+longint unsigned cycles;
+longint unsigned max_cycles;
+
+// logic [31:0] exit_o;
+
+string binary = "";
+
+soc910_testharness dut (
+  .clk_i  (clk_i),
+  .rst_ni (rst_ni)
+);
+
+// Clock process
+initial begin
+    clk_i = 1'b0;
+    rst_ni = 1'b0;
+    repeat(8)
+        #(CLOCK_PERIOD/2) clk_i = ~clk_i;
+    rst_ni = 1'b1;
+    forever begin
+        #(CLOCK_PERIOD/2) clk_i = 1'b1;
+        #(CLOCK_PERIOD/2) clk_i = 1'b0;
+
+        //if (cycles > max_cycles)
+        //    $fatal(1, "Simulation reached maximum cycle count of %d", max_cycles);
+
+        cycles++;
+    end
+end
+
+initial begin
+    forever begin
+        rtc_i = 1'b0;
+        #(RTC_CLOCK_PERIOD/2) rtc_i = 1'b1;
+        #(RTC_CLOCK_PERIOD/2) rtc_i = 1'b0;
+    end
+end
+
+// initial begin
+//     forever begin
+
+//         wait (exit_o[0]);
+
+//         if ((exit_o >> 1)) begin
+//             `uvm_error( "Core Test",  $sformatf("*** FAILED *** (tohost = %0d)", (exit_o >> 1)))
+//         end else begin
+//             `uvm_info( "Core Test",  $sformatf("*** SUCCESS *** (tohost = %0d)", (exit_o >> 1)), UVM_LOW)
+//         end
+
+//         $finish();
+//     end
+// end
+
+// for faster simulation we can directly preload the ELF
+// Note that we are loosing the capabilities to use risc-fesvr though
+initial begin
+    automatic logic [7:0][7:0] mem_row;
+    longint address, len;
+    byte buffer[];
+    void'(uvcl.get_arg_value("++ELF=", binary));
+
+    if (binary != "") begin
+        `uvm_info( "Core Test", $sformatf("Preloading ELF: %s", binary), UVM_LOW)
+
+        void'(read_elf(binary));
+        // wait with preloading, otherwise randomization will overwrite the existing value
+        wait(clk_i);
+
+        // while there are more sections to process
+        while (get_section(address, len)) begin
+            automatic int num_words = (len+7)/8;
+            `uvm_info( "Core Test", $sformatf("Loading Address: %x, Length: %x", address, len),
+UVM_LOW)
+            buffer = new [num_words*8];
+            void'(read_section(address, buffer));
+            // preload memories
+            // 64-bit
+            for (int i = 0; i < num_words; i++) begin
+                mem_row = '0;
+                for (int j = 0; j < 8; j++) begin
+                    mem_row[j] = buffer[i*8 + j];
+                end
+                `MAIN_MEM((address[23:0] >> 3) + i) = mem_row;
+            end
+        end
+    end
+end
+
+endmodule

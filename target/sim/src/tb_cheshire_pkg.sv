@@ -17,10 +17,11 @@ package tb_cheshire_pkg;
     endfunction
 
     // Number of Cheshire configurations
-    localparam int unsigned NumCheshireConfigs = 32'd2;
+    localparam int unsigned NumCheshireConfigs = 32'd3;
 
     // Assemble a configuration array indexed by a numeric parameter
     localparam cheshire_cfg_t [NumCheshireConfigs-1:0] TbCheshireConfigs = {
+        gen_cheshire_c910_cfg(), // 2: c910 configuration
         gen_cheshire_rt_cfg(),   // 1: RT-enabled configuration
         DefaultCfg               // 0: Default configuration
     };

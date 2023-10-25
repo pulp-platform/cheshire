@@ -8,7 +8,7 @@
 
 module fixture_cheshire_soc #(
   /// The selected simulation configuration from the `tb_cheshire_pkg`.
-  parameter int unsigned SelectedCfg = 32'd0
+  parameter int unsigned SelectedCfg = 32'd2
 );
 
   `include "cheshire/typedef.svh"

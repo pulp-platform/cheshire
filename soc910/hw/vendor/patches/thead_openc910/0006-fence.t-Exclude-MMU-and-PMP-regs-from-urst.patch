@@ -1,0 +1,109 @@
+From 5a2df9ca7175f1a3b4fdb12c00996cd35a0fb2d3 Mon Sep 17 00:00:00 2001
+From: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+Date: Fri, 2 Dec 2022 14:32:53 +0100
+Subject: [PATCH 06/10] fence.t: Exclude MMU and PMP regs from urst
+
+Signed-off-by: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+---
+ C910_RTL_FACTORY/gen_rtl/cpu/rtl/ct_top.v     | 2 ++
+ C910_RTL_FACTORY/gen_rtl/mmu/rtl/ct_mmu_top.v | 5 ++++-
+ C910_RTL_FACTORY/gen_rtl/pmp/rtl/ct_pmp_top.v | 5 ++++-
+ 3 files changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/C910_RTL_FACTORY/gen_rtl/cpu/rtl/ct_top.v b/C910_RTL_FACTORY/gen_rtl/cpu/rtl/ct_top.v
+index 18299f8..e0b344f 100644
+--- a/C910_RTL_FACTORY/gen_rtl/cpu/rtl/ct_top.v
++++ b/C910_RTL_FACTORY/gen_rtl/cpu/rtl/ct_top.v
+@@ -1339,6 +1339,7 @@ ct_mmu_top  x_ct_mmu_top (
+   .cp0_mmu_wreg             (cp0_mmu_wreg            ),
+   .cp0_yy_priv_mode         (cp0_yy_priv_mode        ),
+   .cpurst_b                 (mmu_rst_b               ),
++  .arch_rst_b               (idu_arch_rst_b          ),
+   .forever_cpuclk           (coreclk                 ),
+   .hpcp_mmu_cnt_en          (hpcp_mmu_cnt_en         ),
+   .ifu_mmu_abort            (ifu_mmu_abort           ),
+@@ -1454,6 +1455,7 @@ ct_pmp_top  x_ct_pmp_top (
+   .cp0_pmp_wreg       (cp0_pmp_wreg      ),
+   .cp0_yy_priv_mode   (cp0_yy_priv_mode  ),
+   .cpurst_b           (mmu_rst_b         ),
++  .arch_rst_b         (idu_arch_rst_b    ),
+   .forever_cpuclk     (coreclk           ),
+   .mmu_pmp_fetch3     (mmu_pmp_fetch3    ),
+   .mmu_pmp_pa0        (mmu_pmp_pa0       ),
+diff --git a/C910_RTL_FACTORY/gen_rtl/mmu/rtl/ct_mmu_top.v b/C910_RTL_FACTORY/gen_rtl/mmu/rtl/ct_mmu_top.v
+index e63b7be..eb8d66f 100644
+--- a/C910_RTL_FACTORY/gen_rtl/mmu/rtl/ct_mmu_top.v
++++ b/C910_RTL_FACTORY/gen_rtl/mmu/rtl/ct_mmu_top.v
+@@ -32,6 +32,7 @@ module ct_mmu_top(
+   cp0_mmu_wreg,
+   cp0_yy_priv_mode,
+   cpurst_b,
++  arch_rst_b,
+   forever_cpuclk,
+   hpcp_mmu_cnt_en,
+   ifu_mmu_abort,
+@@ -146,6 +147,7 @@ input   [63:0]  cp0_mmu_wdata;
+ input           cp0_mmu_wreg;               
+ input   [1 :0]  cp0_yy_priv_mode;           
+ input           cpurst_b;                   
++input           arch_rst_b;
+ input           forever_cpuclk;             
+ input           hpcp_mmu_cnt_en;            
+ input           ifu_mmu_abort;              
+@@ -279,6 +281,7 @@ wire    [63:0]  cp0_mmu_wdata;
+ wire            cp0_mmu_wreg;               
+ wire    [1 :0]  cp0_yy_priv_mode;           
+ wire            cpurst_b;                   
++wire            arch_rst_b;
+ wire            dutlb_arb_cmplt;            
+ wire            dutlb_arb_load;             
+ wire            dutlb_arb_req;              
+@@ -701,7 +704,7 @@ ct_mmu_regs  x_ct_mmu_regs (
+   .cp0_mmu_wdata            (cp0_mmu_wdata           ),
+   .cp0_mmu_wreg             (cp0_mmu_wreg            ),
+   .cp0_yy_priv_mode         (cp0_yy_priv_mode        ),
+-  .cpurst_b                 (cpurst_b                ),
++  .cpurst_b                 (arch_rst_b              ),
+   .forever_cpuclk           (forever_cpuclk          ),
+   .jtlb_regs_hit            (jtlb_regs_hit           ),
+   .jtlb_regs_hit_mult       (jtlb_regs_hit_mult      ),
+diff --git a/C910_RTL_FACTORY/gen_rtl/pmp/rtl/ct_pmp_top.v b/C910_RTL_FACTORY/gen_rtl/pmp/rtl/ct_pmp_top.v
+index ff76ceb..efe4055 100644
+--- a/C910_RTL_FACTORY/gen_rtl/pmp/rtl/ct_pmp_top.v
++++ b/C910_RTL_FACTORY/gen_rtl/pmp/rtl/ct_pmp_top.v
+@@ -21,6 +21,7 @@ module ct_pmp_top(
+   cp0_pmp_wreg,
+   cp0_yy_priv_mode,
+   cpurst_b,
++  arch_rst_b,
+   forever_cpuclk,
+   mmu_pmp_fetch3,
+   mmu_pmp_pa0,
+@@ -46,6 +47,7 @@ input   [63:0]  cp0_pmp_wdata;
+ input           cp0_pmp_wreg;      
+ input   [1 :0]  cp0_yy_priv_mode;  
+ input           cpurst_b;          
++input           arch_rst_b;
+ input           forever_cpuclk;    
+ input           mmu_pmp_fetch3;    
+ input   [27:0]  mmu_pmp_pa0;       
+@@ -74,6 +76,7 @@ wire            cp0_pmp_wreg;
+ wire    [1 :0]  cp0_yy_priv_mode;  
+ wire            cpuclk;            
+ wire            cpurst_b;          
++wire            arch_rst_b;
+ wire    [1 :0]  cur_priv_mode;     
+ wire            forever_cpuclk;    
+ wire            mmu_pmp_fetch3;    
+@@ -209,7 +212,7 @@ gated_clk_cell  x_pmp_gated_clk (
+ ct_pmp_regs  x_ct_pmp_regs (
+   .cp0_pmp_wdata  (cp0_pmp_wdata ),
+   .cpuclk         (cpuclk        ),
+-  .cpurst_b       (cpurst_b      ),
++  .cpurst_b       (arch_rst_b    ),
+   .pmp_cp0_data   (pmp_cp0_data  ),
+   .pmp_csr_sel    (pmp_csr_sel   ),
+   .pmp_csr_wen    (pmp_csr_wen   ),
+-- 
+2.16.5
+

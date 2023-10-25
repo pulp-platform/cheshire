@@ -1,0 +1,13 @@
+# Bender
+.bender/
+*.lock
+Bender.local
+# Build
+build/
+# Override dependencies
+deps/
+# Backup
+*.bk
+*.tmp
+# OS
+*.DS_Store

@@ -1,0 +1,62 @@
+From 290174af285532b31109dbe9dc1b5868563be57e Mon Sep 17 00:00:00 2001
+From: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+Date: Tue, 13 Dec 2022 15:45:22 +0100
+Subject: [PATCH 10/10] tb: Write UART log to file
+
+Signed-off-by: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+---
+ smart_run/logical/tb/tb.v | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/smart_run/logical/tb/tb.v b/smart_run/logical/tb/tb.v
+index 312f14c..c008a57 100644
+--- a/smart_run/logical/tb/tb.v
++++ b/smart_run/logical/tb/tb.v
+@@ -72,6 +72,7 @@ module tb();
+   wire  pad_yy_gate_clk_en_b;
+   
+   static integer FILE;
++  static integer uart_file;
+   
+   wire uart0_sin;
+   wire [7:0]b_pad_gpio_porta;
+@@ -203,7 +204,12 @@ module tb();
+     $fwrite(FILE,"TEST FAIL");   
+   $finish;
+   end
+-  
++
++  initial
++  begin
++    uart_file = $fopen("uart.log", "w");
++  end
++
+   reg [31:0] retire_inst_in_period;
+   reg [31:0] cycle_count;
+   
+@@ -300,18 +306,22 @@ module tb();
+      if(cpu_wstrb[15:0] == 16'hf)
+      begin
+         $write("%c", `SOC_TOP.biu_pad_wdata[7:0]);
++        $fwrite(uart_file, "%c", `SOC_TOP.biu_pad_wdata[7:0]);
+      end
+      else if(cpu_wstrb[15:0] == 16'hf0)
+      begin
+         $write("%c", `SOC_TOP.biu_pad_wdata[39:32]);
++        $fwrite(uart_file, "%c", `SOC_TOP.biu_pad_wdata[39:32]);
+      end
+      else if(cpu_wstrb[15:0] == 16'hf00)
+      begin
+         $write("%c", `SOC_TOP.biu_pad_wdata[71:64]);
++        $fwrite(uart_file, "%c", `SOC_TOP.biu_pad_wdata[71:64]);
+      end
+      else if(cpu_wstrb[15:0] == 16'hf000)
+      begin
+         $write("%c", `SOC_TOP.biu_pad_wdata[103:96]);
++        $fwrite(uart_file, "%c", `SOC_TOP.biu_pad_wdata[103:96]);
+      end
+     end
+   
+-- 
+2.16.5
+

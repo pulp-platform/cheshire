@@ -1,0 +1,25 @@
+From ddc09d104523c9db90b5f18ad62f065f9a0ffa1d Mon Sep 17 00:00:00 2001
+From: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+Date: Sat, 7 Jan 2023 00:47:49 +0100
+Subject: [PATCH] cpu_sub_system_axi: Resolve multiple intc drivers
+
+---
+ smart_run/logical/common/cpu_sub_system_axi.v | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/smart_run/logical/common/cpu_sub_system_axi.v b/smart_run/logical/common/cpu_sub_system_axi.v
+index 6041fb7..6be86a3 100644
+--- a/smart_run/logical/common/cpu_sub_system_axi.v
++++ b/smart_run/logical/common/cpu_sub_system_axi.v
+@@ -368,7 +368,7 @@ end
+ // assign pad_plic_int_vld  = {{ 144 - 40{1'b0}}, xx_intc_vld[39:0]};
+ assign pad_plic_int_vld[ 39 : 0] = xx_intc_vld[ 39 : 0];
+ 
+-assign pad_plic_int_vld[144 - 1 : 32] = 'h0;
++assign pad_plic_int_vld[144 - 1 : 40] = 'h0;
+ 
+ assign pad_plic_int_cfg  = 'b0;
+ 
+-- 
+2.16.5
+

@@ -1,0 +1,55 @@
+From 86d35d810e50d6d5f899c6d4dbf9ccad6f84cf4c Mon Sep 17 00:00:00 2001
+From: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+Date: Fri, 11 Mar 2022 23:31:11 +0100
+Subject: [PATCH 02/10] openc910: Add includes
+
+Signed-off-by: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+---
+ C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_read_channel.v | 3 +++
+ C910_RTL_FACTORY/gen_rtl/mmu/rtl/ct_mmu_sysmap.v       | 2 ++
+ smart_run/logical/common/cpu_sub_system_axi.v          | 2 ++
+ 3 files changed, 7 insertions(+)
+
+diff --git a/C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_read_channel.v b/C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_read_channel.v
+index b0e73d6..82827e0 100644
+--- a/C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_read_channel.v
++++ b/C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_read_channel.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_biu_read_channel(
+   araddr,
+   arbar,
+diff --git a/C910_RTL_FACTORY/gen_rtl/mmu/rtl/ct_mmu_sysmap.v b/C910_RTL_FACTORY/gen_rtl/mmu/rtl/ct_mmu_sysmap.v
+index 8bb46d6..51cead3 100644
+--- a/C910_RTL_FACTORY/gen_rtl/mmu/rtl/ct_mmu_sysmap.v
++++ b/C910_RTL_FACTORY/gen_rtl/mmu/rtl/ct_mmu_sysmap.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "sysmap.h"
++
+ // &ModuleBeg; @28
+ module ct_mmu_sysmap(
+   mmu_sysmap_pa_y,
+diff --git a/smart_run/logical/common/cpu_sub_system_axi.v b/smart_run/logical/common/cpu_sub_system_axi.v
+index 8acde95..ddabfb2 100644
+--- a/smart_run/logical/common/cpu_sub_system_axi.v
++++ b/smart_run/logical/common/cpu_sub_system_axi.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`define APB_BASE_ADDR 40'hb0000000
++
+ module cpu_sub_system_axi
+ ///////////////////////////////////////////////////
+ // Ports Declarations
+-- 
+2.16.5
+

@@ -1,0 +1,41 @@
+package:
+  name: apb
+  authors:
+    - "Andreas Kurth <akurth@iis.ee.ethz.ch>" # current maintainer
+    - "Fabian Schuiki <fschuiki@iis.ee.ethz.ch>"
+    - "Wolfgang Roenninger <wroennin@ethz.ch>"
+
+dependencies:
+  common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.16.2 }
+
+export_include_dirs:
+  - include
+
+sources:
+  # Source files grouped in levels. Files in level 0 have no dependencies on files in this
+  # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
+  # levels 1 and 0, etc. Files within a level are ordered alphabetically.
+  # Level 0
+  - src/apb_pkg.sv
+  # Level 1
+  - src/apb_intf.sv
+  # Level 2
+  - src/apb_err_slv.sv
+  - src/apb_regs.sv
+  - src/apb_cdc.sv
+  - src/apb_demux.sv
+
+  - target: simulation
+    files:
+      - src/apb_test.sv
+
+  - target: test
+    files:
+      - test/tb_apb_regs.sv
+      - test/tb_apb_cdc.sv
+      - test/tb_apb_demux.sv
+
+  - target: synth_test
+    files:
+      # Level 0
+      - test/synth_bench.sv

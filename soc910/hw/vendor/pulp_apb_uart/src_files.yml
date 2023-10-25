@@ -1,0 +1,17 @@
+apb_uart:
+  files: [
+    src/apb_uart_wrap.sv,
+    src/apb_uart.sv,
+    src/reg_uart_wrap.sv,
+    src/slib_clock_div.sv,
+    src/slib_counter.sv,
+    src/slib_edge_detect.sv,
+    src/slib_fifo.sv,
+    src/slib_input_filter.sv,
+    src/slib_input_sync.sv,
+    src/slib_mv_filter.sv,
+    src/uart_baudgen.sv,
+    src/uart_interrupt.sv,
+    src/uart_receiver.sv,
+    src/uart_transmitter.sv,
+  ]

@@ -1,0 +1,167 @@
+From 3758c90ba85ff9f82646174833cc76876daadf16 Mon Sep 17 00:00:00 2001
+From: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+Date: Tue, 13 Dec 2022 15:43:15 +0100
+Subject: [PATCH 08/10] c910: Include cpu_cfig.h in various files
+
+Signed-off-by: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+---
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_data_array.v   | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_dirty_array.v  | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_info_update.v  | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_ld_tag_array.v | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_tag_array.v    | 2 ++
+ C910_RTL_FACTORY/gen_rtl/plic/rtl/plic_ctrl.v                 | 3 +++
+ C910_RTL_FACTORY/gen_rtl/plic/rtl/plic_top.v                  | 3 +++
+ smart_run/logical/apb/apb.v                                   | 2 ++
+ smart_run/logical/common/cpu_sub_system_axi.v                 | 2 ++
+ smart_run/logical/common/soc.v                                | 1 +
+ smart_run/logical/tb/tb_verilator.v                           | 2 ++
+ 11 files changed, 23 insertions(+)
+
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_data_array.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_data_array.v
+index 5cd9214..7c30c60 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_data_array.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_data_array.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ module ct_lsu_dcache_data_array(
+   data_din,
+   data_dout,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_dirty_array.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_dirty_array.v
+index 3b68acd..a16d2af 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_dirty_array.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_dirty_array.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ module ct_lsu_dcache_dirty_array(
+   dirty_din,
+   dirty_dout,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_info_update.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_info_update.v
+index 69fc2db..67ae95e 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_info_update.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_info_update.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @23
+ module ct_lsu_dcache_info_update(
+   compare_dcwp_addr,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_ld_tag_array.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_ld_tag_array.v
+index b367dfc..ef671c2 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_ld_tag_array.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_ld_tag_array.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ module ct_lsu_dcache_ld_tag_array(
+   forever_cpuclk,
+   pad_yy_icg_scan_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_tag_array.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_tag_array.v
+index 3b2d408..3a9c76b 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_tag_array.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_tag_array.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &Depend("ct_spsram_256x52.vp"); @26
+ // &Depend("ct_spsram_512x52.vp"); @27
+ 
+diff --git a/C910_RTL_FACTORY/gen_rtl/plic/rtl/plic_ctrl.v b/C910_RTL_FACTORY/gen_rtl/plic/rtl/plic_ctrl.v
+index 2a7df28..c8b7d6c 100644
+--- a/C910_RTL_FACTORY/gen_rtl/plic/rtl/plic_ctrl.v
++++ b/C910_RTL_FACTORY/gen_rtl/plic/rtl/plic_ctrl.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module plic_ctrl(
+   plicrst_b,
+   plic_clk,
+diff --git a/C910_RTL_FACTORY/gen_rtl/plic/rtl/plic_top.v b/C910_RTL_FACTORY/gen_rtl/plic/rtl/plic_top.v
+index de53dd7..d3e7f7f 100644
+--- a/C910_RTL_FACTORY/gen_rtl/plic/rtl/plic_top.v
++++ b/C910_RTL_FACTORY/gen_rtl/plic/rtl/plic_top.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module plic_top(
+   plic_hartx_mint_req,
+   plic_hartx_sint_req,
+diff --git a/smart_run/logical/apb/apb.v b/smart_run/logical/apb/apb.v
+index d5f3a4b..752f75a 100644
+--- a/smart_run/logical/apb/apb.v
++++ b/smart_run/logical/apb/apb.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ module apb(
+   b_pad_gpio_porta,
+   biu_pad_haddr,
+diff --git a/smart_run/logical/common/cpu_sub_system_axi.v b/smart_run/logical/common/cpu_sub_system_axi.v
+index 2b1dcac..6041fb7 100644
+--- a/smart_run/logical/common/cpu_sub_system_axi.v
++++ b/smart_run/logical/common/cpu_sub_system_axi.v
+@@ -15,6 +15,8 @@ limitations under the License.
+ 
+ `define APB_BASE_ADDR 40'hb0000000
+ 
++`include "cpu_cfig.h"
++
+ module cpu_sub_system_axi
+ ///////////////////////////////////////////////////
+ // Ports Declarations
+diff --git a/smart_run/logical/common/soc.v b/smart_run/logical/common/soc.v
+index ee2f18a..4fa01f9 100644
+--- a/smart_run/logical/common/soc.v
++++ b/smart_run/logical/common/soc.v
+@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
+ 
+ module soc(
+   b_pad_gpio_porta,
+diff --git a/smart_run/logical/tb/tb_verilator.v b/smart_run/logical/tb/tb_verilator.v
+index ab4fee5..b946274 100644
+--- a/smart_run/logical/tb/tb_verilator.v
++++ b/smart_run/logical/tb/tb_verilator.v
+@@ -27,6 +27,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ `timescale 1ns/100ps
+ 
+ `define CLK_PERIOD          10
+-- 
+2.16.5
+

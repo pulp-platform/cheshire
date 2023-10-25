@@ -1,0 +1,25 @@
+onerror {resume}
+add wave -noupdate -group cpu_top /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/*
+add wave -noupdate -group regs /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_cp0_top/x_ct_cp0_regs/*_value
+add wave -noupdate -group regs /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_cp0_top/x_ct_cp0_regs/rtu_cp0_epc
+add wave -noupdate -group regs /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_cp0_top/x_ct_cp0_regs/pipe4_fencet
+add wave -noupdate -group cp0_iui /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_cp0_top/x_ct_cp0_iui/*
+add wave -noupdate -group lsu_top /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_lsu_top/*
+add wave -noupdate -group lsu_icc /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_lsu_top/x_ct_lsu_icc/*
+add wave -noupdate -group dcache_top /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_lsu_top/x_ct_lsu_dcache_top/*
+add wave -noupdate -group dcache_arb /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_lsu_top/x_ct_lsu_dcache_arb/*
+add wave -noupdate -group lsu_vb /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_lsu_top/x_ct_lsu_vb/*
+add wave -noupdate -group lsu_sq /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_lsu_top/x_ct_lsu_sq/*
+add wave -noupdate -group ct_rst /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_rst_top/*
+add wave -noupdate -group pipe4_decd /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_idu_top/x_ct_idu_rf_dp/x_ct_idu_rf_pipe4_decd/*
+add wave -noupdate -group ifu_pcgen /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_ifu_top/x_ct_ifu_pcgen/*
+add wave -noupdate -group ifu_vector /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_ifu_top/x_ct_ifu_vector/*
+add wave -noupdate -group idu_pregfile /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_idu_top/x_ct_idu_rf_prf_pregfile/*
+add wave -noupdate -group iu_rbus /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_iu_top/x_ct_iu_rbus/*
+add wave -noupdate -group iu_alu0 /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_iu_top/x_ct_iu_alu0/*
+add wave -noupdate -group idu_rf_ctrl /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_idu_top/x_ct_idu_rf_ctrl/*
+add wave -noupdate -group idu_rf_ctrl /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_idu_top/x_ct_idu_rf_ctrl/*
+add wave -noupdate -group ifu_icache /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_top_0/x_ct_core/x_ct_ifu_top/x_ct_ifu_icache_if/*
+add wave -noupdate -group l2c /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_l2c_top/*
+add wave -noupdate -group snb_arb_1 /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_ciu_top/x_ct_ciu_snb_1/x_ct_ciu_snb_arb/*
+add wave -noupdate -group snb_sab_1 /tb/x_soc/x_cpu_sub_system_axi/x_rv_integration_platform/x_cpu_top/x_ct_ciu_top/x_ct_ciu_snb_1/x_ct_ciu_snb_sab/*

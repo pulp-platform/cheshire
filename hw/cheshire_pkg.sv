@@ -7,7 +7,6 @@
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 // Thomas Benz <tbenz@iis.ee.ethz.ch>
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
-
 package cheshire_pkg;
 
   ///////////
@@ -61,6 +60,11 @@ package cheshire_pkg;
   typedef bit [ 5:0] aw_bt;   // address, ID widths or small buffers
 
   // Externally controllable parameters
+  typedef enum logic {
+    CVA6            = 'b0,
+    C910            = 'b1
+  } core_select_e;
+
   typedef struct packed {
     // CVA6 parameters
     shrt_bt Cva6RASDepth;
@@ -73,6 +77,7 @@ package cheshire_pkg;
     doub_bt Cva6ExtCieLength;
     bit     Cva6ExtCieOnTop;
     // Hart parameters
+    core_select_e Core;
     bit [MaxCoresWidth-1:0] NumCores;
     doub_bt NumExtIrqHarts;
     doub_bt NumExtDbgHarts;
@@ -508,6 +513,7 @@ package cheshire_pkg;
     Cva6ExtCieLength  : 'h2000_0000,  // [0x2.., 0x4..) is CIE, [0x4.., 0x8..) is non-CIE
     Cva6ExtCieOnTop   : 0,
     // Harts
+    Core              : CVA6,
     NumCores          : 1,
     CoreMaxTxns       : 8,
     CoreMaxTxnsPerId  : 4,
@@ -604,5 +610,26 @@ package cheshire_pkg;
     // All non-set values should be zero
     default: '0
   };
+
+  // C910 config
+    // 24 MByte in 8 byte words
+  localparam NumWords = (24 * 1024 * 1024) / 8;
+  localparam NrMasters = 1; // c910
+  localparam AxiAddrWidth = 40;
+  localparam AxiDataWidth = 128;
+  localparam AxiIdWidthMaster = 8;
+  localparam AxiIdWidthSlaves = AxiIdWidthMaster + $clog2(NrMasters); // 5
+  localparam AxiUserWidth = 1;
+
+  function automatic cheshire_cfg_t gen_cheshire_c910_cfg();
+    cheshire_cfg_t ret  = DefaultCfg;
+    ret.Core            = C910;
+    ret.AddrWidth       = AxiAddrWidth;
+    ret.AxiDataWidth    = AxiDataWidth;
+    ret.AxiMstIdWidth   = AxiIdWidthMaster;
+    ret.AxiUserWidth    = AxiUserWidth;
+    return ret;
+  endfunction
+
 
 endpackage

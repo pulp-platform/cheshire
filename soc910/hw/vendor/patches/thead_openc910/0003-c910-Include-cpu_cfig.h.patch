@@ -1,0 +1,1162 @@
+From 04de741b0c0264673c292bfedee075a40e487dd9 Mon Sep 17 00:00:00 2001
+From: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+Date: Thu, 27 Oct 2022 13:17:47 +0200
+Subject: [PATCH 03/10] c910: Include `cpu_cfig.h`
+
+Signed-off-by: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+---
+ C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_req_arbiter.v           | 3 +++
+ C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_snoop_channel.v         | 3 +++
+ C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_write_channel.v         | 3 +++
+ C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_apbif.v                 | 3 +++
+ C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_ctcq.v                  | 2 ++
+ C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_ctcq_reqq_entry.v       | 3 +++
+ C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_ebiuif.v                | 3 +++
+ C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_arb.v               | 2 ++
+ C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_dp_sel.v            | 2 ++
+ C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_sab.v               | 2 ++
+ C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_sab_entry.v         | 2 ++
+ C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_vb.v                    | 2 ++
+ C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_cawt_entry.v           | 2 ++
+ C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_ncwt_entry.v           | 3 +++
+ C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_read_channel.v         | 2 ++
+ C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_snoop_channel_dummy.v  | 3 +++
+ C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_write_channel.v        | 2 ++
+ C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_piu_top.v                   | 2 ++
+ C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_piu_top_dummy.v             | 3 +++
+ C910_RTL_FACTORY/gen_rtl/cp0/rtl/ct_cp0_regs.v                  | 1 +
+ C910_RTL_FACTORY/gen_rtl/cpu/rtl/openC910.v                     | 3 +++
+ C910_RTL_FACTORY/gen_rtl/had/rtl/ct_had_ddc_dp.v                | 2 ++
+ C910_RTL_FACTORY/gen_rtl/had/rtl/ct_had_pcfifo.v                | 2 ++
+ C910_RTL_FACTORY/gen_rtl/had/rtl/ct_had_regs.v                  | 4 +++-
+ C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_data_array0.v    | 2 ++
+ C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_data_array1.v    | 2 ++
+ C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_predecd_array0.v | 2 ++
+ C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_predecd_array1.v | 2 ++
+ C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_tag_array.v      | 1 +
+ C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_ifctrl.v                | 2 ++
+ C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_cmp.v                   | 2 ++
+ C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_data.v                  | 3 +++
+ C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_icc.v                   | 2 ++
+ C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_tag.v                   | 2 ++
+ C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_tag_ecc.v               | 2 ++
+ C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_wb.v                    | 2 ++
+ C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2cache_data_array.v        | 2 ++
+ C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2cache_dirty_array_16way.v | 2 ++
+ C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2cache_tag_array_16way.v   | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_amr.v                   | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_bus_arb.v               | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_cache_buffer.v          | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_arb.v            | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_icc.v                   | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_ag.v                 | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_da.v                 | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_dc.v                 | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_wb.v                 | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lfb.v                   | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lfb_addr_entry.v        | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lm.v                    | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lq_entry.v              | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu.v                   | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_gpfb.v              | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_entry.v         | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_l1sm.v          | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_l2sm.v          | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_tsm.v           | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_sdb_cmp.v           | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_sdb_entry.v         | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_rb.v                    | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_rb_entry.v              | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_ctcq.v            | 3 +++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_ctcq_entry.v      | 3 +++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_req_arbiter.v     | 3 +++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_snq.v             | 3 +++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_snq_entry.v       | 3 +++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_spec_fail_predict.v     | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_sq.v                    | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_sq_entry.v              | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_ag.v                 | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_da.v                 | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_dc.v                 | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_wb.v                 | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_vb.v                    | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_vb_addr_entry.v         | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_wmb.v                   | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_wmb_ce.v                | 2 ++
+ C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_wmb_entry.v             | 2 ++
+ C910_RTL_FACTORY/gen_rtl/mmu/rtl/ct_mmu_sysmap.v                | 1 +
+ C910_RTL_FACTORY/gen_rtl/pmp/rtl/ct_pmp_comp_hit.v              | 3 +++
+ 81 files changed, 177 insertions(+), 1 deletion(-)
+
+diff --git a/C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_req_arbiter.v b/C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_req_arbiter.v
+index ad385c4..af257ed 100644
+--- a/C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_req_arbiter.v
++++ b/C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_req_arbiter.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_biu_req_arbiter(
+   araddr,
+   arbar,
+diff --git a/C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_snoop_channel.v b/C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_snoop_channel.v
+index 5324fff..4dd6934 100644
+--- a/C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_snoop_channel.v
++++ b/C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_snoop_channel.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_biu_snoop_channel(
+   accpuclk,
+   biu_lsu_ac_addr,
+diff --git a/C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_write_channel.v b/C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_write_channel.v
+index 0a3f8ff..7bb0b36 100644
+--- a/C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_write_channel.v
++++ b/C910_RTL_FACTORY/gen_rtl/biu/rtl/ct_biu_write_channel.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_biu_write_channel(
+   bcpuclk,
+   biu_lsu_b_id,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_apbif.v b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_apbif.v
+index 541ed90..58a5fc4 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_apbif.v
++++ b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_apbif.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_ciu_apbif(
+   apb_clk_en,
+   apbif_had_pctrace_inv,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_ctcq.v b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_ctcq.v
+index b3189eb..cb31e46 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_ctcq.v
++++ b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_ctcq.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @23
+ module ct_ciu_ctcq(
+   bmbif_ctcq_bar_req,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_ctcq_reqq_entry.v b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_ctcq_reqq_entry.v
+index 707df21..0997806 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_ctcq_reqq_entry.v
++++ b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_ctcq_reqq_entry.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_ciu_ctcq_reqq_entry(
+   ciu_icg_en,
+   cpurst_b,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_ebiuif.v b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_ebiuif.v
+index 1b6a278..ffdbd52 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_ebiuif.v
++++ b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_ebiuif.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_ciu_ebiuif(
+   ciu_icg_en,
+   cpurst_b,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_arb.v b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_arb.v
+index 960445c..3704864 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_arb.v
++++ b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_arb.v
+@@ -15,6 +15,8 @@ limitations under the License.
+ 
+ // &Depend("ct_fifo.v"); @18
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @20
+ module ct_ciu_snb_arb(
+   ar_crt_entry_index,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_dp_sel.v b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_dp_sel.v
+index 7a5d1bf..f27f789 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_dp_sel.v
++++ b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_dp_sel.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @18
+ module ct_ciu_snb_dp_sel(
+   entry0_age_vect,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_sab.v b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_sab.v
+index 22ceeaf..5674d9e 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_sab.v
++++ b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_sab.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @22
+ module ct_ciu_snb_sab(
+   ar_crt_entry_index,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_sab_entry.v b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_sab_entry.v
+index 27a2085..dd0a142 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_sab_entry.v
++++ b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_snb_sab_entry.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @21
+ module ct_ciu_snb_sab_entry(
+   agevec_clr,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_vb.v b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_vb.v
+index 4637385..ad1a131 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_vb.v
++++ b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ciu_vb.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @18
+ module ct_ciu_vb(
+   ciu_icg_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_cawt_entry.v b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_cawt_entry.v
+index 78cd71c..f994a5a 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_cawt_entry.v
++++ b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_cawt_entry.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @24
+ module ct_ebiu_cawt_entry(
+   ca_rd_addr_hit_cawt_x,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_ncwt_entry.v b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_ncwt_entry.v
+index 4aa7c60..a1259ff 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_ncwt_entry.v
++++ b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_ncwt_entry.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_ebiu_ncwt_entry(
+   aw_needissue,
+   bfifo_pop_bresp,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_read_channel.v b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_read_channel.v
+index 8692b2d..54e0e60 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_read_channel.v
++++ b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_read_channel.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @24
+ module ct_ebiu_read_channel(
+   ca_rd_addr_hit_cawt,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_snoop_channel_dummy.v b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_snoop_channel_dummy.v
+index a25b34a..46f439d 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_snoop_channel_dummy.v
++++ b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_snoop_channel_dummy.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_ebiu_snoop_channel_dummy(
+   ebiu_ebiuif_acaddr,
+   ebiu_ebiuif_acid,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_write_channel.v b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_write_channel.v
+index c60c39f..52e562f 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_write_channel.v
++++ b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_ebiu_write_channel.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @23
+ module ct_ebiu_write_channel(
+   ca_rd_addr_hit_cawt,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_piu_top.v b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_piu_top.v
+index 07456c4..47a2089 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_piu_top.v
++++ b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_piu_top.v
+@@ -15,6 +15,8 @@ limitations under the License.
+ 
+ // &Depend("ct_fifo.v"); @18
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @20
+ module ct_piu_top(
+   bmbif_piu_ctcq_grant,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_piu_top_dummy.v b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_piu_top_dummy.v
+index 6b6204b..9efb66e 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_piu_top_dummy.v
++++ b/C910_RTL_FACTORY/gen_rtl/ciu/rtl/ct_piu_top_dummy.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_piu_top_dummy(
+   bmbif_piu_ctcq_grant,
+   bmbif_piu_ncq_grant,
+diff --git a/C910_RTL_FACTORY/gen_rtl/cp0/rtl/ct_cp0_regs.v b/C910_RTL_FACTORY/gen_rtl/cp0/rtl/ct_cp0_regs.v
+index 11e7518..bdc078b 100644
+--- a/C910_RTL_FACTORY/gen_rtl/cp0/rtl/ct_cp0_regs.v
++++ b/C910_RTL_FACTORY/gen_rtl/cp0/rtl/ct_cp0_regs.v
+@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
+ 
+ // &ModuleBeg; @24
+ module ct_cp0_regs(
+diff --git a/C910_RTL_FACTORY/gen_rtl/cpu/rtl/openC910.v b/C910_RTL_FACTORY/gen_rtl/cpu/rtl/openC910.v
+index 4eb662b..84c32d6 100644
+--- a/C910_RTL_FACTORY/gen_rtl/cpu/rtl/openC910.v
++++ b/C910_RTL_FACTORY/gen_rtl/cpu/rtl/openC910.v
+@@ -29,6 +29,9 @@ limitations under the License.
+ // &Depend("sync_level2level.v"); @37
+ // &Depend("plic_sec_busif.v"); @39
+ // &ModuleBeg; @41
++
++`include "cpu_cfig.h"
++
+ module openC910(
+   axim_clk_en,
+   biu_pad_araddr,
+diff --git a/C910_RTL_FACTORY/gen_rtl/had/rtl/ct_had_ddc_dp.v b/C910_RTL_FACTORY/gen_rtl/had/rtl/ct_had_ddc_dp.v
+index 302ebb2..1fa9193 100644
+--- a/C910_RTL_FACTORY/gen_rtl/had/rtl/ct_had_ddc_dp.v
++++ b/C910_RTL_FACTORY/gen_rtl/had/rtl/ct_had_ddc_dp.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @23
+ module ct_had_ddc_dp(
+   cpuclk,
+diff --git a/C910_RTL_FACTORY/gen_rtl/had/rtl/ct_had_pcfifo.v b/C910_RTL_FACTORY/gen_rtl/had/rtl/ct_had_pcfifo.v
+index 99d5ff9..cc81a5e 100644
+--- a/C910_RTL_FACTORY/gen_rtl/had/rtl/ct_had_pcfifo.v
++++ b/C910_RTL_FACTORY/gen_rtl/had/rtl/ct_had_pcfifo.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @23
+ module ct_had_pcfifo(
+   cpuclk,
+diff --git a/C910_RTL_FACTORY/gen_rtl/had/rtl/ct_had_regs.v b/C910_RTL_FACTORY/gen_rtl/had/rtl/ct_had_regs.v
+index 93f8320..22b3c79 100644
+--- a/C910_RTL_FACTORY/gen_rtl/had/rtl/ct_had_regs.v
++++ b/C910_RTL_FACTORY/gen_rtl/had/rtl/ct_had_regs.v
+@@ -12,7 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+-  
++
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @24
+ module ct_had_regs(
+   bkpt_regs_mbca,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_data_array0.v b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_data_array0.v
+index 008131d..1a5e6b1 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_data_array0.v
++++ b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_data_array0.v
+@@ -21,6 +21,8 @@ limitations under the License.
+ // &Depend("ct_spsram_2048x32_split.vp"); @29
+ // &Depend("ct_spsram_1024x32.vp"); @30
+ 
++`include "cpu_cfig.h"
++
+ module ct_ifu_icache_data_array0(
+   cp0_yy_clk_en,
+   cp0_ifu_icg_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_data_array1.v b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_data_array1.v
+index 99f256d..405fac4 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_data_array1.v
++++ b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_data_array1.v
+@@ -21,6 +21,8 @@ limitations under the License.
+ // &Depend("ct_spsram_2048x32_split.vp"); @29
+ // &Depend("ct_spsram_1024x32.vp"); @30
+ 
++`include "cpu_cfig.h"
++
+ module ct_ifu_icache_data_array1(
+   cp0_yy_clk_en,
+   cp0_ifu_icg_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_predecd_array0.v b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_predecd_array0.v
+index 2d7495d..0cd0101 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_predecd_array0.v
++++ b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_predecd_array0.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ module ct_ifu_icache_predecd_array0(
+   cp0_ifu_icg_en,
+   cp0_yy_clk_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_predecd_array1.v b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_predecd_array1.v
+index da7a214..22f42bc 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_predecd_array1.v
++++ b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_predecd_array1.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ module ct_ifu_icache_predecd_array1(
+   cp0_ifu_icg_en,
+   cp0_yy_clk_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_tag_array.v b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_tag_array.v
+index 2b78afd..607a6c9 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_tag_array.v
++++ b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_icache_tag_array.v
+@@ -21,6 +21,7 @@ limitations under the License.
+ // &Depend("ct_spsram_512x59.vp"); @29
+ // &Depend("ct_spsram_256x59.vp"); @30
+ 
++`include "cpu_cfig.h"
+ 
+ module ct_ifu_icache_tag_array(
+   cp0_ifu_icg_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_ifctrl.v b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_ifctrl.v
+index 14c001f..026eb58 100644
+--- a/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_ifctrl.v
++++ b/C910_RTL_FACTORY/gen_rtl/ifu/rtl/ct_ifu_ifctrl.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @22
+ module ct_ifu_ifctrl(
+   bht_ifctrl_inv_done,
+diff --git a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_cmp.v b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_cmp.v
+index f390fb8..402752c 100644
+--- a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_cmp.v
++++ b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_cmp.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @22
+ module ct_l2c_cmp(
+   ciu_l2c_snpl2_ready_x,
+diff --git a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_data.v b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_data.v
+index 8a84e05..4f2412f 100644
+--- a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_data.v
++++ b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_data.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_l2c_data(
+   ciu_l2c_data_acc_cycle,
+   ciu_l2c_data_setup,
+diff --git a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_icc.v b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_icc.v
+index dd32828..5ec8583 100644
+--- a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_icc.v
++++ b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_icc.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @22
+ module ct_l2c_icc(
+   ciu_l2c_ctcq_req_x,
+diff --git a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_tag.v b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_tag.v
+index 0a97c05..9cba536 100644
+--- a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_tag.v
++++ b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_tag.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @22
+ module ct_l2c_tag(
+   ciu_l2c_addr_vld_x,
+diff --git a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_tag_ecc.v b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_tag_ecc.v
+index d91b308..816a834 100644
+--- a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_tag_ecc.v
++++ b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_tag_ecc.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @22
+ module ct_l2c_tag_ecc(
+   cmp_stage_stall,
+diff --git a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_wb.v b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_wb.v
+index 4e7f201..671dfef 100644
+--- a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_wb.v
++++ b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2c_wb.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @20
+ module ct_l2c_wb(
+   cmp_rfifo_cp,
+diff --git a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2cache_data_array.v b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2cache_data_array.v
+index 1a421ce..86c5399 100644
+--- a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2cache_data_array.v
++++ b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2cache_data_array.v
+@@ -21,6 +21,8 @@ limitations under the License.
+ // &Depend("ct_spsram_32768x128.vp"); @28
+ // &Depend("ct_spsram_65536x128.vp"); @29
+ 
++`include "cpu_cfig.h"
++
+ module ct_l2cache_data_array(
+   data_cen,
+   data_clk,
+diff --git a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2cache_dirty_array_16way.v b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2cache_dirty_array_16way.v
+index 2d058b7..536fe7e 100644
+--- a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2cache_dirty_array_16way.v
++++ b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2cache_dirty_array_16way.v
+@@ -20,6 +20,8 @@ limitations under the License.
+ // &Depend("ct_spsram_2048x144.vp"); @27
+ // &Depend("ct_spsram_4096x144.vp"); @28
+ 
++`include "cpu_cfig.h"
++
+ module ct_l2cache_dirty_array_16way(
+   dirty_cen,
+   dirty_clk,
+diff --git a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2cache_tag_array_16way.v b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2cache_tag_array_16way.v
+index bd73ecb..bf1d1c1 100644
+--- a/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2cache_tag_array_16way.v
++++ b/C910_RTL_FACTORY/gen_rtl/l2c/rtl/ct_l2cache_tag_array_16way.v
+@@ -21,6 +21,8 @@ limitations under the License.
+ // &Depend("ct_spsram_2048x88.vp"); @28
+ // &Depend("ct_spsram_4096x84.vp"); @29
+ 
++`include "cpu_cfig.h"
++
+ module ct_l2cache_tag_array_16way(
+   tag_cen,
+   tag_clk,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_amr.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_amr.v
+index ad6f68a..b3fc082 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_amr.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_amr.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @24
+ module ct_lsu_amr(
+   amr_l2_mem_set,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_bus_arb.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_bus_arb.v
+index 4363b52..dad72e8 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_bus_arb.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_bus_arb.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @23
+ module ct_lsu_bus_arb(
+   biu_lsu_ar_ready,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_cache_buffer.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_cache_buffer.v
+index 2080b57..e177427 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_cache_buffer.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_cache_buffer.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @25
+ module ct_lsu_cache_buffer(
+   cb_ld_da_data,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_arb.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_arb.v
+index 0576143..aba5f9f 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_arb.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_dcache_arb.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @23
+ module ct_lsu_dcache_arb(
+   ag_dcache_arb_ld_data_gateclk_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_icc.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_icc.v
+index d8bfce7..4f40210 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_icc.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_icc.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @24
+ module ct_lsu_icc(
+   cp0_lsu_dcache_clr,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_ag.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_ag.v
+index 2c7c7c9..b16be10 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_ag.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_ag.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @28
+ module ct_lsu_ld_ag(
+   ag_dcache_arb_ld_data_gateclk_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_da.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_da.v
+index ca99263..f015360 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_da.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_da.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @28
+ module ct_lsu_ld_da(
+   cb_ld_da_data,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_dc.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_dc.v
+index 71804dd..b8feeb3 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_dc.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_dc.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @27
+ module ct_lsu_ld_dc(
+   cb_ld_dc_addr_hit,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_wb.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_wb.v
+index d7dce62..d86d227 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_wb.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_ld_wb.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @27
+ module ct_lsu_ld_wb(
+   cp0_lsu_icg_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lfb.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lfb.v
+index bdcb178..dadfa70 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lfb.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lfb.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @29
+ module ct_lsu_lfb(
+   biu_lsu_r_data,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lfb_addr_entry.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lfb_addr_entry.v
+index 65e4fe6..c9a7c70 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lfb_addr_entry.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lfb_addr_entry.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @26
+ module ct_lsu_lfb_addr_entry(
+   cp0_lsu_dcache_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lm.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lm.v
+index 6d21c34..be32e8e 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lm.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lm.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @24
+ module ct_lsu_lm(
+   biu_lsu_r_id,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lq_entry.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lq_entry.v
+index 30897f7..84b416c 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lq_entry.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_lq_entry.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @25
+ module ct_lsu_lq_entry(
+   cp0_lsu_corr_dis,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu.v
+index a4a55d0..2c98dc5 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @28
+ module ct_lsu_pfu(
+   amr_wa_cancel,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_gpfb.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_gpfb.v
+index 2070070..af40abb 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_gpfb.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_gpfb.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @27
+ module ct_lsu_pfu_gpfb(
+   cp0_lsu_icg_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_entry.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_entry.v
+index 58c7760..95229c3 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_entry.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_entry.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @30
+ module ct_lsu_pfu_pfb_entry(
+   amr_wa_cancel,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_l1sm.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_l1sm.v
+index bfe811a..ad1d534 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_l1sm.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_l1sm.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @27
+ module ct_lsu_pfu_pfb_l1sm(
+   cp0_lsu_icg_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_l2sm.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_l2sm.v
+index ebc716e..d4991e4 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_l2sm.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_l2sm.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @27
+ module ct_lsu_pfu_pfb_l2sm(
+   cp0_lsu_icg_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_tsm.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_tsm.v
+index 6539313..3a8a0d1 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_tsm.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_pfb_tsm.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @26
+ module ct_lsu_pfu_pfb_tsm(
+   cp0_lsu_icg_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_sdb_cmp.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_sdb_cmp.v
+index 2b24ef8..ed33af9 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_sdb_cmp.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_sdb_cmp.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @26
+ module ct_lsu_pfu_sdb_cmp(
+   cp0_lsu_icg_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_sdb_entry.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_sdb_entry.v
+index e54f482..7648570 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_sdb_entry.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_pfu_sdb_entry.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @28
+ module ct_lsu_pfu_sdb_entry(
+   amr_wa_cancel,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_rb.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_rb.v
+index acf73f8..40f630b 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_rb.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_rb.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @27
+ module ct_lsu_rb(
+   biu_lsu_b_id,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_rb_entry.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_rb_entry.v
+index 3b406df..2bdf8d1 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_rb_entry.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_rb_entry.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @27
+ module ct_lsu_rb_entry(
+   biu_lsu_b_id,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_ctcq.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_ctcq.v
+index 0b596ae..e25ead3 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_ctcq.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_ctcq.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_lsu_snoop_ctcq(
+   arb_ctcq_ctc_2nd_trans,
+   arb_ctcq_ctc_asid_va,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_ctcq_entry.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_ctcq_entry.v
+index 0175728..979eaa0 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_ctcq_entry.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_ctcq_entry.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_lsu_snoop_ctcq_entry(
+   cp0_lsu_icg_en,
+   cpurst_b,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_req_arbiter.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_req_arbiter.v
+index 0fdf2ec..e2c762f 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_req_arbiter.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_req_arbiter.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_lsu_snoop_req_arbiter(
+   arb_ctcq_ctc_2nd_trans,
+   arb_ctcq_ctc_asid_va,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_snq.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_snq.v
+index 6716eb0..fb36c06 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_snq.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_snq.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_lsu_snoop_snq(
+   arb_snq_entry_oldest_index,
+   arb_snq_snoop_addr,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_snq_entry.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_snq_entry.v
+index ca75a9a..b4368d0 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_snq_entry.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_snoop_snq_entry.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_lsu_snoop_snq_entry(
+   arb_snq_entry_oldest_index_x,
+   biu_snq_cr_resp_acept_x,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_spec_fail_predict.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_spec_fail_predict.v
+index 6ee0e72..b1a3429 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_spec_fail_predict.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_spec_fail_predict.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @24
+ module ct_lsu_spec_fail_predict(
+   cp0_lsu_icg_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_sq.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_sq.v
+index 7619b91..54ccb56 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_sq.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_sq.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @30
+ module ct_lsu_sq(
+   cp0_lsu_icg_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_sq_entry.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_sq_entry.v
+index 0269fd9..473c7f2 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_sq_entry.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_sq_entry.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @29
+ module ct_lsu_sq_entry(
+   cp0_lsu_icg_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_ag.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_ag.v
+index 86b0c7d..e5ae5eb 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_ag.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_ag.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @28
+ module ct_lsu_st_ag(
+   ag_dcache_arb_st_dirty_gateclk_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_da.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_da.v
+index eb530e6..663a995 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_da.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_da.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @26
+ module ct_lsu_st_da(
+   amr_wa_cancel,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_dc.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_dc.v
+index db58163..65deaf7 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_dc.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_dc.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @25
+ module ct_lsu_st_dc(
+   cp0_lsu_dcache_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_wb.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_wb.v
+index 5017296..8325765 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_wb.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_st_wb.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @25
+ module ct_lsu_st_wb(
+   cp0_lsu_icg_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_vb.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_vb.v
+index bdd75b8..855fd11 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_vb.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_vb.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @31
+ module ct_lsu_vb(
+   biu_lsu_b_id,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_vb_addr_entry.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_vb_addr_entry.v
+index 827ea13..7a780fc 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_vb_addr_entry.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_vb_addr_entry.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @26
+ module ct_lsu_vb_addr_entry(
+   cp0_lsu_icg_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_wmb.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_wmb.v
+index 27d1918..0c6b030 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_wmb.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_wmb.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @37
+ module ct_lsu_wmb(
+   amr_l2_mem_set,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_wmb_ce.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_wmb_ce.v
+index fc625ac..dc56e9c 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_wmb_ce.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_wmb_ce.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @24
+ module ct_lsu_wmb_ce(
+   cp0_lsu_icg_en,
+diff --git a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_wmb_entry.v b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_wmb_entry.v
+index 88594e1..25cbe83 100644
+--- a/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_wmb_entry.v
++++ b/C910_RTL_FACTORY/gen_rtl/lsu/rtl/ct_lsu_wmb_entry.v
+@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
++
+ // &ModuleBeg; @33
+ module ct_lsu_wmb_entry(
+   biu_lsu_b_id,
+diff --git a/C910_RTL_FACTORY/gen_rtl/mmu/rtl/ct_mmu_sysmap.v b/C910_RTL_FACTORY/gen_rtl/mmu/rtl/ct_mmu_sysmap.v
+index 51cead3..99b7a4f 100644
+--- a/C910_RTL_FACTORY/gen_rtl/mmu/rtl/ct_mmu_sysmap.v
++++ b/C910_RTL_FACTORY/gen_rtl/mmu/rtl/ct_mmu_sysmap.v
+@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+ 
++`include "cpu_cfig.h"
+ `include "sysmap.h"
+ 
+ // &ModuleBeg; @28
+diff --git a/C910_RTL_FACTORY/gen_rtl/pmp/rtl/ct_pmp_comp_hit.v b/C910_RTL_FACTORY/gen_rtl/pmp/rtl/ct_pmp_comp_hit.v
+index 5aa6254..2b2e781 100644
+--- a/C910_RTL_FACTORY/gen_rtl/pmp/rtl/ct_pmp_comp_hit.v
++++ b/C910_RTL_FACTORY/gen_rtl/pmp/rtl/ct_pmp_comp_hit.v
+@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
++
++`include "cpu_cfig.h"
++
+ module ct_pmp_comp_hit(
+   addr_match_mode_x,
+   mmu_addr_ge_bottom_x,
+-- 
+2.16.5
+
