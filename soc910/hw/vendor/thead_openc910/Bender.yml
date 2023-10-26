@@ -520,7 +520,7 @@ sources:
       - smart_run/logical/axi/axi_fifo.v
       - smart_run/logical/axi/axi_slave128.v
       - smart_run/logical/axi/axi_err128.v
-      - smart_run/logical/pmu/sync.v
+      - smart_run/logical/pmu/sync_c910.v
       - smart_run/logical/pmu/pmu.v
       - smart_run/logical/pmu/tap2_sm.v
       - smart_run/logical/pmu/px_had_sync.v

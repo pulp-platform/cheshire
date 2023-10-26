@@ -8,6 +8,10 @@
 // Thomas Benz <tbenz@iis.ee.ethz.ch>
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 package cheshire_pkg;
+  import cva6_pkg::*;
+`ifdef TARGET_C910
+  import c910_pkg::*;
+`endif
 
   ///////////
   //  SoC  //
@@ -435,22 +439,6 @@ package cheshire_pkg;
   //  CVA6  //
   ////////////
 
-  // CVA6 imposes an ID width of 4, but only 6 of 16 IDs are ever used
-  localparam int unsigned Cva6IdWidth = 4;
-  localparam int unsigned Cva6IdsUsed = 6;
-  typedef logic [Cva6IdWidth-1:0] cva6_id_t;
-  typedef int unsigned cva6_id_map_t [Cva6IdsUsed-1:0][0:1];
-
-  // Symbols for used CVA6 IDs
-  typedef enum cva6_id_t {
-    Cva6IdBypMmu    = 'b1000,
-    Cva6IdBypLoad   = 'b1001,
-    Cva6IdBypStore  = 'b1010,
-    Cva6IdBypAmo    = 'b1011,
-    Cva6IdICache    = 'b0000,
-    Cva6IdDCache    = 'b1100
-  } cva6_id_e;
-
   // Choose static colocation of IDs based on how heavily used and/or critical they are
   function automatic cva6_id_map_t gen_cva6_id_map(cheshire_cfg_t cfg);
     case (cfg.AxiMstIdWidth)
@@ -611,16 +599,8 @@ package cheshire_pkg;
     default: '0
   };
 
+`ifdef TARGET_C910
   // C910 config
-    // 24 MByte in 8 byte words
-  localparam NumWords = (24 * 1024 * 1024) / 8;
-  localparam NrMasters = 1; // c910
-  localparam AxiAddrWidth = 40;
-  localparam AxiDataWidth = 128;
-  localparam AxiIdWidthMaster = 8;
-  localparam AxiIdWidthSlaves = AxiIdWidthMaster + $clog2(NrMasters); // 5
-  localparam AxiUserWidth = 1;
-
   function automatic cheshire_cfg_t gen_cheshire_c910_cfg();
     cheshire_cfg_t ret  = DefaultCfg;
     ret.Core            = C910;
@@ -628,8 +608,9 @@ package cheshire_pkg;
     ret.AxiDataWidth    = AxiDataWidth;
     ret.AxiMstIdWidth   = AxiIdWidthMaster;
     ret.AxiUserWidth    = AxiUserWidth;
+    ret.BusErr          = 0;
     return ret;
   endfunction
-
+`endif
 
 endpackage

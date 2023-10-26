@@ -177,7 +177,7 @@ assign lpmd_en = (biu_pad_lpmd_b[1:0] != 2'b11) ;
 
 ////////////sync /////////////////////
 // &Instance("sync", "x_cpu2pmu_sync1"); @58
-sync  x_cpu2pmu_sync1 (
+sync_c910  x_cpu2pmu_sync1 (
   .fast_clk      (cpu_clk      ),
   .in            (lpmd_en      ),
   .out           (lpmd_en_ff   ),
@@ -192,7 +192,7 @@ sync  x_cpu2pmu_sync1 (
 //          ); @63
 
 // &Instance("sync", "x_cpu2pmu_sync2"); @69
-sync  x_cpu2pmu_sync2 (
+sync_c910  x_cpu2pmu_sync2 (
   .fast_clk          (cpu_clk          ),
   .in                (low_power_dis_pre),
   .out               (low_power_dis    ),

@@ -8,7 +8,13 @@
 // Thomas Benz <tbenz@iis.ee.ethz.ch>
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
-module cheshire_soc import cheshire_pkg::*; #(
+module cheshire_soc 
+  import cheshire_pkg::*;
+  import cva6_pkg::*;
+`ifdef C910
+  import c910_pkg::*;
+`endif
+#(
   // Cheshire config
   parameter cheshire_cfg_t Cfg = '0,
   // Debug info for external harts
@@ -545,7 +551,18 @@ module cheshire_soc import cheshire_pkg::*; #(
   /////////////
 
   // TODO: Implement X interface support
+`ifndef TARGET_C910
   `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
+`else
+  // axi master
+  `CHESHIRE_TYPEDEF_AXI_CT( axi_cva6,
+                            addr_t,
+                            axi_mst_id_t,
+                            axi_data_t,
+                            axi_strb_t,
+                            axi_user_t)
+
+`endif
 
   localparam ariane_pkg::ariane_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
 
@@ -589,63 +606,63 @@ module cheshire_soc import cheshire_pkg::*; #(
     riscv::priv_lvl_t  clic_irq_priv;
 
     // Currently, we support only one core
-  if (Cfg.Core == CVA6) begin : gen_cva6_core
-    cva6 #(
-      .ArianeCfg      ( Cva6Cfg ),
-      .AxiAddrWidth   ( Cfg.AddrWidth ),
-      .AxiDataWidth   ( Cfg.AxiDataWidth ),
-      .AxiIdWidth     ( Cva6IdWidth ),
-      .axi_ar_chan_t  ( axi_cva6_ar_chan_t ),
-      .axi_aw_chan_t  ( axi_cva6_aw_chan_t ),
-      .axi_w_chan_t   ( axi_cva6_w_chan_t  ),
-      .axi_req_t      ( axi_cva6_req_t ),
-      .axi_rsp_t      ( axi_cva6_rsp_t )
-    ) i_core_cva6 (
-      .clk_i,
-      .rst_ni,
-      .boot_addr_i      ( BootAddr ),
-      .hart_id_i        ( 64'(i) ),
-      .irq_i            ( xeip[i] ),
-      .ipi_i            ( msip[i] ),
-      .time_irq_i       ( mtip[i] ),
-      .debug_req_i      ( dbg_int_req[i] ),
-      .clic_irq_valid_i ( clic_irq_valid ),
-      .clic_irq_id_i    ( clic_irq_id    ),
-      .clic_irq_level_i ( clic_irq_level ),
-      .clic_irq_priv_i  ( clic_irq_priv  ),
-      .clic_irq_shv_i   ( clic_irq_shv   ),
-      .clic_irq_ready_o ( clic_irq_ready ),
-      .clic_kill_req_i  ( clic_irq_kill_req ),
-      .clic_kill_ack_o  ( clic_irq_kill_ack ),
-      .rvfi_o           ( ),
-      .cvxif_req_o      ( ),
-      .cvxif_resp_i     ( '0 ),
-      .l15_req_o        ( ),
-      .l15_rtrn_i       ( '0 ),
-      .axi_req_o        ( core_out_req ),
-      .axi_resp_i       ( core_out_rsp )
-    );
-  end else begin : gen_c910_core
-    c910_axi_wrap #(
-      .axi_req_t        ( axi_cva6_req_t ),
-      .axi_rsp_t        ( axi_cva6_rsp_t )
-    ) i_c910_axi_wrap (
-      .clk_i,
-      .rst_ni,
-      // External interrupts
-      .ext_int_i        ( {39'b0, intr.ext}   ),
-      // JTAG
-      .jtag_tck_i       ( jtag_tck_i          ),
-      .jtag_tdi_i       ( jtag_tdi_i          ),
-      .jtag_tms_i       ( jtag_tms_i          ),
-      .jtag_tdo_o       ( jtag_tdo_o          ),
-      .jtag_tdo_oe_o    ( jtag_tdo_oe_o       ),
-      .jtag_trst_ni     ( jtag_trst_ni        ),
-      // AXI interface
-      .axi_req_o        ( core_out_req        ),
-      .axi_rsp_i        ( core_out_rsp        )
-    );
-  end
+    if (Cfg.Core == CVA6) begin : gen_cva6_core
+      cva6 #(
+        .ArianeCfg      ( Cva6Cfg ),
+        .AxiAddrWidth   ( Cfg.AddrWidth ),
+        .AxiDataWidth   ( Cfg.AxiDataWidth ),
+        .AxiIdWidth     ( Cva6IdWidth ),
+        .axi_ar_chan_t  ( axi_cva6_ar_chan_t ),
+        .axi_aw_chan_t  ( axi_cva6_aw_chan_t ),
+        .axi_w_chan_t   ( axi_cva6_w_chan_t  ),
+        .axi_req_t      ( axi_cva6_req_t ),
+        .axi_rsp_t      ( axi_cva6_rsp_t )
+      ) i_core_cva6 (
+        .clk_i,
+        .rst_ni,
+        .boot_addr_i      ( BootAddr ),
+        .hart_id_i        ( 64'(i) ),
+        .irq_i            ( xeip[i] ),
+        .ipi_i            ( msip[i] ),
+        .time_irq_i       ( mtip[i] ),
+        .debug_req_i      ( dbg_int_req[i] ),
+        .clic_irq_valid_i ( clic_irq_valid ),
+        .clic_irq_id_i    ( clic_irq_id    ),
+        .clic_irq_level_i ( clic_irq_level ),
+        .clic_irq_priv_i  ( clic_irq_priv  ),
+        .clic_irq_shv_i   ( clic_irq_shv   ),
+        .clic_irq_ready_o ( clic_irq_ready ),
+        .clic_kill_req_i  ( clic_irq_kill_req ),
+        .clic_kill_ack_o  ( clic_irq_kill_ack ),
+        .rvfi_o           ( ),
+        .cvxif_req_o      ( ),
+        .cvxif_resp_i     ( '0 ),
+        .l15_req_o        ( ),
+        .l15_rtrn_i       ( '0 ),
+        .axi_req_o        ( core_out_req ),
+        .axi_resp_i       ( core_out_rsp )
+      );
+    end else begin : gen_c910_core
+      c910_axi_wrap #(
+        .axi_req_t        ( axi_cva6_req_t ),
+        .axi_rsp_t        ( axi_cva6_rsp_t )
+      ) i_c910_axi_wrap (
+        .clk_i,
+        .rst_ni,
+        // External interrupts
+        .ext_int_i        ( {39'b0, intr.ext}   ),
+        // JTAG
+        .jtag_tck_i       ( jtag_tck_i          ),
+        .jtag_tdi_i       ( jtag_tdi_i          ),
+        .jtag_tms_i       ( jtag_tms_i          ),
+        .jtag_tdo_o       ( jtag_tdo_o          ),
+        .jtag_tdo_en_o    ( jtag_tdo_oe_o       ),
+        .jtag_trst_ni     ( jtag_trst_ni        ),
+        // AXI interface
+        .axi_req_o        ( core_out_req        ),
+        .axi_rsp_i        ( core_out_rsp        )
+      );
+    end
 
     if (Cfg.BusErr) begin : gen_cva6_bus_err
       axi_err_unit_wrap #(
@@ -737,31 +754,36 @@ module cheshire_soc import cheshire_pkg::*; #(
     end
 
     // CVA6's ID encoding is wasteful; remap it statically pack into available bits
-    axi_id_serialize #(
-      .AxiSlvPortIdWidth      ( Cva6IdWidth     ),
-      .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
-      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth      ),
-      .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
-      .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId   ),
-      .AxiAddrWidth           ( Cfg.AddrWidth    ),
-      .AxiDataWidth           ( Cfg.AxiDataWidth ),
-      .AxiUserWidth           ( Cfg.AxiUserWidth ),
-      .AtopSupport            ( 1 ),
-      .slv_req_t              ( axi_cva6_req_t ),
-      .slv_resp_t             ( axi_cva6_rsp_t ),
-      .mst_req_t              ( axi_mst_req_t  ),
-      .mst_resp_t             ( axi_mst_rsp_t  ),
-      .MstIdBaseOffset        ( '0 ),
-      .IdMapNumEntries        ( Cva6IdsUsed ),
-      .IdMap                  ( gen_cva6_id_map(Cfg) )
-    ) i_axi_id_serialize (
-      .clk_i,
-      .rst_ni,
-      .slv_req_i  ( core_ur_req ),
-      .slv_resp_o ( core_ur_rsp ),
-      .mst_req_o  ( axi_in_req[AxiIn.cores[i]] ),
-      .mst_resp_i ( axi_in_rsp[AxiIn.cores[i]] )
-    );
+    if (Cfg.Core == CVA6) begin
+      axi_id_serialize #(
+        .AxiSlvPortIdWidth      ( Cva6IdWidth     ),
+        .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
+        .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth      ),
+        .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
+        .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId   ),
+        .AxiAddrWidth           ( Cfg.AddrWidth    ),
+        .AxiDataWidth           ( Cfg.AxiDataWidth ),
+        .AxiUserWidth           ( Cfg.AxiUserWidth ),
+        .AtopSupport            ( 1 ),
+        .slv_req_t              ( axi_cva6_req_t ),
+        .slv_resp_t             ( axi_cva6_rsp_t ),
+        .mst_req_t              ( axi_mst_req_t  ),
+        .mst_resp_t             ( axi_mst_rsp_t  ),
+        .MstIdBaseOffset        ( '0 ),
+        .IdMapNumEntries        ( Cva6IdsUsed ),
+        .IdMap                  ( gen_cva6_id_map(Cfg) )
+      ) i_axi_id_serialize (
+        .clk_i,
+        .rst_ni,
+        .slv_req_i  ( core_ur_req ),
+        .slv_resp_o ( core_ur_rsp ),
+        .mst_req_o  ( axi_in_req[AxiIn.cores[i]] ),
+        .mst_resp_i ( axi_in_rsp[AxiIn.cores[i]] )
+      );
+    end else begin
+        assign axi_in_req[AxiIn.cores[i]] = core_ur_req;
+        assign core_ur_rsp                = axi_in_rsp[AxiIn.cores[i]];
+    end
   end
 
 

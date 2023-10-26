@@ -32,7 +32,7 @@ limitations under the License.
 
 
 // &ModuleBeg; @20
-module sync(
+module sync_c910(
   fast_clk,
   in,
   out,
