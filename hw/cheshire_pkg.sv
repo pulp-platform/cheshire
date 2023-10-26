@@ -604,10 +604,10 @@ package cheshire_pkg;
   function automatic cheshire_cfg_t gen_cheshire_c910_cfg();
     cheshire_cfg_t ret  = DefaultCfg;
     ret.Core            = C910;
-    ret.AddrWidth       = AxiAddrWidth;
-    ret.AxiDataWidth    = AxiDataWidth;
-    ret.AxiMstIdWidth   = AxiIdWidthMaster;
-    ret.AxiUserWidth    = AxiUserWidth;
+    ret.AddrWidth       = soc910_pkg::AxiAddrWidth;
+    ret.AxiDataWidth    = soc910_pkg::AxiDataWidth;
+    ret.AxiMstIdWidth   = soc910_pkg::AxiIdWidthMaster;
+    ret.AxiUserWidth    = soc910_pkg::AxiUserWidth;
     ret.BusErr          = 0;
     return ret;
   endfunction
