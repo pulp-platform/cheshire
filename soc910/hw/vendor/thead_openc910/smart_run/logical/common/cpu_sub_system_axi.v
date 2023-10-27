@@ -13,7 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-`define APB_BASE_ADDR 40'hb0000000
+// `define APB_BASE_ADDR 40'hb0000000
+`define APB_BASE_ADDR 40'h0800_0000
 
 `include "cpu_cfig.h"
 

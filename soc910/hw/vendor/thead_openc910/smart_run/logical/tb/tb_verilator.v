@@ -52,7 +52,8 @@ limitations under the License.
 `define CP0_RSLT            `CPU_TOP.x_ct_top_0.x_ct_core.x_ct_cp0_top.x_ct_cp0_iui.cp0_iu_ex3_rslt_data[63:0]
 
 // `define APB_BASE_ADDR       40'h4000000000
-`define APB_BASE_ADDR       40'hb0000000
+// `define APB_BASE_ADDR       40'hb0000000
+`define APB_BASE_ADDR 40'h0800_0000
 
 module top(
   input wire clk
