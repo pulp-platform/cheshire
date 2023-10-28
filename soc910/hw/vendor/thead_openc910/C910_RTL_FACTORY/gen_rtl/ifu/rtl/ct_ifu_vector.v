@@ -217,7 +217,8 @@ end
 
 assign ifu_xx_sync_reset         = vec_cur_state[8];
 assign ifu_cp0_rst_inv_req       = vec_cur_state[8]  && !vector_rst_inv_ff;
-assign ifu_cp0_rst_mrvbr_req     = ifu_cp0_rst_inv_req && !vec_cur_state[10]; // Do not reset mrvbr when coming out of urst
+// assign ifu_cp0_rst_mrvbr_req     = ifu_cp0_rst_inv_req && !vec_cur_state[10]; // Do not reset mrvbr when coming out of urst
+assign ifu_cp0_rst_mrvbr_req     = ifu_cp0_rst_inv_req;
 assign vector_reset_on           = vec_cur_state[8];
 assign vector_sm_on              = !(vec_cur_state[0]); //IDLE
 assign pc_load                   = (!rtu_ifu_xx_dbgon) &&

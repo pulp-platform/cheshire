@@ -35,7 +35,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter int unsigned  SlinkBurstBytes   = 1024,
   parameter int unsigned  SlinkMaxTxns      = 32,
   parameter int unsigned  SlinkMaxTxnsPerId = 16,
-  parameter bit           SlinkAxiDebug     = 0,
+  parameter bit           SlinkAxiDebug     = 1,
   // Derived Parameters;  *do not override*
   parameter int unsigned  AxiStrbWidth      = DutCfg.AxiDataWidth/8,
   parameter int unsigned  AxiStrbBits       = $clog2(DutCfg.AxiDataWidth/8)
@@ -798,6 +798,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
         #(ClkPeriodSys * idle_cycles);
         slink_read_beats(addr, 2, 0, beats);
         data = beats[0] >> addr[AxiStrbBits-1:0];
+        if (SlinkAxiDebug) $display("%h", data);
     end while (~data[0]);
   endtask
 

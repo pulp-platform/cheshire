@@ -228,7 +228,7 @@ rv_integration_platform  x_rv_integration_platform (
     .pad_cpu_apb_base                             (`APB_BASE_ADDR                           ),
     .pad_cpu_l2cache_flush_req                    (1'b0                                     ),
     .pad_cpu_rst_b                                (pad_cpu_rst_b                            ),
-    .pad_core0_rvba                               (40'b0                                    ), // Reset vector base address
+    .pad_core0_rvba                               (40'h2000000                                    ), // Reset vector base address
     .pad_cpu_sys_cnt                              (pad_cpu_sys_cnt                          ),
     .pad_had_jtg_tclk                             (pad_had_jtg_tclk                         ),
     .pad_had_jtg_tdi                              (pad_had_jtg_tdi                          ),

@@ -608,7 +608,7 @@ package cheshire_pkg;
     ret.AxiDataWidth    = soc910_pkg::AxiDataWidth;
     ret.AxiMstIdWidth   = soc910_pkg::AxiIdWidthMaster;
     ret.AxiUserWidth    = soc910_pkg::AxiUserWidth;
-    ret.BusErr          = 0;
+    // ret.BusErr          = 0;
     return ret;
   endfunction
 `endif
