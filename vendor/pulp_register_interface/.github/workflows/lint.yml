@@ -1,0 +1,59 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+# Run all lint checks
+name: lint
+on: [push, pull_request]
+
+jobs:
+
+  ################
+  # Verible Lint #
+  ################
+  verilog:
+    name: Verilog Sources
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: chipsalliance/verible-linter-action@main
+        with:
+          paths: |
+            ./src
+            ./vendor/lowrisc_opentitan/src
+          exclude_paths: |
+            ./src/test/test_regs_reg_top.sv
+          extra_args: "--rules=-interface-name-style,+explicit-parameter-storage-type=exempt_type:string --lint_fatal --parse_fatal --waiver_files lint/verible.waiver"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reviewdog_reporter: github-check
+
+
+  #####################
+  # Vendor Up-to-Date #
+  #####################
+  # Check that all vendored sources are up-to-date.
+  check-vendor:
+    name: Vendor Up-to-Date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install bender
+        run: curl --proto '=https' --tlsv1.2 https://pulp-platform.github.io/bender/init -sSf | sh -s -- 0.26.0
+      - name: Re-vendor and diff
+        run: ./bender import --refetch && git diff --exit-code
+
+  internal:
+    name: Internal CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mirror and check
+        uses: pulp-platform/pulp-actions/gitlab-ci@v2
+        # Skip on forks or pull requests from forks due to missing secrets.
+        if: >
+          github.repository == 'pulp-platform/register_interface' &&
+          (github.event_name != 'pull_request' ||
+          github.event.pull_request.head.repo.full_name == github.repository)
+        with:
+          domain: iis-git.ee.ethz.ch
+          repo: github-mirror/register_interface
+          token: ${{ secrets.GITLAB_TOKEN }}

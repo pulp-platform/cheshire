@@ -1,0 +1,73 @@
+From d6fe46056741a409bfa82d8ac523341ea87d3755 Mon Sep 17 00:00:00 2001
+From: Luca Colagrande <luca.colagrande3@gmail.com>
+Date: Mon, 21 Aug 2023 16:51:47 +0200
+Subject: [PATCH] Generate Markdown documentation
+
+---
+ regtool.py | 22 +++++++++++++++-------
+ 1 file changed, 15 insertions(+), 7 deletions(-)
+
+diff --git a/regtool.py b/regtool.py
+index 76268c9ca..f7e117a3e 100755
+--- a/regtool.py
++++ b/regtool.py
+@@ -11,8 +11,10 @@ import re
+ import sys
+ from pathlib import PurePath
+ 
+-from reggen import (gen_cheader, gen_dv, gen_fpv, gen_html,
+-                    gen_json, gen_rtl, gen_selfdoc, version)
++from reggen import (
++    gen_cfg_md, gen_cheader, gen_dv, gen_fpv, gen_md, gen_html,
++    gen_json, gen_rtl, gen_selfdoc, version
++)
+ from reggen.ip_block import IpBlock
+ 
+ DESC = """regtool, generate register info from Hjson source"""
+@@ -41,14 +43,17 @@ def main():
+                         help='input file in Hjson type')
+     parser.add_argument('-d',
+                         action='store_true',
+-                        help='Output register documentation (html)')
++                        help='Output register documentation (markdown)')
+     parser.add_argument('--cdefines',
+                         '-D',
+                         action='store_true',
+                         help='Output C defines header')
++    parser.add_argument('--doc-html-old',
++                        action='store_true',
++                        help='Output html documentation (deprecated)')
+     parser.add_argument('--doc',
+                         action='store_true',
+-                        help='Output source file documentation (gfm)')
++                        help='Output source file documentation (markdown)')
+     parser.add_argument('-j',
+                         action='store_true',
+                         help='Output as formatted JSON')
+@@ -115,9 +120,10 @@ def main():
+     # the output needs a directory, it is a default path relative to the source
+     # file (used when --outdir is not given).
+     arg_to_format = [('j', ('json', None)), ('c', ('compact', None)),
+-                     ('d', ('html', None)), ('doc', ('doc', None)),
++                     ('d', ('registers', None)), ('doc', ('doc', None)),
+                      ('r', ('rtl', 'rtl')), ('s', ('dv', 'dv')),
+-                     ('f', ('fpv', 'fpv/vip')), ('cdefines', ('cdh', None))]
++                     ('f', ('fpv', 'fpv/vip')), ('cdefines', ('cdh', None)),
++                     ('doc_html_old', ('doc_html_old', None))]
+     format = None
+     dirspec = None
+     for arg_name, spec in arg_to_format:
+@@ -224,7 +230,9 @@ def main():
+                 src_lic += '\n' + found_spdx
+ 
+         with outfile:
+-            if format == 'html':
++            if format == 'registers':
++                return gen_md.gen_md(obj, outfile)
++            elif format == 'doc_html_old':
+                 return gen_html.gen_html(obj, outfile)
+             elif format == 'cdh':
+                 return gen_cheader.gen_cdefines(obj, outfile, src_lic, src_copy)
+-- 
+2.31.1
+

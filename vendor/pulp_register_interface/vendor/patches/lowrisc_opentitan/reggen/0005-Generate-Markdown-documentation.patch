@@ -1,0 +1,652 @@
+From a028a724c10c795886a69c23849e6fa82860465f Mon Sep 17 00:00:00 2001
+From: Luca Colagrande <luca.colagrande3@gmail.com>
+Date: Mon, 21 Aug 2023 16:52:38 +0200
+Subject: [PATCH] Generate Markdown documentation
+
+---
+ gen_cfg_md.py     | 143 ++++++++++++++++++++
+ gen_md.py         | 336 ++++++++++++++++++++++++++++++++++++++++++++++
+ md_helpers.py     | 122 +++++++++++++++++
+ multi_register.py |   1 +
+ 4 files changed, 602 insertions(+)
+ create mode 100644 util/reggen/gen_cfg_md.py
+ create mode 100644 util/reggen/gen_md.py
+ create mode 100644 util/reggen/md_helpers.py
+
+diff --git a/gen_cfg_md.py b/gen_cfg_md.py
+new file mode 100644
+index 000000000..f74d02e00
+--- /dev/null
++++ b/gen_cfg_md.py
+@@ -0,0 +1,143 @@
++# Copyright lowRISC contributors.
++# Licensed under the Apache License, Version 2.0, see LICENSE for details.
++# SPDX-License-Identifier: Apache-2.0
++"""Generate markdown documentation for the interfaces of an IpBlock."""
++
++from typing import TextIO, List, Tuple, Optional
++
++from reggen.ip_block import IpBlock
++from reggen.md_helpers import (
++    title, url, italic, coderef, regref_to_link, name_width, table, list_item,
++)
++
++
++def gen_cfg_md(cfgs: IpBlock, output: TextIO, register_file: Optional[str] = None) -> None:
++    comport_url = url(
++        "Comportable guideline for peripheral device functionality",
++        "https://opentitan.org/book/doc/contributing/hw/comportability",
++    )
++    output.write(
++        f'Referring to the {comport_url}, the module '
++        f'{coderef(cfgs.name)} has the following hardware interfaces defined\n',
++    )
++
++    list_items: List[str] = []
++    tables: List[Tuple[
++        str,
++        List[str],
++        List[List[str]],
++    ]] = []
++
++    # Clocks
++    primary_clock = cfgs.clocking.primary.clock
++    assert primary_clock
++    list_items.append('Primary Clock: ' + coderef(primary_clock))
++
++    other_clocks = cfgs.clocking.other_clocks()
++    list_items.append(
++        "Other Clocks: " +
++        (", ".join(coderef(clk) for clk in other_clocks) if other_clocks else italic("none"))
++    )
++
++    # Bus Interfaces
++    dev_ports = [coderef(port) for port in cfgs.bus_interfaces.get_port_names(False, True)]
++    assert dev_ports
++    list_items.append("Bus Device Interfaces (TL-UL): " + ", ".join(dev_ports))
++
++    host_ports = [coderef(port) for port in cfgs.bus_interfaces.get_port_names(True, False)]
++    list_items.append(
++        "Bus Host Interfaces (TL-UL): " +
++        (", ".join(host_ports) if host_ports else italic("none"))
++    )
++
++    # IO
++    ios = ([('input', x) for x in cfgs.xputs[1]] +
++           [('output', x) for x in cfgs.xputs[2]] +
++           [('inout', x) for x in cfgs.xputs[0]])
++
++    if not ios:
++        list_items.append("Peripheral Pins for Chip IO: " + italic("none"))
++    else:
++        rows = [
++            [name_width(x), direction, regref_to_link(x.desc, register_file)]
++            for direction, x in ios
++        ]
++        tables.append((
++            "Peripheral Pins for Chip IO",
++            ["Pin name", "Direction", "Description"],
++            rows,
++        ))
++
++    # Inter-Module Signals
++    if not cfgs.inter_signals:
++        list_items.append("Inter-Module Signals: " + italic("none"))
++    else:
++        rows = []
++        for ims in cfgs.inter_signals:
++            name = ims.name
++            pkg_struct = ims.package + "::" + ims.struct if ims.package is not None else ims.struct
++            sig_type = ims.signal_type
++            act = ims.act
++            width = str(ims.width) if ims.width is not None else "1"
++            desc = ims.desc if ims.desc is not None else ""
++            rows.append([name, pkg_struct, sig_type, act, width, desc])
++
++        comportibility_url = (
++            "https://opentitan.org/book/doc/contributing/hw/comportability/index.html"
++            "#inter-signal-handling"
++        )
++        tables.append((
++            url("Inter-Module Signals", comportibility_url),
++            ["Port Name", "Package::Struct", "Type", "Act", "Width", "Description"],
++            rows,
++        ))
++
++    # Interrupts
++    if not cfgs.interrupts:
++        list_items.append("Interrupts: " + italic("none"))
++    else:
++        rows = [
++            [name_width(x), x.intr_type.name, regref_to_link(x.desc, register_file)]
++            for x in cfgs.interrupts
++        ]
++        tables.append((
++            "Interrupts",
++            ["Interrupt Name", "Type", "Description"],
++            rows,
++        ))
++
++    # Alerts
++    if not cfgs.alerts:
++        list_items.append("Security Alerts: " + italic("none"))
++    else:
++        rows = [
++            [x.name, regref_to_link(x.desc, register_file)]
++            for x in cfgs.alerts
++        ]
++        tables.append((
++            "Security Alerts",
++            ["Alert Name", "Description"],
++            rows,
++        ))
++
++    # Countermeasures
++    if not cfgs.countermeasures:
++        list_items.append("Security Countermeasures: " + italic("none"))
++    else:
++        rows = [
++            [cfgs.name.upper() + '.' + str(cm), regref_to_link(cm.desc, register_file)]
++            for cm in cfgs.countermeasures
++        ]
++        tables.append((
++            "Security Countermeasures",
++            ["Countermeasure ID", "Description"],
++            rows,
++        ))
++
++    for item in list_items:
++        output.write(list_item(item))
++
++    output.write("\n")
++
++    for (table_title, header, rows) in tables:
++        output.write(title(table_title, 2) + table(header, rows))
+\ No newline at end of file
+diff --git a/gen_md.py b/gen_md.py
+new file mode 100644
+index 000000000..53724863f
+--- /dev/null
++++ b/gen_md.py
+@@ -0,0 +1,336 @@
++# Copyright lowRISC contributors.
++# Licensed under the Apache License, Version 2.0, see LICENSE for details.
++# SPDX-License-Identifier: Apache-2.0
++"""Generate markdown documentation for the registers of an IpBlock."""
++
++import json
++from typing import List, TextIO, Dict, Any, Optional
++
++from reggen.ip_block import IpBlock
++from reggen.md_helpers import (
++    coderef, mono, italic, list_item, table,
++    regref_to_link, first_line, title, url, wavejson,
++)
++from reggen.multi_register import MultiRegister
++from reggen.reg_block import RegBlock
++from reggen.register import Register
++from reggen.window import Window
++
++
++def gen_md(block: IpBlock, output: TextIO) -> int:
++    assert block.reg_blocks
++    # Handle the case where there's just one interface.
++    if len(block.reg_blocks) == 1:
++        rb = next(iter(block.reg_blocks.values()))
++        gen_md_reg_block(output, rb, block.name, block.regwidth)
++        return 0
++
++    # Handle the case where there is more than one device interface and,
++    # correspondingly, more than one reg block.
++    for iface_name, rb in block.reg_blocks.items():
++        assert iface_name
++        gen_md_reg_block(output, rb, block.name, block.regwidth, iface_name)
++
++    return 0
++
++
++def gen_md_reg_block(
++    output: TextIO, rb: RegBlock, comp: str, width: int, iface_name: Optional[str] = None
++) -> None:
++    if len(rb.entries) == 0:
++        output.write('This interface does not expose any registers.')
++        return
++
++    # Generate overview table.
++    gen_md_register_summary(output, rb.entries, comp, width, iface_name)
++
++    # Generate detailed entries.
++    for x in rb.entries:
++        if isinstance(x, Register):
++            gen_md_register(output, x, comp, width)
++        elif isinstance(x, MultiRegister):
++            gen_md_multiregister(output, x, comp, width)
++        else:
++            assert isinstance(x, Window)
++            gen_md_window(output, x, comp, width)
++
++
++def gen_md_register_summary(output: TextIO, entries: List[object],
++                            comp: str, width: int, iface_name: Optional[str] = None) -> None:
++
++    heading = "Summary" if iface_name is None \
++        else "Summary of the " + coderef(iface_name) + " interface's registers"
++    output.write(title(heading, 2))
++
++    bytew = width // 8
++
++    header = ["Name", "Offset", "Length", "Description"]
++    rows: List[List[str]] = []
++
++    def add_row(name: str, anchor: str, offset: int, length: int, description: str) -> None:
++        rows.append([
++            comp + "." + url(mono(name), "#" + anchor),
++            hex(offset),
++            str(length),
++            first_line(description),
++        ])
++    for entry in entries:
++        if isinstance(entry, MultiRegister):
++            is_compact = multireg_is_compact(entry, width)
++            for reg in entry.regs:
++                # If multiregisters are compact, each register has it's own section,
++                # so the anchor should link to a section with the individual register name(s).
++                # Otherwise, there is one section for the whole multiregister,
++                # so the anchor should link to a section with the multiregister name.
++                anchor = reg.name if is_compact else entry.name.lower()
++                add_row(reg.name, anchor, reg.offset, bytew, reg.desc)
++        elif isinstance(entry, Window):
++            length = bytew * entry.items
++            add_row(entry.name, entry.name.lower(), entry.offset, length, entry.desc)
++        else:
++            assert isinstance(entry, Register)
++            add_row(entry.name, entry.name.lower(), entry.offset, bytew, entry.desc)
++
++    output.write(table(header, rows))
++
++
++def gen_md_window(output: TextIO, win: Window, comp: str, regwidth: int) -> None:
++    assert win.name
++    wname = win.name
++
++    # Word aligned start and end addresses.
++    start_addr = win.offset
++    end_addr = start_addr + 4 * win.items - 4
++
++    output.write(
++        title(wname, 2) +
++        win.desc +
++        "\n\n" +
++        list_item(
++            "Word Aligned Offset Range: " +
++            mono(f"{start_addr:#x}") +
++            "to" +
++            mono(f"{end_addr:#x}")
++        ) +
++        list_item("Size (words): " + mono(f"{win.items}") + "") +
++        list_item("Access: " + mono(f"{win.swaccess.key}")) +
++        list_item(
++            "Byte writes are " +
++            (italic("not") if not win.byte_write else "") +
++            " supported."
++        ) +
++        "\n"
++    )
++
++
++def multireg_is_compact(mreg: MultiRegister, width: int) -> bool:
++    # Note that validation guarantees that compacted multiregs only ever have one field.
++    return mreg.compact and (mreg.reg.fields[0].bits.msb + 1) <= width // 2
++
++
++def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str, width: int) -> None:
++    # Check whether this is a compacted multireg, in which case we cannot use
++    # the general definition of the first register as an example for all other instances.
++    if multireg_is_compact(mreg, width):
++        for reg in mreg.regs:
++            gen_md_register(output, reg, comp, width)
++        return
++
++    # The general definition of the registers making up this multiregister block.
++    reg_def = mreg.reg
++
++    # Information
++    output.write(
++        title(reg_def.name, 2) +
++        regref_to_link(reg_def.desc) +
++        "\n" +
++        list_item("Reset default: " + mono(f"{reg_def.resval:#x}")) +
++        list_item("Reset mask: " + mono(f"{reg_def.resmask:#x}"))
++    )
++
++    # Instances
++    output.write("\n" + title("Instances", 3))
++    output.write(table(
++        ["Name", "Offset"],
++        [[reg.name, hex(reg.offset)] for reg in mreg.regs],
++    ))
++
++    # Fields
++    output.write("\n" + title("Fields", 3))
++
++    # Generate bit-field wavejson.
++    gen_md_reg_picture(output, reg_def, width)
++
++    # Generate fields
++    gen_md_reg_fields(output, reg_def, width)
++
++
++def gen_md_register(output: TextIO, reg: Register, comp: str, width: int) -> None:
++    output.write(
++        title(reg.name, 2) +
++        regref_to_link(reg.desc) +
++        "\n" +
++        list_item("Offset: " + mono(f"{reg.offset:#x}")) +
++        list_item("Reset default: " + mono(f"{reg.resval:#x}")) +
++        list_item("Reset mask: " + mono(f"{reg.resmask:#x}"))
++    )
++    if reg.regwen is not None:
++        output.write(
++            list_item("Register enable: " + url(mono(reg.regwen), "#" + reg.regwen.lower()))
++        )
++
++    # Fields
++    output.write("\n" + title("Fields", 3))
++
++    # Generate bit-field wavejson.
++    gen_md_reg_picture(output, reg, width)
++
++    # Generate fields
++    gen_md_reg_fields(output, reg, width)
++
++
++def gen_md_reg_picture(output: TextIO, reg: Register, width: int) -> None:
++    """Outputs a wavejson description of the register in a markdown code block.
++
++    We use WaveDrom to illustrate the register since we already have a wavejson preprocessor.
++    The wavejson bit-field is great but has some limitations that make it hard to draw nice picture.
++    Notably, it does not automatically rotate fields that don't fit
++    or increase the vertical space if necessary.
++    As the result, the following code makes some assumptions to decide when to rotate
++    and to compute the vertical space.
++    Furthermore, we do not know the horizontal size so we have to fix it,
++    which mean that the final result might be rescaled on the page.
++    """
++    hspace = 640
++    vspace = 80
++    fontsize = 10
++    lanes = 1
++    margin = 10  # margin around text
++    # estimated size that a character takes
++    font_adv = 10
++    # size of each bit in the picture
++    bit_width = hspace * lanes / width
++
++    fields: List[Dict[str, Any]] = []
++    next_bit = 0
++    for field in reg.fields:
++        fieldlsb = field.bits.lsb
++        # add an empty field if necessary
++        if fieldlsb > next_bit:
++            fields.append({"bits": fieldlsb - next_bit})
++        # we need to decide whether to rotate or not
++        # compute the size needed to draw
++        need_space = font_adv * len(field.name) + 2 * margin
++        # if this too large horizontally, rotate
++        # FIXME this does not account for splitting accross lanes
++        rotate = 0
++        if need_space > bit_width * field.bits.width():
++            rotate = -90
++            # increase vertical space if needed
++            vspace = max(vspace, need_space)
++
++        fields.append({
++            "name": field.name,
++            "bits": field.bits.width(),
++            "attr": [field.swaccess.key],
++            "rotate": rotate
++        })
++        next_bit = field.bits.msb + 1
++
++    # add an empty field if necessary
++    if width > next_bit:
++        fields.append({"bits": width - next_bit})
++    # wavedrom configuration, see https://github.com/wavedrom/bitfield
++    config = {"lanes": lanes, "fontsize": fontsize, "vspace": vspace}
++
++    json_str = json.dumps({"reg": fields, "config": config})
++    output.write(wavejson(json_str))
++
++
++def gen_md_reg_fields(output: TextIO, reg: Register, width: int) -> None:
++    # The maximum field description length allowed in a register's field table
++    MAX_DESCRIPTION_LEN = 250
++
++    # If any field is an enum or has a long description,
++    # put fields in their own sections.
++    field_sections = any(
++        field.enum is not None or
++        (field.desc is not None and len(field.desc) > MAX_DESCRIPTION_LEN)
++        for field in reg.fields
++    )
++
++    header = ["Bits", "Type", "Reset", "Name"]
++    colalign = ["center", "center", "center", "left"]
++    # If generating field sections, the description of fields will not be put in the table.
++    if not field_sections:
++        header.append("Description")
++        colalign.append("left")
++
++    def reserved_row(msb: int, lsb: int) -> List[str]:
++        return (
++            ([f"{msb}:{lsb}"] if msb != lsb else [str(msb)]) +
++            (["", "", ""] if not field_sections else ["", ""]) +
++            ["Reserved"]
++        )
++
++    rows = []
++    nextbit = width - 1
++    for field in reversed(reg.fields):
++        fname = field.name
++        msb = field.bits.msb
++
++        # Insert a row for any reserved bits before this field
++        if nextbit > msb:
++            rows.append(reserved_row(nextbit, msb + 1))
++
++        row = [
++            field.bits.as_str(),
++            field.swaccess.key,
++            'x' if field.resval is None else hex(field.resval),
++        ]
++        # If generating field sections, just add the name with a link to it's section.
++        if field_sections:
++            row.append(url(fname, f"#{reg.name.lower()}--{fname.lower()}"))
++        # Otherwise, add the name and description to the table.
++        else:
++            row.extend([fname, "" if field.desc is None else regref_to_link(field.desc)])
++
++        rows.append(row)
++
++        nextbit = field.bits.lsb - 1
++
++    # Insert a row for any remaining reserved bits
++    if nextbit > 0:
++        rows.append(reserved_row(nextbit, 0))
++
++    output.write(table(header, rows, colalign))
++
++    # Return before generating field sections, if they are not wanted.
++    if not field_sections:
++        return
++
++    # Generate field sections.
++    for field in reversed(reg.fields):
++        fname = field.name
++
++        output.write(title(f"{reg.name} . {fname}", 3))
++
++        if field.desc is not None:
++            output.write(regref_to_link(field.desc) + "\n")
++
++        if field.enum is not None:
++            if len(field.enum) == 0:
++                output.write("All values are reserved.\n")
++            else:
++                header = ["Value", "Name", "Description"]
++                hex_width = 2 + ((field.bits.width() + 3) // 4)
++                rows = [
++                    [f"{enum.value:#0{hex_width}x}", enum.name, enum.desc]
++                    for enum in field.enum
++                ]
++                output.write(table(header, rows))
++
++                if field.has_incomplete_enum():
++                    output.write("Other values are reserved.\n")
++
++        output.write("\n")
+\ No newline at end of file
+diff --git a/md_helpers.py b/md_helpers.py
+new file mode 100644
+index 000000000..98a829f91
+--- /dev/null
++++ b/md_helpers.py
+@@ -0,0 +1,122 @@
++# Copyright lowRISC contributors.
++# Licensed under the Apache License, Version 2.0, see LICENSE for details.
++# SPDX-License-Identifier: Apache-2.0
++"""A collection of functions that aid in generating markdown."""
++
++import re
++from typing import List, Match, Union, Optional
++
++import tabulate
++from reggen.signal import Signal
++
++
++def name_width(x: Signal) -> str:
++    '''Returns the name of the given signal followed by it's width.'''
++    return (
++        '{}[{}:0]'.format(x.name, x.bits.msb)
++        if x.bits.width() != 1 else x.name
++    )
++
++
++def coderef(s: str) -> str:
++    '''Return markdown code to refer to some element in the code'''
++    return f"**`{s}`**"
++
++
++def mono(s: str) -> str:
++    '''Return markdown code to put a string in monospace'''
++    return f"`{s}`"
++
++
++def list_item(s: str) -> str:
++    '''Return markdown code to put a string as a list item.
++
++    Make sure to use succeeding a new line.
++    '''
++    return f"- {s}\n"
++
++
++def italic(s: str) -> str:
++    '''Return markdown code to put a string in italic'''
++    return f"*{s}*"
++
++
++def bold(s: str) -> str:
++    '''Return markdown code to put a string in bold'''
++    return f"**{s}**"
++
++
++def url(text: str, url: str) -> str:
++    '''Return a markdown link to a URL'''
++    return f"[{text}]({url})"
++
++
++def title(title: str, level: int) -> str:
++    '''Return the markdown string that corresponds to a title of a certain level'''
++    assert level <= 6, "commonmark does not handle more than 6 levels of title"
++    return ('#' * level) + " " + title + '\n'
++
++
++def wavejson(json: str) -> str:
++    '''Return the markdown code to embed a wavedrom bit-field register picture'''
++    return f"\n```wavejson\n{json}\n```\n"
++
++
++def first_line(s: str) -> str:
++    """Returns the first line of a string."""
++    try:
++        return s.split("\n")[0]
++    except IndexError:
++        # only one line so return the string.
++        return s
++
++
++def regref_to_link(s: str, file: Optional[str] = None) -> str:
++    '''Replaces the register reference markup in the data files with markdown links.
++
++    The markup used in data files is '!!REG_NAME.field'
++    which is translated to '[`REG_NAME.field`](file#reg_name)'.
++
++    Args:
++        s (str): The content in which to substitute register links.
++        file (str | None): An optional link to the file holding registers.
++
++    Returns:
++        str: The content after the substitutions have been performed.
++    '''
++    def linkify(match: Match[str]) -> str:
++        name = match.group(1)
++        register = match.group(1).partition('.')[0].lower()  # remove field
++        return f"[`{name}`]({file if file else ''}#{register})"
++
++    return re.sub(r"!!([A-Za-z0-9_.]+)", linkify, s)
++
++
++def sanitise_for_md_table(s: str) -> str:
++    '''Transform (a subset of) markdown into something that can be put
++    in a markdown table cell.
++
++    Specifically, this function handle two corner cases:
++    - new lines, which are converted to spaces.
++    - vertical bars, which are escaped.
++    '''
++    s = re.sub(r"\n", " ", s)
++    s = re.sub(r"\|", r"\\\|", s)
++    return s
++
++
++def table(header: List[str],
++          rows: List[List[str]],
++          colalign: Union[None, List[str]] = None) -> str:
++    '''Return the markdown code for a table given a header and the rows.
++
++    The content is sanitised for use in a markdown table using `sanitise_for_md_table`.
++    If `colalign` is not None, each entry is the list specifies the alignment of a
++    column and can be either 'left', 'right' or 'center'.
++    '''
++    header = [sanitise_for_md_table(x) for x in header]
++    rows = [[sanitise_for_md_table(x) for x in row] for row in rows]
++    # For some unknown reason,
++    # the "github" format of tabulate is "pipe" without the align specifiers,
++    # despite alignment being part of the GitHub Markdown format.
++    return "\n" + tabulate.tabulate(rows, header, "pipe", colalign=colalign) + "\n\n"
+\ No newline at end of file
+diff --git a/multi_register.py b/multi_register.py
+index 82c866774..0266376e1 100644
+--- a/multi_register.py
++++ b/multi_register.py
+@@ -69,6 +69,7 @@ class MultiRegister(RegBase):
+         self.cname = check_name(rd['cname'],
+                                 'cname field of multireg {}'
+                                 .format(self.reg.name))
++        self.name = self.reg.name        
+ 
+         self.regwen_multi = check_bool(rd.get('regwen_multi', False),
+                                        'regwen_multi field of multireg {}'
+-- 
+2.31.1
+

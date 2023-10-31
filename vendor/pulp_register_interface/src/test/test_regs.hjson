@@ -1,0 +1,55 @@
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+{
+  name: "test_regs",
+  clock_primary: "clk_i",
+  reset_primary: "rst_ni",
+  bus_interfaces: [
+    { protocol: "reg_iface",
+      direction: "device"
+    }
+  ],
+
+  regwidth: "32",
+
+  registers: [
+    { name: "reg1",
+      desc: "test register 1",
+      swaccess: "rw",
+      hwaccess: "hrw",
+
+      fields: [
+        { bits: "31:0",
+          name: "reg1",
+          desc: "test register 1"
+        }
+      ]
+    },
+    { name: "reg2",
+      desc: "test register 2",
+      swaccess: "rw",
+      hwaccess: "hrw",
+
+      fields: [
+        { bits: "31:0",
+          name: "reg2",
+          desc: "test register 2"
+        }
+      ]
+    },
+    { name: "reg3",
+      desc: "test register 3",
+      swaccess: "rw",
+      hwaccess: "hrw",
+
+      fields: [
+        { bits: "31:0",
+          name: "reg3",
+          desc: "test register 3"
+        }
+      ]
+    },
+  ]
+}

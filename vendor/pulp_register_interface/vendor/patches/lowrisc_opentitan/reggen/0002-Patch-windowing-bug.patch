@@ -1,0 +1,25 @@
+From ff0007f7852bd9a550235b00d99f45a3befbe4e1 Mon Sep 17 00:00:00 2001
+From: Paul Scheffler <paulsc@iis.ee.ethz.ch>
+Date: Wed, 18 Aug 2021 22:09:48 +0200
+Subject: [PATCH] regtool: Patch windowing bug
+
+---
+ reg_top.sv.tpl | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/reg_top.sv.tpl b/reg_top.sv.tpl
+index 4cd9036..594f9fe 100644
+--- a/reg_top.sv.tpl
++++ b/reg_top.sv.tpl
+@@ -199,7 +199,7 @@ module ${mod_name} \
+   assign reg_intf_req = reg_intf_demux_req[${num_wins}];
+   assign reg_intf_demux_rsp[${num_wins}] = reg_intf_rsp;
+ 
+-    % for i,t in enumerate(block.wins):
++    % for i in range(num_wins):
+   assign reg_req_win_o[${i}] = reg_intf_demux_req[${i}];
+   assign reg_intf_demux_rsp[${i}] = reg_rsp_win_i[${i}];
+     % endfor
+-- 
+2.16.5
+
