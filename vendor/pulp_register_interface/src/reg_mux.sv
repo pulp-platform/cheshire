@@ -50,7 +50,8 @@ module reg_mux #(
 
   stream_arbiter #(
     .DATA_T (req_payload_t),
-    .N_INP (NoPorts)
+    .N_INP (NoPorts),
+    .ARBITER ("prio")
   ) i_stream_arbiter (
     .clk_i,
     .rst_ni,
