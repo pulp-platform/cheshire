@@ -45,6 +45,7 @@ vendor_package:
 
 sources:
   - hw/bootrom/cheshire_bootrom.sv
+  # - hw/bootrom/cheshire_bootrom_for_test.sv
   - hw/regs/cheshire_reg_pkg.sv
   - hw/regs/cheshire_reg_top.sv
   - hw/cva6_pkg.sv
