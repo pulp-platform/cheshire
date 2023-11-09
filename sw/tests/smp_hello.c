@@ -16,6 +16,8 @@
 #include "smp.h"
 #include "printf.h"
 
+#define __BAUDRATE 115200
+
 uint32_t __attribute__((section(".data"))) semaphore = 0x0;
 
 void semaphore_wait() {
