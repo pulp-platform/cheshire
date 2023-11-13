@@ -343,7 +343,7 @@ package cheshire_pkg;
     axi_out_t ret = '{dbg: 0, reg_demux: 1, default: '0};
     int unsigned i = 1, r = 1;
     ret.map[0] = '{0, AmDbg,   AmDbg + 'h40000};
-    ret.map[1] = '{1, 'h0200_0000, 'h0800_0000};
+    ret.map[1] = '{1, 'h0200_0000, 'h0C00_0000};
     // Whether we have an LLC or a bypass, the output port is has its
     // own Xbar output with the specified region iff it is connected.
     if (cfg.LlcOutConnect) begin i++; r++; ret.llc = i;
