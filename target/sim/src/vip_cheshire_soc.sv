@@ -803,7 +803,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   // Load a binary
   task automatic slink_elf_preload(input string binary, output doub_bt entry);
-    longint sec_addr, sec_len, bus_offset;
+    longint sec_addr, sec_len, bus_offset, write_addr;
     $display("[SLINK] Preloading ELF binary: %s", binary);
     if (read_elf(binary))
       $fatal(1, "[SLINK] Failed to load ELF!");
@@ -833,8 +833,9 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
           beats.push_back(beat);
         end
+        write_addr = sec_addr + (i==0 ? 0 : i - sec_addr%AxiStrbWidth);
         // Write this burst
-        slink_write_beats(sec_addr + i, AxiStrbBits, beats);
+        slink_write_beats(write_addr, AxiStrbBits, beats);
       end
     end
     void'(get_entry(entry));
