@@ -586,57 +586,57 @@ module cheshire_soc import cheshire_pkg::*; #(
   axi_mst_req_t [AxiIn.num_in-1:0] tagger_req;
   axi_mst_rsp_t [AxiIn.num_in-1:0] tagger_rsp;
 
-  for (genvar i = 0; i < NumIntHarts; i++) begin : gen_cva6_cores
-    axi_cva6_req_t core_out_req, core_ur_req;
-    axi_cva6_rsp_t core_out_rsp, core_ur_rsp;
+  axi_cva6_req_t [NumIntHarts-1:0] core_out_req , core_ur_req;
+  axi_cva6_rsp_t [NumIntHarts-1:0] core_out_rsp , core_ur_rsp;
 
-    // CLIC interface
-    logic clic_irq_valid, clic_irq_ready;
-    logic clic_irq_kill_req, clic_irq_kill_ack;
-    logic clic_irq_shv;
-    logic clic_irq_v;
-    logic [$clog2(NumClicIntrs)-1:0] clic_irq_id;
-    logic [7:0]        clic_irq_level;
-    logic [5:0]        clic_irq_vsid;
-    riscv::priv_lvl_t  clic_irq_priv;
+  // CLIC interface
+  logic [NumIntHarts-1:0] clic_irq_valid, clic_irq_ready;
+  logic [NumIntHarts-1:0] clic_irq_kill_req, clic_irq_kill_ack;
+  logic [NumIntHarts-1:0] clic_irq_shv;
+  logic [NumIntHarts-1:0] clic_irq_v;
+  logic [NumIntHarts-1:0] [$clog2(NumClicIntrs)-1:0] clic_irq_id;
+  logic [NumIntHarts-1:0] [7:0]        clic_irq_level;
+  logic [NumIntHarts-1:0] [5:0]        clic_irq_vsid;
+  riscv::priv_lvl_t  [NumIntHarts] clic_irq_priv;
 
-    cva6 #(
-      .ArianeCfg      ( Cva6Cfg ),
-      .AxiAddrWidth   ( Cfg.AddrWidth ),
-      .AxiDataWidth   ( Cfg.AxiDataWidth ),
-      .AxiIdWidth     ( Cva6IdWidth ),
-      .axi_ar_chan_t  ( axi_cva6_ar_chan_t ),
-      .axi_aw_chan_t  ( axi_cva6_aw_chan_t ),
-      .axi_w_chan_t   ( axi_cva6_w_chan_t  ),
-      .axi_req_t      ( axi_cva6_req_t ),
-      .axi_rsp_t      ( axi_cva6_rsp_t )
-    ) i_core_cva6 (
-      .clk_i,
-      .rst_ni,
-      .boot_addr_i      ( BootAddr ),
-      .hart_id_i        ( 64'(i) ),
-      .irq_i            ( xeip[i] ),
-      .ipi_i            ( msip[i] ),
-      .time_irq_i       ( mtip[i] ),
-      .debug_req_i      ( dbg_int_req[i] ),
-      .clic_irq_valid_i ( clic_irq_valid ),
-      .clic_irq_id_i    ( clic_irq_id    ),
-      .clic_irq_level_i ( clic_irq_level ),
-      .clic_irq_priv_i  ( clic_irq_priv  ),
-      .clic_irq_shv_i   ( clic_irq_shv   ),
-      .clic_irq_v_i     ( clic_irq_v     ),
-      .clic_irq_vsid_i  ( clic_irq_vsid  ),
-      .clic_irq_ready_o ( clic_irq_ready ),
-      .clic_kill_req_i  ( clic_irq_kill_req ),
-      .clic_kill_ack_o  ( clic_irq_kill_ack ),
-      .rvfi_o           ( ),
-      .cvxif_req_o      ( ),
-      .cvxif_resp_i     ( '0 ),
-      .l15_req_o        ( ),
-      .l15_rtrn_i       ( '0 ),
-      .axi_req_o        ( core_out_req ),
-      .axi_resp_i       ( core_out_rsp )
-    );
+  // Currently, we support only one core
+  // Actually we should support 2?
+  cva6_wrap #(
+    .Cva6Cfg          ( Cva6Cfg              ),
+    .NumHarts         ( NumIntHarts          ),
+    .AxiAddrWidth     ( Cfg.AddrWidth        ),
+    .AxiDataWidth     ( Cfg.AxiDataWidth     ),
+    .AxiIdWidth       ( Cva6IdWidth          ),
+    .ClicNumIrqs      ( $clog2(NumClicIntrs) ),
+    .axi_ar_chan_t    ( axi_cva6_ar_chan_t   ),
+    .axi_aw_chan_t    ( axi_cva6_aw_chan_t   ),
+    .axi_w_chan_t     ( axi_cva6_w_chan_t    ),
+    .axi_req_t        ( axi_cva6_req_t       ),
+    .axi_rsp_t        ( axi_cva6_rsp_t       )
+  ) i_core_wrap       (
+    .clk_i            ( clk_i                           ),
+    .rstn_i           ( rst_ni                          ),
+    .bootaddress_i    ( BootAddr                        ),
+    .hart_id_i        ( '0                              ),
+    .irq_i            ( xeip[NumIntHarts-1:0]           ),
+    .ipi_i            ( msip[NumIntHarts-1:0]           ),
+    .time_irq_i       ( mtip[NumIntHarts-1:0]           ),
+    .debug_req_i      ( dbg_int_req                     ),
+    .clic_irq_valid_i ( clic_irq_valid                  ),
+    .clic_irq_id_i    ( clic_irq_id[NumIntHarts-1:0]    ),
+    .clic_irq_level_i ( clic_irq_level[NumIntHarts-1:0] ),
+    .clic_irq_priv_i  ( clic_irq_priv                   ),
+    .clic_irq_shv_i   ( clic_irq_shv                    ),
+    .clic_irq_v_i     ( clic_irq_v                      ),
+    .clic_irq_vsid_i  ( clic_irq_vsid[NumIntHarts-1:0]  ),
+    .clic_irq_ready_o ( clic_irq_ready                  ),
+    .clic_kill_req_i  ( clic_irq_kill_req               ),
+    .clic_kill_ack_o  ( clic_irq_kill_ack               ),
+    .axi_req_o        ( core_out_req                    ),
+    .axi_rsp_i        ( core_out_rsp                    )
+  );
+
+  for (genvar i = 0; i < NumIntHarts; i++) begin : gen_core_surroundings
 
     if (Cfg.BusErr) begin : gen_cva6_bus_err
       axi_err_unit_wrap #(
@@ -654,9 +654,9 @@ module cheshire_soc import cheshire_pkg::*; #(
       ) i_cva6_bus_err (
         .clk_i,
         .rst_ni,
-        .testmode_i ( test_mode_i ),
-        .axi_req_i  ( core_out_req ),
-        .axi_rsp_i  ( core_out_rsp ),
+        .testmode_i ( test_mode_i          ),
+        .axi_req_i  ( core_out_req[i]      ),
+        .axi_rsp_i  ( core_out_rsp[i]      ),
         .err_irq_o  ( core_bus_err_intr[i] ),
         .reg_req_i  ( reg_out_req[RegOut.bus_err[RegBusErrCoresBase+i]] ),
         .reg_rsp_o  ( reg_out_rsp[RegOut.bus_err[RegBusErrCoresBase+i]] )
@@ -695,41 +695,41 @@ module cheshire_soc import cheshire_pkg::*; #(
         .rst_ni,
         .reg_req_i      ( reg_out_req[RegOut.clic[i]] ),
         .reg_rsp_o      ( reg_out_rsp[RegOut.clic[i]] ),
-        .intr_src_i     ( clic_intr ),
-        .irq_valid_o    ( clic_irq_valid ),
-        .irq_ready_i    ( clic_irq_ready ),
-        .irq_id_o       ( clic_irq_id    ),
-        .irq_level_o    ( clic_irq_level ),
-        .irq_shv_o      ( clic_irq_shv   ),
-        .irq_priv_o     ( clic_irq_priv  ),
-        .irq_v_o        ( clic_irq_v     ),
-        .irq_vsid_o     ( clic_irq_vsid  ),
-        .irq_kill_req_o ( clic_irq_kill_req ),
-        .irq_kill_ack_i ( clic_irq_kill_ack )
+        .intr_src_i     ( clic_intr            ),
+        .irq_valid_o    ( clic_irq_valid[i]    ),
+        .irq_ready_i    ( clic_irq_ready[i]    ),
+        .irq_id_o       ( clic_irq_id[i]       ),
+        .irq_level_o    ( clic_irq_level[i]    ),
+        .irq_shv_o      ( clic_irq_shv[i]      ),
+        .irq_priv_o     ( clic_irq_priv[i]     ),
+        .irq_v_o        ( clic_irq_v[i]        ),
+        .irq_vsid_o     ( clic_irq_vsid[i]     ),
+        .irq_kill_req_o ( clic_irq_kill_req[i] ),
+        .irq_kill_ack_i ( clic_irq_kill_ack[i] )
       );
 
     end else begin : gen_no_clic
 
-      assign clic_irq_valid    = '0;
-      assign clic_irq_id       = '0;
-      assign clic_irq_level    = '0;
-      assign clic_irq_shv      = '0;
-      assign clic_irq_priv     = riscv::priv_lvl_t'(0);
-      assign clic_irq_kill_req = '0;
+      assign clic_irq_valid[i]    = '0;
+      assign clic_irq_id[i]       = '0;
+      assign clic_irq_level[i]    = '0;
+      assign clic_irq_shv[i]      = '0;
+      assign clic_irq_priv[i]     = riscv::priv_lvl_t'(0);
+      assign clic_irq_kill_req[i] = '0;
 
     end
 
     // Map user to AMO domain as we are an atomics-capable master.
     // Within the provided AMO user range, we count up from the provided core AMO offset.
     always_comb begin
-      core_ur_req         = core_out_req;
-      core_ur_req.aw.user = Cfg.AxiUserDefault;
-      core_ur_req.ar.user = Cfg.AxiUserDefault;
-      core_ur_req.w.user  = Cfg.AxiUserDefault;
-      core_ur_req.aw.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
-      core_ur_req.ar.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
-      core_ur_req.w.user  [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
-      core_out_rsp        = core_ur_rsp;
+      core_ur_req[i]         = core_out_req[i];
+      core_ur_req[i].aw.user = Cfg.AxiUserDefault;
+      core_ur_req[i].ar.user = Cfg.AxiUserDefault;
+      core_ur_req[i].w.user  = Cfg.AxiUserDefault;
+      core_ur_req[i].aw.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
+      core_ur_req[i].ar.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
+      core_ur_req[i].w.user  [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
+      core_out_rsp[i]       = core_ur_rsp[i];
     end
 
     // CVA6's ID encoding is wasteful; remap it statically pack into available bits
@@ -753,10 +753,10 @@ module cheshire_soc import cheshire_pkg::*; #(
     ) i_axi_id_serialize (
       .clk_i,
       .rst_ni,
-      .slv_req_i  ( core_ur_req   ),
-      .slv_resp_o ( core_ur_rsp   ),
-      .mst_req_o  ( tagger_req[i] ),
-      .mst_resp_i ( tagger_rsp[i] )
+      .slv_req_i  ( core_ur_req[i] ),
+      .slv_resp_o ( core_ur_rsp[i] ),
+      .mst_req_o  ( tagger_req[i]  ),
+      .mst_resp_i ( tagger_rsp[i]  )
     );
 
     if (Cfg.LlcCachePartition) begin : gen_tagger
