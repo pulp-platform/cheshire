@@ -285,9 +285,6 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  Reg Demux  //
   /////////////////
 
-  // Define types needed
-  `CHESHIRE_TYPEDEF_AXI_CT(axi_d32, addr_t, axi_slv_id_t, logic [31:0], logic [3:0], axi_user_t)
-
   // Generate indices and get maps for all ports
   localparam reg_out_t  RegOut = gen_reg_out(Cfg);
 
@@ -306,7 +303,6 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   axi_slv_req_t axi_reg_amo_req, axi_reg_cut_req;
   axi_slv_rsp_t axi_reg_amo_rsp, axi_reg_cut_rsp;
-
 
   reg_req_t reg_in_req;
   reg_rsp_t reg_in_rsp;
