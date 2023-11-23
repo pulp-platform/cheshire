@@ -11,9 +11,9 @@
 module cheshire_soc 
   import cheshire_pkg::*;
   import cva6_pkg::*;
-`ifdef C910
-  import c910_pkg::*;
-`endif
+// `ifdef C910
+//   import c910_pkg::*;
+// `endif
 #(
   // Cheshire config
   parameter cheshire_cfg_t Cfg = '0,
@@ -554,14 +554,25 @@ module cheshire_soc
 `ifndef TARGET_C910
   `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
 `else
-  // axi master
+  // 64-bit axi master
   `CHESHIRE_TYPEDEF_AXI_CT( axi_cva6,
                             addr_t,
                             axi_mst_id_t,
                             axi_data_t,
                             axi_strb_t,
                             axi_user_t)
-
+  // 128-bit axi master
+  `CHESHIRE_TYPEDEF_AXI_CT( axi_c910,
+                          addr_t,
+                          logic[soc910_pkg::AxiIdWidthMaster-1:0],
+                          logic[soc910_pkg::AxiDataWidth-1:0],
+                          logic[soc910_pkg::AxiDataWidth/8-1:0],
+                          logic[soc910_pkg::AxiUserWidth-1:0]
+                          )
+// soc910_pkg::AxiAddrWidth;
+// soc910_pkg::AxiDataWidth;
+// soc910_pkg::AxiIdWidthMaster;
+// soc910_pkg::AxiUserWidth;
 `endif
 
   localparam ariane_pkg::ariane_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
@@ -643,13 +654,19 @@ module cheshire_soc
         .axi_resp_i       ( core_out_rsp )
       );
     end else begin : gen_c910_core
+      axi_c910_req_t c910_out_req;
+      axi_c910_rsp_t c910_out_rsp;
+
       c910_axi_wrap #(
-        .axi_req_t        ( axi_cva6_req_t ),
-        .axi_rsp_t        ( axi_cva6_rsp_t )
+        .axi_req_t        ( axi_c910_req_t ),
+        .axi_rsp_t        ( axi_c910_rsp_t )
       ) i_c910_axi_wrap (
         .clk_i,
         .rst_ni,
-        // External interrupts
+        // clint
+        .ipi_i            ( msip[i] ),
+        .time_irq_i       ( mtip[i] ),
+        // plic External interrupts
         .ext_int_i        ( {39'b0, intr.ext}   ),
         // JTAG
         .jtag_tck_i       ( jtag_tck_i          ),
@@ -659,9 +676,113 @@ module cheshire_soc
         .jtag_tdo_en_o    ( jtag_tdo_oe_o       ),
         .jtag_trst_ni     ( jtag_trst_ni        ),
         // AXI interface
-        .axi_req_o        ( core_out_req        ),
-        .axi_rsp_i        ( core_out_rsp        )
+        .axi_req_o        ( c910_out_req        ),
+        .axi_rsp_i        ( c910_out_rsp        )
       );
+// soc910_pkg::AxiAddrWidth;
+// soc910_pkg::AxiDataWidth;
+// soc910_pkg::AxiIdWidthMaster;
+// soc910_pkg::AxiUserWidth;
+
+      
+      // axi_iw_converter #(
+      //   /// ID width of the AXI4+ATOP slave port
+      //   .AxiSlvPortIdWidth    ( soc910_pkg::AxiIdWidthMaster),
+      //   /// ID width of the AXI4+ATOP master port
+      //   .AxiMstPortIdWidth    ( Cfg.AxiMstIdWidth),
+      //   /// Maximum number of different IDs that can be in flight at the slave port.  Reads and writes are
+      //   /// counted separately (except for ATOPs, which count as both read and write).
+      //   ///
+      //   /// It is legal for upstream to have transactions with more unique IDs than the maximum given by
+      //   /// this parameter in flight, but a transaction exceeding the maximum will be stalled until all
+      //   /// transactions of another ID complete.
+      //   .AxiSlvPortMaxUniqIds ( soc910_pkg::AxiMaxMstTrans ),
+      //   /// Maximum number of in-flight transactions with the same ID at the slave port.
+      //   ///
+      //   /// This parameter is only relevant if `AxiSlvPortMaxUniqIds <= 2**AxiMstPortIdWidth`.  In that
+      //   /// case, this parameter is passed to [`axi_id_remap` as `AxiMaxTxnsPerId`
+      //   /// parameter](module.axi_id_remap#parameter.AxiMaxTxnsPerId).
+      //   .AxiSlvPortMaxTxnsPerId ( 32'd1 ),
+      //   /// Maximum number of in-flight transactions at the slave port.  Reads and writes are counted
+      //   /// separately (except for ATOPs, which count as both read and write).
+      //   ///
+      //   /// This parameter is only relevant if `AxiSlvPortMaxUniqIds > 2**AxiMstPortIdWidth`.  In that
+      //   /// case, this parameter is passed to
+      //   /// [`axi_id_serialize`](module.axi_id_serialize#parameter.AxiSlvPortMaxTxns).
+      //   .AxiSlvPortMaxTxns      ( soc910_pkg::AxiMaxMstTrans ),
+      //   /// Maximum number of different IDs that can be in flight at the master port.  Reads and writes
+      //   /// are counted separately (except for ATOPs, which count as both read and write).
+      //   ///
+      //   /// This parameter is only relevant if `AxiSlvPortMaxUniqIds > 2**AxiMstPortIdWidth`.  In that
+      //   /// case, this parameter is passed to
+      //   /// [`axi_id_serialize`](module.axi_id_serialize#parameter.AxiMstPortMaxUniqIds).
+      //   .AxiMstPortMaxUniqIds   ( Cfg.AxiMaxMstTrans ),
+      //   /// Maximum number of in-flight transactions with the same ID at the master port.
+      //   ///
+      //   /// This parameter is only relevant if `AxiSlvPortMaxUniqIds > 2**AxiMstPortIdWidth`.  In that
+      //   /// case, this parameter is passed to
+      //   /// [`axi_id_serialize`](module.axi_id_serialize#parameter.AxiMstPortMaxTxnsPerId).
+      //   .AxiMstPortMaxTxnsPerId  ( 32'd1 ),
+      //   /// Address width of both AXI4+ATOP ports
+      //   .AxiAddrWidth            ( Cfg.AddrWidth ),
+      //   /// Data width of both AXI4+ATOP ports
+      //   .AxiDataWidth            ( soc910_pkg::AxiDataWidth ),
+      //   /// User signal width of both AXI4+ATOP ports
+      //   .AxiUserWidth            ( Cfg.AxiUserWidth ),
+      //   /// Request struct type of the AXI4+ATOP slave port
+      //   .slv_req_t               ( axi_c910_req_t ),
+      //   /// Response struct type of the AXI4+ATOP slave port
+      //   .slv_resp_t              ( axi_c910_req_t ),
+      //   /// Request struct type of the AXI4+ATOP master port
+      //   parameter type mst_req_t = logic,
+      //   /// Response struct type of the AXI4+ATOP master port
+      //   parameter type mst_resp_t = logic
+      // ) (
+      //   /// Rising-edge clock of both ports
+      //   input  logic      clk_i,
+      //   /// Asynchronous reset, active low
+      //   input  logic      rst_ni,
+      //   /// Slave port request
+      //   input  slv_req_t  slv_req_i,
+      //   /// Slave port response
+      //   output slv_resp_t slv_resp_o,
+      //   /// Master port request
+      //   output mst_req_t  mst_req_o,
+      //   /// Master port response
+      //   input  mst_resp_t mst_resp_i
+      // );
+
+
+      axi_dw_converter #(
+          .AxiMaxReads         ( Cfg.AxiMaxMstTrans     ), // Number of outstanding reads
+          .AxiSlvPortDataWidth ( soc910_pkg::AxiDataWidth ), // Data width of the slv port
+          .AxiMstPortDataWidth ( Cfg.AxiDataWidth       ), // Data width of the mst port
+          .AxiAddrWidth        ( Cfg.AddrWidth          ), // Address width
+          .AxiIdWidth          ( Cfg.AxiMstIdWidth      ), // ID width
+          .aw_chan_t           ( axi_cva6_aw_chan_t     ), // AW Channel Type
+          .mst_w_chan_t        ( axi_cva6_w_chan_t      ), //  W Channel Type for the mst port
+          .slv_w_chan_t        ( axi_c910_w_chan_t      ), //  W Channel Type for the slv port
+          .b_chan_t            ( axi_cva6_b_chan_t      ), //  B Channel Type
+          .ar_chan_t           ( axi_cva6_ar_chan_t     ), // AR Channel Type
+          .mst_r_chan_t        ( axi_cva6_r_chan_t      ), //  R Channel Type for the mst port
+          .slv_r_chan_t        ( axi_c910_r_chan_t      ), //  R Channel Type for the slv port
+          .axi_mst_req_t       ( axi_cva6_req_t         ), // AXI Request Type for mst ports
+          .axi_mst_resp_t      ( axi_cva6_rsp_t         ), // AXI Response Type for mst ports
+          .axi_slv_req_t       ( axi_c910_req_t         ), // AXI Request Type for slv ports
+          .axi_slv_resp_t      ( axi_c910_rsp_t         )  // AXI Response Type for slv ports
+        ) i_axi_dw_converter (
+          .clk_i,
+          .rst_ni,
+          // Slave interface
+          .slv_req_i          ( c910_out_req ),
+          .slv_resp_o         ( c910_out_rsp ),
+          // Master interface
+          .mst_req_o          ( core_out_req ),
+          .mst_resp_i         ( core_out_rsp )
+        );
+
+
+
     end
 
     if (Cfg.BusErr) begin : gen_cva6_bus_err
@@ -1123,7 +1244,7 @@ module cheshire_soc
   //  CLINT  //
   /////////////
 
-  if (Cfg.Core == CVA6) begin : gen_cva6_clint
+  // if (Cfg.Core == CVA6) begin : gen_cva6_clint
 
     clint #(
       .reg_req_t  ( reg_req_t ),
@@ -1139,7 +1260,7 @@ module cheshire_soc
       .ipi_o        ( msip )
     );
 
-  end
+  // end
 
   //////////////
   //  AXI RT  //

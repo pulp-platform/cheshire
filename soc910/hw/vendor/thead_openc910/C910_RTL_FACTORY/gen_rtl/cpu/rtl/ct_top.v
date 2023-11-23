@@ -131,17 +131,88 @@ module ct_top(
 
 // &Ports("compare", "../../../gen_rtl/cpu/rtl/top_golden_port.v"); @28
 input   [63 :0]  ir_corex_wdata;                      
-input   [39 :0]  pad_biu_acaddr;                      
-input   [2  :0]  pad_biu_acprot;                      
-input   [3  :0]  pad_biu_acsnoop;                     
-input            pad_biu_acvalid;                     
+
+// ACE intf
+  // AR
+output  [4  :0]  biu_pad_arid;                        
+output  [39 :0]  biu_pad_araddr;                      
+output  [1  :0]  biu_pad_arlen;                       
+output  [2  :0]  biu_pad_arsize;                      
+output  [1  :0]  biu_pad_arburst;                     
+output           biu_pad_arlock;                      
+output  [3  :0]  biu_pad_arcache;                     
+output  [2  :0]  biu_pad_arprot;                      
+output  [2  :0]  biu_pad_aruser;                      
+output           biu_pad_arvalid;                     
 input            pad_biu_arready;                     
+
+output  [3  :0]  biu_pad_arsnoop;                     
+output  [1  :0]  biu_pad_ardomain;                    
+output  [1  :0]  biu_pad_arbar;                       
+
+  // R
+input   [4  :0]  pad_biu_rid;                         
+input   [127:0]  pad_biu_rdata;                       
+input   [3  :0]  pad_biu_rresp;                       
+input            pad_biu_rlast;                       
+input            pad_biu_rvalid;                      
+output           biu_pad_rready;                      
+
+  // AW
+output  [39 :0]  biu_pad_awaddr;                      
+output  [1  :0]  biu_pad_awburst;                     
+output  [3  :0]  biu_pad_awcache;                     
+output  [4  :0]  biu_pad_awid;                        
+output  [1  :0]  biu_pad_awlen;                       
+output           biu_pad_awlock;                      
+output  [2  :0]  biu_pad_awprot;                      
 input            pad_biu_awready;                     
+output  [2  :0]  biu_pad_awsize;                      
+output           biu_pad_awunique;                    
+output           biu_pad_awuser;                      
+output           biu_pad_awvalid;                     
+
+output  [2  :0]  biu_pad_awsnoop;                     
+output  [1  :0]  biu_pad_awdomain;                    
+output  [1  :0]  biu_pad_awbar;                       
+
+  // W
+output  [127:0]  biu_pad_wdata;                       
+output  [15 :0]  biu_pad_wstrb;                       
+output           biu_pad_wlast;                       
+output           biu_pad_werr;                        
+output           biu_pad_wvalid;                      
+input            pad_biu_wready;                      
+
+  // B
 input   [4  :0]  pad_biu_bid;                         
 input   [1  :0]  pad_biu_bresp;                       
 input            pad_biu_bvalid;                      
-input            pad_biu_cdready;                     
+output           biu_pad_back;                        
+output           biu_pad_bready;                      
+
+  // AC
+input            pad_biu_acvalid;                     
+output           biu_pad_acready;                     
+input   [39 :0]  pad_biu_acaddr;                      
+input   [3  :0]  pad_biu_acsnoop;                     
+input   [2  :0]  pad_biu_acprot;                      
+
+  // CR
+output           biu_pad_crvalid;                     
 input            pad_biu_crready;                     
+output  [4  :0]  biu_pad_crresp;                      
+
+  // CD
+output           biu_pad_cdvalid;                     
+input            pad_biu_cdready;                     
+output  [127:0]  biu_pad_cddata;                      
+output           biu_pad_cdlast;                      
+output           biu_pad_cderr;                       
+
+// signals with ct_biu_top/ct_biu_other_io_sync
+output  [3  :0]  biu_pad_cnt_en;                      // l2cnt_en from ct_hpcp_top
+// signals from ct_ciu_top/ct_piu_other_io
 input            pad_biu_csr_cmplt;                   
 input   [127:0]  pad_biu_csr_rdata;                   
 input            pad_biu_dbgrq_b;                     
@@ -149,17 +220,13 @@ input   [3  :0]  pad_biu_hpcp_l2of_int;
 input            pad_biu_me_int;                      
 input            pad_biu_ms_int;                      
 input            pad_biu_mt_int;                      
-input   [127:0]  pad_biu_rdata;                       
-input   [4  :0]  pad_biu_rid;                         
-input            pad_biu_rlast;                       
-input   [3  :0]  pad_biu_rresp;                       
-input            pad_biu_rvalid;                      
 input            pad_biu_se_int;                      
 input            pad_biu_ss_int;                      
 input            pad_biu_st_int;                      
+
+
 input            pad_biu_wns_awready;                 
 input            pad_biu_wns_wready;                  
-input            pad_biu_wready;                      
 input            pad_biu_ws_awready;                  
 input            pad_biu_ws_wready;                   
 input   [2  :0]  pad_core_hartid;                     
@@ -178,55 +245,14 @@ input            sm_update_ir;
 input            x_enter_dbg_req_i;                   
 input            x_exit_dbg_req_i;                    
 input            x_had_dbg_mask;                      
-output           biu_pad_acready;                     
-output  [39 :0]  biu_pad_araddr;                      
-output  [1  :0]  biu_pad_arbar;                       
-output  [1  :0]  biu_pad_arburst;                     
-output  [3  :0]  biu_pad_arcache;                     
-output  [1  :0]  biu_pad_ardomain;                    
-output  [4  :0]  biu_pad_arid;                        
-output  [1  :0]  biu_pad_arlen;                       
-output           biu_pad_arlock;                      
-output  [2  :0]  biu_pad_arprot;                      
-output  [2  :0]  biu_pad_arsize;                      
-output  [3  :0]  biu_pad_arsnoop;                     
-output  [2  :0]  biu_pad_aruser;                      
-output           biu_pad_arvalid;                     
-output  [39 :0]  biu_pad_awaddr;                      
-output  [1  :0]  biu_pad_awbar;                       
-output  [1  :0]  biu_pad_awburst;                     
-output  [3  :0]  biu_pad_awcache;                     
-output  [1  :0]  biu_pad_awdomain;                    
-output  [4  :0]  biu_pad_awid;                        
-output  [1  :0]  biu_pad_awlen;                       
-output           biu_pad_awlock;                      
-output  [2  :0]  biu_pad_awprot;                      
-output  [2  :0]  biu_pad_awsize;                      
-output  [2  :0]  biu_pad_awsnoop;                     
-output           biu_pad_awunique;                    
-output           biu_pad_awuser;                      
-output           biu_pad_awvalid;                     
-output           biu_pad_back;                        
-output           biu_pad_bready;                      
-output  [127:0]  biu_pad_cddata;                      
-output           biu_pad_cderr;                       
-output           biu_pad_cdlast;                      
-output           biu_pad_cdvalid;                     
-output  [3  :0]  biu_pad_cnt_en;                      
-output  [4  :0]  biu_pad_crresp;                      
-output           biu_pad_crvalid;                     
 output           biu_pad_csr_sel;                     
 output  [79 :0]  biu_pad_csr_wdata;                   
 output           biu_pad_jdb_pm;                      
 output           biu_pad_lpmd_b;                      
 output           biu_pad_rack;                        
-output           biu_pad_rready;                      
-output  [127:0]  biu_pad_wdata;                       
-output           biu_pad_werr;                        
-output           biu_pad_wlast;                       
 output           biu_pad_wns;                         
-output  [15 :0]  biu_pad_wstrb;                       
-output           biu_pad_wvalid;                      
+
+// monitor signals
 output  [63 :0]  cp0_pad_mstatus;                     
 output           rtu_cpu_no_retire;                   
 output           rtu_pad_retire0;                     
@@ -235,6 +261,7 @@ output           rtu_pad_retire1;
 output  [39 :0]  rtu_pad_retire1_pc;                  
 output           rtu_pad_retire2;                     
 output  [39 :0]  rtu_pad_retire2_pc;                  
+
 output           x_dbg_ack_pc;                        
 output           x_enter_dbg_req_o;                   
 output           x_exit_dbg_req_o;                    

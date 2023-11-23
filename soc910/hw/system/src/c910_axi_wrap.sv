@@ -10,6 +10,9 @@ module c910_axi_wrap #(
 )(
   input  logic        clk_i,
   input  logic        rst_ni,
+  // clint
+  input  logic        ipi_i,
+  input  logic        time_irq_i,
   // External interrupts
   input  logic [39:0] ext_int_i,
   // JTAG
@@ -34,7 +37,8 @@ module c910_axi_wrap #(
     .pad_biu_rdata        ( axi_rsp_i.r.data         ),
     .pad_biu_rid          ( axi_rsp_i.r.id           ),
     .pad_biu_rlast        ( axi_rsp_i.r.last         ),
-    .pad_biu_rresp        ( {2'b0, axi_rsp_i.r.resp} ),
+    // .pad_biu_rresp        ( {2'b0, axi_rsp_i.r.resp} ),
+    .pad_biu_rresp        ( '0 ),
     .pad_biu_rvalid       ( axi_rsp_i.r_valid        ),
     .pad_biu_wready       ( axi_rsp_i.w_ready        ),
     .pad_cpu_rst_b        ( rst_ni                   ),
@@ -73,7 +77,9 @@ module c910_axi_wrap #(
     .per_clk              ( clk_i                    ),
     .i_pad_jtg_tms        ( jtag_tms_i               ),
     .biu_pad_wid          (                          ),
-    .biu_pad_lpmd_b       (                          )
+    .biu_pad_lpmd_b       (                          ),
+    .ipi_i                ( ipi_i                    ),
+    .time_irq_i           ( time_irq_i               )
   );
 
   assign axi_req_o.aw.qos    = '0;

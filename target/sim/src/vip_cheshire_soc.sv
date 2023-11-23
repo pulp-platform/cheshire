@@ -35,7 +35,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter int unsigned  SlinkBurstBytes   = 1024,
   parameter int unsigned  SlinkMaxTxns      = 32,
   parameter int unsigned  SlinkMaxTxnsPerId = 16,
-  parameter bit           SlinkAxiDebug     = 1,
+  parameter bit           SlinkAxiDebug     = 0,
   // Derived Parameters;  *do not override*
   parameter int unsigned  AxiStrbWidth      = DutCfg.AxiDataWidth/8,
   parameter int unsigned  AxiStrbBits       = $clog2(DutCfg.AxiDataWidth/8)
@@ -400,6 +400,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     wait_for_reset();
     forever begin
       uart_read_byte(bite);
+      $display("[UART] byte: %s", bite);
       if (uart_boot_ena) begin
         uart_boot_byte  = bite;
         uart_boot_ena = 0;

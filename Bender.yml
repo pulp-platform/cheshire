@@ -49,7 +49,7 @@ sources:
   - hw/regs/cheshire_reg_pkg.sv
   - hw/regs/cheshire_reg_top.sv
   - hw/cva6_pkg.sv
-  - hw/c910_pkg.sv
+  # - hw/c910_pkg.sv
   - hw/cheshire_pkg.sv
   - hw/cheshire_soc.sv
 

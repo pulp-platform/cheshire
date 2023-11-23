@@ -123,7 +123,10 @@ module openC910(
   pad_yy_scan_enable,
   pad_yy_scan_mode,
   pad_yy_scan_rst_b,
-  pll_cpu_clk
+  pll_cpu_clk,
+  // clint
+  ipi_i,
+  time_irq_i
 );
 
 // &Ports("compare", "../../../gen_rtl/cpu/rtl/mp_top_golden_port.v"); @42
@@ -169,6 +172,10 @@ input            pad_yy_scan_enable;
 input            pad_yy_scan_mode;              
 input            pad_yy_scan_rst_b;             
 input            pll_cpu_clk;                   
+  // clint
+input           ipi_i;
+input           time_irq_i;
+
 output  [39 :0]  biu_pad_araddr;                
 output  [1  :0]  biu_pad_arburst;               
 output  [3  :0]  biu_pad_arcache;               
@@ -649,6 +656,10 @@ wire    [1  :0]  plic_hartx_sint_req;
 wire    [159:0]  plic_int_cfg;                  
 wire    [159:0]  plic_int_vld;                  
 wire             pll_cpu_clk;                   
+  // clint
+wire             ipi_i;
+wire             time_irq_i;
+
 wire    [1  :0]  pprot;                         
 wire    [31 :0]  prdata_clint;                  
 wire    [31 :0]  prdata_had;                    
@@ -723,6 +734,9 @@ ct_rmu_top_dummy  x_rmu_top (
 // &ConnRule(s/cp0_/core0_/); @95
 // &ConnRule(s/^x_/core0_/); @96
 // &Instance("ct_top", "x_ct_top_0"); @97
+assign pad_ibiu0_ms_int = ipi_i;
+assign pad_ibiu0_mt_int = time_irq_i;
+
 ct_top  x_ct_top_0 (
   .biu_pad_acready         (ibiu0_pad_acready      ),
   .biu_pad_araddr          (ibiu0_pad_araddr       ),
@@ -1347,8 +1361,10 @@ ct_ciu_top  x_ct_ciu_top (
   .pad_ibiu0_dbgrq_b              (pad_ibiu0_dbgrq_b             ),
   .pad_ibiu0_hpcp_l2of_int        (pad_ibiu0_hpcp_l2of_int       ),
   .pad_ibiu0_me_int               (pad_ibiu0_me_int              ),
-  .pad_ibiu0_ms_int               (pad_ibiu0_ms_int              ),
-  .pad_ibiu0_mt_int               (pad_ibiu0_mt_int              ),
+  // .pad_ibiu0_ms_int               (pad_ibiu0_ms_int              ),
+  // .pad_ibiu0_mt_int               (pad_ibiu0_mt_int              ),
+  .pad_ibiu0_ms_int               (              ),
+  .pad_ibiu0_mt_int               (              ),
   .pad_ibiu0_rdata                (pad_ibiu0_rdata               ),
   .pad_ibiu0_rid                  (pad_ibiu0_rid                 ),
   .pad_ibiu0_rlast                (pad_ibiu0_rlast               ),

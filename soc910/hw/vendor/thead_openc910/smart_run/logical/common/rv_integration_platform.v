@@ -55,6 +55,10 @@ module rv_integration_platform
   pad_yy_scan_mode                         ,
   pad_yy_scan_rst_b                        ,
   pll_cpu_clk                              ,
+  // clint
+  ipi_i                                    ,
+  time_irq_i                               ,
+
   biu_pad_araddr                           ,
   biu_pad_arburst                          ,
   biu_pad_arcache                          ,
@@ -161,6 +165,10 @@ input                  pad_yy_scan_enable                       ;
 input                  pad_yy_scan_mode                         ;
 input                  pad_yy_scan_rst_b                        ;
 input                  pll_cpu_clk                              ;
+  // clint
+input                  ipi_i                                    ;
+input                  time_irq_i                               ;
+
 output     [39 : 0]    biu_pad_araddr                           ;
 output     [1 : 0]     biu_pad_arburst                          ;
 output     [3 : 0]     biu_pad_arcache                          ;
@@ -264,6 +272,10 @@ wire                   pad_yy_scan_enable                       ;
 wire                   pad_yy_scan_mode                         ;
 wire                   pad_yy_scan_rst_b                        ;
 wire                   pll_cpu_clk                              ;
+// clint
+wire                   ipi_i                                    ;
+wire                   time_irq_i                               ;
+
 wire       [39 : 0]    biu_pad_araddr                           ;
 wire       [1 : 0]     biu_pad_arburst                          ;
 wire       [3 : 0]     biu_pad_arcache                          ;
@@ -430,7 +442,11 @@ openC910 x_cpu_top(
     .cpu_pad_l2cache_flush_done                   (cpu_pad_l2cache_flush_done               ),
     .cpu_pad_no_op                                (cpu_pad_no_op                            ),
     .had_pad_jtg_tdo                              (had_pad_jtg_tdo                          ),
-    .had_pad_jtg_tdo_en                           (had_pad_jtg_tdo_en                       )
+    .had_pad_jtg_tdo_en                           (had_pad_jtg_tdo_en                       ),
+
+    // clint
+    .ipi_i                                        (ipi_i                                    ),
+    .time_irq_i                                   (time_irq_i                               )
   );
 
 endmodule

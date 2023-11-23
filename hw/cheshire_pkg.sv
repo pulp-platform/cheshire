@@ -9,9 +9,9 @@
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 package cheshire_pkg;
   import cva6_pkg::*;
-`ifdef TARGET_C910
-  import c910_pkg::*;
-`endif
+// `ifdef TARGET_C910
+//   import c910_pkg::*;
+// `endif
 
   ///////////
   //  SoC  //
@@ -605,7 +605,8 @@ package cheshire_pkg;
     cheshire_cfg_t ret  = DefaultCfg;
     ret.Core            = C910;
     ret.AddrWidth       = soc910_pkg::AxiAddrWidth;
-    ret.AxiDataWidth    = soc910_pkg::AxiDataWidth;
+    // ret.AxiDataWidth    = soc910_pkg::AxiDataWidth;
+    ret.AxiMaxMstTrans  = soc910_pkg::AxiMaxMstTrans;
     ret.AxiMstIdWidth   = soc910_pkg::AxiIdWidthMaster;
     ret.AxiUserWidth    = soc910_pkg::AxiUserWidth;
     // ret.BusErr          = 0;
