@@ -3,7 +3,7 @@ packages:
     revision: 77ddf073f194d44b9119949d2421be59789e69ae
     version: 0.2.4
     source:
-      Git: https://github.com/pulp-platform/apb
+      Git: https://github.com/pulp-platform/apb.git
     dependencies:
     - common_cells
   apb_uart:
@@ -27,7 +27,7 @@ packages:
     revision: 7d7fc1349d4915a657de535a491bc26fbf0d2cfa
     version: null
     source:
-      Git: https://github.com/pulp-platform/axi_llc.git
+      Git: https://github.com/pulp-platform/axi_llc
     dependencies:
     - axi
     - common_cells
@@ -35,8 +35,8 @@ packages:
     - register_interface
     - tech_cells_generic
   axi_riscv_atomics:
-    revision: c3c3f2b65071841035c4e081c61c9b7be801d749
-    version: 0.8.1
+    revision: 0ac3a78fe342c5a5b9b10bff49d58897f773059e
+    version: 0.8.2
     source:
       Git: https://github.com/pulp-platform/axi_riscv_atomics.git
     dependencies:
@@ -62,8 +62,8 @@ packages:
     - common_cells
     - register_interface
   clic:
-    revision: 94e2a77143053f1a2a72c88989616c89e05854fc
-    version: null
+    revision: 0ff9f07e0a492bff046dfe24399b1e1e82d557b7
+    version: 3.0.0-for-carfield
     source:
       Git: https://github.com/pulp-platform/clic.git
     dependencies:
@@ -92,7 +92,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: ec242579ea25a1f6bef7235591814dd1e475f90c
+    revision: 498d241b3515840e828dd6d70c70b8d8e07a8592
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -102,7 +102,7 @@ packages:
     - fpnew
     - tech_cells_generic
   fpnew:
-    revision: f231041c610f270ffc03cbdac38739ddb6426572
+    revision: a8e0cba6dd50f357ece73c2c955d96efc3c6c315
     version: null
     source:
       Git: https://github.com/pulp-platform/cvfpu.git
@@ -120,7 +120,7 @@ packages:
     revision: ca1b28816a3706be0bf9ce01378246d5346384f0
     version: 0.5.1
     source:
-      Git: https://github.com/pulp-platform/iDMA.git
+      Git: https://github.com/pulp-platform/idma.git
     dependencies:
     - axi
     - common_cells
@@ -142,6 +142,16 @@ packages:
       Git: https://github.com/pulp-platform/opentitan_peripherals.git
     dependencies:
     - common_cells
+    - register_interface
+    - tech_cells_generic
+  redundancy_cells:
+    revision: f5451c323350eebd5820e1c2e1772f50d8301c4a
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/redundancy_cells.git
+    dependencies:
+    - common_cells
+    - common_verification
     - register_interface
     - tech_cells_generic
   register_interface:

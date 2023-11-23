@@ -612,6 +612,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AxiDataWidth     ( Cfg.AxiDataWidth     ),
     .AxiIdWidth       ( Cva6IdWidth          ),
     .ClicNumIrqs      ( $clog2(NumClicIntrs) ),
+    .reg_req_t        ( reg_req_t            ),
+    .reg_rsp_t        ( reg_rsp_t            ),
     .axi_ar_chan_t    ( axi_cva6_ar_chan_t   ),
     .axi_aw_chan_t    ( axi_cva6_aw_chan_t   ),
     .axi_w_chan_t     ( axi_cva6_w_chan_t    ),
