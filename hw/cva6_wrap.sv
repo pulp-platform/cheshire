@@ -32,16 +32,16 @@ import rapid_recovery_pkg::*;
   input  logic             [NumHarts-1:0]                  ipi_i,
   input  logic             [NumHarts-1:0]                  time_irq_i,
   input  logic             [NumHarts-1:0]                  debug_req_i,
-  input  logic             [NumHarts-1:0]                  clic_irq_valid_i, // CLIC interrupt request
-  input  logic             [NumHarts-1:0][ClicNumIrqs-1:0] clic_irq_id_i, // interrupt source ID
-  input  logic             [NumHarts-1:0][7:0]             clic_irq_level_i, // interrupt level is 8-bit from CLIC spec
-  input  riscv::priv_lvl_t [NumHarts-1:0]                  clic_irq_priv_i,  // CLIC interrupt privilege level
-  input  logic             [NumHarts-1:0]                  clic_irq_v_i,     // CLIC interrupt virtualization bit
-  input  logic             [NumHarts-1:0][5:0]             clic_irq_vsid_i,  // CLIC interrupt Virtual Supervisor ID
-  input  logic             [NumHarts-1:0]                  clic_irq_shv_i,   // selective hardware vectoring bit
-  output logic             [NumHarts-1:0]                  clic_irq_ready_o, // core side interrupt hanshake (ready)
-  input  logic             [NumHarts-1:0]                  clic_kill_req_i,  // kill request
-  output logic             [NumHarts-1:0]                  clic_kill_ack_o,  // kill acknowledge
+  input  logic             [NumHarts-1:0]                  clic_irq_valid_i,
+  input  logic             [NumHarts-1:0][ClicNumIrqs-1:0] clic_irq_id_i,
+  input  logic             [NumHarts-1:0][7:0]             clic_irq_level_i,
+  input  riscv::priv_lvl_t [NumHarts-1:0]                  clic_irq_priv_i,
+  input  logic             [NumHarts-1:0]                  clic_irq_v_i,
+  input  logic             [NumHarts-1:0][5:0]             clic_irq_vsid_i,
+  input  logic             [NumHarts-1:0]                  clic_irq_shv_i,
+  output logic             [NumHarts-1:0]                  clic_irq_ready_o,
+  input  logic             [NumHarts-1:0]                  clic_kill_req_i,
+  output logic             [NumHarts-1:0]                  clic_kill_ack_o,
   output axi_req_t         [NumHarts-1:0]                  axi_req_o,
   input  axi_rsp_t         [NumHarts-1:0]                  axi_rsp_i
 );
@@ -70,6 +70,7 @@ typedef struct packed {
   axi_req_t axi_req;
 } cva6_outputs_t;
 
+logic          [NumHarts-1:0] core_setback;
 cva6_inputs_t  [NumHarts-1:0] sys2hmr, hmr2core;
 cva6_outputs_t [NumHarts-1:0] hmr2sys, core2hmr;
 
@@ -110,6 +111,7 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
   ) i_core_cva6    (
     .clk_i            ( clk_i                         ),
     .rst_ni           ( rstn_i                        ),
+    .clear_i          ( core_setback[i]               ),
     .boot_addr_i      ( hmr2core[i].bootaddress       ),
     .hart_id_i        ( hmr2core[i].hart_id           ),
     .irq_i            ( hmr2core[i].irq               ),
@@ -180,10 +182,10 @@ hmr_unit #(
   .sys_fetch_en_i        ( '0      ), // TODO?
   .enable_bus_vote_i     ( '0      ), // TODO?
 
-  .core_setback_o         ( /* TODO */  ),
-  .core_inputs_o          ( hmr2core    ),
-  .core_nominal_outputs_i ( core2hmr    ),
-  .core_bus_outputs_i     ( '0          ) // TODO?
+  .core_setback_o         ( core_setback ),
+  .core_inputs_o          ( hmr2core     ),
+  .core_nominal_outputs_i ( core2hmr     ),
+  .core_bus_outputs_i     ( '0           ) // TODO?
 );
 
 endmodule: cva6_wrap
