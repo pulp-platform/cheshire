@@ -139,7 +139,12 @@ $(foreach link,$(patsubst $(CHS_SW_LD_DIR)/%.ld,%,$(wildcard $(CHS_SW_LD_DIR)/*.
 # Images from CVA6 SDK (built externally)
 CHS_CVA6_SDK_IMGS ?= $(addprefix $(CHS_SW_DIR)/deps/cva6-sdk/install64/,fw_payload.bin uImage)
 
-# Create full Linux disk image
+# linux-%.gpt.bin do not provide meaningfull error
+$(CHS_CVA6_SDK_IMGS):
+	@echo "error: Missing CVA6 SDK images. Did you build your kernel?"
+	@exit 1
+
+# Create full Linux disk image for a given board config
 $(CHS_SW_DIR)/boot/linux-%.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CHS_SW_DIR)/boot/cheshire_%.dtb $(CHS_CVA6_SDK_IMGS)
 	truncate -s $(CHS_SW_DISK_SIZE) $@
 	sgdisk --clear -g --set-alignment=1 \

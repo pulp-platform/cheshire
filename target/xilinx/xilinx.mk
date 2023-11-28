@@ -70,16 +70,14 @@ VIVADOFLAGS ?= -nojournal -mode $(MODE)
 chs-xil-all: $(bit)
 
 # Generate mcs from bitstream
-$(mcs): $(bit)
+cheshire_%.mcs: cheshire_%.bit
 	cd $(CHS_XIL_DIR) && $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/write_cfgmem.tcl -tclargs $@ $^
 
 # Compile bitstream
-$(bit): $(ips) $(CHS_XIL_DIR)/scripts/add_sources.tcl
+cheshire_%.bit: $(ips) $(CHS_XIL_DIR)/scripts/add_sources.tcl
 	@mkdir -p $(out)
 	cd $(CHS_XIL_DIR) && $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/prologue.tcl -source scripts/run.tcl
-	cp $(CHS_XIL_DIR)/$(PROJECT).runs/impl_1/*.bit $(out)
-	cp $(CHS_XIL_DIR)/$(PROJECT).runs/impl_1/*.ltx $(out)
-	cp $(CHS_XIL_DIR)/$(PROJECT).runs/impl_1/*_routed.dcp $(out)
+	find $(CHS_XIL_DIR)/$(PROJECT).runs -name "*.ltx" -o -name "*.bit" -o -name "*routed.rpt" | xargs -I {} cp {} $(out)
 
 # Generate ips
 %.xci:
@@ -89,14 +87,17 @@ $(bit): $(ips) $(CHS_XIL_DIR)/scripts/add_sources.tcl
 	IP_NAME=$(basename $(notdir $@)) ; cd $(ip-dir)/$$IP_NAME && make clean && USE_ARTIFACTS=$(USE_ARTIFACTS) VIVADOENV="$(subst ",\",$(VIVADOENV))" VIVADO="$(VIVADO)" make
 	IP_NAME=$(basename $(notdir $@)) ; cp $(ip-dir)/$$IP_NAME/$$IP_NAME.srcs/sources_1/ip/$$IP_NAME/$$IP_NAME.xci $@
 
+# Open Vivado gui
 chs-xil-gui:
 	@echo "Starting $(vivado) GUI"
 	cd $(CHS_XIL_DIR) && $(VIVADOENV) $(VIVADO) -nojournal -mode gui $(PROJECT).xpr &
 
-chs-xil-program: #$(bit)
+# Program already-compiled bitstream
+chs-xil-program:
 	@echo "Programming board $(BOARD) ($(XILINX_PART))"
 	$(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source $(CHS_XIL_DIR)/scripts/program.tcl
 
+# Flash VCU128 SPI mem
 chs-xil-flash: $(CHS_SW_DIR)/boot/linux-${BOARD}.gpt.bin
 	$(VIVADOENV) FILE=$< OFFSET=0 $(VIVADO) $(VIVADOFLAGS) -source $(CHS_XIL_DIR)/scripts/flash_spi.tcl
 

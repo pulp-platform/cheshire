@@ -9,49 +9,15 @@ else
 	VIVADO ?= vivado
 endif
 
-# Note: We do not use Memora as it is bound to Git versionning
-# and not standalone on files hash / environment variables
-ARTIFACTS_PATH=/usr/scratch2/wuerzburg/cykoenig/memora/cheshire
-GREEN='\033[0;32m'
-NC='\033[0m'
-
-all:
-
-ifeq ($(USE_ARTIFACTS),1)
-all: save-artifacts
-else
-all: $(PROJECT).xpr
-endif
+all: load-artifacts $(PROJECT).xpr save-artifacts
 
 # Build IP
-$(PROJECT).xpr:
+xlnx_%.xpr:
 	$(VIVADOENV) $(VIVADO) -mode batch -source tcl/run.tcl
 
-.PHONY: generate_sha256 load-artifacts
+save-artifacts:
 
-# Generate a sha based on env variables and artifacts_in
-generate_sha256:
-	@echo $(VIVADO) $(PROJECT) > .generated_env
-	@echo $(VIVADOENV) | tr " " "\n" | grep $(foreach var,$(ARTIFACTS_VARS), $(addprefix -e ,$(var)))  >> .generated_env
-	@sha256sum $(ARTIFACTS_IN) >> .generated_env
-	@sha256sum .generated_env | awk '{print $$1}' > .generated_sha256
-
-# Load artifacts based on .generated_sha256
-load-artifacts: .generated_sha256
-	@if [ -d "$(ARTIFACTS_PATH)/`cat $<`" ]; then\
-		echo -e $(GREEN)"Fetching $(PROJECT) from $(ARTIFACTS_PATH)/`cat $<`"$(NC); \
-		cp -r $(ARTIFACTS_PATH)/`cat $<`/* .; \
-	fi
-
-# Save artifacts (this folder) based on .generated_sha256
-save-artifacts: generate_sha256 load-artifacts $(PROJECT).xpr
-	@if [ ! -d "$(ARTIFACTS_PATH)/`cat .generated_sha256`" ]; then \
-		cp -r . $(ARTIFACTS_PATH)/`cat .generated_sha256`; \
-		chmod -R o+rw $(ARTIFACTS_PATH)/`cat .generated_sha256`; \
-	fi
-
-gui:
-	$(VIVADOENV) $(VIVADO) -mode gui -source tcl/run.tcl &
+load-artifacts:
 
 clean:
 	rm -rf ip/*
@@ -65,3 +31,40 @@ clean:
 	rm -rf .Xil
 	rm -rf tmp
 	rm -rf .generated*
+
+.PHONY: clean save-artifacts load-artifacts
+
+#
+# Artifacts management (IIS internal)
+#
+
+ifeq ($(USE_ARTIFACTS),1)
+
+# Note: We do not use Memora as it is bound to Git versionning
+# and not standalone on files hash / environment variables
+ARTIFACTS_PATH=/usr/scratch2/wuerzburg/cykoenig/memora/cheshire
+TERM_GREEN='\033[0;32m'
+TERM_NC='\033[0m'
+
+# Generate a sha based on env variables and artifacts_in
+.generated_sha256:
+	@echo $(VIVADO) $(PROJECT) > .generated_env
+	@echo $(VIVADOENV) | tr " " "\n" | grep $(foreach var,$(ARTIFACTS_VARS), $(addprefix -e ,$(var)))  >> .generated_env
+	@sha256sum $(ARTIFACTS_IN) >> .generated_env
+	@sha256sum .generated_env | awk '{print $$1}' > .generated_sha256
+
+# Load artifacts based on .generated_sha256
+load-artifacts: .generated_sha256
+	@if [ -d "$(ARTIFACTS_PATH)/`cat $<`" ]; then\
+		echo -e $(TERM_GREEN)"Fetching $(PROJECT) from $(ARTIFACTS_PATH)/`cat $<`"$(TERM_NC); \
+		cp -r $(ARTIFACTS_PATH)/`cat $<`/* .; \
+	fi
+
+# Save artifacts (this folder) based on .generated_sha256
+save-artifacts: .generated_sha256 $(PROJECT).xpr
+	@if [ ! -d "$(ARTIFACTS_PATH)/`cat .generated_sha256`" ]; then \
+		cp -r . $(ARTIFACTS_PATH)/`cat .generated_sha256`; \
+		chmod -R o+rw $(ARTIFACTS_PATH)/`cat .generated_sha256`; \
+	fi
+
+endif # ifeq ($(USE_ARTIFACTS),1)
