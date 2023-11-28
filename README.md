@@ -14,7 +14,7 @@ If you are impatient and have all needed [dependencies](https://pulp-platform.gi
 
 ```
 set BINARY ../../../sw/tests/helloworld.spm.elf
-source compile.tcl
+source compile.cheshire_soc.tcl
 source start.cheshire_soc.tcl
 run -all
 ```
