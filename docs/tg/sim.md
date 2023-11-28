@@ -41,7 +41,7 @@ set BOOTMODE 0
 set PRELMODE 1
 
 # Compile design
-source compile.tcl
+source compile.cheshire_soc.tcl
 
 # Start and run simulation
 source start.cheshire_soc.tcl
