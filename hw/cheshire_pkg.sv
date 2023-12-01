@@ -141,6 +141,7 @@ package cheshire_pkg;
     bit     IrqRouter;
     bit     BusErr;
     bit     Cva6DMR;
+    bit     RapidRecovery;
     // Parameters for Debug Module
     jtag_idcode_t DbgIdCode;
     dw_bt   DbgMaxReqs;
@@ -572,6 +573,7 @@ package cheshire_pkg;
     IrqRouter         : 0,
     BusErr            : 1,
     Cva6DMR           : 1,
+    RapidRecovery     : 0,
     // Debug
     DbgIdCode         : CheshireIdCode,
     DbgMaxReqs        : 4,
