@@ -17,11 +17,17 @@
     csrr reg2, mhartid; \
     bne reg1, reg2, 2f
 
+// If the two cores are lockestepped at reset or peremanetly locked, we see a
+// single Hart ID at boot. Otherwise we see NUM_INT_HARTS.
+// The procedure to set/unset the CLINT MSIP registers is now based on the
+// Hart ID. This way, split/lock execution should be trasnparent.
 #define smp_resume(reg1, reg2, reg3) \
     la reg1, __base_clint; \
     la reg3, __base_regs; \
     lw reg3, 76(reg3); /* regs.NUM_INT_HARTS */ \
-    slli reg3, reg3, 2; \
+    csrr reg2, mhartid; \
+    addi reg2, reg2, 1; \
+    sll reg3, reg3, reg2; \
     add reg3, reg1, reg3; \
     1:; \
     li reg2, 1; \

@@ -586,8 +586,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   axi_mst_req_t [AxiIn.num_in-1:0] tagger_req;
   axi_mst_rsp_t [AxiIn.num_in-1:0] tagger_rsp;
 
-  axi_cva6_req_t [NumIntHarts-1:0] core_out_req , core_ur_req;
-  axi_cva6_rsp_t [NumIntHarts-1:0] core_out_rsp , core_ur_rsp;
+  axi_cva6_req_t [NumIntHarts-1:0] core_out_req, core_ur_req;
+  axi_cva6_rsp_t [NumIntHarts-1:0] core_out_rsp, core_ur_rsp;
 
   // CLIC interface
   logic [NumIntHarts-1:0] clic_irq_valid, clic_irq_ready;
@@ -597,10 +597,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   logic [NumIntHarts-1:0] [$clog2(NumClicIntrs)-1:0] clic_irq_id;
   logic [NumIntHarts-1:0] [7:0]        clic_irq_level;
   logic [NumIntHarts-1:0] [5:0]        clic_irq_vsid;
-  riscv::priv_lvl_t  [NumIntHarts] clic_irq_priv;
+  riscv::priv_lvl_t  [NumIntHarts-1:0] clic_irq_priv;
 
-  // Currently, we support only one core
-  // Actually we should support 2?
   cva6_wrap #(
     .Cva6Cfg          ( Cva6Cfg              ),
     .NumHarts         ( NumIntHarts          ),
@@ -717,6 +715,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       assign clic_irq_level[i]    = '0;
       assign clic_irq_shv[i]      = '0;
       assign clic_irq_priv[i]     = riscv::priv_lvl_t'(0);
+      assign clic_irq_v[i]        = '0;
+      assign clic_irq_vsid[i]     = '0;
       assign clic_irq_kill_req[i] = '0;
 
     end
