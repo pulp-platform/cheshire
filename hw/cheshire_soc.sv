@@ -599,6 +599,17 @@ module cheshire_soc import cheshire_pkg::*; #(
   logic [NumIntHarts-1:0] [5:0]        clic_irq_vsid;
   riscv::priv_lvl_t  [NumIntHarts-1:0] clic_irq_priv;
 
+  reg_req_t reg_out_core_req;
+  reg_rsp_t reg_out_core_rsp;
+
+  // Additional register intergace bus for the HMR unit configuration
+  if (Cfg.HmrUnit == 1) begin : gen_hmr_unit_reg_intf
+    assign reg_out_core_req = reg_out_req[RegOut.hmr_unit];
+    assign reg_out_rsp[RegOut.hmr_unit] = reg_out_core_rsp;
+  end else begin
+    assign reg_out_core_req = '0;
+  end
+
   cva6_wrap #(
     .Cva6Cfg          ( Cva6Cfg              ),
     .NumHarts         ( NumIntHarts          ),
@@ -632,6 +643,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .clic_irq_ready_o ( clic_irq_ready                  ),
     .clic_kill_req_i  ( clic_irq_kill_req               ),
     .clic_kill_ack_o  ( clic_irq_kill_ack               ),
+    .reg_req_i        ( reg_out_core_req                ),
+    .reg_rsp_o        ( reg_out_core_rsp                ),
     .axi_req_o        ( core_out_req                    ),
     .axi_rsp_i        ( core_out_rsp                    )
   );
