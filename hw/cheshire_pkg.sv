@@ -140,7 +140,9 @@ package cheshire_pkg;
     bit     Clic;
     bit     IrqRouter;
     bit     BusErr;
+    bit     HmrUnit;
     bit     Cva6DMR;
+    bit     Cva6DMRFixed;
     bit     RapidRecovery;
     // Parameters for Debug Module
     jtag_idcode_t DbgIdCode;
@@ -275,15 +277,16 @@ package cheshire_pkg;
   endfunction
 
   // Static addresses (defined here only if multiply used)
-  localparam doub_bt AmDbg    = 'h0000_0000;  // Base of AXI peripherals
-  localparam doub_bt AmBrom   = 'h0200_0000;  // Base of reg peripherals
-  localparam doub_bt AmRegs   = 'h0300_0000;
-  localparam doub_bt AmLlc    = 'h0300_1000;
-  localparam doub_bt AmSlink  = 'h0300_6000;
-  localparam doub_bt AmBusErr = 'h0300_8000;
-  localparam doub_bt AmTagger = 'h0300_A000;
-  localparam doub_bt AmSpm    = 'h1000_0000;  // Cached region at bottom, uncached on top
-  localparam doub_bt AmClic   = 'h0800_0000;
+  localparam doub_bt AmDbg     = 'h0000_0000;  // Base of AXI peripherals
+  localparam doub_bt AmBrom    = 'h0200_0000;  // Base of reg peripherals
+  localparam doub_bt AmRegs    = 'h0300_0000;
+  localparam doub_bt AmLlc     = 'h0300_1000;
+  localparam doub_bt AmSlink   = 'h0300_6000;
+  localparam doub_bt AmBusErr  = 'h0300_8000;
+  localparam doub_bt AmTagger  = 'h0300_A000;
+  localparam doub_bt AmHmrUnit = 'h0300_C000;
+  localparam doub_bt AmSpm     = 'h1000_0000;  // Cached region at bottom, uncached on top
+  localparam doub_bt AmClic    = 'h0800_0000;
 
   // Static masks
   localparam doub_bt AmSpmBaseUncached = 'h1400_0000;
@@ -399,6 +402,7 @@ package cheshire_pkg;
     aw_bt [2**MaxCoresWidth-1:0] bus_err;
     aw_bt [2**MaxCoresWidth-1:0] clic;
     aw_bt [2**MaxCoresWidth-1:0] tagger;
+    aw_bt hmr_unit;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
@@ -429,6 +433,9 @@ package cheshire_pkg;
     end
     if (cfg.LlcCachePartition) for (int j = 0; j < cfg.NumCores; j++) begin
       i++; ret.tagger[j]  = i; r++; ret.map[r] = '{i, AmTagger + j*'h100,  AmTagger + (j+1)*'h100};
+    end
+    if (cfg.HmrUnit) begin
+      i++; ret.hmr_unit   = i; r++; ret.map[r] = '{i, AmHmrUnit, AmHmrUnit+'h400};
     end
     i++; r++;
     ret.ext_base  = i;
@@ -572,7 +579,9 @@ package cheshire_pkg;
     Clic              : 0,
     IrqRouter         : 0,
     BusErr            : 1,
+    HmrUnit           : 1,
     Cva6DMR           : 1,
+    Cva6DMRFixed      : 0,
     RapidRecovery     : 0,
     // Debug
     DbgIdCode         : CheshireIdCode,

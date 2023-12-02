@@ -38,6 +38,8 @@ module cva6_wrap #(
   output logic             [NumHarts-1:0]                  clic_irq_ready_o,
   input  logic             [NumHarts-1:0]                  clic_kill_req_i,
   output logic             [NumHarts-1:0]                  clic_kill_ack_o,
+  input  reg_req_t                                         reg_req_i,
+  output reg_rsp_t                                         reg_rsp_o,
   output axi_req_t         [NumHarts-1:0]                  axi_req_o,
   input  axi_rsp_t         [NumHarts-1:0]                  axi_rsp_i
 );
@@ -136,7 +138,7 @@ if (NumHarts > 1) begin: gen_multicore_hmr
   hmr_unit #(
     .NumCores          ( NumHarts          ),
     .DMRSupported      ( Cfg.Cva6DMR       ),
-    .DMRFixed          ( 1                 ), // TODO: make configurable
+    .DMRFixed          ( Cfg.Cva6DMRFixed  ), // TODO: make configurable
     .TMRSupported      ( 0                 ),
     .RapidRecovery     ( Cfg.RapidRecovery ),
     .SeparateData      ( 0                 ),
@@ -152,8 +154,8 @@ if (NumHarts > 1) begin: gen_multicore_hmr
   ) i_cva6_hmr (
     .clk_i              ( clk_i         ),
     .rst_ni             ( rstn_i        ),
-    .reg_request_i      ( '0            ), // TODO
-    .reg_response_o     ( /* TODO */    ),
+    .reg_request_i      ( reg_req_i     ),
+    .reg_response_o     ( reg_rsp_o     ),
     .tmr_failure_o      ( /* Not used */),
     .tmr_error_o        ( /* Not used */), // Should this not be NumTMRCores? or NumCores?
     .tmr_resynch_req_o  ( /* Not used */),
@@ -171,8 +173,8 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     .rapid_recovery_o ( /* TODO */ ),
     .core_backup_i    (  '0        ), // TODO
 
-    .sys_inputs_i          ( sys2hmr[0] ),
-    .sys_nominal_outputs_o ( hmr2sys[0] ),
+    .sys_inputs_i          ( sys2hmr ),
+    .sys_nominal_outputs_o ( hmr2sys ),
     .sys_bus_outputs_o     (         ),
     .sys_fetch_en_i        ( '0      ), // TODO?
     .enable_bus_vote_i     ( '0      ), // TODO?
@@ -184,7 +186,7 @@ if (NumHarts > 1) begin: gen_multicore_hmr
   );
 
   /* We temporarily hardcode this for permanent lockstep.*/
-  assign hmr2sys[NumHarts-1] = '0;
+  // assign hmr2sys[NumHarts-1] = '0;
 end else begin : gen_single_core_binding
   assign core_setback = '0;
   assign hmr2core = sys2hmr ;
