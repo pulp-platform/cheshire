@@ -111,8 +111,12 @@ _fp_init:
     // Set FS state to "Clean"
     csrrc x0, mstatus, t1
 
-    // Full fence, then jump to main
+    // Full fence, then init SoC
     fence
+
+    // Init SoC, than jump to main
+    jal x1, soc_init
+
     call main
 
 // If main returns, we end up here
@@ -127,6 +131,8 @@ _exit:
     ori  t0, t0, 1
     la t1, __base_regs
     sw t0, 8(t1)     // regs.SCRATCH[2]
+    // Flush everything before exiting.
+    jal x1, soc_close
     // Hand over to whatever called us, passing return
     ret
 
