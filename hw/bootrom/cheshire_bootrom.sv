@@ -85,7 +85,7 @@ module cheshire_bootrom #(
             053: data_o = 32'h0397f322 /* 0x00d4 */;
             054: data_o = 32'h83930100 /* 0x00d8 */;
             055: data_o = 32'ha383f2a3 /* 0x00dc */;
-            056: data_o = 32'hc31704c3 /* 0x00e0 */;
+            056: data_o = 32'hb31704c3 /* 0x00e0 */;
             057: data_o = 32'h03130100 /* 0x00e4 */;
             058: data_o = 32'h2303f1e3 /* 0x00e8 */;
             059: data_o = 32'hd3b32003 /* 0x00ec */;

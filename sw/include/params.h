@@ -23,6 +23,7 @@ extern void *__base_gpio;
 extern void *__base_slink;
 extern void *__base_vga;
 extern void *__base_clint;
+extern void *__base_hmr;
 extern void *__base_plic;
 extern void *__base_dma;
 extern void *__base_axirt;

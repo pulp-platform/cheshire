@@ -284,7 +284,7 @@ package cheshire_pkg;
   localparam doub_bt AmSlink   = 'h0300_6000;
   localparam doub_bt AmBusErr  = 'h0300_8000;
   localparam doub_bt AmTagger  = 'h0300_A000;
-  localparam doub_bt AmHmrUnit = 'h0300_C000;
+  localparam doub_bt AmHmrUnit = 'h0300_B000;
   localparam doub_bt AmSpm     = 'h1000_0000;  // Cached region at bottom, uncached on top
   localparam doub_bt AmClic    = 'h0800_0000;
 
