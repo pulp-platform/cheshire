@@ -15,8 +15,10 @@ _start:
     csrrc x0, mstatus, 10
 
     // Park SMP harts
-    csrr t0, mhartid
-    beqz t0, 2f
+    // csrr t0, mhartid
+    // beqz t0, 2f
+    // All harts continue.
+    beq t0, t0, 2f
 1:
     wfi
     j 1b
@@ -110,13 +112,19 @@ _fp_init:
 
     // Set FS state to "Clean"
     csrrc x0, mstatus, t1
+    // Non SMP Hart initializes the SoC
+    // SMP Harts jump to main
+    csrr t0, mhartid
+    beqz t0, _soc_init
+    j _program_start
 
-    // Full fence, then init SoC
-    fence
-
+_soc_init:
     // Init SoC, than jump to main
     jal x1, soc_init
 
+_program_start:
+    // Full fence, then go to main
+    fence
     call main
 
 // If main returns, we end up here
