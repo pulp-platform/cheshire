@@ -15,7 +15,20 @@
   model = "eth,cheshire";
 
   chosen {
+    #address-cells = <2>;
+    #size-cells = <2>;
+    ranges;
+    bootargs = "console=ttyS0,115200 console=tty0";
     stdout-path = "/soc/serial@3002000:115200";
+    framebuffer0: framebuffer@A0000000 {
+      compatible = "simple-framebuffer"; 
+      reg = <0x0 0xA0000000 0x0 (640 * 480 * 2)>;
+      width = <640>;
+      height = <480>;
+      stride = <(640 * 2)>;
+      format = "r5g6b5";
+      status = "okay";
+    };
   };
   memory@80000000 {
     device_type = "memory";
@@ -86,6 +99,14 @@
       max-frequency = <25000000>;
       #address-cells = <1>;
       #size-cells = <0>;
+    };
+    usb@1001000 {
+      compatible = "generic-ohci";
+      reg = <0x0 0x1001000 0x0 0x1000>;
+      interrupt-parent = <&PLIC0>;
+      interrupts = <19>;
+      //clock-frequency = <48000000>;
+      //phy-names = "usb";
     };
     vga@3007000 {
       compatible = "eth,axi-vga";
