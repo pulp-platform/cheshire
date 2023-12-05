@@ -80,3 +80,10 @@ static inline void *gprw(void *gp) {
     if (!(cond)) return (ret);
 
 #define MIN(a, b) (((a) <= (b)) ? (a) : (b))
+
+// Read hart ID
+static inline unsigned int hart_id() {
+  int hart_id;
+  asm volatile("csrr %0, mhartid" : "=r" (hart_id) : );
+  return hart_id;
+}
