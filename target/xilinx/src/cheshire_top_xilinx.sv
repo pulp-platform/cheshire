@@ -78,7 +78,16 @@ module cheshire_top_xilinx (
 `endif
 
   output logic  uart_tx_o,
-  input  logic  uart_rx_i
+  input  logic  uart_rx_i,
+  
+  inout wire          usb_0_dp,
+  inout wire          usb_0_dm,
+  inout wire          usb_1_dp,
+  inout wire          usb_1_dm,
+  inout wire          usb_2_dp,
+  inout wire          usb_2_dm,
+  inout wire          usb_3_dp,
+  inout wire          usb_3_dm
 );
 
   ///////////////////////
@@ -97,6 +106,7 @@ module cheshire_top_xilinx (
     ret.VgaRedWidth     = 5;
     ret.VgaGreenWidth   = 6;
     ret.VgaBlueWidth    = 5;
+    ret.Usb             = 1;
     return ret;
   endfunction
 
@@ -322,6 +332,64 @@ module cheshire_top_xilinx (
 `endif
 `endif
 
+  ///////////
+  //  USB  //
+  ///////////
+
+  // Port 0
+  logic  usb_0_dm_o;
+  logic  usb_0_dm_i;
+  logic  usb_0_dm_en_o;
+  logic  usb_0_dp_o;
+  logic  usb_0_dp_i;
+  logic  usb_0_dp_en_o;
+  // Port 1
+  logic  usb_1_dm_o;
+  logic  usb_1_dm_i;
+  logic  usb_1_dm_en_o;
+  logic  usb_1_dp_o;
+  logic  usb_1_dp_i;
+  logic  usb_1_dp_en_o;
+  // Port 2
+  logic  usb_2_dm_o;
+  logic  usb_2_dm_i;
+  logic  usb_2_dm_en_o;
+  logic  usb_2_dp_o;
+  logic  usb_2_dp_i;
+  logic  usb_2_dp_en_o;
+  // Port 3
+  logic  usb_3_dm_o;
+  logic  usb_3_dm_i;
+  logic  usb_3_dm_en_o;
+  logic  usb_3_dp_o;
+  logic  usb_3_dp_i;
+  logic  usb_3_dp_en_o;
+  
+
+  // Port 0
+  assign usb_0_dp = usb_0_dp_en_o ? usb_0_dp_o : 'z;
+  assign usb_0_dp_i = usb_0_dp;
+  assign usb_0_dm = usb_0_dm_en_o ? usb_0_dm_o : 'z;
+  assign usb_0_dm_i = usb_0_dm;
+  
+  // Port 1
+  assign usb_1_dp = usb_1_dp_en_o ? usb_1_dp_o : 'z;
+  assign usb_1_dp_i = usb_1_dp;
+  assign usb_1_dm = usb_1_dm_en_o ? usb_1_dm_o : 'z;
+  assign usb_1_dm_i = usb_1_dm;
+  
+  // Port 2
+  assign usb_2_dp = usb_2_dp_en_o ? usb_2_dp_o : 'z;
+  assign usb_2_dp_i = usb_2_dp;
+  assign usb_2_dm = usb_2_dm_en_o ? usb_2_dm_o : 'z;
+  assign usb_2_dm_i = usb_2_dm;
+  
+  // Port 3
+  assign usb_3_dp = usb_3_dp_en_o ? usb_3_dp_o : 'z;
+  assign usb_3_dp_i = usb_3_dp;
+  assign usb_3_dm = usb_3_dm_en_o ? usb_3_dm_o : 'z;
+  assign usb_3_dm_i = usb_3_dm;
+
   /////////////////////////
   // "RTC" Clock Divider //
   /////////////////////////
@@ -461,7 +529,31 @@ module cheshire_top_xilinx (
     .vga_blue_o,
 `endif
     .uart_tx_o,
-    .uart_rx_i
+    .uart_rx_i,
+    .usb_0_dm_o,
+    .usb_0_dm_i,
+    .usb_0_dm_en_o,
+    .usb_0_dp_o,
+    .usb_0_dp_i,
+    .usb_0_dp_en_o,
+    .usb_1_dm_o,
+    .usb_1_dm_i,
+    .usb_1_dm_en_o,
+    .usb_1_dp_o,
+    .usb_1_dp_i,
+    .usb_1_dp_en_o,
+    .usb_2_dm_o,
+    .usb_2_dm_i,
+    .usb_2_dm_en_o,
+    .usb_2_dp_o,
+    .usb_2_dp_i,
+    .usb_2_dp_en_o,
+    .usb_3_dm_o,
+    .usb_3_dm_i,
+    .usb_3_dm_en_o,
+    .usb_3_dp_o,
+    .usb_3_dp_i,
+    .usb_3_dp_en_o
   );
 
 endmodule

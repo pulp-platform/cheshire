@@ -163,3 +163,13 @@ set_property -dict { PACKAGE_PIN Y29   IOSTANDARD LVCMOS33 } [get_ports { jtag_t
 # I2C Bus
 set_property -dict { PACKAGE_PIN AE30  IOSTANDARD LVCMOS33 } [get_ports { i2c_scl_io }]; #IO_L16P_T2_13 Sch=sys_scl
 set_property -dict { PACKAGE_PIN AF30  IOSTANDARD LVCMOS33 } [get_ports { i2c_sda_io }]; #IO_L16N_T2_13 Sch=sys_sda
+
+# PMOD Header JA (USB 1.1 Adapter)
+set_property -dict { PACKAGE_PIN U27   IOSTANDARD LVCMOS33 } [get_ports { usb_3_dm }]; #IO_L13P_T2_MRCC_14 Sch=ja_p[1]
+set_property -dict { PACKAGE_PIN U28   IOSTANDARD LVCMOS33 } [get_ports { usb_3_dp }]; #IO_L13N_T2_MRCC_14 Sch=ja_n[1]
+set_property -dict { PACKAGE_PIN T26   IOSTANDARD LVCMOS33 } [get_ports { usb_2_dm }]; #IO_L12P_T1_MRCC_14 Sch=ja_p[2]
+set_property -dict { PACKAGE_PIN T27   IOSTANDARD LVCMOS33 } [get_ports { usb_2_dp }]; #IO_L12N_T1_MRCC_14 Sch=ja_n[2]
+set_property -dict { PACKAGE_PIN T22   IOSTANDARD LVCMOS33 } [get_ports { usb_1_dm }]; #IO_L5P_T0_D06_14 Sch=ja_p[3]
+set_property -dict { PACKAGE_PIN T23   IOSTANDARD LVCMOS33 } [get_ports { usb_1_dp }]; #IO_L5N_T0_D07_14 Sch=ja_n[3]
+set_property -dict { PACKAGE_PIN T20   IOSTANDARD LVCMOS33 } [get_ports { usb_0_dm }]; #IO_L4P_T0_D04_14 Sch=ja_p[4]
+set_property -dict { PACKAGE_PIN T21   IOSTANDARD LVCMOS33 } [get_ports { usb_0_dp }]; #IO_L4N_T0_D05_14 Sch=ja_n[4]
