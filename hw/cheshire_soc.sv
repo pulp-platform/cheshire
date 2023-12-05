@@ -610,7 +610,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   if (Cfg.HmrUnit == 1) begin : gen_hmr_unit_reg_intf
     assign reg_out_core_req = reg_out_req[RegOut.hmr_unit];
     assign reg_out_rsp[RegOut.hmr_unit] = reg_out_core_rsp;
-  end else begin
+  end else begin : gen_no_hmr_unit_reg_intf
     assign reg_out_core_req = '0;
   end
 
