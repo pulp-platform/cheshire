@@ -12,7 +12,3 @@ void soc_init() {
   // IO initialization
   cheshire_init_io();
 };
-
-void soc_close() {
-  cheshire_close_io();
-};

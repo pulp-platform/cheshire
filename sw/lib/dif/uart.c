@@ -74,13 +74,9 @@ void uart_open(){
 
 void _putchar(char character) {
     uart_write(&__base_uart, character);
+    uart_write_flush(&__base_uart);
 };
 
 char _getchar() {
     return uart_read(&__base_uart);
 };
-
-void uart_close() {
-    uart_write_flush(&__base_uart);
-};
-

@@ -139,8 +139,6 @@ _exit:
     ori  t0, t0, 1
     la t1, __base_regs
     sw t0, 8(t1)     // regs.SCRATCH[2]
-    // Flush everything before exiting.
-    jal x1, soc_close
     // Hand over to whatever called us, passing return
     ret
 

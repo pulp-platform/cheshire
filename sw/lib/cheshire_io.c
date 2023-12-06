@@ -17,13 +17,3 @@ void cheshire_init_io() {
   // .
   // .
 };
-
-void cheshire_close_io() {
-  // Close UART first
-  uart_close();
-
-  // Close other IOs
-  // .
-  // .
-  // .
-};

@@ -47,5 +47,3 @@ void uart_open();
 void _putchar(char character);
 
 char _getchar();
-
-void uart_close();
