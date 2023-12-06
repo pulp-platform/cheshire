@@ -5,5 +5,3 @@
 #include "cheshire_io.h"
 
 void soc_init();
-
-void soc_close();
