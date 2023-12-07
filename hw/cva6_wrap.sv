@@ -4,6 +4,8 @@
 //
 // Yvan Tortorella <yvan.tortorella@unibo.it>
 
+`include "axi/assign.svh"
+
 module cva6_wrap #(
   parameter cheshire_pkg::cheshire_cfg_t Cfg = '0,
   parameter ariane_pkg::ariane_cfg_t Cva6Cfg = ariane_pkg::ArianeDefaultConfig,
@@ -88,11 +90,12 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
   assign sys2hmr[i].clic_irq_vsid  = clic_irq_vsid_i[i];
   assign sys2hmr[i].clic_irq_shv   = clic_irq_shv_i[i];
   assign sys2hmr[i].clic_kill_req  = clic_kill_req_i[i];
-  assign sys2hmr[i].axi_rsp        = axi_rsp_i[i];
+  `AXI_ASSIGN_RESP_STRUCT(sys2hmr[i].axi_rsp, axi_rsp_i[i]);
+
   // Bind HMR outputs to system.
   assign clic_irq_ready_o[i] = hmr2sys[i].clic_irq_ready;
   assign clic_kill_ack_o[i]  = hmr2sys[i].clic_kill_ack;
-  assign axi_req_o[i]        = hmr2sys[i].axi_req;
+  `AXI_ASSIGN_REQ_STRUCT(axi_req_o[i], hmr2sys[i].axi_req);
 
   cva6 #(
     .ArianeCfg     ( Cva6Cfg       ),
