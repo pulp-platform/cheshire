@@ -194,6 +194,18 @@ end else begin : gen_single_core_binding
   assign core_setback = '0;
   assign hmr2core = sys2hmr ;
   assign hmr2sys  = core2hmr;
+
+  // reg error slave when HMR not supported
+  reg_err_slv #(
+    .DW       ( 32 ),
+    .ERR_VAL  ( 32'hBADCAB1E ),
+    .req_t    ( reg_req_t ),
+    .rsp_t    ( reg_rsp_t )
+  ) i_cva6_hmr_err_slv (
+    .req_i  ( reg_req_i ),
+    .rsp_o  ( reg_rsp_o )
+  );
+
 end
 
 endmodule: cva6_wrap
