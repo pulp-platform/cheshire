@@ -26,6 +26,7 @@ module cva6_wrap #(
   input  logic                                             rstn_i,
   input  cheshire_pkg::doub_bt                             bootaddress_i,
   input  cheshire_pkg::doub_bt                             hart_id_i,
+  input  logic             [31:0]                          harts_sync_req_i,
   input  logic             [NumHarts-1:0][1:0]             irq_i,
   input  logic             [NumHarts-1:0]                  ipi_i,
   input  logic             [NumHarts-1:0]                  time_irq_i,
@@ -70,6 +71,7 @@ typedef struct packed {
   axi_req_t axi_req;
 } cva6_outputs_t;
 
+logic                         cores_sync;
 logic          [NumHarts-1:0] core_setback;
 cva6_inputs_t  [NumHarts-1:0] sys2hmr, hmr2core;
 cva6_outputs_t [NumHarts-1:0] hmr2sys, core2hmr;
@@ -137,12 +139,15 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
   );
 end
 
+assign cores_sync = (harts_sync_req_i[NumHarts-1:0] == '1) ? 1'b1 : 1'b0;
+
 if (NumHarts > 1) begin: gen_multicore_hmr
   hmr_unit #(
     .NumCores          ( NumHarts          ),
     .DMRSupported      ( Cfg.Cva6DMR       ),
     .DMRFixed          ( Cfg.Cva6DMRFixed  ), // TODO: make configurable
     .TMRSupported      ( 0                 ),
+    // .InterleaveGrps    ( 0                 ),
     .RapidRecovery     ( Cfg.RapidRecovery ),
     .SeparateData      ( 0                 ),
     .RfAddrWidth       ( 5                 ),
@@ -170,7 +175,12 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     .dmr_error_o        ( /* TODO */ ), // Should this not be NumDMRCores? or NumCores?
     .dmr_resynch_req_o  ( /* TODO */ ),
     .dmr_sw_synch_req_o ( /* TODO */ ),
-    .dmr_cores_synch_i  ( '0         ),
+    // In PULP cluster we connected this to the event unit
+    // to receive information about cores' synchronization.
+    // How should we handle it here? We could use Cheshire's
+    // registers to write that a synchronization completed
+    // succesfully (??)
+    .dmr_cores_synch_i  ( cores_sync ),
 
     // Rapid recovery buses
     .rapid_recovery_o ( /* TODO */ ),
@@ -179,7 +189,8 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     .sys_inputs_i          ( sys2hmr ),
     .sys_nominal_outputs_o ( hmr2sys ),
     .sys_bus_outputs_o     (         ),
-    .sys_fetch_en_i        ( '0      ), // TODO?
+    // CVA6 boot does not rely on fetch enable.
+    .sys_fetch_en_i        ( '1      ),
     .enable_bus_vote_i     ( '0      ), // TODO?
 
     .core_setback_o         ( core_setback ),

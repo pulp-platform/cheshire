@@ -611,6 +611,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   end
 
   cva6_wrap #(
+    .Cfg              ( Cfg                  ),
     .Cva6Cfg          ( Cva6Cfg              ),
     .NumHarts         ( NumIntHarts          ),
     .AxiAddrWidth     ( Cfg.AddrWidth        ),
@@ -629,6 +630,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .rstn_i           ( rst_ni                          ),
     .bootaddress_i    ( BootAddr                        ),
     .hart_id_i        ( '0                              ),
+    .harts_sync_req_i ( reg_reg2hw.harts_sync.q         ),
     .irq_i            ( xeip[NumIntHarts-1:0]           ),
     .ipi_i            ( msip[NumIntHarts-1:0]           ),
     .time_irq_i       ( mtip[NumIntHarts-1:0]           ),
@@ -1038,6 +1040,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   /////////////////////
 
   cheshire_reg_pkg::cheshire_hw2reg_t reg_hw2reg;
+  cheshire_reg_pkg::cheshire_reg2hw_t reg_reg2hw;
 
   assign reg_hw2reg = '{
     boot_mode     : boot_mode_i,
@@ -1076,6 +1079,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .reg_req_i  ( reg_out_req[RegOut.regs] ),
     .reg_rsp_o  ( reg_out_rsp[RegOut.regs] ),
     .hw2reg     ( reg_hw2reg ),
+    .reg2hw     ( reg_reg2hw ),
     .devmode_i  ( 1'b1 )
   );
 
