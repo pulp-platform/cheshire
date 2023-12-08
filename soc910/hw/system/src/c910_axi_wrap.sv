@@ -13,6 +13,9 @@ module c910_axi_wrap #(
   // clint
   input  logic        ipi_i,
   input  logic        time_irq_i,
+  // plic
+  input  logic [1:0]  plic_hartx_mint_req_i,
+  input  logic [1:0]  plic_hartx_sint_req_i,
   // External interrupts
   input  logic [39:0] ext_int_i,
   // JTAG
@@ -78,8 +81,12 @@ module c910_axi_wrap #(
     .i_pad_jtg_tms        ( jtag_tms_i               ),
     .biu_pad_wid          (                          ),
     .biu_pad_lpmd_b       (                          ),
+    // clint
     .ipi_i                ( ipi_i                    ),
-    .time_irq_i           ( time_irq_i               )
+    .time_irq_i           ( time_irq_i               ),
+    // plic
+    .plic_hartx_mint_req_i(plic_hartx_mint_req_i     ),
+    .plic_hartx_sint_req_i(plic_hartx_sint_req_i     )
   );
 
   assign axi_req_o.aw.qos    = '0;

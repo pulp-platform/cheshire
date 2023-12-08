@@ -126,7 +126,10 @@ module openC910(
   pll_cpu_clk,
   // clint
   ipi_i,
-  time_irq_i
+  time_irq_i,
+  // plic
+  plic_hartx_mint_req_i,
+  plic_hartx_sint_req_i
 );
 
 // &Ports("compare", "../../../gen_rtl/cpu/rtl/mp_top_golden_port.v"); @42
@@ -173,8 +176,11 @@ input            pad_yy_scan_mode;
 input            pad_yy_scan_rst_b;             
 input            pll_cpu_clk;                   
   // clint
-input           ipi_i;
-input           time_irq_i;
+input            ipi_i;
+input            time_irq_i;
+  // plic
+input   [1  :0]  plic_hartx_mint_req_i;
+input   [1  :0]  plic_hartx_sint_req_i;
 
 output  [39 :0]  biu_pad_araddr;                
 output  [1  :0]  biu_pad_arburst;               
@@ -651,8 +657,8 @@ wire             plic_core0_me_int;
 wire             plic_core0_se_int;             
 wire             plic_core1_me_int;             
 wire             plic_core1_se_int;             
-wire    [1  :0]  plic_hartx_mint_req;           
-wire    [1  :0]  plic_hartx_sint_req;           
+wire    [1  :0]  plic_hartx_mint_req_i;
+wire    [1  :0]  plic_hartx_sint_req_i;
 wire    [159:0]  plic_int_cfg;                  
 wire    [159:0]  plic_int_vld;                  
 wire             pll_cpu_clk;                   
@@ -1633,8 +1639,8 @@ plic_top #(.INT_NUM(`PLIC_INT_NUM+16),
               .ID_NUM(`PLIC_ID_NUM),
               .PRIO_BIT(`PLIC_PRIO_BIT),
               .MAX_HART_NUM(`MAX_HART_NUM)) x_plic_top(
-  .plic_hartx_mint_req    (plic_hartx_mint_req  ),
-  .plic_hartx_sint_req    (plic_hartx_sint_req  ),
+  .plic_hartx_mint_req    ('0 /*plic_hartx_mint_req_i*/  ),
+  .plic_hartx_sint_req    ('0 /*plic_hartx_sint_req_i*/  ),
   .ciu_plic_paddr         (paddr[26:0]          ),
   .ciu_plic_penable       (penable              ),
   .ciu_plic_psel          (psel_plic            ),
@@ -1655,8 +1661,8 @@ plic_top #(.INT_NUM(`PLIC_INT_NUM+16),
 // &Force("bus","pad_plic_int_vld",`PLIC_INT_NUM-1,0); @1447
 // &Force("input","pad_plic_int_cfg"); @1448
 // &Force("bus","pad_plic_int_cfg",`PLIC_INT_NUM-1,0); @1449
-// &Force("nonport","plic_hartx_mint_req"); @1450
-// &Force("nonport","plic_hartx_sint_req"); @1451
+// &Force("nonport","plic_hartx_mint_req_i"); @1450
+// &Force("nonport","plic_hartx_sint_req_i"); @1451
 // &Force("nonport","perr_plic"); @1452
 // &Force("nonport","prdata_plic"); @1453
 // &Force("nonport","pready_plic"); @1454
@@ -1671,10 +1677,10 @@ assign plic_int_vld[`PLIC_INT_NUM+15:0] = {pad_plic_int_vld[`PLIC_INT_NUM-1:0],1
 assign plic_int_cfg[`PLIC_INT_NUM+15:0] = {pad_plic_int_cfg[`PLIC_INT_NUM-1:0],16'b0};
 // &Depend("ct_plic_top_dummy.v"); @1465
 
-assign plic_core0_me_int  = plic_hartx_mint_req[0];
-assign plic_core0_se_int  = plic_hartx_sint_req[0];
-assign plic_core1_me_int  = plic_hartx_mint_req[1];
-assign plic_core1_se_int  = plic_hartx_sint_req[1];
+assign plic_core0_me_int  = plic_hartx_mint_req_i[0];
+assign plic_core0_se_int  = plic_hartx_sint_req_i[0];
+assign plic_core1_me_int  = plic_hartx_mint_req_i[1];
+assign plic_core1_se_int  = plic_hartx_sint_req_i[1];
 //==========================================================
 //  Instance ct_reset_top sub module 
 //==========================================================

@@ -666,8 +666,12 @@ module cheshire_soc
         // clint
         .ipi_i            ( msip[i] ),
         .time_irq_i       ( mtip[i] ),
-        // plic External interrupts
-        .ext_int_i        ( {39'b0, intr.ext}   ),
+        // plic
+        .plic_hartx_mint_req_i ({1'b0, xeip[i].m}),
+        .plic_hartx_sint_req_i ({1'b0, xeip[i].s}),
+
+        // External interrupts to c910 internal plic
+        .ext_int_i        ( '0 /*{39'b0, intr.ext}*/   ),
         // JTAG
         .jtag_tck_i       ( jtag_tck_i          ),
         .jtag_tdi_i       ( jtag_tdi_i          ),
@@ -1221,23 +1225,23 @@ module cheshire_soc
   //  PLIC  //
   ////////////
 
-  if (Cfg.Core == CVA6) begin : gen_cva6_plic
+  // if (Cfg.Core == CVA6) begin : gen_cva6_plic
 
-    rv_plic #(
-      .reg_req_t  ( reg_req_t ),
-      .reg_rsp_t  ( reg_rsp_t )
-    ) i_plic (
-      .clk_i,
-      .rst_ni,
-      .reg_req_i  ( reg_out_req[RegOut.plic] ),
-      .reg_rsp_o  ( reg_out_rsp[RegOut.plic] ),
-      .intr_src_i ( intr_routed[IntrRtdPlic][rv_plic_reg_pkg::NumSrc-1:0] ),
-      .irq_o      ( xeip ),
-      .irq_id_o   ( ),
-      .msip_o     ( )
-    );
+  rv_plic #(
+    .reg_req_t  ( reg_req_t ),
+    .reg_rsp_t  ( reg_rsp_t )
+  ) i_plic (
+    .clk_i,
+    .rst_ni,
+    .reg_req_i  ( reg_out_req[RegOut.plic] ),
+    .reg_rsp_o  ( reg_out_rsp[RegOut.plic] ),
+    .intr_src_i ( intr_routed[IntrRtdPlic][rv_plic_reg_pkg::NumSrc-1:0] ),
+    .irq_o      ( xeip ),
+    .irq_id_o   ( ),
+    .msip_o     ( )
+  );
 
-  end
+  // end
 
 
   /////////////
@@ -1246,19 +1250,19 @@ module cheshire_soc
 
   // if (Cfg.Core == CVA6) begin : gen_cva6_clint
 
-    clint #(
-      .reg_req_t  ( reg_req_t ),
-      .reg_rsp_t  ( reg_rsp_t )
-    ) i_clint (
-      .clk_i,
-      .rst_ni,
-      .testmode_i   ( test_mode_i ),
-      .reg_req_i    ( reg_out_req[RegOut.clint] ),
-      .reg_rsp_o    ( reg_out_rsp[RegOut.clint] ),
-      .rtc_i,
-      .timer_irq_o  ( mtip ),
-      .ipi_o        ( msip )
-    );
+  clint #(
+    .reg_req_t  ( reg_req_t ),
+    .reg_rsp_t  ( reg_rsp_t )
+  ) i_clint (
+    .clk_i,
+    .rst_ni,
+    .testmode_i   ( test_mode_i ),
+    .reg_req_i    ( reg_out_req[RegOut.clint] ),
+    .reg_rsp_o    ( reg_out_rsp[RegOut.clint] ),
+    .rtc_i,
+    .timer_irq_o  ( mtip ),
+    .ipi_o        ( msip )
+  );
 
   // end
 

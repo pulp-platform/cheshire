@@ -44,6 +44,9 @@ module cpu_sub_system_axi
   // clint
   ipi_i                                    ,
   time_irq_i                               ,
+  // plic
+  plic_hartx_mint_req_i                    ,
+  plic_hartx_sint_req_i                    ,
 
   biu_pad_araddr                           ,
   biu_pad_arburst                          ,
@@ -112,6 +115,9 @@ input                  pll_cpu_clk                              ;
 // clint
 input                  ipi_i                                    ;
 input                  time_irq_i                               ;
+// plic
+input      [1  :0]     plic_hartx_mint_req_i                    ;
+input      [1  :0]     plic_hartx_sint_req_i                    ;
 
 output     [39 : 0]    biu_pad_araddr                           ;
 output     [1 : 0]     biu_pad_arburst                          ;
@@ -181,6 +187,9 @@ wire                   pll_cpu_clk                              ;
 // clint
 wire                   ipi_i                                    ;
 wire                   time_irq_i                               ;
+// plic
+wire       [1  :0]     plic_hartx_mint_req_i                    ;
+wire       [1  :0]     plic_hartx_sint_req_i                    ;
 
 wire       [39 : 0]    biu_pad_araddr                           ;
 wire       [1 : 0]     biu_pad_arburst                          ;
@@ -364,7 +373,10 @@ rv_integration_platform  x_rv_integration_platform (
 
       // clint
     .ipi_i                                        (ipi_i                                    ),
-    .time_irq_i                                   (time_irq_i                               )
+    .time_irq_i                                   (time_irq_i                               ),
+      // plic
+    .plic_hartx_mint_req_i                        (plic_hartx_mint_req_i                    ),
+    .plic_hartx_sint_req_i                        (plic_hartx_sint_req_i                    )
   );
 
 
