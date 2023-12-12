@@ -231,7 +231,10 @@ module ct_cp0_regs(
   rtu_cp0_vstart,
   rtu_cp0_vstart_vld,
   rtu_yy_xx_expt_vec,
-  rtu_yy_xx_flush
+  rtu_yy_xx_flush,
+
+  // debug mode
+  cp0_yy_debug_mode_o
 );
 
 // &Ports; @25
@@ -275,7 +278,7 @@ input   [31 :0]  iui_regs_opcode;
 input   [63 :0]  iui_regs_ori_src0;              
 input            iui_regs_rst_inv_d;             
 input            iui_regs_rst_inv_i;             
-input            iui_regs_sel;                   
+input            iui_regs_sel;                   // csr write signal
 input   [63 :0]  iui_regs_src0;                  
 input            lsu_cp0_dcache_done;            
 input   [127:0]  lsu_cp0_dcache_read_data;       
@@ -287,7 +290,7 @@ input   [63 :0]  pmp_cp0_data;
 input   [63 :0]  rtu_cp0_epc;                    
 input            rtu_cp0_expt_gateclk_vld;       
 input   [63 :0]  rtu_cp0_expt_mtval;             
-input            rtu_cp0_expt_vld;               
+input            rtu_cp0_expt_vld;               // exception valid
 input            rtu_cp0_fp_dirty_vld;           
 input            rtu_cp0_int_ack;                
 input            rtu_cp0_vec_dirty_vld;          
@@ -299,7 +302,7 @@ input   [2  :0]  rtu_cp0_vsetvl_vsew;
 input            rtu_cp0_vsetvl_vtype_vld;       
 input   [6  :0]  rtu_cp0_vstart;                 
 input            rtu_cp0_vstart_vld;             
-input   [5  :0]  rtu_yy_xx_expt_vec;             
+input   [5  :0]  rtu_yy_xx_expt_vec;             // exception mcause/scause
 input            rtu_yy_xx_flush;                
 output           cp0_biu_icg_en;                 
 output  [31 :0]  cp0_had_cpuid_0;                
@@ -450,6 +453,9 @@ output           regs_iui_vs_off;
 output  [63 :0]  regs_iui_wdata;                 
 output           regs_lpmd_int_vld;              
 output           regs_xx_icg_en;                 
+
+// debug mode
+output           cp0_yy_debug_mode_o;
 
 // &Regs; @26
 reg              amr;                            
@@ -1047,6 +1053,44 @@ wire             wb;
 wire             wbr;                            
 wire    [1  :0]  xs;                             
 
+// riscv debug support
+  // debug mode csrs
+wire             dcsr_local_en;
+wire    [31 :0]  dcsr_value;
+wire             dpc_local_en;
+wire    [63 :0]  dpc_value;
+wire             dscratch0_local_en;
+wire    [63 :0]  dscratch0_value;
+wire             dscratch1_local_en;
+wire    [63 :0]  dscratch1_value;
+
+wire [3:0]  dcsr_debugver;
+wire        dcsr_ebreakvs;
+wire        dcsr_ebreakvu;
+reg         dcsr_ebreakm;
+reg         dcsr_ebreaks;
+reg         dcsr_ebreaku;
+reg         dcsr_stepie;
+wire        dcsr_stopcount;
+wire        dcsr_stoptime;
+reg  [2:0]  dcsr_cause_d, dcsr_cause_q;
+reg         dcsr_mprven;
+wire        dcsr_nmip;
+reg         dcsr_step;
+reg  [1:0]  dcsr_prv_d, dcsr_prv_q;
+
+reg  [63:0] dpc_d, dpc_q;
+
+reg  [63:0] dscratch0_d, dscratch0_q;
+
+reg  [63:0] dscratch1_d, dscratch1_q;
+
+  // debug mode states
+reg         debug_mode_d, debug_mode_q;
+
+  // debug mode output signals
+wire        cp0_yy_debug_mode_o;
+
 
 //==========================================================
 //                 Instance of Gated Cell  
@@ -1142,6 +1186,34 @@ gated_clk_cell  x_cp0_cdata_gated_clk (
 //          .local_en(cins_r), @80
 //          .external_en(1'b0), @81
 //          .clk_out(cdata_clk)); @82
+
+// exception causes
+parameter INSTR_ADDR_MISALIGNED = 5'd0;
+parameter INSTR_ACCESS_FAULT    = 5'd1;  // Illegal access as governed by PMPs and PMAs
+parameter ILLEGAL_INSTR         = 5'd2;
+parameter BREAKPOINT            = 5'd3;
+parameter LD_ADDR_MISALIGNED    = 5'd4;
+parameter LD_ACCESS_FAULT       = 5'd5;  // Illegal access as governed by PMPs and PMAs
+parameter ST_ADDR_MISALIGNED    = 5'd6;
+parameter ST_ACCESS_FAULT       = 5'd7;  // Illegal access as governed by PMPs and PMAs
+parameter ENV_CALL_UMODE        = 5'd8;  // environment call from user mode or virtual user mode
+parameter ENV_CALL_SMODE        = 5'd9;  // environment call from hypervisor-extended supervisor mode
+parameter ENV_CALL_VSMODE       = 5'd10; // environment call from virtual supervisor mode
+parameter ENV_CALL_MMODE        = 5'd11; // environment call from machine mode
+parameter INSTR_PAGE_FAULT      = 5'd12; // Instruction page fault
+parameter LOAD_PAGE_FAULT       = 5'd13; // Load page fault
+parameter STORE_PAGE_FAULT      = 5'd15; // Store page fault
+parameter INSTR_GUEST_PAGE_FAULT= 5'd20; // Instruction guest-page fault
+parameter LOAD_GUEST_PAGE_FAULT = 5'd21; // Load guest-page fault
+parameter VIRTUAL_INSTRUCTION   = 5'd22; // virtual instruction
+parameter STORE_GUEST_PAGE_FAULT= 5'd23; // Store guest-page fault
+parameter DEBUG_REQUEST         = 5'd24; // Debug request
+
+// debug causes
+parameter CauseBreakpoint       = 3'd1;
+parameter CauseTrigger          = 3'd2;
+parameter CauseRequest          = 3'd3;
+parameter CauseSingleStep       = 3'd4;
 
 // CSR list in C960
 // 1. Machine Level CSRs
@@ -1370,6 +1442,12 @@ parameter HEDELEG   = 12'h602;
 
 parameter VSSTATUS  = 12'h200;
 
+// 6. Debug Extension (Sdext) CSRs
+parameter DCSR      = 12'h7b0;
+parameter DPC       = 12'h7b1;
+parameter DSCRATCH0 = 12'h7b2;
+parameter DSCRATCH1 = 12'h7b3;
+
 //==========================================================
 //              Generate Local Signal to CSRs
 //==========================================================
@@ -1439,6 +1517,12 @@ assign satp_local_en     = iui_regs_addr[11:0] == SATP;
 assign fxcr_local_en     = iui_regs_sel && iui_regs_addr[11:0] == FXCR;  
 
 assign shpmcr_local_en   = iui_regs_sel && iui_regs_addr[11:0] == SHPMCR;
+
+// riscv debug support
+assign dcsr_local_en      = iui_regs_sel && iui_regs_addr[11:0] == DCSR;
+assign dpc_local_en       = iui_regs_sel && iui_regs_addr[11:0] == DPC;
+assign dscratch0_local_en = iui_regs_sel && iui_regs_addr[11:0] == DSCRATCH0;
+assign dscratch1_local_en = iui_regs_sel && iui_regs_addr[11:0] == DSCRATCH1;
 
 //==========================================================
 //                 1. Machine Level CSRs
@@ -3792,6 +3876,148 @@ assign vsstatus_value[63:0] = 64'b0;
 
 
 
+
+//==========================================================
+//               Debug Mode Registers
+//==========================================================
+
+//==========================================================
+//               Define the DCSR register
+//==========================================================
+//  Debug Control and Status Register
+//  64-bit Read/Write
+//  Providing the Debug Status
+//  the definiton for DCSR register is listed as follows
+//  ===============================================================
+//  |31    28|27 18|   17   |   16   |   15  | 14 |   13  |   12  |
+//  +--------+-----+--------+--------+-------+----+-------+-------+
+//  |debugver|  0  |ebreakvs|ebreakvu|ebreakm|  0 |ebreaks|ebreaku|
+//  ===============================================================
+//  ============================================================
+//  |  11  |    10   |    9   |8   6| 5 |   4  |  3 |  2 |1   0|
+//  +------+---------+--------+-----+---+------+----+----+-----+
+//  |stepie|stopcount|stoptime|cause| v |mprven|nmip|step| prv |
+//  ============================================================
+
+assign dcsr_debugver = 4'h4;
+
+assign dcsr_ebreakvs = '0;
+
+assign dcsr_ebreakvu = '0;
+
+always @(posedge regs_flush_clk or negedge cpurst_b)
+begin
+  if(!cpurst_b)
+    dcsr_ebreakm <= 1'b0;
+  else if(dcsr_local_en)
+    dcsr_ebreakm <= iui_regs_src0[15];
+  else
+    dcsr_ebreakm <= dcsr_ebreakm;
+end
+
+always @(posedge regs_flush_clk or negedge cpurst_b)
+begin
+  if(!cpurst_b)
+    dcsr_ebreaks <= 1'b0;
+  else if(dcsr_local_en)
+    dcsr_ebreaks <= iui_regs_src0[13];
+  else
+    dcsr_ebreaks <= dcsr_ebreaks;
+end
+
+always @(posedge regs_flush_clk or negedge cpurst_b)
+begin
+  if(!cpurst_b)
+    dcsr_ebreaku <= 1'b0;
+  else if(dcsr_local_en)
+    dcsr_ebreaku <= iui_regs_src0[12];
+  else
+    dcsr_ebreaku <= dcsr_ebreaku;
+end
+
+always @(posedge regs_flush_clk or negedge cpurst_b)
+begin
+  if(!cpurst_b)
+    dcsr_stepie <= 1'b0;
+  else if(dcsr_local_en)
+    dcsr_stepie <= iui_regs_src0[11];
+  else
+    dcsr_stepie <= dcsr_stepie;
+end
+
+assign dcsr_stopcount = 1'b0;
+
+assign dcsr_stoptime  = 1'b0;
+
+// reg  [2:0]  dcsr_cause_q; ////////////////// TODO
+
+always @(posedge regs_flush_clk or negedge cpurst_b)
+begin
+  if(!cpurst_b)
+    dcsr_mprven <= 1'b0;
+  else if(dcsr_local_en)
+    dcsr_mprven <= iui_regs_src0[4];
+  else
+    dcsr_mprven <= dcsr_mprven;
+end
+
+assign dcsr_nmip = 1'b0;
+
+always @(posedge regs_flush_clk or negedge cpurst_b)
+begin
+  if(!cpurst_b)
+    dcsr_step <= 1'b0;
+  else if(dcsr_local_en)
+    dcsr_step <= iui_regs_src0[2];
+  else
+    dcsr_step <= dcsr_step;
+end
+
+assign dcsr_value[31:0]  = {dcsr_debugver, 10'b0, dcsr_ebreakvs, dcsr_ebreakvu, dcsr_ebreakm, 1'b0, 
+                            dcsr_ebreaks, dcsr_ebreaku, dcsr_stepie, dcsr_stopcount, dcsr_stoptime, 
+                            dcsr_cause_q, v, dcsr_mprven, dcsr_nmip, dcsr_step, dcsr_prv_q};
+
+
+// debug mode states
+
+always @(*)
+begin
+  if(!debug_mode_q) begin
+    dcsr_prv_d = pm;
+
+    // caused by a breakpoint
+    if(rtu_cp0_expt_vld & ~rtu_yy_xx_expt_vec[5] & (rtu_yy_xx_expt_vec[4:0] == BREAKPOINT)) begin
+      dcsr_prv_d = pm;
+      // check that we actually want to enter debug depending on the privilege level we are currently in
+      case (pm)
+        2'b11: begin
+          debug_mode_d = dcsr_ebreakm;
+          // set_debug_pc_o = ebreakm;
+        end
+        2'b01: begin
+          debug_mode_d    = v ? dcsr_ebreakvs : dcsr_ebreaks;
+          // set_debug_pc_o  = v ? dcsr_ebreakvs : dcsr_ebreaks;
+        end
+        2'b00: begin
+          debug_mode_d    = v ? dcsr_ebreakvu : dcsr_ebreaku;
+          // set_debug_pc_o  = v ? dcsr_ebreakvu : dcsr_ebreaku;
+        end
+        default:;
+      endcase
+
+      // save PC of next this instruction e.g.: the next one to be executed
+      dpc_d = rtu_cp0_epc;
+      dcsr_cause_d = CauseBreakpoint;
+    end
+  end
+end
+
+// debug mode output signals
+assign cp0_yy_debug_mode_o = debug_mode_q;
+
+
+
+
 //==========================================================
 // select regs depending on the implementation location
 //==========================================================
@@ -3977,6 +4203,12 @@ begin
     HEDELEG   : data_out[63:0] = hedeleg_value[63:0];
 
     VSSTATUS  : data_out[63:0] = vsstatus_value[63:0];
+
+    // 6. Debug Extension (Sdext) CSRs
+    DCSR      : data_out[63:0] = {32'b0, dcsr_value[31:0]};
+    DPC       : data_out[63:0] = dpc_q[63:0];
+    DSCRATCH0 : data_out[63:0] = dscratch0_q[63:0];
+    DSCRATCH1 : data_out[63:0] = dscratch1_q[63:0];
 
     default   : data_out[63:0] = 64'b0; 
   endcase

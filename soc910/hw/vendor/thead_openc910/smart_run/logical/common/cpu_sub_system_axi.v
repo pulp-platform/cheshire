@@ -47,6 +47,8 @@ module cpu_sub_system_axi
   // plic
   plic_hartx_mint_req_i                    ,
   plic_hartx_sint_req_i                    ,
+  // debug request (async)
+  debug_req_i                              ,
 
   biu_pad_araddr                           ,
   biu_pad_arburst                          ,
@@ -118,6 +120,8 @@ input                  time_irq_i                               ;
 // plic
 input      [1  :0]     plic_hartx_mint_req_i                    ;
 input      [1  :0]     plic_hartx_sint_req_i                    ;
+// debug request (async)
+input                  debug_req_i                              ;
 
 output     [39 : 0]    biu_pad_araddr                           ;
 output     [1 : 0]     biu_pad_arburst                          ;
@@ -190,6 +194,8 @@ wire                   time_irq_i                               ;
 // plic
 wire       [1  :0]     plic_hartx_mint_req_i                    ;
 wire       [1  :0]     plic_hartx_sint_req_i                    ;
+// debug request (async)
+wire                   debug_req_i                              ;
 
 wire       [39 : 0]    biu_pad_araddr                           ;
 wire       [1 : 0]     biu_pad_arburst                          ;
@@ -376,7 +382,9 @@ rv_integration_platform  x_rv_integration_platform (
     .time_irq_i                                   (time_irq_i                               ),
       // plic
     .plic_hartx_mint_req_i                        (plic_hartx_mint_req_i                    ),
-    .plic_hartx_sint_req_i                        (plic_hartx_sint_req_i                    )
+    .plic_hartx_sint_req_i                        (plic_hartx_sint_req_i                    ),
+      // debug request (async)
+    .debug_req_i                                  (debug_req_i                              )
   );
 
 

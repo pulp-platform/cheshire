@@ -129,7 +129,9 @@ module openC910(
   time_irq_i,
   // plic
   plic_hartx_mint_req_i,
-  plic_hartx_sint_req_i
+  plic_hartx_sint_req_i,
+  // debug request (async)
+  debug_req_i
 );
 
 // &Ports("compare", "../../../gen_rtl/cpu/rtl/mp_top_golden_port.v"); @42
@@ -181,6 +183,8 @@ input            time_irq_i;
   // plic
 input   [1  :0]  plic_hartx_mint_req_i;
 input   [1  :0]  plic_hartx_sint_req_i;
+  // debug request (async)
+input            debug_req_i;
 
 output  [39 :0]  biu_pad_araddr;                
 output  [1  :0]  biu_pad_arburst;               
@@ -665,6 +669,8 @@ wire             pll_cpu_clk;
   // clint
 wire             ipi_i;
 wire             time_irq_i;
+  // debug request (async)
+wire             debug_req_i;
 
 wire    [1  :0]  pprot;                         
 wire    [31 :0]  prdata_clint;                  

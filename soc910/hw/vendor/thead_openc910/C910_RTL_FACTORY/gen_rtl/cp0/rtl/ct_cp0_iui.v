@@ -707,6 +707,12 @@ parameter HEDELEG   = 12'h602;
 
 parameter VSSTATUS  = 12'h200;
 
+// 6. Debug Extension (Sdext) CSRs
+parameter DCSR      = 12'h7b0;
+parameter DPC       = 12'h7b1;
+parameter DSCRATCH0 = 12'h7b2;
+parameter DSCRATCH1 = 12'h7b3;
+
 //==========================================================
 //                Handling the CP0 operations
 //==========================================================
@@ -1068,6 +1074,12 @@ begin
     //SMCIR     : addr_inv = 1'b0;
 
     //FXCR      : addr_inv = 1'b0;
+
+
+    DCSR      : addr_inv = 1'b0;
+    DPC       : addr_inv = 1'b0;
+    DSCRATCH0 : addr_inv = 1'b0;
+    DSCRATCH1 : addr_inv = 1'b0;
 
     default   : addr_inv = 1'b1; 
   endcase

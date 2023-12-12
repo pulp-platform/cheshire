@@ -16,6 +16,8 @@ module c910_axi_wrap #(
   // plic
   input  logic [1:0]  plic_hartx_mint_req_i,
   input  logic [1:0]  plic_hartx_sint_req_i,
+  // debug request (async)
+  input  logic        debug_req_i,
   // External interrupts
   input  logic [39:0] ext_int_i,
   // JTAG
@@ -86,7 +88,9 @@ module c910_axi_wrap #(
     .time_irq_i           ( time_irq_i               ),
     // plic
     .plic_hartx_mint_req_i(plic_hartx_mint_req_i     ),
-    .plic_hartx_sint_req_i(plic_hartx_sint_req_i     )
+    .plic_hartx_sint_req_i(plic_hartx_sint_req_i     ),
+    // debug request (async)
+    .debug_req_i          (debug_req_i               )
   );
 
   assign axi_req_o.aw.qos    = '0;
