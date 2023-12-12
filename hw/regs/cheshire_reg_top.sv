@@ -17,6 +17,7 @@ module cheshire_reg_top #(
   input  reg_req_t reg_req_i,
   output reg_rsp_t reg_rsp_o,
   // To HW
+  output cheshire_reg_pkg::cheshire_reg2hw_t reg2hw, // Write
   input  cheshire_reg_pkg::cheshire_hw2reg_t hw2reg, // Read
 
 
@@ -157,6 +158,9 @@ module cheshire_reg_top #(
   logic vga_params_green_width_re;
   logic [7:0] vga_params_blue_width_qs;
   logic vga_params_blue_width_re;
+  logic [31:0] harts_sync_qs;
+  logic [31:0] harts_sync_wd;
+  logic harts_sync_we;
 
   // Register instances
 
@@ -917,9 +921,36 @@ module cheshire_reg_top #(
   );
 
 
+  // R[harts_sync]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_harts_sync (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (harts_sync_we),
+    .wd     (harts_sync_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.harts_sync.qe),
+    .q      (reg2hw.harts_sync.q ),
+
+    // to register interface (read)
+    .qs     (harts_sync_qs)
+  );
 
 
-  logic [22:0] addr_hit;
+
+
+  logic [23:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CHESHIRE_SCRATCH_0_OFFSET);
@@ -945,6 +976,7 @@ module cheshire_reg_top #(
     addr_hit[20] = (reg_addr == CHESHIRE_HW_FEATURES_OFFSET);
     addr_hit[21] = (reg_addr == CHESHIRE_LLC_SIZE_OFFSET);
     addr_hit[22] = (reg_addr == CHESHIRE_VGA_PARAMS_OFFSET);
+    addr_hit[23] = (reg_addr == CHESHIRE_HARTS_SYNC_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -974,7 +1006,8 @@ module cheshire_reg_top #(
                (addr_hit[19] & (|(CHESHIRE_PERMIT[19] & ~reg_be))) |
                (addr_hit[20] & (|(CHESHIRE_PERMIT[20] & ~reg_be))) |
                (addr_hit[21] & (|(CHESHIRE_PERMIT[21] & ~reg_be))) |
-               (addr_hit[22] & (|(CHESHIRE_PERMIT[22] & ~reg_be)))));
+               (addr_hit[22] & (|(CHESHIRE_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(CHESHIRE_PERMIT[23] & ~reg_be)))));
   end
 
   assign scratch_0_we = addr_hit[0] & reg_we & !reg_error;
@@ -1066,6 +1099,9 @@ module cheshire_reg_top #(
   assign vga_params_green_width_re = addr_hit[22] & reg_re & !reg_error;
 
   assign vga_params_blue_width_re = addr_hit[22] & reg_re & !reg_error;
+
+  assign harts_sync_we = addr_hit[23] & reg_we & !reg_error;
+  assign harts_sync_wd = reg_wdata[31:0];
 
   // Read data return
   always_comb begin
@@ -1177,6 +1213,10 @@ module cheshire_reg_top #(
         reg_rdata_next[23:16] = vga_params_blue_width_qs;
       end
 
+      addr_hit[23]: begin
+        reg_rdata_next[31:0] = harts_sync_qs;
+      end
+
       default: begin
         reg_rdata_next = '1;
       end
@@ -1206,6 +1246,7 @@ module cheshire_reg_top_intf
   input logic rst_ni,
   REG_BUS.in  regbus_slave,
   // To HW
+  output cheshire_reg_pkg::cheshire_reg2hw_t reg2hw, // Write
   input  cheshire_reg_pkg::cheshire_hw2reg_t hw2reg, // Read
   // Config
   input devmode_i // If 1, explicit error return for unmapped register access
@@ -1239,6 +1280,7 @@ module cheshire_reg_top_intf
     .rst_ni,
     .reg_req_i(s_reg_req),
     .reg_rsp_o(s_reg_rsp),
+    .reg2hw, // Write
     .hw2reg, // Read
     .devmode_i
   );

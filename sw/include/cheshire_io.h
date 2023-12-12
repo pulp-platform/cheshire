@@ -9,5 +9,3 @@
 #include "params.h"
 
 void cheshire_init_io();
-
-void cheshire_close_io();
