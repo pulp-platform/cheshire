@@ -48,7 +48,7 @@ module cva6_wrap #(
 );
 
 typedef struct packed {
-  cheshire_pkg::doub_bt    bootaddress;
+  // cheshire_pkg::doub_bt    bootaddress;
   cheshire_pkg::doub_bt    hart_id;
   logic  [1:0]             irq;
   logic                    ipi;
@@ -75,10 +75,11 @@ logic                         cores_sync;
 logic          [NumHarts-1:0] core_setback;
 cva6_inputs_t  [NumHarts-1:0] sys2hmr, hmr2core;
 cva6_outputs_t [NumHarts-1:0] hmr2sys, core2hmr;
+cheshire_pkg::doub_bt [NumHarts-1:0] core_bootaddress;
 
 for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
   // Bind system inputs to HMR.
-  assign sys2hmr[i].bootaddress    = bootaddress_i; // TODO: differentiate?
+  // assign sys2hmr[i].bootaddress    = bootaddress_i; // TODO: differentiate?
   assign sys2hmr[i].hart_id        = hart_id_i + 64'(i);
   assign sys2hmr[i].irq            = irq_i[i];
   assign sys2hmr[i].ipi            = ipi_i[i];
@@ -113,7 +114,8 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
     .clk_i            ( clk_i                         ),
     .rst_ni           ( rstn_i                        ),
     .clear_i          ( core_setback[i]               ),
-    .boot_addr_i      ( hmr2core[i].bootaddress       ),
+    // .boot_addr_i      ( hmr2core[i].bootaddress       ),
+    .boot_addr_i      ( core_bootaddress[i]           ),
     .hart_id_i        ( hmr2core[i].hart_id           ),
     .irq_i            ( hmr2core[i].irq               ),
     .ipi_i            ( hmr2core[i].ipi               ),
@@ -186,17 +188,19 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     .rapid_recovery_o ( /* TODO */ ),
     .core_backup_i    (  '0        ), // TODO
 
-    .sys_inputs_i          ( sys2hmr ),
-    .sys_nominal_outputs_o ( hmr2sys ),
-    .sys_bus_outputs_o     (         ),
+    .sys_bootaddress_i     ( bootaddress_i ),
+    .sys_inputs_i          ( sys2hmr       ),
+    .sys_nominal_outputs_o ( hmr2sys       ),
+    .sys_bus_outputs_o     (               ),
     // CVA6 boot does not rely on fetch enable.
-    .sys_fetch_en_i        ( '1      ),
-    .enable_bus_vote_i     ( '0      ), // TODO?
+    .sys_fetch_en_i        ( '1            ),
+    .enable_bus_vote_i     ( '0            ), // TODO?
 
-    .core_setback_o         ( core_setback ),
-    .core_inputs_o          ( hmr2core     ),
-    .core_nominal_outputs_i ( core2hmr     ),
-    .core_bus_outputs_i     ( '0           ) // TODO?
+    .core_bootaddress_o     ( core_bootaddress ),
+    .core_setback_o         ( core_setback     ),
+    .core_inputs_o          ( hmr2core         ),
+    .core_nominal_outputs_i ( core2hmr         ),
+    .core_bus_outputs_i     ( '0               ) // TODO?
   );
 
   /* We temporarily hardcode this for permanent lockstep.*/

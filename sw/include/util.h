@@ -87,3 +87,26 @@ static inline unsigned int hart_id() {
   asm volatile("csrr %0, mhartid" : "=r" (hart_id) : );
   return hart_id;
 }
+
+// Disable data caches
+static inline void disable_dcache(){
+  asm volatile("csrrwi x0, 0x701, 0x0 \n\t" : : : "memory");
+}
+
+// Enable data caches
+static inline void enable_dcache(){
+  asm volatile("csrrwi x0, 0x701, 0x1 \n\t" : : : "memory");
+}
+
+// The following is for future DMR support
+// Wake up sleeping hart using CLINT
+// static inline void wakeup_hart(unsigned int hart_id) {
+//   *reg32(&__base_clint, 0x4*hart_id) = 0x1;
+//   *reg32(&__base_clint, 0x4*hart_id) = 0x0;
+// }
+
+// Write synchronization request in dedicated register
+// static inline void sync_req(unsigned int hart_id){
+//   uint32_t sync_reg = *reg32(&__base_regs, CHESHIRE_HARTS_SYNC_REG_OFFSET);
+//   *reg32(&__base_regs, CHESHIRE_HARTS_SYNC_REG_OFFSET) = sync_reg | (0x1 << hart_id);
+// }
