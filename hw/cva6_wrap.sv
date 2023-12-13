@@ -206,6 +206,7 @@ if (NumHarts > 1) begin: gen_multicore_hmr
   /* We temporarily hardcode this for permanent lockstep.*/
   // assign hmr2sys[NumHarts-1] = '0;
 end else begin : gen_single_core_binding
+  assign core_bootaddress = bootaddress_i;
   assign core_setback = '0;
   assign hmr2core = sys2hmr ;
   assign hmr2sys  = core2hmr;
