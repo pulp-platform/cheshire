@@ -9,11 +9,11 @@
 #include "cheshire_io.h"
 
 void cheshire_init_io() {
-  // Initialize UART first
-  uart_open();
-  
-  // Initialize other IOs
-  // .
-  // .
-  // .
+    // Initialize UART first
+    uart_open();
+
+    // Initialize other IOs
+    // .
+    // .
+    // .
 };
