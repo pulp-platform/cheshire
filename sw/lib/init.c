@@ -9,6 +9,6 @@
 #include "init.h"
 
 void soc_init() {
-  // IO initialization
-  cheshire_init_io();
+    // IO initialization
+    cheshire_init_io();
 };
