@@ -42,7 +42,7 @@ endif
 # Location of ip outputs
 ips := $(addprefix $(CHS_XIL_DIR)/,$(addsuffix .xci ,$(basename $(ips-names))))
 # Derive bender args from enabled ips
-xilinx_targs += -t fpga -t cv64a6_imafdcsclic_sv39 -t cva6
+xilinx_targs += -t fpga -t cv64a6_imafdcsclic_sv39 -t cva6 -t c910
 xilinx_targs += $(foreach ip-name,$(ips-names),$(addprefix -t ,$(ip-name)))
 xilinx_targs += $(addprefix -t ,$(BOARD))
 
