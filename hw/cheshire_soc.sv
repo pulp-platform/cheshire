@@ -658,6 +658,12 @@ module cheshire_soc
       axi_c910_rsp_t c910_out_rsp;
 
       c910_axi_wrap #(
+        .AxiSetModifiable ( 1'b1              ),
+        .AxiUnwrapBursts  ( 1'b1              ),
+        .AddrWidth        ( soc910_pkg::AxiAddrWidth    ),
+        .DataWidth        ( soc910_pkg::AxiDataWidth    ),
+        .IdWidth          ( soc910_pkg::AxiIdWidthMaster),
+        .UserWidth        ( soc910_pkg::AxiUserWidth    ),
         .axi_req_t        ( axi_c910_req_t ),
         .axi_rsp_t        ( axi_c910_rsp_t )
       ) i_c910_axi_wrap (
@@ -790,28 +796,53 @@ module cheshire_soc
     end
 
     if (Cfg.BusErr) begin : gen_cva6_bus_err
-      axi_err_unit_wrap #(
-        .AddrWidth          ( Cfg.AddrWidth ),
-        .IdWidth            ( Cva6IdWidth   ),
-        .UserErrBits        ( Cfg.AxiUserErrBits ),
-        .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
-        .NumOutstanding     ( Cfg.CoreMaxTxns ),
-        .NumStoredErrors    ( 4 ),
-        .DropOldest         ( 1'b0 ),
-        .axi_req_t          ( axi_cva6_req_t ),
-        .axi_rsp_t          ( axi_cva6_rsp_t ),
-        .reg_req_t          ( reg_req_t ),
-        .reg_rsp_t          ( reg_rsp_t )
-      ) i_cva6_bus_err (
-        .clk_i,
-        .rst_ni,
-        .testmode_i ( test_mode_i ),
-        .axi_req_i  ( core_out_req ),
-        .axi_rsp_i  ( core_out_rsp ),
-        .err_irq_o  ( core_bus_err_intr[i] ),
-        .reg_req_i  ( reg_out_req[RegOut.bus_err[RegBusErrCoresBase+i]] ),
-        .reg_rsp_o  ( reg_out_rsp[RegOut.bus_err[RegBusErrCoresBase+i]] )
-      );
+      if(Cfg.Core == CVA6) begin: gen_i_cva6_bus_err
+        axi_err_unit_wrap #(
+          .AddrWidth          ( Cfg.AddrWidth ),
+          .IdWidth            ( Cva6IdWidth   ),
+          .UserErrBits        ( Cfg.AxiUserErrBits ),
+          .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
+          .NumOutstanding     ( Cfg.CoreMaxTxns ),
+          .NumStoredErrors    ( 4 ),
+          .DropOldest         ( 1'b0 ),
+          .axi_req_t          ( axi_cva6_req_t ),
+          .axi_rsp_t          ( axi_cva6_rsp_t ),
+          .reg_req_t          ( reg_req_t ),
+          .reg_rsp_t          ( reg_rsp_t )
+        ) i_cva6_bus_err (
+          .clk_i,
+          .rst_ni,
+          .testmode_i ( test_mode_i ),
+          .axi_req_i  ( core_out_req ),
+          .axi_rsp_i  ( core_out_rsp ),
+          .err_irq_o  ( core_bus_err_intr[i] ),
+          .reg_req_i  ( reg_out_req[RegOut.bus_err[RegBusErrCoresBase+i]] ),
+          .reg_rsp_o  ( reg_out_rsp[RegOut.bus_err[RegBusErrCoresBase+i]] )
+        );
+      end else begin: gen_i_c910_bus_err
+          axi_err_unit_wrap #(
+          .AddrWidth          ( Cfg.AddrWidth ),
+          .IdWidth            ( soc910_pkg::AxiIdWidthMaster   ),
+          .UserErrBits        ( Cfg.AxiUserErrBits ),
+          .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
+          .NumOutstanding     ( Cfg.CoreMaxTxns ),
+          .NumStoredErrors    ( 4 ),
+          .DropOldest         ( 1'b0 ),
+          .axi_req_t          ( axi_cva6_req_t ),
+          .axi_rsp_t          ( axi_cva6_rsp_t ),
+          .reg_req_t          ( reg_req_t ),
+          .reg_rsp_t          ( reg_rsp_t )
+        ) i_cva6_bus_err (
+          .clk_i,
+          .rst_ni,
+          .testmode_i ( test_mode_i ),
+          .axi_req_i  ( core_out_req ),
+          .axi_rsp_i  ( core_out_rsp ),
+          .err_irq_o  ( core_bus_err_intr[i] ),
+          .reg_req_i  ( reg_out_req[RegOut.bus_err[RegBusErrCoresBase+i]] ),
+          .reg_rsp_o  ( reg_out_rsp[RegOut.bus_err[RegBusErrCoresBase+i]] )
+        );
+      end
     end
 
     // Generate CLIC for core if enabled

@@ -1,7 +1,0 @@
-build-vsim
-modelsim.ini
-bin/
-transcript
-vsim.wlf
-work/
-.bender/

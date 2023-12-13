@@ -26,22 +26,23 @@ dependencies:
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.5.1  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
-  # register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",     version: 0.4.2  }
+  register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",     version: 0.4.2  }
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              version: 0.8.0  }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.0  }
   unbent:                   { git: "https://github.com/pulp-platform/unbent.git",                 version: 0.1.5  }
   # soc910:                   { git: "git@iis-git.ee.ethz.ch:nwistoff/soc910.git",                  rev: 7c218d05   }
-  register_interface:       { path: vendor/pulp_register_interface                                                  }
-  soc910:                   { path: soc910/hw/system                                                              }
+  # register_interface:       { path: vendor/pulp_register_interface                                                  }
+  # soc910:                   { path: soc910/hw/system                                                              }
+  pulp_c910:                { git: "git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git",               rev: fbaa9ac7   }
 
 export_include_dirs:
   - hw/include
 
-vendor_package:
-  - name: register_interface
-    target_dir: vendor/pulp_register_interface
-    upstream: { git: "https://github.com/pulp-platform/register_interface.git", rev: "d7693be4aef1fc7e7eb2b00b41c42e87d959866c" }
-    patch_dir: "vendor/patches/pulp_register_interface"
+# vendor_package:
+#   - name: register_interface
+#     target_dir: vendor/pulp_register_interface
+#     upstream: { git: "https://github.com/pulp-platform/register_interface.git", rev: "d7693be4aef1fc7e7eb2b00b41c42e87d959866c" }
+#     patch_dir: "vendor/patches/pulp_register_interface"
 
 sources:
   - hw/bootrom/cheshire_bootrom.sv

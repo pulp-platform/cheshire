@@ -1,3 +1,0 @@
-overrides:
-  axi: {path: ../vendor/pulp_axi}
-  apb: {path: ../vendor/pulp_apb}

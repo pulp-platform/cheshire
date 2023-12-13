@@ -15,8 +15,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: fccffb5953ec8564218ba05e20adbedec845e014
-    version: 0.39.1
+    revision: 7f82d0b748266984fd4b77a936fa893c600686d4
+    version: null
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -135,12 +135,6 @@ packages:
     - axi
     - common_cells
     - register_interface
-  openc910:
-    revision: null
-    version: null
-    source:
-      Path: soc910/hw/system/../vendor/thead_openc910
-    dependencies: []
   opentitan_peripherals:
     revision: cd3153de2783abd3d03d0595e6c4b32413c62f14
     version: 0.4.0
@@ -150,6 +144,16 @@ packages:
     - common_cells
     - register_interface
     - tech_cells_generic
+  pulp_c910:
+    revision: fbaa9ac74a174656a003ae723e70ee5b6387b5dc
+    version: null
+    source:
+      Git: git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git
+    dependencies:
+    - apb
+    - apb_uart
+    - axi
+    - common_cells
   register_interface:
     revision: d7693be4aef1fc7e7eb2b00b41c42e87d959866c
     version: 0.4.2
@@ -161,8 +165,8 @@ packages:
     - common_cells
     - common_verification
   riscv-dbg:
-    revision: 138d74bcaa90c70180c12215db3776813d2a95f2
-    version: 0.8.0
+    revision: 358f90110220adf7a083f8b65d157e836d706236
+    version: 0.8.1
     source:
       Git: https://github.com/pulp-platform/riscv-dbg.git
     dependencies:
@@ -177,15 +181,6 @@ packages:
     - axi
     - common_cells
     - register_interface
-  soc910:
-    revision: null
-    version: null
-    source:
-      Path: soc910/hw/system
-    dependencies:
-    - apb
-    - axi
-    - openc910
   tech_cells_generic:
     revision: 7968dd6e6180df2c644636bc6d2908a49f2190cf
     version: 0.2.13
