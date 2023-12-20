@@ -166,4 +166,30 @@ module fixture_cheshire_soc #(
     .axi_ext_mst_rsp_t ( axi_mst_rsp_t )
   ) vip (.*);
 
+
+  ////////////
+  // co-sim //
+  ////////////
+
+`ifdef SPIKE_TANDEM
+  localparam NUM_WORDS = 2**24;
+
+  spike #(
+    .Size ( NUM_WORDS * 8 )
+  ) i_spike (
+      .clk_i          (clk    ),
+      .rst_ni         (rst_n  ),
+      .clint_tick_i   ( rtc   ),
+      .commit_instr_i ( '0 ),
+      .commit_ack_i   ( '0 ),
+      .exception_i    ( '0 ),
+      .waddr_i        ( '0 ),
+      .wdata_i        ( '0 ),
+      .priv_lvl_i     ( '0 )
+  );
+  initial begin
+      $display("Running binary in tandem mode");
+  end
+`endif
+
 endmodule

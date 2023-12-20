@@ -33,7 +33,7 @@ dependencies:
   # soc910:                   { git: "git@iis-git.ee.ethz.ch:nwistoff/soc910.git",                  rev: 7c218d05   }
   # register_interface:       { path: vendor/pulp_register_interface                                                  }
   # soc910:                   { path: soc910/hw/system                                                              }
-  pulp_c910:                { git: "git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git",               rev: fbaa9ac7   }
+  pulp_c910:                { git: "git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git",               rev: fd4b9fce   }
 
 export_include_dirs:
   - hw/include
@@ -58,6 +58,7 @@ sources:
     files:
       - target/sim/models/s25fs512s.v
       - target/sim/models/24FC1025.v
+      - target/sim/src/spike.sv
       - target/sim/src/vip_cheshire_soc.sv
       - target/sim/src/tb_cheshire_pkg.sv
       - target/sim/src/fixture_cheshire_soc.sv

@@ -46,6 +46,9 @@ module tb_cheshire_soc #(
           fix.vip.slink_wait_for_eoc(exit_code);
         end 2: begin  // UART
           fix.vip.uart_debug_elf_run_and_wait(preload_elf, exit_code);
+        end 3 : begin // MEM for simulation debug
+          fix.vip.memory_elf_run(preload_elf);
+          fix.vip.slink_wait_for_eoc(exit_code);
         end default: begin
           $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);
         end

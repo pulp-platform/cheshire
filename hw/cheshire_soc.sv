@@ -654,8 +654,10 @@ module cheshire_soc
         .axi_resp_i       ( core_out_rsp )
       );
     end else begin : gen_c910_core
-      axi_c910_req_t c910_out_req;
-      axi_c910_rsp_t c910_out_rsp;
+      (* mark_debug = "true" *) axi_c910_req_t c910_out_req_s1;
+      (* mark_debug = "true" *) axi_c910_rsp_t c910_out_rsp_s1;
+      (* mark_debug = "true" *) axi_c910_req_t c910_out_req_s2;
+      (* mark_debug = "true" *) axi_c910_rsp_t c910_out_rsp_s2;
 
       c910_axi_wrap #(
         .AxiSetModifiable ( 1'b1              ),
@@ -686,8 +688,33 @@ module cheshire_soc
         .jtag_tdo_en_o    ( jtag_tdo_oe_o       ),
         .jtag_trst_ni     ( jtag_trst_ni        ),
         // AXI interface
-        .axi_req_o        ( c910_out_req        ),
-        .axi_rsp_i        ( c910_out_rsp        )
+        .axi_req_o        ( c910_out_req_s1     ),
+        .axi_rsp_i        ( c910_out_rsp_s1     )
+      );
+
+      // axi fifo to close timing
+      axi_fifo #(
+        .Depth        ( 1 ),  // Number of FiFo slots.
+        .FallThrough  ( 0 ),  // fifos are in fall-through mode
+    // AXI channel structs
+        .aw_chan_t    ( axi_c910_aw_chan_t ),
+        .w_chan_t     ( axi_c910_w_chan_t  ),
+        .b_chan_t     ( axi_c910_b_chan_t  ),
+        .ar_chan_t    ( axi_c910_ar_chan_t ),
+        .r_chan_t     ( axi_c910_r_chan_t  ),
+    // AXI request & response structs
+        .axi_req_t     ( axi_c910_req_t     ),
+        .axi_resp_t    ( axi_c910_rsp_t     )
+      ) i_c910_timing_axi_fifo (
+        .clk_i,  // Clock
+        .rst_ni,  // Asynchronous reset active low
+        .test_i       ( test_mode_i ),
+        // slave port
+        .slv_req_i    (c910_out_req_s1 ),
+        .slv_resp_o   (c910_out_rsp_s1 ),
+        // master port
+        .mst_req_o    (c910_out_req_s2),
+        .mst_resp_i   (c910_out_rsp_s2)
       );
 // soc910_pkg::AxiAddrWidth;
 // soc910_pkg::AxiDataWidth;
@@ -784,8 +811,8 @@ module cheshire_soc
           .clk_i,
           .rst_ni,
           // Slave interface
-          .slv_req_i          ( c910_out_req ),
-          .slv_resp_o         ( c910_out_rsp ),
+          .slv_req_i          ( c910_out_req_s2 ),
+          .slv_resp_o         ( c910_out_rsp_s2 ),
           // Master interface
           .mst_req_o          ( core_out_req ),
           .mst_resp_i         ( core_out_rsp )
@@ -911,6 +938,7 @@ module cheshire_soc
 
     // CVA6's ID encoding is wasteful; remap it statically pack into available bits
     if (Cfg.Core == CVA6) begin
+`ifndef TARGET_C910
       axi_id_serialize #(
         .AxiSlvPortIdWidth      ( Cva6IdWidth     ),
         .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
@@ -936,6 +964,7 @@ module cheshire_soc
         .mst_req_o  ( axi_in_req[AxiIn.cores[i]] ),
         .mst_resp_i ( axi_in_rsp[AxiIn.cores[i]] )
       );
+`endif
     end else begin
         assign axi_in_req[AxiIn.cores[i]] = core_ur_req;
         assign core_ur_rsp                = axi_in_rsp[AxiIn.cores[i]];

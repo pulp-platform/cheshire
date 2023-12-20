@@ -134,9 +134,69 @@ CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/boo
 ##############
 # Simulation #
 ##############
+# library for DPI
+dpi-library    ?= work-dpi
 
-$(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: Bender.yml
-	$(BENDER) script vsim -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 -t c910 -t rtl --vlog-arg="$(VLOG_ARGS)" > $@
+RISCV=/usr/pack/riscv-1.0-kgf/riscv64-gcc-11.2.0
+QUESTASIM_HOME=/usr/pack/questa-2022.3-bt/questasim
+VCS_HOME=
+
+ifndef RISCV
+$(error RISCV not set - please point your RISCV variable to your RISCV installation)
+endif
+
+# By default assume spike resides at the RISCV prefix.
+SPIKE_ROOT     ?= $(RISCV)
+
+# spike tandem verification
+spike-tandem=1
+
+ifdef spike-tandem
+	questa-define := +define+SPIKE_TANDEM
+	dpi := $(patsubst target/sim/src/dpi/%.cc, ${dpi-library}/%.o, $(wildcard target/sim/src/dpi/*.cc))
+	dpi_hdr := $(wildcard target/sim/src/dpi/*.h)
+	dpi_hdr := $(addprefix $(CHS_ROOT)/, $(dpi_hdr))
+endif
+
+DPI_FLAGS := -I$(QUESTASIM_HOME)/include                      \
+			 -I$(RISCV)/include                               \
+             -I$(SPIKE_ROOT)/include                          \
+             -std=c++11 -I$(CHS_ROOT)/target/sim/src/dpi -O3
+
+ifdef spike-tandem
+DPI_FLAGS += -Itarget/sim/src/riscv-isa-sim/install/include/spike
+endif
+
+DPI_CXXFLAGS ?= $(CXXFLAGS) $(DPI_FLAGS) -D_GLIBCXX_USE_CXX11_ABI=0
+
+# compile spike first, no need to link the spike, only need the 
+build-spike: $(CHS_ROOT)/target/sim/src/dpi/bootrom.h
+	- cd ./target/sim/src/riscv-isa-sim && mkdir -p build && cd build && ../configure --prefix=`pwd`/../install --with-fesvr=$(RISCV) --enable-commitlog && make -j8 install
+	cp $(CHS_ROOT)/target/sim/src/riscv-isa-sim/build/libriscv.so $(CHS_ROOT)/target/sim/src/riscv-isa-sim/install/lib/libriscv.so
+
+# gen bootrom for spike
+$(CHS_ROOT)/target/sim/src/dpi/bootrom.img: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.bin
+	dd if=$< of=$@ bs=128
+
+$(CHS_ROOT)/target/sim/src/dpi/bootrom.h: $(CHS_ROOT)/target/sim/src/dpi/bootrom.img $(CHS_ROOT)/target/sim/src/dpi/gen_rom.py
+	$(CHS_ROOT)/target/sim/src/dpi/gen_rom.py $<
+	cp $@ $(CHS_ROOT)/target/sim/src/riscv-isa-sim/riscv/
+
+# compile DPIs
+$(dpi-library)/%.o: target/sim/src/dpi/%.cc $(dpi_hdr)
+	mkdir -p $(dpi-library)
+	$(CXX) -shared -fPIC -std=c++0x -Bsymbolic $(DPI_CXXFLAGS) -c $< -o $@
+
+$(dpi-library)/ariane_dpi.so: $(dpi)
+	mkdir -p $(dpi-library)
+	# Compile C-code and generate .so file
+	$(CXX) $(CXXFLAGS) -D_GLIBCXX_USE_CXX11_ABI=0 -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -L$(RISCV)/lib -L$(SPIKE_ROOT)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_ROOT)/lib -lfesvr
+
+./target/sim/src/riscv-isa-sim/install/lib/libriscv.so: build-spike
+
+$(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: Bender.yml ./target/sim/src/riscv-isa-sim/install/lib/libriscv.so $(dpi-library)/ariane_dpi.so
+	echo "$(VLOG_ARGS)"
+	$(BENDER) script vsim -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 -t c910 -t rtl --vlog-arg="$(VLOG_ARGS) $(questa-define)" > $@
 	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
 $(CHS_ROOT)/target/sim/models:

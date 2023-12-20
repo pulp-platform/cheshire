@@ -92,6 +92,35 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   //  DRAM  //
   ////////////
 
+  // Preload function called by testbench
+  task automatic memory_preload(string image);
+    // We overlay the entire memory with an alternating pattern
+    for (int k = 0; k < $size(i_dram_sim_mem.mem); ++k)
+      i_dram_sim_mem.mem[k] = 'h9a;
+    // We load an image into chip 0 only if it exists
+    if (image != "")
+      $readmemh(image, i_dram_sim_mem.mem);
+    
+    for(int i = 0; i < 64; i++) begin
+      $display("0x%h", i_dram_sim_mem.mem[i]);
+    end
+  endtask
+
+  // Run a binary
+  task automatic memory_elf_run(input string binary);
+    doub_bt entry;
+    entry = DutCfg.LlcOutRegionStart;
+    // Preload
+    memory_preload(binary);
+    // Write entry point
+    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_1_OFFSET, entry[63:32]);
+    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_0_OFFSET, entry[32:0]);
+    // Resume hart 0
+    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, 2);
+    $display("[SLINK] Wrote launch signal and entry point 0x%h", entry);
+  endtask
+
+
   axi_sim_mem #(
     .AddrWidth          ( DutCfg.AddrWidth    ),
     .DataWidth          ( DutCfg.AxiDataWidth ),

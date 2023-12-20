@@ -184,7 +184,22 @@ module cheshire_top_xilinx
     default: '0
   };
 
-  localparam cheshire_cfg_t CheshireFPGACfg = FPGACfg;
+  // C910 config
+  function automatic cheshire_cfg_t gen_cheshire_c910_cfg();
+    cheshire_cfg_t ret  = FPGACfg;
+`ifdef TARGET_C910
+    ret.Core            = C910;
+    ret.AddrWidth       = soc910_pkg::AxiAddrWidth;
+    // ret.AxiDataWidth    = soc910_pkg::AxiDataWidth;
+    ret.AxiMaxMstTrans  = soc910_pkg::AxiMaxMstTrans;
+    ret.AxiMstIdWidth   = soc910_pkg::AxiIdWidthMaster;
+    ret.AxiUserWidth    = soc910_pkg::AxiUserWidth;
+    // ret.BusErr          = 0;
+`endif
+    return ret;
+  endfunction
+
+  localparam cheshire_cfg_t CheshireFPGACfg = gen_cheshire_c910_cfg();
   `CHESHIRE_TYPEDEF_ALL(, CheshireFPGACfg)
 
   axi_llc_req_t axi_llc_mst_req;
@@ -508,7 +523,7 @@ module cheshire_top_xilinx
   //////////////////
 
   cheshire_soc #(
-    .Cfg                ( FPGACfg ),
+    .Cfg                ( CheshireFPGACfg ),
     .ExtHartinfo        ( '0 ),
     .axi_ext_llc_req_t  ( axi_llc_req_t ),
     .axi_ext_llc_rsp_t  ( axi_llc_rsp_t ),
