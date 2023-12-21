@@ -24,7 +24,7 @@ packages:
     - common_verification
     - tech_cells_generic
   axi_llc:
-    revision: 76933aa7fa8ff5c8ccbc075f6af4fca4d8416d17
+    revision: d79a00b8673b814efacbbe9bf106103407fc401b
     version: null
     source:
       Git: https://github.com/pulp-platform/axi_llc
