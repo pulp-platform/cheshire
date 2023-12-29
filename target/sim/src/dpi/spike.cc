@@ -125,6 +125,14 @@ extern "C" void spike_tick(commit_log_t* commit_log)
   commit_log->data = commit_log_val.data;
   commit_log->instr = commit_log_val.instr;
   commit_log->was_exception = commit_log_val.was_exception;
+
+    // c910 cosim added
+  for(int i = 0; i < 32; i++) {
+    commit_log->areg_value[i] = commit_log_val.areg_value[i];
+  }
+  commit_log->mstatus_value  = commit_log_val.mstatus_value;
+  commit_log->mcause_value   = commit_log_val.mcause_value;
+  commit_log->minstret_value = commit_log_val.minstret_value;
 }
 
 extern "C" void clint_tick()

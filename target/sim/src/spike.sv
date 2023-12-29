@@ -18,24 +18,50 @@ import uvm_pkg::*;
 
 import "DPI-C" function int spike_create(string filename, longint unsigned dram_base, int unsigned size);
 
-typedef riscv::commit_log_t riscv_commit_log_t;
+typedef struct {
+  byte priv;
+  longint unsigned pc;
+  byte is_fp;
+  byte rd;
+  longint unsigned data;
+  int unsigned instr;
+  byte was_exception;
+
+  // c910 cosim added
+  longint unsigned areg_value [32];
+  longint unsigned mstatus_value;
+  longint unsigned mcause_value;
+  longint unsigned minstret_value;
+} commit_log_t;
+
+typedef commit_log_t riscv_commit_log_t;
 import "DPI-C" function void spike_tick(output riscv_commit_log_t commit_log);
 
 import "DPI-C" function void clint_tick();
 
 module spike #(
     parameter longint unsigned DramBase = 'h8000_0000,
-    parameter int unsigned     Size     = 64 * 1024 * 1024 // 64 Mega Byte
+    parameter int unsigned     Size     = 64 * 1024 * 1024, // 64 Mega Byte
+    parameter int unsigned     NR_COMMIT_PORTS = 1,
+    parameter int unsigned     NR_COMMIT_PORTS_W = $clog2(NR_COMMIT_PORTS) > 0 ? $clog2(NR_COMMIT_PORTS) : 1,
+    parameter int unsigned     NR_RETIRE_PORTS = 1,
+    parameter int unsigned     NR_RETIRE_PORTS_W = $clog2(NR_RETIRE_PORTS) > 0 ? $clog2(NR_RETIRE_PORTS) : 1,
+    parameter int unsigned     MaxInFlightInstrNum = 64 * 3, // 64 ROB entries * max 3 fold instructions per entry
+    parameter int unsigned     MaxInFlightInstrNum_W = $clog2(MaxInFlightInstrNum) > 0 ? $clog2(MaxInFlightInstrNum) : 1 // 64 ROB entries * max 3 fold instructions per entry
 )(
     input logic       clk_i,
     input logic       rst_ni,
     input logic       clint_tick_i,
-    input ariane_pkg::scoreboard_entry_t [ariane_pkg::NR_COMMIT_PORTS-1:0] commit_instr_i,
-    input logic [ariane_pkg::NR_COMMIT_PORTS-1:0]                          commit_ack_i,
-    input ariane_pkg::exception_t                                          exception_i,
-    input logic [ariane_pkg::NR_COMMIT_PORTS-1:0][4:0]                     waddr_i,
-    input logic [ariane_pkg::NR_COMMIT_PORTS-1:0][63:0]                    wdata_i,
-    input riscv::priv_lvl_t                                                priv_lvl_i
+    input logic [NR_COMMIT_PORTS-1:0]                       commit_vld_i,    
+    input logic [NR_RETIRE_PORTS-1:0]                       retire_vld_i,    
+    input logic [NR_RETIRE_PORTS-1:0][39:0]                 retire_pc_i,
+    input logic [NR_RETIRE_PORTS-1:0][39:0]                 retire_nxt_pc_i,
+    // input logic [NR_RETIRE_PORTS-1:0][1:0]                  retire_folded_inst_num_i,
+    input logic [31:0][63:0]                                areg_value_i,
+    input logic [63:0]                                      mstatus_value_i,
+    input logic [63:0]                                      mcause_value_i,
+    input logic [63:0]                                      minstret_value_i,
+    input logic [1:0]                                       priv_lvl_i
 );
     static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
 
@@ -52,55 +78,165 @@ module spike #(
     end
 
     riscv_commit_log_t commit_log;
+    riscv_commit_log_t commit_log_last_inst;
     logic [31:0] instr;
 
-    always_ff @(posedge clk_i) begin
-        if (rst_ni) begin
+    logic [NR_COMMIT_PORTS_W-1:0] commit_instr_num;
+    logic [NR_RETIRE_PORTS_W-1:0] retire_instr_num;
+    logic [NR_RETIRE_PORTS_W-1:0] retire_instr_num_per_retire;
+    logic [MaxInFlightInstrNum_W-1 : 0] unretired_commited_instr_counter_d, unretired_commited_instr_counter_q;
+    logic                         has_retired_inst;
+    logic                         has_pc_match;
+    logic                         not_the_first_retire;
 
-            for (int i = 0; i < ariane_pkg::NR_COMMIT_PORTS; i++) begin
-                if ((commit_instr_i[i].valid && commit_ack_i[i]) || (commit_instr_i[i].valid && exception_i.valid)) begin
-                    spike_tick(commit_log);
-                    instr = (commit_log.instr[1:0] != 2'b11) ? {16'b0, commit_log.instr[15:0]} : commit_log.instr;
-                    // $display("\x1B[32m%h %h\x1B[0m", commit_log.pc, instr);
-                    // $display("%p", commit_log);
-                    // $display("\x1B[37m%h %h\x1B[0m", commit_instr_i[i].pc, commit_instr_i[i].ex.tval[31:0]);
-                    assert (commit_log.pc === commit_instr_i[i].pc) else begin
-                        $warning("\x1B[33m[Tandem] PCs Mismatch\x1B[0m");
-                        // $stop;
-                    end
-                    assert (commit_log.was_exception === exception_i.valid) else begin
-                        $warning("\x1B[33m[Tandem] Exception not detected\x1B[0m");
-                        // $stop;
-                        $display("Spike: %p", commit_log);
-                        $display("Ariane: %p", commit_instr_i[i]);
-                    end
-                    if (!exception_i.valid) begin
-                        assert (commit_log.priv === priv_lvl_i) else begin
-                            $warning("\x1B[33m[Tandem] Privilege level mismatches\x1B[0m");
-                            // $stop;
-                            $display("\x1B[37m %2d == %2d @ PC %h\x1B[0m", priv_lvl_i, commit_log.priv, commit_log.pc);
+    assign unretired_commited_instr_counter_d = unretired_commited_instr_counter_q +
+                                                commit_instr_num -
+                                                retire_instr_num;
+
+    always_comb begin
+        commit_instr_num = '0;
+        for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+            if(commit_vld_i[i]) begin
+                commit_instr_num = commit_instr_num + 1;
+            end
+        end
+    end
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if(!rst_ni) begin
+            unretired_commited_instr_counter_q <= '0;
+        end else begin
+            unretired_commited_instr_counter_q <= unretired_commited_instr_counter_d;
+        end
+    end
+
+    always_ff @(posedge clk_i) begin
+        retire_instr_num = '0;
+        has_retired_inst = '0;
+        has_pc_match     = '0;
+        if (rst_ni) begin
+            for (int i = 0; i < NR_RETIRE_PORTS; i++) begin
+                has_pc_match     = '0;
+                if (retire_vld_i[i]) begin
+                    has_retired_inst = 1'b1;
+                    $display("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+                    // for(int retire_instr_num_per_retire = 0; retire_instr_num_per_retire < retire_folded_inst_num_i[i]; retire_instr_num_per_retire++) begin
+                    while (retire_instr_num < unretired_commited_instr_counter_q) begin
+                        retire_instr_num = retire_instr_num + 1;
+
+                        commit_log_last_inst = commit_log;
+                        spike_tick(commit_log);
+                        if(~not_the_first_retire) begin
+                            commit_log_last_inst = commit_log;
+                            not_the_first_retire = 1'b1;
                         end
-                        assert (instr === commit_instr_i[i].ex.tval) else begin
-                            $warning("\x1B[33m[Tandem] Decoded instructions mismatch\x1B[0m");
-                            // $stop;
-                            $display("\x1B[37m%h === %h @ PC %h\x1B[0m", commit_instr_i[i].ex.tval, instr, commit_log.pc);
-                        end
-                        // TODO(zarubaf): Adapt for floating point instructions
-                        if (commit_instr_i[i].rd != 0) begin
-                            // check the return value
-                            // $display("\x1B[37m%h === %h\x1B[0m", commit_instr_i[i].rd, commit_log.rd);
-                            assert (waddr_i[i] === commit_log.rd) else begin
-                                $warning("\x1B[33m[Tandem] Destination register mismatches\x1B[0m");
-                                // $stop;
+                        instr = (commit_log.instr[1:0] != 2'b11) ? {16'b0, commit_log.instr[15:0]} : commit_log.instr;
+                        // $display("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+                        $display("\x1B[pc:%h, inst:%h\x1B]", commit_log.pc, instr);
+                        $display("%p", commit_log);
+                        $display("\x1B[retire PC: %h\x1B]", retire_pc_i[i]);
+
+                        if(commit_log.pc[39:0] === retire_pc_i[i]) begin // tick spike until reach the first inst of the next retire
+                            has_pc_match = 1'b1;
+                        
+                            // if(retire_instr_num_per_retire == 0) begin // for the first inst of the retire, check pc matching
+                            //     assert (commit_log.pc[39:0] === retire_pc_i[i]) else begin
+                            //         $warning("\x1B[[Tandem] PCs Mismatch\x1B]");
+                            //         $display("Spike PC: %h", commit_log.pc[39:0]);
+                            //         $display("TC910 PC: %h", retire_pc_i[i]);
+                            //         $display("Spike log: %p", commit_log);
+                            //         $display("==========================================");
+                            //         $stop;
+                            //     end
+                            // end
+
+                            assert (commit_log_last_inst.priv === priv_lvl_i) else begin
+                                $warning("\x1B[[Tandem] Privilege level mismatches\x1B]");
+                                $display("@ PC %h", commit_log_last_inst.pc);
+                                $display("Spike priv_lvl: %2d", commit_log_last_inst.priv);
+                                $display("TC910 priv_lvl: %2d", priv_lvl_i);
+                                $display("==========================================");
+                                $stop;
                             end
-                            assert (wdata_i[i] === commit_log.data) else begin
-                                $warning("\x1B[33m[Tandem] Write back data mismatches\x1B[0m");
-                                $display("\x1B[37m%h === %h @ PC %h\x1B[0m", wdata_i[i], commit_log.data, commit_log.pc);
+
+                            // check the csr
+                            assert (mstatus_value_i[i] === commit_log_last_inst.mstatus_value) else begin
+                                $warning("\x1B[[Tandem] mstatus mismatches\x1B]");
+                                $display("@ PC %h", commit_log_last_inst.pc);
+                                $display("Spike mstatus: %h", commit_log_last_inst.mstatus_value);
+                                $display("TC910 mstatus: %h", mstatus_value_i[i]);
+                                $display("==========================================");
                             end
+                            assert (mcause_value_i[i] === commit_log_last_inst.mcause_value) else begin
+                                $warning("\x1B[[Tandem] mcause mismatches\x1B]");
+                                $display("@ PC %h", commit_log_last_inst.pc);
+                                $display("Spike mcause: %h", commit_log_last_inst.mcause_value);
+                                $display("TC910 mcause: %h", mcause_value_i[i]);
+                                $display("==========================================");
+                            end
+
+                            // check the architectural registers
+                            for(int k = 0; k < 32; k++) begin
+                                // check the register value
+                                $display("\x1B[x%d %h vs %h\x1B]", k, areg_value_i[k], commit_log_last_inst.areg_value[k]);
+                                
+                                if(^areg_value_i[k] !== 1'bx) begin                            
+                                    assert (areg_value_i[k] === commit_log_last_inst.areg_value[k]) else begin
+                                        $warning("\x1B[[Tandem] x%d register mismatches\x1B]", k);
+                                        $display("@ PC %h", commit_log_last_inst.pc);
+                                        $display("Spike x%d: %h", k, commit_log_last_inst.areg_value[k]);
+                                        $display("TC910 x%d: %h", k, areg_value_i[k]);
+                                        $display("==========================================");
+                                        $stop;
+                                    end
+                                end else begin
+                                    assert (commit_log_last_inst.areg_value[k] === '0) else begin
+                                        $warning("\x1B[[Tandem] x%d register mismatches\x1B]", k);
+                                        $display("@ PC %h", commit_log_last_inst.pc);
+                                        $display("Spike x%d: %h", k, commit_log_last_inst.areg_value[k]);
+                                        $display("TC910 x%d: %h", k, areg_value_i[k]);
+                                        $display("==========================================");
+                                        $stop;
+                                    end
+                                end
+                            end
+                            break;
                         end
+                    end
+
+                    assert (has_pc_match) else begin
+                        $warning("\x1B[[Tandem] PCs Mismatch\x1B]");
+                        $display("Spike PC: %h", commit_log_last_inst.pc[39:0]);
+                        $display("TC910 PC: %h", retire_pc_i[i]);
+                        $display("Spike log: %p", commit_log_last_inst);
+                        for(int k = 0; k < 32; k++) begin
+                            $display("\x1B[x%d %h vs %h\x1B]", k, areg_value_i[k], commit_log_last_inst.areg_value[k]);
+                        end
+                        $display("==========================================");
+                        $stop;
+                    end
+
+                    assert (retire_instr_num <= unretired_commited_instr_counter_q) else begin
+                        $warning("\x1B[[Tandem] retire%d: retire more inst than commited but not retired ones\x1B]", i);
+                        $display("Spike PC: %h", commit_log_last_inst.pc[39:0]);
+                        $display("TC910 PC: %h", retire_pc_i[i]);
+                        $display("==========================================");
+                        $stop;
                     end
                 end
             end
+            if(has_retired_inst) begin
+                assert (minstret_value_i === commit_log_last_inst.minstret_value) else begin
+                    $warning("\x1B[[Tandem] minstret mismatches\x1B]");
+                    $display("@ PC %h", commit_log_last_inst.pc);
+                    $display("Spike minstret: %h", commit_log_last_inst.minstret_value);
+                    $display("TC910 minstret: %h", minstret_value_i);
+                    $display("==========================================");
+                    // $stop;
+                end
+            end
+        end else begin
+            not_the_first_retire = '0;
         end
     end
 

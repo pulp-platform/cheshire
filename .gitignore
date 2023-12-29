@@ -42,3 +42,4 @@ target/sim/vsim/work/
 target/xilinx/cheshire.srcs/
 target/xilinx/probes.ltx
 work-dpi/
+*.img

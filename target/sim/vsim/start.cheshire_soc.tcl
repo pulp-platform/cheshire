@@ -29,7 +29,8 @@ if {[info exists PRELMODE]} { append pargs "+PRELMODE=${PRELMODE} " }
 if {[info exists BINARY]}   { append pargs "+BINARY=${BINARY} " }
 if {[info exists IMAGE]}    { append pargs "+IMAGE=${IMAGE} " }
 
-set questa-cmd "-gblso ../src/riscv-isa-sim/install/lib/libriscv.so \
+set questa-cmd "+PRELOAD=/scratch/zexifu/c910_sw/cheshire_2/sw/deps/cva6-sdk/install64/opensbi_alone.elf \
+                -gblso ../src/riscv-isa-sim/install/lib/libriscv.so \
                 -gblso /usr/pack/riscv-1.0-kgf/riscv64-gcc-11.2.0/lib/libfesvr.so \
                 -sv_lib ../../../work-dpi/ariane_dpi"
 

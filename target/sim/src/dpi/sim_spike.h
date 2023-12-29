@@ -26,6 +26,13 @@ typedef struct
   uint64_t data;
   uint32_t instr;
   char     was_exception;
+  
+  // c910 cosim added
+  uint64_t areg_value [32];
+  uint64_t mstatus_value;
+  uint64_t mcause_value;
+  uint64_t minstret_value;
+
 } commit_log_t;
 
 // this class encapsulates the processors and memory in a RISC-V machine.

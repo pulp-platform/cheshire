@@ -98,11 +98,13 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     for (int k = 0; k < $size(i_dram_sim_mem.mem); ++k)
       i_dram_sim_mem.mem[k] = 'h9a;
     // We load an image into chip 0 only if it exists
-    if (image != "")
+    if (image != "") begin
       $readmemh(image, i_dram_sim_mem.mem);
+      $display("rtl load image: %s", image);
+    end
     
-    for(int i = 0; i < 64; i++) begin
-      $display("0x%h", i_dram_sim_mem.mem[i]);
+    for(longint unsigned i = 'h80000000; i < 'h80000000+64; i++) begin
+      $display("%h, 0x%h", i, i_dram_sim_mem.mem[i]);
     end
   endtask
 

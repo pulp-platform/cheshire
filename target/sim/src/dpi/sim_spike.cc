@@ -69,6 +69,15 @@ commit_log_t sim_spike_t::tick(size_t n)
   commit_log.instr = procs[0]->get_state()->last_insn;
   commit_log.was_exception = procs[0]->get_state()->was_exception;
 
+  // c910 cosim added
+  for(int i = 0; i < 32; i++) {
+    commit_log.areg_value[i] = procs[0]->get_state()->XPR[i];
+  }
+  commit_log.mstatus_value  = procs[0]->get_state()->mstatus;
+  commit_log.mcause_value   = procs[0]->get_state()->mcause;
+  commit_log.minstret_value = procs[0]->get_state()->minstret;
+
+
   return commit_log;
 }
 
