@@ -13,7 +13,7 @@ package c910_pkg;
   // localparam AxiIdWidthSlaves = AxiIdWidthMaster + $clog2(NrMasters); // 5
   // localparam AxiUserWidth = 1;
 
-  // // 2n(Non-cacheable/Device) + 28(cacheable) read + 2n(Non-cacheable/Device) + 32(cacheable) write
+  // // 8n(Non-cacheable/Device) + 28(cacheable) read + 8n(Non-cacheable/Device) + 32(cacheable) write
   // localparam AxiMaxMstTrans = 8 * NrMasters + 28 + 8 * NrMasters + 32;
 
 endpackage

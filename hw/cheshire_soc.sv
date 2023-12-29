@@ -677,7 +677,8 @@ module cheshire_soc
         // plic
         .plic_hartx_mint_req_i ({1'b0, xeip[i].m}),
         .plic_hartx_sint_req_i ({1'b0, xeip[i].s}),
-
+        // debug request (async)
+        .debug_req_i      ( '0 ),
         // External interrupts to c910 internal plic
         .ext_int_i        ( '0 /*{39'b0, intr.ext}*/   ),
         // JTAG
@@ -791,7 +792,7 @@ module cheshire_soc
 
 
       axi_dw_converter #(
-          .AxiMaxReads         ( Cfg.AxiMaxMstTrans     ), // Number of outstanding reads
+          .AxiMaxReads         ( 8 ),// soc910_pkg::AxiMaxMstReadTrans is too large // Number of outstanding reads
           .AxiSlvPortDataWidth ( soc910_pkg::AxiDataWidth ), // Data width of the slv port
           .AxiMstPortDataWidth ( Cfg.AxiDataWidth       ), // Data width of the mst port
           .AxiAddrWidth        ( Cfg.AddrWidth          ), // Address width
