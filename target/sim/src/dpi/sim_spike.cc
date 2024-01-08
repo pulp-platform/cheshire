@@ -30,6 +30,7 @@ sim_spike_t::sim_spike_t(const char* isa, size_t nprocs,
 
   for (size_t i = 0; i < procs.size(); i++) {
     procs[i] = new processor_t(isa, this, i, false);
+    procs[i]->setBus(bus);
   }
 
   clint.reset(new clint_t(procs));
@@ -38,12 +39,20 @@ sim_spike_t::sim_spike_t(const char* isa, size_t nprocs,
   bus.add_device(CLINT_BASE, clint.get());
   uart.reset(new uart_t());
   bus.add_device(UART_BASE, uart.get());
+  cheshire_reg.reset(new cheshire_reg_t());
+  cheshire_reg.get()->reset();
+  bus.add_device(CHESHIRE_REG_BASE, cheshire_reg.get());
   make_bootrom();
   set_procs_debug(true);
 }
 
 sim_spike_t::~sim_spike_t()
 {
+  boot_rom      = nullptr;
+  clint         = nullptr;
+  uart          = nullptr;
+  cheshire_reg  = nullptr;
+
   for (size_t i = 0; i < procs.size(); i++)
     delete procs[i];
   delete debug_mmu;
@@ -83,6 +92,10 @@ commit_log_t sim_spike_t::tick(size_t n)
 
 void sim_spike_t::clint_tick() {
   clint->increment(1);
+}
+
+int sim_spike_t::uart_tick() {
+  return uart->tick(1);
 }
 
 void sim_spike_t::set_debug(bool value)

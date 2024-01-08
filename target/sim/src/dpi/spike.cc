@@ -110,7 +110,24 @@ extern "C" void spike_create(const char* filename, uint64_t dram_base, unsigned 
     if (!sim) {
       std::vector<std::string> htif_args = sanitize_args();
 
-      sim = new sim_spike_t("rv64imac", 1, mem, htif_args);
+      // the c910 misa is 800000000094112d: "RV64IMAFDCMSUX"
+      sim = new sim_spike_t("rv64imafdc", 1, mem, htif_args); // for cva6: rv64imac
+    }
+}
+
+extern "C" void spike_destroy()
+{
+    // Delete the mem_t objects stored in the vector
+    for (auto &pair : mem) {
+        delete pair.second;
+        pair.second = nullptr;
+    }
+    mem.clear(); // Clear the vector
+
+    // Delete the sim_spike_t object
+    if (sim != nullptr) {
+        delete sim;
+        sim = nullptr;
     }
 }
 
@@ -138,4 +155,9 @@ extern "C" void spike_tick(commit_log_t* commit_log)
 extern "C" void clint_tick()
 {
   sim->clint_tick();
+}
+
+extern "C" int uart_tick()
+{
+  return sim->uart_tick();
 }

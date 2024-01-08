@@ -36,6 +36,7 @@ void mmu_t::flush_tlb()
 
 static void throw_access_exception(reg_t addr, access_type type)
 {
+  printf("[throw_access_exception] 1.addr = 0x%x, type = 0x%x\n", addr, type);
   switch (type) {
     case FETCH: throw trap_instruction_access_fault(addr);
     case LOAD: throw trap_load_access_fault(addr);
@@ -57,7 +58,11 @@ reg_t mmu_t::translate(reg_t addr, reg_t len, access_type type)
 
   reg_t paddr = walk(addr, type, mode) | (addr & (PGSIZE-1));
   if (!pmp_ok(paddr, type, mode) || !pmp_homogeneous(paddr, len))
+  {
+    printf("[translate] 1.  addr = 0x%x, type = 0x%x\n", addr, type);
+    printf("[translate] 1.1 pmp_ok = %d, pmp_homogeneous = %d\n", pmp_ok(paddr, type, mode), pmp_homogeneous(paddr, len));
     throw_access_exception(addr, type);
+  }
   return paddr;
 }
 
@@ -182,15 +187,18 @@ reg_t mmu_t::pmp_ok(reg_t addr, access_type type, reg_t mode)
   for (size_t i = 0; i < proc->state.n_pmp; i++) {
     reg_t tor = proc->state.pmpaddr[i] << PMP_SHIFT;
     uint8_t cfg = proc->state.pmpcfg[i];
+    printf("[pmp_ok] 1.  i = %d, tor = 0x%x, cfg = 0x%x, PMP_A = 0x%x, cfg & PMP_A = 0x%x\n", i, tor, cfg, PMP_A, cfg & PMP_A);
 
     if (cfg & PMP_A) {
       bool is_tor = (cfg & PMP_A) == PMP_TOR;
       bool is_na4 = (cfg & PMP_A) == PMP_NA4;
+      printf("[pmp_ok] 1.1 i = %d, is_tor = 0x%x, PMP_TOR = 0x%x, is_na4 = 0x%x, PMP_NA4 = 0x%x\n", i, is_tor, PMP_TOR, is_na4, PMP_NA4);
 
       reg_t mask = (proc->state.pmpaddr[i] << 1) | (!is_na4);
       mask = ~(mask & ~(mask + 1)) << PMP_SHIFT;
       bool napot_match = ((addr ^ tor) & mask) == 0;
       bool tor_match = base <= addr && addr < tor;
+      printf("[pmp_ok] 1.2 i = %d, is_tor = 0x%x, tor_match = 0x%x, napot_match = 0x%x, mask = 0x%x\n", i, is_tor, tor_match, napot_match, mask);
 
       if (is_tor ? tor_match : napot_match) {
         return
@@ -272,7 +280,10 @@ reg_t mmu_t::walk(reg_t addr, access_type type, reg_t mode)
     auto pte_paddr = base + idx * vm.ptesize;
     auto ppte = sim->addr_to_mem(pte_paddr);
     if (!ppte || !pmp_ok(pte_paddr, LOAD, PRV_S))
+    {
+      printf("[walk] 1.addr = 0x%x, type = 0x%x\n", addr, type);
       throw_access_exception(addr, type);
+    }
 
     reg_t pte = vm.ptesize == 4 ? *(uint32_t*)ppte : *(uint64_t*)ppte;
     reg_t ppn = pte >> PTE_PPN_SHIFT;

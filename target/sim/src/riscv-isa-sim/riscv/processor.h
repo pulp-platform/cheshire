@@ -122,6 +122,15 @@ struct state_t
   mcontrol_t mcontrol[num_triggers];
   reg_t tdata2[num_triggers];
 
+  // mcountinhibit, the function is not fully implemented
+  reg_t mcountinhibit;
+  // mhpmevent3 - mhpmevent31, the mhpmevent19 - mhpmevent31 are tired 0
+  reg_t mhpmevent[29];
+  // mhpmcounter3 - mhpmcounter31, the mhpmcounter19 - mhpmcounter31 are tired 0
+  reg_t mhpmcounter[29];
+
+  // c910 has 8 pmpaddr csrs, and each minimum granularity is 4KB
+  // but for the pmpaddr8 - pmpaddr15, it will still return full 0
   static const int n_pmp = 16;
   uint8_t pmpcfg[n_pmp];
   reg_t pmpaddr[n_pmp];
@@ -172,6 +181,18 @@ public:
 
   void set_debug(bool value);
   void set_histogram(bool value);
+  void setBus(bus_t& bus) {
+    this->bus = &bus;
+  }
+  bool mmio_load(reg_t addr, size_t len, uint8_t* bytes)
+  {
+    if(bus) {
+      if (addr + len < addr)
+        return false;
+      return bus->load(addr, len, bytes);
+    }
+    return false;
+  }
   void reset();
   void step(size_t n); // run for n cycles
   void set_csr(int which, reg_t val);
@@ -302,6 +323,7 @@ public:
 private:
   simif_t* sim;
   mmu_t* mmu; // main memory is always accessed via the mmu
+  bus_t* bus = nullptr; // access some meory mapped csrs (e.g. time which is a ro mirror of mtime in clint) through bus
   extension_t* ext;
   disassembler_t* disassembler;
   state_t state;
@@ -329,6 +351,7 @@ private:
 
   friend class mmu_t;
   friend class clint_t;
+  friend class cheshire_reg_t;
   friend class extension_t;
 
   void parse_isa_string(const char* isa);

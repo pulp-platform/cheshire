@@ -46,6 +46,7 @@ sim_t::sim_t(const char* isa, size_t nprocs, bool halted, reg_t start_pc,
   if (hartids.size() == 0) {
     for (size_t i = 0; i < procs.size(); i++) {
       procs[i] = new processor_t(isa, this, i, halted);
+      procs[i]->setBus(bus);
     }
   }
   else {
@@ -55,6 +56,7 @@ sim_t::sim_t(const char* isa, size_t nprocs, bool halted, reg_t start_pc,
     }
     for (size_t i = 0; i < procs.size(); i++) {
       procs[i] = new processor_t(isa, this, hartids[i], halted);
+      procs[i]->setBus(bus);
     }
   }
 
@@ -63,6 +65,10 @@ sim_t::sim_t(const char* isa, size_t nprocs, bool halted, reg_t start_pc,
 
   uart.reset(new uart_t());
   bus.add_device(UART_BASE, uart.get());
+
+  cheshire_reg.reset(new cheshire_reg_t());
+  cheshire_reg.get()->reset();
+  bus.add_device(CHESHIRE_REG_BASE, cheshire_reg.get());
 
   dump.reset(new dump_t());
   bus.add_device(DUMP_BASE, dump.get());
@@ -185,10 +191,19 @@ void sim_t::make_dtb()
 }
 
 char* sim_t::addr_to_mem(reg_t addr) {
+  printf("[addr_to_mem] 1.addr = 0x%x\n", addr);
   auto desc = bus.find_device(addr);
+  printf("[addr_to_mem] 2.desc = 0x%x\n", desc);
   if (auto mem = dynamic_cast<mem_t*>(desc.second))
+  {
+    printf("[addr_to_mem] 3.mem = 0x%x\n", mem);
     if (addr - desc.first < mem->size())
+    {
+      printf("[addr_to_mem] 4.addr - desc.first = 0x%x, mem->size() = 0x%x\n", addr - desc.first, mem->size());
       return mem->contents() + (addr - desc.first);
+    }
+  }
+  printf("[addr_to_mem] 5\n");
   return NULL;
 }
 

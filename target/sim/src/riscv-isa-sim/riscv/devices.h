@@ -83,6 +83,7 @@ class uart_t : public abstract_device_t {
   uart_t();
   bool load(reg_t addr, size_t len, uint8_t* bytes);
   bool store(reg_t addr, size_t len, const uint8_t* bytes);
+  int  tick(reg_t dec);
  private:
   uint8_t ier;
   uint8_t dll;
@@ -93,6 +94,7 @@ class uart_t : public abstract_device_t {
   uint8_t msr;
   uint8_t mcr;
   bool fifo_enabled;
+  uint64_t tx_counter;
 };
 
 class dump_t : public abstract_device_t {
@@ -102,6 +104,49 @@ class dump_t : public abstract_device_t {
   bool store(reg_t addr, size_t len, const uint8_t* bytes);
  private:
   std::ofstream ofs;
+};
+
+class cheshire_reg_t : public abstract_device_t {
+ public:
+  cheshire_reg_t();
+  bool load(reg_t addr, size_t len, uint8_t* bytes);
+  bool store(reg_t addr, size_t len, const uint8_t* bytes);
+  void reset();
+  size_t size() { return CHESHIRE_REG_SIZE; }
+ private:
+  typedef struct cheshire_reg_hw_features {
+    uint32_t bootrom;
+    uint32_t llc;
+    uint32_t uart;
+    uint32_t spi_host;
+    uint32_t i2c;
+    uint32_t gpio;
+    uint32_t dma;
+    uint32_t serial_link;
+    uint32_t vga;
+    uint32_t axirt;
+    uint32_t clic;
+    uint32_t irq_router;
+    uint32_t bus_err;
+  } cheshire_reg_hw_features_t;
+
+  typedef struct cheshire_reg_vga_params {
+    uint32_t red_width;
+    uint32_t green_width;
+    uint32_t blue_width;
+  } cheshire_reg_vga_params_t;
+
+  uint32_t                    scratch[16];
+  uint32_t                    boot_mode;
+  uint32_t                    rtc_freq;
+  uint32_t                    platform_rom;
+  uint32_t                    num_int_harts;
+  cheshire_reg_hw_features_t  hw_features;
+  uint32_t                    hw_features_reg;
+
+  uint32_t                    llc_size;
+  cheshire_reg_vga_params_t   vga_params;
+  uint32_t                    vga_params_reg;
 };
 
 #endif

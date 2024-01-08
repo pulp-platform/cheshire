@@ -47,6 +47,7 @@ public:
   int init_sim();
   void producer_thread();
   void clint_tick();
+  int  uart_tick();
   commit_log_t tick(size_t n); // step through simulation
   void set_debug(bool value);
   void set_log(bool value);
@@ -71,6 +72,7 @@ private:
   std::unique_ptr<rom_device_t> boot_rom;
   std::unique_ptr<clint_t> clint;
   std::unique_ptr<uart_t> uart;
+  std::unique_ptr<cheshire_reg_t> cheshire_reg;
   bus_t bus;
   std::thread t1;
 

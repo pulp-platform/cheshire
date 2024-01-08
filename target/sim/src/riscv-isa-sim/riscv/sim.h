@@ -55,6 +55,7 @@ private:
   std::unique_ptr<clint_t> clint;
   std::unique_ptr<dump_t> dump;
   std::unique_ptr<uart_t> uart;
+  std::unique_ptr<cheshire_reg_t> cheshire_reg;
   bus_t bus;
 
   processor_t* get_core(const std::string& i);

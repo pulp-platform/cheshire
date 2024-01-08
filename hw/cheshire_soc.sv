@@ -977,7 +977,7 @@ module cheshire_soc
   //  JTAG Debug Module  //
   /////////////////////////
 
-  if (Cfg.Core == CVA6) begin : gen_cva6_dm
+  // if (Cfg.Core == CVA6) begin : gen_cva6_dm
   
     localparam int unsigned NumDbgHarts = NumIntHarts + Cfg.NumExtDbgHarts;
 
@@ -1202,10 +1202,10 @@ module cheshire_soc
       .tms_i            ( jtag_tms_i     ),
       .trst_ni          ( jtag_trst_ni   ),
       .td_i             ( jtag_tdi_i     ),
-      .td_o             ( jtag_tdo_o     ),
-      .tdo_oe_o         ( jtag_tdo_oe_o  )
+      .td_o             ( /*jtag_tdo_o*/     ),
+      .tdo_oe_o         ( /*jtag_tdo_oe_o*/  )
     );
-  end
+  // end
 
   /////////////////////
   //  Register File  //

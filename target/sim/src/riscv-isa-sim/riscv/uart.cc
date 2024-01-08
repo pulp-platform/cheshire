@@ -24,9 +24,10 @@ uart_t::uart_t()
   ier = 0;
   lcr = 0;
   mcr = 0;
-  lsr = 0;
+  lsr = (1 << THRE) | (1 << TEMT);
   msr = 0;
   scr = 0;
+  tx_counter = 0;
 }
 
   // set {char}  0x10000004 = 0x00
@@ -75,7 +76,7 @@ bool uart_t::load(reg_t addr, size_t len, uint8_t* bytes)
               bytes[0] = mcr;
               break;
     case LSR:
-              bytes[0] = lsr | (1 << THRE) | (1 << TEMT);
+              bytes[0] = lsr;
               break;
     case MSR:
               bytes[0] = msr;
@@ -102,7 +103,17 @@ bool uart_t::store(reg_t addr, size_t len, const uint8_t* bytes)
               if (lcr & 0x80) {
                 dll = bytes[0];
               } else {
+                // if (tx_counter == 0) {
+                //   printf("[spike UART]%c\n", bytes[0]);
+                // } else {
+                //   printf("[spike UART]%c(error: the uart THR is not empty!)\n", bytes[0]);
+                // }
                 printf("%c", bytes[0]);
+                // set the tx_counter to simulate the transmission time
+                tx_counter = 16 * (dll + (dlm << 8));
+                // clear the LSR_THRE and LSR_TEMT bit
+                lsr &= ~((1 << THRE) | (1 << TEMT));
+                // printf("[spike UART]set tx_counter = 0x%x, lsr = 0x%x\n", tx_counter, lsr);
               }
               break;
     case IER:
@@ -140,3 +151,27 @@ bool uart_t::store(reg_t addr, size_t len, const uint8_t* bytes)
   return true;
 }
 
+int uart_t::tick(reg_t dec)
+{
+  int ret = 0;
+  uint64_t tx_counter_old = tx_counter;
+  if(tx_counter == 16 * (dll + (dlm << 8))) {
+    ret = 1; // count start
+  }
+
+  if(tx_counter > dec) {
+    tx_counter -= dec;
+  } else {
+    tx_counter = 0;
+  }
+  if(tx_counter == 0) {
+    // set the LSR_THRE bit
+    lsr |= (1 << THRE);
+  }
+
+  if((tx_counter == 0) && (tx_counter_old > 0)) {
+    ret = 2; // count end
+  }
+
+  return ret;
+}

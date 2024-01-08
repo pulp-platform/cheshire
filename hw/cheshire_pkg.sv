@@ -610,6 +610,9 @@ package cheshire_pkg;
     ret.AxiMstIdWidth   = soc910_pkg::AxiIdWidthMaster;
     ret.AxiUserWidth    = soc910_pkg::AxiUserWidth;
     // ret.BusErr          = 0;
+  // `ifdef TARGET_COSIM
+  //   ret.LlcNotBypass    = 0; // for spike co-sim
+  // `endif
     return ret;
   endfunction
 `endif

@@ -131,7 +131,18 @@ void state_t::reset(reg_t max_isa)
     mcontrol[i].type = 2;
 
   pmpcfg[0] = PMP_R | PMP_W | PMP_X | PMP_NAPOT;
-  pmpaddr[0] = ~reg_t(0);
+  pmpaddr[0] = (~reg_t(0)) & 0x3FFFFFFE00;
+  if(n_pmp > 8) {
+    for(unsigned int i = 8; i < n_pmp; i++) {
+      pmpaddr[i] = 0;
+    }
+  }
+
+  mcountinhibit = 0;
+  for(unsigned int i = 0; i < 29; i++) {
+    mhpmevent   [i] = 0;
+    mhpmcounter [i] = 0;
+  }
 }
 
 void processor_t::set_debug(bool value)
@@ -338,24 +349,40 @@ void processor_t::set_csr(int which, reg_t val)
                        | ((ext != NULL) << IRQ_COP);
   reg_t all_ints = delegable_ints | MIP_MSIP | MIP_MTIP;
 
-  // if (which >= CSR_PMPADDR0 && which < CSR_PMPADDR0 + state.n_pmp) {
-  //   size_t i = which - CSR_PMPADDR0;
-  //   bool locked = state.pmpcfg[i] & PMP_L;
-  //   bool next_locked = i+1 < state.n_pmp && (state.pmpcfg[i+1] & PMP_L);
-  //   bool next_tor = i+1 < state.n_pmp && (state.pmpcfg[i+1] & PMP_A) == PMP_TOR;
-  //   if (!locked && !(next_locked && next_tor))
-  //     state.pmpaddr[i] = val;
+  if (which >= CSR_PMPADDR0 && which < CSR_PMPADDR0 + state.n_pmp) {
+    size_t i = which - CSR_PMPADDR0;
+    bool locked = state.pmpcfg[i] & PMP_L;
+    bool next_locked = i+1 < state.n_pmp && (state.pmpcfg[i+1] & PMP_L);
+    bool next_tor = i+1 < state.n_pmp && (state.pmpcfg[i+1] & PMP_A) == PMP_TOR;
+    if (!locked && !(next_locked && next_tor))
+      // the minimum granularity of each pmpaddr is 4KB, the [1:0] 
+      // is already omitted in riscv spec as its possible minimum 
+      // granularity is 4B, and the lsb of valid part of address 
+      // should be 0, so set [8:0] to 0 to simulate 4KB granularity.
+      // and also the [63:38] are set to 0 according to c910 user manual
+      if(i < 8) { // implemented pmpaddr0 - pmpaddr7
+        state.pmpaddr[i] = val & 0x3FFFFFFE00;
+      } else { // pmpaddr8 - pmpaddr15 return 0
+        state.pmpaddr[i] = 0;
+      }
 
-  //   // mmu->flush_tlb();
-  // }
+    mmu->flush_tlb();
+  } else if (which >= CSR_PMPCFG0 && which < CSR_PMPCFG0 + state.n_pmp / 4) {
+    for (size_t i0 = (which - CSR_PMPCFG0) * 4, i = i0; i < i0 + xlen / 8; i++) {
+      if (!(state.pmpcfg[i] & PMP_L))
+        state.pmpcfg[i] = (val >> (8 * (i - i0))) & (PMP_R | PMP_W | PMP_X | PMP_A | PMP_L);
+    }
+    mmu->flush_tlb();
+  }
 
-  // if (which >= CSR_PMPCFG0 && which < CSR_PMPCFG0 + state.n_pmp / 4) {
-  //   for (size_t i0 = (which - CSR_PMPCFG0) * 4, i = i0; i < i0 + xlen / 8; i++) {
-  //     if (!(state.pmpcfg[i] & PMP_L))
-  //       state.pmpcfg[i] = (val >> (8 * (i - i0))) & (PMP_R | PMP_W | PMP_X | PMP_A | PMP_L);
-  //   }
-  //   // mmu->flush_tlb();
-  // }
+  if (which == CSR_MCOUNTINHIBIT) {
+    state.mcountinhibit = val;
+  }
+  if (which >= CSR_MHPMCOUNTER3 && which <= CSR_MHPMCOUNTER18) {
+    state.mhpmcounter[which - CSR_MHPMCOUNTER3] = val;
+  } else if (which >= CSR_MHPMEVENT3 && which <= CSR_MHPMEVENT18) {
+    state.mhpmevent[which - CSR_MHPMEVENT3] = val;
+  }
 
   switch (which)
   {
@@ -378,6 +405,7 @@ void processor_t::set_csr(int which, reg_t val)
         // mmu->flush_tlb();
 
       reg_t mask = MSTATUS_SIE | MSTATUS_SPIE | MSTATUS_MIE | MSTATUS_MPIE
+                 | MSTATUS_FS
                  | MSTATUS_MPRV | MSTATUS_SUM
                  | MSTATUS_MXR | MSTATUS_TW | MSTATUS_TVM
                  | MSTATUS_TSR | MSTATUS_UXL | MSTATUS_SXL |
@@ -573,28 +601,31 @@ reg_t processor_t::get_csr(int which)
 
   if (ctr_ok) {
     if (which >= CSR_HPMCOUNTER3 && which <= CSR_HPMCOUNTER31)
-      return 0;
+      return state.mhpmcounter[which - CSR_HPMCOUNTER3];
     if (xlen == 32 && which >= CSR_HPMCOUNTER3H && which <= CSR_HPMCOUNTER31H)
       return 0;
   }
+  if (which == CSR_MCOUNTINHIBIT) {
+    return state.mcountinhibit;
+  }
   if (which >= CSR_MHPMCOUNTER3 && which <= CSR_MHPMCOUNTER31)
-    return 0;
+    return state.mhpmcounter[which - CSR_MHPMCOUNTER3];
   if (xlen == 32 && which >= CSR_MHPMCOUNTER3H && which <= CSR_MHPMCOUNTER31H)
     return 0;
   if (which >= CSR_MHPMEVENT3 && which <= CSR_MHPMEVENT31)
-    return 0;
+    return state.mhpmevent[which - CSR_MHPMEVENT3];
 
-  // if (which >= CSR_PMPADDR0 && which < CSR_PMPADDR0 + state.n_pmp)
-  //   return state.pmpaddr[which - CSR_PMPADDR0];
+  if (which >= CSR_PMPADDR0 && which < CSR_PMPADDR0 + state.n_pmp)
+    return state.pmpaddr[which - CSR_PMPADDR0];
 
-  // if (which >= CSR_PMPCFG0 && which < CSR_PMPCFG0 + state.n_pmp / 4) {
-  //   require((which & ((xlen / 32) - 1)) == 0);
+  if (which >= CSR_PMPCFG0 && which < CSR_PMPCFG0 + state.n_pmp / 4) {
+    require((which & ((xlen / 32) - 1)) == 0);
 
-  //   reg_t res = 0;
-  //   for (size_t i0 = (which - CSR_PMPCFG0) * 4, i = i0; i < i0 + xlen / 8 && i < state.n_pmp; i++)
-  //     res |= reg_t(state.pmpcfg[i]) << (8 * (i - i0));
-  //   return res;
-  // }
+    reg_t res = 0;
+    for (size_t i0 = (which - CSR_PMPCFG0) * 4, i = i0; i < i0 + xlen / 8 && i < state.n_pmp; i++)
+      res |= reg_t(state.pmpcfg[i]) << (8 * (i - i0));
+    return res;
+  }
 
   switch (which)
   {
@@ -617,6 +648,16 @@ reg_t processor_t::get_csr(int which)
     case CSR_CYCLE:
       if (ctr_ok)
         return state.minstret;
+      break;
+    case CSR_TIME:
+      if (ctr_ok) {
+        if(bus) {
+          reg_t res = 0;
+          if(mmio_load(CLINT_BASE+0xbff8, sizeof res, (uint8_t*)&res)) {
+            return res;
+          }
+        }
+      }
       break;
     case CSR_MINSTRET:
     case CSR_MCYCLE:
