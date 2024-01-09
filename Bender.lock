@@ -24,10 +24,10 @@ packages:
     - common_verification
     - tech_cells_generic
   axi_llc:
-    revision: 559bcbd09a5a884dbe31e2d72fd95d024e357f39
-    version: 0.2.1
+    revision: edae802164fc453a59006e9170a18407b5e01e22
+    version: null
     source:
-      Git: https://github.com/pulp-platform/axi_llc.git
+      Git: https://github.com/Aquaticfuller/axi_llc.git
     dependencies:
     - axi
     - common_cells
