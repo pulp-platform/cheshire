@@ -92,7 +92,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 6c6265e9e94494eac446f56c999e8c5dce63fbe8
+    revision: 6503a4c88ff2e274724cbebce8d25fb883d8b8a8
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -145,7 +145,7 @@ packages:
     - register_interface
     - tech_cells_generic
   redundancy_cells:
-    revision: 09cd9514d52145530fa432e6692ed33aec6c04b6
+    revision: 3fbd080e479f194f68e51dbe262e62c4362868bd
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
