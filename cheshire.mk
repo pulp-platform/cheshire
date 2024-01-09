@@ -221,8 +221,10 @@ CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 # Emulation #
 #############
 
-CHS_XIL_DIR := $(CHS_ROOT)/target/xilinx_211223
+# CHS_XIL_DIR := $(CHS_ROOT)/target/xilinx
+# CHS_XIL_DIR := $(CHS_ROOT)/target/xilinx_211223
 # CHS_XIL_DIR := $(CHS_ROOT)/target/xilinx_060124
+CHS_XIL_DIR := $(CHS_ROOT)/target/xilinx_090124
 include $(CHS_XIL_DIR)/xilinx.mk
 include $(CHS_XIL_DIR)/sim/sim.mk
 CHS_XILINX_ALL += $(CHS_XIL_DIR)/scripts/add_sources.tcl

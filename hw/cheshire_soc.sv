@@ -656,8 +656,8 @@ module cheshire_soc
     end else begin : gen_c910_core
       (* mark_debug = "true" *) axi_c910_req_t c910_out_req_s1;
       (* mark_debug = "true" *) axi_c910_rsp_t c910_out_rsp_s1;
-      (* mark_debug = "true" *) axi_c910_req_t c910_out_req_s2;
-      (* mark_debug = "true" *) axi_c910_rsp_t c910_out_rsp_s2;
+      axi_c910_req_t c910_out_req_s2;
+      axi_c910_rsp_t c910_out_rsp_s2;
 
       c910_axi_wrap #(
         .AxiSetModifiable ( 1'b1              ),

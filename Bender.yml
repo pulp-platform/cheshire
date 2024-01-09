@@ -33,7 +33,7 @@ dependencies:
   # soc910:                   { git: "git@iis-git.ee.ethz.ch:nwistoff/soc910.git",                  rev: 7c218d05   }
   # register_interface:       { path: vendor/pulp_register_interface                                                  }
   # soc910:                   { path: soc910/hw/system                                                              }
-  pulp_c910:                { git: "git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git",               rev: fef1b0ed   }
+  pulp_c910:                { git: "git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git",               rev: 546ceba4   }
 
 export_include_dirs:
   - hw/include
