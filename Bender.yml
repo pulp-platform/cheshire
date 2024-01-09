@@ -22,11 +22,11 @@ dependencies:
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                  version: 0.2.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           version: 1.32.0 }
   common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.0  }
-  cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: "6c6265e"  } # branch: astral
+  cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: "6503a4c"  } # branch: astral
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.5.1  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
-  redundancy_cells:         { git: "https://github.com/pulp-platform/redundancy_cells.git",       rev: "09cd9514" } # branch: astral
+  redundancy_cells:         { git: "https://github.com/pulp-platform/redundancy_cells.git",       rev: "3fbd080e" } # branch: astral
   register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",     version: 0.4.2  }
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              version: 0.8.0  }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.0  }
