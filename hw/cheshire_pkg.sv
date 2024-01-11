@@ -108,6 +108,7 @@ package cheshire_pkg;
     // Reg parameters
     dw_bt   RegMaxReadTxns;
     dw_bt   RegMaxWriteTxns;
+    bit     AxiToRegCut;
     aw_bt   RegAmoNumCuts;
     bit     RegAmoPostCut;
     // External AXI ports (limited number of ports and rules)
@@ -562,6 +563,7 @@ package cheshire_pkg;
     AxiUserDefault    : 0,
     RegMaxReadTxns    : 8,
     RegMaxWriteTxns   : 8,
+    AxiToRegCut       : 0,
     RegAmoNumCuts     : 1,
     RegAmoPostCut     : 1,
     // RTC
