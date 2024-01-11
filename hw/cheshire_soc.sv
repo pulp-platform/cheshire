@@ -366,6 +366,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AxiIdWidth   ( AxiSlvIdWidth    ),
     .AxiUserWidth ( Cfg.AxiUserWidth ),
     .RegDataWidth ( 32'd32 ),
+    .RegCut       ( Cfg.AxiToRegCut ),
     .axi_req_t    ( axi_slv_req_t ),
     .axi_rsp_t    ( axi_slv_rsp_t ),
     .reg_req_t    ( reg_req_t ),
