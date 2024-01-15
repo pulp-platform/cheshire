@@ -145,8 +145,9 @@ module cheshire_soc
   cheshire_intr_t [NumRtdIntrTgts-1:0] intr_routed;
 
   // Interrupt requests to all interruptible harts
-  cheshire_xeip_t [NumIrqHarts-1:0] xeip;
-  logic           [NumIrqHarts-1:0] mtip, msip;
+  (* mark_debug = "true" *) cheshire_xeip_t [NumIrqHarts-1:0] xeip;
+  (* mark_debug = "true" *) logic           [NumIrqHarts-1:0] mtip;
+  (* mark_debug = "true" *) logic           [NumIrqHarts-1:0] msip;
 
   // Interrupt 0 is hardwired to zero by convention.
   // Other internal interrupts are synchronous (for now) and need not be synced;
@@ -671,6 +672,7 @@ module cheshire_soc
       ) i_c910_axi_wrap (
         .clk_i,
         .rst_ni,
+        .rtc_i,
         // clint
         .ipi_i            ( msip[i] ),
         .time_irq_i       ( mtip[i] ),
@@ -685,8 +687,8 @@ module cheshire_soc
         .jtag_tck_i       ( jtag_tck_i          ),
         .jtag_tdi_i       ( jtag_tdi_i          ),
         .jtag_tms_i       ( jtag_tms_i          ),
-        .jtag_tdo_o       ( jtag_tdo_o          ),
-        .jtag_tdo_en_o    ( jtag_tdo_oe_o       ),
+        .jtag_tdo_o       ( /*jtag_tdo_o*/          ),
+        .jtag_tdo_en_o    ( /*jtag_tdo_oe_o*/       ),
         .jtag_trst_ni     ( jtag_trst_ni        ),
         // AXI interface
         .axi_req_o        ( c910_out_req_s1     ),
@@ -1202,8 +1204,8 @@ module cheshire_soc
       .tms_i            ( jtag_tms_i     ),
       .trst_ni          ( jtag_trst_ni   ),
       .td_i             ( jtag_tdi_i     ),
-      .td_o             ( /*jtag_tdo_o*/     ),
-      .tdo_oe_o         ( /*jtag_tdo_oe_o*/  )
+      .td_o             ( jtag_tdo_o     ),
+      .tdo_oe_o         ( jtag_tdo_oe_o  )
     );
   // end
 

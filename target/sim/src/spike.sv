@@ -12,7 +12,7 @@
 // Date: 3/11/2018
 // Description: Wrapped Spike Model for Tandem Verification
 
-// `define DEBUG_DISPLAY
+`define DEBUG_DISPLAY
 import uvm_pkg::*;
 
 `include "uvm_macros.svh"
@@ -51,7 +51,7 @@ module spike #(
     parameter int unsigned     NR_RETIRE_PORTS_W = $clog2(NR_RETIRE_PORTS) > 0 ? $clog2(NR_RETIRE_PORTS) : 1,
     parameter int unsigned     MaxInFlightInstrNum = 64 * 3, // 64 ROB entries * max 3 fold instructions per entry
     parameter int unsigned     MaxInFlightInstrNum_W = $clog2(MaxInFlightInstrNum) > 0 ? $clog2(MaxInFlightInstrNum) : 1, // 64 ROB entries * max 3 fold instructions per entry
-    parameter int unsigned     SpikeRunAheadInstMax = 512
+    parameter int unsigned     SpikeRunAheadInstMax = 16
 )(
     input logic       clk_i,
     input logic       rst_ni,
@@ -70,6 +70,8 @@ module spike #(
     static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
 
     string binary = "";
+    string binary2 = "";
+    string binary3 = "";
 
     logic fake_clk;
 
@@ -77,6 +79,8 @@ module spike #(
 
     initial begin
         void'(uvcl.get_arg_value("+PRELOAD=", binary));
+        void'(uvcl.get_arg_value("+PRELOAD2=", binary2));
+        void'(uvcl.get_arg_value("+PRELOAD3=", binary3));
         assert(binary != "") else $error("We need a preloaded binary for tandem verification");
         void'(spike_create(binary, DramBase, Size));
     end
@@ -102,7 +106,8 @@ module spike #(
             //     $display("[spike UART] counter end   @ %t ps", $time);
             // end
             spike_tick(commit_log_tmp);
-            if(commit_log_tmp.pc[39:0] == 40'h80008e6a) begin
+            // if(commit_log_tmp.pc[39:0] == 40'h800003f8) begin
+            if(commit_log_tmp.pc[39:0] == 40'h8000372c) begin
                 spike_single_step = 1;
             end
             if(spike_single_step) begin
@@ -224,7 +229,7 @@ module spike #(
                                 $display("Spike priv_lvl: %2d", commit_log_last_inst.priv);
                                 $display("TC910 priv_lvl: %2d", priv_lvl_i);
                                 $display("==========================================");
-                                $stop;
+                                // $stop;
                             end
 
                             // check the csr
@@ -252,26 +257,34 @@ module spike #(
                             for(int k = 0; k < 32; k++) begin
                                 // check the register value
                                 $display("\x1B[x%d %h vs %h\x1B]", k, areg_value_i[k], commit_log_last_inst.areg_value[k]);
-                                
-                                if(^areg_value_i[k] !== 1'bx) begin                            
-                                    assert (areg_value_i[k] === commit_log_last_inst.areg_value[k]) else begin
-                                        $warning("\x1B[[Tandem] x%d register mismatches\x1B]", k);
-                                        $display("@ PC %h", commit_log_last_inst.pc);
-                                        $display("Spike x%d: %h", k, commit_log_last_inst.areg_value[k]);
-                                        $display("TC910 x%d: %h", k, areg_value_i[k]);
-                                        $display("==========================================");
-                                        // $stop;
-                                    end
-                                end else begin
-                                    assert (commit_log_last_inst.areg_value[k] === '0) else begin
-                                        $warning("\x1B[[Tandem] x%d register mismatches\x1B]", k);
-                                        $display("@ PC %h", commit_log_last_inst.pc);
-                                        $display("Spike x%d: %h", k, commit_log_last_inst.areg_value[k]);
-                                        $display("TC910 x%d: %h", k, areg_value_i[k]);
-                                        $display("==========================================");
-                                        // $stop;
-                                    end
+                                assert (areg_value_i[k] === commit_log_last_inst.areg_value[k]) else begin
+                                    $warning("\x1B[[Tandem] x%d register mismatches\x1B]", k);
+                                    $display("@ PC %h", commit_log_last_inst.pc);
+                                    $display("Spike x%d: %h", k, commit_log_last_inst.areg_value[k]);
+                                    $display("TC910 x%d: %h", k, areg_value_i[k]);
+                                    $display("==========================================");
+                                    // $stop;
                                 end
+
+                                // if(^areg_value_i[k] !== 1'bx) begin                            
+                                //     assert (areg_value_i[k] === commit_log_last_inst.areg_value[k]) else begin
+                                //         $warning("\x1B[[Tandem] x%d register mismatches\x1B]", k);
+                                //         $display("@ PC %h", commit_log_last_inst.pc);
+                                //         $display("Spike x%d: %h", k, commit_log_last_inst.areg_value[k]);
+                                //         $display("TC910 x%d: %h", k, areg_value_i[k]);
+                                //         $display("==========================================");
+                                //         // $stop;
+                                //     end
+                                // end else begin
+                                //     assert (commit_log_last_inst.areg_value[k] === '0) else begin
+                                //         $warning("\x1B[[Tandem] x%d register mismatches\x1B]", k);
+                                //         $display("@ PC %h", commit_log_last_inst.pc);
+                                //         $display("Spike x%d: %h", k, commit_log_last_inst.areg_value[k]);
+                                //         $display("TC910 x%d: %h", k, areg_value_i[k]);
+                                //         $display("==========================================");
+                                //         // $stop;
+                                //     end
+                                // end
                             end
                             `endif
                             break;

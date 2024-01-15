@@ -94,26 +94,40 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   // Preload function called by testbench
   task automatic memory_preload(string image);
-    // We overlay the entire memory with an alternating pattern
-    for (int k = 0; k < $size(i_dram_sim_mem.mem); ++k)
-      i_dram_sim_mem.mem[k] = 'h9a;
+    // // We overlay the entire memory with an alternating pattern
+    // for (int k = 0; k < $size(i_dram_sim_mem.mem); ++k)
+    //   i_dram_sim_mem.mem[k] = 'h9a;
     // We load an image into chip 0 only if it exists
     if (image != "") begin
       $readmemh(image, i_dram_sim_mem.mem);
       $display("rtl load image: %s", image);
     end
-    
-    for(longint unsigned i = 'h80000000; i < 'h80000000+64; i++) begin
-      $display("%h, 0x%h", i, i_dram_sim_mem.mem[i]);
-    end
   endtask
 
   // Run a binary
-  task automatic memory_elf_run(input string binary);
+  task automatic memory_elf_run(input string binary, input string binary2, input string binary3);
     doub_bt entry;
     entry = DutCfg.LlcOutRegionStart;
     // Preload
+    // We overlay the entire memory with an alternating pattern
+    for (int k = 0; k < $size(i_dram_sim_mem.mem); ++k)
+      i_dram_sim_mem.mem[k] = 'h9a;
+
     memory_preload(binary);
+    $stop();
+    memory_preload(binary2);
+    $stop();
+    memory_preload(binary3);
+    $stop();
+    for(longint unsigned i = 'h80000000; i < 'h80000000+8; i++) begin
+      $display("%h, 0x%h", i, i_dram_sim_mem.mem[i]);
+    end
+    for(longint unsigned i = 'h80200000; i < 'h80200000+8; i++) begin
+      $display("%h, 0x%h", i, i_dram_sim_mem.mem[i]);
+    end
+    for(longint unsigned i = 'h81000000; i < 'h81000000+8; i++) begin
+      $display("%h, 0x%h", i, i_dram_sim_mem.mem[i]);
+    end
     // Write entry point
     slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_1_OFFSET, entry[63:32]);
     slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_0_OFFSET, entry[32:0]);
@@ -431,7 +445,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     wait_for_reset();
     forever begin
       uart_read_byte(bite);
-      $display("[UART] byte: %s", bite);
+      // $display("[UART] byte: %s", bite);
       if (uart_boot_ena) begin
         uart_boot_byte  = bite;
         uart_boot_ena = 0;
@@ -555,6 +569,9 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     // We load an image into chip 0 only if it exists
     if (image != "")
       $readmemh(image, gen_i2c_eeproms[0].i_i2c_eeprom.MemoryBlock);
+    for(longint unsigned i = 'h0; i < 'h0+8; i++) begin
+      $display("i_i2c_eeprom %h, 0x%h", i, gen_i2c_eeproms[0].i_i2c_eeprom.MemoryBlock[i]);
+    end
   endtask
 
   ////////////////
@@ -581,6 +598,9 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     // We load an image into chip 0 only if it exists
     if (image != "")
       $readmemh(image, i_spi_norflash.Mem);
+    for(longint unsigned i = 'h0; i < 'h0+8; i++) begin
+      $display("i_spi_norflash %h, 0x%h", i, i_spi_norflash.Mem[i]);
+    end
   endtask
 
   ///////////////////
