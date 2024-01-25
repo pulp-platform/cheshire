@@ -1,0 +1,107 @@
+437,438c437,463
+<   example_top #
+<     (
+---
+> wire         cpu_reset;
+> wire         cpu_resetn;
+> `ifdef TARGET_XLNX_MIG_DDR4
+> wire         sys_clk_p;
+> wire         sys_clk_n;
+> `endif
+> wire         testmode_i;
+> wire [1:0]   boot_mode_i;
+> wire         jtag_tck_i;
+> wire         jtag_tms_i;
+> wire         jtag_tdi_i;
+> wire         jtag_tdo_o;
+> wire         jtag_trst_ni;
+> wire         jtag_vdd_o;
+> wire         jtag_gnd_o;
+> wire         uart_tx_o;
+> wire         uart_rx_i;
+> 
+> assign cpu_reset = sys_rst;
+> assign cpu_resetn = ~cpu_reset;
+> assign boot_mode_i = '0;
+> assign testmode_i = '0;
+> assign jtag_tck_i = '0;
+> assign jtag_tms_i = '0;
+> assign jtag_tdi_i = '0;
+> assign jtag_trst_ni = '0;
+> assign uart_rx_i = '0;
+440,443c465,468
+<      .SIMULATION                (SIMULATION),
+<      .BEGIN_ADDRESS             (BEGIN_ADDRESS),
+<      .END_ADDRESS               (END_ADDRESS),
+<      .PRBS_EADDR_MASK_POS       (PRBS_EADDR_MASK_POS),
+---
+> `ifdef TARGET_XLNX_MIG_DDR4
+> assign sys_clk_p = c0_sys_clk_p;
+> assign sys_clk_n = c0_sys_clk_n;
+> `endif
+445,457d469
+<      .COL_WIDTH                 (COL_WIDTH),
+<      .CS_WIDTH                  (CS_WIDTH),
+<      .DM_WIDTH                  (DM_WIDTH),
+<     
+<      .DQ_WIDTH                  (DQ_WIDTH),
+<      .DQS_CNT_WIDTH             (DQS_CNT_WIDTH),
+<      .DRAM_WIDTH                (DRAM_WIDTH),
+<      .ECC_TEST                  (ECC_TEST),
+<      .RANKS                     (RANKS),
+<      .ROW_WIDTH                 (ROW_WIDTH),
+<      .ADDR_WIDTH                (ADDR_WIDTH),
+<      .BURST_MODE                (BURST_MODE),
+<      .TCQ                       (TCQ),
+459,473c471,472
+<      
+<     .DRAM_TYPE                 (DRAM_TYPE),
+<     
+<      
+<     .nCK_PER_CLK               (nCK_PER_CLK),
+<     
+<      
+<      .C_S_AXI_ID_WIDTH          (C_S_AXI_ID_WIDTH),
+<      .C_S_AXI_ADDR_WIDTH        (C_S_AXI_ADDR_WIDTH),
+<      .C_S_AXI_DATA_WIDTH        (C_S_AXI_DATA_WIDTH),
+<      .C_S_AXI_SUPPORTS_NARROW_BURST (C_S_AXI_SUPPORTS_NARROW_BURST),
+<     
+<      .DEBUG_PORT                (DEBUG_PORT),
+<     
+<      .RST_ACT_LOW               (RST_ACT_LOW)
+---
+>   cheshire_top_xilinx #
+>     (
+475c474
+<    u_ip_top
+---
+>    u_cheshire_top_xilinx
+477,502c476
+< 
+<      .ddr3_dq              (ddr3_dq_fpga),
+<      .ddr3_dqs_n           (ddr3_dqs_n_fpga),
+<      .ddr3_dqs_p           (ddr3_dqs_p_fpga),
+< 
+<      .ddr3_addr            (ddr3_addr_fpga),
+<      .ddr3_ba              (ddr3_ba_fpga),
+<      .ddr3_ras_n           (ddr3_ras_n_fpga),
+<      .ddr3_cas_n           (ddr3_cas_n_fpga),
+<      .ddr3_we_n            (ddr3_we_n_fpga),
+<      .ddr3_reset_n         (ddr3_reset_n),
+<      .ddr3_ck_p            (ddr3_ck_p_fpga),
+<      .ddr3_ck_n            (ddr3_ck_n_fpga),
+<      .ddr3_cke             (ddr3_cke_fpga),
+<      .ddr3_cs_n            (ddr3_cs_n_fpga),
+<     
+<      .ddr3_dm              (ddr3_dm_fpga),
+<     
+<      .ddr3_odt             (ddr3_odt_fpga),
+<     
+<      
+<      .sys_clk_i            (sys_clk_i),
+<     
+<       .init_calib_complete (init_calib_complete),
+<       .tg_compare_error    (tg_compare_error),
+<       .sys_rst             (sys_rst)
+---
+>      .*

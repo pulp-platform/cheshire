@@ -28,10 +28,22 @@ sw/deps/.patched
 # Test models
 target/sim/models
 
-# VSIM generated files
+# VSIM generated files 
 target/sim/vsim/compile.*.tcl
 target/sim/vsim/*.log
 target/sim/vsim/modelsim.ini
 target/sim/vsim/transcript
 target/sim/vsim/vsim.wlf
 target/sim/vsim/work/
+
+# Xilinx flow generated files
+*.generated_env
+*.generated_sha256
+
+# Vivado generated files
+*.cache
+*.gen
+*.hw
+*.runs
+*.xpr
+*.xci

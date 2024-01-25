@@ -24,8 +24,8 @@ xilinx_ips_paths_vanilla           := $(foreach ip-name,$(xilinx_ips_names_vanil
 
 # Flavor specific bender args
 # (add the enabled ips in bender args, used by phy_definitions.svh)
-xilinx_targs_vanilla := $(foreach ip-name,$(xilinx_ips_names_vanilla),$(addprefix -t ,$(ip-name)))
-xilinx_targs_vanilla += -t xilinx_vanilla
+xilinx_targs_vanilla := $(xilinx_targs_common) $(foreach ip-name,$(xilinx_ips_names_vanilla),$(addprefix -t ,$(ip-name)))
+xilinx_targs_vanilla += -t flavor_vanilla
 
 # Vivado variables
 vivado_env_vanilla := \
@@ -48,15 +48,19 @@ vivado_env_vanilla := \
 
 # Generate bender script
 $(CHS_XIL_DIR)/flavor_vanilla/scripts/add_sources.tcl: Bender.yml
-	$(BENDER) script vivado $(xilinx_targs) $(xilinx_targs_vanilla) > $@
+	$(BENDER) script vivado $(xilinx_targs_vanilla) > $@
 
 # Compile bitstream
 $(CHS_XIL_DIR)/flavor_vanilla/out/%.bit: $(xilinx_ips_paths_vanilla) $(CHS_XIL_DIR)/flavor_vanilla/scripts/add_sources.tcl
 	@mkdir -p $(CHS_XIL_DIR)/flavor_vanilla/out
-	cd $(CHS_XIL_DIR)/flavor_vanilla && $(vivado_env) $(VIVADO) $(VIVADO_FLAGS) -source scripts/run.tcl
+	cd $(CHS_XIL_DIR)/flavor_vanilla && $(vivado_env_vanilla) $(VIVADO) $(VIVADO_FLAGS) -source scripts/run.tcl
 	find $(CHS_XIL_DIR)/flavor_vanilla -name "*.ltx" -o -name "*.bit" -o -name "*routed.rpt" | xargs -I {} cp {} $(CHS_XIL_DIR)/flavor_vanilla/out
 
 chs-xil-clean-vanilla:
-	cd $(CHS_XIL_DIR)/flavor_vanilla && rm -rf scripts/add_sources.tcl* *.log *.jou *.str *.mif carfield.* .Xil/
+	cd $(CHS_XIL_DIR)/flavor_vanilla && rm -rf scripts/add_sources.tcl *.log *.jou cheshire.* .Xil/
 
 .PHONY: chs-xil-clean-vanilla
+
+# Add simulation rules to verify Xilinx IP integration
+
+include $(CHS_XIL_DIR)/flavor_vanilla/sim/sim.mk

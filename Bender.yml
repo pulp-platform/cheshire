@@ -50,14 +50,9 @@ sources:
       - target/sim/src/fixture_cheshire_soc.sv
       - target/sim/src/tb_cheshire_soc.sv
 
-  - target: all(fpga, xilinx, xilinx_vanilla)
+  - target: all(fpga, xilinx, flavor_vanilla)
     files:
       - target/xilinx/flavor_vanilla/src/fan_ctrl.sv
       - target/xilinx/flavor_vanilla/src/dram_wrapper_xilinx.sv
       - target/xilinx/flavor_vanilla/src/phy_definitions.svh
       - target/xilinx/flavor_vanilla/src/cheshire_top_xilinx.sv
-
-  - target: all(fpga, xilinx, xilinx_bd)
-    files:
-      - target/xilinx/flavor_bd/src/cheshire_ip_wrapper.v
-      - target/xilinx/flavor_bd/src/cheshire_top_xilinx.sv

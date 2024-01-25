@@ -144,8 +144,9 @@ $(CHS_CVA6_SDK_IMGS):
 	@echo "error: Missing CVA6 SDK images. Did you build your kernel?"
 	@exit 1
 
+
 # Create full Linux disk image for a given board config
-$(CHS_SW_DIR)/boot/linux-%.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CHS_SW_DIR)/boot/cheshire_%.dtb $(CHS_CVA6_SDK_IMGS)
+$(CHS_SW_DIR)/boot/linux_%.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CHS_SW_DIR)/boot/%.dtb $(CHS_CVA6_SDK_IMGS)
 	truncate -s $(CHS_SW_DISK_SIZE) $@
 	sgdisk --clear -g --set-alignment=1 \
 		--new=1:64:96 --typecode=1:$(CHS_SW_ZSL_TGUID) \

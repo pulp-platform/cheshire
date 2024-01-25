@@ -1,8 +1,10 @@
-// Copyright 2023 ETH Zurich and University of Bologna.
+// Copyright 2024 ETH Zurich and University of Bologna.
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 //
 // Cyril Koenig <cykoenig@iis.ee.ethz.ch>
+//
+// Resize AXI AW IW DW before connecting to a Xilinx DRAM controller
 
 
 `include "cheshire/typedef.svh"
@@ -48,23 +50,23 @@ module dram_wrapper_xilinx #(
     integer StrobeWidth;
   } dram_cfg_t;
 
-`ifdef TARGET_VCU128
+`ifdef TARGET_VCU118
   localparam dram_cfg_t cfg = '{
     EnCDC         : 1, // 333 MHz axi (attention CDC logdepth)
     IdWidth       : 4,
-    AddrWidth     : 32,
+    AddrWidth     : 31,
     DataWidth     : 512,
     StrobeWidth   : 64
   };
 `endif
 
-`ifdef TARGET_ZCU102
+`ifdef TARGET_VCU128
   localparam dram_cfg_t cfg = '{
-    EnCDC         : 1, // ??? MHz axi (attention CDC logdepth)
-    IdWidth       : 4,
-    AddrWidth     : 29,
-    DataWidth     : 128,
-    StrobeWidth   : 16
+    EnCDC         : 1, // 333 MHz axi (attention CDC logdepth)
+    IdWidth       : 8,
+    AddrWidth     : 32,
+    DataWidth     : 512,
+    StrobeWidth   : 64
   };
 `endif
 
@@ -116,45 +118,39 @@ module dram_wrapper_xilinx #(
   // Instianciate data width resizer //
   /////////////////////////////////////
 
-  if (cfg.DataWidth != SoC_DataWidth) begin : gen_dw_converter
-    axi_dw_converter #(
-        .AxiMaxReads        (8),
-        .AxiSlvPortDataWidth(SoC_DataWidth),
-        .AxiMstPortDataWidth(cfg.DataWidth),
-        .AxiAddrWidth       (SoC_AddrWidth),
-        .AxiIdWidth         (SoC_IdWidth  ),
-        // Common aw, ar, b
-        .aw_chan_t          (axi_soc_aw_chan_t),
-        .b_chan_t           (axi_soc_b_chan_t),
-        .ar_chan_t          (axi_soc_ar_chan_t),
-        // Master w, r
-        .mst_w_chan_t       (axi_dw_w_chan_t),
-        .mst_r_chan_t       (axi_dw_r_chan_t),
-        .axi_mst_req_t      (axi_dw_req_t),
-        .axi_mst_resp_t     (axi_dw_resp_t),
-        // Slave w, r
-        .slv_w_chan_t       (axi_soc_w_chan_t),
-        .slv_r_chan_t       (axi_soc_r_chan_t),
-        .axi_slv_req_t      (axi_soc_req_t),
-        .axi_slv_resp_t     (axi_soc_resp_t)
-    ) axi_dw_converter_ddr4 (
-        .clk_i     (soc_clk_i),
-        .rst_ni    (soc_resetn_i),
-        .slv_req_i (soc_dresizer_req),
-        .slv_resp_o(soc_dresizer_rsp),
-        .mst_req_o (dresizer_iresizer_req),
-        .mst_resp_i(dresizer_iresizer_rsp)
-    );
-  end else begin : gen_no_dw_converter
-    assign dresizer_iresizer_req = soc_dresizer_req;
-    assign soc_dresizer_rsp      = dresizer_iresizer_rsp;
-  end
+  axi_dw_converter #(
+      .AxiMaxReads        (8),
+      .AxiSlvPortDataWidth(SoC_DataWidth),
+      .AxiMstPortDataWidth(cfg.DataWidth),
+      .AxiAddrWidth       (SoC_AddrWidth),
+      .AxiIdWidth         (SoC_IdWidth  ),
+      // Common aw, ar, b
+      .aw_chan_t          (axi_soc_aw_chan_t),
+      .b_chan_t           (axi_soc_b_chan_t),
+      .ar_chan_t          (axi_soc_ar_chan_t),
+      // Master w, r
+      .mst_w_chan_t       (axi_dw_w_chan_t),
+      .mst_r_chan_t       (axi_dw_r_chan_t),
+      .axi_mst_req_t      (axi_dw_req_t),
+      .axi_mst_resp_t     (axi_dw_resp_t),
+      // Slave w, r
+      .slv_w_chan_t       (axi_soc_w_chan_t),
+      .slv_r_chan_t       (axi_soc_r_chan_t),
+      .axi_slv_req_t      (axi_soc_req_t),
+      .axi_slv_resp_t     (axi_soc_resp_t)
+  ) axi_dw_converter_ddr4 (
+      .clk_i     (soc_clk_i),
+      .rst_ni    (soc_resetn_i),
+      .slv_req_i (soc_dresizer_req),
+      .slv_resp_o(soc_dresizer_rsp),
+      .mst_req_o (dresizer_iresizer_req),
+      .mst_resp_i(dresizer_iresizer_rsp)
+  );
 
   /////////////////
   // ID resizer  //
   /////////////////
 
-if (cfg.IdWidth != SoC_IdWidth) begin : gen_iw_converter
   axi_iw_converter #(
     .AxiAddrWidth          ( SoC_AddrWidth    ),
     .AxiDataWidth          ( cfg.DataWidth    ),
@@ -178,10 +174,6 @@ if (cfg.IdWidth != SoC_IdWidth) begin : gen_iw_converter
     .mst_req_o  ( iresizer_cdc_req      ),
     .mst_resp_i ( iresizer_cdc_rsp      )
   );
-  end else begin : gen_no_iw_converter
-    assign iresizer_cdc_req = dresizer_iresizer_req;
-    assign dresizer_iresizer_rsp = iresizer_cdc_rsp;
-  end
 
   //////////////////////
   // Instianciate CDC //
@@ -278,7 +270,7 @@ if (cfg.IdWidth != SoC_IdWidth) begin : gen_iw_converter
     .c0_ddr4_s_axi_rresp       (cdc_dram_rsp.r.resp),
     .c0_ddr4_s_axi_rlast       (cdc_dram_rsp.r.last),
     .c0_ddr4_s_axi_rvalid      (cdc_dram_rsp.r_valid),
-`ifdef TARGET_VCU128
+  `ifdef TARGET_VCU128
     // Axi ctrl
     .c0_ddr4_s_axi_ctrl_awvalid('0),
     .c0_ddr4_s_axi_ctrl_awready(),

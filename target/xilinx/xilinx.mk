@@ -15,34 +15,19 @@
 # User input Makefile variables
 #
 
+#
+# Makefile variables (user inputs are in capital letters)
+#
+
 CHS_XIL_DIR ?= $(CHS_ROOT)/target/xilinx
 
-XILINX_PROJECT          ?= cheshire
-XILINX_FLAVOR           ?= vanilla
-XILINX_BOARD            ?= genesys2
-XILINX_ELABORATION_ONLY ?= 0
-XILINX_CHECK_TIMING     ?= 0
-XILINX_USE_ARTIFACTS    ?= 0
+VIVADO ?= vitis-2020.2 vivado
 
-ifneq (,$(wildcard /etc/iis.version))
-	VIVADO ?= vitis-2020.2 vivado
-else
-	VIVADO ?= vivado
-endif
-VIVADO_MODE  ?= batch
-VIVADO_FLAGS ?= -nojournal -mode $(VIVADO_MODE)
-
-#
-# Derived variables
-#
-
-ifeq ($(XILINX_BOARD),genesys2)
-	xilinx_part       := xc7k325tffg900-2
-	xilinx_board_long := digilentinc.com:genesys2:part0:1.1
-	XILINX_PORT       ?= 3332
-	XILINX_FPGA_PATH  ?= xilinx_tcf/Digilent/200300A8C60DB
-	XILINX_HOST       ?= bordcomputer
-endif
+XILINX_PROJECT ?= cheshire
+# XILINX_FLAVOR in {vanilla}
+XILINX_FLAVOR  ?= vanilla
+# XILINX_BOARD in {vcu128, genesys2}
+XILINX_BOARD   ?= vcu128
 
 ifeq ($(XILINX_BOARD),vcu128)
 	xilinx_part       := xcvu37p-fsvh2892-2L-e
@@ -52,35 +37,53 @@ ifeq ($(XILINX_BOARD),vcu128)
 	XILINX_HOST       ?= bordcomputer
 endif
 
-xilinx_ip_dir  := $(CHS_XIL_DIR)/xilinx_ips
-xilinx_ip_dirs := $(wildcard $(xilinx_ip_dir)/*)
+ifeq ($(XILINX_BOARD),genesys2)
+	xilinx_part       := xc7k325tffg900-2
+	xilinx_board_long := digilentinc.com:genesys2:part0:1.1
+	XILINX_PORT       ?= 3332
+	XILINX_FPGA_PATH  ?= xilinx_tcf/Digilent/200300A8C60DB
+	XILINX_HOST       ?= bordcomputer
+endif
 
-xilinx_targs := -t cv64a6_imafdcsclic_sv39 -t cva6
-xilinx_targs += -t fpga $(addprefix -t ,$(XILINX_BOARD))
+XILINX_USE_ARTIFACTS ?= 0
+XILINX_ARTIFACTS_ROOT ?=
+XILINX_ELABORATION_ONLY ?= 0
+XILINX_CHECK_TIMING ?= 0
+
+VIVADO_MODE  ?= batch
+VIVADO_FLAGS ?= -nojournal -mode $(VIVADO_MODE)
+
+xilinx_ip_dir := $(CHS_XIL_DIR)/xilinx_ips
+xilinx_bit := $(CHS_XIL_DIR)/out/$(XILINX_PROJECT)_$(XILINX_FLAVOR)_$(XILINX_BOARD).bit
+
+xilinx_targs_common := -t fpga -t xilinx -t cv64a6_imafdcsclic_sv39 -t cva6
+xilinx_targs_common += $(addprefix -t ,$(XILINX_BOARD))
 
 #
-# Include flavors
+# Include other makefiles flavors
 #
 
 include $(CHS_XIL_DIR)/flavor_vanilla/flavor_vanilla.mk
-include $(CHS_XIL_DIR)/flavor_bd/flavor_bd.mk
 
 #
 # Flavor dependant variables
 #
 
-xilinx_bit := $(CHS_XIL_DIR)/out/$(XILINX_PROJECT)_$(XILINX_FLAVOR)_$(XILINX_BOARD).bit
 vivado_env := $(vivado_env_$(XILINX_FLAVOR))
+xilinx_targs := $(xilinx_targs_$(XILINX_FLAVOR))
+xilinx_defs := $(xilinx_defs_$(XILINX_FLAVOR))
 
 #
-# Targets
+# IPs compile rules
 #
 
-# Generate ips
-%.xci:
-	echo $@
-	@echo "Generating IP $(basename $@)"
-	IP_NAME=$(basename $(notdir $@)) ; cd $(xilinx_ip_dir)/$$IP_NAME && make clean && XILINX_USE_ARTIFACTS=$(XILINX_USE_ARTIFACTS) vivado_env="$(subst ",\",$(vivado_env))" VIVADO="$(VIVADO)" make
+# Note: at the moment xilinx_ips uses vivado_env defined above,
+# but it could re-define its own vivado_env and xilinx_targs
+include $(CHS_XIL_DIR)/xilinx_ips/xilinx_ips.mk
+
+#
+# Top level compile rules
+#
 
 # Copy bitstream and probe file to final output location (/target/xilinx/out)
 $(CHS_XIL_DIR)/out/%.bit: $(xilinx_bit_$(XILINX_FLAVOR))
@@ -90,8 +93,8 @@ $(CHS_XIL_DIR)/out/%.bit: $(xilinx_bit_$(XILINX_FLAVOR))
 		cp $(patsubst %.bit,%.ltx,$< $@); \
 	fi
 
-# Build a bitstream
-chs-xil-all: chs-xil-clean-ips $(xilinx_bit)
+# Build bitstream
+chs-xil-all: $(xilinx_bit)
 
 # Program last bitstream
 chs-xil-program:
@@ -99,15 +102,8 @@ chs-xil-program:
 	$(vivado_env) $(VIVADO) $(VIVADO_FLAGS) -source $(CHS_XIL_DIR)/scripts/program.tcl
 
 # Flash linux image
-chs-xil-flash: $(CAR_SW_DIR)/boot/linux_carfield_$(XILINX_FLAVOR)_$(XILINX_BOARD).gpt.bin
+chs-xil-flash: $(CHS_SW_DIR)/boot/linux_cheshire_$(XILINX_BOARD)_$(XILINX_FLAVOR).gpt.bin
 	$(vivado_env) FILE=$< OFFSET=0 $(VIVADO) $(VIVADO_FLAGS) -source $(CHS_XIL_DIR)/scripts/flash_spi.tcl
+chs-xil-clean: chs-xil-clean-vanilla xilinx-ip-clean-all
 
-# Clean a given IP folder
-%-xlnx-ip-clean: %
-	make -C $< clean
-# Clean all IP folder using rule above
-chs-xil-clean-ips: $(addsuffix -xlnx-ip-clean,$(shell find $(xilinx_ip_dir)/ -maxdepth 1 -mindepth 1 -type d))
-
-chs-xil-clean: chs-xil-clean-ips chs-xil-clean-vanilla chs-xil-clean-bd
-
-.PHONY: chs-xil-program chs-xil-flash chs-xil-clean chs-xil-all chs-xil-clean-ips
+.PHONY: chs-xil-program chs-xil-flash chs-xil-clean chs-xil-all
