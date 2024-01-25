@@ -19,12 +19,13 @@ read_ip $::env(XILINX_IP_PATHS)
 
 # Contraints files selection
 switch $::env(XILINX_BOARD) {
-  "genesys2" - "kc705" - "vc707" - "vcu128" - "zcu102" {
+  "genesys2" - "vcu128" {
     import_files -fileset constrs_1 -norecurse constraints/cheshire.xdc
     import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_BOARD).xdc
   }
   default {
-      exit 1
+    puts "Unknown board $::env(XILINX_BOARD)"
+    exit 1
   }
 }
 
