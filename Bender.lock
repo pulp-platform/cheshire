@@ -3,7 +3,7 @@ packages:
     revision: 77ddf073f194d44b9119949d2421be59789e69ae
     version: 0.2.4
     source:
-      Git: https://github.com/pulp-platform/apb.git
+      Git: https://github.com/pulp-platform/apb
     dependencies:
     - common_cells
   apb_uart:
@@ -15,10 +15,10 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: fccffb5953ec8564218ba05e20adbedec845e014
-    version: 0.39.1
+    revision: 4fb5a02ef5c96396ac2157bcaf09bb6a05b6a87d
+    version: null
     source:
-      Git: https://github.com/pulp-platform/axi.git
+      Git: https://github.com/pulp-platform/axi
     dependencies:
     - common_cells
     - common_verification
@@ -62,8 +62,8 @@ packages:
     - common_cells
     - register_interface
   clic:
-    revision: 0ff9f07e0a492bff046dfe24399b1e1e82d557b7
-    version: 3.0.0-for-carfield
+    revision: 94e2a77143053f1a2a72c88989616c89e05854fc
+    version: null
     source:
       Git: https://github.com/pulp-platform/clic.git
     dependencies:
@@ -92,7 +92,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 6503a4c88ff2e274724cbebce8d25fb883d8b8a8
+    revision: 6c985d0c48b9ef586e81472ecc8054276cf26a0e
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -100,9 +100,10 @@ packages:
     - axi
     - common_cells
     - fpnew
+    - redundancy_cells
     - tech_cells_generic
   fpnew:
-    revision: a8e0cba6dd50f357ece73c2c955d96efc3c6c315
+    revision: f231041c610f270ffc03cbdac38739ddb6426572
     version: null
     source:
       Git: https://github.com/pulp-platform/cvfpu.git
@@ -120,7 +121,7 @@ packages:
     revision: ca1b28816a3706be0bf9ce01378246d5346384f0
     version: 0.5.1
     source:
-      Git: https://github.com/pulp-platform/idma.git
+      Git: https://github.com/pulp-platform/iDMA.git
     dependencies:
     - axi
     - common_cells
@@ -145,7 +146,7 @@ packages:
     - register_interface
     - tech_cells_generic
   redundancy_cells:
-    revision: 3fbd080e479f194f68e51dbe262e62c4362868bd
+    revision: 651441e4a6459f84f3dde4242cf34961925a2142
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
@@ -165,8 +166,8 @@ packages:
     - common_cells
     - common_verification
   riscv-dbg:
-    revision: 138d74bcaa90c70180c12215db3776813d2a95f2
-    version: 0.8.0
+    revision: 358f90110220adf7a083f8b65d157e836d706236
+    version: 0.8.1
     source:
       Git: https://github.com/pulp-platform/riscv-dbg.git
     dependencies:

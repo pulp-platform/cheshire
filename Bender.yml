@@ -16,17 +16,17 @@ dependencies:
   axi:                      { git: "https://github.com/pulp-platform/axi",                        rev: 4fb5a02    }
   axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc",                    rev: d79a00b    } # branch: astral
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.8.1  }
-  axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: 0.0.0-alpha.4 }
+  axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: =0.0.0-alpha.4 }
   axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",                version: 0.1.1  }
   clic:                     { git: "https://github.com/pulp-platform/clic.git",                   rev: "94e2a77"  } # branch: aottaviano/dev
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                  version: 0.2.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           version: 1.32.0 }
   common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.0  }
-  cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: "6503a4c"  } # branch: astral
+  cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: "6c985d0"  } # branch: astral
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.5.1  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
-  redundancy_cells:         { git: "https://github.com/pulp-platform/redundancy_cells.git",       rev: "3fbd080e" } # branch: astral
+  redundancy_cells:         { git: "https://github.com/pulp-platform/redundancy_cells.git",       rev: "651441e4" } # branch: astral_rebase
   register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",     rev: "e4b20be8" } # branch: astral
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              version: 0.8.0  }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.0  }
