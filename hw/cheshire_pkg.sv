@@ -463,15 +463,60 @@ package cheshire_pkg;
     endcase
   endfunction
 
-  function automatic ariane_pkg::ariane_cfg_t gen_cva6_cfg(cheshire_cfg_t cfg);
+  function automatic config_pkg::cva6_cfg_t gen_cva6_cfg(cheshire_cfg_t cfg);
     doub_bt SizeSpm = get_llc_size(cfg);
     doub_bt SizeLlcOut = cfg.LlcOutRegionEnd - cfg.LlcOutRegionStart;
     doub_bt CieBase   = cfg.Cva6ExtCieOnTop ? 64'h8000_0000 - cfg.Cva6ExtCieLength : 64'h2000_0000;
     doub_bt NoCieBase = cfg.Cva6ExtCieOnTop ? 64'h2000_0000 : 64'h2000_0000 + cfg.Cva6ExtCieLength;
-    return ariane_pkg::ariane_cfg_t'{
+    return config_pkg::cva6_cfg_t'{
+      NrCommitPorts         : 2,
+      AxiAddrWidth          : cfg.AddrWidth,
+      AxiDataWidth          : cfg.AxiDataWidth,
+      AxiIdWidth            : Cva6IdWidth,
+      AxiUserWidth          : cfg.AxiUserWidth,
+      NrLoadBufEntries      : 2,
+      FpuEn                 : 1,
+      XF16                  : 0,
+      XF16ALT               : 0,
+      XF8                   : 0,
+      XF8ALT                : 1,
+      RVA                   : 1,
+      RVB                   : 0,
+      RVV                   : 0,
+      RVC                   : 1,
+      RVH                   : 1,
+      RVZCB                 : 1,
+      XFVec                 : 0,
+      CvxifEn               : 0,
+      ZiCondExtEn           : 1,
+      RVSCLIC               : 1,
+      RVF                   : 1,
+      RVD                   : 1,
+      FpPresent             : 1,
+      NSX                   : 0,
+      FLen                  : 64,
+      RVFVec                : 0,
+      XF16Vec               : 0,
+      XF16ALTVec            : 0,
+      XF8Vec                : 0,
+      NrRgprPorts           : 0,
+      NrWbPorts             : 0,
+      EnableAccelerator     : 0,
+      RVS                   : 1,
+      RVU                   : 1,
+      HaltAddress           : AmDbg + 'h800,
+      ExceptionAddress      : AmDbg + 'h808,
       RASDepth              : cfg.Cva6RASDepth,
       BTBEntries            : cfg.Cva6BTBEntries,
       BHTEntries            : cfg.Cva6BHTEntries,
+      DmBaseAddress         : AmDbg,
+      TvalEn                : 1,
+      NrPMPEntries          : cfg.Cva6NrPMPEntries,
+      PMPCfgRstVal          : {16{64'h0}},
+      PMPAddrRstVal         : {16{64'h0}},
+      PMPEntryReadOnly      : 16'd0,
+      NOCType               : config_pkg::NOC_TYPE_AXI4_ATOP,
+      CLICNumInterruptSrc   : NumCoreIrqs + NumIntIntrs + cfg.NumExtClicIntrs,
       NrNonIdempotentRules  : 2,   // Periphs, ExtNonCIE
       NonIdempotentAddrBase : {64'h0000_0000, NoCieBase},
       NonIdempotentLength   : {64'h1000_0000, 64'h6000_0000 - cfg.Cva6ExtCieLength},
@@ -481,12 +526,10 @@ package cheshire_pkg;
       NrCachedRegionRules   : 3,   // CachedSPM, LLCOut, ExtCIE
       CachedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart,  CieBase},
       CachedRegionLength    : {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength},
-      AxiCompliant          : 1,
-      SwapEndianess         : 0,
-      CLICNumInterruptSrc   : NumCoreIrqs + NumIntIntrs + cfg.NumExtClicIntrs,
-      CLICIntCtlBits        : cfg.ClicIntCtlBits,
-      DmBaseAddress         : AmDbg,
-      NrPMPEntries          : cfg.Cva6NrPMPEntries
+      MaxOutstandingStores  : 7,
+      DebugEn               : 1,
+      NonIdemPotenceEn      : 0,
+      AxiBurstWriteEn       : 0
     };
   endfunction
 
@@ -501,9 +544,9 @@ package cheshire_pkg;
 
   localparam cheshire_cfg_t DefaultCfg = '{
     // CVA6 parameters
-    Cva6RASDepth      : ariane_pkg::ArianeDefaultConfig.RASDepth,
-    Cva6BTBEntries    : ariane_pkg::ArianeDefaultConfig.BTBEntries,
-    Cva6BHTEntries    : ariane_pkg::ArianeDefaultConfig.BHTEntries,
+    Cva6RASDepth      : 2,
+    Cva6BTBEntries    : 32,
+    Cva6BHTEntries    : 128,
     Cva6NrPMPEntries  : 0,
     Cva6ExtCieLength  : 'h2000_0000,  // [0x2.., 0x4..) is CIE, [0x4.., 0x8..) is non-CIE
     Cva6ExtCieOnTop   : 0,
@@ -517,7 +560,7 @@ package cheshire_pkg;
     NumExtClicIntrs   : NumExtPlicIntrs,
     NumExtOutIntrTgts : 0,
     NumExtOutIntrs    : 0,
-    ClicIntCtlBits    : ariane_pkg::ArianeDefaultConfig.CLICIntCtlBits,
+    ClicIntCtlBits    : 256,
     NumExtIntrSyncs   : 2,
     // Interconnect
     AddrWidth         : 48,
