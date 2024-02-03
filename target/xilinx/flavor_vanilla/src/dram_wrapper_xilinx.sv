@@ -73,7 +73,7 @@ module dram_wrapper_xilinx #(
 `ifdef TARGET_GENESYS2
   localparam dram_cfg_t cfg = '{
     EnCDC         : 1, // 200 MHz axi (attention CDC logdepth)
-    IdWidth       : 4,
+    IdWidth       : 4, // Locked in Vivado
     AddrWidth     : 30,
     DataWidth     : 64,
     StrobeWidth   : 8
@@ -156,12 +156,12 @@ module dram_wrapper_xilinx #(
     .AxiDataWidth          ( cfg.DataWidth    ),
     .AxiUserWidth          ( SoC_UserWidth    ),
     .AxiSlvPortIdWidth     ( SoC_IdWidth      ),
-    .AxiSlvPortMaxUniqIds  ( 1                ),
-    .AxiSlvPortMaxTxnsPerId( 1                ),
-    .AxiSlvPortMaxTxns     ( 1                ),
+    .AxiSlvPortMaxUniqIds  ( 2                ),
+    .AxiSlvPortMaxTxnsPerId( 2                ),
+    .AxiSlvPortMaxTxns     ( 4                ),
     .AxiMstPortIdWidth     ( cfg.IdWidth      ),
-    .AxiMstPortMaxUniqIds  ( 1                ),
-    .AxiMstPortMaxTxnsPerId( 1                ),
+    .AxiMstPortMaxUniqIds  ( 2                ),
+    .AxiMstPortMaxTxnsPerId( 2                ),
     .slv_req_t             ( axi_dw_req_t     ),
     .slv_resp_t            ( axi_dw_resp_t    ),
     .mst_req_t             ( axi_dw_iw_req_t  ),
