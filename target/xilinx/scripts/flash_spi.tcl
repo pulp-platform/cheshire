@@ -14,7 +14,7 @@ set file $::env(FILE)
 set offset $::env(OFFSET)
 set mcs_file image.mcs
 
-if {$::env(XILINX_BOARD) eq "vcu128"} {
+if {$::env(chs_xilinx_board) eq "vcu128"} {
   set hw_device [get_hw_devices xcvu37p_0]
   set hw_mem_device [lindex [get_cfgmem_parts {mt25qu02g-spi-x1_x2_x4}] 0]
 }

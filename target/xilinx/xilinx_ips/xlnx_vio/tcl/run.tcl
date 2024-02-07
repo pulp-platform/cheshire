@@ -4,8 +4,8 @@
 #
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
-set partNumber $::env(XILINX_PART)
-set boardName  $::env(XILINX_BOARD_LONG)
+set partNumber $::env(xilinx_part)
+set boardName  $::env(xilinx_board_long)
 
 set ipName xlnx_vio
 
@@ -14,7 +14,7 @@ set_property board_part $boardName [current_project]
 
 create_ip -name vio -vendor xilinx.com -library ip -version 3.0 -module_name $ipName
 
-if {$::env(XILINX_BOARD) eq "vcu128"} {
+if {$::env(chs_xilinx_board) eq "vcu128"} {
 set_property -dict [list CONFIG.C_NUM_PROBE_OUT {3} \
                          CONFIG.C_PROBE_OUT0_INIT_VAL {0x0} \
                          CONFIG.C_PROBE_OUT1_INIT_VAL {0x2} \
@@ -23,7 +23,7 @@ set_property -dict [list CONFIG.C_NUM_PROBE_OUT {3} \
                          CONFIG.C_EN_PROBE_IN_ACTIVITY {0} \
                          CONFIG.C_NUM_PROBE_IN {0} \
                    ] [get_ips $ipName]
-} elseif {$::env(XILINX_BOARD) eq "genesys2"} {
+} elseif {$::env(chs_xilinx_board) eq "genesys2"} {
 set_property -dict [list CONFIG.C_NUM_PROBE_OUT {3} \
                          CONFIG.C_PROBE_OUT0_INIT_VAL {0x0} \
                          CONFIG.C_PROBE_OUT1_INIT_VAL {0x0} \

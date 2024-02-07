@@ -6,30 +6,30 @@
 # Nils Wistoff <nwistoff@iis.ee.ethz.ch>
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
-set project $::env(XILINX_PROJECT)
+set project cheshire_vanilla_$::env(chs_xilinx_board)
 
-create_project $project . -force -part $::env(XILINX_PART)
-set_property board_part $::env(XILINX_BOARD_LONG) [current_project]
+create_project $project . -force -part $::env(xilinx_part)
+set_property board_part $::env(xilinx_board_long) [current_project]
 
 # set number of threads to 8 (maximum, unfortunately)
 set_param general.maxThreads 8
 
 # Ips selection
-read_ip $::env(XILINX_IP_PATHS)
+read_ip $::env(xilinx_ip_paths)
 
 # Contraints files selection
-switch $::env(XILINX_BOARD) {
+switch $::env(chs_xilinx_board) {
   "genesys2" - "vcu128" {
-    import_files -fileset constrs_1 -norecurse constraints/cheshire.xdc
-    import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_BOARD).xdc
+    import_files -fileset constrs_1 -norecurse ../../constraints/cheshire.xdc
+    import_files -fileset constrs_1 -norecurse ../../constraints/$::env(chs_xilinx_board).xdc
   }
   default {
-    puts "Unknown board $::env(XILINX_BOARD)"
+    puts "Unknown board $::env(chs_xilinx_board)"
     exit 1
   }
 }
 
-source scripts/add_sources.tcl
+source ../../scripts/add_sources_$::env(chs_xilinx_board).tcl
 
 set_property top ${project}_top_xilinx [current_fileset]
 
@@ -100,7 +100,7 @@ if ($DEBUG) {
         set netNameLast $netName
     }
     # Need to save save constraints before implementing the core
-    # set_property target_constrs_file cheshire.srcs/constrs_1/imports/constraints/$::env(XILINX_BOARD).xdc [current_fileset -constrset]
+    # set_property target_constrs_file cheshire.srcs/constrs_1/imports/constraints/$::env(chs_xilinx_board).xdc [current_fileset -constrset]
     save_constraints -force
     implement_debug_core
     write_debug_probes -force probes.ltx

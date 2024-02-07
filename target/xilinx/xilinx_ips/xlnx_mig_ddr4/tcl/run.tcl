@@ -4,8 +4,8 @@
 #
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
-set partNumber $::env(XILINX_PART)
-set boardName  $::env(XILINX_BOARD_LONG)
+set partNumber $::env(xilinx_part)
+set boardName  $::env(xilinx_board_long)
 
 set ipName xlnx_mig_ddr4
 
@@ -15,7 +15,7 @@ set_property board_part $boardName [current_project]
 create_ip -name ddr4 -vendor xilinx.com -library ip -version 2.2 -module_name $ipName
 
 
-if {$::env(XILINX_BOARD) eq "vcu128"} {
+if {$::env(chs_xilinx_board) eq "vcu128"} {
   set_property -dict [list CONFIG.C0.DDR4_Clamshell {true} \
                            CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram} \
                            CONFIG.System_Clock {No_Buffer} \

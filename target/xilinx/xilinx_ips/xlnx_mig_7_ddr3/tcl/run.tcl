@@ -4,9 +4,9 @@
 #
 # Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
-set partNumber $::env(XILINX_PART)
-set boardName  $::env(XILINX_BOARD_LONG)
-set boardNameShort $::env(XILINX_BOARD)
+set partNumber $::env(xilinx_part)
+set boardName  $::env(xilinx_board_long)
+set boardNameShort $::env(chs_xilinx_board)
 
 set ipName xlnx_mig_7_ddr3
 

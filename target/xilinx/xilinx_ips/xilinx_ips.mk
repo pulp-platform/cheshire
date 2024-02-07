@@ -22,7 +22,7 @@ endif
 	@echo "IP $(1) : Done"
 
 $(CHS_XIL_DIR)/xilinx_ips/$(1)/$(1).xpr:
-	cd $$(ROOT_$(1)) && $(vivado_env) $(VIVADO) -mode batch -source tcl/run.tcl
+	cd $$(ROOT_$(1)) && $(chs_vivado_env) $(VIVADO) -mode batch -source tcl/run.tcl
 .PRECIOUS: $(CHS_XIL_DIR)/xilinx_ips/$(1)/%.xci
 endef
 
@@ -31,7 +31,7 @@ $(foreach ip, $(chs_xil_available_ips), $(eval $(call chs_xlnx_ips_vars_and_deps
 
 # Define inputs used to differentiate pre-compiled IPs artifacts
 $(CHS_XIL_DIR)/xilinx_ips/%/.generated_env:
-	echo $(VIVADO) $(XILINX_PROJECT) > $@
+	echo $(VIVADO) cheshire > $@
 	echo $(ARTIFACTS_VALS_$*) >> $@
 	echo $(ARTIFACTS_FILES_$*) >> $@
 	sha256sum $(ARTIFACTS_PATHS_$*) | awk '{print $$1}' >> $@

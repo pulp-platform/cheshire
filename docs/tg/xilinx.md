@@ -225,7 +225,7 @@ _Please consider opening a pull request containing the necessary changes to inte
 
 ### Makefile
 
-Add your board on top of `target/xilinx/xilinx.mk`, in particular `XILINX_PART` and `XILINX_BOARD` are identifying the FPGA chip and board (can be found in VIvado GUI). The parameters identifying your personal device `XILINX_PORT`, `FPGA_PATH`, `XILINX_HOST` can be left empty for now.  
+Add your board on top of `target/xilinx/xilinx.mk`, in particular `xilinx_part` and `chs_xilinx_board` are identifying the FPGA chip and board (can be found in VIvado GUI). The parameters identifying your personal device `XILINX_PORT`, `FPGA_PATH`, `XILINX_HOST` can be left empty for now.  
 You then need to define `ip-names` with the Xilinx IPs that you will be using: DDR3/4 depending on your board, Clock Wizard, VIOs. See next sections for more explanations.
 
 ### Vivado IPs

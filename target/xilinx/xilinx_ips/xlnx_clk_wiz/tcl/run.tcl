@@ -4,8 +4,8 @@
 #
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
-set partNumber $::env(XILINX_PART)
-set boardName  $::env(XILINX_BOARD_LONG)
+set partNumber $::env(xilinx_part)
+set boardName  $::env(xilinx_board_long)
 
 set ipName xlnx_clk_wiz
 
@@ -14,7 +14,7 @@ set_property board_part $boardName [current_project]
 
 create_ip -name clk_wiz -vendor xilinx.com -library ip -version 6.0 -module_name $ipName
 
-if {$::env(XILINX_BOARD) eq "vcu128"} {
+if {$::env(chs_xilinx_board) eq "vcu128"} {
     set_property -dict  [list CONFIG.CLK_IN1_BOARD_INTERFACE {Custom} \
                               CONFIG.RESET_BOARD_INTERFACE {Custom} \
                               CONFIG.CLKOUT2_USED {true} \
@@ -42,7 +42,7 @@ if {$::env(XILINX_BOARD) eq "vcu128"} {
                         ] [get_ips $ipName]
 }
 
-if {$::env(XILINX_BOARD) eq "zcu102"} {
+if {$::env(chs_xilinx_board) eq "zcu102"} {
     set_property -dict  [list CONFIG.PRIM_SOURCE {No_buffer} \
                               CONFIG.PRIM_IN_FREQ {300.000} \
                               CONFIG.CLKOUT2_USED {true} \
@@ -74,7 +74,7 @@ if {$::env(XILINX_BOARD) eq "zcu102"} {
                         ] [get_ips $ipName]
 }
 
-if {$::env(XILINX_BOARD) eq "genesys2"} {
+if {$::env(chs_xilinx_board) eq "genesys2"} {
     set_property -dict  [list CONFIG.PRIM_SOURCE {No_buffer} \
                               CONFIG.PRIM_IN_FREQ {200.000} \
                               CONFIG.CLKOUT2_USED {true} \
