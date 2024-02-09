@@ -74,11 +74,18 @@ module cheshire_top_xilinx
     Cva6BHTEntries    : ariane_pkg::ArianeDefaultConfig.BHTEntries,
     Cva6NrPMPEntries  : 0,
     Cva6ExtCieLength  : 'h2000_0000,
+    Cva6ExtCieOnTop   : 0,
     // Harts
     NumCores          : 1,
     CoreMaxTxns       : 8,
     CoreMaxTxnsPerId  : 4,
+    CoreUserAmoOffs   : 0, // Convention: lower AMO bits for cores, MSB for serial link
     // Interrupts
+    NumExtInIntrs     : 0,
+    NumExtClicIntrs   : NumExtPlicIntrs,
+    NumExtOutIntrTgts : 0,
+    NumExtOutIntrs    : 0,
+    ClicIntCtlBits    : 256,
     NumExtIntrSyncs   : 2,
     // Interconnect
     AddrWidth         : 48,
@@ -89,6 +96,9 @@ module cheshire_top_xilinx
     AxiMaxSlvTrans    : 8,
     AxiUserAmoMsb     : 1,
     AxiUserAmoLsb     : 0,
+    AxiUserErrBits    : 0,
+    AxiUserErrLsb     : 0,
+    AxiUserDefault    : 0,
     RegMaxReadTxns    : 8,
     RegMaxWriteTxns   : 8,
     RegAmoNumCuts     : 1,
@@ -104,6 +114,10 @@ module cheshire_top_xilinx
     Dma               : 1,
     SerialLink        : 0,
     Vga               : 1,
+    AxiRt             : 0,
+    Clic              : 0,
+    IrqRouter         : 0,
+    BusErr            : 0,
     // Debug
     DbgIdCode         : CheshireIdCode,
     DbgMaxReqs        : 4,
@@ -150,6 +164,11 @@ module cheshire_top_xilinx
     DmaRAWCouplingAvail : 1,
     // GPIOs
     GpioInputSyncs    : 1,
+    // AXI RT
+    AxiRtNumPending     : 16,
+    AxiRtWBufferDepth   : 16,
+    AxiRtNumAddrRegions : 2,
+    AxiRtCutPaths       : 1,
     // All non-set values should be zero
     default: '0
   };
