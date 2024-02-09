@@ -589,7 +589,6 @@ module cheshire_soc import cheshire_pkg::*; #(
     logic [7:0]        clic_irq_level;
     riscv::priv_lvl_t  clic_irq_priv;
 
-    // Currently, we support only one core
     cva6 #(
       .ArianeCfg      ( Cva6Cfg ),
       .AxiAddrWidth   ( Cfg.AddrWidth ),
