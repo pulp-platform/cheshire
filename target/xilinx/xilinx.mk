@@ -33,11 +33,6 @@ VIVADO_FLAGS            ?= -nojournal -mode $(VIVADO_MODE)
 chs_xilinx_flavor  ?=
 chs_xilinx_board   ?=
 
-ifeq ($(chs_xilinx_board),vcu128)
-	xilinx_part       := xcvu37p-fsvh2892-2L-e
-	xilinx_board_long := xilinx.com:vcu128:part0:1.0
-endif
-
 ifeq ($(chs_xilinx_board),genesys2)
 	xilinx_part       := xc7k325tffg900-2
 	xilinx_board_long := digilentinc.com:genesys2:part0:1.1
@@ -47,6 +42,18 @@ chs_xilinx_targs_common := -t fpga -t xilinx -t cv64a6_imafdcsclic_sv39 -t cva6
 chs_xilinx_targs_common += $(addprefix -t ,$(chs_xilinx_board))
 
 CHS_XIL_IPS_DIR := $(CHS_XIL_DIR)/xilinx_ips
+
+chs_xilinx_bit_vanilla_genesys2 := $(CHS_XIL_DIR)/flavor_vanilla/builds/cheshire_vanilla_genesys2/cheshire_vanilla_genesys2.runs/impl_1/cheshire_top_xilinx.bit
+chs_xilinx_bit := $(chs_xilinx_bit_$(chs_xilinx_flavor)_$(chs_xilinx_board))
+
+# Env used for auxiliary scripts (programming/flashing)
+chs_vivado_env_common := \
+    xilinx_board=$(chs_xilinx_board) \
+    xilinx_board_long=$(xilinx_board_long) \
+    xilinx_part=$(xilinx_part) \
+    XILINX_PORT=$(XILINX_PORT) \
+    XILINX_HOST=$(XILINX_HOST) \
+    XILINX_FPGA_PATH=$(XILINX_FPGA_PATH)
 
 #
 # Include other makefiles flavors
@@ -74,22 +81,23 @@ include $(CHS_XIL_IPS_DIR)/xilinx_ips.mk
 # Top level compile rules
 #
 
-# Build bitstreams
-chs-xil-vanilla-genesys2:
-	${MAKE} chs_xilinx_flavor=vanilla chs_xilinx_board=genesys2 $(CHS_XIL_DIR)/flavor_vanilla/out/cheshire_vanilla_genesys2.bit
+$(CHS_XIL_DIR)/out/cheshire_vanilla_genesys2.bit:
+	@mkdir -p $(CHS_XIL_DIR)/out
+	${MAKE} chs_xilinx_flavor=vanilla chs_xilinx_board=genesys2 $(chs_xilinx_bit_vanilla_genesys2)
+	if [ "$(XILINX_ELABORATION_ONLY)" -eq "0" ]; then \
+		cp $(chs_xilinx_bit_vanilla_genesys2) $@; \
+	fi
 
-chs-xil-vanilla-vcu128:
-	${MAKE} chs_xilinx_flavor=vanilla chs_xilinx_board=vcu128 $(CHS_XIL_DIR)/flavor_vanilla/out/cheshire_vanilla_vcu128.bit
+chs-xil-vanilla-genesys2: $(CHS_XIL_DIR)/out/cheshire_vanilla_genesys2.bit
 
-# Program last bitstream
+# Program bitstream (XILINX_BOARD)
 chs-xil-program:
 	@echo "Programming board $(chs_xilinx_board) ($(xilinx_part))"
-	$(chs_vivado_env) $(VIVADO) $(VIVADO_FLAGS) -source $(CHS_XIL_DIR)/scripts/program.tcl
+	$(chs_vivado_env) $(VIVADO) $(VIVADO_FLAGS) xilinx_bit=$(chs_xilinx_bit) -source $(CHS_XIL_DIR)/scripts/program.tcl
 
-# Flash linux image
-chs-xil-flash: $(CHS_SW_DIR)/boot/linux_cheshire_$(chs_xilinx_board)_$(chs_xilinx_flavor).gpt.bin
-	$(chs_vivado_env) FILE=$< OFFSET=0 $(VIVADO) $(VIVADO_FLAGS) -source $(CHS_XIL_DIR)/scripts/flash_spi.tcl
+chs-xil-program-vanilla-genesys2: $(CHS_XIL_DIR)/out/cheshire_vanilla_genesys2.bit
+	${MAKE} chs_xilinx_flavor=vanilla chs_xilinx_board=genesys2 chs-xil-program
 
 chs-xil-clean: chs-xil-clean-vanilla xilinx-ip-clean-all
 
-.PHONY: chs-xil-vanilla-genesys2 chs-xil-vanilla-vcu128 chs-xil-program chs-xil-flash chs-xil-clean
+.PHONY: chs-xil-vanilla-genesys2 chs-xil-program-vanilla-genesys2 chs-xil-program chs-xil-clean

@@ -9,11 +9,8 @@ open_hw_manager
 connect_hw_server -url $::env(XILINX_HOST):$::env(XILINX_PORT)
 open_hw_target $::env(XILINX_HOST):$::env(XILINX_PORT)/$::env(XILINX_FPGA_PATH)
 
-if {$::env(chs_xilinx_board) eq "genesys2"} {
+if {$::env(xilinx_board) eq "genesys2"} {
   set hw_device [get_hw_devices xc7k325t_0]
-}
-if {$::env(chs_xilinx_board) eq "vcu128"} {
-  set hw_device [get_hw_devices xcvu37p_0]
 }
 
 set_property PARAM.FREQUENCY 15000000 [get_hw_targets *]

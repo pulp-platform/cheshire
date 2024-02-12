@@ -6,7 +6,7 @@
 # Nils Wistoff <nwistoff@iis.ee.ethz.ch>
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
-set project cheshire_vanilla_$::env(chs_xilinx_board)
+set project cheshire_vanilla_$::env(xilinx_board)
 
 create_project $project . -force -part $::env(xilinx_part)
 set_property board_part $::env(xilinx_board_long) [current_project]
@@ -18,18 +18,18 @@ set_param general.maxThreads 8
 read_ip $::env(xilinx_ip_paths)
 
 # Contraints files selection
-switch $::env(chs_xilinx_board) {
-  "genesys2" - "vcu128" {
+switch $::env(xilinx_board) {
+  "genesys2" {
     import_files -fileset constrs_1 -norecurse ../../constraints/cheshire.xdc
-    import_files -fileset constrs_1 -norecurse ../../constraints/$::env(chs_xilinx_board).xdc
+    import_files -fileset constrs_1 -norecurse ../../constraints/$::env(xilinx_board).xdc
   }
   default {
-    puts "Unknown board $::env(chs_xilinx_board)"
+    puts "Unknown board $::env(xilinx_board)"
     exit 1
   }
 }
 
-source ../../scripts/add_sources_$::env(chs_xilinx_board).tcl
+source ../../scripts/add_sources_$::env(xilinx_board).tcl
 
 set_property top ${project}_top_xilinx [current_fileset]
 
@@ -100,7 +100,7 @@ if ($DEBUG) {
         set netNameLast $netName
     }
     # Need to save save constraints before implementing the core
-    # set_property target_constrs_file cheshire.srcs/constrs_1/imports/constraints/$::env(chs_xilinx_board).xdc [current_fileset -constrset]
+    # set_property target_constrs_file cheshire.srcs/constrs_1/imports/constraints/$::env(xilinx_board).xdc [current_fileset -constrset]
     save_constraints -force
     implement_debug_core
     write_debug_probes -force probes.ltx

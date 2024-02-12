@@ -364,14 +364,14 @@ module cheshire_top_xilinx
   // SPI Adaption //
   //////////////////
 
-  (* mark_debug = "true" *) logic spi_sck_soc;
-  (* mark_debug = "true" *) logic [1:0] spi_cs_soc;
-  (* mark_debug = "true" *) logic [3:0] spi_sd_soc_out;
-  (* mark_debug = "true" *) logic [3:0] spi_sd_soc_in;
+  logic spi_sck_soc;
+  logic [1:0] spi_cs_soc;
+  logic [3:0] spi_sd_soc_out;
+  logic [3:0] spi_sd_soc_in;
 
-  (* mark_debug = "true" *) logic spi_sck_en;
-  (* mark_debug = "true" *) logic [1:0] spi_cs_en;
-  (* mark_debug = "true" *) logic [3:0] spi_sd_en;
+  logic spi_sck_en;
+  logic [1:0] spi_cs_en;
+  logic [3:0] spi_sd_en;
 
 `ifdef USE_SD
   // Assert reset low => Apply power to the SD Card
@@ -413,35 +413,6 @@ module cheshire_top_xilinx
   assign qspi_clk_ts  = ~spi_sck_en;
   assign qspi_cs_b_ts = ~spi_cs_en;
   assign qspi_dqo_ts  = ~spi_sd_en;
-
-  // On VCU128/ZCU102, SPI ports are not directly available
-`ifdef USE_STARTUPE3
-  STARTUPE3 #(
-     .PROG_USR("FALSE"),
-     .SIM_CCLK_FREQ(0.0)
-  )
-  STARTUPE3_inst (
-     .CFGCLK    (),
-     .CFGMCLK   (),
-     .DI        (qspi_dqi),
-     .EOS       (),
-     .PREQ      (),
-     .DO        (qspi_dqo),
-     .DTS       (qspi_dqo_ts),
-     .FCSBO     (qspi_cs_b[1]),
-     .FCSBTS    (qspi_cs_b_ts[1]),
-     .GSR       (1'b0),
-     .GTS       (1'b0),
-     .KEYCLEARB (1'b1),
-     .PACK      (1'b0),
-     .USRCCLKO  (qspi_clk),
-     .USRCCLKTS (qspi_clk_ts),
-     .USRDONEO  (1'b1),
-     .USRDONETS (1'b1)
-  );
-`else
-  // TODO: off-chip qspi interface
-`endif // USE_STARTUPE3
 
 `endif // USE_QSPI
 
@@ -540,14 +511,14 @@ module cheshire_top_xilinx
     .dbg_active_o       ( ),
     .dbg_ext_req_o      ( ),
     .dbg_ext_unavail_i  ( '0 ),
-// Serial Link may be disabled
+// Serial Link may be disabled on certain boards
 `ifdef USE_SERIAL
     .ddr_link_i           ( '0                    ),
     .ddr_link_o,
     .ddr_link_clk_i       ( 1'b1                  ),
     .ddr_link_clk_o,
 `endif
-// External JTAG may be disabled
+// External JTAG may be disabled on certain boards
 `ifdef USE_JTAG
     .jtag_tck_i,
     .jtag_trst_ni,
@@ -572,6 +543,7 @@ module cheshire_top_xilinx
     .spih_sd_o            ( spi_sd_soc_out  ),
     .spih_sd_en_o         ( spi_sd_en       ),
     .spih_sd_i            ( spi_sd_soc_in   ),
+// VGA may be disabled on certain boards
 `ifdef USE_VGA
     .vga_hsync_o          ( vga_hs                ),
     .vga_vsync_o          ( vga_vs                ),

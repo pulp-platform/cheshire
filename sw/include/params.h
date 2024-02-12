@@ -30,9 +30,6 @@ extern void *__base_axirtgrd;
 extern void *__base_spm;
 extern void *__base_dram;
 
-// ZSL baudrate (may be overriden on slower SoCs)
-static const uint32_t __BAUDRATE = 115200;
-
 // Maximum number of LBAs to copy to SPM for boot (48 KiB)
 static const uint64_t __BOOT_SPM_MAX_LBAS = 2 * 48;
 

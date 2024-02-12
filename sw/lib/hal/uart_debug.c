@@ -24,7 +24,7 @@ int uart_debug_init(void *uart_base, uint64_t core_freq) {
     CHECK_ASSERT(0x11, uart_base != 0);
     CHECK_ASSERT(0x12, core_freq != 0);
     // The UART debug mode uses the sane default 115.2kBaud
-    uart_init(uart_base, core_freq, __BAUDRATE);
+    uart_init(uart_base, core_freq, 115200);
     fence();
     // Nothing went wrong
     return 0;

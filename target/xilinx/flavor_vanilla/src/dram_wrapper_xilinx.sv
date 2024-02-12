@@ -50,26 +50,6 @@ module dram_wrapper_xilinx #(
     integer StrobeWidth;
   } dram_cfg_t;
 
-`ifdef TARGET_VCU118
-  localparam dram_cfg_t cfg = '{
-    EnCDC         : 1, // 333 MHz axi (attention CDC logdepth)
-    IdWidth       : 4,
-    AddrWidth     : 31,
-    DataWidth     : 512,
-    StrobeWidth   : 64
-  };
-`endif
-
-`ifdef TARGET_VCU128
-  localparam dram_cfg_t cfg = '{
-    EnCDC         : 1, // 333 MHz axi (attention CDC logdepth)
-    IdWidth       : 8,
-    AddrWidth     : 32,
-    DataWidth     : 512,
-    StrobeWidth   : 64
-  };
-`endif
-
 `ifdef TARGET_GENESYS2
   localparam dram_cfg_t cfg = '{
     EnCDC         : 1, // 200 MHz axi (attention CDC logdepth)
@@ -216,91 +196,6 @@ module dram_wrapper_xilinx #(
 
   assign cdc_dram_req_aw_addr = cdc_dram_req.aw.addr[cfg.AddrWidth-1:0];
   assign cdc_dram_req_ar_addr = cdc_dram_req.ar.addr[cfg.AddrWidth-1:0];
-
-
-  ///////////////////////
-  // Instianciate DDR4 //
-  ///////////////////////
-
-`ifdef USE_DDR4
-
-  xlnx_mig_ddr4 i_dram (
-    // Rst
-    .sys_rst                   (sys_rst_i), // Active high
-    .c0_sys_clk_i              (dram_clk_i),
-    .c0_ddr4_aresetn           (soc_resetn_i),
-    // Clk rst out
-    .c0_ddr4_ui_clk            (dram_axi_clk),
-    .c0_ddr4_ui_clk_sync_rst   (dram_rst_o),
-    // Axi
-    .c0_ddr4_s_axi_awid        (cdc_dram_req.aw.id),
-    .c0_ddr4_s_axi_awaddr      (cdc_dram_req_aw_addr),
-    .c0_ddr4_s_axi_awlen       (cdc_dram_req.aw.len),
-    .c0_ddr4_s_axi_awsize      (cdc_dram_req.aw.size),
-    .c0_ddr4_s_axi_awburst     (cdc_dram_req.aw.burst),
-    .c0_ddr4_s_axi_awlock      (cdc_dram_req.aw.lock),
-    .c0_ddr4_s_axi_awcache     (cdc_dram_req.aw.cache),
-    .c0_ddr4_s_axi_awprot      (cdc_dram_req.aw.prot),
-    .c0_ddr4_s_axi_awqos       (cdc_dram_req.aw.qos),
-    .c0_ddr4_s_axi_awvalid     (cdc_dram_req.aw_valid),
-    .c0_ddr4_s_axi_awready     (cdc_dram_rsp.aw_ready),
-    .c0_ddr4_s_axi_wdata       (cdc_dram_req.w.data),
-    .c0_ddr4_s_axi_wstrb       (cdc_dram_req.w.strb),
-    .c0_ddr4_s_axi_wlast       (cdc_dram_req.w.last),
-    .c0_ddr4_s_axi_wvalid      (cdc_dram_req.w_valid),
-    .c0_ddr4_s_axi_wready      (cdc_dram_rsp.w_ready),
-    .c0_ddr4_s_axi_bready      (cdc_dram_req.b_ready),
-    .c0_ddr4_s_axi_bid         (cdc_dram_rsp.b.id),
-    .c0_ddr4_s_axi_bresp       (cdc_dram_rsp.b.resp),
-    .c0_ddr4_s_axi_bvalid      (cdc_dram_rsp.b_valid),
-    .c0_ddr4_s_axi_arid        (cdc_dram_req.ar.id),
-    .c0_ddr4_s_axi_araddr      (cdc_dram_req_ar_addr),
-    .c0_ddr4_s_axi_arlen       (cdc_dram_req.ar.len),
-    .c0_ddr4_s_axi_arsize      (cdc_dram_req.ar.size),
-    .c0_ddr4_s_axi_arburst     (cdc_dram_req.ar.burst),
-    .c0_ddr4_s_axi_arlock      (cdc_dram_req.ar.lock),
-    .c0_ddr4_s_axi_arcache     (cdc_dram_req.ar.cache),
-    .c0_ddr4_s_axi_arprot      (cdc_dram_req.ar.prot),
-    .c0_ddr4_s_axi_arqos       (cdc_dram_req.ar.qos),
-    .c0_ddr4_s_axi_arvalid     (cdc_dram_req.ar_valid),
-    .c0_ddr4_s_axi_arready     (cdc_dram_rsp.ar_ready),
-    .c0_ddr4_s_axi_rready      (cdc_dram_req.r_ready),
-    .c0_ddr4_s_axi_rid         (cdc_dram_rsp.r.id),
-    .c0_ddr4_s_axi_rdata       (cdc_dram_rsp.r.data),
-    .c0_ddr4_s_axi_rresp       (cdc_dram_rsp.r.resp),
-    .c0_ddr4_s_axi_rlast       (cdc_dram_rsp.r.last),
-    .c0_ddr4_s_axi_rvalid      (cdc_dram_rsp.r_valid),
-  `ifdef TARGET_VCU128
-    // Axi ctrl
-    .c0_ddr4_s_axi_ctrl_awvalid('0),
-    .c0_ddr4_s_axi_ctrl_awready(),
-    .c0_ddr4_s_axi_ctrl_awaddr ('0),
-    .c0_ddr4_s_axi_ctrl_wvalid ('0),
-    .c0_ddr4_s_axi_ctrl_wready (),
-    .c0_ddr4_s_axi_ctrl_wdata  ('0),
-    .c0_ddr4_s_axi_ctrl_bvalid (),
-    .c0_ddr4_s_axi_ctrl_bready ('0),
-    .c0_ddr4_s_axi_ctrl_bresp  (),
-    .c0_ddr4_s_axi_ctrl_arvalid('0),
-    .c0_ddr4_s_axi_ctrl_arready(),
-    .c0_ddr4_s_axi_ctrl_araddr ('0),
-    .c0_ddr4_s_axi_ctrl_rvalid (),
-    .c0_ddr4_s_axi_ctrl_rready ('0),
-    .c0_ddr4_s_axi_ctrl_rdata  (),
-    .c0_ddr4_s_axi_ctrl_rresp  (),
-    .c0_ddr4_interrupt         (),
-`endif
-    // Others
-    .c0_init_calib_complete    (),  // keep open
-    .addn_ui_clkout1           (dram_clk_o),
-    .dbg_clk                   (),
-    .dbg_bus                   (),
-    // Phy
-    .*
-  );
-
-`endif  // USE_DDR4
-
 
   ///////////////////////
   // Instianciate DDR3 //

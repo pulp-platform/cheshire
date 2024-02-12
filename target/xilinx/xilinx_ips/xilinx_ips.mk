@@ -5,7 +5,7 @@
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
 # List available IPs
-chs_xil_available_ips = xlnx_clk_wiz xlnx_mig_7_ddr3 xlnx_mig_ddr4 xlnx_vio
+chs_xil_available_ips = xlnx_clk_wiz xlnx_mig_7_ddr3 xlnx_vio
 
 # Include $ip.mk create a building rule to export the $ip.xci file. Also enable artifacts management
 # See xlnx_vio.mk for an example of IP related variables
