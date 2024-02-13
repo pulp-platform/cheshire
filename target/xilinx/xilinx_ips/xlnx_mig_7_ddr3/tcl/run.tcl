@@ -6,7 +6,7 @@
 
 set partNumber $::env(xilinx_part)
 set boardName  $::env(xilinx_board_long)
-set boardNameShort $::env(xilinx_board)
+set boardNameShort $::env(chs_xilinx_board)
 
 set ipName xlnx_mig_7_ddr3
 

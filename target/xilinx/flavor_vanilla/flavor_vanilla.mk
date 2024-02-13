@@ -42,8 +42,8 @@ $(CHS_XIL_DIR)/flavor_vanilla/scripts/add_sources_%.tcl: Bender.yml
 
 # Compile bitstream
 $(CHS_XIL_DIR)/flavor_vanilla/builds/cheshire_vanilla_genesys2/cheshire_vanilla_genesys2.runs/impl_1/cheshire_top_xilinx.bit: $(CHS_XIL_DIR)/flavor_vanilla/scripts/add_sources_genesys2.tcl $(chs_xilinx_ips_paths_vanilla)
-	@mkdir -p $(CHS_XIL_DIR)/flavor_vanilla/builds/cheshire_vanilla_$*
-	cd $(CHS_XIL_DIR)/flavor_vanilla/builds/cheshire_vanilla_$* && $(chs_vivado_env_vanilla) $(VIVADO) $(VIVADO_FLAGS) -source $(CHS_XIL_DIR)/flavor_vanilla/scripts/run.tcl
+	@mkdir -p $(CHS_XIL_DIR)/flavor_vanilla/builds/cheshire_vanilla_genesys2
+	cd $(CHS_XIL_DIR)/flavor_vanilla/builds/cheshire_vanilla_genesys2 && $(chs_vivado_env_vanilla) $(VIVADO) $(VIVADO_FLAGS) -source $(CHS_XIL_DIR)/flavor_vanilla/scripts/run.tcl
 
 .PHONY: chs-xil-clean-vanilla
 chs-xil-clean-vanilla:
