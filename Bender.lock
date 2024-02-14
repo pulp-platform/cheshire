@@ -92,7 +92,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 16cfc0efbe68fcf0051734885f5226382758db02
+    revision: affdedac26accacc2e6c14a113c18d2bf83adb0b
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
