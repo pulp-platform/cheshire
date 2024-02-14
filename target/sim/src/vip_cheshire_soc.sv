@@ -256,6 +256,24 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     $display("[JTAG] Initialization success");
   endtask
 
+  // Halt the core and preload a binary
+  task automatic jtag_elf_halt_load(input string binary, output doub_bt entry );
+    dm::dmstatus_t status;
+    // Wait until bootrom initialized LLC
+    if (DutCfg.LlcNotBypass) begin
+      word_bt regval;
+      $display("[JTAG] Wait for LLC configuration");
+      jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
+    end
+    // Halt hart 0
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, default: '0});
+    do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
+    while (~status.allhalted);
+    $display("[JTAG] Halted hart 0");
+    // Preload binary
+    jtag_elf_preload(binary, entry);
+  endtask
+
   task automatic jtag_write_reg32(input logic [31:0] start_addr, logic [63:0] value);
     logic [31:0]      rdata;
 
