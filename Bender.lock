@@ -15,8 +15,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: 4fb5a02ef5c96396ac2157bcaf09bb6a05b6a87d
-    version: null
+    revision: fccffb5953ec8564218ba05e20adbedec845e014
+    version: 0.39.1
     source:
       Git: https://github.com/pulp-platform/axi
     dependencies:
@@ -92,7 +92,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 6c985d0c48b9ef586e81472ecc8054276cf26a0e
+    revision: c7b5f114cfa0e2421d189b8deb61f273d86d4ccc
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -146,7 +146,7 @@ packages:
     - register_interface
     - tech_cells_generic
   redundancy_cells:
-    revision: 651441e4a6459f84f3dde4242cf34961925a2142
+    revision: c37bdb47339bf70e8323de8df14ea8bbeafb6583
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
@@ -174,8 +174,8 @@ packages:
     - common_cells
     - tech_cells_generic
   serial_link:
-    revision: 77bec1aebd92b2ebea9962814f2370d5d48390c3
-    version: 1.1.0
+    revision: 5a25f5a71074f1ebb6de7b5280f2b16924bcc666
+    version: 1.1.1
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:
