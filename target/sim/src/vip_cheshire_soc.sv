@@ -8,6 +8,7 @@
 
 // Collects all existing verification IP (VIP) in one module for use in testbenches of
 // Cheshire-based SoCs and Chips. IOs are of inout direction where applicable.
+`include "register_interface/assign.svh"
 
 module vip_cheshire_soc import cheshire_pkg::*; #(
   // DUT (must be set)
@@ -67,6 +68,16 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   inout  wire                 spih_sck,
   inout  wire [SpihNumCs-1:0] spih_csb,
   inout  wire [ 3:0]          spih_sd,
+  // Ethernet interface
+  inout  wire [ 3:0]          eth_txd,
+  inout  wire [ 3:0]          eth_rxd,
+  inout  wire                 eth_txck,
+  inout  wire                 eth_rxck,
+  inout  wire                 eth_txctl,
+  inout  wire                 eth_rxctl,
+  inout  wire                 eth_rstn,
+  inout  wire                 eth_mdio,
+  inout  wire                 eth_mdc,
   // Serial link interface
   output logic [SlinkNumChan-1:0]                    slink_rcv_clk_i,
   input  logic [SlinkNumChan-1:0]                    slink_rcv_clk_o,
@@ -592,6 +603,167 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       $readmemh(image, i_spi_norflash.Mem);
   endtask
 
+   ///////////////////
+  //    Ethernet   //
+  ///////////////////
+  import idma_pkg::*;
+  localparam REG_BUS_AW          = 32;
+  localparam REG_BUS_DW          = 32;
+  
+  typedef reg_test::reg_driver #(
+    .AW(REG_BUS_AW),
+    .DW(REG_BUS_DW),
+    .TT(ClkPeriodJtag * TTest),
+    .TA(ClkPeriodJtag * TAppl)
+  ) reg_bus_drv_t;
+
+  REG_BUS #(
+    .DATA_WIDTH(REG_BUS_DW),
+    .ADDR_WIDTH(REG_BUS_AW)
+  ) reg_bus_rx (
+    .clk_i(clk)
+  );
+  
+  logic reg_error;
+  logic [REG_BUS_DW-1:0] rx_req_ready, rx_rsp_valid;
+
+  reg_bus_drv_t reg_drv_rx  = new(reg_bus_rx);
+  
+  reg_req_t reg_bus_rx_req;
+  reg_rsp_t reg_bus_rx_rsp;
+
+  `REG_BUS_ASSIGN_TO_REQ (reg_bus_rx_req, reg_bus_rx)
+  `REG_BUS_ASSIGN_FROM_RSP (reg_bus_rx, reg_bus_rx_rsp)
+ 
+  axi_mst_req_t axi_req_mem;
+  axi_mst_rsp_t axi_rsp_mem;
+  idma_pkg::idma_busy_t idma_busy_o;
+ 
+  eth_idma_wrap#(
+    .DataWidth           ( DutCfg.AxiDataWidth  ),    
+    .AddrWidth           ( DutCfg.AddrWidth     ),
+    .UserWidth           ( DutCfg.AxiUserWidth  ),
+    .AxiIdWidth          ( DutCfg.AxiMstIdWidth ),
+    .axi_req_t           ( axi_mst_req_t        ),
+    .axi_rsp_t           ( axi_mst_rsp_t        ),
+    .reg_req_t           ( reg_req_t            ),
+    .reg_rsp_t           ( reg_rsp_t            )
+  ) i_rx_eth_idma_wrap (
+    .clk_i               ( clk          ),
+    .rst_ni              ( rst_n        ),  
+    .phy_rx_clk_i        ( eth_txck     ),
+    .phy_rxd_i           ( eth_txd      ),
+    .phy_rx_ctl_i        ( eth_txctl    ),
+    .phy_tx_clk_o        ( eth_rxck     ),
+    .phy_txd_o           ( eth_rxd      ),
+    .phy_tx_ctl_o        ( eth_rxctl    ),
+    .phy_resetn_o        ( eth_rstn     ),  
+    .phy_intn_i          ( 1'b1            ),
+    .phy_pme_i           ( 1'b1            ),
+    .phy_mdio_i          ( 1'b0            ),
+    .phy_mdio_o          (                 ),
+    .phy_mdio_oe         (                 ),
+    .phy_mdc_o           (                 ),
+    .reg_req_i           ( reg_bus_rx_req  ),
+    .reg_rsp_o           ( reg_bus_rx_rsp  ),
+    .testmode_i          ( 1'b0            ),
+    .axi_req_o           ( axi_req_mem     ),
+    .axi_rsp_i           ( axi_rsp_mem     ),
+    .idma_busy_o         ( tx_busy         )
+  );
+
+  axi_sim_mem #(
+    .AddrWidth         ( DutCfg.AddrWidth     ),
+    .DataWidth         ( DutCfg.AxiDataWidth  ),
+    .IdWidth           ( DutCfg.AxiMstIdWidth ),
+    .UserWidth         ( DutCfg.AxiUserWidth  ),
+    .axi_req_t         ( axi_slv_req_t        ),
+    .axi_rsp_t         ( axi_slv_rsp_t        ),
+    .WarnUninitialized ( 1'b0                 ),
+    .ClearErrOnAccess  ( 1'b1                 ),
+    .ApplDelay         ( ClkPeriodJtag * TAppl ),
+    .AcqDelay          ( ClkPeriodJtag * TTest )
+  ) i_rx_axi_sim_mem (
+    .clk_i              ( clk               ),
+    .rst_ni             ( rst_n             ),
+    .axi_req_i          ( axi_req_mem       ),
+    .axi_rsp_o          ( axi_rsp_mem       ),
+    .mon_r_last_o       ( /* NOT CONNECTED */ ),
+    .mon_r_beat_count_o ( /* NOT CONNECTED */ ),
+    .mon_r_user_o       ( /* NOT CONNECTED */ ),
+    .mon_r_id_o         ( /* NOT CONNECTED */ ),
+    .mon_r_data_o       ( /* NOT CONNECTED */ ),
+    .mon_r_addr_o       ( /* NOT CONNECTED */ ),
+    .mon_r_valid_o      ( /* NOT CONNECTED */ ),
+    .mon_w_last_o       ( /* NOT CONNECTED */ ),
+    .mon_w_beat_count_o ( /* NOT CONNECTED */ ),
+    .mon_w_user_o       ( /* NOT CONNECTED */ ),
+    .mon_w_id_o         ( /* NOT CONNECTED */ ),
+    .mon_w_data_o       ( /* NOT CONNECTED */ ),
+    .mon_w_addr_o       ( /* NOT CONNECTED */ ),
+    .mon_w_valid_o      ( /* NOT CONNECTED */ )
+  );
+          
+  initial begin
+
+   @(posedge clk);
+
+  $readmemh("/scratch/chaol/cheshire/target/sim/src/rx_mem_init.vmem", i_rx_axi_sim_mem.mem);
+  
+  @(posedge clk);
+  reg_drv_rx.send_write( 'h0300c000, 32'h98001032, 'hf, reg_error); //lower 32bits of MAC address
+  @(posedge clk);
+  
+  reg_drv_rx.send_write( 'h0300c004, 32'h00002070, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+  @(posedge clk);
+
+  reg_drv_rx.send_write( 'h0300c010, 32'h0, 'hf, reg_error ); // SRC_ADDR  
+  @(posedge clk);
+  
+  reg_drv_rx.send_write( 'h0300c014, 32'h0, 'hf, reg_error); // DST_ADDR
+  @(posedge clk);
+
+  reg_drv_rx.send_write( 'h0300c018, 32'h40,'hf , reg_error); // Size in bytes 
+  @(posedge clk);
+  
+  reg_drv_rx.send_write( 'h0300c01c, 32'h5,'hf , reg_error); // src protocol
+  @(posedge clk);
+
+  reg_drv_rx.send_write( 'h0300c020, 32'h0,'hf , reg_error); // dst protocol
+  @(posedge clk);
+
+ // @(posedge data_ready);
+
+  //#9000ns;
+
+  // while(1) begin
+  //  reg_drv_rx.send_read( 'h3000003c, rx_req_ready, reg_error);
+  //  if(rx_req_ready) begin
+    reg_drv_rx.send_write( 'h0300c038, 'h1, 'hf , reg_error);   // req valid
+    @(posedge clk);
+//     break;
+//   end
+//   @(posedge clk_i);
+// end
+
+@(posedge clk);
+
+
+reg_drv_rx.send_write( 'h0300c040, 'h1, 'hf, reg_error);   //rsp ready
+//repeat(25)@(posedge clk_i);
+//reg_drv_rx.send_write( 'h30000038, 'h0, 'hf , reg_error);  // req valid
+
+while(1) begin
+reg_drv_rx.send_read( 'h0300c044, rx_rsp_valid, reg_error);
+  if(rx_rsp_valid) begin
+reg_drv_rx.send_write( 'h0300c040, 32'h0, 'hf , reg_error);  
+@(posedge clk);
+break;
+end
+@(posedge clk);
+end
+         end         
+        
   ///////////////////
   //  Serial Link  //
   ///////////////////
@@ -930,13 +1102,36 @@ module vip_cheshire_soc_tristate import cheshire_pkg::*; (
   output logic [ 3:0]           spih_sd_i,
   input  logic [ 3:0]           spih_sd_o,
   input  logic [ 3:0]           spih_sd_en,
+  // Ethernet pad IO
+  output logic [3:0]            eth_rxd_i,  
+  input  logic [3:0]            eth_txd_o,
+  output logic                  eth_rxck_i,
+  input  logic                  eth_txck_o,
+  output logic                  eth_rxctl_i,
+  input  logic                  eth_txctl_o,
+  input  logic                  eth_rstn_o,
+  input  logic                  eth_mdio_o,
+  output logic                  eth_mdio_i,
+  input  logic                  eth_mdio_en,
+  input  logic                  eth_mdc_o,
+       
   // I2C wires
   inout  wire i2c_sda,
   inout  wire i2c_scl,
   // SPI host wires
   inout  wire                 spih_sck,
   inout  wire [SpihNumCs-1:0] spih_csb,
-  inout  wire [ 3:0]          spih_sd
+  inout  wire [ 3:0]          spih_sd,
+  // Ethernet wires
+  inout  wire [ 3:0]          eth_txd,
+  inout  wire [ 3:0]          eth_rxd,
+  inout  wire                 eth_txck,
+  inout  wire                 eth_rxck,
+  inout  wire                 eth_txctl,
+  inout  wire                 eth_rxctl,
+  inout  wire                 eth_rstn,
+  inout  wire                 eth_mdio,
+  inout  wire                 eth_mdc
 );
 
   // I2C
@@ -961,5 +1156,18 @@ module vip_cheshire_soc_tristate import cheshire_pkg::*; (
     bufif1 (spih_csb[i], spih_csb_o[i], spih_csb_en[i]);
     pullup (spih_csb[i]);
   end
+
+  // Ethernet
+  assign eth_txd = eth_txd_o;
+  assign eth_txck = eth_txck_o;
+  assign eth_txctl = eth_txctl_o;
+  assign eth_mdc = eth_mdc_o;
+  assign eth_rxd_i = eth_rxd;
+  assign eth_rxck_i = eth_rxck;
+  assign eth_rxctl_i = eth_rxctl;
+  
+
+  bufif1 (eth_mdio_i, eth_mdio, ~eth_mdio_en); 
+  bufif1 (eth_mdio, eth_mdio_o, eth_mdio_en);  
 
 endmodule
