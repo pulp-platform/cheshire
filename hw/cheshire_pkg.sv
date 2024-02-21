@@ -305,7 +305,7 @@ package cheshire_pkg;
 
   // AXI Xbar master indices
   typedef struct packed {
-    aw_bt [2**MaxCoresWidth-1:0] cores;
+    aw_bt cores;
     aw_bt dbg;
     aw_bt dma;
     aw_bt slink;
@@ -317,7 +317,7 @@ package cheshire_pkg;
   function automatic axi_in_t gen_axi_in(cheshire_cfg_t cfg);
     axi_in_t ret = '{default: '0};
     int unsigned i = 0;
-    for (int j = 0; j < cfg.NumCores; j++) begin ret.cores[i] = i; i++; end
+    ret.cores = i; i++;
     ret.dbg = i;
     if (cfg.Dma)        begin i++; ret.dma   = i; end
     if (cfg.SerialLink) begin i++; ret.slink = i; end
@@ -554,6 +554,9 @@ package cheshire_pkg;
       NrExecuteRegionRules  : 5,   // Debug, Bootrom, AllSPM, LLCOut, ExtCIE
       ExecuteRegionAddrBase : {AmDbg, AmBrom, AmSpm, cfg.LlcOutRegionStart, CieBase},
       ExecuteRegionLength   : {64'h40000, 64'h40000, 2*SizeSpm, SizeLlcOut, cfg.Cva6ExtCieLength},
+      NrSharedRegionRules   : 3, 
+      SharedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart, CieBase},
+      SharedRegionLength    : {SizeSpm, SizeLlcOut,            cfg.Cva6ExtCieLength},
       NrCachedRegionRules   : 3,   // CachedSPM, LLCOut, ExtCIE
       CachedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart,  CieBase},
       CachedRegionLength    : {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength},
@@ -582,7 +585,7 @@ package cheshire_pkg;
     Cva6ExtCieLength  : 'h2000_0000,  // [0x2.., 0x4..) is CIE, [0x4.., 0x8..) is non-CIE
     Cva6ExtCieOnTop   : 0,
     // Harts
-    NumCores          : 1,
+    NumCores          : 2,
     CoreMaxTxns       : 8,
     CoreMaxTxnsPerId  : 4,
     CoreUserAmoOffs   : 0, // Convention: lower AMO bits for cores, MSB for serial link

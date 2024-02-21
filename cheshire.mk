@@ -81,7 +81,7 @@ $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv:
 	$(REGTOOL) -r $< --outdir $(dir $@)
 
 # CLINT
-CLINTCORES ?= 1
+CLINTCORES ?= 2
 include $(CLINTROOT)/clint.mk
 $(CLINTROOT)/.generated:
 	flock -x $@ $(MAKE) clint && touch $@
@@ -153,8 +153,10 @@ CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/boo
 # Simulation #
 ##############
 
-$(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: $(CHS_ROOT)/Bender.yml
-	$(BENDER) script vsim -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 -t rtl -t snitch_cluster --vlog-arg="$(VLOG_ARGS)" > $@
+CVA6_TARGET ?= cv64a6_imafdc_sv39_wb # cv64a6_imafdcsclic_sv39
+
+$(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: Bender.yml
+	$(BENDER) script vsim -t sim -t $(CVA6_TARGET) -t test -t cva6 -t rtl --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
 .PRECIOUS: $(CHS_ROOT)/target/sim/models

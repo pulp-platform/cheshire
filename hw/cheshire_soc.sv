@@ -100,6 +100,8 @@ module cheshire_soc import cheshire_pkg::*; #(
 );
 
   `include "axi/typedef.svh"
+  `include "ace/typedef.svh"
+  `include "ace/assign.svh"
   `include "common_cells/registers.svh"
   `include "common_cells/assertions.svh"
   `include "cheshire/typedef.svh"
@@ -212,6 +214,9 @@ module cheshire_soc import cheshire_pkg::*; #(
   localparam addr_rule_t [AxiOut.num_rules-1:0] AxiMap = gen_axi_map();
 
   // Connectivity of Xbar
+  axi_mst_req_t ccu_axi_cut_req, axi_tagger_req;
+  axi_mst_rsp_t ccu_axi_cut_rsp, axi_tagger_rsp;
+
   axi_mst_req_t [AxiIn.num_in-1:0]    axi_in_req, axi_rt_in_req;
   axi_mst_rsp_t [AxiIn.num_in-1:0]    axi_in_rsp, axi_rt_in_rsp;
   axi_slv_req_t [AxiOut.num_out-1:0]  axi_out_req;
@@ -585,11 +590,8 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   assign intr.intn.bus_err.cores = core_bus_err_intr_comb;
 
-  axi_mst_req_t [AxiIn.num_in-1:0] tagger_req;
-  axi_mst_rsp_t [AxiIn.num_in-1:0] tagger_rsp;
-
-  axi_cva6_req_t [NumIntHarts-1:0] core_out_req, core_out_cut_req, core_ur_req;
-  axi_cva6_rsp_t [NumIntHarts-1:0] core_out_rsp, core_out_cut_rsp, core_ur_rsp;
+  ariane_ace::req_t [NumIntHarts-1:0] core_out_req, core_ur_req;
+  ariane_ace::resp_t [NumIntHarts-1:0] core_out_rsp, core_ur_rsp;
 
   // CLIC interface
   logic [NumIntHarts-1:0] clic_irq_valid, clic_irq_ready;
@@ -662,8 +664,8 @@ module cheshire_soc import cheshire_pkg::*; #(
         .NumOutstanding     ( Cfg.CoreMaxTxns ),
         .NumStoredErrors    ( 4 ),
         .DropOldest         ( 1'b0 ),
-        .axi_req_t          ( axi_cva6_req_t ),
-        .axi_rsp_t          ( axi_cva6_rsp_t ),
+        .axi_req_t          ( ariane_ace::req_t  ),
+        .axi_rsp_t          ( ariane_ace::resp_t ),
         .reg_req_t          ( reg_req_t ),
         .reg_rsp_t          ( reg_rsp_t )
       ) i_cva6_bus_err (
@@ -736,90 +738,145 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     end
 
-    axi_cut #(
-      .Bypass     ( ~Cfg.CorePostCut   ),
-      .aw_chan_t  ( axi_cva6_aw_chan_t ),
-      .w_chan_t   ( axi_cva6_w_chan_t  ),
-      .b_chan_t   ( axi_cva6_b_chan_t  ),
-      .ar_chan_t  ( axi_cva6_ar_chan_t ),
-      .r_chan_t   ( axi_cva6_r_chan_t  ),
-      .axi_req_t  ( axi_cva6_req_t     ),
-      .axi_resp_t ( axi_cva6_rsp_t     )
-    ) i_core_axi_cut (
-      .clk_i      ( clk_i               ),
-      .rst_ni     ( rst_ni              ),
-      .slv_req_i  ( core_out_req[i]     ),
-      .slv_resp_o ( core_out_rsp[i]     ),
-      .mst_req_o  ( core_out_cut_req[i] ),
-      .mst_resp_i ( core_out_cut_rsp[i] )
-    );
-
     // Map user to AMO domain as we are an atomics-capable master.
     // Within the provided AMO user range, we count up from the provided core AMO offset.
     always_comb begin
-      core_ur_req[i]         = core_out_cut_req[i];
+      core_ur_req[i]         = core_out_req[i];
       core_ur_req[i].aw.user = Cfg.AxiUserDefault;
       core_ur_req[i].ar.user = Cfg.AxiUserDefault;
       core_ur_req[i].w.user  = Cfg.AxiUserDefault;
       core_ur_req[i].aw.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
       core_ur_req[i].ar.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
       core_ur_req[i].w.user  [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
-      core_out_cut_rsp[i]    = core_ur_rsp[i];
+      core_out_rsp[i]        = core_ur_rsp[i];
     end
 
-    // CVA6's ID encoding is wasteful; remap it statically pack into available bits
-    axi_id_serialize #(
-      .AxiSlvPortIdWidth      ( Cva6IdWidth     ),
-      .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
-      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth      ),
-      .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
-      .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId   ),
-      .AxiAddrWidth           ( Cfg.AddrWidth    ),
-      .AxiDataWidth           ( Cfg.AxiDataWidth ),
-      .AxiUserWidth           ( Cfg.AxiUserWidth ),
-      .AtopSupport            ( 1 ),
-      .slv_req_t              ( axi_cva6_req_t ),
-      .slv_resp_t             ( axi_cva6_rsp_t ),
-      .mst_req_t              ( axi_mst_req_t  ),
-      .mst_resp_t             ( axi_mst_rsp_t  ),
-      .MstIdBaseOffset        ( '0 ),
-      .IdMapNumEntries        ( Cva6IdsUsed ),
-      .IdMap                  ( gen_cva6_id_map(Cfg) )
-    ) i_axi_id_serialize (
+    `ACE_ASSIGN_FROM_REQ(core_to_CCU[i], core_ur_req)
+    `ACE_ASSIGN_TO_RESP(core_ur_rsp, core_to_CCU[i])
+    `SNOOP_ASSIGN_FROM_RESP(CCU_to_core[i], core_ur_req)
+    `SNOOP_ASSIGN_TO_REQ(core_ur_rsp, CCU_to_core[i])
+
+  end
+
+  ///////////////////
+  //      CCU      //
+  ///////////////////
+
+  localparam CCUIdWidth = Cva6IdWidth + $clog2(NumIntHarts) + $clog2(NumIntHarts+1);
+
+  ACE_BUS #(
+    .AXI_ADDR_WIDTH ( Cfg.AddrWidth    ),
+    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth ),
+    .AXI_ID_WIDTH   ( Cva6IdWidth      ),
+    .AXI_USER_WIDTH ( Cfg.AxiUserWidth )
+  ) core_to_CCU[NumIntHarts-1:0]();
+
+  SNOOP_BUS #(
+    .SNOOP_ADDR_WIDTH ( Cfg.AddrWidth    ),
+    .SNOOP_DATA_WIDTH ( Cfg.AxiDataWidth )
+  ) CCU_to_core[NumIntHarts-1:0]();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( Cfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( CCUIdWidth        ),
+    .AXI_USER_WIDTH ( Cfg.AxiUserWidth  )
+  ) ccu_out_axi();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( Cfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( Cfg.AxiMstIdWidth ),
+    .AXI_USER_WIDTH ( Cfg.AxiUserWidth  )
+  ) ccu_remap_axi();
+
+  localparam ace_pkg::ccu_cfg_t CCU_CFG = '{
+    NoSlvPorts         : NumIntHarts,
+    MaxMstTrans        : 2, // Probably requires update
+    MaxSlvTrans        : 2, // Probably requires update
+    FallThrough        : 1'b0,
+    LatencyMode        : axi_pkg::CUT_ALL_PORTS,
+    AxiIdWidthSlvPorts : Cva6IdWidth,
+    AxiIdUsedSlvPorts  : Cva6IdWidth,
+    UniqueIds          : 1'b1,
+    DcacheLineWidth    : ariane_pkg::DCACHE_LINE_WIDTH,
+    AxiAddrWidth       : Cfg.AddrWidth,
+    AxiUserWidth       : Cfg.AxiUserWidth,
+    AxiDataWidth       : Cfg.AxiDataWidth
+  };
+
+  ace_ccu_top_intf #(
+    .Cfg ( CCU_CFG )
+  ) i_ccu (
+    .clk_i,
+    .rst_ni,
+    .test_i      ( test_mode_i ),
+    .slv_ports   ( core_to_CCU ),
+    .snoop_ports ( CCU_to_core ),
+    .mst_ports   ( ccu_out_axi )
+  );
+
+  axi_id_remap_intf #(
+    .AXI_SLV_PORT_ID_WIDTH     ( CCUIdWidth        ),
+    .AXI_SLV_PORT_MAX_UNIQ_IDS ( 4                 ),
+    .AXI_MAX_TXNS_PER_ID       ( 1                 ),
+    .AXI_MST_PORT_ID_WIDTH     ( Cfg.AxiMstIdWidth ),
+    .AXI_ADDR_WIDTH            ( Cfg.AddrWidth     ),
+    .AXI_DATA_WIDTH            ( Cfg.AxiDataWidth  ),
+    .AXI_USER_WIDTH            ( Cfg.AxiUserWidth  )
+  ) i_axi_id_remapper (
+    .clk_i,
+    .rst_ni,
+    .slv ( ccu_out_axi   ),
+    .mst ( ccu_remap_axi )
+  );
+
+  `AXI_ASSIGN_TO_REQ(ccu_axi_cut_req, ccu_remap_axi)
+  `AXI_ASSIGN_FROM_RESP(ccu_remap_axi, ccu_axi_cut_rsp)
+
+  axi_cut #(
+    .Bypass     ( ~Cfg.CorePostCut   ),
+    .aw_chan_t  ( axi_cva6_aw_chan_t ),
+    .w_chan_t   ( axi_cva6_w_chan_t  ),
+    .b_chan_t   ( axi_cva6_b_chan_t  ),
+    .ar_chan_t  ( axi_cva6_ar_chan_t ),
+    .r_chan_t   ( axi_cva6_r_chan_t  ),
+    .axi_req_t  ( axi_cva6_req_t     ),
+    .axi_resp_t ( axi_cva6_rsp_t     )
+  ) i_core_axi_cut (
+    .clk_i      ( clk_i           ),
+    .rst_ni     ( rst_ni          ),
+    .slv_req_i  ( ccu_axi_cut_req ),
+    .slv_resp_o ( ccu_axi_cut_rsp ),
+    .mst_req_o  ( axi_tagger_req  ),
+    .mst_resp_i ( axi_tagger_rsp  )
+  );
+
+  if (Cfg.LlcCachePartition) begin : gen_tagger
+    tagger #(
+      .DATA_WIDTH       ( Cfg.AxiDataWidth    ),
+      .ADDR_WIDTH       ( Cfg.AddrWidth       ),
+      .MAXPARTITION     ( Cfg.LlcMaxPartition ),
+      .AXI_USER_ID_MSB  ( Cfg.LlcUserMsb      ),
+      .AXI_USER_ID_LSB  ( Cfg.LlcUserLsb      ),
+      .TAGGER_GRAN      ( 3                   ),
+      .axi_req_t        ( axi_mst_req_t       ),
+      .axi_rsp_t        ( axi_mst_rsp_t       ),
+      .reg_req_t        ( reg_req_t           ),
+      .reg_rsp_t        ( reg_rsp_t           )
+    ) i_tagger (
       .clk_i,
       .rst_ni,
-      .slv_req_i  ( core_ur_req[i] ),
-      .slv_resp_o ( core_ur_rsp[i] ),
-      .mst_req_o  ( tagger_req[i] ),
-      .mst_resp_i ( tagger_rsp[i] )
+      .slv_req_i ( axi_tagger_req ),
+      .slv_rsp_o ( axi_tagger_rsp ),
+      .mst_req_o ( axi_in_req[AxiIn.cores] ),
+      .mst_rsp_i ( axi_in_rsp[AxiIn.cores] ),
+      .cfg_req_i ( reg_out_req[RegOut.tagger] ),
+      .cfg_rsp_o ( reg_out_rsp[RegOut.tagger] )
     );
-
-    if (Cfg.LlcCachePartition) begin : gen_tagger
-        tagger #(
-          .DATA_WIDTH       ( Cfg.AxiDataWidth    ),
-          .ADDR_WIDTH       ( Cfg.AddrWidth       ),
-          .MAXPARTITION     ( Cfg.LlcMaxPartition ),
-          .AXI_USER_ID_MSB  ( Cfg.LlcUserMsb      ),
-          .AXI_USER_ID_LSB  ( Cfg.LlcUserLsb      ),
-          .TAGGER_GRAN      ( 3                   ),
-          .axi_req_t        ( axi_mst_req_t       ),
-          .axi_rsp_t        ( axi_mst_rsp_t       ),
-          .reg_req_t        ( reg_req_t           ),
-          .reg_rsp_t        ( reg_rsp_t           )
-        ) i_tagger (
-          .clk_i,
-          .rst_ni,
-          .slv_req_i        ( tagger_req[i]              ),
-          .slv_rsp_o        ( tagger_rsp[i]              ),
-          .mst_req_o        ( axi_in_req[AxiIn.cores[i]] ),
-          .mst_rsp_i        ( axi_in_rsp[AxiIn.cores[i]] ),
-          .cfg_req_i        ( reg_out_req[RegOut.tagger[i]] ),
-          .cfg_rsp_o        ( reg_out_rsp[RegOut.tagger[i]] )
-        );
-    end else begin : gen_no_tagger
-      assign axi_in_req[AxiIn.cores[i]] = tagger_req[i];
-      assign tagger_rsp[i] = axi_in_rsp[AxiIn.cores[i]];
-    end
+  end else begin : gen_no_tagger
+    assign axi_in_req[AxiIn.cores] = axi_tagger_req;
+    assign axi_tagger_rsp = axi_in_rsp[AxiIn.cores];
   end
 
   /////////////////////////
