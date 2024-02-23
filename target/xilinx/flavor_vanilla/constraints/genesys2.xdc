@@ -6,7 +6,7 @@
 # Timing Parameters #
 #####################
 
-# 50 MHz SoC clock
+# Todo catch soc_clock directly from clk_wiz and extract TCK
 create_generated_clock -name soc_clk -divide_by 1 -source [get_pins i_xlnx_clk_wiz/inst/mmcm_adv_inst/CLKOUT1] [get_nets soc_clk]
 set soc_clk soc_clk
 set SOC_TCK 20.0
@@ -36,13 +36,12 @@ set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_pins u_ibufg_sys_clk/O]
 
 # Dram axi clock : 200 MHz
 set MIG_TCK 5
-create_generated_clock -source [get_pins i_dram_wrapper/i_dram/u_xlnx_mig_7_ddr3_mig/u_ddr3_infrastructure/gen_mmcm.mmcm_i/CLKFBOUT] \
- -divide_by 1 -add -master_clock clk_pll_i -name dram_axi_clk [get_pins i_dram_wrapper/i_dram/ui_clk]
+
 # Aynch reset in
 set MIG_RST_I [get_pin i_dram_wrapper/i_dram/aresetn]
 set_false_path -hold -setup -through $MIG_RST_I
 # Synch reset out
-set MIG_RST_O [get_pins i_dram_wrapper/i_dram/ui_clk]
+set MIG_RST_O [get_pins i_dram_wrapper/i_dram/ui_clk_sync_rst]
 set_false_path -hold -through $MIG_RST_O
 set_max_delay -through $MIG_RST_O $MIG_TCK
 
