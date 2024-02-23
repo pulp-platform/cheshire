@@ -100,14 +100,14 @@ CHS_SW_GEN_HDRS += $(OTPROOT)/.generated
 %.o: %.S $(CHS_SW_GEN_HDRS)
 	$(CHS_SW_CC) $(CHS_SW_INCLUDES) $(CHS_SW_CCFLAGS) -c $< -o $@
 
-define chs_ld_elf_rule
+define chs_sw_ld_elf_rule
 .PRECIOUS: %.$(1).elf
 
 %.$(1).elf: $$(CHS_SW_LD_DIR)/$(1).ld %.o $$(CHS_SW_LIBS)
 	$$(CHS_SW_CC) $$(CHS_SW_INCLUDES) -T$$< $$(CHS_SW_LDFLAGS) -o $$@ $$*.o $$(CHS_SW_LIBS)
 endef
 
-$(foreach link,$(patsubst $(CHS_SW_LD_DIR)/%.ld,%,$(wildcard $(CHS_SW_LD_DIR)/*.ld)),$(eval $(call chs_ld_elf_rule,$(link))))
+$(foreach link,$(patsubst $(CHS_SW_LD_DIR)/%.ld,%,$(wildcard $(CHS_SW_LD_DIR)/*.ld)),$(eval $(call chs_sw_ld_elf_rule,$(link))))
 
 %.dump: %.elf
 	$(CHS_SW_OBJDUMP) -d -S $< > $@
@@ -129,7 +129,7 @@ $(foreach link,$(patsubst $(CHS_SW_LD_DIR)/%.ld,%,$(wildcard $(CHS_SW_LD_DIR)/*.
 %.gpt.bin: %.rom.bin
 	rm -f $@
 	truncate -s $$(( ($$(stat --printf="%s" $<)/512 + 85)*512 )) $@
-	sgdisk --clear -g --set-alignment=1 --new=1:37:40 --new=2:42:-9 --typecode=2:$(CHS_SW_ZSL_TGUID) --new=3:-5:-2 $@
+	sgdisk -Z --clear -g --set-alignment=1 --new=1:37:40 --new=2:42:-9 --typecode=2:$(CHS_SW_ZSL_TGUID) --new=3:-5:-2 $@ &> /dev/null
 	dd if=$< of=$@ bs=512 seek=42 conv=notrunc
 
 # Create hex file from .gpt image
