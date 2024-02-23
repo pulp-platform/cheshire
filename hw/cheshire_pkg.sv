@@ -105,6 +105,7 @@ package cheshire_pkg;
     dw_bt   RegMaxWriteTxns;
     aw_bt   RegAmoNumCuts;
     bit     RegAmoPostCut;
+    bit     RegAdaptMemCut;
     // External AXI ports (limited number of ports and rules)
     bit     [MaxExtAxiMstWidth-1:0]     AxiExtNumMst;
     bit     [MaxExtAxiSlvWidth-1:0]     AxiExtNumSlv;
@@ -579,6 +580,7 @@ package cheshire_pkg;
     RegMaxWriteTxns   : 8,
     RegAmoNumCuts     : 1,
     RegAmoPostCut     : 1,
+    RegAdaptMemCut    : 1,
     // RTC
     RtcFreq           : 32768,
     // Features
