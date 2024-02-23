@@ -23,6 +23,7 @@ site/
 *.gpth
 *.o
 *.a
+*.dtb
 sw/deps/.patched
 
 # Test models
@@ -35,3 +36,10 @@ target/sim/vsim/modelsim.ini
 target/sim/vsim/transcript
 target/sim/vsim/vsim.wlf
 target/sim/vsim/work/
+
+# Xilinx generated files
+target/xilinx/build
+target/xilinx/out
+target/xilinx/scripts/add_sources.*
+**/*.jou
+**/*.log

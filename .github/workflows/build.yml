@@ -13,7 +13,7 @@ jobs:
   build:
     strategy:
       matrix:
-        target: [sw, hw, sim, xilinx]
+        target: [sw, hw, sim]
       fail-fast: false
     runs-on: ubuntu-22.04
     steps:
