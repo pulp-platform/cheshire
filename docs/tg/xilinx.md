@@ -60,7 +60,7 @@ Baremetal code can be preloaded through JTAG using OpenOCD and GDB or loaded fro
 First, connect to UART using a serial communication program like minicom:
 
 ```
-minicom -cD /dev/ttyUSBX
+minicom -c on D /dev/ttyUSBX
 ```
 
 Make sure that hardware flow control matches your board's setup (usually *off*).
@@ -105,7 +105,7 @@ Clone the `cheshire` branch of CVA6 SDK and build the firmware (OpenSBI + U-boot
 
 ```
 git submodule update --init --recursive sw/deps/cva6-sdk
-make -C sw/deps/cva6-sdk images
+cd sw/deps/cva6-sdk && make images
 ```
 
 In principle, we can boot Linux through JTAG by loading all images into memory, launching OpenSBI, and instructing U-boot to load the kernel directly from memory. Here, we focus on autonomous boot from SD card.
@@ -115,10 +115,10 @@ In this case, OpenSBI is loaded by a regular baremetal program called the [Zero-
 To create a full Linux disk image from the ZSL, device tree, firmware, and Linux, run:
 
 ```
-make sw/boot/linux.gpt.bin
+make ${CHS_ROOT}/sw/boot/linux.gpt.bin
 ```
 
-Flash this image to an SD card as you did in the previous section, then insert the SD card and reset into boot mode 1. You should first see the ZSL print on the UART:
+where `CHS_ROOT` is the root of the Cheshire repository. Flash this image to an SD card as you did in the previous section, then insert the SD card and reset into boot mode 1. You should first see the ZSL print on the UART:
 
 ```
  /\___/\       Boot mode:       1

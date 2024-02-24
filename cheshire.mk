@@ -90,8 +90,8 @@ $(OTPROOT)/.generated: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
 AXIRT_NUM_MGRS ?= 8
 AXIRT_NUM_SUBS ?= 2
 include $(AXIRTROOT)/axirt.mk
-$(AXIRTROOT)/.generated: axirt_regs
-	touch $@
+$(AXIRTROOT)/.generated:
+	flock -x $@ $(MAKE) axirt_regs && touch $@
 
 # AXI VGA
 include $(AXI_VGA_ROOT)/axi_vga.mk
@@ -132,20 +132,21 @@ CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/boo
 # Simulation #
 ##############
 
-$(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: Bender.yml
+$(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: $(CHS_ROOT)/Bender.yml
 	$(BENDER) script vsim -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 -t rtl --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
+.PRECIOUS: $(CHS_ROOT)/target/sim/models
 $(CHS_ROOT)/target/sim/models:
 	mkdir -p $@
 
 # Download (partially non-free) simulation models from publically available sources;
 # by running these targets or targets depending on them, you accept this (see README.md).
-$(CHS_ROOT)/target/sim/models/s25fs512s.v: Bender.yml | $(CHS_ROOT)/target/sim/models
+$(CHS_ROOT)/target/sim/models/s25fs512s.v: $(CHS_ROOT)/Bender.yml | $(CHS_ROOT)/target/sim/models
 	wget --no-check-certificate https://freemodelfoundry.com/fmf_vlog_models/flash/s25fs512s.v -O $@
 	touch $@
 
-$(CHS_ROOT)/target/sim/models/24FC1025.v: Bender.yml | $(CHS_ROOT)/target/sim/models
+$(CHS_ROOT)/target/sim/models/24FC1025.v: $(CHS_ROOT)/Bender.yml | $(CHS_ROOT)/target/sim/models
 	wget https://ww1.microchip.com/downloads/en/DeviceDoc/24xx1025_Verilog_Model.zip -o $@
 	unzip -p 24xx1025_Verilog_Model.zip 24FC1025.v > $@
 	rm 24xx1025_Verilog_Model.zip
@@ -158,7 +159,7 @@ CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 # FPGA Flow #
 #############
 
-$(CHS_ROOT)/target/xilinx/scripts/add_sources.tcl: Bender.yml
+$(CHS_ROOT)/target/xilinx/scripts/add_sources.tcl: $(CHS_ROOT)/Bender.yml
 	$(BENDER) script vivado -t fpga -t cv64a6_imafdcsclic_sv39 -t cva6 > $@
 
 CHS_XILINX_ALL += $(CHS_ROOT)/target/xilinx/scripts/add_sources.tcl
