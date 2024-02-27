@@ -74,6 +74,20 @@ module cheshire_soc import cheshire_pkg::*; #(
   output logic  i2c_scl_o,
   input  logic  i2c_scl_i,
   output logic  i2c_scl_en_o,
+  // ETHERNET interface
+  input  logic        eth_rxck_i,
+  input  logic [3:0]  eth_rxd_i,
+  input  logic        eth_rxctl_i,
+  output logic        eth_txck_o,
+  output logic [3:0]  eth_txd_o,
+  output logic        eth_txctl_o,
+  output logic        eth_rstn_o,  
+  input  logic        eth_intn_i,
+  input  logic        eth_pme_i,
+  input  logic        eth_mdio_i,
+  output logic        eth_mdio_o,
+  output logic        eth_mdio_oe,
+  output logic        eth_mdc_o,
   // SPI host interface
   output logic                  spih_sck_o,
   output logic                  spih_sck_en_o,
@@ -1282,6 +1296,61 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign intr.intn.i2c_host_timeout      = 0;
 
   end
+
+
+  ////////////////
+  //  ETHERNET  //
+  ////////////////
+  if (Cfg.Ethernet) begin : gen_ethernet
+    eth_idma_wrap#(
+      .DataWidth           ( Cfg.AxiDataWidth  ),    
+      .AddrWidth           ( Cfg.AddrWidth     ),
+      .UserWidth           ( Cfg.AxiUserWidth  ),
+      .AxiIdWidth          ( Cfg.AxiMstIdWidth ),
+      .axi_req_t           ( axi_mst_req_t     ),
+      .axi_rsp_t           ( axi_mst_rsp_t     ),
+      .reg_req_t           ( reg_req_t         ),
+      .reg_rsp_t           ( reg_rsp_t         )
+    ) i_tx_eth_idma_wrap (
+      .clk_i,
+      .rst_ni,
+      .phy_rx_clk_i        ( eth_rxck_i  ),
+      .phy_rxd_i           ( eth_rxd_i   ),
+      .phy_rx_ctl_i        ( eth_rxctl_i ),
+      .phy_tx_clk_o        ( eth_txck_o  ),
+      .phy_txd_o           ( eth_txd_o   ),
+      .phy_tx_ctl_o        ( eth_txctl_o ),
+      .phy_resetn_o        ( eth_rstn_o  ),  
+      .phy_intn_i          ( 1'b1        ),
+      .phy_pme_i           ( 1'b1        ),
+      .phy_mdio_i          ( 1'b0        ),
+      .phy_mdio_o          ( eth_mdio_o  ),
+      .phy_mdio_oe         ( eth_mdio_oe ),
+      .phy_mdc_o           ( eth_mdc_o   ), 
+      .testmode_i          ( 1'b0        ),
+      .axi_req_o           ( axi_in_req[AxiIn.eth_idma]   ),
+      .axi_rsp_i           ( axi_in_rsp[AxiIn.eth_idma]   ),
+      .reg_req_i           ( reg_out_req[RegOut.ethernet] ),
+      .reg_rsp_o           ( reg_out_rsp[RegOut.ethernet] ) // req from cheshire def, but inside ethernet, it awaits for the type
+    );
+
+  end else begin : gen_no_ethernet
+
+      assign axi_in_rsp[AxiIn.eth_idma].aw_ready = 1'b1;
+      assign axi_in_rsp[AxiIn.eth_idma].ar_ready = 1'b1;
+      assign axi_in_rsp[AxiIn.eth_idma].w_ready = 1'b1;
+
+      // assign axi_in_rsp[AxiIn.eth_idma].b_valid = axi_in_req[AxiIn.eth_idma].aw_valid;
+      // assign axi_in_rsp[AxiIn.eth_idma].b_id = axi_in_req[AxiIn.eth_idma].aw_id;
+      // assign axi_in_rsp[AxiIn.eth_idma].b_resp = axi_pkg::RESP_SLVERR;
+      // assign axi_in_rsp[AxiIn.eth_idma].b_user = '0;
+
+      assign axi_in_rsp[AxiIn.eth_idma].r_valid = axi_in_req[AxiIn.eth_idma].ar_valid;
+      // assign axi_in_rsp[AxiIn.eth_idma].r_resp = axi_pkg::RESP_SLVERR;
+      // assign axi_in_rsp[AxiIn.eth_idma].r_data = 'hdeadbeef;
+      // assign axi_in_rsp[AxiIn.eth_idma].r_last = 1'b1;
+
+    end
 
   ////////////////
   //  SPI Host  //
