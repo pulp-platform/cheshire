@@ -164,11 +164,22 @@ $(CHS_ROOT)/target/xilinx/scripts/add_sources.tcl: $(CHS_ROOT)/Bender.yml
 
 CHS_XILINX_ALL += $(CHS_ROOT)/target/xilinx/scripts/add_sources.tcl
 
+###########
+# Threadx #
+###########
+
+CHS_THREADX_REMOTE ?= git@github.com:alex96295/threadx.git
+CHS_THREADX_COMMIT ?= d6a1149
+
+chs-threadx-init:
+	git clone $(CHS_THREADX_REMOTE) threadx
+	cd threadx && git checkout $(CHS_THREADX_COMMIT)
+
 #################################
 # Phonies (KEEP AT END OF FILE) #
 #################################
 
-.PHONY: chs-all chs-nonfree-init chs-clean-deps chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-xilinx-all
+.PHONY: chs-all chs-threadx-init chs-nonfree-init chs-clean-deps chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-xilinx-all
 
 CHS_ALL += $(CHS_SW_ALL) $(CHS_HW_ALL) $(CHS_SIM_ALL) $(CHS_XILINX_ALL)
 
