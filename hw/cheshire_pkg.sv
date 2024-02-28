@@ -457,7 +457,7 @@ package cheshire_pkg;
       2: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 1}, '{Cva6IdBypAccel, 1}, '{Cva6IdBypStore, 1},
                   '{Cva6IdBypAmo, 0}, '{Cva6IdICache,  2}, '{Cva6IdDCache,   3}};
       // Compress output ID space without any serialization
-      3: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 1}, '{Cva6IdBypAccel, 1}, '{Cva6IdBypStore, 2},
+      3: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 1}, '{Cva6IdBypAccel, 6}, '{Cva6IdBypStore, 2},
                   '{Cva6IdBypAmo, 3}, '{Cva6IdICache,  4}, '{Cva6IdDCache,   5}};
       // With 4b of ID or more, no remapping is necessary
       default: return '{default: '{0, 0}};
