@@ -490,7 +490,7 @@ package cheshire_pkg;
       XFVec                 : 0,
       CvxifEn               : 0,
       ZiCondExtEn           : 1,
-      RVSCLIC               : 1,
+      RVSCLIC               : cfg.Clic,
       RVF                   : 1,
       RVD                   : 1,
       FpPresent             : 1,
