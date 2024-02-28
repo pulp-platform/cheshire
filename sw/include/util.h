@@ -30,6 +30,10 @@ static inline void wfi() {
     asm volatile("wfi" ::: "memory");
 }
 
+static inline void nop() {
+    asm volatile("nop" ::: "memory");
+}
+
 // Enables or disables M-mode timer interrupts.
 static inline void set_mtie(int enable) {
     if (enable)
@@ -38,12 +42,42 @@ static inline void set_mtie(int enable) {
         asm volatile("csrc mie, %0" ::"r"(128) : "memory");
 }
 
+// Enables or disables M-mode software interrupts.
+static inline void set_msie(int enable) {
+    if (enable)
+        asm volatile("csrs mie, %0" ::"r"(8) : "memory");
+    else
+        asm volatile("csrc mie, %0" ::"r"(8) : "memory");
+}
+
+// Enables or disables M-mode software interrupts pending bit.
+static inline void set_msip(int enable) {
+    if (enable)
+        asm volatile("csrs mip, %0" ::"r"(8) : "memory");
+    else
+        asm volatile("csrc mip, %0" ::"r"(8) : "memory");
+}
+
+// Get M-mode software interrupts pending bit.
+static inline uint64_t get_msip() {
+    uint64_t msip;
+    asm volatile("csrr %0, mip" : "=r"(msip)::"memory");
+    return (msip & 0x8) >> 3;
+}
+
 // Enables or disables M-mode global interrupts.
 static inline void set_mie(int enable) {
     if (enable)
         asm volatile("csrsi mstatus, 8" ::: "memory");
     else
         asm volatile("csrci mstatus, 8" ::: "memory");
+}
+
+// Get hart id
+static inline uint64_t get_mhartid() {
+    uint64_t mhartid;
+    asm volatile("csrr %0, mhartid" : "=r"(mhartid)::"memory");
+    return mhartid;
 }
 
 // Get cycle count since reset
