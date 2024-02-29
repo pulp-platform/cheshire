@@ -75,7 +75,7 @@ module cheshire_top_xilinx
     Cva6NrPMPEntries  : 0,
     Cva6ExtCieLength  : 'h2000_0000,
     // Harts
-    NumCores          : 1,
+    NumCores          : 2,
     CoreMaxTxns       : 8,
     CoreMaxTxnsPerId  : 4,
     // Interrupts
