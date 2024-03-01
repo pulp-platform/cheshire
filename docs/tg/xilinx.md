@@ -7,23 +7,23 @@ This page describes how to map Cheshire on Xilinx FPGAs to *execute baremetal pr
 We currently provide working setups for:
 
 - Digilent Genesys 2 with Vivado `>= 2020.2`
+- Xilinx VCU128 with Vivado `>= 2020.2`
 
 We are working on support for more boards in the future.
 
 ## Implementation
 
-Since the implementation steps and available features vary between boards, we provide instructions and document available features for each.
-
-### Digilent Genesys 2
-
-Generate the bitstream `target/xilinx/out/cheshire_top_xilinx.bit` by running:
+Generate the bitstream `target/xilinx/out/cheshire.<myboard>.bit` for your desired board by running:
 
 ```
-make -C target/xilinx
+make chs-xilinx-<myboard>
 ```
+
+Since available features vary between boards, we provide further documentation for each.
+
+### Digilent Genesys 2 (`genesys2`)
 
 Before flashing the bitstream to your device, take note of the position of onboard switches, which control important functionality:
-
 
   | Switch | Function                                        |
   | ------ | ------------------------------------------------|
@@ -33,12 +33,37 @@ Before flashing the bitstream to your device, take note of the position of onboa
 
 The reset, JTAG TAP, UART, I2C, and VGA are all connected to their onboard logic or ports. The UART has *no flow control*. The microSD slot is connected to chip select 0 of the SPI host peripheral. Serial link and GPIOs are currently not available.
 
+### Xilinx VCU128 (`vcu128`)
+
+Since there are no switches on this board, the boot mode must be selected using Virtual IOs controlled through Vivado (see [Virtual IOs](#virtual_ios) below).
+
+This board provides a JTAG TAP and a UART without flow control connected to onboard ports. The SPI host peripheral connects to the `STARTUPE3` IP block, which provides access to the onboard flash. All other IOs are currently not available.
+
+### Virtual IOs
+
+To provide control of important IO without direct access to onboard switches, we provide the following virtual IOs on all boards, which may be controlled at runtime through Vivado's Hardware Manager:
+
+  | Virtual IO          | Function                                        |
+  | ------------------- | ------------------------------------------------|
+  | `vio_reset`         | Assert reset (active high)                      |
+  | `vio_boot_mode`     | Externally override boot mode                   |
+  | `vio_boot_mode_sel` | Whether to override boot mode from FPGA IO      |
+
+### Inserting ILA probes
+
+For analysis and debugging purposes, integrated logic analyzer (ILA) probes may be inserted into the design in RTL. You can do this by marking signals with appropriate attributes or by using the `ila` macro from the `phy_definitions.svh` header:
+
+```systemverilog
+/* Option 1 */ (* dont_touch = "yes" *) (* mark_debug = "true" *) logic mysignal;
+/* Option 2 */ `ila(my_ila_name, mysignal)
+```
+
 ## Debugging with OpenOCD
 
 To establish a debug bridge over JTAG, ensure the target is in a debuggable state (for example by resetting into the idle boot mode 0) and launch OpenOCD with:
 
 ```
-openocd -f $(bender path ariane)/corev_apu/fpga/ariane.cfg
+openocd -f util/openocd.<myboard>.cfg
 ```
 
 In another shell, launch a RISC-V GDB session attaching to OpenOCD:
@@ -55,7 +80,7 @@ You can now interrupt (Ctrl+C), inspect, and repoint execution with GDB as usual
 
 ## Running Baremetal Code
 
-Baremetal code can be preloaded through JTAG using OpenOCD and GDB or loaded from an SD Card. In principle, other interfaces may also be used to boot if the board provides them, but no setups are available for this.
+Baremetal code can be preloaded through JTAG using OpenOCD and GDB or loaded from a bootable device, such as an SD card. In principle, other interfaces may also be used to boot if the board provides them, but no setups are available for this.
 
 First, connect to UART using a serial communication program like minicom:
 
@@ -78,9 +103,9 @@ continue
 
 You should see `Hello World!` output printed on the UART.
 
-### Boot from SD Card
+### Boot from SD card (`genesys2` only)
 
-First, build an up-to-date a disk image for your desired binary. For `helloworld`:
+First, build an up-to-date GPT disk image for your desired binary. For `helloworld`:
 
 ```
 make sw/tests/helloworld.gpt.bin
@@ -97,6 +122,20 @@ The second command only ensures correctness of the partition layout; it moves th
 
 Insert your SD card and reset into boot mode 1. You should see a `Hello World!` UART output.
 
+### Boot from onboard flash (`vcu128` only)
+
+Build a GPT disk image for your desired binary as explained above, then flash it to your board's flash. For `helloworld`:
+
+```
+make CHS_XILINX_FLASH_BIN=sw/tests/helloworld.gpt.bin chs-xilinx-flash-<myboard>
+```
+
+Flashing an image should take about 10 minutes. *Note that after flashing, your board's bitstream must be reprogrammed* as it is overridden for this task.
+
+If the image given by `CHS_XILINX_FLASH_BIN` does not exist or is out of date, `make` will attempt to build it before flashing. If `CHS_XILINX_FLASH_BIN` is not provided, the target assumes the board's Linux image by default.
+
+After flashing your disk image and reprogramming your bitstream, reset into boot mode 2. For `helloworld`, you should again see a `Hello World!` UART output.
+
 ## Booting Linux
 
 To boot Linux, we must load the *OpenSBI* firmware, which takes over M mode and launches the U-boot bootloader. U-boot then loads Linux. For more details, see [Boot Flow](../um/sw.md#boot-flow).
@@ -108,17 +147,17 @@ git submodule update --init --recursive sw/deps/cva6-sdk
 cd sw/deps/cva6-sdk && make images
 ```
 
-In principle, we can boot Linux through JTAG by loading all images into memory, launching OpenSBI, and instructing U-boot to load the kernel directly from memory. Here, we focus on autonomous boot from SD card.
+In principle, we can boot Linux through JTAG by loading all images into memory, launching OpenSBI, and instructing U-boot to load the kernel directly from memory. Here, we focus on autonomous boot from SD card or SPI flash.
 
 In this case, OpenSBI is loaded by a regular baremetal program called the [Zero-Stage Loader](../um/sw.md#zero-stage-loader) (ZSL). The [boot ROM](../um/sw.md#boot-rom) loads the ZSL from SD card, which then loads the device tree and firmware from other SD card partitions into memory and launches OpenSBI.
 
-To create a full Linux disk image from the ZSL, device tree, firmware, and Linux, run:
+To create a full Linux disk image from the ZSL, your board's device tree, the firmware, and Linux, run:
 
 ```
-make ${CHS_ROOT}/sw/boot/linux.gpt.bin
+make ${CHS_ROOT}/sw/boot/linux.<myboard>.gpt.bin
 ```
 
-where `CHS_ROOT` is the root of the Cheshire repository. Flash this image to an SD card as you did in the previous section, then insert the SD card and reset into boot mode 1. You should first see the ZSL print on the UART:
+where `CHS_ROOT` is the root of the Cheshire repository. Flash this image to an SD card or SPI flash as described in the preceding sections, then reset into the boot mode corresponding for your boot medium. You should first see the ZSL print on the UART:
 
 ```
  /\___/\       Boot mode:       1
