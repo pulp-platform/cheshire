@@ -584,9 +584,6 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   assign intr.intn.bus_err.cores = core_bus_err_intr_comb;
 
-  axi_mst_req_t [AxiIn.num_in-1:0] tagger_req;
-  axi_mst_rsp_t [AxiIn.num_in-1:0] tagger_rsp;
-
   axi_cva6_req_t [NumIntHarts-1:0] core_out_req, core_ur_req;
   axi_cva6_rsp_t [NumIntHarts-1:0] core_out_rsp, core_ur_rsp;
 
@@ -771,8 +768,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .rst_ni,
       .slv_req_i  ( core_ur_req[i] ),
       .slv_resp_o ( core_ur_rsp[i] ),
-      .mst_req_o  ( tagger_req[i] ),
-      .mst_resp_i ( tagger_rsp[i] )
+      .mst_req_o  ( axi_in_req[AxiIn.cores[i]] ),
+      .mst_resp_i ( axi_in_rsp[AxiIn.cores[i]] )
     );
 
     if (Cfg.LlcCachePartition) begin : gen_tagger
