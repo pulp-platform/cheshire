@@ -103,6 +103,7 @@ package cheshire_pkg;
     // Reg parameters
     dw_bt   RegMaxReadTxns;
     dw_bt   RegMaxWriteTxns;
+    bit     AxiToRegCut;
     aw_bt   RegAmoNumCuts;
     bit     RegAmoPostCut;
     // External AXI ports (limited number of ports and rules)
@@ -135,6 +136,10 @@ package cheshire_pkg;
     bit     Clic;
     bit     IrqRouter;
     bit     BusErr;
+    bit     HmrUnit;
+    bit     Cva6DMR;
+    bit     Cva6DMRFixed;
+    bit     RapidRecovery;
     // Parameters for Debug Module
     jtag_idcode_t DbgIdCode;
     dw_bt   DbgMaxReqs;
@@ -147,6 +152,9 @@ package cheshire_pkg;
     shrt_bt LlcSetAssoc;
     shrt_bt LlcNumLines;
     shrt_bt LlcNumBlocks;
+    bit     LlcCachePartition;
+    shrt_bt LlcMaxPartition;
+    axi_llc_pkg::algorithm_e LlcRemapHash;
     dw_bt   LlcMaxReadTxns;
     dw_bt   LlcMaxWriteTxns;
     aw_bt   LlcAmoNumCuts;
@@ -154,6 +162,8 @@ package cheshire_pkg;
     bit     LlcOutConnect;
     doub_bt LlcOutRegionStart;
     doub_bt LlcOutRegionEnd;
+    dw_bt   LlcUserMsb;
+    dw_bt   LlcUserLsb;
     // Parameters for VGA
     byte_bt VgaRedWidth;
     byte_bt VgaGreenWidth;
@@ -263,14 +273,18 @@ package cheshire_pkg;
   endfunction
 
   // Static addresses (defined here only if multiply used)
-  localparam doub_bt AmDbg    = 'h0000_0000;  // Base of AXI peripherals
-  localparam doub_bt AmBrom   = 'h0200_0000;  // Base of reg peripherals
-  localparam doub_bt AmRegs   = 'h0300_0000;
-  localparam doub_bt AmLlc    = 'h0300_1000;
-  localparam doub_bt AmSlink  = 'h0300_6000;
-  localparam doub_bt AmBusErr = 'h0300_8000;
-  localparam doub_bt AmSpm    = 'h1000_0000;  // Cached region at bottom, uncached on top
-  localparam doub_bt AmClic   = 'h0800_0000;
+  localparam doub_bt AmDbg     = 'h0000_0000;  // Base of AXI peripherals
+  localparam doub_bt AmBrom    = 'h0200_0000;  // Base of reg peripherals
+  localparam doub_bt AmRegs    = 'h0300_0000;
+  localparam doub_bt AmLlc     = 'h0300_1000;
+  localparam doub_bt AmSlink   = 'h0300_6000;
+  localparam doub_bt AmBusErr  = 'h0300_8000;
+  // Address 0x0300_A000 is occupied by the tagger in Carfield.
+  // Removed for the moment to isolate the contribution of this PR.
+  // Leaving this comment and the free scope to keep track.
+  localparam doub_bt AmHmrUnit = 'h0300_B000;
+  localparam doub_bt AmSpm     = 'h1000_0000;  // Cached region at bottom, uncached on top
+  localparam doub_bt AmClic    = 'h0800_0000;
 
   // Static masks
   localparam doub_bt AmSpmBaseUncached = 'h1400_0000;
@@ -385,6 +399,7 @@ package cheshire_pkg;
     aw_bt irq_router;
     aw_bt [2**MaxCoresWidth-1:0] bus_err;
     aw_bt [2**MaxCoresWidth-1:0] clic;
+    aw_bt hmr_unit;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
@@ -412,6 +427,9 @@ package cheshire_pkg;
     end
     if (cfg.BusErr) for (int j = 0; j < 2 + cfg.NumCores; j++) begin
       i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, AmBusErr + j*'h40,  AmBusErr + (j+1)*'h40};
+    end
+    if (cfg.HmrUnit) begin
+      i++; ret.hmr_unit   = i; r++; ret.map[r] = '{i, AmHmrUnit, AmHmrUnit+'h400};
     end
     i++; r++;
     ret.ext_base  = i;
@@ -577,6 +595,7 @@ package cheshire_pkg;
     AxiUserDefault    : 0,
     RegMaxReadTxns    : 8,
     RegMaxWriteTxns   : 8,
+    AxiToRegCut       : 0,
     RegAmoNumCuts     : 1,
     RegAmoPostCut     : 1,
     // RTC
@@ -594,6 +613,10 @@ package cheshire_pkg;
     Clic              : 0,
     IrqRouter         : 0,
     BusErr            : 1,
+    HmrUnit           : 1,
+    Cva6DMR           : 1,
+    Cva6DMRFixed      : 0,
+    RapidRecovery     : 0,
     // Debug
     DbgIdCode         : CheshireIdCode,
     DbgMaxReqs        : 4,
@@ -613,6 +636,12 @@ package cheshire_pkg;
     LlcOutConnect     : 1,
     LlcOutRegionStart : 'h8000_0000,
     LlcOutRegionEnd   : 'h1_0000_0000,
+    LlcUserMsb        : 0,
+    LlcUserLsb        : 0,
+    // LLC Partitioning
+    LlcCachePartition : 0,
+    LlcMaxPartition   : 0,
+    LlcRemapHash      : axi_llc_pkg::Modulo,
     // VGA: RGB332
     VgaRedWidth       : 3,
     VgaGreenWidth     : 3,
