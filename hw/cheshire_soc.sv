@@ -791,8 +791,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .rst_ni,
       .slv_req_i  ( core_ur_req[i] ),
       .slv_resp_o ( core_ur_rsp[i] ),
-      .mst_req_o  ( tagger_req[i] ),
-      .mst_resp_i ( tagger_rsp[i] )
+      .mst_req_o  ( axi_in_req[AxiIn.cores[i]] ),
+      .mst_resp_i ( axi_in_rsp[AxiIn.cores[i]] )
     );
 
     if (Cfg.LlcCachePartition) begin : gen_tagger
