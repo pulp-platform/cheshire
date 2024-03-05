@@ -238,6 +238,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       jtag_dbg.read_dmi_exp_backoff(dm::SBData0, data);
     end while (~data[0]);
   endtask
+
   // Initialize the debug module
   task automatic jtag_init;
     jtag_idcode_t idcode;
@@ -254,6 +255,41 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     // Activate, wait for system bus
     jtag_write(dm::SBCS, JtagInitSbcs, 0, 1);
     $display("[JTAG] Initialization success");
+  endtask
+
+  task automatic jtag_read_reg32(
+    input doub_bt addr,
+    output word_bt data,
+    input int unsigned idle_cycles = 20
+  );
+    automatic dm::sbcs_t sbcs = dm::sbcs_t'{sbreadonaddr: 1'b1, sbaccess: 2, default: '0};
+    jtag_write(dm::SBCS, sbcs, 0, 1);
+    jtag_write(dm::SBAddress1, addr[63:32]);
+    jtag_write(dm::SBAddress0, addr[31:0]);
+    jtag_dbg.wait_idle(idle_cycles);
+    jtag_dbg.read_dmi_exp_backoff(dm::SBData0, data);
+    $display("[JTAG] Read 0x%h from 0x%h", data, addr);
+  endtask
+
+  task automatic jtag_write_reg32(
+    input doub_bt addr,
+    input word_bt data,
+    input bit check_write,
+    input int unsigned check_write_wait_cycles = 20
+  );
+    automatic dm::sbcs_t sbcs = dm::sbcs_t'{sbaccess: 2, default: '0};
+    $display("[JTAG] Writing 0x%h to 0x%h", data, addr);
+    jtag_write(dm::SBCS, sbcs, 0, 1);
+    jtag_write(dm::SBAddress1, addr[63:32]);
+    jtag_write(dm::SBAddress0, addr[31:0]);
+    jtag_write(dm::SBData0, data);
+    jtag_dbg.wait_idle(check_write_wait_cycles);
+    if (check_write) begin
+      word_bt rdata;
+      jtag_read_reg32(addr, rdata);
+      if (rdata != data) $fatal(1,"[JTAG] - Read back incorrect data 0x%h!", rdata);
+      else $display("[JTAG] - Read back correct data");
+    end
   endtask
 
   // Load a binary
@@ -282,10 +318,9 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     $display("[JTAG] Preload complete");
   endtask
 
-  // Run a binary
-  task automatic jtag_elf_run(input string binary);
+  // Halt the core and preload a binary
+  task automatic jtag_elf_halt_load(input string binary, output doub_bt entry);
     dm::dmstatus_t status;
-    doub_bt entry;
     // Wait until bootrom initialized LLC
     if (DutCfg.LlcNotBypass) begin
       word_bt regval;
@@ -299,6 +334,12 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     $display("[JTAG] Halted hart 0");
     // Preload binary
     jtag_elf_preload(binary, entry);
+  endtask
+
+  // Run a binary
+  task automatic jtag_elf_run(input string binary);
+    doub_bt entry;
+    jtag_elf_halt_load(binary, entry);
     // Repoint execution
     jtag_write(dm::Data1, entry[63:32]);
     jtag_write(dm::Data0, entry[31:0]);
