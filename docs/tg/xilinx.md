@@ -132,7 +132,7 @@ make CHS_XILINX_FLASH_BIN=sw/tests/helloworld.gpt.bin chs-xilinx-flash-<myboard>
 
 Flashing an image should take about 10 minutes. *Note that after flashing, your board's bitstream must be reprogrammed* as it is overridden for this task.
 
-If the image given by `CHS_XILINX_FLASH_BIN` does not exist or is out of date, `make` will attempt to build it before flashing. If `CHS_XILINX_FLASH_BIN` is not provided, the target assumes the board's Linux image by default.
+If the image given by `CHS_XILINX_FLASH_BIN` does not exist, `make` will attempt to build it before flashing. If `CHS_XILINX_FLASH_BIN` is not provided, the target assumes the board's Linux image by default.
 
 After flashing your disk image and reprogramming your bitstream, reset into boot mode 2. For `helloworld`, you should again see a `Hello World!` UART output.
 

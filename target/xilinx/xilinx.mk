@@ -71,9 +71,10 @@ CHS_XILINX_ALL = $(foreach board,$(CHS_XILINX_BOARDS),$$(CHS_XILINX_DIR)/out/che
 # `CHS_XILINX_HWS_PATH_$(board)` overrides the device path for each board (default *).
 CHS_XILINX_HWS_URL ?= localhost:3121
 
-# TODO: add dependency on file $(2) in here
+# We build the dependency file $(2) only if it does not exist; it must not be up to date.
 define chs_xilinx_util_rule
 chs-xilinx-$(1)-%: $$(CHS_XILINX_DIR)/scripts/util/$(1).tcl | $$(CHS_XILINX_DIR)/build/%.$(1)/
+	[ -e $(subst %,$$*,$(2)) ] || $$(MAKE) $(subst %,$$*,$(2))
 	@rm -f $$(CHS_XILINX_DIR)/build/$$(*)*.$(1).log $$(CHS_XILINX_DIR)/build/$$(*)*.$(1).jou
 	cd $$| && $$(VIVADO) -mode batch -log ../$$(*).$(1).log -jou ../$$(*).$(1).jou -source $$< \
 		-tclargs "$$(CHS_XILINX_HWS_URL) $$(or $$(CHS_XILINX_HWS_PATH_$$*),*) $$* $(subst %,$$*,$(2)) 0"
