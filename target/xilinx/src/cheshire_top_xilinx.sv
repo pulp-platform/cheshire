@@ -123,6 +123,12 @@ module cheshire_top_xilinx
     LlcOutConnect     : 1,
     LlcOutRegionStart : 'h8000_0000,
     LlcOutRegionEnd   : 'h1_0000_0000,
+    LlcUserMsb        : 0,
+    LlcUserLsb        : 0,
+    // LLC partitioning
+    LlcCachePartition : 0,
+    LlcMaxPartition   : 0,
+    LlcRemapHash      : axi_llc_pkg::Modulo,
     // VGA: RGB332
     VgaRedWidth       : 5,
     VgaGreenWidth     : 6,

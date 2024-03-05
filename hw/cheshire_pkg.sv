@@ -85,6 +85,11 @@ package cheshire_pkg;
     byte_bt NumExtOutIntrTgts;
     shrt_bt NumExtOutIntrs;
     shrt_bt ClicIntCtlBits;
+    bit     ClicUseSMode;
+    bit     ClicUseUMode;
+    bit     ClicUseVsMode;
+    bit     ClicUseVsModePrio;
+    byte_bt ClicNumVsCtxts;
     shrt_bt NumExtIntrSyncs;
     // AXI parameters
     aw_bt   AddrWidth;
@@ -279,9 +284,7 @@ package cheshire_pkg;
   localparam doub_bt AmLlc     = 'h0300_1000;
   localparam doub_bt AmSlink   = 'h0300_6000;
   localparam doub_bt AmBusErr  = 'h0300_8000;
-  // Address 0x0300_A000 is occupied by the tagger in Carfield.
-  // Removed for the moment to isolate the contribution of this PR.
-  // Leaving this comment and the free scope to keep track.
+  localparam doub_bt AmTagger  = 'h0300_A000;
   localparam doub_bt AmHmrUnit = 'h0300_B000;
   localparam doub_bt AmSpm     = 'h1000_0000;  // Cached region at bottom, uncached on top
   localparam doub_bt AmClic    = 'h0800_0000;
@@ -399,6 +402,7 @@ package cheshire_pkg;
     aw_bt irq_router;
     aw_bt [2**MaxCoresWidth-1:0] bus_err;
     aw_bt [2**MaxCoresWidth-1:0] clic;
+    aw_bt [2**MaxCoresWidth-1:0] tagger;
     aw_bt hmr_unit;
     aw_bt ext_base;
     aw_bt num_out;
@@ -427,6 +431,9 @@ package cheshire_pkg;
     end
     if (cfg.BusErr) for (int j = 0; j < 2 + cfg.NumCores; j++) begin
       i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, AmBusErr + j*'h40,  AmBusErr + (j+1)*'h40};
+    end
+    if (cfg.LlcCachePartition) for (int j = 0; j < cfg.NumCores; j++) begin
+      i++; ret.tagger[j]  = i; r++; ret.map[r] = '{i, AmTagger + j*'h100,  AmTagger + (j+1)*'h100};
     end
     if (cfg.HmrUnit) begin
       i++; ret.hmr_unit   = i; r++; ret.map[r] = '{i, AmHmrUnit, AmHmrUnit+'h400};
@@ -580,11 +587,16 @@ package cheshire_pkg;
     NumExtOutIntrTgts : 0,
     NumExtOutIntrs    : 0,
     ClicIntCtlBits    : 8,
+    ClicUseSMode      : 0,
+    ClicUseUMode      : 0,
+    ClicUseVsMode     : 0,
+    ClicUseVsModePrio : 0,
+    ClicNumVsCtxts    : 0,
     NumExtIntrSyncs   : 2,
     // Interconnect
     AddrWidth         : 48,
     AxiDataWidth      : 64,
-    AxiUserWidth      : 2,  // AMO(2)
+    AxiUserWidth      : 2,  // Convention: bit 0 for core(s), bit 1 for serial link
     AxiMstIdWidth     : 2,
     AxiMaxMstTrans    : 24,
     AxiMaxSlvTrans    : 24,
