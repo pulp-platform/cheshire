@@ -35,23 +35,23 @@ The reset, JTAG TAP, UART, I2C, and VGA are all connected to their onboard logic
 
 ### Xilinx VCU128 (`vcu128`)
 
-Since there are no switches on this board, the boot mode must be selected using Virtual IOs controlled through Vivado (see [Virtual IOs](#virtual_ios) below).
+Since there are no switches on this board, the boot mode must be selected using Virtual IOs (see [Virtual IOs](#virtual_ios) below).
 
 This board provides a JTAG TAP and a UART without flow control connected to onboard ports. The SPI host peripheral connects to the `STARTUPE3` IP block, which provides access to the onboard flash. All other IOs are currently not available.
 
 ### Virtual IOs
 
-To provide control of important IO without direct access to onboard switches, we provide the following virtual IOs on all boards, which may be controlled at runtime through Vivado's Hardware Manager:
+To provide control of important IO without direct access to onboard switches, we provide the following virtual IOs on all boards, which may be controlled at runtime through Vivado's hardware manager:
 
-  | Virtual IO          | Function                                        |
-  | ------------------- | ------------------------------------------------|
-  | `vio_reset`         | Assert reset (active high)                      |
-  | `vio_boot_mode`     | Externally override boot mode                   |
-  | `vio_boot_mode_sel` | Whether to override boot mode from FPGA IO      |
+  | Virtual IO          | Function                                   |
+  | ------------------- | -------------------------------------------|
+  | `vio_reset`         | Assert reset (active high)                 |
+  | `vio_boot_mode`     | Externally override boot mode              |
+  | `vio_boot_mode_sel` | Whether to override boot mode from FPGA IO |
 
 ### Inserting ILA probes
 
-For analysis and debugging purposes, integrated logic analyzer (ILA) probes may be inserted into the design in RTL. You can do this by marking signals with appropriate attributes or by using the `ila` macro from the `phy_definitions.svh` header:
+For analysis and debugging purposes, integrated logic analyzer (ILA) probes may be added to the design's RTL description. You can do this either by marking signals with appropriate attributes or by using the `ila` macro from the `phy_definitions.svh` header:
 
 ```systemverilog
 /* Option 1 */ (* dont_touch = "yes" *) (* mark_debug = "true" *) logic mysignal;
