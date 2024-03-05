@@ -63,8 +63,10 @@ For analysis and debugging purposes, integrated logic analyzer (ILA) probes may 
 To establish a debug bridge over JTAG, ensure the target is in a debuggable state (for example by resetting into the idle boot mode 0) and launch OpenOCD with:
 
 ```
-openocd -f util/openocd.<myboard>.cfg
+openocd -f util/openocd.<board_or_adapter>.cfg
 ```
+
+If multiple JTAG adapters are connected to your debugging machine, you may have to extend the script to specify desired adapter's serial number.
 
 In another shell, launch a RISC-V GDB session attaching to OpenOCD:
 
