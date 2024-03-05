@@ -261,7 +261,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     input doub_bt addr,
     output word_bt data,
     input int unsigned idle_cycles = 20
-
   );
     automatic dm::sbcs_t sbcs = dm::sbcs_t'{sbreadonaddr: 1'b1, sbaccess: 2, default: '0};
     jtag_write(dm::SBCS, sbcs, 0, 1);
