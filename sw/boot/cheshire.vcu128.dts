@@ -1,0 +1,27 @@
+// Copyright 2024 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+//
+// Cyril Koenig <cykoenig@iis.ee.ethz.ch>
+
+/include/ "cheshire.dtsi"
+
+&spi {
+  boot-with = <1>;
+  nor@1 {
+    #address-cells = <0x1>;
+    #size-cells = <0x1>;
+    // Note : u-boot does not find mt25qu02g
+    compatible = "mt25qu02g", "jedec,spi-nor";
+    reg = <0x1>; // CS
+    spi-max-frequency = <25000000>;
+    spi-rx-bus-width = <0x1>;
+    spi-tx-bus-width = <0x1>;
+    disable-wp;
+    partition@0 {
+      label = "all";
+      reg = <0x0 0x6000000>; // 96 MB
+      read-only;
+    };
+  };
+};

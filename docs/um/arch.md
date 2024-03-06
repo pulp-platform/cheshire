@@ -151,6 +151,7 @@ The internal interconnect exposes the following parameters:
 | `RegMax(Read|Write)Txns`    | `dw_bt`      | Max. inflight transactions at Regbus AMO filter   |
 | `RegAmoNumCuts`             | `aw_bt`      | Number of timing cuts inside Regbus AMO filter    |
 | `RegAmoPostCut`             | `bit`        | Whether to insert a cut after Regbus AMO filter   |
+| `RegAdaptMemCut`            | `bit`        | Whether to insert a cut inside AXI-to-Rb. adapter |
 | `(Axi|Reg)ExtNum(Mst|Slv)`  | `0..15`      | AXI4 and Regbus number of external Mgrs. or Subs. |
 | `(Axi|Reg)ExtNumRules`      | `0..15`      | AXI4 and Regbus number of external address rules  |
 | `(Axi|Reg)ExtRegion*`       | `doub_bt`    | AXI4 and Regbus external address regions          |
