@@ -98,40 +98,14 @@ module cheshire_soc import cheshire_pkg::*; #(
   output logic [Cfg.VgaGreenWidth-1:0]  vga_green_o,
   output logic [Cfg.VgaBlueWidth -1:0]  vga_blue_o,
   // USB interface
-//  (* dont_touch = "yes" *) (* mark_debug = "true" *) output logic  usb_dm_o,
-//  (* dont_touch = "yes" *) (* mark_debug = "true" *) input  logic  usb_dm_i,
-// (* dont_touch = "yes" *) (* mark_debug = "true" *) output logic  usb_dm_en_o,
-//  (* dont_touch = "yes" *) (* mark_debug = "true" *) output logic  usb_dp_o,
-//  (* dont_touch = "yes" *) (* mark_debug = "true" *) input  logic  usb_dp_i,
-//  (* dont_touch = "yes" *) (* mark_debug = "true" *) output logic  usb_dp_en_o
-  // Port 0
-  output logic  usb_0_dm_o,
-  input  logic  usb_0_dm_i,
-  output logic  usb_0_dm_en_o,
-  output logic  usb_0_dp_o,
-  input  logic  usb_0_dp_i,
-  output logic  usb_0_dp_en_o,
-  // Port 1
-  output logic  usb_1_dm_o,
-  input  logic  usb_1_dm_i,
-  output logic  usb_1_dm_en_o,
-  output logic  usb_1_dp_o,
-  input  logic  usb_1_dp_i,
-  output logic  usb_1_dp_en_o,
-  // Port 2
-  output logic  usb_2_dm_o,
-  input  logic  usb_2_dm_i,
-  output logic  usb_2_dm_en_o,
-  output logic  usb_2_dp_o,
-  input  logic  usb_2_dp_i,
-  output logic  usb_2_dp_en_o,
-  // Port 3
-  output logic  usb_3_dm_o,
-  input  logic  usb_3_dm_i,
-  output logic  usb_3_dm_en_o,
-  output logic  usb_3_dp_o,
-  input  logic  usb_3_dp_i,
-  output logic  usb_3_dp_en_o
+  input  logic                   usb_clk_i,
+  input  logic                   usb_rst_ni,
+  input  logic [UsbNumPorts-1:0] usb_dm_i,
+  output logic [UsbNumPorts-1:0] usb_dm_o,
+  output logic [UsbNumPorts-1:0] usb_dm_oe_o,
+  input  logic [UsbNumPorts-1:0] usb_dp_i,
+  output logic [UsbNumPorts-1:0] usb_dp_o,
+  output logic [UsbNumPorts-1:0] usb_dp_oe_o
 );
 
   `include "axi/typedef.svh"
@@ -1027,6 +1001,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       dma         : Cfg.Dma,
       serial_link : Cfg.SerialLink,
       vga         : Cfg.Vga,
+      usb         : Cfg.Usb,
       axirt       : Cfg.AxiRt,
       clic        : Cfg.Clic,
       irq_router  : Cfg.IrqRouter,
@@ -1389,329 +1364,6 @@ module cheshire_soc import cheshire_pkg::*; #(
   end
 
   ///////////
-  //  USB  //
-  ///////////
-
-  // Define types needed
-  // For the crtl converter chain
-  `CHESHIRE_TYPEDEF_AXI_CT(axi_usb_ctrl_ser, addr_t, logic [7:0], axi_data_t, axi_strb_t, axi_user_t)
-  `CHESHIRE_TYPEDEF_AXI_CT(axi_usb_ctrl_dw, addr_t, logic [7:0], logic [31:0], logic [3:0], axi_user_t)
-  `CHESHIRE_TYPEDEF_AXI_CT(axi_usb_ctrl, logic [11:0], logic [7:0], logic [31:0], logic [3:0], axi_user_t)
-  // For the dma converter chain
-  `CHESHIRE_TYPEDEF_AXI_CT(axi_usb_dma, logic [31:0], logic [Cfg.AxiMstIdWidth-1:0], logic [31:0], logic [3:0], axi_user_t)
-  `CHESHIRE_TYPEDEF_AXI_CT(axi_usb_dma_dw, logic [31:0], logic [Cfg.AxiMstIdWidth-1:0], axi_data_t, axi_strb_t, axi_user_t)
-
-  if (Cfg.Usb) begin : gen_usb
-    axi_slv_req_t usb_amo_req, usb_cut_req; // AXI interconnect for atomics and cuts
-    axi_slv_rsp_t usb_amo_rsp, usb_cut_rsp;
-
-    axi_riscv_atomics_structs #(
-      .AxiAddrWidth     ( Cfg.AddrWidth    ),
-      .AxiDataWidth     ( Cfg.AxiDataWidth ),
-      .AxiIdWidth       ( AxiSlvIdWidth    ),
-      .AxiUserWidth     ( Cfg.AxiUserWidth ),
-      .AxiMaxReadTxns   ( Cfg.UsbConfMaxReadTxns  ),
-      .AxiMaxWriteTxns  ( Cfg.UsbConfMaxWriteTxns ),
-      .AxiUserAsId      ( 1 ),
-      .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
-      .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-      .RiscvWordWidth   ( 64 ),
-      .NAxiCuts         ( Cfg.UsbConfAmoNumCuts ),
-      .axi_req_t        ( axi_slv_req_t ),
-      .axi_rsp_t        ( axi_slv_rsp_t )
-    ) i_usb_ctrl_atomics (
-      .clk_i,
-      .rst_ni,
-      .axi_slv_req_i ( axi_out_req[AxiOut.usb] ),
-      .axi_slv_rsp_o ( axi_out_rsp[AxiOut.usb] ),
-      .axi_mst_req_o ( usb_amo_req ),
-      .axi_mst_rsp_i ( usb_amo_rsp )
-    );
-
-    axi_cut #(
-      .Bypass     ( ~Cfg.UsbConfAmoPostCut ),
-      .aw_chan_t  ( axi_slv_aw_chan_t ),
-      .w_chan_t   ( axi_slv_w_chan_t  ),
-      .b_chan_t   ( axi_slv_b_chan_t  ),
-      .ar_chan_t  ( axi_slv_ar_chan_t ),
-      .r_chan_t   ( axi_slv_r_chan_t  ),
-      .axi_req_t  ( axi_slv_req_t ),
-      .axi_resp_t ( axi_slv_rsp_t )
-    ) i_usb_ctrl_atomics_cut (
-      .clk_i,
-      .rst_ni,
-      .slv_req_i  ( usb_amo_req ),
-      .slv_resp_o ( usb_amo_rsp ),
-      .mst_req_o  ( usb_cut_req ),
-      .mst_resp_i ( usb_cut_rsp )
-    );
-
-    axi_usb_ctrl_ser_req_t usb_ctrl_ser_req;
-    axi_usb_ctrl_ser_rsp_t usb_ctrl_ser_rsp;
-    
-    axi_iw_converter #(
-    .AxiSlvPortIdWidth      ( AxiSlvIdWidth ),
-    .AxiMstPortIdWidth      ( 8 ),
-    .AxiSlvPortMaxUniqIds   ( 1 /* TODO */ ),
-    .AxiSlvPortMaxTxnsPerId ( 1 /* TODO */ ),
-    .AxiSlvPortMaxTxns      ( 1 /* TODO */ ),
-    .AxiMstPortMaxUniqIds   ( 1 /* TODO */ ),
-    .AxiMstPortMaxTxnsPerId ( 1 /* TODO */ ),
-    .AxiAddrWidth           ( Cfg.AddrWidth ),
-    .AxiDataWidth           ( Cfg.AxiDataWidth ),
-    .AxiUserWidth           ( Cfg.AxiUserWidth ),
-    .slv_req_t              ( axi_slv_req_t ),
-    .slv_resp_t             ( axi_slv_rsp_t ),
-    .mst_req_t              ( axi_usb_ctrl_ser_req_t ),
-    .mst_resp_t             ( axi_usb_ctrl_ser_rsp_t )
-  ) i_usb_ctrl_iw_converter (
-    .clk_i,
-    .rst_ni,
-    .slv_req_i  ( usb_cut_req ),
-    .slv_resp_o ( usb_cut_rsp ),
-    .mst_req_o  ( usb_ctrl_ser_req ),
-    .mst_resp_i ( usb_ctrl_ser_rsp )
-  );
-
-    axi_usb_ctrl_dw_req_t usb_ctrl_dw_req;
-    axi_usb_ctrl_dw_rsp_t usb_ctrl_dw_rsp;
-
-    axi_dw_converter #(
-      .AxiMaxReads          ( 1 /* TODO */ ),
-      .AxiSlvPortDataWidth  ( Cfg.AxiDataWidth ),
-      .AxiMstPortDataWidth  ( 32 ),
-      .AxiAddrWidth         ( Cfg.AddrWidth ),
-      .AxiIdWidth           ( 8 ),
-      .aw_chan_t            ( axi_usb_ctrl_ser_aw_chan_t ),
-      .ar_chan_t            ( axi_usb_ctrl_ser_ar_chan_t ),
-      .mst_w_chan_t         ( axi_usb_ctrl_dw_w_chan_t ),
-      .slv_w_chan_t         ( axi_usb_ctrl_ser_w_chan_t ),
-      .b_chan_t             ( axi_usb_ctrl_ser_b_chan_t ),
-      .mst_r_chan_t         ( axi_usb_ctrl_dw_r_chan_t ),
-      .slv_r_chan_t         ( axi_usb_ctrl_ser_r_chan_t ),
-      .axi_slv_req_t        ( axi_usb_ctrl_ser_req_t ),
-      .axi_slv_resp_t       ( axi_usb_ctrl_ser_rsp_t ),
-      .axi_mst_req_t        ( axi_usb_ctrl_dw_req_t ),
-      .axi_mst_resp_t       ( axi_usb_ctrl_dw_rsp_t )
-    ) i_usb_ctrl_dw_converter (
-      .clk_i,
-      .rst_ni,
-      .slv_req_i  ( usb_ctrl_ser_req ),
-      .slv_resp_o ( usb_ctrl_ser_rsp ),
-      .mst_req_o  ( usb_ctrl_dw_req ),
-      .mst_resp_i ( usb_ctrl_dw_rsp )
-    );
-
-    axi_usb_ctrl_req_t usb_ctrl_req, usb_ctrl_cut_req;
-    axi_usb_ctrl_rsp_t usb_ctrl_rsp, usb_ctrl_cut_rsp;
-
-    axi_modify_address #(
-      .slv_req_t  ( axi_usb_ctrl_dw_req_t ),
-      .mst_req_t  ( axi_usb_ctrl_req_t ),
-      .mst_addr_t ( logic [11:0] ),
-      .axi_resp_t ( axi_usb_ctrl_rsp_t )
-    ) i_usb_ctrl_modify_address (
-      .slv_req_i    ( usb_ctrl_dw_req ),
-      .slv_resp_o   ( usb_ctrl_dw_rsp ),
-      .mst_aw_addr_i( usb_ctrl_dw_req.aw.addr[11:0] ),
-      .mst_ar_addr_i( usb_ctrl_dw_req.ar.addr[11:0] ),
-      .mst_req_o    ( usb_ctrl_req ),
-      .mst_resp_i   ( usb_ctrl_rsp )
-    );
-
-    axi_cut #(
-      .Bypass     ( ~Cfg.UsbConfAmoPostCut ),
-      .aw_chan_t  ( axi_usb_ctrl_aw_chan_t ),
-      .w_chan_t   ( axi_usb_ctrl_w_chan_t  ),
-      .b_chan_t   ( axi_usb_ctrl_b_chan_t  ),
-      .ar_chan_t  ( axi_usb_ctrl_ar_chan_t ),
-      .r_chan_t   ( axi_usb_ctrl_r_chan_t  ),
-      .axi_req_t  ( axi_usb_ctrl_req_t ),
-      .axi_resp_t ( axi_usb_ctrl_rsp_t )
-    ) i_usb_ctrl_cut (
-      .clk_i,
-      .rst_ni,
-      .slv_req_i  ( usb_ctrl_req ),
-      .slv_resp_o ( usb_ctrl_rsp ),
-      .mst_req_o  ( usb_ctrl_cut_req ),
-      .mst_resp_i ( usb_ctrl_cut_rsp )
-    );
-
-
-    axi_usb_dma_req_t usb_dma_req;
-    axi_usb_dma_rsp_t usb_dma_rsp;
-
-    axi_usb_dma_dw_req_t usb_dma_dw_req;
-    axi_usb_dma_dw_rsp_t usb_dma_dw_rsp;
-
-    axi_dw_converter #(
-      .AxiMaxReads          ( 1 /* TODO */ ),
-      .AxiSlvPortDataWidth  ( 32 ),
-      .AxiMstPortDataWidth  ( Cfg.AxiDataWidth ),
-      .AxiAddrWidth         ( Cfg.AddrWidth ),
-      .AxiIdWidth           ( Cfg.AxiMstIdWidth ),
-      .aw_chan_t            ( axi_usb_dma_aw_chan_t ),
-      .ar_chan_t            ( axi_usb_dma_ar_chan_t ),
-      .mst_w_chan_t         ( axi_usb_dma_dw_w_chan_t ),
-      .slv_w_chan_t         ( axi_usb_dma_w_chan_t ),
-      .b_chan_t             ( axi_usb_dma_b_chan_t ),
-      .mst_r_chan_t         ( axi_usb_dma_dw_r_chan_t ),
-      .slv_r_chan_t         ( axi_usb_dma_r_chan_t ),
-      .axi_slv_req_t        ( axi_usb_dma_req_t ),
-      .axi_slv_resp_t       ( axi_usb_dma_rsp_t ),
-      .axi_mst_req_t        ( axi_usb_dma_dw_req_t ),
-      .axi_mst_resp_t       ( axi_usb_dma_dw_rsp_t )
-    ) i_usb_dma_dw_converter (
-      .clk_i,
-      .rst_ni,
-      .slv_req_i  ( usb_dma_req ),
-      .slv_resp_o ( usb_dma_rsp ),
-      .mst_req_o  ( usb_dma_dw_req ),
-      .mst_resp_i ( usb_dma_dw_rsp )
-    );
-
-    axi_modify_address #(
-      .slv_req_t  ( axi_usb_dma_dw_req_t ),
-      .mst_req_t  ( axi_mst_req_t ),
-      .mst_addr_t ( addr_t ),
-      .axi_resp_t ( axi_mst_rsp_t )
-    ) i_usb_dma_modify_address (
-      .slv_req_i    ( usb_dma_dw_req ),
-      .slv_resp_o   ( usb_dma_dw_rsp ),
-      // TODO: how to write to addresses exceeding 32 bit? Find solution.
-      .mst_aw_addr_i( addr_t'(usb_dma_dw_req.aw.addr) ),
-      .mst_ar_addr_i( addr_t'(usb_dma_dw_req.ar.addr) ),
-      .mst_req_o    ( axi_in_req[AxiIn.usb] ),
-      .mst_resp_i   ( axi_in_rsp[AxiIn.usb] )
-    );
-
-    // Tie unconnected AXI IO
-    always_comb begin
-      // Ctrl connections
-      usb_ctrl_cut_rsp.r.user   = Cfg.AxiUserDefault;
-      usb_ctrl_cut_rsp.b.user   = Cfg.AxiUserDefault;
-      // DMA connections
-      usb_dma_req.aw.id     = '0;
-      usb_dma_req.aw.burst  = axi_pkg::BURST_INCR;
-      usb_dma_req.aw.lock   = 0;
-      usb_dma_req.aw.qos    = '0;
-      usb_dma_req.aw.region = '0;
-      usb_dma_req.aw.atop   = '0;
-      usb_dma_req.aw.user   = Cfg.AxiUserDefault;
-      usb_dma_req.w.user    = Cfg.AxiUserDefault;
-      usb_dma_req.ar.id     = '0;
-      usb_dma_req.ar.burst  = axi_pkg::BURST_INCR;
-      usb_dma_req.ar.qos    = '0;
-      usb_dma_req.ar.region = '0;
-      usb_dma_req.ar.user   = Cfg.AxiUserDefault;
-    end
-
-    UsbOhciAxi4 i_usb (
-      .io_dma_aw_valid          ( usb_dma_req.aw_valid   ),
-      .io_dma_aw_ready          ( usb_dma_rsp.aw_ready   ),
-      .io_dma_aw_payload_addr   ( usb_dma_req.aw.addr    ),
-      .io_dma_aw_payload_len    ( usb_dma_req.aw.len     ),
-      .io_dma_aw_payload_size   ( usb_dma_req.aw.size    ),
-      .io_dma_aw_payload_cache  ( usb_dma_req.aw.cache   ),
-      .io_dma_aw_payload_prot   ( usb_dma_req.aw.prot    ),
-      .io_dma_w_valid           ( usb_dma_req.w_valid    ),
-      .io_dma_w_ready           ( usb_dma_rsp.w_ready    ),
-      .io_dma_w_payload_data    ( usb_dma_req.w.data     ),
-      .io_dma_w_payload_strb    ( usb_dma_req.w.strb     ),
-      .io_dma_w_payload_last    ( usb_dma_req.w.last     ),
-      .io_dma_b_valid           ( usb_dma_rsp.b_valid    ),
-      .io_dma_b_ready           ( usb_dma_req.b_ready    ),
-      .io_dma_b_payload_resp    ( usb_dma_rsp.b.resp     ),
-      .io_dma_ar_valid          ( usb_dma_req.ar_valid   ),
-      .io_dma_ar_ready          ( usb_dma_rsp.ar_ready   ),
-      .io_dma_ar_payload_addr   ( usb_dma_req.ar.addr    ),
-      .io_dma_ar_payload_len    ( usb_dma_req.ar.len     ),
-      .io_dma_ar_payload_size   ( usb_dma_req.ar.size    ),
-      .io_dma_ar_payload_cache  ( usb_dma_req.ar.cache   ),
-      .io_dma_ar_payload_prot   ( usb_dma_req.ar.prot    ),
-      .io_dma_r_valid           ( usb_dma_rsp.r_valid    ),
-      .io_dma_r_ready           ( usb_dma_req.r_ready    ),
-      .io_dma_r_payload_data    ( usb_dma_rsp.r.data     ),
-      .io_dma_r_payload_resp    ( usb_dma_rsp.r.resp     ),
-      .io_dma_r_payload_last    ( usb_dma_rsp.r.last     ),
-      .io_ctrl_aw_valid         ( usb_ctrl_cut_req.aw_valid  ),
-      .io_ctrl_aw_ready         ( usb_ctrl_cut_rsp.aw_ready  ),
-      .io_ctrl_aw_payload_addr  ( usb_ctrl_cut_req.aw.addr   ),
-      .io_ctrl_aw_payload_id    ( usb_ctrl_cut_req.aw.id     ),
-      .io_ctrl_aw_payload_region( usb_ctrl_cut_req.aw.region ),
-      .io_ctrl_aw_payload_len   ( usb_ctrl_cut_req.aw.len    ),
-      .io_ctrl_aw_payload_size  ( usb_ctrl_cut_req.aw.size   ),
-      .io_ctrl_aw_payload_burst ( usb_ctrl_cut_req.aw.burst  ),
-      .io_ctrl_aw_payload_lock  ( usb_ctrl_cut_req.aw.lock   ),
-      .io_ctrl_aw_payload_cache ( usb_ctrl_cut_req.aw.cache  ),
-      .io_ctrl_aw_payload_qos   ( usb_ctrl_cut_req.aw.qos    ),
-      .io_ctrl_aw_payload_prot  ( usb_ctrl_cut_req.aw.prot   ),
-      .io_ctrl_w_valid          ( usb_ctrl_cut_req.w_valid   ),
-      .io_ctrl_w_ready          ( usb_ctrl_cut_rsp.w_ready   ),
-      .io_ctrl_w_payload_data   ( usb_ctrl_cut_req.w.data    ),
-      .io_ctrl_w_payload_strb   ( usb_ctrl_cut_req.w.strb    ),
-      .io_ctrl_w_payload_last   ( usb_ctrl_cut_req.w.last    ),
-      .io_ctrl_b_valid          ( usb_ctrl_cut_rsp.b_valid   ),
-      .io_ctrl_b_ready          ( usb_ctrl_cut_req.b_ready   ),
-      .io_ctrl_b_payload_id     ( usb_ctrl_cut_rsp.b.id      ),
-      .io_ctrl_b_payload_resp   ( usb_ctrl_cut_rsp.b.resp    ),
-      .io_ctrl_ar_valid         ( usb_ctrl_cut_req.ar_valid  ),
-      .io_ctrl_ar_ready         ( usb_ctrl_cut_rsp.ar_ready  ),
-      .io_ctrl_ar_payload_addr  ( usb_ctrl_cut_req.ar.addr   ),
-      .io_ctrl_ar_payload_id    ( usb_ctrl_cut_req.ar.id     ),
-      .io_ctrl_ar_payload_region( usb_ctrl_cut_req.ar.region ),
-      .io_ctrl_ar_payload_len   ( usb_ctrl_cut_req.ar.len    ),
-      .io_ctrl_ar_payload_size  ( usb_ctrl_cut_req.ar.size   ),
-      .io_ctrl_ar_payload_burst ( usb_ctrl_cut_req.ar.burst  ),
-      .io_ctrl_ar_payload_lock  ( usb_ctrl_cut_req.ar.lock   ),
-      .io_ctrl_ar_payload_cache ( usb_ctrl_cut_req.ar.cache  ),
-      .io_ctrl_ar_payload_qos   ( usb_ctrl_cut_req.ar.qos    ),
-      .io_ctrl_ar_payload_prot  ( usb_ctrl_cut_req.ar.prot   ),
-      .io_ctrl_r_valid          ( usb_ctrl_cut_rsp.r_valid   ),
-      .io_ctrl_r_ready          ( usb_ctrl_cut_req.r_ready   ),
-      .io_ctrl_r_payload_data   ( usb_ctrl_cut_rsp.r.data    ),
-      .io_ctrl_r_payload_id     ( usb_ctrl_cut_rsp.r.id      ),
-      .io_ctrl_r_payload_resp   ( usb_ctrl_cut_rsp.r.resp    ),
-      .io_ctrl_r_payload_last   ( usb_ctrl_cut_rsp.r.last    ),
-      .io_interrupt             ( intr.intn.usb              ),
-      .io_usb_0_dp_read         ( usb_0_dp_i                 ),
-      .io_usb_0_dp_write        ( usb_0_dp_o                 ),
-      .io_usb_0_dp_writeEnable  ( usb_0_dp_en_o              ),
-      .io_usb_0_dm_read         ( usb_0_dm_i                 ),
-      .io_usb_0_dm_write        ( usb_0_dm_o                 ),
-      .io_usb_0_dm_writeEnable  ( usb_0_dm_en_o              ),
-      .io_usb_1_dp_read         ( usb_1_dp_i                 ),
-      .io_usb_1_dp_write        ( usb_1_dp_o                 ),
-      .io_usb_1_dp_writeEnable  ( usb_1_dp_en_o              ),
-      .io_usb_1_dm_read         ( usb_1_dm_i                 ),
-      .io_usb_1_dm_write        ( usb_1_dm_o                 ),
-      .io_usb_1_dm_writeEnable  ( usb_1_dm_en_o              ),
-      .io_usb_2_dp_read         ( usb_2_dp_i                 ),
-      .io_usb_2_dp_write        ( usb_2_dp_o                 ),
-      .io_usb_2_dp_writeEnable  ( usb_2_dp_en_o              ),
-      .io_usb_2_dm_read         ( usb_2_dm_i                 ),
-      .io_usb_2_dm_write        ( usb_2_dm_o                 ),
-      .io_usb_2_dm_writeEnable  ( usb_2_dm_en_o              ),
-      .io_usb_3_dp_read         ( usb_3_dp_i                 ),
-      .io_usb_3_dp_write        ( usb_3_dp_o                 ),
-      .io_usb_3_dp_writeEnable  ( usb_3_dp_en_o              ),
-      .io_usb_3_dm_read         ( usb_3_dm_i                 ),
-      .io_usb_3_dm_write        ( usb_3_dm_o                 ),
-      .io_usb_3_dm_writeEnable  ( usb_3_dm_en_o              ),
-      .phy_clk                  ( clk_i                      ),
-      .phy_reset                ( !rst_ni                    ),
-      .ctrl_clk                 ( clk_i                      ),
-      .ctrl_reset               ( !rst_ni                    )
-    );
-
-
-//    // USB Valid/Ready signals added to ILA
-//    `define ila(__name, __signal)  \
-//    (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [$bits(__signal)-1:0] __name; \
-//    assign __name = __signal;
-  end
-
-  ///////////
   //  DMA  //
   ///////////
 
@@ -1930,8 +1582,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   if (Cfg.Vga) begin : gen_vga
 
-    axi_mst_req_t axi_vga_req, axi_vga_burst_req;
-    axi_mst_rsp_t axi_vga_burst_rsp;
+    axi_mst_req_t axi_vga_req;
 
     always_comb begin
       axi_in_req[AxiIn.vga]         = axi_vga_req;
@@ -1940,26 +1591,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       axi_in_req[AxiIn.vga].ar.user = Cfg.AxiUserDefault;
     end
 
-  axi_burst_splitter #(
-    .MaxReadTxns    ( 24 /*TODO*/),
-    .MaxWriteTxns   ( 24 /*TODO*/),
-    .FullBW         ( 1 /*TODO*/ ),
-    .AddrWidth      ( Cfg.AddrWidth     ),
-    .DataWidth      ( Cfg.AxiDataWidth  ),
-    .IdWidth        ( Cfg.AxiMstIdWidth ),
-    .UserWidth      ( Cfg.AxiUserWidth  ),
-    .axi_req_t      ( axi_mst_req_t     ),
-    .axi_resp_t     ( axi_mst_rsp_t     )
-  ) i_axi_burst_splitter (
-    .clk_i,
-    .rst_ni,
-    .slv_req_i      ( axi_vga_burst_req ),
-    .slv_resp_o     ( axi_vga_burst_rsp ),
-    .mst_req_o      ( axi_vga_req ),
-    .mst_resp_i     ( axi_in_rsp[AxiIn.vga] )
-  );
-
-  axi_vga #(
+    axi_vga #(
       .RedWidth     ( Cfg.VgaRedWidth    ),
       .GreenWidth   ( Cfg.VgaGreenWidth  ),
       .BlueWidth    ( Cfg.VgaBlueWidth   ),
@@ -1983,8 +1615,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .test_mode_en_i ( test_mode_i ),
       .reg_req_i      ( reg_out_req[RegOut.vga] ),
       .reg_rsp_o      ( reg_out_rsp[RegOut.vga] ),
-      .axi_req_o      ( axi_vga_burst_req ),
-      .axi_resp_i     ( axi_vga_burst_rsp ),
+      .axi_req_o      ( axi_vga_req           ),
+      .axi_resp_i     ( axi_in_rsp[AxiIn.vga] ),
       .hsync_o        ( vga_hsync_o ),
       .vsync_o        ( vga_vsync_o ),
       .red_o          ( vga_red_o   ),
@@ -2029,6 +1661,57 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   if (!(Cfg.Vga && Cfg.BusErr)) begin : gen_vga_bus_err_tie
     assign intr.intn.bus_err.vga = '0;
+  end
+
+  ///////////
+  //  USB  //
+  ///////////
+
+  if (Cfg.Usb) begin : gen_usb
+
+    // TODO: USB has no internal error handling, so it should have a bus error unit.
+
+    spinal_usb_ohci #(
+      .AxiMaxReads    ( Cfg.UsbDmaMaxReads ),
+      .AxiAddrWidth   ( Cfg.AddrWidth     ),
+      .AxiDataWidth   ( Cfg.AxiDataWidth  ),
+      .AxiIdWidth     ( Cfg.AxiMstIdWidth ),
+      .AxiUserWidth   ( Cfg.AxiUserWidth  ),
+      .AxiId          ( '0 ),
+      .AxiUser        ( Cfg.AxiUserDefault ),
+      .AxiAddrDomain  ( Cfg.UsbAddrDomain ),
+      .AxiAddrMask    ( Cfg.UsbAddrMask   ),
+      .reg_req_t      ( reg_req_t ),
+      .reg_rsp_t      ( reg_rsp_t ),
+      .axi_req_t      ( axi_mst_req_t ),
+      .axi_rsp_t      ( axi_mst_rsp_t )
+    ) i_spinal_usb_ohci (
+      .soc_clk_i    ( clk_i  ),
+      .soc_rst_ni   ( rst_ni ),
+      .ctrl_req_i   ( reg_out_req[RegOut.usb] ),
+      .ctrl_rsp_o   ( reg_out_rsp[RegOut.usb] ),
+      .dma_req_o    ( axi_in_req[AxiIn.usb] ),
+      .dma_rsp_i    ( axi_in_rsp[AxiIn.usb] ),
+      .intr_o       ( intr.intn.usb ),
+      .phy_clk_i    ( usb_clk_i   ),
+      .phy_rst_ni   ( usb_rst_ni  ),
+      .phy_dm_i     ( usb_dm_i    ),
+      .phy_dm_o     ( usb_dm_o    ),
+      .phy_dm_oe_o  ( usb_dm_oe_o ),
+      .phy_dp_i     ( usb_dp_i    ),
+      .phy_dp_o     ( usb_dp_o    ),
+      .phy_dp_oe_o  ( usb_dp_oe_o )
+    );
+
+  end else begin : gen_no_usb
+
+    assign usb_dm_o    = '0;
+    assign usb_dm_oe_o = '0;
+    assign usb_dp_o    = '0;
+    assign usb_dp_oe_o = '0;
+
+    assign intr.intn.usb = 0;
+
   end
 
   //////////////////
