@@ -13,7 +13,7 @@
 
 // TODO: Expose more IO: unused SPI CS, Serial Link, etc.
 
-module cheshire_top_xilinx (
+module cheshire_top_xilinx import cheshire_pkg::*; (
   input  logic  sys_clk_p,
   input  logic  sys_clk_n,
 
@@ -79,22 +79,14 @@ module cheshire_top_xilinx (
 
   output logic  uart_tx_o,
   input  logic  uart_rx_i,
-  
-  inout wire          usb_0_dp,
-  inout wire          usb_0_dm,
-  inout wire          usb_1_dp,
-  inout wire          usb_1_dm,
-  inout wire          usb_2_dp,
-  inout wire          usb_2_dm,
-  inout wire          usb_3_dp,
-  inout wire          usb_3_dm
+
+  inout  wire [UsbNumPorts-1:0] usb_dm_io,
+  inout  wire [UsbNumPorts-1:0] usb_dp_io
 );
 
   ///////////////////////
   //  Cheshire Config  //
   ///////////////////////
-
-  import cheshire_pkg::*;
 
   // Use default config as far as possible
   function automatic cheshire_cfg_t gen_cheshire_xilinx_cfg();
@@ -106,7 +98,11 @@ module cheshire_top_xilinx (
     ret.VgaRedWidth     = 5;
     ret.VgaGreenWidth   = 6;
     ret.VgaBlueWidth    = 5;
-    ret.Usb             = 1;
+  `ifdef USE_USB
+    ret.Usb = 1;
+  `else
+    ret.Usb = 0;
+  `endif
     return ret;
   endfunction
 
@@ -120,6 +116,7 @@ module cheshire_top_xilinx (
 
   wire sys_clk;
   wire soc_clk;
+  wire usb_clk;
 
   IBUFDS #(
     .IBUF_LOW_PWR ("FALSE")
@@ -133,8 +130,8 @@ module cheshire_top_xilinx (
     .clk_in1  ( sys_clk ),
     .reset    ( '0 ),
     .locked   ( ),
-    .clk_100  ( ),
-    .clk_50   ( soc_clk  ),
+    .clk_50   ( soc_clk ),
+    .clk_48   ( usb_clk ),
     .clk_20   ( ),
     .clk_10   ( )
   );
@@ -336,59 +333,20 @@ module cheshire_top_xilinx (
   //  USB  //
   ///////////
 
-  // Port 0
-  logic  usb_0_dm_o;
-  logic  usb_0_dm_i;
-  logic  usb_0_dm_en_o;
-  logic  usb_0_dp_o;
-  logic  usb_0_dp_i;
-  logic  usb_0_dp_en_o;
-  // Port 1
-  logic  usb_1_dm_o;
-  logic  usb_1_dm_i;
-  logic  usb_1_dm_en_o;
-  logic  usb_1_dp_o;
-  logic  usb_1_dp_i;
-  logic  usb_1_dp_en_o;
-  // Port 2
-  logic  usb_2_dm_o;
-  logic  usb_2_dm_i;
-  logic  usb_2_dm_en_o;
-  logic  usb_2_dp_o;
-  logic  usb_2_dp_i;
-  logic  usb_2_dp_en_o;
-  // Port 3
-  logic  usb_3_dm_o;
-  logic  usb_3_dm_i;
-  logic  usb_3_dm_en_o;
-  logic  usb_3_dp_o;
-  logic  usb_3_dp_i;
-  logic  usb_3_dp_en_o;
-  
+  // SoC IOs
+  logic [UsbNumPorts-1:0] usb_dm_i;
+  logic [UsbNumPorts-1:0] usb_dm_o;
+  logic [UsbNumPorts-1:0] usb_dm_oe_o;
+  logic [UsbNumPorts-1:0] usb_dp_i;
+  logic [UsbNumPorts-1:0] usb_dp_o;
+  logic [UsbNumPorts-1:0] usb_dp_oe_o;
 
-  // Port 0
-  assign usb_0_dp = usb_0_dp_en_o ? usb_0_dp_o : 'z;
-  assign usb_0_dp_i = usb_0_dp;
-  assign usb_0_dm = usb_0_dm_en_o ? usb_0_dm_o : 'z;
-  assign usb_0_dm_i = usb_0_dm;
-  
-  // Port 1
-  assign usb_1_dp = usb_1_dp_en_o ? usb_1_dp_o : 'z;
-  assign usb_1_dp_i = usb_1_dp;
-  assign usb_1_dm = usb_1_dm_en_o ? usb_1_dm_o : 'z;
-  assign usb_1_dm_i = usb_1_dm;
-  
-  // Port 2
-  assign usb_2_dp = usb_2_dp_en_o ? usb_2_dp_o : 'z;
-  assign usb_2_dp_i = usb_2_dp;
-  assign usb_2_dm = usb_2_dm_en_o ? usb_2_dm_o : 'z;
-  assign usb_2_dm_i = usb_2_dm;
-  
-  // Port 3
-  assign usb_3_dp = usb_3_dp_en_o ? usb_3_dp_o : 'z;
-  assign usb_3_dp_i = usb_3_dp;
-  assign usb_3_dm = usb_3_dm_en_o ? usb_3_dm_o : 'z;
-  assign usb_3_dm_i = usb_3_dm;
+  for (genvar i = 0; i < FPGACfg.Usb*UsbNumPorts; ++i) begin : gen_usb_tristate
+    assign usb_dp_io [i] = usb_dp_oe_o[i] ? usb_dp_o[i] : 'z;
+    assign usb_dp_i  [i] = usb_dp_io[i];
+    assign usb_dm_io [i] = usb_dm_oe_o[i] ? usb_dm_o[i] : 'z;
+    assign usb_dm_i  [i] = usb_dm_io[i];
+  end
 
   /////////////////////////
   // "RTC" Clock Divider //
@@ -530,30 +488,14 @@ module cheshire_top_xilinx (
 `endif
     .uart_tx_o,
     .uart_rx_i,
-    .usb_0_dm_o,
-    .usb_0_dm_i,
-    .usb_0_dm_en_o,
-    .usb_0_dp_o,
-    .usb_0_dp_i,
-    .usb_0_dp_en_o,
-    .usb_1_dm_o,
-    .usb_1_dm_i,
-    .usb_1_dm_en_o,
-    .usb_1_dp_o,
-    .usb_1_dp_i,
-    .usb_1_dp_en_o,
-    .usb_2_dm_o,
-    .usb_2_dm_i,
-    .usb_2_dm_en_o,
-    .usb_2_dp_o,
-    .usb_2_dp_i,
-    .usb_2_dp_en_o,
-    .usb_3_dm_o,
-    .usb_3_dm_i,
-    .usb_3_dm_en_o,
-    .usb_3_dp_o,
-    .usb_3_dp_i,
-    .usb_3_dp_en_o
+    .usb_clk_i          ( usb_clk ),
+    .usb_rst_ni         ( rst_n ), // Technically should sync to `usb_clk`, but pulse is long enough
+    .usb_dm_i,
+    .usb_dm_o,
+    .usb_dm_oe_o,
+    .usb_dp_i,
+    .usb_dp_o,
+    .usb_dp_oe_o
   );
 
 endmodule

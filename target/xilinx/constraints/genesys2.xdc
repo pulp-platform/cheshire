@@ -92,6 +92,17 @@ set_false_path -hold -from [get_ports {i2c_scl_io i2c_sda_io}]
 set_max_delay [expr $I2C_IO_SPEED * 0.35] -to [get_ports {i2c_scl_io i2c_sda_io}]
 set_false_path -hold -to [get_ports {i2c_scl_io i2c_sda_io}]
 
+#######
+# USB #
+#######
+
+set usb_clk [get_clocks -of_objects [get_pins i_clkwiz/clk_48]]
+
+# `set_max_delay -datapath only` implicitly vaives all undesired checks between clocks (setup with skew and hold)
+# We assume here `soc_clk` is the faster clock, and allocate two thirds of its period for the crossing.
+set_max_delay -datapath_only -from $usb_clk -to $soc_clk [expr 0.67 * $SOC_TCK]
+set_max_delay -datapath_only -from $soc_clk -to $usb_clk [expr 0.67 * $SOC_TCK]
+
 ###############
 # Assign Pins #
 ###############
@@ -165,11 +176,11 @@ set_property -dict { PACKAGE_PIN AE30  IOSTANDARD LVCMOS33 } [get_ports { i2c_sc
 set_property -dict { PACKAGE_PIN AF30  IOSTANDARD LVCMOS33 } [get_ports { i2c_sda_io }]; #IO_L16N_T2_13 Sch=sys_sda
 
 # PMOD Header JA (USB 1.1 Adapter)
-set_property -dict { PACKAGE_PIN U27   IOSTANDARD LVCMOS33 } [get_ports { usb_3_dm }]; #IO_L13P_T2_MRCC_14 Sch=ja_p[1]
-set_property -dict { PACKAGE_PIN U28   IOSTANDARD LVCMOS33 } [get_ports { usb_3_dp }]; #IO_L13N_T2_MRCC_14 Sch=ja_n[1]
-set_property -dict { PACKAGE_PIN T26   IOSTANDARD LVCMOS33 } [get_ports { usb_2_dm }]; #IO_L12P_T1_MRCC_14 Sch=ja_p[2]
-set_property -dict { PACKAGE_PIN T27   IOSTANDARD LVCMOS33 } [get_ports { usb_2_dp }]; #IO_L12N_T1_MRCC_14 Sch=ja_n[2]
-set_property -dict { PACKAGE_PIN T22   IOSTANDARD LVCMOS33 } [get_ports { usb_1_dm }]; #IO_L5P_T0_D06_14 Sch=ja_p[3]
-set_property -dict { PACKAGE_PIN T23   IOSTANDARD LVCMOS33 } [get_ports { usb_1_dp }]; #IO_L5N_T0_D07_14 Sch=ja_n[3]
-set_property -dict { PACKAGE_PIN T20   IOSTANDARD LVCMOS33 } [get_ports { usb_0_dm }]; #IO_L4P_T0_D04_14 Sch=ja_p[4]
-set_property -dict { PACKAGE_PIN T21   IOSTANDARD LVCMOS33 } [get_ports { usb_0_dp }]; #IO_L4N_T0_D05_14 Sch=ja_n[4]
+set_property -dict { PACKAGE_PIN U27   IOSTANDARD LVCMOS33 } [get_ports { usb_dm_io[3] }]; #IO_L13P_T2_MRCC_14 Sch=ja_p[1]
+set_property -dict { PACKAGE_PIN U28   IOSTANDARD LVCMOS33 } [get_ports { usb_dp_io[3] }]; #IO_L13N_T2_MRCC_14 Sch=ja_n[1]
+set_property -dict { PACKAGE_PIN T26   IOSTANDARD LVCMOS33 } [get_ports { usb_dm_io[2] }]; #IO_L12P_T1_MRCC_14 Sch=ja_p[2]
+set_property -dict { PACKAGE_PIN T27   IOSTANDARD LVCMOS33 } [get_ports { usb_dp_io[2] }]; #IO_L12N_T1_MRCC_14 Sch=ja_n[2]
+set_property -dict { PACKAGE_PIN T22   IOSTANDARD LVCMOS33 } [get_ports { usb_dm_io[1] }]; #IO_L5P_T0_D06_14 Sch=ja_p[3]
+set_property -dict { PACKAGE_PIN T23   IOSTANDARD LVCMOS33 } [get_ports { usb_dp_io[1] }]; #IO_L5N_T0_D07_14 Sch=ja_n[3]
+set_property -dict { PACKAGE_PIN T20   IOSTANDARD LVCMOS33 } [get_ports { usb_dm_io[0] }]; #IO_L4P_T0_D04_14 Sch=ja_p[4]
+set_property -dict { PACKAGE_PIN T21   IOSTANDARD LVCMOS33 } [get_ports { usb_dp_io[0] }]; #IO_L4N_T0_D05_14 Sch=ja_n[4]

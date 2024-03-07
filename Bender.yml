@@ -26,7 +26,7 @@ dependencies:
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.5.1  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
-  register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",     version: 0.4.3  }
+  register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",     version: 0.4.4  }
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              version: 0.8.1  }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.1  }
   unbent:                   { git: "https://github.com/pulp-platform/unbent.git",                 version: 0.1.6  }
@@ -35,12 +35,13 @@ export_include_dirs:
   - hw/include
 
 sources:
+  - hw/future/UsbOhciAxi4.v
+  - hw/future/spinal_usb_ohci.sv
   - hw/bootrom/cheshire_bootrom.sv
   - hw/regs/cheshire_reg_pkg.sv
   - hw/regs/cheshire_reg_top.sv
   - hw/cheshire_pkg.sv
   - hw/cheshire_soc.sv
-  - hw/future/UsbOhciAxi4.v
 
   - target: any(simulation, test)
     files:
