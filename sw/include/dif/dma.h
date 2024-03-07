@@ -9,16 +9,16 @@
 #include "regs/idma.h"
 #include "params.h"
 
-#define DMA_SRC_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_FRONTEND_SRC_ADDR_REG_OFFSET)
-#define DMA_DST_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_FRONTEND_DST_ADDR_REG_OFFSET)
-#define DMA_NUMBYTES_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_FRONTEND_NUM_BYTES_REG_OFFSET)
-#define DMA_CONF_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_FRONTEND_CONF_REG_OFFSET)
-#define DMA_STATUS_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_FRONTEND_STATUS_REG_OFFSET)
-#define DMA_NEXTID_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_FRONTEND_NEXT_ID_REG_OFFSET)
-#define DMA_DONE_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_FRONTEND_DONE_REG_OFFSET)
-#define DMA_SRC_STRIDE_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_FRONTEND_STRIDE_SRC_REG_OFFSET)
-#define DMA_DST_STRIDE_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_FRONTEND_STRIDE_DST_REG_OFFSET)
-#define DMA_NUM_REPS_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_FRONTEND_NUM_REPETITIONS_REG_OFFSET)
+#define DMA_SRC_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_SRC_ADDR_LOW_REG_OFFSET)
+#define DMA_DST_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_DST_ADDR_LOW_REG_OFFSET)
+#define DMA_NUMBYTES_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_LENGTH_LOW_REG_OFFSET)
+#define DMA_CONF_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_CONF_REG_OFFSET)
+#define DMA_STATUS_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_STATUS_0_BUSY_0_OFFSET)
+#define DMA_NEXTID_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_NEXT_ID_0_REG_OFFSET)
+#define DMA_DONE_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_DONE_ID_0_REG_OFFSET)
+#define DMA_SRC_STRIDE_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_SRC_STRIDE_2_LOW_REG_OFFSET)
+#define DMA_DST_STRIDE_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_DST_STRIDE_2_LOW_REG_OFFSET)
+#define DMA_NUM_REPS_ADDR(BASE) ((void *)BASE + IDMA_REG64_2D_REPS_2_LOW_REG_OFFSET)
 
 #define DMA_CONF_DECOUPLE 0
 #define DMA_CONF_DEBURST 0
@@ -82,9 +82,9 @@
         *(NAME##_dma_num_bytes_ptr()) = size; \
         *(NAME##_dma_num_reps_ptr()) = 0; \
         *(NAME##_dma_conf_ptr()) = \
-            (DMA_CONF_DECOUPLE << IDMA_REG64_2D_FRONTEND_CONF_DECOUPLE_BIT) | \
-            (DMA_CONF_DEBURST << IDMA_REG64_2D_FRONTEND_CONF_DEBURST_BIT) | \
-            (DMA_CONF_SERIALIZE << IDMA_REG64_2D_FRONTEND_CONF_SERIALIZE_BIT); \
+            (DMA_CONF_DECOUPLE << IDMA_REG64_2D_CONF_DECOUPLE_AW_BIT) | \
+            (DMA_CONF_DEBURST << 1) | \
+            (DMA_CONF_SERIALIZE << 2); \
         return *(NAME##_dma_nextid_ptr()); \
     } \
 \
@@ -102,9 +102,9 @@
         *(NAME##_dma_dst_ptr()) = (uint64_t)dst; \
         *(NAME##_dma_num_bytes_ptr()) = size; \
         *(NAME##_dma_conf_ptr()) = \
-            (DMA_CONF_DECOUPLE << IDMA_REG64_2D_FRONTEND_CONF_DECOUPLE_BIT) | \
-            (DMA_CONF_DEBURST << IDMA_REG64_2D_FRONTEND_CONF_DEBURST_BIT) | \
-            (DMA_CONF_SERIALIZE << IDMA_REG64_2D_FRONTEND_CONF_SERIALIZE_BIT); \
+            (DMA_CONF_DECOUPLE << IDMA_REG64_2D_CONF_DECOUPLE_AW_BIT) | \
+            (DMA_CONF_DEBURST << 1) | \
+            (DMA_CONF_SERIALIZE << 2); \
         *(NAME##_dma_src_stride_ptr()) = src_stride; \
         *(NAME##_dma_dst_stride_ptr()) = dst_stride; \
         *(NAME##_dma_num_reps_ptr()) = num_reps; \

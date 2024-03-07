@@ -29,7 +29,20 @@ module cheshire_top_xilinx
 
   inout wire          i2c_scl_io,
   inout wire          i2c_sda_io,
-
+  
+  input  logic        eth_rxck_i,
+  input  logic [3:0]  eth_rxd_i,
+  input  logic        eth_rxctl_i,
+  output logic        eth_txck_o,
+  output logic [3:0]  eth_txd_o,
+  output logic        eth_txctl_o,
+  output logic        eth_rstn_o, 
+  input  logic        eth_intn_i,
+  input  logic        eth_pme_i,
+  inout  logic        eth_mdio_io,
+  output logic        eth_mdio_oe,
+  output logic        eth_mdc_o,
+  
   input logic         sd_cd_i,
   output logic        sd_cmd_o,
   inout wire  [3:0]   sd_d_io,
@@ -102,6 +115,7 @@ module cheshire_top_xilinx
     SpiHost           : 1,
     Gpio              : 1,
     Dma               : 1,
+    Ethernet          : 1;
     SerialLink        : 0,
     Vga               : 1,
     // Debug
@@ -364,6 +378,23 @@ module cheshire_top_xilinx
     .T  ( ~i2c_sda_en         )
   );
 
+  ///////////////////////
+  // Ethernet Adaption //
+  ///////////////////////
+
+  logic 
+  IOBUF #(
+    .DRIVE        ( 12         ), // Specify the output drive strength
+    .IBUF_LOW_PWR ( "FALSE"    ),  // Low Power - "TRUE", High Performance = "FALSE" 
+    .IOSTANDARD   ( "DEFAULT"  ), // Specify the I/O standard
+    .SLEW         ( "FAST"     ) // Specify the output slew rate
+ ) IOBUF_inst (
+    .O  ( eth_mdio_i    ),     // Buffer output
+    .IO ( eth_mdio      ),   // Buffer inout port (connect directly to top-level port)
+    .I  ( eth_mdio_o    ),   // Buffer input
+    .T  ( ~eth_mdio_oe  )    // 3-state enable input, high=input, low=output
+ );
+
 
   //////////////////
   // SPI Adaption //
@@ -525,6 +556,19 @@ module cheshire_top_xilinx
     .spih_sd_o          ( spi_sd_soc_out  ),
     .spih_sd_en_o       ( spi_sd_en       ),
     .spih_sd_i          ( spi_sd_soc_in   ),
+    .eth_rxck_i         ( eth_rxck_i      ),
+    .eth_rxd_i (  eth_rxd_i ),
+    .eth_rxctl_i( eth_rxctl_i),
+    .eth_txck_o(eth_txck_o),
+    .eth_txd_o(eth_txd_o),
+    .eth_txctl_o(eth_txctl_o),
+    .eth_rstn_o(eth_rstn_o), 
+    .eth_intn_i(eth_intn_i),
+    .eth_pme_i(eth_pme_i),
+    .eth_mdio_i(eth_mdio_i),
+    .eth_mdio_o(eth_mdio_o),
+    .eth_mdio_oe(eth_mdio_oe),
+    .eth_mdc_o(eth_md_o),
     .gpio_i             ( '0 ),
     .gpio_o             ( ),
     .gpio_en_o          ( ),

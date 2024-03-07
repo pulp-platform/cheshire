@@ -7,6 +7,7 @@
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 // Thomas Benz <tbenz@iis.ee.ethz.ch>
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
+`include "axi/assign.svh"
 
 module cheshire_soc import cheshire_pkg::*; #(
   // Cheshire config
@@ -74,6 +75,20 @@ module cheshire_soc import cheshire_pkg::*; #(
   output logic  i2c_scl_o,
   input  logic  i2c_scl_i,
   output logic  i2c_scl_en_o,
+  // ETHERNET interface
+  input  logic        eth_rxck_i,
+  input  logic [3:0]  eth_rxd_i,
+  input  logic        eth_rxctl_i,
+  output logic        eth_txck_o,
+  output logic [3:0]  eth_txd_o,
+  output logic        eth_txctl_o,
+  output logic        eth_rstn_o, 
+  input  logic        eth_intn_i,
+  input  logic        eth_pme_i,
+  input  logic        eth_mdio_i,
+  output logic        eth_mdio_o,
+  output logic        eth_mdio_oe,
+  output logic        eth_mdc_o,
   // SPI host interface
   output logic                  spih_sck_o,
   output logic                  spih_sck_en_o,
@@ -1282,6 +1297,63 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign intr.intn.i2c_host_timeout      = 0;
 
   end
+  ////////////////
+  //  ETHERNET  //
+  ////////////////
+  if (Cfg.Ethernet) begin : gen_ethernet
+    AXI_BUS #(
+      .AXI_ADDR_WIDTH( Cfg.AddrWidth    ),
+      .AXI_DATA_WIDTH( Cfg.AxiDataWidth ),
+      .AXI_ID_WIDTH  ( AxiSlvIdWidth    ),
+      .AXI_USER_WIDTH( Cfg.AxiUserWidth )
+    ) axi_ethernet ();
+
+  `AXI_ASSIGN_FROM_REQ(axi_ethernet, axi_out_req[AxiOut.ethernet]);
+  `AXI_ASSIGN_TO_RESP(axi_out_rsp[AxiOut.ethernet], axi_ethernet);
+
+
+    eth_rgmii #(
+      .AXI_ID_WIDTH   ( AxiSlvIdWidth     ),
+      .AXI_ADDR_WIDTH ( Cfg.AddrWidth     ),
+      .AXI_DATA_WIDTH ( Cfg.AxiDataWidth  ),
+      .AXI_USER_WIDTH ( Cfg.AxiUserWidth  )
+    ) i_eth_rgmii_tx(
+      .clk_i           ( clk_i           ),
+      .rst_ni          ( rst_ni          ),
+      .ethernet        ( axi_ethernet    ),   
+      .eth_rxck        ( eth_rxck_i      ),
+      .eth_rxctl       ( eth_rxctl_i     ),
+      .eth_rxd         ( eth_rxd_i       ),
+      .eth_txck        ( eth_txck_o      ),
+      .eth_txctl       ( eth_txctl_o     ),
+      .eth_txd         ( eth_txd_o       ),
+      .eth_rst_n       ( eth_rstn_o      ),
+      .phy_int_i       (                 ),
+      .phy_pme_i       (                 ),
+      .phy_mdio_i      (                 ),
+      .phy_mdio_o      (                 ),
+      .phy_mdio_eo     (                 ),
+      .phy_mdc_o       (                 )
+      );
+
+  end else begin : gen_no_ethernet // not sure
+
+      assign axi_out_rsp[AxiOut.ethernet].aw_ready = 1'b1;
+      assign axi_out_rsp[AxiOut.ethernet].ar_ready = 1'b1;
+      assign axi_out_rsp[AxiOut.ethernet].w_ready = 1'b1;
+
+      // assign axi_in_rsp[AxiIn.eth_idma].b_valid = axi_in_req[AxiIn.eth_idma].aw_valid;
+      // assign axi_in_rsp[AxiIn.eth_idma].b_id = axi_in_req[AxiIn.eth_idma].aw_id;
+      // assign axi_in_rsp[AxiIn.eth_idma].b_resp = axi_pkg::RESP_SLVERR;
+      // assign axi_in_rsp[AxiIn.eth_idma].b_user = '0;
+
+      assign axi_out_rsp[AxiOut.ethernet].r_valid = axi_out_req[AxiOut.ethernet].ar_valid;
+      // assign axi_in_rsp[AxiIn.eth_idma].r_resp = axi_pkg::RESP_SLVERR;
+      // assign axi_in_rsp[AxiIn.eth_idma].r_data = 'hdeadbeef;
+      // assign axi_in_rsp[AxiIn.eth_idma].r_last = 1'b1;
+
+    end
+
 
   ////////////////
   //  SPI Host  //

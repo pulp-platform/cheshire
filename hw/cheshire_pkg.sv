@@ -126,6 +126,7 @@ package cheshire_pkg;
     bit     Bootrom;
     bit     Uart;
     bit     I2c;
+    bit     Ethernet;
     bit     SpiHost;
     bit     Gpio;
     bit     Dma;
@@ -320,6 +321,7 @@ package cheshire_pkg;
     aw_bt llc;
     aw_bt spm;
     aw_bt dma;
+    aw_bt ethernet;
     aw_bt slink;
     aw_bt ext_base;
     aw_bt num_out;
@@ -346,6 +348,7 @@ package cheshire_pkg;
       r++; ret.map[r] = '{i, AmSpm + 'h0400_0000, AmSpm + 'h0400_0000 + SizeSpm};
     end
     if (cfg.Dma)          begin i++; r++; ret.dma = i; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
+    if (cfg.Ethernet)     begin i++; r++; ret.ethernet = i; ret.map[r] = '{i, 'h0301_0000, 'h0302_0000}; end
     if (cfg.SerialLink)   begin i++; r++; ret.slink = i;
         ret.map[r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
     // External port indices start after internal ones
@@ -407,6 +410,7 @@ package cheshire_pkg;
     if (cfg.Vga)          begin i++; ret.vga        = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
     if (cfg.IrqRouter)    begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
     if (cfg.AxiRt)        begin i++; ret.axirt      = i; r++; ret.map[r] = '{i, 'h020c_0000, 'h0210_0000}; end
+
     if (cfg.Clic) for (int j = 0; j < cfg.NumCores; j++) begin
       i++; ret.clic[j]    = i; r++; ret.map[r] = '{i, AmClic + j*'h40000, AmClic + (j+1)*'h40000};
     end
@@ -540,13 +544,14 @@ package cheshire_pkg;
     // Features
     Bootrom           : 1,
     Uart              : 1,
+    Ethernet          : 1,
     I2c               : 1,
     SpiHost           : 1,
     Gpio              : 1,
-    Dma               : 1,
+    //Dma               : 1,
     SerialLink        : 1,
     Vga               : 1,
-    AxiRt             : 0,
+    AxiRt             : 1,
     Clic              : 0,
     IrqRouter         : 0,
     BusErr            : 1,

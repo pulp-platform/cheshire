@@ -8,7 +8,6 @@
 
 // Collects all existing verification IP (VIP) in one module for use in testbenches of
 // Cheshire-based SoCs and Chips. IOs are of inout direction where applicable.
-
 module vip_cheshire_soc import cheshire_pkg::*; #(
   // DUT (must be set)
   parameter cheshire_cfg_t DutCfg           = '0,
@@ -17,7 +16,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter type          axi_ext_mst_req_t = logic,
   parameter type          axi_ext_mst_rsp_t = logic,
   // Timing
-  parameter time          ClkPeriodSys      = 5ns,
+  parameter time          ClkPeriodSys      = 2ns,
   parameter time          ClkPeriodJtag     = 20ns,
   parameter time          ClkPeriodRtc      = 30518ns,
   parameter int unsigned  RstCycles         = 5,
@@ -67,6 +66,16 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   inout  wire                 spih_sck,
   inout  wire [SpihNumCs-1:0] spih_csb,
   inout  wire [ 3:0]          spih_sd,
+  // Ethernet interface
+  inout  wire [ 3:0]          eth_txd,
+  inout  wire [ 3:0]          eth_rxd,
+  inout  wire                 eth_txck,
+  inout  wire                 eth_rxck,
+  inout  wire                 eth_txctl,
+  inout  wire                 eth_rxctl,
+  inout  wire                 eth_rstn,
+  inout  wire                 eth_mdio,
+  inout  wire                 eth_mdc,
   // Serial link interface
   output logic [SlinkNumChan-1:0]                    slink_rcv_clk_i,
   input  logic [SlinkNumChan-1:0]                    slink_rcv_clk_o,
@@ -552,6 +561,189 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   endtask
 
   ///////////////////
+  //    Ethernet   //
+  ///////////////////
+
+  AXI_BUS_DV#(
+    .AXI_ADDR_WIDTH(DutCfg.AddrWidth),
+    .AXI_DATA_WIDTH(DutCfg.AxiDataWidth),
+    .AXI_ID_WIDTH(DutCfg.AxiMstIdWidth),
+    .AXI_USER_WIDTH(DutCfg.AxiUserWidth)
+  )axi_master_dv(clk);
+
+  AXI_BUS#(
+    .AXI_ADDR_WIDTH(DutCfg.AddrWidth),
+    .AXI_DATA_WIDTH(DutCfg.AxiDataWidth),
+    .AXI_ID_WIDTH(DutCfg.AxiMstIdWidth),
+    .AXI_USER_WIDTH(DutCfg.AxiUserWidth)
+  )axi_master();
+
+  `AXI_ASSIGN(axi_master, axi_master_dv)
+
+  typedef axi_test::axi_driver #(.AW(DutCfg.AddrWidth), .DW(DutCfg.AxiDataWidth), .IW(DutCfg.AxiMstIdWidth), .UW(DutCfg.AxiUserWidth), .TA(ClkPeriodSys * TAppl), .TT(ClkPeriodSys * TTest)) axi_drv_t;
+  axi_drv_t axi_master_drv =  new(axi_master_dv);
+
+  axi_drv_t::b_beat_t b_beat;
+  axi_drv_t::w_beat_t w_beat = new;
+  axi_drv_t::ax_beat_t aw_beat = new, ar_beat = new;
+  axi_drv_t::r_beat_t r_beat;
+  //beats
+  // axi_test::axi_ax_beat #(.AW(DutCfg.AddrWidth), .IW(DutCfg.AxiMstIdWidth), .UW(DutCfg.AxiUserWidth)) ar_beat = new();
+  // axi_test::axi_r_beat  #(.DW(DutCfg.AxiDataWidth), .IW(DutCfg.AxiMstIdWidth), .UW(DutCfg.AxiUserWidth)) r_beat  = new();
+  // axi_test::axi_ax_beat #(.AW(DutCfg.AddrWidth), .IW(DutCfg.AxiMstIdWidth), .UW(DutCfg.AxiUserWidth)) aw_beat = new();
+  // axi_test::axi_w_beat  #(.DW(DutCfg.AxiDataWidth), .UW(DutCfg.AxiUserWidth))      w_beat  = new();
+  // axi_test::axi_b_beat  #(.IW(DutCfg.AxiMstIdWidth), .UW(DutCfg.AxiUserWidth))     b_beat  = new();
+  typedef logic [DutCfg.AddrWidth-1:0]   axi_addr_t;
+
+  task reset_master;
+    input axi_drv_t axi_master_drv;
+    axi_master_drv.reset_master();
+  endtask
+
+  task read_axi;
+    input axi_drv_t axi_master_drv;
+    input axi_addr_t raddr;
+
+    ar_beat.ax_addr  = raddr;
+    axi_master_drv.send_ar(ar_beat);
+    axi_master_drv.recv_r(r_beat);
+    $display("Read data: %x", r_beat.r_data);
+  endtask // read_axi
+
+  task write_axi;
+    input axi_drv_t axi_master_drv;
+    input axi_addr_t waddr;
+    input axi_data_t wdata;
+    input axi_strb_t wstrb;
+
+    aw_beat.ax_addr  = waddr;
+    w_beat.w_strb    = wstrb;
+    w_beat.w_last    = 1'b1;
+    w_beat.w_data    = wdata;
+
+    axi_master_drv.send_aw(aw_beat);
+    axi_master_drv.send_w(w_beat);
+    $display("Written data: %x", w_beat.w_data);
+    axi_master_drv.recv_b(b_beat);
+
+  endtask; // write_axi
+
+  eth_rgmii #(
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
+    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
+    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
+  ) i_eth_rgmii_rx(
+    .clk_i           ( clk           ),
+    .rst_ni          ( rst_n         ),
+    .ethernet        ( axi_master    ),
+    .eth_rxck        ( eth_txck      ),
+    .eth_rxctl       ( eth_txctl     ),
+    .eth_rxd         ( eth_txd       ),
+    .eth_txck        ( eth_rxck      ),
+    .eth_txctl       ( eth_rxctl     ),
+    .eth_txd         ( eth_rxd       ),
+    .eth_rst_n       ( eth_rstn      ),
+    .phy_int_i       ( 1'b1          ),
+    .phy_pme_i       ( 1'b1          ),
+    .phy_mdio_i      ( 1'b0          ),
+    .phy_mdio_o      (               ),
+    .phy_mdio_eo     (               ),
+    .phy_mdc_o       (               )
+  );
+  
+  logic [DutCfg.AxiDataWidth:0] data_array [7:0] = {
+    64'h1032207098001032, 64'h3210E20020709800, 
+    64'h1716151413121110, 64'h2726252423222120,
+    64'h3736353433323130, 64'h4746454443424140, 
+    64'h5756555453525150, 64'h6766656463626160
+  };
+
+  logic [DutCfg.AxiMstIdWidth-1:0] read_addr [31:0];
+
+  
+
+  initial begin
+    for (int i = 0; i < 8; i++) begin
+       read_addr[i] = 64'h0301_4000 + (i * 8);
+    end
+  end
+  
+  logic [DutCfg.AddrWidth-1:0] write_addr [31:0];
+
+  initial begin
+      for (int i = 0; i < 8; i++) begin
+          write_addr[i] = 64'h0301_1000 + (i * 8);
+      end
+  end
+
+  logic [63:0] rx_read_data;
+  assign rx_read_data=axi_master.r_data;
+
+  event       tx_complete;
+  logic       en_rx_memw;
+  assign en_rx_memw = i_eth_rgmii_rx.eth_rgmii.RAMB16_inst_rx.genblk1[0].mem_wrap_rx_inst.enaB;
+
+  initial begin
+    while(1) begin
+       @(posedge en_rx_memw);
+       @(negedge en_rx_memw);
+       -> tx_complete;
+    end
+  end
+
+  // Check if the data received and stored in the rx memory matches the transmitted data
+
+  initial begin
+    automatic int continue_loop = 1;
+    while(continue_loop) begin
+      wait(tx_complete.triggered);
+      for(int i=0; i<8; i++) begin
+        read_axi(axi_master_drv, read_addr[i]);
+        if(rx_read_data == data_array[i])
+          $display(" Data correct");
+        else
+           $display("Data wrong");
+      end
+      continue_loop = 0;
+    end      
+    
+    reset_master(axi_master_drv);
+    repeat(5) @(posedge clk);
+    #3000ns;
+    
+    // Packet length
+    write_axi(axi_master_drv,'h03010810,'h00000040, 'h0f);
+    repeat(5) @(posedge clk);
+
+    // TX BUFFER FILLING ----------------------------------------------
+    for(int j=0; j<8; j++) begin
+       write_axi(axi_master_drv, write_addr[j], data_array[j], 'hff);
+       @(posedge clk);
+    end
+    repeat(10) @(posedge clk);
+
+    // TRANSMISSION OF PACKET -----------------------------------------
+    // 1 --> mac_address[31:0]
+    write_axi(axi_master_drv,'h03010800,'h00890702, 'h0f);
+    @(posedge clk);
+
+    // 2 --> {irq_en,promiscuous,spare,loopback,cooked,mac_address[47:32]}
+    write_axi(axi_master_drv,'h03010808,'h00802301, 'h0f);
+    @(posedge clk);
+
+    // 3 --> Rx frame check sequence register(read) and last register(write)
+    write_axi(axi_master_drv,'h03010828,'h00000008, 'h0f);
+    @(posedge clk);
+
+    repeat(20) @(posedge clk);
+    $finish;
+
+  end // initial begin
+      
+
+
+  ///////////////////
   //  Serial Link  //
   ///////////////////
 
@@ -889,13 +1081,35 @@ module vip_cheshire_soc_tristate import cheshire_pkg::*; (
   output logic [ 3:0]           spih_sd_i,
   input  logic [ 3:0]           spih_sd_o,
   input  logic [ 3:0]           spih_sd_en,
+  // Ethernet pad IO
+  output logic [3:0]            eth_rxd_i,  
+  input  logic [3:0]            eth_txd_o,
+  output logic                  eth_rxck_i,
+  input  logic                  eth_txck_o,
+  output logic                  eth_rxctl_i,
+  input  logic                  eth_txctl_o,
+  input  logic                  eth_rstn_o,
+  input  logic                  eth_mdio_o,
+  output logic                  eth_mdio_i,
+  input  logic                  eth_mdio_en,
+  input  logic                  eth_mdc_o,
   // I2C wires
   inout  wire i2c_sda,
   inout  wire i2c_scl,
   // SPI host wires
   inout  wire                 spih_sck,
   inout  wire [SpihNumCs-1:0] spih_csb,
-  inout  wire [ 3:0]          spih_sd
+  inout  wire [ 3:0]          spih_sd,
+  // Ethernet wires
+  inout  wire [ 3:0]          eth_txd,
+  inout  wire [ 3:0]          eth_rxd,
+  inout  wire                 eth_txck,
+  inout  wire                 eth_rxck,
+  inout  wire                 eth_txctl,
+  inout  wire                 eth_rxctl,
+  inout  wire                 eth_rstn,
+  inout  wire                 eth_mdio,
+  inout  wire                 eth_mdc
 );
 
   // I2C
@@ -920,5 +1134,17 @@ module vip_cheshire_soc_tristate import cheshire_pkg::*; (
     bufif1 (spih_csb[i], spih_csb_o[i], spih_csb_en[i]);
     pullup (spih_csb[i]);
   end
+
+   // Ethernet
+  assign eth_txd = eth_txd_o;
+  assign eth_txck = eth_txck_o;
+  assign eth_txctl = eth_txctl_o;
+  assign eth_mdc = eth_mdc_o;
+  assign eth_rxd_i = eth_rxd;
+  assign eth_rxck_i = eth_rxck;
+  assign eth_rxctl_i = eth_rxctl;
+
+  bufif1 (eth_mdio_i, eth_mdio, ~eth_mdio_en); 
+  bufif1 (eth_mdio, eth_mdio_o, eth_mdio_en); 
 
 endmodule

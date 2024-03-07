@@ -34,6 +34,13 @@ packages:
     - common_verification
     - register_interface
     - tech_cells_generic
+  axi_mem_if:
+    revision: 3567273b4f67bd57a81a2a503394a49641bae53a
+    version: 0.2.1
+    source:
+      Git: git@github.com:pulp-platform/axi_mem_if.git
+    dependencies:
+    - axi
   axi_riscv_atomics:
     revision: 0ac3a78fe342c5a5b9b10bff49d58897f773059e
     version: 0.8.2
@@ -44,8 +51,8 @@ packages:
     - common_cells
     - common_verification
   axi_rt:
-    revision: 2be9d4028cd3fd6617a0302a53212495a4c4e3fa
-    version: 0.0.0-alpha.4
+    revision: 56074a195b1c8b05f4bdd73674e437bbcb35f2cd
+    version: 0.0.0-alpha.7
     source:
       Git: https://github.com/pulp-platform/axi_rt.git
     dependencies:
@@ -78,8 +85,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: 2bd027cb87eaa9bf7d17196ec5f69864b35b630f
-    version: 1.32.0
+    revision: 13f28aa0021fc22c0d01a12d618fda58d2c93239
+    version: 1.33.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -101,6 +108,16 @@ packages:
     - common_cells
     - fpnew
     - tech_cells_generic
+  ethernet:
+    revision: 73914110bc57c12316f9ace755ae2cb3b0a2ba8e
+    version: null
+    source:
+      Git: git@github.com:AlSaqr-platform/ethernet.git
+    dependencies:
+    - axi
+    - axi_mem_if
+    - common_cells
+    - common_verification
   fpnew:
     revision: f231041c610f270ffc03cbdac38739ddb6426572
     version: null
@@ -117,14 +134,24 @@ packages:
     dependencies:
     - common_cells
   idma:
-    revision: ca1b28816a3706be0bf9ce01378246d5346384f0
-    version: 0.5.1
+    revision: a80fcace92b1562e7cd76c8615298b5623ba74d2
+    version: 0.6.0-beta
     source:
       Git: https://github.com/pulp-platform/iDMA.git
     dependencies:
     - axi
     - common_cells
     - common_verification
+    - idma_gen
+    - register_interface
+  idma_gen:
+    revision: null
+    version: null
+    source:
+      Path: .bender/git/checkouts/idma-77bf7fa56d324e6a/target/rtl
+    dependencies:
+    - axi
+    - common_cells
     - register_interface
   irq_router:
     revision: d1d31350b24f3965b3a51e1bc96c71eb34e94db3
@@ -145,8 +172,8 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: d7693be4aef1fc7e7eb2b00b41c42e87d959866c
-    version: 0.4.2
+    revision: e25b36670ff7aab3402f40efcc2b11ee0f31cf19
+    version: 0.4.3
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:
@@ -155,16 +182,16 @@ packages:
     - common_cells
     - common_verification
   riscv-dbg:
-    revision: 138d74bcaa90c70180c12215db3776813d2a95f2
-    version: 0.8.0
+    revision: 358f90110220adf7a083f8b65d157e836d706236
+    version: 0.8.1
     source:
       Git: https://github.com/pulp-platform/riscv-dbg.git
     dependencies:
     - common_cells
     - tech_cells_generic
   serial_link:
-    revision: 77bec1aebd92b2ebea9962814f2370d5d48390c3
-    version: 1.1.0
+    revision: 5a25f5a71074f1ebb6de7b5280f2b16924bcc666
+    version: 1.1.1
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:
