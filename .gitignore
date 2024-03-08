@@ -42,3 +42,99 @@ target/xilinx/build
 target/xilinx/out
 target/xilinx/scripts/add_sources.*
 vivado*
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Nicole Narr <narrn@student.ethz.ch>
+# Christopher Reinwardt <creinwar@student.ethz.ch>
+
+# Nonfree repository
+nonfree/
+
+# Dependency files
+.bender/
+
+# Documentation site
+site/
+
+# Software build files
+*.bin
+*.dump
+*.memh
+*.elf
+*.gpt
+*.gpth
+*.o
+*.a
+*.dtb
+sw/deps/.patched
+
+# Test models
+target/sim/models
+
+# VSIM generated files
+target/sim/vsim/compile.*.tcl
+target/sim/vsim/*.log
+target/sim/vsim/modelsim.ini
+target/sim/vsim/transcript
+target/sim/vsim/vsim.wlf
+target/sim/vsim/work/
+
+# Xilinx generated files
+target/xilinx/build
+target/xilinx/out
+target/xilinx/scripts/add_sources.*
+vivado*
+
+venv/
+
+vivado/
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Nicole Narr <narrn@student.ethz.ch>
+# Christopher Reinwardt <creinwar@student.ethz.ch>
+
+# Nonfree repository
+nonfree/
+
+# Dependency files
+.bender/
+
+# Documentation site
+site/
+
+# Software build files
+*.bin
+*.dump
+*.memh
+*.elf
+*.gpt
+*.gpth
+*.o
+*.a
+*.dtb
+sw/deps/.patched
+
+# Test models
+target/sim/models
+
+# VSIM generated files
+target/sim/vsim/compile.*.tcl
+target/sim/vsim/*.log
+target/sim/vsim/modelsim.ini
+target/sim/vsim/transcript
+target/sim/vsim/vsim.wlf
+target/sim/vsim/work/
+
+# Xilinx generated files
+target/xilinx/build
+target/xilinx/out
+target/xilinx/scripts/add_sources.*
+vivado*
+
+venv/
+
+vivado/
