@@ -18,7 +18,7 @@ packages:
     revision: 9402c8a9ce0a7b5253c3c29e788612d771e8b5d6
     version: 0.39.3
     source:
-      Git: https://github.com/pulp-platform/axi.git
+      Git: https://github.com/pulp-platform/axi
     dependencies:
     - common_cells
     - common_verification
