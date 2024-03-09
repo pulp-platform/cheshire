@@ -72,6 +72,74 @@ extern "C" {
 #define AXI_LLC_BIST_STATUS_REG_OFFSET 0x48
 #define AXI_LLC_BIST_STATUS_DONE_BIT 0
 
+// Index-based Partition Flush Configuration [31:0] (lower 32 bit)
+#define AXI_LLC_CFG_FLUSH_PARTITION_LOW_REG_OFFSET 0x4c
+
+// Index-based Partition Flush Configuration [63:32] (upper 32 bit)
+#define AXI_LLC_CFG_FLUSH_PARTITION_HIGH_REG_OFFSET 0x50
+
+// Index-based Partition Configuration [31:0] (lower 32 bit) (common
+// parameters)
+#define AXI_LLC_CFG_SET_PARTITION_LOW_LOW_FIELD_WIDTH 32
+#define AXI_LLC_CFG_SET_PARTITION_LOW_LOW_FIELDS_PER_REG 1
+#define AXI_LLC_CFG_SET_PARTITION_LOW_MULTIREG_COUNT 2
+
+// Index-based Partition Configuration [31:0] (lower 32 bit)
+#define AXI_LLC_CFG_SET_PARTITION_LOW_0_REG_OFFSET 0x54
+
+// Index-based Partition Configuration [31:0] (lower 32 bit)
+#define AXI_LLC_CFG_SET_PARTITION_LOW_1_REG_OFFSET 0x58
+
+// Index-based Partition Configuration [63:32] (higher 32 bit) (common
+// parameters)
+#define AXI_LLC_CFG_SET_PARTITION_HIGH_HIGH_FIELD_WIDTH 32
+#define AXI_LLC_CFG_SET_PARTITION_HIGH_HIGH_FIELDS_PER_REG 1
+#define AXI_LLC_CFG_SET_PARTITION_HIGH_MULTIREG_COUNT 2
+
+// Index-based Partition Configuration [63:32] (higher 32 bit)
+#define AXI_LLC_CFG_SET_PARTITION_HIGH_0_REG_OFFSET 0x5c
+
+// Index-based Partition Configuration [63:32] (higher 32 bit)
+#define AXI_LLC_CFG_SET_PARTITION_HIGH_1_REG_OFFSET 0x60
+
+// Commit the set partition configuration
+#define AXI_LLC_COMMIT_PARTITION_CFG_REG_OFFSET 0x64
+#define AXI_LLC_COMMIT_PARTITION_CFG_COMMIT_BIT 0
+
+// Index-based Flushed Flag (lower 32 bit) (common parameters)
+#define AXI_LLC_FLUSHED_SET_LOW_LOW_FIELD_WIDTH 32
+#define AXI_LLC_FLUSHED_SET_LOW_LOW_FIELDS_PER_REG 1
+#define AXI_LLC_FLUSHED_SET_LOW_MULTIREG_COUNT 4
+
+// Index-based Flushed Flag (lower 32 bit)
+#define AXI_LLC_FLUSHED_SET_LOW_0_REG_OFFSET 0x6c
+
+// Index-based Flushed Flag (lower 32 bit)
+#define AXI_LLC_FLUSHED_SET_LOW_1_REG_OFFSET 0x70
+
+// Index-based Flushed Flag (lower 32 bit)
+#define AXI_LLC_FLUSHED_SET_LOW_2_REG_OFFSET 0x74
+
+// Index-based Flushed Flag (lower 32 bit)
+#define AXI_LLC_FLUSHED_SET_LOW_3_REG_OFFSET 0x78
+
+// Index-based Flushed Flag (upper 32 bit) (common parameters)
+#define AXI_LLC_FLUSHED_SET_HIGH_HIGH_FIELD_WIDTH 32
+#define AXI_LLC_FLUSHED_SET_HIGH_HIGH_FIELDS_PER_REG 1
+#define AXI_LLC_FLUSHED_SET_HIGH_MULTIREG_COUNT 4
+
+// Index-based Flushed Flag (upper 32 bit)
+#define AXI_LLC_FLUSHED_SET_HIGH_0_REG_OFFSET 0x7c
+
+// Index-based Flushed Flag (upper 32 bit)
+#define AXI_LLC_FLUSHED_SET_HIGH_1_REG_OFFSET 0x80
+
+// Index-based Flushed Flag (upper 32 bit)
+#define AXI_LLC_FLUSHED_SET_HIGH_2_REG_OFFSET 0x84
+
+// Index-based Flushed Flag (upper 32 bit)
+#define AXI_LLC_FLUSHED_SET_HIGH_3_REG_OFFSET 0x88
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
