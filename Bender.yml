@@ -14,7 +14,7 @@ package:
 dependencies:
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.1  }
   axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.2 }
-  axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc",                    rev: 4deb8c6    } # branch: astral
+  axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc",                    rev: d79a00b    } # branch: astral
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      rev: 034bf8941  } # branch: master
   axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: 0.0.0-alpha.7 }
   axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",                version: 0.1.3  }
