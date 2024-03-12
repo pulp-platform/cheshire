@@ -46,6 +46,8 @@ module cva6_wrap #(
   input  axi_rsp_t         [NumHarts-1:0]                  axi_rsp_i
 );
 
+localparam int unsigned NumDcachePorts = 4;
+
 typedef struct packed {
   // cheshire_pkg::doub_bt    bootaddress;
   cheshire_pkg::doub_bt    hart_id;
@@ -61,13 +63,35 @@ typedef struct packed {
   logic  [5:0]             clic_irq_vsid;
   logic                    clic_irq_shv;
   logic                    clic_kill_req;
-  axi_rsp_t                axi_rsp;
+  // axi_rsp_t                axi_rsp;
+  // CVA6 cache bus
+  logic busy; // in
+  logic icache_miss; // in
+  logic dcache_flush_ack; // in
+  logic dcache_miss; // in
+  logic wbuffer_empty; // in
+  ariane_pkg::dcache_req_o_t [NumDcachePorts-1:0] dcache_req_ports_from_cache; // in
+  ariane_pkg::amo_resp_t amo_resp; // in
+  ariane_pkg::icache_arsp_t  icache_areq_from_cache; // in
+  ariane_pkg::icache_drsp_t icache_dreq_from_cache; // in
 } cva6_inputs_t;
 
 typedef struct packed {
   logic clic_irq_ready;
   logic clic_kill_ack;
-  axi_req_t axi_req;
+  // axi_req_t axi_req;
+  // CVA6 cache bus
+  riscv::priv_lvl_t priv_lvl; // out
+  logic stall; // out
+  logic init_n; // out
+  logic icache_en; // out
+  logic icache_flush; // out
+  logic dcache_enable; // out
+  logic dcache_flush; // out
+  ariane_pkg::dcache_req_i_t [NumDcachePorts-1:0] dcache_req_ports_to_cache; // out
+  ariane_pkg::amo_req_t amo_req; // out
+  ariane_pkg::icache_areq_t icache_areq_to_cache; // out
+  ariane_pkg::icache_dreq_t icache_dreq_to_cache; // out
 } cva6_outputs_t;
 
 logic                         cores_sync;
@@ -92,23 +116,22 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
   assign sys2hmr[i].clic_irq_vsid  = clic_irq_vsid_i[i];
   assign sys2hmr[i].clic_irq_shv   = clic_irq_shv_i[i];
   assign sys2hmr[i].clic_kill_req  = clic_kill_req_i[i];
-  `AXI_ASSIGN_RESP_STRUCT(sys2hmr[i].axi_rsp, axi_rsp_i[i]);
 
   // Bind HMR outputs to system.
   assign clic_irq_ready_o[i] = hmr2sys[i].clic_irq_ready;
   assign clic_kill_ack_o[i]  = hmr2sys[i].clic_kill_ack;
-  `AXI_ASSIGN_REQ_STRUCT(axi_req_o[i], hmr2sys[i].axi_req);
 
   cva6 #(
-    .CVA6Cfg       ( Cva6Cfg       ),
-    .axi_ar_chan_t ( axi_ar_chan_t ),
-    .axi_aw_chan_t ( axi_aw_chan_t ),
-    .axi_w_chan_t  ( axi_w_chan_t  ),
-    .b_chan_t      ( b_chan_t      ),
-    .r_chan_t      ( r_chan_t      ),
-    .noc_req_t     ( axi_req_t     ),
-    .noc_resp_t    ( axi_rsp_t     )
-  ) i_core_cva6    (
+    .CVA6Cfg        ( Cva6Cfg        ),
+    .NumDcachePorts ( NumDcachePorts ),
+    .axi_ar_chan_t  ( axi_ar_chan_t  ),
+    .axi_aw_chan_t  ( axi_aw_chan_t  ),
+    .axi_w_chan_t   ( axi_w_chan_t   ),
+    .b_chan_t       ( b_chan_t       ),
+    .r_chan_t       ( r_chan_t       ),
+    .noc_req_t      ( axi_req_t      ),
+    .noc_resp_t     ( axi_rsp_t      )
+  ) i_core_cva6     (
     .clk_i            ( clk_i                         ),
     .rst_ni           ( rstn_i                        ),
     .clear_i          ( core_setback[i]               ),
@@ -134,8 +157,76 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
     .rvfi_probes_o    (                               ),
     .cvxif_req_o      (                               ),
     .cvxif_resp_i     ( '0                            ),
-    .noc_req_o        ( core2hmr[i].axi_req           ),
-    .noc_resp_i       ( hmr2core[i].axi_rsp           )
+    .noc_req_o        ( ),
+    .noc_resp_i       ( '0 ),
+    .dcache_commit_wbuffer_not_ni_i ( 1'b1 ),
+    .inval_ready_i ( 1'b1 ),
+    .priv_lvl_o         ( core2hmr[i].priv_lvl ),
+    .busy_i             ( hmr2core[i].busy ),
+    .stall_o            ( core2hmr[i].stall ),
+    .init_no            ( core2hmr[i].init_n ),
+    .icache_en_o        ( core2hmr[i].icache_en ),
+    .icache_flush_o     ( core2hmr[i].icache_flush ),
+    .icache_miss_i      ( hmr2core[i].icache_miss ),
+    .dcache_enable_o    ( core2hmr[i].dcache_enable ),
+    .dcache_flush_o     ( core2hmr[i].dcache_flush ),
+    .dcache_flush_ack_i ( hmr2core[i].dcache_flush_ack ),
+    .dcache_miss_i      ( hmr2core[i].dcache_miss ),
+    .wbuffer_empty_i    ( hmr2core[i].wbuffer_empty ),
+    .dcache_req_ports_o ( core2hmr[i].dcache_req_ports_to_cache ),
+    .dcache_req_ports_i ( hmr2core[i].dcache_req_ports_from_cache ),
+    .amo_req_o          ( core2hmr[i].amo_req ),
+    .amo_resp_i         ( hmr2core[i].amo_resp ),
+    .icache_areq_o      ( core2hmr[i].icache_areq_to_cache ),
+    .icache_areq_i      ( hmr2core[i].icache_areq_from_cache ),
+    .icache_dreq_o      ( core2hmr[i].icache_dreq_to_cache ),
+    .icache_dreq_i      ( hmr2core[i].icache_dreq_from_cache )
+  );
+
+  std_cache_subsystem #(
+    // note: this only works with one cacheable region
+    // not as important since this cache subsystem is about to be
+    // deprecated
+    .CVA6Cfg      (Cva6Cfg),
+    .EnableEcc    (0),
+    .NumPorts     (NumDcachePorts), // From CVA6 internal
+    .axi_ar_chan_t(axi_ar_chan_t),
+    .axi_aw_chan_t(axi_aw_chan_t),
+    .axi_w_chan_t (axi_w_chan_t),
+    .axi_req_t    (axi_req_t),
+    .axi_rsp_t    (axi_rsp_t)
+  ) i_external_cache (
+    // to D$
+    .clk_i             ( clk_i ),
+    .rst_ni            ( rstn_i ),
+    .priv_lvl_i        ( hmr2sys[i].priv_lvl ),
+    .busy_o            ( sys2hmr[i].busy ),
+    .stall_i           ( hmr2sys[i].stall ),
+    .init_ni           ( hmr2sys[i].init_n ),
+    // I$
+    .icache_en_i       ( hmr2sys[i].icache_en ),
+    .icache_flush_i    ( hmr2sys[i].icache_flush ),
+    .icache_miss_o     ( sys2hmr[i].icache_miss ),
+    .icache_areq_i     ( hmr2sys[i].icache_areq_to_cache ),
+    .icache_areq_o     ( sys2hmr[i].icache_areq_from_cache ),
+    .icache_dreq_i     ( hmr2sys[i].icache_dreq_to_cache ),
+    .icache_dreq_o     ( sys2hmr[i].icache_dreq_from_cache ),
+    // D$
+    .dcache_enable_i   ( hmr2sys[i].dcache_enable ),
+    .dcache_flush_i    ( hmr2sys[i].dcache_flush ),
+    .dcache_flush_ack_o( sys2hmr[i].dcache_flush_ack ),
+    // to commit stage
+    .amo_req_i         ( hmr2sys[i].amo_req ),
+    .amo_resp_o        ( sys2hmr[i].amo_resp ),
+    .dcache_miss_o     ( sys2hmr[i].dcache_miss ),
+    // this is statically set to 1 as the std_cache does not have a wbuffer
+    .wbuffer_empty_o   ( sys2hmr[i].wbuffer_empty ),
+    // from PTW, Load Unit  and Store Unit
+    .dcache_req_ports_i( hmr2sys[i].dcache_req_ports_to_cache ),
+    .dcache_req_ports_o( sys2hmr[i].dcache_req_ports_from_cache ),
+    // memory side
+    .axi_req_o         ( axi_req_o[i] ),
+    .axi_resp_i        ( axi_rsp_i[i] )
   );
 end
 
