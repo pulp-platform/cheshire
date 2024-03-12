@@ -23,6 +23,7 @@ dependencies:
   common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           version: 1.33.0 }
   common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.0  }
   cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: pulp-v2.0.0-alpha.1 }
+  ara:                      { git: "https://github.com/pulp-platform/ara.git",                    rev: 89a1dd3 } # main branch
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.6.3  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
