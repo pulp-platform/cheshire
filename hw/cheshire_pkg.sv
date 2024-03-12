@@ -138,6 +138,7 @@ package cheshire_pkg;
     bit     Clic;
     bit     IrqRouter;
     bit     BusErr;
+    bit     Ara;
     // Parameters for Debug Module
     jtag_idcode_t DbgIdCode;
     dw_bt   DbgMaxReqs;
@@ -196,6 +197,9 @@ package cheshire_pkg;
     aw_bt   AxiRtNumAddrRegions;
     bit     AxiRtCutPaths;
     bit     AxiRtEnableChecks;
+    // Parameters for Ara
+    byte_bt AraNrLanes;
+    word_bt AraVLEN;
   } cheshire_cfg_t;
 
   //////////////////
@@ -295,6 +299,7 @@ package cheshire_pkg;
   typedef struct packed {
     aw_bt [2**MaxCoresWidth-1:0] cores;
     aw_bt dbg;
+    aw_bt ara;
     aw_bt dma;
     aw_bt slink;
     aw_bt vga;
@@ -308,6 +313,7 @@ package cheshire_pkg;
     int unsigned i = 0;
     for (int j = 0; j < cfg.NumCores; j++) begin ret.cores[i] = i; i++; end
     ret.dbg = i;
+    if (cfg.Ara)        begin i++; ret.ara   = i; end
     if (cfg.Dma)        begin i++; ret.dma   = i; end
     if (cfg.SerialLink) begin i++; ret.slink = i; end
     if (cfg.Vga)        begin i++; ret.vga   = i; end
@@ -582,6 +588,7 @@ package cheshire_pkg;
     Clic              : 0,
     IrqRouter         : 0,
     BusErr            : 1,
+    Ara               : 0,
     // Debug
     DbgIdCode         : CheshireIdCode,
     DbgMaxReqs        : 4,
@@ -639,6 +646,9 @@ package cheshire_pkg;
     AxiRtWBufferDepth   : 16,
     AxiRtNumAddrRegions : 2,
     AxiRtCutPaths       : 1,
+    // Ara
+    AraNrLanes          : 2,
+    AraVLEN             : 2048,
     // All non-set values should be zero
     default: '0
   };
