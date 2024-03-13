@@ -1789,4 +1789,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   // TODO: many other things I most likely forgot
   // TODO: check that LLC only exists if its output is connected (the reverse is allowed)
 
+  if (Cfg.Ara && (NumIntHarts > 1))
+    $error("Ara is only compatible with a single-core architecture.");
+
 endmodule
