@@ -92,8 +92,6 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   function automatic cheshire_cfg_t gen_cheshire_xilinx_cfg();
     cheshire_cfg_t ret  = DefaultCfg;
     ret.RtcFreq         = 1000000;
-    // TODO: UNBENT breaks SD boot; why?
-    ret.BusErr          = 0;
     ret.SerialLink      = 0;
     ret.VgaRedWidth     = 5;
     ret.VgaGreenWidth   = 6;
