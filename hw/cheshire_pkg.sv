@@ -161,6 +161,8 @@ package cheshire_pkg;
     byte_bt VgaBlueWidth;
     aw_bt   VgaHCountWidth;
     aw_bt   VgaVCountWidth;
+    dw_bt   VgaBufferDepth;
+    dw_bt   VgaMaxReadTxns;
     // Parameters for Serial Link
     dw_bt   SlinkMaxTxnsPerId;
     dw_bt   SlinkMaxUniqIds;
@@ -621,6 +623,8 @@ package cheshire_pkg;
     VgaBlueWidth      : 2,
     VgaHCountWidth    : 24, // TODO: Default is 32; is this needed?
     VgaVCountWidth    : 24, // TODO: See above
+    VgaBufferDepth    : 16,
+    VgaMaxReadTxns    : 24,
     // Serial Link: map other chip's lower 32bit to 'h1_000_0000
     SlinkMaxTxnsPerId : 4,
     SlinkMaxUniqIds   : 4,
