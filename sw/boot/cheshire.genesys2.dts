@@ -16,3 +16,28 @@
     disable-wp;
   };
 };
+
+&soc {
+  usb@3008000 {
+    compatible = "generic-ohci";
+    reg = <0x0 0x3008000 0x0 0x1000>;
+    interrupt-parent = <&PLIC0>;
+    interrupts = <19>;
+  };
+};
+
+&chosen {
+  #address-cells = <2>;
+  #size-cells = <2>;
+  ranges;
+  bootargs = "console=ttyS0,115200 console=tty0";
+  framebuffer0: framebuffer@A0000000 {
+    compatible = "simple-framebuffer";
+    reg = <0x0 0xA0000000 0x0 (640 * 480 * 2)>;
+    width = <640>;
+    height = <480>;
+    stride = <(640 * 2)>;
+    format = "r5g6b5";
+    status = "okay";
+  };
+};

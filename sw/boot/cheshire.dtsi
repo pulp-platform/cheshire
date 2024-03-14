@@ -9,12 +9,13 @@
 /dts-v1/;
 
 / {
+
   #address-cells = <2>;
   #size-cells = <2>;
   compatible = "eth,cheshire-dev";
   model = "eth,cheshire";
 
-  chosen {
+  chosen: chosen {
     #address-cells = <2>;
     #size-cells = <2>;
     ranges;
@@ -30,10 +31,12 @@
       status = "okay";
     };
   };
+
   memory@80000000 {
     device_type = "memory";
     reg = <0x0 0x80000000 0x0 0x40000000>;
   };
+
   cpus {
     #address-cells = <1>;
     #size-cells = <0>;
@@ -55,6 +58,7 @@
       };
     };
   };
+
   soc: soc {
     #address-cells = <2>;
     #size-cells = <2>;
@@ -100,12 +104,6 @@
       #address-cells = <1>;
       #size-cells = <0>;
     };
-    usb@3008000 {
-      compatible = "generic-ohci";
-      reg = <0x0 0x3008000 0x0 0x1000>;
-      interrupt-parent = <&PLIC0>;
-      interrupts = <19>;
-    };
     vga@3007000 {
       compatible = "eth,axi-vga";
       reg = <0x0 0x3007000 0x0 0x1000>;
@@ -127,4 +125,5 @@
       reg = <0x0 0x4000000 0x0 0x4000000>;
     };
   };
+
 };
