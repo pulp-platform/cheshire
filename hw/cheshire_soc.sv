@@ -1589,9 +1589,14 @@ module cheshire_soc import cheshire_pkg::*; #(
       .VCountWidth  ( Cfg.VgaVCountWidth ),
       .AXIAddrWidth ( Cfg.AddrWidth    ),
       .AXIDataWidth ( Cfg.AxiDataWidth ),
+      .AXIIdWidth   ( Cfg.AxiMstIdWidth ),
+      .AXIUserWidth ( Cfg.AxiUserWidth ),
       .AXIStrbWidth ( AxiStrbWidth     ),
+      .BufferDepth  ( Cfg.VgaBufferDepth ),
+      .MaxReadTxns  ( Cfg.VgaMaxReadTxns ),
       .axi_req_t    ( axi_mst_req_t ),
       .axi_resp_t   ( axi_mst_rsp_t ),
+      .axi_r_chan_t ( axi_mst_r_chan_t ),
       .reg_req_t    ( reg_req_t ),
       .reg_resp_t   ( reg_rsp_t )
     ) i_axi_vga (

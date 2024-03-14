@@ -15,8 +15,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: fccffb5953ec8564218ba05e20adbedec845e014
-    version: 0.39.1
+    revision: ac5deb3ff086aa34b168f392c051e92603d6c0e2
+    version: 0.39.2
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -44,8 +44,8 @@ packages:
     - common_cells
     - common_verification
   axi_rt:
-    revision: 2be9d4028cd3fd6617a0302a53212495a4c4e3fa
-    version: 0.0.0-alpha.4
+    revision: 56074a195b1c8b05f4bdd73674e437bbcb35f2cd
+    version: 0.0.0-alpha.7
     source:
       Git: https://github.com/pulp-platform/axi_rt.git
     dependencies:
@@ -53,8 +53,8 @@ packages:
     - common_cells
     - register_interface
   axi_vga:
-    revision: 07be187d1e954d8090031b32d236ad76dc62ce45
-    version: 0.1.1
+    revision: 3718b9930f94a9eaad8ee50b4bccc71df0403084
+    version: 0.1.3
     source:
       Git: https://github.com/pulp-platform/axi_vga.git
     dependencies:
@@ -78,8 +78,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: 2bd027cb87eaa9bf7d17196ec5f69864b35b630f
-    version: 1.32.0
+    revision: 13f28aa0021fc22c0d01a12d618fda58d2c93239
+    version: 1.33.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -155,16 +155,16 @@ packages:
     - common_cells
     - common_verification
   riscv-dbg:
-    revision: 138d74bcaa90c70180c12215db3776813d2a95f2
-    version: 0.8.0
+    revision: 358f90110220adf7a083f8b65d157e836d706236
+    version: 0.8.1
     source:
       Git: https://github.com/pulp-platform/riscv-dbg.git
     dependencies:
     - common_cells
     - tech_cells_generic
   serial_link:
-    revision: 77bec1aebd92b2ebea9962814f2370d5d48390c3
-    version: 1.1.0
+    revision: 5a25f5a71074f1ebb6de7b5280f2b16924bcc666
+    version: 1.1.1
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:
