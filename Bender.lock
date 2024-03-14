@@ -53,8 +53,8 @@ packages:
     - common_cells
     - register_interface
   axi_vga:
-    revision: 6385a13dfc50d84b6100802b673aaa6f55ffe264
-    version: null
+    revision: 3718b9930f94a9eaad8ee50b4bccc71df0403084
+    version: 0.1.3
     source:
       Git: https://github.com/pulp-platform/axi_vga.git
     dependencies:
