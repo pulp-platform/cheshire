@@ -9,6 +9,7 @@
 /// The config port is adapted to 32b Regbus, the DMA port to parametric AXI4.
 /// The IOs are bundled into PULP structs and arrays to simplify connection.
 
+// verilog_lint: waive package-filename
 package spinal_usb_ohci_pkg;
   localparam int unsigned NumPhyPorts = 4;
 endpackage
