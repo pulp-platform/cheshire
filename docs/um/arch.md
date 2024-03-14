@@ -225,6 +225,8 @@ The [VGA Controller](https://github.com/pulp-platform/axi_vga) enables the drawi
 | -------------------------- | ------------ | ------------------------------------------------- |
 | `Vga(Red|Green|Blue)Width` | `byte_bt`    | Bit width of red, green, and blue output channels |
 | `Vga(H|V)CountWidth`       | `aw_bt`      | Horizontal and vertical sync counter width        |
+| `VgaBufferDepth`           | `dw_bt`      | Depth of internal read data FIFO                  |
+| `VgaMaxReadTxns`           | `dw_bt`      | Maximum number of outstanding reads               |
 
 ### Serial Link
 
@@ -240,9 +242,9 @@ The [Serial Link](https://github.com/pulp-platform/serial_link) is a fully digit
 | `SlinkTxAddrDomain`      | `doub_bt`    | Address domain to cast incoming requests into     |
 | `SlinkUserAmoBit`        | `dw_bt`      | AXI4 AMO user bit to set on incoming requests     |
 
-### DMA engine
+### DMA Engine
 
-The [iDMA engine](https://github.com/pulp-platform/iDMA) enables high-throughput asynchronous transfers between any two subordinate address ranges in the system. The hardware supports, if enabled, up to two-dimensional transfers directly in hardware. It exposes the following parameters:
+The [iDMA Engine](https://github.com/pulp-platform/iDMA) enables high-throughput asynchronous transfers between any two subordinate address ranges in the system. The hardware supports, if enabled, up to two-dimensional transfers directly in hardware. It exposes the following parameters:
 
 | Parameter                    | Type / Range | Description                                       |
 | ---------------------------- | ------------ | ------------------------------------------------- |
