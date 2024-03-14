@@ -577,7 +577,7 @@ package cheshire_pkg;
     // Interconnect
     AddrWidth         : 48,
     AxiDataWidth      : 64,
-    AxiUserWidth      : 2,  // Convention: bit 0 for core(s), bit 1 for serial link
+    AxiUserWidth      : 6,  // Convention: bit 0 for core(s), bit 1 for serial link, bits 2-5 for llc
     AxiMstIdWidth     : 2,
     AxiMaxMstTrans    : 24,
     AxiMaxSlvTrans    : 24,
@@ -625,11 +625,11 @@ package cheshire_pkg;
     LlcOutConnect     : 1,
     LlcOutRegionStart : 'h8000_0000,
     LlcOutRegionEnd   : 'h1_0000_0000,
-    LlcUserMsb        : 0,
-    LlcUserLsb        : 0,
+    LlcUserMsb        : 5,
+    LlcUserLsb        : 2,
     // LLC Partitioning
-    LlcCachePartition : 0,
-    LlcMaxPartition   : 0,
+    LlcCachePartition : 1,
+    LlcMaxPartition   : 16,
     LlcRemapHash      : axi_llc_pkg::Modulo,
     // VGA: RGB332
     VgaRedWidth       : 3,
