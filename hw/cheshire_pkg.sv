@@ -483,7 +483,7 @@ package cheshire_pkg;
       XF16                  : 0,
       XF16ALT               : 0,
       XF8                   : 0,
-      XF8ALT                : 1,
+      XF8ALT                : 0,
       RVA                   : 1,
       RVB                   : 0,
       RVV                   : 0,
