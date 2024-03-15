@@ -1642,21 +1642,27 @@ module cheshire_soc import cheshire_pkg::*; #(
   // TODO: check that LLC only exists if its output is connected (the reverse is allowed)
 
   //probing the axi line
-  // first need to initialize the signals of interestclk_i
-  logic axi_mst_req_prob, axi_mst_rsp_prob;
+  
+  axi_mst_req_t [AxiIn.num_in-1:0] axi_mst_req_prob;
+  axi_mst_rsp_t [AxiIn.num_in-1:0] axi_mst_rsp_prob;
 
-  //how does the axi_mst_req_t array work??
-  assign axi_mst_req_prob  = axi_in_req[AXiIn.num_in];
-  assign axi_mst_rsp_prob  = axi_in_rsp[AXiIn.num_in];
+  
+  assign axi_mst_req_prob  = axi_in_req;
+  assign axi_mst_rsp_prob  = axi_in_rsp;
+ 
   axi_snoop# (
-    //no paramters
+    .axi_mst_req_t(axi_mst_req_t),
+    .axi_mst_rsp_t(axi_mst_rsp_t)
 
 
   )
   i_axi_snoop(
-    .clk_i, //but somehow the clock doesnt work on the otherside
+    .clk_i, 
     .axi_mst_req_i(axi_mst_req_prob),
-    .axi_mst_rsp_i(axi_mst_rsp_prob)
+    .axi_mst_rsp_i(axi_mst_rsp_prob),
+    .axi_mst_req_o(axi_in_req),
+    .axi_mst_rsp_o(axi_in_rsp)
   );
-
+//axi_mst_req_t [AxiIn.num_in-1:0]    axi_in_req, axi_rt_in_req;
+//axi_mst_rsp_t [AxiIn.num_in-1:0]    axi_in_rsp, axi_rt_in_rsp;
 endmodule
