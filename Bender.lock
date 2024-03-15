@@ -1,7 +1,7 @@
 packages:
   ace:
-    revision: fc2056f9f560ec55192c6b09ef682c822fad90fe
-    version: null
+    revision: d80ae1727aae2ebf280a99c273ddde0fcac3df62
+    version: 0.1.0
     source:
       Git: https://github.com/planvtech/ace.git
     dependencies:
@@ -106,7 +106,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: d05b3ea57099144ea958edfad4e039200ac62c08
+    revision: 929f8bdb76cc101ff0dbfacb74b0ac9f1a4ab37a
     version: null
     source:
       Git: https://github.com/planvtech/cva6.git
