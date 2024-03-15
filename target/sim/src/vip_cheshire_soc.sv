@@ -114,18 +114,18 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       i_dram_sim_mem.mem[k] = 'h9a;
 
     memory_preload(binary);
-    $stop();
+    // $stop();
     memory_preload(binary2);
-    $stop();
+    // $stop();
     memory_preload(binary3);
-    $stop();
+    // $stop();
     for(longint unsigned i = 'h80000000; i < 'h80000000+8; i++) begin
       $display("%h, 0x%h", i, i_dram_sim_mem.mem[i]);
     end
     for(longint unsigned i = 'h80200000; i < 'h80200000+8; i++) begin
       $display("%h, 0x%h", i, i_dram_sim_mem.mem[i]);
     end
-    for(longint unsigned i = 'h81000000; i < 'h81000000+8; i++) begin
+    for(longint unsigned i = 'h80800000; i < 'h80800000+8; i++) begin
       $display("%h, 0x%h", i, i_dram_sim_mem.mem[i]);
     end
     // Write entry point
@@ -136,6 +136,14 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     $display("[SLINK] Wrote launch signal and entry point 0x%h", entry);
   endtask
 
+
+  axi_ext_llc_rsp_t axi_llc_mst_rsp_tmp;
+  always_comb begin
+    axi_llc_mst_rsp = axi_llc_mst_rsp_tmp;
+    if(axi_llc_mst_rsp_tmp.r.data === 'x) begin
+      axi_llc_mst_rsp.r.data = '0;
+    end
+  end
 
   axi_sim_mem #(
     .AddrWidth          ( DutCfg.AddrWidth    ),
@@ -152,7 +160,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .clk_i              ( clk   ),
     .rst_ni             ( rst_n ),
     .axi_req_i          ( axi_llc_mst_req ),
-    .axi_rsp_o          ( axi_llc_mst_rsp ),
+    .axi_rsp_o          ( axi_llc_mst_rsp_tmp ),
     .mon_w_valid_o      ( ),
     .mon_w_addr_o       ( ),
     .mon_w_data_o       ( ),

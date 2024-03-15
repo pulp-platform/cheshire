@@ -58,6 +58,29 @@ _start:
     la gp, __global_pointer$
     .option pop
 
+    // C910 functions enable
+    # invalid all memory for IBP,BTB,BHT,DCACHE,ICACHE
+    li x3, 0x70013
+    csrs 0x7c2,x3  #mcor
+    
+    # enable ICACHE,DCACHE,BHT,BTB,IBP,RAS,WA
+    # li x3, 0x10f7
+    # csrs 0x7c1,x3  #mhcr
+    # enable write allocate
+    # li x3, 0x4
+    # csrs 0x7c1,x3  #mhcr
+    
+    li x3, 0x11ff
+    csrs 0x7c1,x3  #mhcr
+
+    # enable lbuf,way_pred,data_cache_prefetch, amr
+    # li x3, 0x7e30c
+    # csrs 0x7c5,x3   #mhint
+    # li x3, 0x6e30c
+    li x3, 0x4630c # disable L2 prefetch
+    # li x3, 0x46308 # disable L2, L1d prefetch
+    csrs 0x7c5,x3   #mhint
+
     // If LLC present: Wait for end of BIST, then extend stack and set to all SPM
     la t0, __base_regs
     lw t0, 80(t0)   // regs.HW_FEATURES
@@ -94,6 +117,11 @@ boot_next_stage:
     sw a0, 16(t0)   // regs.SCRATCH[4]
     srli a0, a0, 32
     sw a0, 20(t0)   // regs.SCRATCH[5]
+    
+    // dcache write back dirty entries
+    li t3, 0x20
+    csrs 0x7c2,t3  #mcor
+    
     fence
     // Resume SMP harts
     smp_resume(t0, t1, t2)

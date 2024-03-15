@@ -206,33 +206,34 @@ module fixture_cheshire_soc #(
   logic [63:0]       mstatus_value;
   logic [63:0]       mcause_value;
   logic [63:0]       minstret_value;
+  logic [63:0]       mcycle_value;
 
   logic [95:0][63:0] preg_value;
   logic [31:0][6:0]  areg_preg_idx_uncommited, areg_preg_idx_commited;
   logic [31:0][63:0] areg_value;
 
-  spike #(
-    .NR_COMMIT_PORTS (NR_COMMIT_PORTS),
-    .NR_RETIRE_PORTS (NR_RETIRE_PORTS),
-    .Size ( NUM_WORDS * 8 )
-  ) i_spike (
-      .clk_i                    ( clk                       ),
-      .rst_ni                   ( rst_n                     ),
-      .clint_tick_i             ( rtc                       ),
-      .commit_vld_i             ( commit_vld                ),
-      .retire_vld_i             ( retire_vld                ),
-      .retire_pc_i              ( retire_pc                 ),
-      .retire_nxt_pc_i          ( retire_nxt_pc             ),
-      // .retire_folded_inst_num_i ( retire_folded_inst_num_q  ),
-      .areg_value_i             ( areg_value                ),
-      .mstatus_value_i          ( mstatus_value             ),
-      .mcause_value_i           ( mcause_value              ),
-      .minstret_value_i         ( minstret_value            ),
-      .priv_lvl_i               ( priv_lvl                  )
-  );
-  initial begin
-      $display("Running binary in tandem mode");
-  end
+  // spike #(
+  //   .NR_COMMIT_PORTS (NR_COMMIT_PORTS),
+  //   .NR_RETIRE_PORTS (NR_RETIRE_PORTS),
+  //   .Size ( NUM_WORDS * 8 )
+  // ) i_spike (
+  //     .clk_i                    ( clk                       ),
+  //     .rst_ni                   ( rst_n                     ),
+  //     .clint_tick_i             ( rtc                       ),
+  //     .commit_vld_i             ( commit_vld                ),
+  //     .retire_vld_i             ( retire_vld                ),
+  //     .retire_pc_i              ( retire_pc                 ),
+  //     .retire_nxt_pc_i          ( retire_nxt_pc             ),
+  //     // .retire_folded_inst_num_i ( retire_folded_inst_num_q  ),
+  //     .areg_value_i             ( areg_value                ),
+  //     .mstatus_value_i          ( mstatus_value             ),
+  //     .mcause_value_i           ( mcause_value              ),
+  //     .minstret_value_i         ( minstret_value            ),
+  //     .priv_lvl_i               ( priv_lvl                  )
+  // );
+  // initial begin
+  //     $display("Running binary in tandem mode");
+  // end
 `endif
 
   assign priv_lvl = dut.gen_cva6_cores[0].gen_c910_core.i_c910_axi_wrap.cpu_sub_system_axi_i.x_rv_integration_platform.x_cpu_top.x_ct_top_0.x_ct_core.x_ct_cp0_top.x_ct_cp0_regs.cp0_yy_priv_mode;
@@ -277,6 +278,7 @@ module fixture_cheshire_soc #(
   assign mstatus_value  = dut.gen_cva6_cores[0].gen_c910_core.i_c910_axi_wrap.cpu_sub_system_axi_i.x_rv_integration_platform.core0_pad_mstatus;
   assign mcause_value   = dut.gen_cva6_cores[0].gen_c910_core.i_c910_axi_wrap.cpu_sub_system_axi_i.x_rv_integration_platform.x_cpu_top.x_ct_top_0.x_ct_core.x_ct_cp0_top.x_ct_cp0_regs.mcause_value;
   assign minstret_value = dut.gen_cva6_cores[0].gen_c910_core.i_c910_axi_wrap.cpu_sub_system_axi_i.x_rv_integration_platform.x_cpu_top.x_ct_top_0.x_ct_hpcp_top.minstret_value;
+  assign mcycle_value   = dut.gen_cva6_cores[0].gen_c910_core.i_c910_axi_wrap.cpu_sub_system_axi_i.x_rv_integration_platform.x_cpu_top.x_ct_top_0.x_ct_hpcp_top.mcycle_value;
 
   generate
     for(genvar i = 0; i < 32; i++) begin

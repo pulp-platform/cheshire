@@ -659,6 +659,8 @@ module cheshire_soc
       (* mark_debug = "true" *) axi_c910_rsp_t c910_out_rsp_s1;
       axi_c910_req_t c910_out_req_s2;
       axi_c910_rsp_t c910_out_rsp_s2;
+      axi_c910_req_t c910_out_req_s3;
+      axi_c910_rsp_t c910_out_rsp_s3;
 
       c910_axi_wrap #(
         .AxiSetModifiable ( 1'b1              ),
@@ -695,10 +697,32 @@ module cheshire_soc
         .axi_rsp_i        ( c910_out_rsp_s1     )
       );
 
+      axi_burst_undec #(
+      // the whole burst length in bit
+        .TotalBurstLength ( 512 ),
+      // AXI channel structs
+        .aw_chan_t    ( axi_c910_aw_chan_t ),
+        .w_chan_t     ( axi_c910_w_chan_t  ),
+        .b_chan_t     ( axi_c910_b_chan_t  ),
+        .ar_chan_t    ( axi_c910_ar_chan_t ),
+        .r_chan_t     ( axi_c910_r_chan_t  ),
+      // AXI request & response structs
+        .axi_req_t     ( axi_c910_req_t     ),
+        .axi_resp_t    ( axi_c910_rsp_t     )
+    ) i_c910_axi_burst_undec (
+        .clk_i,  // Clock
+        .rst_ni,  // Asynchronous reset active low
+        // slave port
+        .slv_req_i    (c910_out_req_s1 ),
+        .slv_resp_o   (c910_out_rsp_s1 ),
+        // master port
+        .mst_req_o    (c910_out_req_s2),
+        .mst_resp_i   (c910_out_rsp_s2)
+    );
+
       // axi fifo to close timing
-      axi_fifo #(
-        .Depth        ( 1 ),  // Number of FiFo slots.
-        .FallThrough  ( 0 ),  // fifos are in fall-through mode
+      axi_cut #(
+        .Bypass       ( 0 ),
     // AXI channel structs
         .aw_chan_t    ( axi_c910_aw_chan_t ),
         .w_chan_t     ( axi_c910_w_chan_t  ),
@@ -708,119 +732,62 @@ module cheshire_soc
     // AXI request & response structs
         .axi_req_t     ( axi_c910_req_t     ),
         .axi_resp_t    ( axi_c910_rsp_t     )
-      ) i_c910_timing_axi_fifo (
+      ) i_c910_timing_axi_cut (
         .clk_i,  // Clock
         .rst_ni,  // Asynchronous reset active low
-        .test_i       ( test_mode_i ),
         // slave port
-        .slv_req_i    (c910_out_req_s1 ),
-        .slv_resp_o   (c910_out_rsp_s1 ),
+        .slv_req_i    (c910_out_req_s2 ),
+        .slv_resp_o   (c910_out_rsp_s2 ),
         // master port
-        .mst_req_o    (c910_out_req_s2),
-        .mst_resp_i   (c910_out_rsp_s2)
+        .mst_req_o    (c910_out_req_s3),
+        .mst_resp_i   (c910_out_rsp_s3)
       );
-// soc910_pkg::AxiAddrWidth;
-// soc910_pkg::AxiDataWidth;
-// soc910_pkg::AxiIdWidthMaster;
-// soc910_pkg::AxiUserWidth;
-
-      
-      // axi_iw_converter #(
-      //   /// ID width of the AXI4+ATOP slave port
-      //   .AxiSlvPortIdWidth    ( soc910_pkg::AxiIdWidthMaster),
-      //   /// ID width of the AXI4+ATOP master port
-      //   .AxiMstPortIdWidth    ( Cfg.AxiMstIdWidth),
-      //   /// Maximum number of different IDs that can be in flight at the slave port.  Reads and writes are
-      //   /// counted separately (except for ATOPs, which count as both read and write).
-      //   ///
-      //   /// It is legal for upstream to have transactions with more unique IDs than the maximum given by
-      //   /// this parameter in flight, but a transaction exceeding the maximum will be stalled until all
-      //   /// transactions of another ID complete.
-      //   .AxiSlvPortMaxUniqIds ( soc910_pkg::AxiMaxMstTrans ),
-      //   /// Maximum number of in-flight transactions with the same ID at the slave port.
-      //   ///
-      //   /// This parameter is only relevant if `AxiSlvPortMaxUniqIds <= 2**AxiMstPortIdWidth`.  In that
-      //   /// case, this parameter is passed to [`axi_id_remap` as `AxiMaxTxnsPerId`
-      //   /// parameter](module.axi_id_remap#parameter.AxiMaxTxnsPerId).
-      //   .AxiSlvPortMaxTxnsPerId ( 32'd1 ),
-      //   /// Maximum number of in-flight transactions at the slave port.  Reads and writes are counted
-      //   /// separately (except for ATOPs, which count as both read and write).
-      //   ///
-      //   /// This parameter is only relevant if `AxiSlvPortMaxUniqIds > 2**AxiMstPortIdWidth`.  In that
-      //   /// case, this parameter is passed to
-      //   /// [`axi_id_serialize`](module.axi_id_serialize#parameter.AxiSlvPortMaxTxns).
-      //   .AxiSlvPortMaxTxns      ( soc910_pkg::AxiMaxMstTrans ),
-      //   /// Maximum number of different IDs that can be in flight at the master port.  Reads and writes
-      //   /// are counted separately (except for ATOPs, which count as both read and write).
-      //   ///
-      //   /// This parameter is only relevant if `AxiSlvPortMaxUniqIds > 2**AxiMstPortIdWidth`.  In that
-      //   /// case, this parameter is passed to
-      //   /// [`axi_id_serialize`](module.axi_id_serialize#parameter.AxiMstPortMaxUniqIds).
-      //   .AxiMstPortMaxUniqIds   ( Cfg.AxiMaxMstTrans ),
-      //   /// Maximum number of in-flight transactions with the same ID at the master port.
-      //   ///
-      //   /// This parameter is only relevant if `AxiSlvPortMaxUniqIds > 2**AxiMstPortIdWidth`.  In that
-      //   /// case, this parameter is passed to
-      //   /// [`axi_id_serialize`](module.axi_id_serialize#parameter.AxiMstPortMaxTxnsPerId).
-      //   .AxiMstPortMaxTxnsPerId  ( 32'd1 ),
-      //   /// Address width of both AXI4+ATOP ports
-      //   .AxiAddrWidth            ( Cfg.AddrWidth ),
-      //   /// Data width of both AXI4+ATOP ports
-      //   .AxiDataWidth            ( soc910_pkg::AxiDataWidth ),
-      //   /// User signal width of both AXI4+ATOP ports
-      //   .AxiUserWidth            ( Cfg.AxiUserWidth ),
-      //   /// Request struct type of the AXI4+ATOP slave port
-      //   .slv_req_t               ( axi_c910_req_t ),
-      //   /// Response struct type of the AXI4+ATOP slave port
-      //   .slv_resp_t              ( axi_c910_req_t ),
-      //   /// Request struct type of the AXI4+ATOP master port
-      //   parameter type mst_req_t = logic,
-      //   /// Response struct type of the AXI4+ATOP master port
-      //   parameter type mst_resp_t = logic
-      // ) (
-      //   /// Rising-edge clock of both ports
-      //   input  logic      clk_i,
-      //   /// Asynchronous reset, active low
-      //   input  logic      rst_ni,
-      //   /// Slave port request
-      //   input  slv_req_t  slv_req_i,
-      //   /// Slave port response
-      //   output slv_resp_t slv_resp_o,
-      //   /// Master port request
-      //   output mst_req_t  mst_req_o,
-      //   /// Master port response
-      //   input  mst_resp_t mst_resp_i
-      // );
-
 
       axi_dw_converter #(
-          .AxiMaxReads         ( 8 ),// soc910_pkg::AxiMaxMstReadTrans is too large // Number of outstanding reads
-          .AxiSlvPortDataWidth ( soc910_pkg::AxiDataWidth ), // Data width of the slv port
-          .AxiMstPortDataWidth ( Cfg.AxiDataWidth       ), // Data width of the mst port
-          .AxiAddrWidth        ( Cfg.AddrWidth          ), // Address width
-          .AxiIdWidth          ( Cfg.AxiMstIdWidth      ), // ID width
-          .aw_chan_t           ( axi_cva6_aw_chan_t     ), // AW Channel Type
-          .mst_w_chan_t        ( axi_cva6_w_chan_t      ), //  W Channel Type for the mst port
-          .slv_w_chan_t        ( axi_c910_w_chan_t      ), //  W Channel Type for the slv port
-          .b_chan_t            ( axi_cva6_b_chan_t      ), //  B Channel Type
-          .ar_chan_t           ( axi_cva6_ar_chan_t     ), // AR Channel Type
-          .mst_r_chan_t        ( axi_cva6_r_chan_t      ), //  R Channel Type for the mst port
-          .slv_r_chan_t        ( axi_c910_r_chan_t      ), //  R Channel Type for the slv port
-          .axi_mst_req_t       ( axi_cva6_req_t         ), // AXI Request Type for mst ports
-          .axi_mst_resp_t      ( axi_cva6_rsp_t         ), // AXI Response Type for mst ports
-          .axi_slv_req_t       ( axi_c910_req_t         ), // AXI Request Type for slv ports
-          .axi_slv_resp_t      ( axi_c910_rsp_t         )  // AXI Response Type for slv ports
-        ) i_axi_dw_converter (
-          .clk_i,
-          .rst_ni,
-          // Slave interface
-          .slv_req_i          ( c910_out_req_s2 ),
-          .slv_resp_o         ( c910_out_rsp_s2 ),
-          // Master interface
-          .mst_req_o          ( core_out_req ),
-          .mst_resp_i         ( core_out_rsp )
-        );
+        .AxiMaxReads         ( 8 ),// soc910_pkg::AxiMaxMstReadTrans is too large // Number of outstanding reads
+        .AxiSlvPortDataWidth ( soc910_pkg::AxiDataWidth ), // Data width of the slv port
+        .AxiMstPortDataWidth ( Cfg.AxiDataWidth       ), // Data width of the mst port
+        .AxiAddrWidth        ( Cfg.AddrWidth          ), // Address width
+        .AxiIdWidth          ( Cfg.AxiMstIdWidth      ), // ID width
+        .aw_chan_t           ( axi_cva6_aw_chan_t     ), // AW Channel Type
+        .mst_w_chan_t        ( axi_cva6_w_chan_t      ), //  W Channel Type for the mst port
+        .slv_w_chan_t        ( axi_c910_w_chan_t      ), //  W Channel Type for the slv port
+        .b_chan_t            ( axi_cva6_b_chan_t      ), //  B Channel Type
+        .ar_chan_t           ( axi_cva6_ar_chan_t     ), // AR Channel Type
+        .mst_r_chan_t        ( axi_cva6_r_chan_t      ), //  R Channel Type for the mst port
+        .slv_r_chan_t        ( axi_c910_r_chan_t      ), //  R Channel Type for the slv port
+        .axi_mst_req_t       ( axi_cva6_req_t         ), // AXI Request Type for mst ports
+        .axi_mst_resp_t      ( axi_cva6_rsp_t         ), // AXI Response Type for mst ports
+        .axi_slv_req_t       ( axi_c910_req_t         ), // AXI Request Type for slv ports
+        .axi_slv_resp_t      ( axi_c910_rsp_t         )  // AXI Response Type for slv ports
+      ) i_axi_dw_converter (
+        .clk_i,
+        .rst_ni,
+        // Slave interface
+        .slv_req_i          ( c910_out_req_s3 ),
+        .slv_resp_o         ( c910_out_rsp_s3 ),
+        // Master interface
+        .mst_req_o          ( core_out_req ),
+        .mst_resp_i         ( core_out_rsp )
+      );
 
+
+      ace_dummy_handler #(
+        .aw_chan_t  ( axi_slv_aw_chan_t ),
+        .w_chan_t   ( axi_slv_w_chan_t  ),
+        .b_chan_t   ( axi_slv_b_chan_t  ),
+        .ar_chan_t  ( axi_slv_ar_chan_t ),
+        .r_chan_t   ( axi_slv_r_chan_t  ),
+        .axi_req_t  ( axi_slv_req_t ),
+        .axi_resp_t ( axi_slv_rsp_t )
+      ) i_ace_dummy_handler (
+        .clk_i,
+        .rst_ni,
+        .axi_slv_req_i ( axi_out_req[AxiOut.ace] ),
+        .axi_slv_rsp_o ( axi_out_rsp[AxiOut.ace] )
+        // .axi_mst_req_o (  ),
+        // .axi_mst_rsp_i (  )
+      );
 
 
     end

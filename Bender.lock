@@ -145,7 +145,7 @@ packages:
     - register_interface
     - tech_cells_generic
   pulp_c910:
-    revision: 44f1bd325def3c43be06ef84ee69ce4880ab3b71
+    revision: 1853c1e2f040944cb028223fc331be13601e9e98
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git

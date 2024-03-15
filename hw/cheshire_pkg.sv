@@ -273,6 +273,9 @@ package cheshire_pkg;
 
   // Static addresses (defined here only if multiply used)
   localparam doub_bt AmDbg    = 'h0000_0000;  // Base of AXI peripherals
+`ifdef TARGET_C910
+  localparam doub_bt AmAce    = 'h0004_0000;  // Base of ACE to AXI converter
+`endif
   localparam doub_bt AmBrom   = 'h0200_0000;  // Base of reg peripherals
   localparam doub_bt AmRegs   = 'h0300_0000;
   localparam doub_bt AmLlc    = 'h0300_1000;
@@ -325,6 +328,9 @@ package cheshire_pkg;
   // AXI Xbar slave indices and map
   typedef struct packed {
     aw_bt dbg;
+`ifdef TARGET_C910
+    aw_bt ace;
+`endif
     aw_bt reg_demux;
     aw_bt llc;
     aw_bt spm;
@@ -338,10 +344,18 @@ package cheshire_pkg;
 
   function automatic axi_out_t gen_axi_out(cheshire_cfg_t cfg);
     doub_bt SizeSpm = get_llc_size(cfg);
+`ifdef TARGET_C910
+    axi_out_t ret = '{dbg: 0, ace: 1, reg_demux: 2, default: '0};
+    int unsigned i = 2, r = 2;
+    ret.map[0] = '{0, AmDbg,   AmDbg + 'h40000};
+    ret.map[1] = '{1, AmAce,   AmAce + 'h010}; // redirect c910 ACE coherent req to this module (e.g. Evict req)
+    ret.map[2] = '{2, 'h0200_0000, 'h0C00_0000};
+`else
     axi_out_t ret = '{dbg: 0, reg_demux: 1, default: '0};
     int unsigned i = 1, r = 1;
     ret.map[0] = '{0, AmDbg,   AmDbg + 'h40000};
     ret.map[1] = '{1, 'h0200_0000, 'h0C00_0000};
+`endif
     // Whether we have an LLC or a bypass, the output port is has its
     // own Xbar output with the specified region iff it is connected.
     if (cfg.LlcOutConnect) begin i++; r++; ret.llc = i;
