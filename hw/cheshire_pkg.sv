@@ -489,7 +489,7 @@ package cheshire_pkg;
       AxiDataWidth          : cfg.AxiDataWidth,
       AxiIdWidth            : Cva6IdWidth,
       AxiUserWidth          : cfg.AxiUserWidth,
-      NrLoadBufEntries      : 2,
+      NrLoadBufEntries      : 32,
       FpuEn                 : 1,
       XF16                  : 0,
       XF16ALT               : 0,
