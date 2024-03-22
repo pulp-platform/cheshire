@@ -715,7 +715,32 @@ module cheshire_soc import cheshire_pkg::*; #(
     end
 
     // CVA6's ID encoding is wasteful; remap it statically pack into available bits
-  
+  axi_id_serialize #(
+      .AxiSlvPortIdWidth      ( Cva6IdWidth     ),
+      .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
+      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth      ),
+      .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
+      .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId   ),
+      .AxiAddrWidth           ( Cfg.AddrWidth    ),
+      .AxiDataWidth           ( Cfg.AxiDataWidth ),
+      .AxiUserWidth           ( Cfg.AxiUserWidth ),
+      .AtopSupport            ( 1 ),
+      .slv_req_t              ( axi_cva6_req_t ),
+      .slv_resp_t             ( axi_cva6_rsp_t ),
+      .mst_req_t              ( axi_mst_req_t  ),
+      .mst_resp_t             ( axi_mst_rsp_t  ),
+      .MstIdBaseOffset        ( '0 ),
+      .IdMapNumEntries        ( Cva6IdsUsed ),
+      .IdMap                  ( gen_cva6_id_map(Cfg) )
+    ) i_axi_id_serialize (
+      .clk_i,
+      .rst_ni,
+      .slv_req_i  ( core_ur_req ),
+      .slv_resp_o ( core_ur_rsp ),
+      .mst_req_o  ( axi_in_req[AxiIn.cores[i]] ),
+      .mst_resp_i ( axi_in_rsp[AxiIn.cores[i]] )
+    );
+
   end
 
   /////////////////////////
@@ -1643,12 +1668,12 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   //probing the axi line
   
-  axi_mst_req_t [AxiIn.num_in-1:0] axi_mst_req_prob;
-  axi_mst_rsp_t [AxiIn.num_in-1:0] axi_mst_rsp_prob;
+  //axi_mst_req_t [AxiIn.num_in-1:0] axi_mst_req_prob;
+  //axi_mst_rsp_t [AxiIn.num_in-1:0] axi_mst_rsp_prob;
 
   
-  assign axi_mst_req_prob  = axi_in_req;
-  assign axi_mst_rsp_prob  = axi_in_rsp;
+  //assign axi_mst_req_prob  = axi_in_req;
+  //assign axi_mst_rsp_prob  = axi_in_rsp;
  
   axi_snoop# (
     .axi_mst_req_t(axi_mst_req_t),
@@ -1656,13 +1681,31 @@ module cheshire_soc import cheshire_pkg::*; #(
 
 
   )
-  i_axi_snoop(
+  i_axi_snoop_cva6(
     .clk_i, 
-    .axi_mst_req_i(axi_mst_req_prob),
-    .axi_mst_rsp_i(axi_mst_rsp_prob),
+    .axi_mst_req_i(axi_in_req),
+    .axi_mst_rsp_i(axi_in_rsp),
     .axi_mst_req_o(axi_in_req),
     .axi_mst_rsp_o(axi_in_rsp)
   );
+
+  axi_snoop# (
+    .axi_mst_req_t(axi_slv_req_t),
+    .axi_mst_rsp_t(axi_slv_rsp_t)
+
+  )
+  i_axi_snoop_llc(
+    .clk_i,
+    .axi_mst_req_i(axi_llc_cut_req),
+    .axi_mst_rsp_i(axi_llc_cut_rsp),
+    .axi_mst_req_o(axi_llc_cut_req),
+    .axi_mst_rsp_o(axi_llc_cut_rsp)
+
+  )
+  //todo: remove mst slv in naming of snoop.sv
 //axi_mst_req_t [AxiIn.num_in-1:0]    axi_in_req, axi_rt_in_req;
 //axi_mst_rsp_t [AxiIn.num_in-1:0]    axi_in_rsp, axi_rt_in_rsp;
+
+//axi_slv_req_t axi_llc_cut_req;
+//axi_slv_rsp_t axi_llc_cut_rsp;
 endmodule

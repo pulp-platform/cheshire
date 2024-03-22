@@ -56,3 +56,4 @@ sources:
       - target/xilinx/src/dram_wrapper_xilinx.sv
       - target/xilinx/src/fan_ctrl.sv
       - target/xilinx/src/cheshire_top_xilinx.sv
+      - target/xilinx/src/axi_snoop.sv
