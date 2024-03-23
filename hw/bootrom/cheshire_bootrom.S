@@ -60,26 +60,26 @@ _start:
 
     // C910 functions enable
     # invalid all memory for IBP,BTB,BHT,DCACHE,ICACHE
-    li x3, 0x70013
-    csrs 0x7c2,x3  #mcor
+    li t0, 0x70013
+    csrs 0x7c2,t0  #mcor
     
     # enable ICACHE,DCACHE,BHT,BTB,IBP,RAS,WA
-    # li x3, 0x10f7
-    # csrs 0x7c1,x3  #mhcr
+    # li t0, 0x10f7
+    # csrs 0x7c1,t0  #mhcr
     # enable write allocate
-    # li x3, 0x4
-    # csrs 0x7c1,x3  #mhcr
+    # li t0, 0x4
+    # csrs 0x7c1,t0  #mhcr
     
-    li x3, 0x11ff
-    csrs 0x7c1,x3  #mhcr
+    li t0, 0x11ff
+    csrs 0x7c1,t0  #mhcr
 
     # enable lbuf,way_pred,data_cache_prefetch, amr
-    # li x3, 0x7e30c
-    # csrs 0x7c5,x3   #mhint
-    # li x3, 0x6e30c
-    li x3, 0x4630c # disable L2 prefetch
-    # li x3, 0x46308 # disable L2, L1d prefetch
-    csrs 0x7c5,x3   #mhint
+    # li t0, 0x7e30c
+    # csrs 0x7c5,t0   #mhint
+    # li t0, 0x6e30c
+    li t0, 0x4630c # disable L2 prefetch
+    # li t0, 0x46308 # disable L2, L1d prefetch
+    csrs 0x7c5,t0   #mhint
 
     // If LLC present: Wait for end of BIST, then extend stack and set to all SPM
     la t0, __base_regs

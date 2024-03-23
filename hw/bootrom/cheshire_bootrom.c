@@ -73,8 +73,8 @@ int main() {
     uint32_t bootmode = *reg32(&__base_regs, CHESHIRE_BOOT_MODE_REG_OFFSET);
     uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
     // Compute the boot core frequency using the reference clock
-    uint64_t core_freq = clint_get_core_freq(rtc_freq, 2500);
-    // uint64_t core_freq = 50000000; // 50 MHz according to opensbi/platform/fpga/cheshire_c910/platform.c
+    // uint64_t core_freq = clint_get_core_freq(rtc_freq, 2500);
+    uint64_t core_freq = 50000000; // 50 MHz according to opensbi/platform/fpga/cheshire_c910/platform.c
     // In case of reentry, store return in scratch0 as is convention
     switch (bootmode) {
     case 0:
