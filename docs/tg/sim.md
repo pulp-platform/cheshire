@@ -28,6 +28,8 @@ The `SELCFG` parameter selects the simulation configuration specified in the `tb
 | 0        | Default configuration from `cheshire_pkg` |
 | 1        | AXI-RT-enabled configuration              |
 
+Defining `PRTCFG` and setting its value to 1 prints the Cheshire and its derived configuration structs at `t=0`.
+
 For simulation of Cheshire in other designs, we provide the module `cheshire_vip` encapsulating all verification IPs and their interfaces. For details, see [Verifying Cheshire In-System](integr.md#verifying-cheshire-in-system).
 
 ## QuestaSim
