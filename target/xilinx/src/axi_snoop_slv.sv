@@ -1,11 +1,11 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: Illian Gruenberg
 // 
 // Create Date: 03/14/2024 05:34:34 PM
 // Design Name: 
-// Module Name: axi_snoop
+// Module Name: axi_snoop_slv
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,16 +20,16 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module axi_snoop #(
-parameter type axi_mst_req_t = logic,
-parameter type axi_mst_rsp_t = logic,
+module axi_snoop_slv#(
+parameter type axi_slv_req_t = logic,
+parameter type axi_slv_rsp_t = logic,
 
 )(
     input clk_i,
-    input axi_mst_req_t  axi_mst_req_i,
-    input axi_mst_rsp_t  axi_mst_rsp_i,
-    output axi_mst_req_t axi_mst_req_o,
-    output axi_mst_rsp_t axi_mst_rsp_o,
+    input axi_slv_req_t  axi_slv_req_i,
+    input axi_slv_rsp_t  axi_slv_rsp_i,
+    output axi_slv_req_t axi_slv_req_o,
+    output axi_slv_rsp_t axi_slv_rsp_o,
     output logic [63:0] counter_reg_q_o,
     output logic [63:0] counter_clk_cycles_q_o,
     output logic [63:0] zero_o
@@ -53,7 +53,6 @@ parameter type axi_mst_rsp_t = logic,
 
       counter_clk_cycles_d = 64'b0;
       counter_clk_cycles_q_o = 64'b0;
-
       zero_o = 64'b0;
     end
  
@@ -62,18 +61,19 @@ parameter type axi_mst_rsp_t = logic,
         counter_clk_cycles_q_o <= counter_clk_cycles_d + 1;
         counter_clk_cycles_d <= counter_clk_cycles_q_o;
 
-        if (axi_mst_req_i.aw_valid) begin
+        if (axi_slv_req_i.aw_valid) begin
             counter_reg_q_o <= counter_reg_d + 1;
             counter_reg_d <= counter_reg_q_o;
         end
        
-        if (axi_mst_rsp_i.b_valid) begin
+        if (axi_slv_rsp_i.b_valid) begin
             counter_reg_q_o <= counter_reg_d + 1;
             counter_reg_d <= counter_reg_q_o;
         end 
     end
     
-    assign axi_mst_req_o = axi_mst_req_i;
-    assign axi_mst_rsp_o = axi_mst_rsp_i;
-
+    assign axi_slv_req_o = axi_slv_req_i;
+    assign axi_slv_rsp_o = axi_slv_rsp_i;
+    
+    
 endmodule

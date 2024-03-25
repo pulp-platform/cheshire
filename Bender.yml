@@ -57,3 +57,4 @@ sources:
       - target/xilinx/src/fan_ctrl.sv
       - target/xilinx/src/cheshire_top_xilinx.sv
       - target/xilinx/src/axi_snoop.sv
+      - target/xilinx/src/axi_snoop_slv.sv
