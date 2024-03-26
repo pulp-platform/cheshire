@@ -29,6 +29,10 @@ module fixture_cheshire_soc #(
   logic       test_mode;
   logic [1:0] boot_mode;
   logic       rtc;
+  
+  logic       clk_200MHz;
+  logic       phy_tx_clk;
+  logic       eth_clk;
 
   axi_llc_req_t axi_llc_mst_req;
   axi_llc_rsp_t axi_llc_mst_rsp;
@@ -95,6 +99,9 @@ module fixture_cheshire_soc #(
     .test_mode_i        ( test_mode ),
     .boot_mode_i        ( boot_mode ),
     .rtc_i              ( rtc       ),
+    .clk_200MHz       (clk_200MHz),
+    .phy_tx_clk       (phy_tx_clk),
+    .eth_clk          (eth_clk),
     .axi_llc_mst_req_o  ( axi_llc_mst_req ),
     .axi_llc_mst_rsp_i  ( axi_llc_mst_rsp ),
     .axi_ext_mst_req_i  ( '0 ),

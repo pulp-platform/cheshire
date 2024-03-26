@@ -29,6 +29,9 @@ module cheshire_soc import cheshire_pkg::*; #(
   input  logic        test_mode_i,
   input  logic [1:0]  boot_mode_i,
   input  logic        rtc_i,
+  input  logic        clk_200MHz,
+  input  logic       phy_tx_clk,
+  input  logic       eth_clk,
   // External AXI LLC (DRAM) port
   output axi_ext_llc_req_t axi_llc_mst_req_o,
   input  axi_ext_llc_rsp_t axi_llc_mst_rsp_i,
@@ -1333,7 +1336,10 @@ module cheshire_soc import cheshire_pkg::*; #(
       .phy_mdio_i      (                 ),
       .phy_mdio_o      (                 ),
       .phy_mdio_eo     (                 ),
-      .phy_mdc_o       (                 )
+      .phy_mdc_o       (                 ),
+      .clk_200MHz      (  clk_200MHz              ),
+      .phy_tx_clk      (  phy_tx_clk              ),
+      .eth_clk         (   eth_clk             )
       );
 
   end else begin : gen_no_ethernet // not sure

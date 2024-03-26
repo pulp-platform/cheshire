@@ -19,6 +19,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter time          ClkPeriodSys      = 2ns,
   parameter time          ClkPeriodJtag     = 20ns,
   parameter time          ClkPeriodRtc      = 30518ns,
+  parameter time          ClkPeriodEth125   = 8ns,
+  parameter time          ClkPeriodEth200   = 5ns,
   parameter int unsigned  RstCycles         = 5,
   parameter real          TAppl             = 0.1,
   parameter real          TTest             = 0.9,
@@ -67,6 +69,9 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   inout  wire [SpihNumCs-1:0] spih_csb,
   inout  wire [ 3:0]          spih_sd,
   // Ethernet interface
+  output   logic              clk_200MHz,
+  output  logic               phy_tx_clk,
+  output  logic               eth_clk,
   inout  wire [ 3:0]          eth_txd,
   inout  wire [ 3:0]          eth_rxd,
   inout  wire                 eth_txck,
@@ -649,7 +654,10 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .phy_mdio_i      ( 1'b0          ),
     .phy_mdio_o      (               ),
     .phy_mdio_eo     (               ),
-    .phy_mdc_o       (               )
+    .phy_mdc_o       (               ),
+    .clk_200MHz      (  clk_200MHz   ),
+    .phy_tx_clk      (  phy_tx_clk   ),
+    .eth_clk         (  eth_clk      )
   );
   
   logic [DutCfg.AxiDataWidth:0] data_array [7:0] = {
@@ -661,7 +669,33 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   logic [DutCfg.AxiMstIdWidth-1:0] read_addr [31:0];
 
-  
+   initial begin
+    forever begin
+    phy_tx_clk <= 1;
+    #(ClkPeriodEth125/2);
+    phy_tx_clk <= 0;
+    #(ClkPeriodEth125/2);
+    end
+  end
+
+  initial begin
+    forever begin
+    eth_clk <= 0;
+    #(ClkPeriodEth125/4);
+    eth_clk <= 1;
+    #(ClkPeriodEth125/2);
+    eth_clk <= 0;
+    #(ClkPeriodEth125/4);
+  end
+  end
+
+    clk_rst_gen #(
+    .ClkPeriod    ( ClkPeriodEth200 ),
+    .RstClkCycles ( RstCycles )
+  ) i_clk_rst_eth_200 (
+    .clk_o  ( clk_200MHz ),
+    .rst_no ( )
+  );
 
   initial begin
     for (int i = 0; i < 8; i++) begin
