@@ -30,6 +30,10 @@ module fixture_cheshire_soc #(
   logic [1:0] boot_mode;
   logic       rtc;
 
+  logic       clk_200MHz;
+  logic       phy_tx_clk;
+  logic       eth_clk;
+
   axi_llc_req_t axi_llc_mst_req;
   axi_llc_rsp_t axi_llc_mst_rsp;
 
@@ -48,6 +52,20 @@ module fixture_cheshire_soc #(
   logic i2c_scl_o;
   logic i2c_scl_i;
   logic i2c_scl_en;
+
+  logic       eth_rxck_i;
+  logic [3:0] eth_rxd_i;
+  logic       eth_rxctl_i;
+  logic       eth_txck_o;
+  logic [3:0] eth_txd_o;
+  logic       eth_txctl_o;
+  logic       eth_rstn_o;  
+  logic       eth_intn_i;
+  logic       eth_pme_i;
+  logic       eth_mdio_i;
+  logic       eth_mdio_o;
+  logic       eth_mdio_en;
+  logic       eth_mdc_o;
 
   logic                 spih_sck_o;
   logic                 spih_sck_en;
@@ -79,6 +97,9 @@ module fixture_cheshire_soc #(
     .test_mode_i        ( test_mode ),
     .boot_mode_i        ( boot_mode ),
     .rtc_i              ( rtc       ),
+    .clk_200MHz         ( clk_200MHz),
+    .phy_tx_clk         ( phy_tx_clk),
+    .eth_clk            ( eth_clk   ),
     .axi_llc_mst_req_o  ( axi_llc_mst_req ),
     .axi_llc_mst_rsp_i  ( axi_llc_mst_rsp ),
     .axi_ext_mst_req_i  ( '0 ),
@@ -115,6 +136,19 @@ module fixture_cheshire_soc #(
     .i2c_scl_o          ( i2c_scl_o  ),
     .i2c_scl_i          ( i2c_scl_i  ),
     .i2c_scl_en_o       ( i2c_scl_en ),
+    .eth_rxck_i         ( eth_rxck_i  ),
+    .eth_rxd_i          ( eth_rxd_i   ),
+    .eth_rxctl_i        ( eth_rxctl_i ),
+    .eth_txck_o         ( eth_txck_o  ),
+    .eth_txd_o          ( eth_txd_o   ),
+    .eth_txctl_o        ( eth_txctl_o ),
+    .eth_rstn_o         ( eth_rstn_o  ),  
+    .eth_intn_i         ( eth_intn_i  ),
+    .eth_pme_i          ( eth_pme_i   ),
+    .eth_mdio_i         ( eth_mdio_i  ),
+    .eth_mdio_o         ( eth_mdio_o  ),
+    .eth_mdio_oe        ( eth_mdio_en ),
+    .eth_mdc_o          ( eth_mdc_o   ),
     .spih_sck_o         ( spih_sck_o  ),
     .spih_sck_en_o      ( spih_sck_en ),
     .spih_csb_o         ( spih_csb_o  ),
@@ -146,6 +180,16 @@ module fixture_cheshire_soc #(
   wire                 spih_sck;
   wire [SpihNumCs-1:0] spih_csb;
   wire [ 3:0]          spih_sd;
+
+  wire [ 3:0]          eth_txd;
+  wire [ 3:0]          eth_rxd;
+  wire                 eth_txck;
+  wire                 eth_rxck;
+  wire                 eth_txctl;
+  wire                 eth_rxctl;
+  wire                 eth_rstn;
+  wire                 eth_mdio;
+  wire                 eth_mdc;
 
   vip_cheshire_soc_tristate vip_tristate (.*);
 

@@ -23,6 +23,7 @@ set all_in_mux [get_nets -of [ get_pins -filter { DIRECTION == IN } -of [get_cel
 set_property CLOCK_DEDICATED_ROUTE FALSE $all_in_mux
 set_property CLOCK_BUFFER_TYPE NONE $all_in_mux
 
+
 ########
 # JTAG #
 ########

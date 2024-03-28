@@ -48,6 +48,19 @@ module cheshire_top_xilinx (
   inout  wire   i2c_sda_io,
 `endif
 
+`ifdef USE_ETHERNET
+  input  wire        eth_rxck,
+  input  wire [3:0]  eth_rxd,
+  input  wire        eth_rxctl,
+  output wire        eth_txck,
+  output wire [3:0]  eth_txd,
+  output wire        eth_txctl,
+  output wire        eth_rst_n, 
+  input  wire        eth_intn,
+  input  wire        eth_pme,
+  input  wire        eth_mdio,
+`endif
+
 `ifdef USE_SD
   input  logic        sd_cd_i,
   output logic        sd_cmd_o,
@@ -110,6 +123,9 @@ module cheshire_top_xilinx (
 
   wire sys_clk;
   wire soc_clk;
+  logic phy_tx_clk_i;
+  logic eth_clk_i;
+  logic clk_200MHz;
 
   IBUFDS #(
     .IBUF_LOW_PWR ("FALSE")
@@ -120,13 +136,13 @@ module cheshire_top_xilinx (
   );
 
   clkwiz i_clkwiz (
-    .clk_in1  ( sys_clk ),
-    .reset    ( '0 ),
-    .locked   ( ),
-    .clk_100  ( ),
-    .clk_50   ( soc_clk  ),
-    .clk_20   ( ),
-    .clk_10   ( )
+    .clk_in1    ( sys_clk      ),
+    .reset      ( '0           ),
+    .locked     (              ),
+    .clk_200    ( clk_200MHz   ),
+    .clk_50     ( soc_clk      ),
+    .clk_125    ( phy_tx_clk_i ),
+    .clk_125_90 ( eth_clk_i    )
   );
 
   /////////////////////
@@ -453,6 +469,16 @@ module cheshire_top_xilinx (
     .spih_sd_o          ( spi_sd_soc_out  ),
     .spih_sd_en_o       ( spi_sd_en       ),
     .spih_sd_i          ( spi_sd_soc_in   ),
+    .clk_200MHz          (clk_200MHz),
+    .eth_clk ( eth_clk) ,
+    .phy_tx_clk ( phy_tx_clk ),
+    .eth_rxck_i (eth_rxck),
+    .eth_rxd_i ( eth_rxd),
+    .eth_rxctl_i ( eth_rxctl),
+    .eth_txck_o ( eth_txck ),
+    .eth_txd_o ( eth_txd ),
+    .eth_txctl_o ( eth_txctl),
+    .eth_rstn_o (eth_rst_n), 
 `ifdef USE_VGA
     .vga_hsync_o,
     .vga_vsync_o,

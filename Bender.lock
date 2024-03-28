@@ -34,6 +34,13 @@ packages:
     - common_verification
     - register_interface
     - tech_cells_generic
+  axi_mem_if:
+    revision: 3567273b4f67bd57a81a2a503394a49641bae53a
+    version: 0.2.1
+    source:
+      Git: git@github.com:pulp-platform/axi_mem_if.git
+    dependencies:
+    - axi
   axi_riscv_atomics:
     revision: 0ac3a78fe342c5a5b9b10bff49d58897f773059e
     version: 0.8.2
@@ -78,8 +85,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: 13f28aa0021fc22c0d01a12d618fda58d2c93239
-    version: 1.33.0
+    revision: ad22699793d98ef714f120c6268fe92d096a61e1
+    version: 1.33.1
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -101,6 +108,16 @@ packages:
     - common_cells
     - fpnew
     - tech_cells_generic
+  ethernet:
+    revision: 5098ab54d155a38fe5ed63423d72962642995de6
+    version: null
+    source:
+      Git: git@github.com:AlSaqr-platform/ethernet.git
+    dependencies:
+    - axi
+    - axi_mem_if
+    - common_cells
+    - common_verification
   fpnew:
     revision: f231041c610f270ffc03cbdac38739ddb6426572
     version: null
@@ -145,8 +162,8 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: e25b36670ff7aab3402f40efcc2b11ee0f31cf19
-    version: 0.4.3
+    revision: ae616e5a1ec2b41e72d200e5ab09c65e94aebd3d
+    version: 0.4.4
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:
