@@ -107,5 +107,13 @@
       riscv,ndev = <51>;
       reg = <0x0 0x4000000 0x0 0x4000000>;
     };
+    eth: lowrisc-eth@3010000 {  
+      compatible = "lowrisc-eth";  
+      device_type = "network";   
+      interrupt-parent = <&PLIC0>;   
+      interrupts = <0x00000003>;
+      local-mac-address = [00 18 3e 02 e3 7f]; // This needs to change if more than one GenesysII on a VLAN
+      reg = <0x0 0x3010000 0x0 0x10000>; 
+    };
   };
 };
