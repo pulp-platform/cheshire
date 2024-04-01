@@ -29,7 +29,7 @@ $(CHS_XILINX_DIR)/build/%/out.xci: \
 		$$(wildcard $(CHS_XILINX_DIR)/src/ips/$$*.prj) \
 		| $(CHS_XILINX_DIR)/build/%/
 	@rm -f $(CHS_XILINX_DIR)/build/$(*)*.log $(CHS_XILINX_DIR)/build/$(*)*.jou
-	cd $| && $(VIVADO) -mode gui -log ../$*.log -jou ../$*.jou -source $< -tclargs "$(subst ., ,$*)"
+	cd $| && $(VIVADO) -mode batch -log ../$*.log -jou ../$*.jou -source $< -tclargs "$(subst ., ,$*)"
 
 ##############
 # Bitstreams #
@@ -51,7 +51,7 @@ $$(CHS_XILINX_DIR)/out/%.$(1).bit: \
 		$$(CHS_HW_ALL) \
 		| $$(CHS_XILINX_DIR)/build/$(1).%/
 	@rm -f $$(CHS_XILINX_DIR)/build/$$*.$(1)*.log $$(CHS_XILINX_DIR)/build/$$*.$(1)*.jou
-	cd $$| && $$(VIVADO) -mode gui -log ../$$*.$(1).log -jou ../$$*.$(1).jou -source $$< \
+	cd $$| && $$(VIVADO) -mode batch -log ../$$*.$(1).log -jou ../$$*.$(1).jou -source $$< \
 		-tclargs "$(1) $$* $$(CHS_XILINX_IPS_$(1):%=$$(CHS_XILINX_DIR)/build/$(1).%/out.xci)"
 
 .PHONY: chs-xilinx-$(1)
@@ -76,7 +76,7 @@ define chs_xilinx_util_rule
 chs-xilinx-$(1)-%: $$(CHS_XILINX_DIR)/scripts/util/$(1).tcl | $$(CHS_XILINX_DIR)/build/%.$(1)/
 	[ -e $(subst %,$$*,$(2)) ] || $$(MAKE) $(subst %,$$*,$(2))
 	@rm -f $$(CHS_XILINX_DIR)/build/$$(*)*.$(1).log $$(CHS_XILINX_DIR)/build/$$(*)*.$(1).jou
-	cd $$| && $$(VIVADO) -mode gui -log ../$$(*).$(1).log -jou ../$$(*).$(1).jou -source $$< \
+	cd $$| && $$(VIVADO) -mode batch -log ../$$(*).$(1).log -jou ../$$(*).$(1).jou -source $$< \
 		-tclargs "$$(CHS_XILINX_HWS_URL) $$(or $$(CHS_XILINX_HWS_PATH_$$*),*) $$* $(subst %,$$*,$(2)) 0"
 endef
 

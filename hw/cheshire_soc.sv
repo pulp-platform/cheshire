@@ -84,9 +84,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   output logic        eth_txck_o,
   output logic [3:0]  eth_txd_o,
   output logic        eth_txctl_o,
-  output logic        eth_rstn_o,
-  input  logic        eth_intn_i,
-  input  logic        eth_pme_i,
+  output logic        eth_rstn_o,     
   input  logic        eth_mdio_i,
   output logic        eth_mdio_o,
   output logic        eth_mdio_oe,
@@ -1312,7 +1310,8 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   `AXI_ASSIGN_FROM_REQ(axi_ethernet, axi_out_req[AxiOut.ethernet]);
   `AXI_ASSIGN_TO_RESP(axi_out_rsp[AxiOut.ethernet], axi_ethernet);
-
+  
+  logic eth_intn, eth_pme;
 
     eth_rgmii #(
       .AXI_ID_WIDTH   ( AxiSlvIdWidth     ),
@@ -1320,30 +1319,31 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AXI_DATA_WIDTH ( Cfg.AxiDataWidth  ),
       .AXI_USER_WIDTH ( Cfg.AxiUserWidth  )
     ) i_eth_rgmii_tx(
-      .clk_i           ( clk_i           ),
-      .rst_ni          ( rst_ni          ),
-      .ethernet        ( axi_ethernet    ),   
-      .eth_rxck        ( eth_rxck_i      ),
-      .eth_rxctl       ( eth_rxctl_i     ),
-      .eth_rxd         ( eth_rxd_i       ),
-      .eth_txck        ( eth_txck_o      ),
-      .eth_txctl       ( eth_txctl_o     ),
-      .eth_txd         ( eth_txd_o       ),
-      .eth_rst_n       ( eth_rstn_o      ),
-      .phy_int_i       (                 ),
-      .phy_pme_i       (                 ),
-      .phy_mdio_i      (                 ),
-      .phy_mdio_o      (                 ),
-      .phy_mdio_eo     (                 ),
-      .phy_mdc_o       (                 ),
-      .clk_200MHz      (  clk_200MHz     ),
-      .phy_tx_clk      (  phy_tx_clk     ),
-      .eth_clk         (  eth_clk        )
+      .clk_i           ( clk_i              ),
+      .rst_ni          ( rst_ni             ),
+      .ethernet        ( axi_ethernet       ),   
+      .eth_rxck        ( eth_rxck_i         ),
+      .eth_rxctl       ( eth_rxctl_i        ),
+      .eth_rxd         ( eth_rxd_i          ),
+      .eth_txck        ( eth_txck_o         ),
+      .eth_txctl       ( eth_txctl_o        ),
+      .eth_txd         ( eth_txd_o          ),
+      .eth_rst_n       ( eth_rstn_o         ),
+      .phy_int_i       ( eth_intn           ),
+      .phy_pme_i       ( eth_pme            ),
+      .phy_mdio_i      ( eth_mdio_i         ),
+      .phy_mdio_o      ( eth_mdio_o         ),
+      .phy_mdio_eo     ( eth_mdio_oe        ),
+      .phy_mdc_o       ( eth_mdc_o          ),
+      .clk_200MHz      ( clk_200MHz         ),
+      .phy_tx_clk      ( phy_tx_clk         ),
+      .eth_clk         ( eth_clk            ),
+      .eth_irq         ( intr.intn.eth_irq  ) 
     );
-  
 
   end else begin : gen_no_ethernet // not sure
-
+      
+      assign intr.intn.eth_irq = 0;
       assign axi_out_rsp[AxiOut.ethernet].aw_ready = 1'b1;
       assign axi_out_rsp[AxiOut.ethernet].ar_ready = 1'b1;
       assign axi_out_rsp[AxiOut.ethernet].w_ready = 1'b1;

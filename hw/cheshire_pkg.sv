@@ -232,6 +232,7 @@ package cheshire_pkg;
     logic i2c_fmt_threshold;
     logic uart;
     logic zero;
+    logic eth_irq;
   } cheshire_int_intr_t;
 
   typedef struct packed {
