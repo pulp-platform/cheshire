@@ -109,14 +109,13 @@ packages:
     - fpnew
     - tech_cells_generic
   ethernet:
-    revision: 5098ab54d155a38fe5ed63423d72962642995de6
+    revision: 90a025eb02bbf7bc228ca3a2167ba48ff057c17e
     version: null
     source:
-      Git: git@github.com:AlSaqr-platform/ethernet.git
+      Git: git@github.com:pulp-platform/pulp-ethernet.git
     dependencies:
     - axi
     - axi_mem_if
-    - common_cells
     - common_verification
   fpnew:
     revision: f231041c610f270ffc03cbdac38739ddb6426572
