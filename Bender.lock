@@ -1,6 +1,6 @@
 packages:
   ace:
-    revision: d80ae1727aae2ebf280a99c273ddde0fcac3df62
+    revision: f919f5cabf41961321bf37327ab4eb726dfdbd0c
     version: 0.1.0
     source:
       Git: https://github.com/planvtech/ace.git
@@ -85,8 +85,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: 13f28aa0021fc22c0d01a12d618fda58d2c93239
-    version: 1.33.0
+    revision: ad22699793d98ef714f120c6268fe92d096a61e1
+    version: 1.33.1
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -99,10 +99,10 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 929f8bdb76cc101ff0dbfacb74b0ac9f1a4ab37a
+    revision: 1e8e9b204873e4381d78615ce876889a814247ef
     version: null
     source:
-      Git: https://github.com/planvtech/cva6.git
+      Git: git@iis-git.ee.ethz.ch:github-mirror/cva6.git
     dependencies:
     - ace
     - axi
