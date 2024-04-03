@@ -550,7 +550,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
 
-  localparam ariane_pkg::ariane_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
+  localparam config_pkg::cva6_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
 
   // Boot from boot ROM only if available, otherwise from platform ROM
   localparam logic [63:0] BootAddr = 64'(Cfg.Bootrom ? AmBrom : Cfg.PlatformRom);
@@ -592,15 +592,17 @@ module cheshire_soc import cheshire_pkg::*; #(
     riscv::priv_lvl_t  clic_irq_priv;
 
     cva6 #(
-      .ArianeCfg      ( Cva6Cfg ),
-      .AxiAddrWidth   ( Cfg.AddrWidth ),
-      .AxiDataWidth   ( Cfg.AxiDataWidth ),
-      .AxiIdWidth     ( Cva6IdWidth ),
+      .CVA6Cfg        ( Cva6Cfg ),
+      // .AxiAddrWidth   ( Cfg.AddrWidth ),
+      // .AxiDataWidth   ( Cfg.AxiDataWidth ),
+      // .AxiIdWidth     ( Cva6IdWidth ),
       .axi_ar_chan_t  ( ariane_ace::ar_chan_t ),
       .axi_aw_chan_t  ( ariane_ace::aw_chan_t ),
-      .axi_w_chan_t   ( ariane_axi::w_chan_t  ),
-      .axi_req_t      ( ariane_ace::req_t     ),
-      .axi_rsp_t      ( ariane_ace::resp_t    )
+      .axi_w_chan_t   ( ariane_ace::ariane_axi_w_chan_t ),
+      .b_chan_t       ( ariane_ace::ariane_axi_b_chan_t ),
+      .r_chan_t       ( ariane_ace::r_chan_t  ),
+      .noc_req_t      ( ariane_ace::req_t     ),
+      .noc_resp_t     ( ariane_ace::resp_t    )
     ) i_core_cva6 (
       .clk_i,
       .rst_ni,
@@ -618,13 +620,11 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clic_irq_ready_o ( clic_irq_ready ),
       .clic_kill_req_i  ( clic_irq_kill_req ),
       .clic_kill_ack_o  ( clic_irq_kill_ack ),
-      .rvfi_o           ( ),
+      .rvfi_probes_o    ( ),
       .cvxif_req_o      ( ),
       .cvxif_resp_i     ( '0 ),
-      .l15_req_o        ( ),
-      .l15_rtrn_i       ( '0 ),
-      .axi_req_o        ( core_out_req ),
-      .axi_resp_i       ( core_out_rsp )
+      .noc_req_o        ( core_out_req ),
+      .noc_resp_i       ( core_out_rsp )
     );
 
     if (Cfg.BusErr) begin : gen_cva6_bus_err
