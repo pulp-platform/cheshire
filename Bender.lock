@@ -109,7 +109,7 @@ packages:
     - fpnew
     - tech_cells_generic
   ethernet:
-    revision: 5098ab54d155a38fe5ed63423d72962642995de6
+    revision: c407186b6fe23720767ad65ccd604652ae1c6630
     version: null
     source:
       Git: git@github.com:AlSaqr-platform/ethernet.git
