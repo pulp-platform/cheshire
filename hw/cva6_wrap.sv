@@ -61,12 +61,30 @@ typedef struct packed {
   logic  [5:0]             clic_irq_vsid;
   logic                    clic_irq_shv;
   logic                    clic_kill_req;
+  std_cache_pkg::cache_line_t [ariane_pkg::DCACHE_SET_ASSOC-1:0] dcache_rdata;
+  logic [ariane_pkg::ICACHE_SET_ASSOC-1:0][ariane_pkg::ICACHE_TAG_WIDTH:0] icache_tag_rdata;
+  logic [ariane_pkg::ICACHE_SET_ASSOC-1:0][ariane_pkg::ICACHE_USER_LINE_WIDTH-1:0] icache_data_ruser;
+  logic [ariane_pkg::ICACHE_SET_ASSOC-1:0][ariane_pkg::ICACHE_LINE_WIDTH-1:0] icache_data_rdata;
   axi_rsp_t                axi_rsp;
 } cva6_inputs_t;
 
 typedef struct packed {
   logic clic_irq_ready;
   logic clic_kill_ack;
+  logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] dcache_req;
+  logic [ariane_pkg::DCACHE_INDEX_WIDTH-1:0] dcache_addr;
+  logic dcache_we;
+  std_cache_pkg::cache_line_t dcache_wdata;
+  std_cache_pkg::cl_be_t dcache_be;
+  logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] icache_tag_req;
+  logic icache_tag_we;
+  logic [wt_cache_pkg::ICACHE_CL_IDX_WIDTH-1:0] icache_tag_addr;
+  logic [ariane_pkg::ICACHE_TAG_WIDTH-1:0] icache_tag_wdata;
+  logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] icache_tag_wdata_valid;
+  logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] icache_data_req;
+  logic icache_data_we;
+  logic [wt_cache_pkg::ICACHE_CL_IDX_WIDTH-1:0] icache_data_addr;
+  wt_cache_pkg::icache_rtrn_t icache_data_wdata;
   axi_req_t axi_req;
 } cva6_outputs_t;
 
@@ -101,6 +119,7 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
 
   cva6 #(
     .CVA6Cfg       ( Cva6Cfg       ),
+    .ExternalSrams ( 1             ),
     .axi_ar_chan_t ( axi_ar_chan_t ),
     .axi_aw_chan_t ( axi_aw_chan_t ),
     .axi_w_chan_t  ( axi_w_chan_t  ),
@@ -134,11 +153,55 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
     .rvfi_probes_o    (                               ),
     .cvxif_req_o      (                               ),
     .cvxif_resp_i     ( '0                            ),
+    // Connection to external SRAMs
+    .dcache_req_o     ( core2hmr[i].dcache_req        ),
+    .dcache_addr_o    ( core2hmr[i].dcache_addr       ),
+    .dcache_we_o      ( core2hmr[i].dcache_we         ),
+    .dcache_wdata_o   ( core2hmr[i].dcache_wdata      ),
+    .dcache_be_o      ( core2hmr[i].dcache_be         ),
+    .dcache_rdata_i   ( hmr2core[i].dcache_rdata      ),
+    .icache_tag_req_o   ( core2hmr[i].icache_tag_req  ),
+    .icache_tag_we_o    ( core2hmr[i].icache_tag_we   ),
+    .icache_tag_addr_o  ( core2hmr[i].icache_tag_addr ),
+    .icache_tag_wdata_o ( core2hmr[i].icache_tag_wdata),
+    .icache_tag_wdata_valid_o ( core2hmr[i].icache_tag_wdata_valid ),
+    .icache_tag_rdata_i ( hmr2core[i].icache_tag_rdata),
+    .icache_data_req_o  ( core2hmr[i].icache_data_req ),
+    .icache_data_we_o   ( core2hmr[i].icache_data_we ),
+    .icache_data_addr_o ( core2hmr[i].icache_data_addr ),
+    .icache_data_wdata_o( core2hmr[i].icache_data_wdata ),
+    .icache_data_ruser_i( hmr2core[i].icache_data_ruser ),
+    .icache_data_rdata_i( hmr2core[i].icache_data_rdata ),
     .noc_req_o        ( core2hmr[i].axi_req           ),
     .noc_resp_i       ( hmr2core[i].axi_rsp           )
   );
+
+ cache_wrap i_cva6_srams (
+   .clk_i (clk_i),
+   .rst_ni (rstn_i),
+   // D$ interface
+   .dcache_req_i  (hmr2sys[i].dcache_req),
+   .dcache_addr_i (hmr2sys[i].dcache_addr),
+   .dcache_we_i   (hmr2sys[i].dcache_we),
+   .dcache_wdata_i(hmr2sys[i].dcache_wdata),
+   .dcache_be_i   (hmr2sys[i].dcache_be),
+   .dcache_rdata_o(sys2hmr[i].dcache_rdata),
+   .icache_tag_req_i   ( hmr2sys[i].icache_tag_req),
+   .icache_tag_we_i    ( hmr2sys[i].icache_tag_we),
+   .icache_tag_addr_i  ( hmr2sys[i].icache_tag_addr),
+   .icache_tag_wdata_i ( hmr2sys[i].icache_tag_wdata),
+   .icache_tag_wdata_valid_i ( hmr2sys[i].icache_tag_wdata_valid),
+   .icache_tag_rdata_o ( sys2hmr[i].icache_tag_rdata),
+   .icache_data_req_i  ( hmr2sys[i].icache_data_req),
+   .icache_data_we_i   ( hmr2sys[i].icache_data_we),
+   .icache_data_addr_i ( hmr2sys[i].icache_data_addr),
+   .icache_data_wdata_i( hmr2sys[i].icache_data_wdata),
+   .icache_data_ruser_o( sys2hmr[i].icache_data_ruser),
+   .icache_data_rdata_o( sys2hmr[i].icache_data_rdata)
+ );
 end
 
+// typedef struct packed {} rapid_recovery_t;
 assign cores_sync = (harts_sync_req_i[NumHarts-1:0] == '1) ? 1'b1 : 1'b0;
 
 if (NumHarts > 1) begin: gen_multicore_hmr
@@ -157,8 +220,9 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     // .core_backup_t     ( '0 ), // TODO
     // .bus_outputs_t     ( '0 ), // TODO
     .reg_req_t         ( reg_req_t ), // TODO
-    .reg_rsp_t         ( reg_rsp_t ), // TODO
-    .rapid_recovery_t  ( rapid_recovery_pkg::rapid_recovery_t ) // TODO
+    .reg_rsp_t         ( reg_rsp_t ) // TODO
+    // .rapid_recovery_t  ( rapid_recovery_pkg::rapid_recovery_t ) // TODO
+    //.rapid_recovery_t  ( rapid_recovery_t ) // TODO
   ) i_cva6_hmr (
     .clk_i              ( clk_i         ),
     .rst_ni             ( rstn_i        ),
