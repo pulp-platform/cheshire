@@ -626,7 +626,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .axi_rsp_t        ( axi_cva6_rsp_t       )
   ) i_core_wrap       (
     .clk_i            ( clk_i                           ),
-    .rstn_i           ( rst_ni                          ),
+    .rst_ni           ( rst_ni                          ),
     .bootaddress_i    ( BootAddr                        ),
     .hart_id_i        ( '0                              ),
     .harts_sync_req_i ( reg_reg2hw.harts_sync.q         ),
