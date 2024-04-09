@@ -38,7 +38,6 @@ int main(void) {
         *tx_addr = data_to_write[i];
   }
 
-
   *reg32(ETH_BASE, MACLO_OFFSET)  = 0x98001032;  
   *reg32(ETH_BASE, MACHI_OFFSET) = 0x00012070;  
 
@@ -52,21 +51,8 @@ int main(void) {
   *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
   *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x0;
   *reg32(ETH_BASE, IDMA_RSP_READY_OFFSET) = 0x1;
-
-  // pulp_write32( ETH_BASE + IDMA_REQ_VALID_OFFSET ,   0x1);
-
-  // pulp_write32( ETH_BASE + IDMA_REQ_VALID_OFFSET ,   0x0);
   
-
-  //  // data
-  //  pulp_write32( ETH_BASE + IDMA_RSP_READY_OFFSET , 0x1);
-  
-   // to-do deassert rsp_ready when rx transaction is complete
-
-
- 
-    while(1);
-
-  //return 0;
+   // can leave rsp_ready high  
+  return 0;
 
 }

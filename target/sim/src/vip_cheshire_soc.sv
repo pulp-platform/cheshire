@@ -21,6 +21,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter time          ClkPeriodSys      = 5ns,
   parameter time          ClkPeriodJtag     = 20ns,
   parameter time          ClkPeriodRtc      = 30518ns,
+  parameter time          ClkPeriodEth125   = 8ns,
   parameter int unsigned  RstCycles         = 5,
   parameter real          TAppl             = 0.1,
   parameter real          TTest             = 0.9,
@@ -69,15 +70,17 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   inout  wire [SpihNumCs-1:0] spih_csb,
   inout  wire [ 3:0]          spih_sd,
   // Ethernet interface
-  inout  wire [ 3:0]          eth_txd,
-  inout  wire [ 3:0]          eth_rxd,
-  inout  wire                 eth_txck,
-  inout  wire                 eth_rxck,
-  inout  wire                 eth_txctl,
-  inout  wire                 eth_rxctl,
-  inout  wire                 eth_rstn,
-  inout  wire                 eth_mdio,
-  inout  wire                 eth_mdc,
+  output logic                eth_clk_125,
+  output logic                eth_clk_90,
+  input  logic [ 3:0]         eth_txd,
+  output logic [ 3:0]         eth_rxd,
+  input  logic                eth_txck,
+  output logic                eth_rxck,
+  input  logic                eth_txctl,
+  output logic                eth_rxctl,
+  input  logic                eth_rstn,
+  inout  logic                eth_mdio,
+  input  logic                eth_mdc,
   // Serial link interface
   output logic [SlinkNumChan-1:0]                    slink_rcv_clk_i,
   input  logic [SlinkNumChan-1:0]                    slink_rcv_clk_o,
@@ -649,21 +652,23 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .reg_req_t           ( reg_req_t            ),
     .reg_rsp_t           ( reg_rsp_t            )
   ) i_rx_eth_idma_wrap (
-    .clk_i               ( clk          ),
-    .rst_ni              ( rst_n        ),  
-    .phy_rx_clk_i        ( eth_txck     ),
-    .phy_rxd_i           ( eth_txd      ),
-    .phy_rx_ctl_i        ( eth_txctl    ),
-    .phy_tx_clk_o        ( eth_rxck     ),
-    .phy_txd_o           ( eth_rxd      ),
-    .phy_tx_ctl_o        ( eth_rxctl    ),
-    .phy_resetn_o        ( eth_rstn     ),  
+    .clk_i               ( clk             ),
+    .rst_ni              ( rst_n           ),  
+    .eth_clk_i           ( eth_clk_125     ),
+    .eth_clk90_i         ( eth_clk_90      ),
+    .phy_rx_clk_i        ( eth_txck        ),
+    .phy_rxd_i           ( eth_txd         ),
+    .phy_rx_ctl_i        ( eth_txctl       ),
+    .phy_tx_clk_o        ( eth_rxck        ),
+    .phy_txd_o           ( eth_rxd         ),
+    .phy_tx_ctl_o        ( eth_rxctl       ),
+    .phy_resetn_o        ( eth_rstn        ),  
     .phy_intn_i          ( 1'b1            ),
     .phy_pme_i           ( 1'b1            ),
-    .phy_mdio_i          ( 1'b0            ),
-    .phy_mdio_o          (                 ),
-    .phy_mdio_oe         (                 ),
-    .phy_mdc_o           (                 ),
+    .phy_mdio_i          ( eth_mdio_i      ),
+    .phy_mdio_o          ( eth_mdio_o      ),
+    .phy_mdio_oe         ( eth_mdio_oe     ),
+    .phy_mdc_o           ( eth_mdc         ),
     .reg_req_i           ( reg_bus_rx_req  ),
     .reg_rsp_o           ( reg_bus_rx_rsp  ),
     .testmode_i          ( 1'b0            ),
@@ -703,12 +708,30 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .mon_w_addr_o       ( /* NOT CONNECTED */ ),
     .mon_w_valid_o      ( /* NOT CONNECTED */ )
   );
-          
+  
   initial begin
+    forever begin
+    eth_clk_125 <= 0;
+    #(ClkPeriodEth125/2);
+    eth_clk_125 <= 1;
+    #(ClkPeriodEth125/2);
+    end
+  end
 
+  initial begin
+    forever begin
+    eth_clk_90 <= 0;
+    #(ClkPeriodEth125/4);
+    eth_clk_90 <= 1;
+    #(ClkPeriodEth125/2);
+    eth_clk_90 <= 0;
+    #(ClkPeriodEth125/4);
+    end
+  end
+
+  initial begin
    @(posedge clk);
-
-  $readmemh("/scratch/chaol/cheshire/target/sim/src/rx_mem_init.vmem", i_rx_axi_sim_mem.mem);
+  $readmemh("rx_mem_init.vmem", i_rx_axi_sim_mem.mem);
   
   @(posedge clk);
   reg_drv_rx.send_write( 'h0300c000, 32'h98001032, 'hf, reg_error); //lower 32bits of MAC address
@@ -732,37 +755,21 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   reg_drv_rx.send_write( 'h0300c020, 32'h0,'hf , reg_error); // dst protocol
   @(posedge clk);
 
- // @(posedge data_ready);
+  reg_drv_rx.send_write( 'h0300c038, 'h1, 'hf , reg_error);   // req valid
+  @(posedge clk);
 
-  //#9000ns;
+  reg_drv_rx.send_write( 'h0300c040, 'h1, 'hf, reg_error);   
 
-  // while(1) begin
-  //  reg_drv_rx.send_read( 'h3000003c, rx_req_ready, reg_error);
-  //  if(rx_req_ready) begin
-    reg_drv_rx.send_write( 'h0300c038, 'h1, 'hf , reg_error);   // req valid
+  while(1) begin
+    reg_drv_rx.send_read( 'h0300c044, rx_rsp_valid, reg_error);
+    if(rx_rsp_valid) begin
+      reg_drv_rx.send_write( 'h0300c040, 32'h0, 'hf , reg_error);  
+      @(posedge clk);
+      break;
+      end
     @(posedge clk);
-//     break;
-//   end
-//   @(posedge clk_i);
-// end
-
-@(posedge clk);
-
-
-reg_drv_rx.send_write( 'h0300c040, 'h1, 'hf, reg_error);   //rsp ready
-//repeat(25)@(posedge clk_i);
-//reg_drv_rx.send_write( 'h30000038, 'h0, 'hf , reg_error);  // req valid
-
-while(1) begin
-reg_drv_rx.send_read( 'h0300c044, rx_rsp_valid, reg_error);
-  if(rx_rsp_valid) begin
-reg_drv_rx.send_write( 'h0300c040, 32'h0, 'hf , reg_error);  
-@(posedge clk);
-break;
-end
-@(posedge clk);
-end
-         end         
+  end
+end         
         
   ///////////////////
   //  Serial Link  //
@@ -1103,18 +1110,9 @@ module vip_cheshire_soc_tristate import cheshire_pkg::*; (
   input  logic [ 3:0]           spih_sd_o,
   input  logic [ 3:0]           spih_sd_en,
   // Ethernet pad IO
-  output logic [3:0]            eth_rxd_i,  
-  input  logic [3:0]            eth_txd_o,
-  output logic                  eth_rxck_i,
-  input  logic                  eth_txck_o,
-  output logic                  eth_rxctl_i,
-  input  logic                  eth_txctl_o,
-  input  logic                  eth_rstn_o,
   input  logic                  eth_mdio_o,
   output logic                  eth_mdio_i,
-  input  logic                  eth_mdio_en,
-  input  logic                  eth_mdc_o,
-       
+  input  logic                  eth_mdio_en,     
   // I2C wires
   inout  wire i2c_sda,
   inout  wire i2c_scl,
@@ -1123,15 +1121,7 @@ module vip_cheshire_soc_tristate import cheshire_pkg::*; (
   inout  wire [SpihNumCs-1:0] spih_csb,
   inout  wire [ 3:0]          spih_sd,
   // Ethernet wires
-  inout  wire [ 3:0]          eth_txd,
-  inout  wire [ 3:0]          eth_rxd,
-  inout  wire                 eth_txck,
-  inout  wire                 eth_rxck,
-  inout  wire                 eth_txctl,
-  inout  wire                 eth_rxctl,
-  inout  wire                 eth_rstn,
-  inout  wire                 eth_mdio,
-  inout  wire                 eth_mdc
+  input  wire                 eth_mdio
 );
 
   // I2C
@@ -1158,15 +1148,6 @@ module vip_cheshire_soc_tristate import cheshire_pkg::*; (
   end
 
   // Ethernet
-  assign eth_txd = eth_txd_o;
-  assign eth_txck = eth_txck_o;
-  assign eth_txctl = eth_txctl_o;
-  assign eth_mdc = eth_mdc_o;
-  assign eth_rxd_i = eth_rxd;
-  assign eth_rxck_i = eth_rxck;
-  assign eth_rxctl_i = eth_rxctl;
-
-
   bufif1 (eth_mdio_i, eth_mdio, ~eth_mdio_en); 
   bufif1 (eth_mdio, eth_mdio_o, eth_mdio_en);  
 

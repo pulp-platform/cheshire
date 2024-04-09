@@ -25,6 +25,7 @@
   `define USE_VIO
   `define USE_I2C
   `define USE_VGA
+  `define USE_ETHERNET
 `endif
 
 `ifdef TARGET_ZCU102
