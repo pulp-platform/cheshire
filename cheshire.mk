@@ -28,6 +28,7 @@ CLINTROOT    := $(shell $(BENDER) path clint)
 AXIRTROOT    := $(shell $(BENDER) path axi_rt)
 AXI_VGA_ROOT := $(shell $(BENDER) path axi_vga)
 IDMA_ROOT    := $(shell $(BENDER) path idma)
+ETH_ROOT     := $(shell $(BENDER) path ethernet)
 
 REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
 
@@ -47,6 +48,11 @@ $(BENDER_ROOT)/.chs_deps:
 ifeq ($(shell test -f $(BENDER_ROOT)/.chs_deps && echo 1),)
 -include $(BENDER_ROOT)/.chs_deps
 endif
+
+idma-gen:
+	make -C $(IDMA_ROOT) idma_hw_all
+	make -C $(IDMA_ROOT) target/rtl/idma_reg64_2d.hjson
+	make -C $(ETH_ROOT) eth-gen
 
 # Running this target will reset dependencies (without updating the checked-in Bender.lock)
 chs-clean-deps:
@@ -190,7 +196,7 @@ include $(CHS_ROOT)/target/xilinx/xilinx.mk
 
 CHS_ALL += $(CHS_SW_ALL) $(CHS_HW_ALL) $(CHS_SIM_ALL)
 
-chs-all:         $(CHS_ALL)
+chs-all:         $(CHS_ALL) idma-gen
 chs-sw-all:      $(CHS_SW_ALL)
 chs-hw-all:      $(CHS_HW_ALL)
 chs-bootrom-all: $(CHS_BOOTROM_ALL)
