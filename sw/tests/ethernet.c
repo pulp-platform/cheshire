@@ -41,8 +41,8 @@ int main() {
     // *(volatile uint64_t *)0x30001030 = 0x5756555453525150;
     // *(volatile uint64_t *)0x30001038 = 0x6766656463626160;
 
-  while(1);
+  //while(1);
 
-  //return 0;
+  return 0;
 
 }

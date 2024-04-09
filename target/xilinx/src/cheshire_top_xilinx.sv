@@ -56,9 +56,8 @@ module cheshire_top_xilinx (
   output wire [3:0]  eth_txd,
   output wire        eth_txctl,
   output wire        eth_rst_n, 
-  input  wire        eth_intn,
-  input  wire        eth_pme,
-  input  wire        eth_mdio,
+  output wire        eth_mdc,
+  inout  wire        eth_mdio,
 `endif
 
 `ifdef USE_SD
@@ -123,8 +122,8 @@ module cheshire_top_xilinx (
 
   wire sys_clk;
   wire soc_clk;
-  logic phy_tx_clk_i;
-  logic eth_clk_i;
+  logic phy_tx_clk;
+  logic eth_clk;
   logic clk_200MHz;
 
   IBUFDS #(
@@ -141,8 +140,8 @@ module cheshire_top_xilinx (
     .locked     (              ),
     .clk_200    ( clk_200MHz   ),
     .clk_50     ( soc_clk      ),
-    .clk_125    ( phy_tx_clk_i ),
-    .clk_125_90 ( eth_clk_i    )
+    .clk_125    ( phy_tx_clk   ),
+    .clk_125_90 ( eth_clk      )
   );
 
   /////////////////////
@@ -253,6 +252,28 @@ module cheshire_top_xilinx (
     .T  ( ~i2c_sda_en     )
   );
 `endif
+
+ logic eth_mdio_i;
+ logic eth_mdio_o;
+ logic eth_mdio_oe;
+ 
+ // assign  eth_mdio = eth_mdio_oe ? eth_mdio_o : 'z;
+ // assign  eth_mdio_i = eth_mdio;
+ 
+  IOBUF #(
+    .DRIVE        ( 12          ), // Specify the output drive strength
+    .IBUF_LOW_PWR ( "FALSE"     ), // Low Power - "TRUE", High Performance = "FALSE"
+    .IOSTANDARD   ( "DEFAULT"   ), // Specify the I/O standard
+    .SLEW         ( "FAST"      ) // Specify the output slew rate
+  ) i_md_iobuf (
+    .O   ( eth_mdio_i   ),   // Buffer output
+    .IO  ( eth_mdio     ),   // Buffer inout port (connect directly to top-level port)
+    .I   ( eth_mdio_o   ),   // Buffer input
+    .T   ( ~eth_mdio_oe )    // 3-state enable input, high=input, low=output
+  );
+
+
+
 
   ///////////////
   // SPI to SD //
@@ -469,16 +490,20 @@ module cheshire_top_xilinx (
     .spih_sd_o          ( spi_sd_soc_out  ),
     .spih_sd_en_o       ( spi_sd_en       ),
     .spih_sd_i          ( spi_sd_soc_in   ),
-    .clk_200MHz          (clk_200MHz),
-    .eth_clk ( eth_clk) ,
-    .phy_tx_clk ( phy_tx_clk ),
-    .eth_rxck_i (eth_rxck),
-    .eth_rxd_i ( eth_rxd),
-    .eth_rxctl_i ( eth_rxctl),
-    .eth_txck_o ( eth_txck ),
-    .eth_txd_o ( eth_txd ),
-    .eth_txctl_o ( eth_txctl),
-    .eth_rstn_o (eth_rst_n), 
+    .clk_200MHz         ( clk_200MHz      ),
+    .eth_clk            ( eth_clk         ),
+    .phy_tx_clk         ( phy_tx_clk      ),
+    .eth_rxck_i         ( eth_rxck        ),
+    .eth_rxd_i          ( eth_rxd         ),
+    .eth_rxctl_i        ( eth_rxctl       ),
+    .eth_txck_o         ( eth_txck        ),
+    .eth_txd_o          ( eth_txd         ),
+    .eth_txctl_o        ( eth_txctl       ),
+    .eth_rstn_o         ( eth_rst_n       ), 
+    .eth_mdio_i         ( eth_mdio_i      ),
+    .eth_mdio_o         ( eth_mdio_o      ),
+    .eth_mdio_oe        ( eth_mdio_oe     ),
+    .eth_mdc_o          ( eth_mdc         ),
 `ifdef USE_VGA
     .vga_hsync_o,
     .vga_vsync_o,

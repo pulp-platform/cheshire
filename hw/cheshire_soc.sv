@@ -85,8 +85,6 @@ module cheshire_soc import cheshire_pkg::*; #(
   output logic [3:0]  eth_txd_o,
   output logic        eth_txctl_o,
   output logic        eth_rstn_o,
-  input  logic        eth_intn_i,
-  input  logic        eth_pme_i,
   input  logic        eth_mdio_i,
   output logic        eth_mdio_o,
   output logic        eth_mdio_oe,
@@ -1313,41 +1311,63 @@ module cheshire_soc import cheshire_pkg::*; #(
   `AXI_ASSIGN_FROM_REQ(axi_ethernet, axi_out_req[AxiOut.ethernet]);
   `AXI_ASSIGN_TO_RESP(axi_out_rsp[AxiOut.ethernet], axi_ethernet);
 
+  logic eth_en, eth_we, eth_int_n, eth_pme_n;
+  logic [Cfg.AddrWidth-1:0] eth_addr;
+  logic [Cfg.AxiDataWidth-1:0] eth_wrdata, eth_rdata;
+  logic [Cfg.AxiDataWidth/8-1:0] eth_be;
 
-    eth_rgmii #(
-      .AXI_ID_WIDTH   ( AxiSlvIdWidth     ),
-      .AXI_ADDR_WIDTH ( Cfg.AddrWidth     ),
-      .AXI_DATA_WIDTH ( Cfg.AxiDataWidth  ),
-      .AXI_USER_WIDTH ( Cfg.AxiUserWidth  )
-    ) i_eth_rgmii_tx(
-      .clk_i           ( clk_i           ),
-      .rst_ni          ( rst_ni          ),
-      .ethernet        ( axi_ethernet    ),   
-      .eth_rxck        ( eth_rxck_i      ),
-      .eth_rxctl       ( eth_rxctl_i     ),
-      .eth_rxd         ( eth_rxd_i       ),
-      .eth_txck        ( eth_txck_o      ),
-      .eth_txctl       ( eth_txctl_o     ),
-      .eth_txd         ( eth_txd_o       ),
-      .eth_rst_n       ( eth_rstn_o      ),
-      .phy_int_i       (                 ),
-      .phy_pme_i       (                 ),
-      .phy_mdio_i      (                 ),
-      .phy_mdio_o      (                 ),
-      .phy_mdio_eo     (                 ),
-      .phy_mdc_o       (                 ),
-      .clk_200MHz      (  clk_200MHz     ),
-      .phy_tx_clk      (  phy_tx_clk     ),
-      .eth_clk         (  eth_clk        )
-    );
-  
+  axi2mem #(
+    .AXI_ID_WIDTH   ( AxiSlvIdWidth     ),
+    .AXI_ADDR_WIDTH ( Cfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth  ),
+    .AXI_USER_WIDTH ( Cfg.AxiUserWidth  )
+  ) i_axi2rom (
+    .clk_i  ( clk_i                   ),
+    .rst_ni ( rst_ni                  ),
+    .slave  ( axi_ethernet            ),
+    .req_o  ( eth_en                  ),
+    .we_o   ( eth_we                  ),
+    .addr_o ( eth_addr                ),
+    .be_o   ( eth_be                  ),
+    .data_o ( eth_wrdata              ),
+    .data_i ( eth_rdata               )
+  );
+
+framing_top eth_rgmii (
+   .msoc_clk      ( clk_i          ),
+   .core_lsu_addr ( eth_addr[14:0] ),
+   .core_lsu_wdata( eth_wrdata     ),
+   .core_lsu_be   ( eth_be         ),
+   .ce_d          ( eth_en         ),
+   .we_d          ( eth_en & eth_we),
+   .framing_sel   ( eth_en         ),
+   .framing_rdata ( eth_rdata      ),
+   .rst_int       ( !rst_ni        ),
+   .clk_int       ( phy_tx_clk     ), // 125 MHz in-phase
+   .clk90_int     ( eth_clk        ), // 125 MHz quadrature
+   .clk_200_int   ( clk_200MHz     ),
+   .phy_rx_clk    ( eth_rxck_i     ),
+   .phy_rxd       ( eth_rxd_i      ),
+   .phy_rx_ctl    ( eth_rxctl_i    ),
+   .phy_tx_clk    ( eth_txck_o     ),
+   .phy_txd       ( eth_txd_o      ),
+   .phy_tx_ctl    ( eth_txctl_o    ),
+   .phy_reset_n   ( eth_rstn_o     ),
+   .phy_int_n     ( eth_int_n      ),
+   .phy_pme_n     ( eth_pme_n      ),
+   .phy_mdc       ( eth_mdc_o      ),
+   .phy_mdio_i    ( eth_mdio_i     ),
+   .phy_mdio_o    ( eth_mdio_o     ),
+   .phy_mdio_oe   ( eth_mdio_oe    ),
+   .eth_irq       ( intr.intn.eth  )
+);
 
   end else begin : gen_no_ethernet // not sure
 
       assign axi_out_rsp[AxiOut.ethernet].aw_ready = 1'b1;
       assign axi_out_rsp[AxiOut.ethernet].ar_ready = 1'b1;
       assign axi_out_rsp[AxiOut.ethernet].w_ready = 1'b1;
-
+      assign intr.intn.eth = 0; 
       // assign axi_in_rsp[AxiIn.eth_idma].b_valid = axi_in_req[AxiIn.eth_idma].aw_valid;
       // assign axi_in_rsp[AxiIn.eth_idma].b_id = axi_in_req[AxiIn.eth_idma].aw_id;
       // assign axi_in_rsp[AxiIn.eth_idma].b_resp = axi_pkg::RESP_SLVERR;

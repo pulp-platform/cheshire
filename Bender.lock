@@ -38,7 +38,7 @@ packages:
     revision: 3567273b4f67bd57a81a2a503394a49641bae53a
     version: 0.2.1
     source:
-      Git: git@github.com:pulp-platform/axi_mem_if.git
+      Git: https://github.com/pulp-platform/axi_mem_if.git
     dependencies:
     - axi
   axi_riscv_atomics:
@@ -108,16 +108,6 @@ packages:
     - common_cells
     - fpnew
     - tech_cells_generic
-  ethernet:
-    revision: 5098ab54d155a38fe5ed63423d72962642995de6
-    version: null
-    source:
-      Git: git@github.com:AlSaqr-platform/ethernet.git
-    dependencies:
-    - axi
-    - axi_mem_if
-    - common_cells
-    - common_verification
   fpnew:
     revision: f231041c610f270ffc03cbdac38739ddb6426572
     version: null
