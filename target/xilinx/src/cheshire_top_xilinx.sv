@@ -48,6 +48,18 @@ module cheshire_top_xilinx (
   inout  wire   i2c_sda_io,
 `endif
 
+`ifdef USE_ETHERNET
+  input  wire        eth_rxck,
+  input  wire [3:0]  eth_rxd,
+  input  wire        eth_rxctl,
+  output wire        eth_txck,
+  output wire [3:0]  eth_txd,
+  output wire        eth_txctl,
+  output wire        eth_rst_n, 
+  output wire        eth_mdc,
+  inout  wire        eth_mdio,
+`endif
+
 `ifdef USE_SD
   input  logic        sd_cd_i,
   output logic        sd_cmd_o,
@@ -101,6 +113,7 @@ module cheshire_top_xilinx (
   endfunction
 
   // Configure cheshire for FPGA mapping
+
   localparam cheshire_cfg_t FPGACfg = gen_cheshire_xilinx_cfg();
   `CHESHIRE_TYPEDEF_ALL(, FPGACfg)
 
@@ -110,6 +123,8 @@ module cheshire_top_xilinx (
 
   wire sys_clk;
   wire soc_clk;
+  logic eth_clk_125;
+  logic eth_clk_90;
 
   IBUFDS #(
     .IBUF_LOW_PWR ("FALSE")
@@ -120,13 +135,13 @@ module cheshire_top_xilinx (
   );
 
   clkwiz i_clkwiz (
-    .clk_in1  ( sys_clk ),
-    .reset    ( '0 ),
-    .locked   ( ),
-    .clk_100  ( ),
-    .clk_50   ( soc_clk  ),
-    .clk_20   ( ),
-    .clk_10   ( )
+    .clk_in1    ( sys_clk      ),
+    .reset      ( '0           ),
+    .locked     (              ),
+    .clk_200    (              ),
+    .clk_50     ( soc_clk      ),
+    .clk_125    ( eth_clk_125  ),
+    .clk_125_90 ( eth_clk_90   )
   );
 
   /////////////////////
@@ -236,7 +251,31 @@ module cheshire_top_xilinx (
     .I  ( i2c_sda_soc_out ),
     .T  ( ~i2c_sda_en     )
   );
+
 `endif
+
+
+  ///////////////////////
+  // Ethernet Adaption //
+  //////////////////////
+`ifdef USE_ETHERNET
+
+ logic eth_mdio_i;
+ logic eth_mdio_o;
+ logic eth_mdio_oe;
+ 
+  IOBUF #(
+    .DRIVE        ( 12          ), // Specify the output drive strength
+    .IBUF_LOW_PWR ( "FALSE"     ), // Low Power - "TRUE", High Performance = "FALSE"
+    .IOSTANDARD   ( "DEFAULT"   ), // Specify the I/O standard
+    .SLEW         ( "FAST"      ) // Specify the output slew rate
+  ) i_md_iobuf (
+    .O   ( eth_mdio_i   ),   // Buffer output
+    .IO  ( eth_mdio     ),   // Buffer inout port (connect directly to top-level port)
+    .I   ( eth_mdio_o   ),   // Buffer input
+    .T   ( ~eth_mdio_oe )    // 3-state enable input, high=input, low=output
+  );
+  `endif
 
   ///////////////
   // SPI to SD //
@@ -446,6 +485,19 @@ module cheshire_top_xilinx (
     .i2c_scl_o          ( i2c_scl_soc_out ),
     .i2c_scl_i          ( i2c_scl_soc_in  ),
     .i2c_scl_en_o       ( i2c_scl_en      ),
+    .eth_clk_125        ( eth_clk_125 ),
+    .eth_clk_90         ( eth_clk_90  ),
+    .eth_rxck_i         ( eth_rxck    ),
+    .eth_rxd_i          ( eth_rxd     ),
+    .eth_rxctl_i        ( eth_rxctl   ),
+    .eth_txck_o         ( eth_txck    ),
+    .eth_txd_o          ( eth_txd     ),
+    .eth_txctl_o        ( eth_txctl   ),
+    .eth_rstn_o         ( eth_rstn    ),  
+    .eth_mdio_i         ( eth_mdio_i  ),
+    .eth_mdio_o         ( eth_mdio_o  ),
+    .eth_mdio_oe        ( eth_mdio_en ),
+    .eth_mdc_o          ( eth_mdc     ),
     .spih_sck_o         ( spi_sck_soc     ),
     .spih_sck_en_o      ( spi_sck_en      ),
     .spih_csb_o         ( spi_cs_soc      ),
