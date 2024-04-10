@@ -159,7 +159,7 @@ CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 # FPGA Flow #
 #############
 
-include target/xilinx/xilinx.mk
+include $(CHS_ROOT)/target/xilinx/xilinx.mk
 
 #################################
 # Phonies (KEEP AT END OF FILE) #
