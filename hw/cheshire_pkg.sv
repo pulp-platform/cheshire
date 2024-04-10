@@ -596,7 +596,7 @@ package cheshire_pkg;
     AxiRt             : 0,
     Clic              : 0,
     IrqRouter         : 0,
-    BusErr            : 1,
+    BusErr            : 0,
     // Debug
     DbgIdCode         : CheshireIdCode,
     DbgMaxReqs        : 4,
