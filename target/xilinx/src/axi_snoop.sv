@@ -66,12 +66,12 @@ parameter type axi_mst_rsp_t = logic
     end
 
     always_ff @(posedge clk_i) begin
-            if (axi_mst_rsp_i.r_valid & !(axi_mst_req_i.r_ready)) begin
+            if ((axi_mst_rsp_i.r_valid && !axi_mst_req_i.r_ready)) begin
                 counter_stall_q <= counter_stall_d + 1;
                 counter_stall_d <= counter_stall_q;
             end
        
-            if (axi_mst_rsp_i.b_valid & !(axi_mst_req_i.b_ready)) begin
+            if ((axi_mst_rsp_i.b_valid && !axi_mst_req_i.b_ready)) begin
                 counter_stall_q <= counter_stall_d + 1;
                 counter_stall_d <= counter_stall_q;
             end

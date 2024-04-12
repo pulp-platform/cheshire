@@ -1,0 +1,8 @@
+#
+# An unexpected error has occurred (11)
+#
+Stack:
+/usr/pack/vitis-2022.1-zr/Vivado/2022.1/tps/lnx64/jre11.0.11_9/lib//server/libjvm.so(+0xbefecb) [0x7f0315af7ecb]
+/usr/pack/vitis-2022.1-zr/Vivado/2022.1/tps/lnx64/jre11.0.11_9/lib//server/libjvm.so(JVM_handle_linux_signal+0xd1) [0x7f0315afec81]
+/usr/pack/vitis-2022.1-zr/Vivado/2022.1/tps/lnx64/jre11.0.11_9/lib//server/libjvm.so(+0xbead23) [0x7f0315af2d23]
+/lib64/libc.so.6(+0x36400) [0x7f037478e400]
