@@ -70,13 +70,39 @@ parameter type axi_mst_rsp_t = logic
       counter_stall_d = 32'b0;
     end
     
-    always @(negedge rst_ni or posedge clk_i)begin
-        if(!(rst_ni)) begin
+    
+    always_ff @(posedge clk_i) begin
+            if (axi_mst_rsp_i.r_valid & axi_mst_req_i.r_ready) begin
+                counter_reg_q <= counter_reg_d + 1;
+                counter_reg_d <= counter_reg_q;
+            end
+       
+            if (axi_mst_rsp_i.b_valid & axi_mst_req_i.b_ready) begin
+                counter_reg_q <= counter_reg_d + 1;
+                counter_reg_d <= counter_reg_q;
+            end
+
+            if (!rst_ni)begin
             counter_reg_d <= 0;
             counter_reg_q <= 0;
+            end
+    end
 
+    always_ff @(posedge clk_i) begin
+            if ((axi_mst_rsp_i.r_valid && !axi_mst_req_i.r_ready)) begin
+                counter_stall_q <= counter_stall_d + 1;
+                counter_stall_d <= counter_stall_q;
+            end
+       
+            if ((axi_mst_rsp_i.b_valid && !axi_mst_req_i.b_ready)) begin
+                counter_stall_q <= counter_stall_d + 1;
+                counter_stall_d <= counter_stall_q;
+            end
+
+            if (!rst_ni)begin
             counter_stall_d <= 0;
             counter_stall_q <= 0;
+<<<<<<< HEAD
 >>>>>>> a555d4af (stalls & handshake 32 bit)
         end
     end
@@ -113,6 +139,9 @@ parameter type axi_mst_rsp_t = logic
             end 
         end
 >>>>>>> a555d4af (stalls & handshake 32 bit)
+=======
+            end
+>>>>>>> faebb51c (need image)
     end
 
     /*always_ff @(posedge clk_i) begin

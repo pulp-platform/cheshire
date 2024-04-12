@@ -1671,7 +1671,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
 =======
   //////////////////
-  //  Monitoring  //
+  //  Monitoringsta  //
   //////////////////
 
  cycle_counter #(
@@ -1683,6 +1683,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   );
   
   axi_snoop #(
+<<<<<<< HEAD
     .axi_mst_req_t(axi_cva6_req_t),
     .axi_mst_rsp_t(axi_cva6_rsp_t)
 >>>>>>> a555d4af (stalls & handshake 32 bit)
@@ -1692,6 +1693,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   );
 
   axi_snoop #(
+=======
+>>>>>>> faebb51c (need image)
     .axi_mst_req_t(axi_mst_req_t),
     .axi_mst_rsp_t(axi_mst_rsp_t)
   )
@@ -1723,10 +1726,10 @@ module cheshire_soc import cheshire_pkg::*; #(
 =======
     .rst_ni,
     .clk_i , 
-    .axi_mst_req_i(core_out_req),
-    .axi_mst_rsp_i(core_out_rsp),
-    .axi_mst_req_o(core_out_req),
-    .axi_mst_rsp_o(core_out_rsp)
+    .axi_mst_req_i(axi_in_req[AxiIn.cores[0]]),
+    .axi_mst_rsp_i(axi_in_rsp[AxiIn.cores[0]]),
+    .axi_mst_req_o(axi_in_req[AxiIn.cores[0]]),
+    .axi_mst_rsp_o(axi_in_rsp[AxiIn.cores[0]])
   );
 
   
@@ -1736,7 +1739,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .axi_mst_rsp_t(axi_mst_rsp_t)
 
   )
-  i_axi_snoop_dma(
+  i_axi_snoop_dma_mst(
     .rst_ni,
     .clk_i, 
     .axi_mst_req_i(axi_dma_req),
@@ -1748,6 +1751,21 @@ module cheshire_soc import cheshire_pkg::*; #(
     .axi_mst_rsp_o(axi_in_rsp[AxiIn.dma] ) 
 >>>>>>> a555d4af (stalls & handshake 32 bit)
   );
+
+axi_snoop #(
+    .axi_mst_req_t(axi_slv_req_t),
+    .axi_mst_rsp_t(axi_slv_rsp_t)
+
+  )
+  i_axi_snoop_dma_slv(
+    .rst_ni,
+    .clk_i, 
+    .axi_mst_req_i(dma_cut_req),
+    .axi_mst_rsp_i(dma_cut_rsp),
+    .axi_mst_req_o(dma_cut_req),
+    .axi_mst_rsp_o(dma_cut_rsp) 
+  );
+
 
 
 axi_snoop #(
@@ -1766,6 +1784,7 @@ axi_snoop #(
     .axi_mst_req_o(axi_reg_amo_req),
     .axi_mst_rsp_o(axi_reg_amo_rsp)
   );
+
 axi_snoop #(
 .axi_mst_req_t       ( axi_ext_llc_req_t ),
 .axi_mst_rsp_t       ( axi_ext_llc_rsp_t )
@@ -1790,10 +1809,10 @@ axi_snoop #(
 i_axi_snoop_llc(
     .rst_ni,
     .clk_i,
-    .axi_mst_req_i(axi_llc_amo_req),
-    .axi_mst_rsp_i(axi_llc_amo_rsp),
-    .axi_mst_req_o(axi_llc_amo_req),
-    .axi_mst_rsp_o(axi_llc_amo_rsp)
+    .axi_mst_req_i(axi_llc_remap_req),
+    .axi_mst_rsp_i(axi_llc_remap_rsp),
+    .axi_mst_req_o(axi_llc_remap_req),
+    .axi_mst_rsp_o(axi_llc_remap_rsp)
 );
 
 axi_snoop #(
@@ -1803,10 +1822,10 @@ axi_snoop #(
 i_axi_snoop_jtag(
     .rst_ni,
     .clk_i,
-    .axi_mst_req_i(axi_out_req[AxiOut.dbg]),
-    .axi_mst_rsp_i(axi_out_rsp[AxiOut.dbg] ),
-    .axi_mst_req_o(axi_out_req[AxiOut.dbg]),
-    .axi_mst_rsp_o(axi_out_rsp[AxiOut.dbg] )
+    .axi_mst_req_i(dbg_slv_axi_amo_req),
+    .axi_mst_rsp_i(dbg_slv_axi_amo_rsp),
+    .axi_mst_req_o(dbg_slv_axi_amo_req),
+    .axi_mst_rsp_o(dbg_slv_axi_amo_rsp)
 );
 
 axi_snoop #(
