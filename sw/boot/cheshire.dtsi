@@ -107,13 +107,13 @@
       riscv,ndev = <51>;
       reg = <0x0 0x4000000 0x0 0x4000000>;
     };
-    eth: idma-eth@300c000 {  
-      compatible = "idma-eth";  
-      device_type = "network";   
-      interrupt-parent = <&PLIC0>;   
-      interrupts = <19>;
-      local-mac-address = [00 18 3e 02 e3 7f]; // This needs to change if more than one GenesysII on a VLAN
-      reg = <0x0 0x300c000 0x0 0x1000>; 
-    };
+    #eth: idma-eth@300c000 {  
+      #compatible = "idma-eth";  
+      #device_type = "network";   
+      #interrupt-parent = <&PLIC0>;   
+      #interrupts = <19>;
+      #local-mac-address = [00 18 3e 02 e3 7f]; // This needs to change if more than one GenesysII on a VLAN
+      #reg = <0x0 0x300c000 0x0 0x1000>; 
+    #};
   };
 };

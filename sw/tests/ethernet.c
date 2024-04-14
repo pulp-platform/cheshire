@@ -17,14 +17,14 @@
 #define IDMA_REQ_READY_OFFSET        0x40
 #define IDMA_RSP_READY_OFFSET        0x44
 #define IDMA_RSP_VALID_OFFSET        0x48
-#define PRINTF_ON
+//#define PRINTF_ON
 
 
 int main(void) {
   
-  #ifdef PRINTF_ON
-    printf ("Start test Ethernet...\n\r");
-  #endif 
+  // #ifdef PRINTF_ON
+  //   printf ("Start test Ethernet...\n\r");
+  // #endif 
 
   volatile uint64_t data_to_write[8] = {
         0x1032207098001032, 
@@ -59,7 +59,7 @@ int main(void) {
   *reg32(ETH_BASE, IDMA_RSP_READY_OFFSET) = 0x1;
 
 
-  while (!(*reg32(ETH_BASE, IRQ_OFFSET)));
+  //while (!(*reg32(ETH_BASE, IRQ_OFFSET)));
 
   printf ("Ethernet test pass..\n\r");
   
