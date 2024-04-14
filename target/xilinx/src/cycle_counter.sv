@@ -37,6 +37,7 @@ module cycle_counter #(
 always_ff @(posedge clk_i) begin
     counter_clk_cycles_q <= counter_clk_cycles_d + 1;
     counter_clk_cycles_d <= counter_clk_cycles_q;
+    
     if(!rst_ni)begin
         counter_clk_cycles_d <= 0;
         counter_clk_cycles_q <= 0;
