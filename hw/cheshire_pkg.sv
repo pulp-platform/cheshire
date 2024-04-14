@@ -314,7 +314,7 @@ package cheshire_pkg;
     aw_bt vga;
     aw_bt ext_base;
     aw_bt num_in;
-    aw_bt eth_idma;
+    aw_bt eth;
   } axi_in_t;
 
   function automatic axi_in_t gen_axi_in(cheshire_cfg_t cfg);
@@ -325,7 +325,7 @@ package cheshire_pkg;
     if (cfg.Dma)        begin i++; ret.dma   = i; end
     if (cfg.SerialLink) begin i++; ret.slink = i; end
     if (cfg.Vga)        begin i++; ret.vga   = i; end
-    if (cfg.Ethernet)   begin i++; ret.eth_idma = i; end
+    if (cfg.Ethernet)   begin i++; ret.eth   = i; end
     i++;
     ret.ext_base = i;
     ret.num_in = i + cfg.AxiExtNumMst;
@@ -636,7 +636,7 @@ package cheshire_pkg;
     Dma               : 0,
     SerialLink        : 1,
     Vga               : 1,
-    AxiRt             : 0,
+    AxiRt             : 1,
     Clic              : 0,
     IrqRouter         : 0,
     BusErr            : 1,

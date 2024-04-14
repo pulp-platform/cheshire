@@ -34,13 +34,6 @@ packages:
     - common_verification
     - register_interface
     - tech_cells_generic
-  axi_mem_if:
-    revision: 3567273b4f67bd57a81a2a503394a49641bae53a
-    version: 0.2.1
-    source:
-      Git: git@github.com:pulp-platform/axi_mem_if.git
-    dependencies:
-    - axi
   axi_riscv_atomics:
     revision: 034bf89414bad5eeb1d44451798f3debc8365ca5
     version: null
@@ -131,13 +124,12 @@ packages:
     - redundancy_cells
     - tech_cells_generic
   ethernet:
-    revision: e3cf735a8df0ecb8e446631386d2d814899a41af
+    revision: ca7feb6e5722aaec7bdb6d71d4cfddfe58f18afd
     version: null
     source:
       Git: git@github.com:pulp-platform/pulp-ethernet.git
     dependencies:
     - axi
-    - axi_mem_if
     - axi_stream
     - common_cells
     - common_verification
