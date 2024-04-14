@@ -1397,8 +1397,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     ) i_tx_eth_idma_wrap (
       .clk_i,
       .rst_ni, 
-      .eth_clk_i           ( eth_clk_125 ),
-      .eth_clk90_i         ( eth_clk_90  ),
+      .eth_clk125_i        ( eth_clk_125 ),
+      .eth_clk125q_i       ( eth_clk_90  ),
       .phy_rx_clk_i        ( eth_rxck_i  ),
       .phy_rxd_i           ( eth_rxd_i   ),
       .phy_rx_ctl_i        ( eth_rxctl_i ),
@@ -1416,26 +1416,14 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_req_o           ( axi_in_req[AxiIn.eth_idma]   ),
       .axi_rsp_i           ( axi_in_rsp[AxiIn.eth_idma]   ),
       .reg_req_i           ( reg_out_req[RegOut.ethernet] ),
-      .reg_rsp_o           ( reg_out_rsp[RegOut.ethernet] ) // req from cheshire def, but inside ethernet, it awaits for the type
+      .reg_rsp_o           ( reg_out_rsp[RegOut.ethernet] ),
+      .eth_irq_o           ( intr.intn.ethernet           )
     );
 
   end else begin : gen_no_ethernet
-
-      assign axi_in_rsp[AxiIn.eth_idma].aw_ready = 1'b1;
-      assign axi_in_rsp[AxiIn.eth_idma].ar_ready = 1'b1;
-      assign axi_in_rsp[AxiIn.eth_idma].w_ready = 1'b1;
-
-      // assign axi_in_rsp[AxiIn.eth_idma].b_valid = axi_in_req[AxiIn.eth_idma].aw_valid;
-      // assign axi_in_rsp[AxiIn.eth_idma].b_id = axi_in_req[AxiIn.eth_idma].aw_id;
-      // assign axi_in_rsp[AxiIn.eth_idma].b_resp = axi_pkg::RESP_SLVERR;
-      // assign axi_in_rsp[AxiIn.eth_idma].b_user = '0;
-
-      assign axi_in_rsp[AxiIn.eth_idma].r_valid = axi_in_req[AxiIn.eth_idma].ar_valid;
-      // assign axi_in_rsp[AxiIn.eth_idma].r_resp = axi_pkg::RESP_SLVERR;
-      // assign axi_in_rsp[AxiIn.eth_idma].r_data = 'hdeadbeef;
-      // assign axi_in_rsp[AxiIn.eth_idma].r_last = 1'b1;
-
-    end
+      assign intr.intn.ethernet = 1'b0;
+      assign eth_txck_o = 1'b0;
+  end
 
   ////////////////
   //  SPI Host  //

@@ -230,6 +230,7 @@ package cheshire_pkg;
   typedef struct packed {
     cheshire_bus_err_intr_t bus_err;
     logic [31:0] gpio;
+    logic ethernet;
     logic spih_spi_event;
     logic spih_error;
     logic i2c_host_timeout;
