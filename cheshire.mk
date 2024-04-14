@@ -49,10 +49,10 @@ ifeq ($(shell test -f $(BENDER_ROOT)/.chs_deps && echo 1),)
 -include $(BENDER_ROOT)/.chs_deps
 endif
 
-idma-gen:
-	make -C $(IDMA_ROOT) idma_hw_all
-	make -C $(IDMA_ROOT) target/rtl/idma_reg64_2d.hjson
-	make -C $(ETH_ROOT) eth-gen
+#idma-gen:
+#	make -C $(IDMA_ROOT) idma_hw_all   
+#	make -C $(IDMA_ROOT) target/rtl/idma_reg64_2d.hjson
+#	make -C $(ETH_ROOT) eth-gen
 
 # Running this target will reset dependencies (without updating the checked-in Bender.lock)
 chs-clean-deps:
@@ -196,7 +196,7 @@ include $(CHS_ROOT)/target/xilinx/xilinx.mk
 
 CHS_ALL += $(CHS_SW_ALL) $(CHS_HW_ALL) $(CHS_SIM_ALL)
 
-chs-all:         $(CHS_ALL) idma-gen
+chs-all:         $(CHS_ALL) #idma-gen
 chs-sw-all:      $(CHS_SW_ALL)
 chs-hw-all:      $(CHS_HW_ALL)
 chs-bootrom-all: $(CHS_BOOTROM_ALL)
