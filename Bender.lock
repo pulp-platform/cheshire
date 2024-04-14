@@ -63,7 +63,7 @@ packages:
     revision: 54891ff40455ca94a37641b9da4604647878cc07
     version: 0.1.1
     source:
-      Git: git@github.com:pulp-platform/axi_stream.git
+      Git: https://github.com/pulp-platform/axi_stream.git
     dependencies:
     - common_cells
   axi_vga:
@@ -124,7 +124,7 @@ packages:
     - redundancy_cells
     - tech_cells_generic
   ethernet:
-    revision: d7d14161b8f129bccfcf9717f33760cb0a027856
+    revision: e3cf735a8df0ecb8e446631386d2d814899a41af
     version: null
     source:
       Git: git@github.com:pulp-platform/pulp-ethernet.git
