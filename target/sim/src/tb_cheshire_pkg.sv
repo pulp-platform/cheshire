@@ -12,7 +12,7 @@ package tb_cheshire_pkg;
     // A dedicated RT config
     function automatic cheshire_cfg_t gen_cheshire_rt_cfg();
       cheshire_cfg_t ret = DefaultCfg;
-      ret.AxiRt = 0;
+      ret.AxiRt = 1;
       return ret;
     endfunction
 
