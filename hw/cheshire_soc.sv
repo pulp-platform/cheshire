@@ -1412,8 +1412,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .phy_mdio_oe         ( eth_mdio_oe ),
       .phy_mdc_o           ( eth_mdc_o   ), 
       .testmode_i          ( 1'b0        ),
-      .axi_req_o           ( axi_in_req[AxiIn.eth_idma]   ),
-      .axi_rsp_i           ( axi_in_rsp[AxiIn.eth_idma]   ),
+      .axi_req_o           ( axi_in_req[AxiIn.eth]        ),
+      .axi_rsp_i           ( axi_in_rsp[AxiIn.eth]        ),
       .reg_req_i           ( reg_out_req[RegOut.ethernet] ),
       .reg_rsp_o           ( reg_out_rsp[RegOut.ethernet] ),
       .eth_irq_o           ( intr.intn.ethernet           )
