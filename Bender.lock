@@ -85,8 +85,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: ad22699793d98ef714f120c6268fe92d096a61e1
-    version: 1.33.1
+    revision: 7773d971b9d7bef7f5f6a2ef36ee1e4d02cefcd3
+    version: 1.34.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -99,7 +99,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 1e8e9b204873e4381d78615ce876889a814247ef
+    revision: f882fce339fabfd2279893b4415d86b42dec8920
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:github-mirror/cva6.git
