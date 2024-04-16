@@ -665,7 +665,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .phy_resetn_o        ( eth_rstn        ),  
     .phy_intn_i          ( 1'b1            ),
     .phy_pme_i           ( 1'b1            ),
-    .phy_mdio_i          ( eth_mdio_i      ),
+    .phy_mdio_i          ( 1'b0            ),
     .phy_mdio_o          ( eth_mdio_o      ),
     .phy_mdio_oe         ( eth_mdio_oe     ),
     .phy_mdc_o           ( eth_mdc         ),
