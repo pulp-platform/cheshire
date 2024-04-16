@@ -120,7 +120,7 @@ packages:
     revision: ca7feb6e5722aaec7bdb6d71d4cfddfe58f18afd
     version: null
     source:
-      Git: git@github.com:pulp-platform/pulp-ethernet.git
+      Git: https://github.com/pulp-platform/pulp-ethernet.git
     dependencies:
     - axi
     - axi_stream
