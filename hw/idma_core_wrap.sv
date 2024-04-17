@@ -1,0 +1,229 @@
+// Copyright 2024 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+`include "idma/typedef.svh"
+`include "axi/typedef.svh"
+
+module idma_wrap  import idma_pkg::*; #(
+  parameter int unsigned BufferDepth           = 3,
+  parameter int unsigned NumAxInFlight         = 3,
+  parameter int unsigned TFLenWidth            = 32,
+  parameter int unsigned MemSysDepth           = 0,
+  parameter int unsigned AXI_MemNumReqOutst    = 1,
+  parameter int unsigned AXI_MemLatency        = 0,
+  parameter int unsigned WatchDogNumCycles     = 100,
+  parameter int unsigned NumDim                = 3,
+  parameter bit          CombinedShifter       = 1'b0,
+  parameter bit          MaskInvalidData       = 1,
+  parameter bit          RAWCouplingAvail      = 1,
+  parameter bit          HardwareLegalizer     = 1,
+  parameter bit          RejectZeroTransfers   = 1,
+  parameter bit          ErrorHandling         = 0,
+  parameter bit          DmaTracing            = 1,
+  parameter bit          PrintFifoInfo         = 1'b0,
+  parameter int unsigned RegAddrWidth          = 32,
+  parameter int unsigned RegDataWidth          = 32,
+  parameter int unsigned AxiAddrWidth          = 64,
+  parameter int unsigned AxiDataWidth          = 32,
+  parameter int unsigned AxiIdWidth            = 7,
+  parameter int unsigned AxiUserWidth          = 1,
+  parameter int unsigned StrideWidth           = 32,
+  parameter type         axi_req_t             = logic,
+  parameter type         axi_rsp_t             = logic,
+  parameter type         reg_req_t             = logic,
+  parameter type         reg_rsp_t             = logic
+) (
+  input  logic     clk_i,
+  input  logic     rst_ni,
+  input  reg_req_t reg_req_i,
+  output reg_rsp_t reg_rsp_o,
+  output axi_req_t axi_read_req_o,
+  input  axi_rsp_t axi_read_rsp_i,
+  output axi_req_t axi_write_req_o,
+  input  axi_rsp_t axi_write_rsp_i
+);
+
+  // dependent parameters
+  localparam logic [2:0][31:0] RepWidth = '{default: 32'd32};
+  localparam int unsigned IdCounterWidth  = 16;
+  localparam int unsigned AxiStrbWidth    = AxiDataWidth / 8;
+  localparam int unsigned RegStrbWidth    = RegDataWidth / 8;
+  localparam     idma_pkg::error_cap_e ErrorCap = ErrorHandling ? idma_pkg::ERROR_HANDLING :
+                                                                  idma_pkg::NO_ERROR_HANDLING;
+
+  localparam int unsigned MstIdWidth = AxiIdWidth;
+  localparam int unsigned SlvIdWidth = AxiIdWidth - $clog2(2);
+
+  typedef logic [AxiDataWidth/8-1:0] axi_strb_t;
+  typedef logic [AxiDataWidth-1:0]   axi_data_t;
+  typedef logic [AxiAddrWidth-1:0]   axi_addr_t;
+  typedef logic [AxiUserWidth-1:0]   axi_user_t;
+  typedef logic [MstIdWidth-1:0]     axi_id_t;
+  typedef logic [SlvIdWidth-1:0]     slv_id_t;
+
+  typedef logic [31:0]               reps_t;
+  typedef logic [StrideWidth-1:0]    strides_t;
+
+  // AXI4+ATOP channels typedefs
+  `AXI_TYPEDEF_AR_CHAN_T(slv_ar_chan_t, axi_addr_t, slv_id_t, axi_user_t)
+  `AXI_TYPEDEF_AW_CHAN_T(slv_aw_chan_t, axi_addr_t, slv_id_t, axi_user_t)
+  `AXI_TYPEDEF_W_CHAN_T(slv_w_chan_t, axi_data_t, axi_strb_t, axi_user_t)
+  `AXI_TYPEDEF_R_CHAN_T(slv_r_chan_t, axi_data_t, slv_id_t, axi_user_t)
+  `AXI_TYPEDEF_B_CHAN_T(slv_b_chan_t, slv_id_t, axi_user_t)
+
+  `AXI_TYPEDEF_AR_CHAN_T(axi_ar_chan_t, axi_addr_t, axi_id_t, axi_user_t)
+  `AXI_TYPEDEF_AW_CHAN_T(axi_aw_chan_t, axi_addr_t, axi_id_t, axi_user_t)
+  `AXI_TYPEDEF_W_CHAN_T(axi_w_chan_t, axi_data_t, axi_strb_t, axi_user_t)
+  `AXI_TYPEDEF_R_CHAN_T(axi_r_chan_t, axi_data_t, axi_id_t, axi_user_t)
+  `AXI_TYPEDEF_B_CHAN_T(axi_b_chan_t, axi_id_t, axi_user_t)
+
+  `AXI_TYPEDEF_REQ_T(slv_req_t, slv_aw_chan_t, slv_w_chan_t, slv_ar_chan_t)
+  `AXI_TYPEDEF_RESP_T(slv_rsp_t, slv_b_chan_t, slv_r_chan_t)
+
+  //iDMA defines
+  `IDMA_TYPEDEF_FULL_REQ_T(idma_req_t, axi_id_t, axi_addr_t, axi_addr_t)
+  `IDMA_TYPEDEF_FULL_RSP_T(idma_rsp_t, axi_addr_t)
+  `IDMA_TYPEDEF_FULL_ND_REQ_T(idma_nd_req_t, idma_req_t, reps_t, strides_t)
+
+  typedef struct packed {
+      slv_ar_chan_t ar_chan;
+  } axi_read_meta_channel_t;
+
+  typedef struct packed {
+      axi_read_meta_channel_t axi;
+  } read_meta_channel_t;
+
+  typedef struct packed {
+      slv_aw_chan_t aw_chan;
+  } axi_write_meta_channel_t;
+
+  typedef struct packed {
+      axi_write_meta_channel_t axi;
+  } write_meta_channel_t;
+
+  idma_req_t            be_idma_req;
+  idma_rsp_t            be_idma_rsp;
+  idma_nd_req_t         fe_idma_req;
+
+  logic         idma_nd_rsp_valid;
+  logic         idma_nd_rsp_ready;
+  logic         issue_id;
+  logic         retire_id;
+
+  idma_pkg::idma_busy_t busy;
+  logic me_busy;
+
+  logic fe_req_valid, fe_req_ready;
+  logic be_req_valid, be_req_ready;
+
+  logic [IdCounterWidth-1:0] done_id, next_id;
+
+  idma_reg64_2d #(
+       .NumRegs        ( 32'd1          ),
+       .NumStreams     ( 32'd1          ),
+       .IdCounterWidth ( IdCounterWidth ),
+       .reg_req_t      ( reg_req_t      ),
+       .reg_rsp_t      ( reg_rsp_t      ),
+       .dma_req_t      ( idma_nd_req_t  )
+  ) idma_frontend (
+       .clk_i,
+       .rst_ni,
+       .dma_ctrl_req_i ( reg_req_i     ),
+       .dma_ctrl_rsp_o ( reg_rsp_o     ),
+       .dma_req_o      ( fe_idma_req   ),
+       .req_valid_o    ( fe_req_valid  ),
+       .req_ready_i    ( fe_req_ready  ),
+       .next_id_i      ( next_id       ),
+       .stream_idx_o   (               ),
+       .done_id_i      ( done_id       ),
+       .busy_i         ( busy          ),
+       .midend_busy_i  ( me_busy       )
+  );
+
+  idma_nd_midend #(
+      .NumDim        ( NumDim        ),
+      .addr_t        ( axi_addr_t    ),
+      .idma_req_t    ( idma_req_t    ),
+      .idma_rsp_t    ( idma_rsp_t    ),
+      .idma_nd_req_t ( idma_nd_req_t ),
+      .RepWidths     ( RepWidth      )
+  ) idma_midend_i (
+      .clk_i,
+      .rst_ni,
+      .nd_req_i          ( fe_idma_req       ),
+      .nd_req_valid_i    ( fe_req_valid      ),
+      .nd_req_ready_o    ( fe_req_ready      ),
+      .nd_rsp_o          (                   ),
+      .nd_rsp_valid_o    ( idma_nd_rsp_valid ),
+      .nd_rsp_ready_i    ( idma_nd_rsp_ready ),
+      .burst_req_o       ( be_idma_req       ),
+      .burst_req_valid_o ( be_req_valid      ),
+      .burst_req_ready_i ( be_req_ready      ),
+      .burst_rsp_i       ( be_idma_rsp       ),
+      .burst_rsp_valid_i ( be_rsp_valid      ),
+      .burst_rsp_ready_o ( be_rsp_ready      ),
+      .busy_o            ( me_busy           )
+  );
+
+  idma_backend_rw_axi #(
+      .CombinedShifter      ( CombinedShifter      ),
+      .DataWidth            ( AxiDataWidth         ),
+      .AddrWidth            ( AxiAddrWidth         ),
+      .AxiIdWidth           ( SlvIdWidth           ),
+      .UserWidth            ( AxiUserWidth         ),
+      .TFLenWidth           ( TFLenWidth           ),
+      .MaskInvalidData      ( MaskInvalidData      ),
+      .BufferDepth          ( BufferDepth          ),
+      .RAWCouplingAvail     ( RAWCouplingAvail     ),
+      .HardwareLegalizer    ( HardwareLegalizer    ),
+      .RejectZeroTransfers  ( RejectZeroTransfers  ),
+      .ErrorCap             ( ErrorCap             ),
+      .PrintFifoInfo        ( PrintFifoInfo        ),
+      .NumAxInFlight        ( NumAxInFlight        ),
+      .MemSysDepth          ( MemSysDepth          ),
+      .idma_req_t           ( idma_req_t           ),
+      .idma_rsp_t           ( idma_rsp_t           ),
+      .idma_eh_req_t        ( idma_eh_req_t        ),
+      .idma_busy_t          ( idma_busy_t          ),
+      .axi_req_t            ( slv_req_t            ),
+      .axi_rsp_t            ( slv_rsp_t            ),
+      .write_meta_channel_t ( write_meta_channel_t ),
+      .read_meta_channel_t  ( read_meta_channel_t  )
+  ) i_idma_backend  (
+      .clk_i,
+      .rst_ni,
+      .testmode_i           ( 1'b0                 ),
+      .idma_req_i           ( be_idma_req          ),
+      .req_valid_i          ( be_req_valid         ),
+      .req_ready_o          ( be_req_ready         ),
+      .idma_rsp_o           ( be_idma_rsp          ),
+      .rsp_valid_o          ( be_rsp_valid         ),
+      .rsp_ready_i          ( be_rsp_ready         ),
+      .idma_eh_req_i        ( '0                   ),
+      .eh_req_valid_i       ( '0                   ),
+      .eh_req_ready_o       (                      ),
+      .axi_read_req_o       ( axi_read_req_o       ),
+      .axi_read_rsp_i       ( axi_read_rsp_i       ),
+
+      .axi_write_req_o      ( axi_write_req_o      ),
+      .axi_write_rsp_i      ( axi_write_rsp_i      ),
+      .busy_o               ( busy                 )
+  );
+
+  assign retire_id = idma_nd_rsp_valid & idma_nd_rsp_ready;
+  assign issue_id  = fe_req_valid & fe_req_ready;
+  assign idma_nd_rsp_ready = 1'b1;
+
+  idma_transfer_id_gen #(
+    .IdWidth ( IdCounterWidth )
+  ) i_transfer_id_gen (
+    .clk_i,
+    .rst_ni,
+    .issue_i     ( issue_id                     ),
+    .retire_i    ( retire_id                    ),
+    .next_o      ( next_id                      ),
+    .completed_o ( done_id                      )
+  );
+
+endmodule
