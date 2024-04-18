@@ -151,6 +151,22 @@ module cheshire_reg_top #(
   logic hw_features_bus_err_re;
   logic [31:0] llc_size_qs;
   logic llc_size_re;
+  logic [31:0] llc_hit_cnt_write_cache_qs;
+  logic llc_hit_cnt_write_cache_re;
+  logic [31:0] llc_hit_cnt_read_cache_qs;
+  logic llc_hit_cnt_read_cache_re;
+  logic [31:0] llc_miss_cnt_write_cache_qs;
+  logic llc_miss_cnt_write_cache_re;
+  logic [31:0] llc_miss_cnt_read_cache_qs;
+  logic llc_miss_cnt_read_cache_re;
+  logic [31:0] llc_refill_cnt_write_qs;
+  logic llc_refill_cnt_write_re;
+  logic [31:0] llc_refill_cnt_read_qs;
+  logic llc_refill_cnt_read_re;
+  logic [31:0] llc_evict_cnt_write_qs;
+  logic llc_evict_cnt_write_re;
+  logic [31:0] llc_evict_cnt_read_qs;
+  logic llc_evict_cnt_read_re;
   logic [7:0] vga_params_red_width_qs;
   logic vga_params_red_width_re;
   logic [7:0] vga_params_green_width_qs;
@@ -870,6 +886,134 @@ module cheshire_reg_top #(
   );
 
 
+  // R[llc_hit_cnt_write_cache]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_llc_hit_cnt_write_cache (
+    .re     (llc_hit_cnt_write_cache_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.llc_hit_cnt_write_cache.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (llc_hit_cnt_write_cache_qs)
+  );
+
+
+  // R[llc_hit_cnt_read_cache]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_llc_hit_cnt_read_cache (
+    .re     (llc_hit_cnt_read_cache_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.llc_hit_cnt_read_cache.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (llc_hit_cnt_read_cache_qs)
+  );
+
+
+  // R[llc_miss_cnt_write_cache]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_llc_miss_cnt_write_cache (
+    .re     (llc_miss_cnt_write_cache_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.llc_miss_cnt_write_cache.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (llc_miss_cnt_write_cache_qs)
+  );
+
+
+  // R[llc_miss_cnt_read_cache]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_llc_miss_cnt_read_cache (
+    .re     (llc_miss_cnt_read_cache_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.llc_miss_cnt_read_cache.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (llc_miss_cnt_read_cache_qs)
+  );
+
+
+  // R[llc_refill_cnt_write]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_llc_refill_cnt_write (
+    .re     (llc_refill_cnt_write_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.llc_refill_cnt_write.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (llc_refill_cnt_write_qs)
+  );
+
+
+  // R[llc_refill_cnt_read]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_llc_refill_cnt_read (
+    .re     (llc_refill_cnt_read_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.llc_refill_cnt_read.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (llc_refill_cnt_read_qs)
+  );
+
+
+  // R[llc_evict_cnt_write]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_llc_evict_cnt_write (
+    .re     (llc_evict_cnt_write_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.llc_evict_cnt_write.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (llc_evict_cnt_write_qs)
+  );
+
+
+  // R[llc_evict_cnt_read]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_llc_evict_cnt_read (
+    .re     (llc_evict_cnt_read_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.llc_evict_cnt_read.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (llc_evict_cnt_read_qs)
+  );
+
+
   // R[vga_params]: V(True)
 
   //   F[red_width]: 7:0
@@ -919,7 +1063,7 @@ module cheshire_reg_top #(
 
 
 
-  logic [22:0] addr_hit;
+  logic [30:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CHESHIRE_SCRATCH_0_OFFSET);
@@ -944,7 +1088,15 @@ module cheshire_reg_top #(
     addr_hit[19] = (reg_addr == CHESHIRE_NUM_INT_HARTS_OFFSET);
     addr_hit[20] = (reg_addr == CHESHIRE_HW_FEATURES_OFFSET);
     addr_hit[21] = (reg_addr == CHESHIRE_LLC_SIZE_OFFSET);
-    addr_hit[22] = (reg_addr == CHESHIRE_VGA_PARAMS_OFFSET);
+    addr_hit[22] = (reg_addr == CHESHIRE_LLC_HIT_CNT_WRITE_CACHE_OFFSET);
+    addr_hit[23] = (reg_addr == CHESHIRE_LLC_HIT_CNT_READ_CACHE_OFFSET);
+    addr_hit[24] = (reg_addr == CHESHIRE_LLC_MISS_CNT_WRITE_CACHE_OFFSET);
+    addr_hit[25] = (reg_addr == CHESHIRE_LLC_MISS_CNT_READ_CACHE_OFFSET);
+    addr_hit[26] = (reg_addr == CHESHIRE_LLC_REFILL_CNT_WRITE_OFFSET);
+    addr_hit[27] = (reg_addr == CHESHIRE_LLC_REFILL_CNT_READ_OFFSET);
+    addr_hit[28] = (reg_addr == CHESHIRE_LLC_EVICT_CNT_WRITE_OFFSET);
+    addr_hit[29] = (reg_addr == CHESHIRE_LLC_EVICT_CNT_READ_OFFSET);
+    addr_hit[30] = (reg_addr == CHESHIRE_VGA_PARAMS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -974,7 +1126,15 @@ module cheshire_reg_top #(
                (addr_hit[19] & (|(CHESHIRE_PERMIT[19] & ~reg_be))) |
                (addr_hit[20] & (|(CHESHIRE_PERMIT[20] & ~reg_be))) |
                (addr_hit[21] & (|(CHESHIRE_PERMIT[21] & ~reg_be))) |
-               (addr_hit[22] & (|(CHESHIRE_PERMIT[22] & ~reg_be)))));
+               (addr_hit[22] & (|(CHESHIRE_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(CHESHIRE_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(CHESHIRE_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(CHESHIRE_PERMIT[25] & ~reg_be))) |
+               (addr_hit[26] & (|(CHESHIRE_PERMIT[26] & ~reg_be))) |
+               (addr_hit[27] & (|(CHESHIRE_PERMIT[27] & ~reg_be))) |
+               (addr_hit[28] & (|(CHESHIRE_PERMIT[28] & ~reg_be))) |
+               (addr_hit[29] & (|(CHESHIRE_PERMIT[29] & ~reg_be))) |
+               (addr_hit[30] & (|(CHESHIRE_PERMIT[30] & ~reg_be)))));
   end
 
   assign scratch_0_we = addr_hit[0] & reg_we & !reg_error;
@@ -1061,11 +1221,27 @@ module cheshire_reg_top #(
 
   assign llc_size_re = addr_hit[21] & reg_re & !reg_error;
 
-  assign vga_params_red_width_re = addr_hit[22] & reg_re & !reg_error;
+  assign llc_hit_cnt_write_cache_re = addr_hit[22] & reg_re & !reg_error;
 
-  assign vga_params_green_width_re = addr_hit[22] & reg_re & !reg_error;
+  assign llc_hit_cnt_read_cache_re = addr_hit[23] & reg_re & !reg_error;
 
-  assign vga_params_blue_width_re = addr_hit[22] & reg_re & !reg_error;
+  assign llc_miss_cnt_write_cache_re = addr_hit[24] & reg_re & !reg_error;
+
+  assign llc_miss_cnt_read_cache_re = addr_hit[25] & reg_re & !reg_error;
+
+  assign llc_refill_cnt_write_re = addr_hit[26] & reg_re & !reg_error;
+
+  assign llc_refill_cnt_read_re = addr_hit[27] & reg_re & !reg_error;
+
+  assign llc_evict_cnt_write_re = addr_hit[28] & reg_re & !reg_error;
+
+  assign llc_evict_cnt_read_re = addr_hit[29] & reg_re & !reg_error;
+
+  assign vga_params_red_width_re = addr_hit[30] & reg_re & !reg_error;
+
+  assign vga_params_green_width_re = addr_hit[30] & reg_re & !reg_error;
+
+  assign vga_params_blue_width_re = addr_hit[30] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -1172,6 +1348,38 @@ module cheshire_reg_top #(
       end
 
       addr_hit[22]: begin
+        reg_rdata_next[31:0] = llc_hit_cnt_write_cache_qs;
+      end
+
+      addr_hit[23]: begin
+        reg_rdata_next[31:0] = llc_hit_cnt_read_cache_qs;
+      end
+
+      addr_hit[24]: begin
+        reg_rdata_next[31:0] = llc_miss_cnt_write_cache_qs;
+      end
+
+      addr_hit[25]: begin
+        reg_rdata_next[31:0] = llc_miss_cnt_read_cache_qs;
+      end
+
+      addr_hit[26]: begin
+        reg_rdata_next[31:0] = llc_refill_cnt_write_qs;
+      end
+
+      addr_hit[27]: begin
+        reg_rdata_next[31:0] = llc_refill_cnt_read_qs;
+      end
+
+      addr_hit[28]: begin
+        reg_rdata_next[31:0] = llc_evict_cnt_write_qs;
+      end
+
+      addr_hit[29]: begin
+        reg_rdata_next[31:0] = llc_evict_cnt_read_qs;
+      end
+
+      addr_hit[30]: begin
         reg_rdata_next[7:0] = vga_params_red_width_qs;
         reg_rdata_next[15:8] = vga_params_green_width_qs;
         reg_rdata_next[23:16] = vga_params_blue_width_qs;
