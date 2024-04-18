@@ -505,6 +505,22 @@ package cheshire_pkg;
     };
   endfunction
 
+  ///////////
+  //  LLC  //
+  ///////////
+
+  // LLC performance counter events.
+  typedef enum word_bt {
+      HitWriteCache  = 0,
+      HitReadCache   = 1,
+      MissWriteCache = 2,
+      MissReadCache  = 3,
+      RefillWrite    = 4,
+      RefillRead     = 5,
+      EvictWrite     = 6,
+      EvictRead      = 7
+  } llc_evts_e;
+
   ////////////////
   //  Defaults  //
   ////////////////

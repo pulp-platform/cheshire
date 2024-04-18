@@ -108,8 +108,32 @@ extern "C" {
 // Total size of LLC in bytes
 #define CHESHIRE_LLC_SIZE_REG_OFFSET 0x54
 
+// Performance counter for LLC hits on the cache write path
+#define CHESHIRE_LLC_HIT_CNT_WRITE_CACHE_REG_OFFSET 0x58
+
+// Performance counter for LLC hits on the cache read path
+#define CHESHIRE_LLC_HIT_CNT_READ_CACHE_REG_OFFSET 0x5c
+
+// Performance counter for LLC misses on the cache write path
+#define CHESHIRE_LLC_MISS_CNT_WRITE_CACHE_REG_OFFSET 0x60
+
+// Performance counter for LLC misses on the cache read path
+#define CHESHIRE_LLC_MISS_CNT_READ_CACHE_REG_OFFSET 0x64
+
+// Performance counter for LLC refills on the write path
+#define CHESHIRE_LLC_REFILL_CNT_WRITE_REG_OFFSET 0x68
+
+// Performance counter for LLC refills on the read path
+#define CHESHIRE_LLC_REFILL_CNT_READ_REG_OFFSET 0x6c
+
+// Performance counter for LLC evictions on the write path
+#define CHESHIRE_LLC_EVICT_CNT_WRITE_REG_OFFSET 0x70
+
+// Performance counter for LLC evictions on the read path
+#define CHESHIRE_LLC_EVICT_CNT_READ_REG_OFFSET 0x74
+
 // VGA hardware parameters
-#define CHESHIRE_VGA_PARAMS_REG_OFFSET 0x58
+#define CHESHIRE_VGA_PARAMS_REG_OFFSET 0x78
 #define CHESHIRE_VGA_PARAMS_RED_WIDTH_MASK 0xff
 #define CHESHIRE_VGA_PARAMS_RED_WIDTH_OFFSET 0
 #define CHESHIRE_VGA_PARAMS_RED_WIDTH_FIELD \
