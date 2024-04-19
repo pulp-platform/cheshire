@@ -587,8 +587,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   axi_mst_req_t [AxiIn.num_in-1:0] tagger_req;
   axi_mst_rsp_t [AxiIn.num_in-1:0] tagger_rsp;
 
-  axi_cva6_req_t [NumIntHarts-1:0] core_out_req, core_ur_req;
-  axi_cva6_rsp_t [NumIntHarts-1:0] core_out_rsp, core_ur_rsp;
+  axi_cva6_req_t [NumIntHarts-1:0] core_out_req, core_out_cut_req, core_ur_req;
+  axi_cva6_rsp_t [NumIntHarts-1:0] core_out_rsp, core_out_cut_rsp, core_ur_rsp;
 
   // CLIC interface
   logic [NumIntHarts-1:0] clic_irq_valid, clic_irq_ready;
@@ -735,17 +735,35 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     end
 
+    axi_cut #(
+      .Bypass     ( ~Cfg.CorePostCut   ),
+      .aw_chan_t  ( axi_cva6_aw_chan_t ),
+      .w_chan_t   ( axi_cva6_w_chan_t  ),
+      .b_chan_t   ( axi_cva6_b_chan_t  ),
+      .ar_chan_t  ( axi_cva6_ar_chan_t ),
+      .r_chan_t   ( axi_cva6_r_chan_t  ),
+      .axi_req_t  ( axi_cva6_req_t     ),
+      .axi_resp_t ( axi_cva6_rsp_t     )
+    ) i_core_axi_cut (
+      .clk_i      ( clk_i               ),
+      .rst_ni     ( rst_ni              ),
+      .slv_req_i  ( core_out_req[i]     ),
+      .slv_resp_o ( core_out_rsp[i]     ),
+      .mst_req_o  ( core_out_cut_req[i] ),
+      .mst_resp_i ( core_out_cut_rsp[i] )
+    );
+
     // Map user to AMO domain as we are an atomics-capable master.
     // Within the provided AMO user range, we count up from the provided core AMO offset.
     always_comb begin
-      core_ur_req[i]         = core_out_req[i];
+      core_ur_req[i]         = core_out_cut_req[i];
       core_ur_req[i].aw.user = Cfg.AxiUserDefault;
       core_ur_req[i].ar.user = Cfg.AxiUserDefault;
       core_ur_req[i].w.user  = Cfg.AxiUserDefault;
       core_ur_req[i].aw.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
       core_ur_req[i].ar.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
       core_ur_req[i].w.user  [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
-      core_out_rsp[i]       = core_ur_rsp[i];
+      core_out_cut_rsp[i]    = core_ur_rsp[i];
     end
 
     // CVA6's ID encoding is wasteful; remap it statically pack into available bits
