@@ -1666,55 +1666,106 @@ module cheshire_soc import cheshire_pkg::*; #(
   // TODO: many other things I most likely forgot
   // TODO: check that LLC only exists if its output is connected (the reverse is allowed)
 
-  cycle_counter #(
+cycle_counter #(
 
   )
-  (
+  i_cycle_counter(
+  .rst_ni, 
   .clk_i
   );
-
+  
   axi_snoop #(
     .axi_mst_req_t(axi_mst_req_t),
     .axi_mst_rsp_t(axi_mst_rsp_t)
   )
-  i_axi_snoop_cva6(
+  i_axi_snoop_cva6_mst(
+    .rst_ni,
     .clk_i , 
-    .axi_mst_req_i(axi_in_req),
-    .axi_mst_rsp_i(axi_in_rsp),
-    .axi_mst_req_o(axi_in_req),
-    .axi_mst_rsp_o(axi_in_rsp)
+    .axi_mst_req_i(axi_in_req[AxiIn.cores[0]]),
+    .axi_mst_rsp_i(axi_in_rsp[AxiIn.cores[0]])
+  );
+
+ axi_snoop #(
+    .axi_mst_req_t(axi_cva6_req_t),
+    .axi_mst_rsp_t(axi_cva6_rsp_t)
+  )
+  i_axi_snoop_cva6_slv(
+    .rst_ni,
+    .clk_i , 
+    .axi_mst_req_i(core_ur_req),
+    .axi_mst_rsp_i(core_ur_rsp)
   );
 
 
-  axi_snoop #(
+axi_snoop #(
+.axi_mst_req_t       ( axi_ext_llc_req_t ),
+.axi_mst_rsp_t       ( axi_ext_llc_rsp_t )
+)
+
+i_axi_snoop_dram(
+    .rst_ni,
+    .clk_i, 
+    .axi_mst_req_i(axi_llc_mst_req_o),
+    .axi_mst_rsp_i(axi_llc_mst_rsp_i)
+  
+);
+
+/*
+axi_snoop #(
     .axi_mst_req_t(axi_slv_req_t),
     .axi_mst_rsp_t(axi_slv_rsp_t)
+)
+i_axi_snoop_llc(
+    .rst_ni,
+    .clk_i,
+    .axi_mst_req_i(axi_llc_remap_req),
+    .axi_mst_rsp_i(axi_llc_remap_rsp)
+);
 
-  )
-  
-  i_axi_snoop_llc_cut(
+axi_snoop #(
+    .axi_mst_req_t(axi_slv_req_t),
+    .axi_mst_rsp_t(axi_slv_rsp_t)
+)
+i_axi_snoop_llc_amo_mst(
+    .rst_ni,
     .clk_i,
     .axi_mst_req_i(axi_llc_amo_req),
-    .axi_mst_rsp_i(axi_llc_amo_rsp),
-    .axi_mst_req_o(axi_llc_amo_req),
-    .axi_mst_rsp_o(axi_llc_amo_rsp)
-  );
+    .axi_mst_rsp_i(axi_llc_amo_rsp)
+);
 
-  
-  axi_snoop #(
-    .axi_mst_req_t(axi_mst_req_t),
-    .axi_mst_rsp_t(axi_mst_rsp_t)
+axi_snoop #(
+    .axi_mst_req_t(axi_slv_req_t),
+    .axi_mst_rsp_t(axi_slv_rsp_t)
+)
+i_axi_snoop_llc_amo_slv(
+    .rst_ni,
+    .clk_i,
+    .axi_mst_req_i(axi_out_req[AxiOut.llc] ),
+    .axi_mst_rsp_i(axi_out_rsp[AxiOut.llc])
+);
 
 
-  )
-  i_axi_snoop_dma(
-    .clk_i, 
-    .axi_mst_req_i(axi_dma_req),
-    .axi_mst_rsp_i(axi_in_rsp[AxiIn.dma] ),
-    .axi_mst_req_o(axi_dma_req),
-    .axi_mst_rsp_o(axi_in_rsp[AxiIn.dma] ) //AxiIn.dma or just the whole array?
-  );
+axi_snoop #(
+    .axi_mst_req_t(axi_slv_req_t),
+    .axi_mst_rsp_t(axi_slv_rsp_t)
+)
+i_axi_snoop_llc_cut_mst(
+    .rst_ni,
+    .clk_i,
+    .axi_mst_req_i(axi_llc_cut_req),
+    .axi_mst_rsp_i(axi_llc_cut_rsp)
+);
 
+axi_snoop #(
+    .axi_mst_req_t(axi_slv_req_t),
+    .axi_mst_rsp_t(axi_slv_rsp_t)
+)
+i_axi_snoop_llc_cut_slv(
+    .rst_ni,
+    .clk_i,
+    .axi_mst_req_i(axi_llc_amo_req),
+    .axi_mst_rsp_i(axi_llc_amo_rsp)
+);
 
 axi_snoop #(
     .axi_mst_req_t(axi_slv_req_t),
@@ -1722,60 +1773,67 @@ axi_snoop #(
 
   )
   i_axi_snoop_regbus(
+    .rst_ni,
     .clk_i,
     .axi_mst_req_i(axi_reg_amo_req),
-    .axi_mst_rsp_i(axi_reg_amo_rsp),
-    .axi_mst_req_o(axi_reg_amo_req),
-    .axi_mst_rsp_o(axi_reg_amo_rsp)
+    .axi_mst_rsp_i(axi_reg_amo_rsp)
   );
-axi_snoop #(
-.axi_mst_req_t       ( axi_ext_llc_req_t ),
-.axi_mst_rsp_t       ( axi_ext_llc_rsp_t )
-)
-
-i_axi_snoop_dram(
-    .clk_i, 
-    .axi_mst_req_i(axi_llc_mst_req_o),
-    .axi_mst_rsp_i(axi_llc_mst_rsp_i),
-    .axi_mst_req_o(axi_llc_mst_req_o),
-    .axi_mst_rsp_o(axi_llc_mst_rsp_i)
-  
-);
 
 axi_snoop #(
     .axi_mst_req_t(axi_slv_req_t),
     .axi_mst_rsp_t(axi_slv_rsp_t)
 )
-i_axi_snoop_llc(
+i_axi_snoop_jtag(
+    .rst_ni,
     .clk_i,
-    .axi_mst_req_i(axi_out_req[AxiOut.llc]),
-    .axi_mst_rsp_i(axi_out_rsp[AxiOut.llc]),
-    .axi_mst_req_o(axi_out_req[AxiOut.llc]),
-    .axi_mst_rsp_o(axi_out_rsp[AxiOut.llc])
+    .axi_mst_req_i(dbg_slv_axi_amo_req),
+    .axi_mst_rsp_i(dbg_slv_axi_amo_rsp)
 );
 
-/*.axi_mst_req_o  ( axi_dma_req           ),
-//.axi_mst_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
+axi_snoop #(
+    .axi_mst_req_t(axi_mst_req_t),
+    .axi_mst_rsp_t(axi_mst_rsp_t)
+)
+i_axi_snoop_vga(
+    .rst_ni,
+    .clk_i,
+    .axi_mst_req_i(axi_vga_req),
+    .axi_mst_rsp_i(axi_in_rsp[AxiIn.vga])
+);
 
-//axi_mst_req_t [AxiIn.num_in-1:0]    axi_in_req, axi_rt_in_req;
-//axi_mst_rsp_t [AxiIn.num_in-1:0]    axi_in_rsp, axi_rt_in_rsp;
+axi_snoop #(
+    .axi_mst_req_t(axi_mst_req_t),
+    .axi_mst_rsp_t(axi_mst_rsp_t)
+)
+i_axi_snoop_slink(
+    .rst_ni,
+    .clk_i,
+    .axi_mst_req_i(axi_in_req[AxiIn.slink]),
+    .axi_mst_rsp_i(axi_in_rsp[AxiIn.slink])
+);
 
-//axi_slv_req_t axi_llc_cut_req;
-//axi_slv_rsp_t axi_llc_cut_rsp;
+axi_snoop #(
+    .axi_mst_req_t(axi_mst_req_t),
+    .axi_mst_rsp_t(axi_mst_rsp_t)
 
-axi_slv_req_t axi_llc_amo_req;
-axi_slv_rsp_t axi_llc_amo_rsp;
+  )
+  i_axi_snoop_dma_mst(
+    .rst_ni,
+    .clk_i, 
+    .axi_mst_req_i(axi_dma_req),
+    .axi_mst_rsp_i(axi_in_rsp[AxiIn.dma] )
+  );
 
-axi_slv_req_t axi_reg_amo_req, axi_reg_cut_req;
-axi_slv_rsp_t axi_reg_amo_rsp, axi_reg_cut_rsp;
+axi_snoop #(
+    .axi_mst_req_t(axi_slv_req_t),
+    .axi_mst_rsp_t(axi_slv_rsp_t)
 
-output axi_ext_llc_re,
-input  axi_ext_llc_rsp_t axi_llc_mst_rsp_i,
-
-.mst_req_t        ( axi_ext_llc_req_t ),
-.mst_resp_t       ( axi_ext_llc_rsp_t )
-
- axi_slv_req_t [AxiOut.num_out-1:0]  axi_out_req;
- axi_slv_rsp_t [AxiOut.num_out-1:0]  axi_out_rsp;
-*/
+  )
+  i_axi_snoop_dma_slv(
+    .rst_ni,
+    .clk_i, 
+    .axi_mst_req_i(dma_cut_req),
+    .axi_mst_rsp_i(dma_cut_rsp)
+  );
+  */
 endmodule
