@@ -35,8 +35,8 @@ packages:
     - register_interface
     - tech_cells_generic
   axi_riscv_atomics:
-    revision: 0ac3a78fe342c5a5b9b10bff49d58897f773059e
-    version: 0.8.2
+    revision: 06d8256ccebb13d50e5feb2c17ce87a2b1f65c46
+    version: null
     source:
       Git: https://github.com/pulp-platform/axi_riscv_atomics.git
     dependencies:
@@ -78,8 +78,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: 13f28aa0021fc22c0d01a12d618fda58d2c93239
-    version: 1.33.0
+    revision: bf98ae5e1832fa75565152837f0c3c3bf8d89759
+    version: null
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
