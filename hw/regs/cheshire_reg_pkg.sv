@@ -7,7 +7,7 @@
 package cheshire_reg_pkg;
 
   // Address widths within the block
-  parameter int BlockAw = 7;
+  parameter int BlockAw = 8;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -108,6 +108,14 @@ package cheshire_reg_pkg;
   } cheshire_hw2reg_llc_evict_cnt_read_reg_t;
 
   typedef struct packed {
+    logic [31:0] d;
+  } cheshire_hw2reg_llc_access_cnt_write_cache_reg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+  } cheshire_hw2reg_llc_access_cnt_read_cache_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic [7:0]  d;
     } red_width;
@@ -121,55 +129,59 @@ package cheshire_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    cheshire_hw2reg_boot_mode_reg_t boot_mode; // [422:421]
-    cheshire_hw2reg_rtc_freq_reg_t rtc_freq; // [420:389]
-    cheshire_hw2reg_platform_rom_reg_t platform_rom; // [388:357]
-    cheshire_hw2reg_num_int_harts_reg_t num_int_harts; // [356:325]
-    cheshire_hw2reg_hw_features_reg_t hw_features; // [324:312]
-    cheshire_hw2reg_llc_size_reg_t llc_size; // [311:280]
-    cheshire_hw2reg_llc_hit_cnt_write_cache_reg_t llc_hit_cnt_write_cache; // [279:248]
-    cheshire_hw2reg_llc_hit_cnt_read_cache_reg_t llc_hit_cnt_read_cache; // [247:216]
-    cheshire_hw2reg_llc_miss_cnt_write_cache_reg_t llc_miss_cnt_write_cache; // [215:184]
-    cheshire_hw2reg_llc_miss_cnt_read_cache_reg_t llc_miss_cnt_read_cache; // [183:152]
-    cheshire_hw2reg_llc_refill_cnt_write_reg_t llc_refill_cnt_write; // [151:120]
-    cheshire_hw2reg_llc_refill_cnt_read_reg_t llc_refill_cnt_read; // [119:88]
-    cheshire_hw2reg_llc_evict_cnt_write_reg_t llc_evict_cnt_write; // [87:56]
-    cheshire_hw2reg_llc_evict_cnt_read_reg_t llc_evict_cnt_read; // [55:24]
+    cheshire_hw2reg_boot_mode_reg_t boot_mode; // [486:485]
+    cheshire_hw2reg_rtc_freq_reg_t rtc_freq; // [484:453]
+    cheshire_hw2reg_platform_rom_reg_t platform_rom; // [452:421]
+    cheshire_hw2reg_num_int_harts_reg_t num_int_harts; // [420:389]
+    cheshire_hw2reg_hw_features_reg_t hw_features; // [388:376]
+    cheshire_hw2reg_llc_size_reg_t llc_size; // [375:344]
+    cheshire_hw2reg_llc_hit_cnt_write_cache_reg_t llc_hit_cnt_write_cache; // [343:312]
+    cheshire_hw2reg_llc_hit_cnt_read_cache_reg_t llc_hit_cnt_read_cache; // [311:280]
+    cheshire_hw2reg_llc_miss_cnt_write_cache_reg_t llc_miss_cnt_write_cache; // [279:248]
+    cheshire_hw2reg_llc_miss_cnt_read_cache_reg_t llc_miss_cnt_read_cache; // [247:216]
+    cheshire_hw2reg_llc_refill_cnt_write_reg_t llc_refill_cnt_write; // [215:184]
+    cheshire_hw2reg_llc_refill_cnt_read_reg_t llc_refill_cnt_read; // [183:152]
+    cheshire_hw2reg_llc_evict_cnt_write_reg_t llc_evict_cnt_write; // [151:120]
+    cheshire_hw2reg_llc_evict_cnt_read_reg_t llc_evict_cnt_read; // [119:88]
+    cheshire_hw2reg_llc_access_cnt_write_cache_reg_t llc_access_cnt_write_cache; // [87:56]
+    cheshire_hw2reg_llc_access_cnt_read_cache_reg_t llc_access_cnt_read_cache; // [55:24]
     cheshire_hw2reg_vga_params_reg_t vga_params; // [23:0]
   } cheshire_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_0_OFFSET = 7'h 0;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_1_OFFSET = 7'h 4;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_2_OFFSET = 7'h 8;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_3_OFFSET = 7'h c;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_4_OFFSET = 7'h 10;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_5_OFFSET = 7'h 14;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_6_OFFSET = 7'h 18;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_7_OFFSET = 7'h 1c;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_8_OFFSET = 7'h 20;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_9_OFFSET = 7'h 24;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_10_OFFSET = 7'h 28;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_11_OFFSET = 7'h 2c;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_12_OFFSET = 7'h 30;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_13_OFFSET = 7'h 34;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_14_OFFSET = 7'h 38;
-  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_15_OFFSET = 7'h 3c;
-  parameter logic [BlockAw-1:0] CHESHIRE_BOOT_MODE_OFFSET = 7'h 40;
-  parameter logic [BlockAw-1:0] CHESHIRE_RTC_FREQ_OFFSET = 7'h 44;
-  parameter logic [BlockAw-1:0] CHESHIRE_PLATFORM_ROM_OFFSET = 7'h 48;
-  parameter logic [BlockAw-1:0] CHESHIRE_NUM_INT_HARTS_OFFSET = 7'h 4c;
-  parameter logic [BlockAw-1:0] CHESHIRE_HW_FEATURES_OFFSET = 7'h 50;
-  parameter logic [BlockAw-1:0] CHESHIRE_LLC_SIZE_OFFSET = 7'h 54;
-  parameter logic [BlockAw-1:0] CHESHIRE_LLC_HIT_CNT_WRITE_CACHE_OFFSET = 7'h 58;
-  parameter logic [BlockAw-1:0] CHESHIRE_LLC_HIT_CNT_READ_CACHE_OFFSET = 7'h 5c;
-  parameter logic [BlockAw-1:0] CHESHIRE_LLC_MISS_CNT_WRITE_CACHE_OFFSET = 7'h 60;
-  parameter logic [BlockAw-1:0] CHESHIRE_LLC_MISS_CNT_READ_CACHE_OFFSET = 7'h 64;
-  parameter logic [BlockAw-1:0] CHESHIRE_LLC_REFILL_CNT_WRITE_OFFSET = 7'h 68;
-  parameter logic [BlockAw-1:0] CHESHIRE_LLC_REFILL_CNT_READ_OFFSET = 7'h 6c;
-  parameter logic [BlockAw-1:0] CHESHIRE_LLC_EVICT_CNT_WRITE_OFFSET = 7'h 70;
-  parameter logic [BlockAw-1:0] CHESHIRE_LLC_EVICT_CNT_READ_OFFSET = 7'h 74;
-  parameter logic [BlockAw-1:0] CHESHIRE_VGA_PARAMS_OFFSET = 7'h 78;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_0_OFFSET = 8'h 0;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_1_OFFSET = 8'h 4;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_2_OFFSET = 8'h 8;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_3_OFFSET = 8'h c;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_4_OFFSET = 8'h 10;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_5_OFFSET = 8'h 14;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_6_OFFSET = 8'h 18;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_7_OFFSET = 8'h 1c;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_8_OFFSET = 8'h 20;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_9_OFFSET = 8'h 24;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_10_OFFSET = 8'h 28;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_11_OFFSET = 8'h 2c;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_12_OFFSET = 8'h 30;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_13_OFFSET = 8'h 34;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_14_OFFSET = 8'h 38;
+  parameter logic [BlockAw-1:0] CHESHIRE_SCRATCH_15_OFFSET = 8'h 3c;
+  parameter logic [BlockAw-1:0] CHESHIRE_BOOT_MODE_OFFSET = 8'h 40;
+  parameter logic [BlockAw-1:0] CHESHIRE_RTC_FREQ_OFFSET = 8'h 44;
+  parameter logic [BlockAw-1:0] CHESHIRE_PLATFORM_ROM_OFFSET = 8'h 48;
+  parameter logic [BlockAw-1:0] CHESHIRE_NUM_INT_HARTS_OFFSET = 8'h 4c;
+  parameter logic [BlockAw-1:0] CHESHIRE_HW_FEATURES_OFFSET = 8'h 50;
+  parameter logic [BlockAw-1:0] CHESHIRE_LLC_SIZE_OFFSET = 8'h 54;
+  parameter logic [BlockAw-1:0] CHESHIRE_LLC_HIT_CNT_WRITE_CACHE_OFFSET = 8'h 58;
+  parameter logic [BlockAw-1:0] CHESHIRE_LLC_HIT_CNT_READ_CACHE_OFFSET = 8'h 5c;
+  parameter logic [BlockAw-1:0] CHESHIRE_LLC_MISS_CNT_WRITE_CACHE_OFFSET = 8'h 60;
+  parameter logic [BlockAw-1:0] CHESHIRE_LLC_MISS_CNT_READ_CACHE_OFFSET = 8'h 64;
+  parameter logic [BlockAw-1:0] CHESHIRE_LLC_REFILL_CNT_WRITE_OFFSET = 8'h 68;
+  parameter logic [BlockAw-1:0] CHESHIRE_LLC_REFILL_CNT_READ_OFFSET = 8'h 6c;
+  parameter logic [BlockAw-1:0] CHESHIRE_LLC_EVICT_CNT_WRITE_OFFSET = 8'h 70;
+  parameter logic [BlockAw-1:0] CHESHIRE_LLC_EVICT_CNT_READ_OFFSET = 8'h 74;
+  parameter logic [BlockAw-1:0] CHESHIRE_LLC_ACCESS_CNT_WRITE_CACHE_OFFSET = 8'h 78;
+  parameter logic [BlockAw-1:0] CHESHIRE_LLC_ACCESS_CNT_READ_CACHE_OFFSET = 8'h 7c;
+  parameter logic [BlockAw-1:0] CHESHIRE_VGA_PARAMS_OFFSET = 8'h 80;
 
   // Reset values for hwext registers and their fields
   parameter logic [1:0] CHESHIRE_BOOT_MODE_RESVAL = 2'h 0;
@@ -186,6 +198,8 @@ package cheshire_reg_pkg;
   parameter logic [31:0] CHESHIRE_LLC_REFILL_CNT_READ_RESVAL = 32'h 0;
   parameter logic [31:0] CHESHIRE_LLC_EVICT_CNT_WRITE_RESVAL = 32'h 0;
   parameter logic [31:0] CHESHIRE_LLC_EVICT_CNT_READ_RESVAL = 32'h 0;
+  parameter logic [31:0] CHESHIRE_LLC_ACCESS_CNT_WRITE_CACHE_RESVAL = 32'h 0;
+  parameter logic [31:0] CHESHIRE_LLC_ACCESS_CNT_READ_CACHE_RESVAL = 32'h 0;
   parameter logic [23:0] CHESHIRE_VGA_PARAMS_RESVAL = 24'h 0;
 
   // Register index
@@ -220,11 +234,13 @@ package cheshire_reg_pkg;
     CHESHIRE_LLC_REFILL_CNT_READ,
     CHESHIRE_LLC_EVICT_CNT_WRITE,
     CHESHIRE_LLC_EVICT_CNT_READ,
+    CHESHIRE_LLC_ACCESS_CNT_WRITE_CACHE,
+    CHESHIRE_LLC_ACCESS_CNT_READ_CACHE,
     CHESHIRE_VGA_PARAMS
   } cheshire_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] CHESHIRE_PERMIT [31] = '{
+  parameter logic [3:0] CHESHIRE_PERMIT [33] = '{
     4'b 1111, // index[ 0] CHESHIRE_SCRATCH_0
     4'b 1111, // index[ 1] CHESHIRE_SCRATCH_1
     4'b 1111, // index[ 2] CHESHIRE_SCRATCH_2
@@ -255,7 +271,9 @@ package cheshire_reg_pkg;
     4'b 1111, // index[27] CHESHIRE_LLC_REFILL_CNT_READ
     4'b 1111, // index[28] CHESHIRE_LLC_EVICT_CNT_WRITE
     4'b 1111, // index[29] CHESHIRE_LLC_EVICT_CNT_READ
-    4'b 0111  // index[30] CHESHIRE_VGA_PARAMS
+    4'b 1111, // index[30] CHESHIRE_LLC_ACCESS_CNT_WRITE_CACHE
+    4'b 1111, // index[31] CHESHIRE_LLC_ACCESS_CNT_READ_CACHE
+    4'b 0111  // index[32] CHESHIRE_VGA_PARAMS
   };
 
 endpackage

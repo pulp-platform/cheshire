@@ -132,8 +132,14 @@ extern "C" {
 // Performance counter for LLC evictions on the read path
 #define CHESHIRE_LLC_EVICT_CNT_READ_REG_OFFSET 0x74
 
+// Performance counter for LLC accesses on the write path
+#define CHESHIRE_LLC_ACCESS_CNT_WRITE_CACHE_REG_OFFSET 0x78
+
+// Performance counter for LLC accesses on the read path
+#define CHESHIRE_LLC_ACCESS_CNT_READ_CACHE_REG_OFFSET 0x7c
+
 // VGA hardware parameters
-#define CHESHIRE_VGA_PARAMS_REG_OFFSET 0x78
+#define CHESHIRE_VGA_PARAMS_REG_OFFSET 0x80
 #define CHESHIRE_VGA_PARAMS_RED_WIDTH_MASK 0xff
 #define CHESHIRE_VGA_PARAMS_RED_WIDTH_OFFSET 0
 #define CHESHIRE_VGA_PARAMS_RED_WIDTH_FIELD \

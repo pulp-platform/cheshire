@@ -205,6 +205,28 @@
       ]
     }
 
+    { name:     "llc_access_cnt_write_cache"
+      desc:     "Performance counter for LLC accesses on the write path"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwqe:     "true"
+      hwext:    "true"
+      fields: [
+	{ bits: "31:0", name: "llc_access_cnt_write_cache", desc: "Performance counter for LLC accesses on the write path" }
+      ]
+    }
+
+    { name:     "llc_access_cnt_read_cache"
+      desc:     "Performance counter for LLC accesses on the read path"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwqe:     "true"
+      hwext:    "true"
+      fields: [
+	{ bits: "31:0", name: "llc_access_cnt_read_cache", desc: "Performance counter for LLC accesses on the read path" }
+      ]
+    }
+
     { name:     "vga_params"
       desc:     "VGA hardware parameters"
       swaccess: "ro"
