@@ -440,7 +440,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   axi_llc_pkg::events_t axi_llc_evts_all;
 
   // Selected LLC events
-  localparam int unsigned LlcNumEvts = 8;
+  localparam int unsigned LlcNumEvts = 10;
   localparam int unsigned LlcEvtCntWidth = 32;
 
   logic [LlcNumEvts-1:0] llc_evts;
@@ -451,7 +451,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     logic [LlcEvtCntWidth-1:0] read;
   } llc_cnt_t;
 
-  llc_cnt_t llc_hit_cnt_cache, llc_miss_cnt_cache, llc_refill_cnt, llc_evict_cnt;
+  llc_cnt_t llc_hit_cnt_cache, llc_miss_cnt_cache, llc_refill_cnt, llc_evict_cnt, llc_access_cnt_cache;
 
   if (Cfg.LlcOutConnect) begin : gen_llc_atomics
 
@@ -556,15 +556,18 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_llc_events_o    ( axi_llc_evts_all )
     );
 
-  // LLC events array comprises 24 17-bit `event_num_bytes_t` data structures and 4 1-bit event
-  // signals. The 24 structs track, for various events, (i) a level-sensitive signal corresponding
-  // to a handshake (1-bit `active` field), and (ii) the number of transferred bytes (16-bits
-  // `num_bytes` field) during the handshake. The 4 remaining 1-bit signals perform high-level
-  // tracking of evict, refill, write and read requests. We filter all this information and extract
-  // the `active` events for hit (w/r), miss (w/r), refill (w/r) and evict (w/r) to count how
-  // frequently an event happened, and collect this number in a register.
+  // LLC events array comprises 24 17-bit `event_num_bytes_t` data structures
+  // and 4 1-bit event signals. The 24 structs track, for various events, (i) a
+  // level-sensitive signal corresponding to a handshake (1-bit `active` field),
+  // and (ii) the number of transferred bytes (16-bits `num_bytes` field) during
+  // the handshake. The 4 remaining 1-bit signals perform high-level tracking of
+  // evict, refill, write and read requests. We filter all this information and
+  // extract the `active` events for accesses to the LLC (w/r), hits (w/r),
+  // misses (w/r), refills (w/r) and evictions (w/r) to count how frequently an
+  // event happened, and collect this number in a register.
 
-  assign llc_evts = { axi_llc_evts_all.evict_read.active,      axi_llc_evts_all.evict_write.active,
+  assign llc_evts = { axi_llc_evts_all.ar_desc_cache.active,   axi_llc_evts_all.aw_desc_cache.active,
+                      axi_llc_evts_all.evict_read.active,      axi_llc_evts_all.evict_write.active,
                       axi_llc_evts_all.refill_read.active,     axi_llc_evts_all.refill_write.active,
                       axi_llc_evts_all.miss_read_cache.active, axi_llc_evts_all.miss_write_cache.active,
                       axi_llc_evts_all.hit_read_cache.active,  axi_llc_evts_all.hit_write_cache.active
@@ -578,6 +581,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   assign llc_refill_cnt.read      = llc_evt_cnts[RefillRead];
   assign llc_evict_cnt.write      = llc_evt_cnts[EvictWrite];
   assign llc_evict_cnt.read       = llc_evt_cnts[EvictRead];
+  assign llc_access_cnt_cache.write = llc_evt_cnts[WAccess];
+  assign llc_access_cnt_cache.read  = llc_evt_cnts[RAccess];
 
   for (genvar i=0; i < LlcNumEvts; i++) begin : gen_llc_evt_cntrs
     counter #(
@@ -1118,6 +1123,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     llc_refill_cnt_read      : llc_refill_cnt.read,
     llc_evict_cnt_write      : llc_evict_cnt.write,
     llc_evict_cnt_read       : llc_evict_cnt.read,
+    llc_access_cnt_write_cache : llc_access_cnt_cache.write,
+    llc_access_cnt_read_cache  : llc_access_cnt_cache.read,
     vga_params    : '{
       red_width   : Cfg.VgaRedWidth,
       green_width : Cfg.VgaGreenWidth,

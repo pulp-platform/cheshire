@@ -518,7 +518,9 @@ package cheshire_pkg;
       RefillWrite    = 4,
       RefillRead     = 5,
       EvictWrite     = 6,
-      EvictRead      = 7
+      EvictRead      = 7,
+      WAccess        = 8,
+      RAccess        = 9
   } llc_evts_e;
 
   ////////////////
