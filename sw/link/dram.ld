@@ -10,6 +10,8 @@ INCLUDE common.ldh
 
 SECTIONS {
   __stack_pointer$  = ORIGIN(dram) + LENGTH(dram) - 8;
+  __stack_capacity  = LENGTH(dram) - LENGTH(extrom);
+  __hart0_has_stack = 0;
 
   .text : {
     *(.text._start)

@@ -11,6 +11,19 @@
 
 // Minimal CRT0
 .global _start
+_smp_park:
+    // There is only space for a limited number of stacks. Park harts
+    // that cannot be accommodated
+    csrr t0, mhartid
+    la t1, __stack_size$
+    la t2, __stack_capacity
+    addi t0, t0, 1
+    mul t1, t1, t0
+    bge t2, t1, _start
+_smp_park_loop:
+    wfi
+    j _smp_park_loop
+
 _start:
     // Globally disable Machine and Supervisor interrupts
     csrrc x0, mstatus, 10
@@ -25,14 +38,17 @@ _init_gp:
     .option pop
 
 _init_sp:
-    // Init stack pointer iff linked as nonzero
-    mv t0, sp
+    // All SMP harts need to init sp
+    csrr t0, mhartid
+    bnez t0, _do_init_sp
+    // If hart 0, linker tells whether to init sp
+    la t1, __hart0_has_stack
+    bnez t1, _init_context
+_do_init_sp:
     la t1, __stack_pointer$
-    beqz t1, _init_context
     la t2, __stack_size$
-    csrr t3, mhartid
-    mul t3, t3, t2
-    sub sp, t1, t3
+    mul t0, t0, t2
+    sub sp, t1, t0
 
 _init_context:
     // Store existing stack, global, return pointers on new stack
@@ -88,7 +104,7 @@ _fp_init:
     // Set FS state to "Clean"
     csrrc x0, mstatus, t1
 
-_smp_park:
+_smp_pause:
     call smp_pause
 
 _zero_bss_init:

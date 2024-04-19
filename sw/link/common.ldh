@@ -27,7 +27,7 @@ SECTIONS {
   /* Global and stack pointer */
   /* By default, keep the calling context (boot ROM) stack pointer */
   __global_pointer$ = ADDR(.misc) + SIZEOF(.misc) / 2;
-  __stack_pointer$  = 0;
+  __hart0_has_stack  = 1;
 
   /* Stack size */
   /* Use a default stack size of 4KiB */

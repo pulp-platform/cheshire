@@ -9,6 +9,9 @@
 INCLUDE common.ldh
 
 SECTIONS {
+  __stack_pointer$  = ORIGIN(spm) + LENGTH(spm) - 8;
+  __stack_capacity  = LENGTH(spm) - LENGTH(extrom);
+
   /* Put all LOAD sections in one contiguous output section */
   .misc : {
     *(.text._start)
