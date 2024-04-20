@@ -105,12 +105,14 @@ package cheshire_pkg;
     dw_bt   AxiUserErrBits;
     dw_bt   AxiUserErrLsb;
     doub_bt AxiUserDefault; // Default user assignment, adjusted by user features (AMO)
+    bit     CorePostCut;
     // Reg parameters
     dw_bt   RegMaxReadTxns;
     dw_bt   RegMaxWriteTxns;
     bit     AxiToRegCut;
     aw_bt   RegAmoNumCuts;
     bit     RegAmoPostCut;
+    bit     RegAdaptMemCut;
     // External AXI ports (limited number of ports and rules)
     bit     [MaxExtAxiMstWidth-1:0]     AxiExtNumMst;
     bit     [MaxExtAxiSlvWidth-1:0]     AxiExtNumSlv;
@@ -605,11 +607,13 @@ package cheshire_pkg;
     AxiUserErrBits    : 0,
     AxiUserErrLsb     : 0,
     AxiUserDefault    : 0,
+    CorePostCut       : 0,
     RegMaxReadTxns    : 8,
     RegMaxWriteTxns   : 8,
     AxiToRegCut       : 0,
     RegAmoNumCuts     : 1,
     RegAmoPostCut     : 1,
+    RegAdaptMemCut    : 1,
     // RTC
     RtcFreq           : 32768,
     // Features
