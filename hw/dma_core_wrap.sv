@@ -56,9 +56,9 @@ module dma_core_wrap #(
   // iDMA request / response types
   `IDMA_TYPEDEF_FULL_REQ_T(idma_req_t, id_t, addr_t, tf_len_t)
   `IDMA_TYPEDEF_FULL_RSP_T(idma_rsp_t, addr_t)
-  
+
   `REG_BUS_TYPEDEF_ALL(dma_regs, addr_t, data_t, strb_t)
-  
+
   `IDMA_TYPEDEF_FULL_ND_REQ_T(idma_nd_req_t, idma_req_t, tf_len_t, tf_len_t)
 
   typedef struct packed {
