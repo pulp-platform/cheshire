@@ -103,6 +103,11 @@ $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
 	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs BENDER="$(BENDER)" && touch $@
 
+# iDMA
+$(IDMA_ROOT)/.generated: $(IDMA_ROOT)/target/rtl/idma_reg64_2d.hjson
+	flock -x $@ sh -c "cp $< $(dir $@)/target/rtl/; $(MAKE) -j1 otp" && touch $@
+
+
 CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv
 CHS_HW_ALL += $(CLINTROOT)/.generated
 CHS_HW_ALL += $(OTPROOT)/.generated
@@ -136,6 +141,10 @@ $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: $(CHS_ROOT)/Bender.yml
 	$(BENDER) script vsim -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 -t rtl --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
+$(CHS_ROOT)/target/sim/vsim/compile.cheshire_convolve_soc.tcl: $(CHS_ROOT)/Bender.yml
+	$(BENDER) script vsim -t sim -t cv32a6_convolve -t test -t cva6 -t rtl --vlog-arg="$(VLOG_ARGS)" > $@
+	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
+
 .PRECIOUS: $(CHS_ROOT)/target/sim/models
 $(CHS_ROOT)/target/sim/models:
 	mkdir -p $@
@@ -153,6 +162,7 @@ $(CHS_ROOT)/target/sim/models/24FC1025.v: $(CHS_ROOT)/Bender.yml | $(CHS_ROOT)/t
 
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
+CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_convolve_soc.tcl
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 
 #############
@@ -165,7 +175,7 @@ include $(CHS_ROOT)/target/xilinx/xilinx.mk
 # Phonies (KEEP AT END OF FILE) #
 #################################
 
-.PHONY: chs-all chs-nonfree-init chs-clean-deps chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-xilinx-all
+.PHONY: chs-all chs-nonfree-init chs-clean-deps chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-xilinx-all chs-clean-sw
 
 CHS_ALL += $(CHS_SW_ALL) $(CHS_HW_ALL) $(CHS_SIM_ALL)
 

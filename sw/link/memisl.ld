@@ -9,13 +9,11 @@
 INCLUDE common.ldh
 
 SECTIONS {
-  __stack_pointer$  = ORIGIN(memisl) + LENGTH(memisl) - 8;
-
   .text : {
     *(.text._start)
     *(.text)
     *(.text.*)
-  } > bootrom
+  } > memisl
 
   .misc : ALIGN(16) {
     *(.rodata)
@@ -26,7 +24,7 @@ SECTIONS {
     *(.srodata.*)
     *(.sdata)
     *(.sdata.*)
-  } > bootrom
+  } > memisl
 
   . = ALIGN(32);
   __bss_start = .;
@@ -35,12 +33,12 @@ SECTIONS {
     *(.bss.*)
     *(.sbss)
     *(.sbss.*)
-  } > bootrom
+  } > memisl
   . = ALIGN(32);
   __bss_end = .;
 
   .bulk : ALIGN(16) {
     *(.bulk)
     *(.bulk.*)
-  } > bootrom
+  } > memisl
 }

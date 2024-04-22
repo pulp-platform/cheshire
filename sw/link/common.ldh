@@ -16,6 +16,7 @@ MEMORY {
   /* If more SPM is available, CRT0 repoints the stack. */
   extrom (rx)   : ORIGIN = 0x00000000, LENGTH = 48K
   spm (rwx)     : ORIGIN = 0x10000000, LENGTH = 64K
+  memisl (rwx)  : ORIGIN = 0x18000000, LENGTH = 64K
   /* We  assume at least 8 MiB of DRAM (minimum for Linux). */
   dram (rwx)    : ORIGIN = 0x80000000, LENGTH = 8M
 }
@@ -47,6 +48,7 @@ SECTIONS {
   __base_bus_err  = 0x03009000;
   __base_plic     = 0x04000000;
   __base_clic     = 0x08000000;
+  __base_memisl   = ORIGIN(memisl);
   __base_spm      = ORIGIN(spm);
   __base_dram     = ORIGIN(dram);
 }

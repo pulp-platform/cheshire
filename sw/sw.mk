@@ -7,14 +7,60 @@
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 # Override this as needed
-CHS_SW_GCC_BINROOT ?= $(dir $(shell which riscv64-unknown-elf-gcc))
-CHS_SW_DTC     ?= dtc
 
-CHS_SW_AR      := $(CHS_SW_GCC_BINROOT)/riscv64-unknown-elf-ar
-CHS_SW_CC      := $(CHS_SW_GCC_BINROOT)/riscv64-unknown-elf-gcc
-CHS_SW_OBJCOPY := $(CHS_SW_GCC_BINROOT)/riscv64-unknown-elf-objcopy
-CHS_SW_OBJDUMP := $(CHS_SW_GCC_BINROOT)/riscv64-unknown-elf-objdump
-CHS_SW_LTOPLUG := $(shell find $(shell dirname $(CHS_SW_GCC_BINROOT))/libexec/gcc/riscv64-unknown-elf/**/liblto_plugin.so)
+CHS_XLEN ?= 64
+
+ifeq (${CHS_XLEN}, 64)
+
+CHS_SW_64_GCC_BINROOT ?= $(dir $(shell which riscv64-unknown-elf-gcc))
+CHS_SW_64_DTC     ?= dtc
+
+CHS_SW_64_AR      := $(CHS_SW_64_GCC_BINROOT)/riscv64-unknown-elf-ar
+CHS_SW_64_CC      := $(CHS_SW_64_GCC_BINROOT)/riscv64-unknown-elf-gcc
+CHS_SW_64_OBJCOPY := $(CHS_SW_64_GCC_BINROOT)/riscv64-unknown-elf-objcopy
+CHS_SW_64_OBJDUMP := $(CHS_SW_64_GCC_BINROOT)/riscv64-unknown-elf-objdump
+CHS_SW_64_LTOPLUG := $(shell find $(shell dirname $(CHS_SW_64_GCC_BINROOT))/libexec/gcc/riscv64-unknown-elf/**/liblto_plugin.so)
+
+CHS_SW_64_FLAGS   ?= -DOT_PLATFORM_RV32 -march=rv64gc -mabi=lp64d
+
+endif
+ifeq (${CHS_XLEN}, 32)
+
+CHS_SW_32_GCC_BINROOT ?= $(dir $(shell which riscv32-unknown-elf-gcc))
+CHS_SW_32_DTC     ?= dtc
+
+CHS_SW_32_AR      := $(CHS_SW_32_GCC_BINROOT)/riscv32-unknown-elf-ar
+CHS_SW_32_CC      := $(CHS_SW_32_GCC_BINROOT)/riscv32-unknown-elf-gcc
+CHS_SW_32_OBJCOPY := $(CHS_SW_32_GCC_BINROOT)/riscv32-unknown-elf-objcopy
+CHS_SW_32_OBJDUMP := $(CHS_SW_32_GCC_BINROOT)/riscv32-unknown-elf-objdump
+CHS_SW_32_LTOPLUG := $(shell find $(shell dirname $(CHS_SW_32_GCC_BINROOT))/libexec/gcc/riscv32-unknown-elf/**/liblto_plugin.so)
+
+CHS_SW_32_FLAGS ?= -DOT_PLATFORM_RV32 -march=rv32imc -mabi=ilp32
+
+endif
+
+ifeq (${CHS_XLEN}, 64)
+
+CHS_SW_AR      := ${CHS_SW_64_AR}
+CHS_SW_CC      := ${CHS_SW_64_CC}
+CHS_SW_OBJCOPY := ${CHS_SW_64_OBJCOPY}
+CHS_SW_OBJDUMP := ${CHS_SW_64_OBJDUMP}
+CHS_SW_LTOPLUG := ${CHS_SW_64_LTOPLUG}
+
+CHS_SW_FLAGS := ${CHS_SW_64_FLAGS}
+
+endif
+
+ifeq (${CHS_XLEN}, 32)
+
+CHS_SW_AR      := ${CHS_SW_32_AR}
+CHS_SW_CC      := ${CHS_SW_32_CC}
+CHS_SW_OBJCOPY := ${CHS_SW_32_OBJCOPY}
+CHS_SW_OBJDUMP := ${CHS_SW_32_OBJDUMP}
+CHS_SW_LTOPLUG := ${CHS_SW_32_LTOPLUG}
+
+CHS_SW_FLAGS := ${CHS_SW_32_FLAGS}
+endif
 
 CHS_SW_DIR       ?= $(CHS_ROOT)/sw
 CHS_SW_LD_DIR    ?= $(CHS_SW_DIR)/link
@@ -23,7 +69,8 @@ CHS_SW_DTB_TGUID := BA442F61-2AEF-42DE-9233-E4D75D3ACB9D
 CHS_SW_FW_TGUID  := 99EC86DA-3F5B-4B0D-8F4B-C4BACFA5F859
 CHS_SW_DISK_SIZE ?= 16M
 
-CHS_SW_FLAGS   ?= -DOT_PLATFORM_RV32 -march=rv64gc_zifencei -mabi=lp64d -mstrict-align -O2 -Wall -Wextra -static -ffunction-sections -fdata-sections -frandom-seed=cheshire -fuse-linker-plugin -flto -Wl,-flto
+CHS_SW_FLAGS += -mstrict-align  -O2 -Wall -Wextra -static -ffunction-sections -fdata-sections -frandom-seed=cheshire -fuse-linker-plugin -flto -Wl,-flto
+
 CHS_SW_CCFLAGS ?= $(CHS_SW_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
 CHS_SW_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_SW_LD_DIR)
 CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
@@ -53,7 +100,15 @@ CHS_SW_DEPS_SRCS += $(wildcard $(OTPROOT)/sw/device/lib/dif/autogen/*.c)
 #############
 
 CHS_SW_INCLUDES   ?= -I$(CHS_SW_DIR)/include $(CHS_SW_DEPS_INCS)
-CHS_SW_LIB_SRCS_S  = $(wildcard $(CHS_SW_DIR)/lib/*.S $(CHS_SW_DIR)/lib/**/*.S)
+CHS_SW_LIB_SRCS_S  = $(wildcard $(CHS_SW_DIR)/lib/*.S)
+
+ifeq (${CHS_XLEN}, 64)
+CHS_SW_LIB_SRCS_S  += $(wildcard $(CHS_SW_DIR)/lib/64/*.S)
+endif
+ifeq (${CHS_XLEN}, 32)
+CHS_SW_LIB_SRCS_S  += $(wildcard $(CHS_SW_DIR)/lib/32/*.S)
+endif
+
 CHS_SW_LIB_SRCS_C  = $(wildcard $(CHS_SW_DIR)/lib/*.c $(CHS_SW_DIR)/lib/**/*.c)
 CHS_SW_LIB_SRCS_O  = $(CHS_SW_DEPS_SRCS:.c=.o) $(CHS_SW_LIB_SRCS_S:.S=.o) $(CHS_SW_LIB_SRCS_C:.c=.o)
 
@@ -79,7 +134,7 @@ endef
 $(eval $(call chs_sw_gen_hdr_rule,clint,$(CLINTROOT)/src/clint.hjson $(CLINTROOT)/.generated))
 $(eval $(call chs_sw_gen_hdr_rule,serial_link,$(CHS_ROOT)/hw/serial_link.hjson $(CHS_SLINK_DIR)/.generated))
 $(eval $(call chs_sw_gen_hdr_rule,axi_vga,$(AXI_VGA_ROOT)/data/axi_vga.hjson $(AXI_VGA_ROOT)/.generated))
-$(eval $(call chs_sw_gen_hdr_rule,idma,$(IDMA_ROOT)/src/frontends/register_64bit_2d/idma_reg64_2d_frontend.hjson))
+$(eval $(call chs_sw_gen_hdr_rule,idma,$(IDMA_ROOT)/target/rtl/idma_reg64_2d.hjson))
 $(eval $(call chs_sw_gen_hdr_rule,axi_llc,$(CHS_LLC_DIR)/data/axi_llc_regs.hjson))
 $(eval $(call chs_sw_gen_hdr_rule,cheshire,$(CHS_ROOT)/hw/regs/cheshire_regs.hjson))
 $(eval $(call chs_sw_gen_hdr_rule,axi_rt,$(AXIRTROOT)/src/regs/axi_rt.hjson $(AXIRTROOT)/.generated))
@@ -162,7 +217,18 @@ CHS_SW_TEST_SRCS_S  	= $(wildcard $(CHS_SW_DIR)/tests/*.S)
 CHS_SW_TEST_SRCS_C     	= $(wildcard $(CHS_SW_DIR)/tests/*.c)
 CHS_SW_TEST_DRAM_DUMP  	= $(CHS_SW_TEST_SRCS_S:.S=.dram.dump) $(CHS_SW_TEST_SRCS_C:.c=.dram.dump)
 CHS_SW_TEST_SPM_DUMP   	= $(CHS_SW_TEST_SRCS_S:.S=.spm.dump)  $(CHS_SW_TEST_SRCS_C:.c=.spm.dump)
+CHS_SW_TEST_MEMISL_DUMP = $(CHS_SW_TEST_SRCS_S:.S=.memisl.dump)  $(CHS_SW_TEST_SRCS_C:.c=.memisl.dump)
 CHS_SW_TEST_SPM_ROMH   	= $(CHS_SW_TEST_SRCS_S:.S=.rom.memh)  $(CHS_SW_TEST_SRCS_C:.c=.rom.memh)
 CHS_SW_TEST_SPM_GPTH   	= $(CHS_SW_TEST_SRCS_S:.S=.gpt.memh)  $(CHS_SW_TEST_SRCS_C:.c=.gpt.memh)
 
-CHS_SW_TESTS = $(CHS_SW_TEST_DRAM_DUMP) $(CHS_SW_TEST_SPM_DUMP) $(CHS_SW_TEST_SPM_ROMH) $(CHS_SW_TEST_SPM_GPTH)
+CHS_SW_TESTS = $(CHS_SW_TEST_DRAM_DUMP) $(CHS_SW_TEST_SPM_DUMP) $(CHS_SW_TEST_MEMISL_DUMP) $(CHS_SW_TEST_SPM_ROMH) $(CHS_SW_TEST_SPM_GPTH)
+
+#########
+# Clean #
+#########
+
+.PHONY: chs-clean-sw
+
+chs-clean-sw:
+	@find -name *.o | xargs -I ! rm !
+	@find -name libcheshire.a | xargs -I ! rm !
