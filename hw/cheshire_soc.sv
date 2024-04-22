@@ -1683,7 +1683,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .axi_mst_rsp_i(axi_in_rsp[AxiIn.cores[0]])
   );
 
- axi_snoop #(
+ /*axi_snoop #(
     .axi_mst_req_t(axi_cva6_req_t),
     .axi_mst_rsp_t(axi_cva6_rsp_t)
   )
@@ -1694,7 +1694,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .axi_mst_rsp_i(core_ur_rsp)
   );
 
-
+*/
 axi_snoop #(
 .axi_mst_req_t       ( axi_ext_llc_req_t ),
 .axi_mst_rsp_t       ( axi_ext_llc_rsp_t )
