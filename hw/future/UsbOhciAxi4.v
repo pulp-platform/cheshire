@@ -30,10 +30,12 @@
 // generator version and git commit are specified in the generated output):
 //
 // lib/src/main/scala/spinal/lib/com/usb/ohci/UsbOhciAxi4.scala
+// sbt> lib/runMain spinal.lib.com.usb.ohci.UsbOhciAxi4 \
+//        --port-count=4 --dma-width=32 --fifo-bytes=1088
 // ------
-
-// Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
+// Generator : SpinalHDL dev    git head : ed2ae179904c1c6421617f443c92966db416c54d
 // Component : UsbOhciAxi4
+// Git hash  : ed2ae179904c1c6421617f443c92966db416c54d
 
 `timescale 1ns/1ps
 
@@ -299,6 +301,14 @@ module UsbOhciAxi4 (
   wire                back_phy_io_management_1_power;
   wire                back_phy_io_management_2_power;
   wire                back_phy_io_management_3_power;
+  wire                back_buffer_0_dp_read_buffercc_io_dataOut;
+  wire                back_buffer_0_dm_read_buffercc_io_dataOut;
+  wire                back_buffer_1_dp_read_buffercc_io_dataOut;
+  wire                back_buffer_1_dm_read_buffercc_io_dataOut;
+  wire                back_buffer_2_dp_read_buffercc_io_dataOut;
+  wire                back_buffer_2_dm_read_buffercc_io_dataOut;
+  wire                back_buffer_3_dp_read_buffercc_io_dataOut;
+  wire                back_buffer_3_dm_read_buffercc_io_dataOut;
   wire                cc_input_overcurrent;
   wire                cc_input_tick;
   wire                cc_input_tx_ready;
@@ -403,120 +413,56 @@ module UsbOhciAxi4 (
   wire                back_buffer_0_dm_read;
   wire                back_buffer_0_dm_write;
   wire                back_buffer_0_dm_writeEnable;
-  wire                back_native_0_dp_stage_read;
-  wire                back_native_0_dp_stage_write;
-  wire                back_native_0_dp_stage_writeEnable;
-  reg                 back_native_0_dp_writeEnable_regNext;
-  reg                 back_native_0_dp_write_regNext;
-  reg                 back_native_0_dp_stage_read_regNext;
-  wire                back_native_0_dm_stage_read;
-  wire                back_native_0_dm_stage_write;
-  wire                back_native_0_dm_stage_writeEnable;
-  reg                 back_native_0_dm_writeEnable_regNext;
-  reg                 back_native_0_dm_write_regNext;
-  reg                 back_native_0_dm_stage_read_regNext;
+  reg                 back_native_0_dp_write_delay_1;
+  reg                 back_native_0_dp_write_delay_2;
+  reg                 back_native_0_dp_writeEnable_delay_1;
+  reg                 back_native_0_dp_writeEnable_delay_2;
+  reg                 back_native_0_dm_write_delay_1;
+  reg                 back_native_0_dm_write_delay_2;
+  reg                 back_native_0_dm_writeEnable_delay_1;
+  reg                 back_native_0_dm_writeEnable_delay_2;
   wire                back_buffer_1_dp_read;
   wire                back_buffer_1_dp_write;
   wire                back_buffer_1_dp_writeEnable;
   wire                back_buffer_1_dm_read;
   wire                back_buffer_1_dm_write;
   wire                back_buffer_1_dm_writeEnable;
-  wire                back_native_1_dp_stage_read;
-  wire                back_native_1_dp_stage_write;
-  wire                back_native_1_dp_stage_writeEnable;
-  reg                 back_native_1_dp_writeEnable_regNext;
-  reg                 back_native_1_dp_write_regNext;
-  reg                 back_native_1_dp_stage_read_regNext;
-  wire                back_native_1_dm_stage_read;
-  wire                back_native_1_dm_stage_write;
-  wire                back_native_1_dm_stage_writeEnable;
-  reg                 back_native_1_dm_writeEnable_regNext;
-  reg                 back_native_1_dm_write_regNext;
-  reg                 back_native_1_dm_stage_read_regNext;
+  reg                 back_native_1_dp_write_delay_1;
+  reg                 back_native_1_dp_write_delay_2;
+  reg                 back_native_1_dp_writeEnable_delay_1;
+  reg                 back_native_1_dp_writeEnable_delay_2;
+  reg                 back_native_1_dm_write_delay_1;
+  reg                 back_native_1_dm_write_delay_2;
+  reg                 back_native_1_dm_writeEnable_delay_1;
+  reg                 back_native_1_dm_writeEnable_delay_2;
   wire                back_buffer_2_dp_read;
   wire                back_buffer_2_dp_write;
   wire                back_buffer_2_dp_writeEnable;
   wire                back_buffer_2_dm_read;
   wire                back_buffer_2_dm_write;
   wire                back_buffer_2_dm_writeEnable;
-  wire                back_native_2_dp_stage_read;
-  wire                back_native_2_dp_stage_write;
-  wire                back_native_2_dp_stage_writeEnable;
-  reg                 back_native_2_dp_writeEnable_regNext;
-  reg                 back_native_2_dp_write_regNext;
-  reg                 back_native_2_dp_stage_read_regNext;
-  wire                back_native_2_dm_stage_read;
-  wire                back_native_2_dm_stage_write;
-  wire                back_native_2_dm_stage_writeEnable;
-  reg                 back_native_2_dm_writeEnable_regNext;
-  reg                 back_native_2_dm_write_regNext;
-  reg                 back_native_2_dm_stage_read_regNext;
+  reg                 back_native_2_dp_write_delay_1;
+  reg                 back_native_2_dp_write_delay_2;
+  reg                 back_native_2_dp_writeEnable_delay_1;
+  reg                 back_native_2_dp_writeEnable_delay_2;
+  reg                 back_native_2_dm_write_delay_1;
+  reg                 back_native_2_dm_write_delay_2;
+  reg                 back_native_2_dm_writeEnable_delay_1;
+  reg                 back_native_2_dm_writeEnable_delay_2;
   wire                back_buffer_3_dp_read;
   wire                back_buffer_3_dp_write;
   wire                back_buffer_3_dp_writeEnable;
   wire                back_buffer_3_dm_read;
   wire                back_buffer_3_dm_write;
   wire                back_buffer_3_dm_writeEnable;
-  wire                back_native_3_dp_stage_read;
-  wire                back_native_3_dp_stage_write;
-  wire                back_native_3_dp_stage_writeEnable;
-  reg                 back_native_3_dp_writeEnable_regNext;
-  reg                 back_native_3_dp_write_regNext;
-  reg                 back_native_3_dp_stage_read_regNext;
-  wire                back_native_3_dm_stage_read;
-  wire                back_native_3_dm_stage_write;
-  wire                back_native_3_dm_stage_writeEnable;
-  reg                 back_native_3_dm_writeEnable_regNext;
-  reg                 back_native_3_dm_write_regNext;
-  reg                 back_native_3_dm_stage_read_regNext;
-  wire                back_buffer_0_dp_stage_read;
-  wire                back_buffer_0_dp_stage_write;
-  wire                back_buffer_0_dp_stage_writeEnable;
-  reg                 back_buffer_0_dp_writeEnable_regNext;
-  reg                 back_buffer_0_dp_write_regNext;
-  reg                 back_buffer_0_dp_stage_read_regNext;
-  wire                back_buffer_0_dm_stage_read;
-  wire                back_buffer_0_dm_stage_write;
-  wire                back_buffer_0_dm_stage_writeEnable;
-  reg                 back_buffer_0_dm_writeEnable_regNext;
-  reg                 back_buffer_0_dm_write_regNext;
-  reg                 back_buffer_0_dm_stage_read_regNext;
-  wire                back_buffer_1_dp_stage_read;
-  wire                back_buffer_1_dp_stage_write;
-  wire                back_buffer_1_dp_stage_writeEnable;
-  reg                 back_buffer_1_dp_writeEnable_regNext;
-  reg                 back_buffer_1_dp_write_regNext;
-  reg                 back_buffer_1_dp_stage_read_regNext;
-  wire                back_buffer_1_dm_stage_read;
-  wire                back_buffer_1_dm_stage_write;
-  wire                back_buffer_1_dm_stage_writeEnable;
-  reg                 back_buffer_1_dm_writeEnable_regNext;
-  reg                 back_buffer_1_dm_write_regNext;
-  reg                 back_buffer_1_dm_stage_read_regNext;
-  wire                back_buffer_2_dp_stage_read;
-  wire                back_buffer_2_dp_stage_write;
-  wire                back_buffer_2_dp_stage_writeEnable;
-  reg                 back_buffer_2_dp_writeEnable_regNext;
-  reg                 back_buffer_2_dp_write_regNext;
-  reg                 back_buffer_2_dp_stage_read_regNext;
-  wire                back_buffer_2_dm_stage_read;
-  wire                back_buffer_2_dm_stage_write;
-  wire                back_buffer_2_dm_stage_writeEnable;
-  reg                 back_buffer_2_dm_writeEnable_regNext;
-  reg                 back_buffer_2_dm_write_regNext;
-  reg                 back_buffer_2_dm_stage_read_regNext;
-  wire                back_buffer_3_dp_stage_read;
-  wire                back_buffer_3_dp_stage_write;
-  wire                back_buffer_3_dp_stage_writeEnable;
-  reg                 back_buffer_3_dp_writeEnable_regNext;
-  reg                 back_buffer_3_dp_write_regNext;
-  reg                 back_buffer_3_dp_stage_read_regNext;
-  wire                back_buffer_3_dm_stage_read;
-  wire                back_buffer_3_dm_stage_write;
-  wire                back_buffer_3_dm_stage_writeEnable;
-  reg                 back_buffer_3_dm_writeEnable_regNext;
-  reg                 back_buffer_3_dm_write_regNext;
-  reg                 back_buffer_3_dm_stage_read_regNext;
+  reg                 back_native_3_dp_write_delay_1;
+  reg                 back_native_3_dp_write_delay_2;
+  reg                 back_native_3_dp_writeEnable_delay_1;
+  reg                 back_native_3_dp_writeEnable_delay_2;
+  reg                 back_native_3_dm_write_delay_1;
+  reg                 back_native_3_dm_write_delay_2;
+  reg                 back_native_3_dm_writeEnable_delay_1;
+  reg                 back_native_3_dm_writeEnable_delay_2;
 
   UsbOhciAxi4_BmbToAxi4SharedBridge front_dmaBridge (
     .io_input_cmd_valid                    (front_ohci_io_dma_cmd_valid                             ), //i
@@ -857,6 +803,54 @@ module UsbOhciAxi4 (
     .phy_clk                               (phy_clk                                       ), //i
     .phy_reset                             (phy_reset                                     )  //i
   );
+  UsbOhciAxi4_BufferCC_8 back_buffer_0_dp_read_buffercc (
+    .io_dataIn  (back_buffer_0_dp_read                    ), //i
+    .io_dataOut (back_buffer_0_dp_read_buffercc_io_dataOut), //o
+    .phy_clk    (phy_clk                                  ), //i
+    .phy_reset  (phy_reset                                )  //i
+  );
+  UsbOhciAxi4_BufferCC_8 back_buffer_0_dm_read_buffercc (
+    .io_dataIn  (back_buffer_0_dm_read                    ), //i
+    .io_dataOut (back_buffer_0_dm_read_buffercc_io_dataOut), //o
+    .phy_clk    (phy_clk                                  ), //i
+    .phy_reset  (phy_reset                                )  //i
+  );
+  UsbOhciAxi4_BufferCC_8 back_buffer_1_dp_read_buffercc (
+    .io_dataIn  (back_buffer_1_dp_read                    ), //i
+    .io_dataOut (back_buffer_1_dp_read_buffercc_io_dataOut), //o
+    .phy_clk    (phy_clk                                  ), //i
+    .phy_reset  (phy_reset                                )  //i
+  );
+  UsbOhciAxi4_BufferCC_8 back_buffer_1_dm_read_buffercc (
+    .io_dataIn  (back_buffer_1_dm_read                    ), //i
+    .io_dataOut (back_buffer_1_dm_read_buffercc_io_dataOut), //o
+    .phy_clk    (phy_clk                                  ), //i
+    .phy_reset  (phy_reset                                )  //i
+  );
+  UsbOhciAxi4_BufferCC_8 back_buffer_2_dp_read_buffercc (
+    .io_dataIn  (back_buffer_2_dp_read                    ), //i
+    .io_dataOut (back_buffer_2_dp_read_buffercc_io_dataOut), //o
+    .phy_clk    (phy_clk                                  ), //i
+    .phy_reset  (phy_reset                                )  //i
+  );
+  UsbOhciAxi4_BufferCC_8 back_buffer_2_dm_read_buffercc (
+    .io_dataIn  (back_buffer_2_dm_read                    ), //i
+    .io_dataOut (back_buffer_2_dm_read_buffercc_io_dataOut), //o
+    .phy_clk    (phy_clk                                  ), //i
+    .phy_reset  (phy_reset                                )  //i
+  );
+  UsbOhciAxi4_BufferCC_8 back_buffer_3_dp_read_buffercc (
+    .io_dataIn  (back_buffer_3_dp_read                    ), //i
+    .io_dataOut (back_buffer_3_dp_read_buffercc_io_dataOut), //o
+    .phy_clk    (phy_clk                                  ), //i
+    .phy_reset  (phy_reset                                )  //i
+  );
+  UsbOhciAxi4_BufferCC_8 back_buffer_3_dm_read_buffercc (
+    .io_dataIn  (back_buffer_3_dm_read                    ), //i
+    .io_dataOut (back_buffer_3_dm_read_buffercc_io_dataOut), //o
+    .phy_clk    (phy_clk                                  ), //i
+    .phy_reset  (phy_reset                                )  //i
+  );
   UsbOhciAxi4_CtrlCc cc (
     .input_lowSpeed                       (front_ohci_io_phy_lowSpeed                    ), //i
     .input_tx_valid                       (front_ohci_io_phy_tx_valid                    ), //i
@@ -1063,151 +1057,87 @@ module UsbOhciAxi4 (
   assign back_native_3_dm_writeEnable = back_phy_io_usb_3_tx_enable;
   assign back_native_3_dp_write = ((! back_phy_io_usb_3_tx_se0) && back_phy_io_usb_3_tx_data);
   assign back_native_3_dm_write = ((! back_phy_io_usb_3_tx_se0) && (! back_phy_io_usb_3_tx_data));
-  assign back_native_0_dp_stage_writeEnable = back_native_0_dp_writeEnable_regNext;
-  assign back_native_0_dp_stage_write = back_native_0_dp_write_regNext;
-  assign back_native_0_dp_read = back_native_0_dp_stage_read_regNext;
-  assign back_buffer_0_dp_writeEnable = back_native_0_dp_stage_writeEnable;
-  assign back_buffer_0_dp_write = back_native_0_dp_stage_write;
-  assign back_native_0_dp_stage_read = back_buffer_0_dp_read;
-  assign back_native_0_dm_stage_writeEnable = back_native_0_dm_writeEnable_regNext;
-  assign back_native_0_dm_stage_write = back_native_0_dm_write_regNext;
-  assign back_native_0_dm_read = back_native_0_dm_stage_read_regNext;
-  assign back_buffer_0_dm_writeEnable = back_native_0_dm_stage_writeEnable;
-  assign back_buffer_0_dm_write = back_native_0_dm_stage_write;
-  assign back_native_0_dm_stage_read = back_buffer_0_dm_read;
-  assign back_native_1_dp_stage_writeEnable = back_native_1_dp_writeEnable_regNext;
-  assign back_native_1_dp_stage_write = back_native_1_dp_write_regNext;
-  assign back_native_1_dp_read = back_native_1_dp_stage_read_regNext;
-  assign back_buffer_1_dp_writeEnable = back_native_1_dp_stage_writeEnable;
-  assign back_buffer_1_dp_write = back_native_1_dp_stage_write;
-  assign back_native_1_dp_stage_read = back_buffer_1_dp_read;
-  assign back_native_1_dm_stage_writeEnable = back_native_1_dm_writeEnable_regNext;
-  assign back_native_1_dm_stage_write = back_native_1_dm_write_regNext;
-  assign back_native_1_dm_read = back_native_1_dm_stage_read_regNext;
-  assign back_buffer_1_dm_writeEnable = back_native_1_dm_stage_writeEnable;
-  assign back_buffer_1_dm_write = back_native_1_dm_stage_write;
-  assign back_native_1_dm_stage_read = back_buffer_1_dm_read;
-  assign back_native_2_dp_stage_writeEnable = back_native_2_dp_writeEnable_regNext;
-  assign back_native_2_dp_stage_write = back_native_2_dp_write_regNext;
-  assign back_native_2_dp_read = back_native_2_dp_stage_read_regNext;
-  assign back_buffer_2_dp_writeEnable = back_native_2_dp_stage_writeEnable;
-  assign back_buffer_2_dp_write = back_native_2_dp_stage_write;
-  assign back_native_2_dp_stage_read = back_buffer_2_dp_read;
-  assign back_native_2_dm_stage_writeEnable = back_native_2_dm_writeEnable_regNext;
-  assign back_native_2_dm_stage_write = back_native_2_dm_write_regNext;
-  assign back_native_2_dm_read = back_native_2_dm_stage_read_regNext;
-  assign back_buffer_2_dm_writeEnable = back_native_2_dm_stage_writeEnable;
-  assign back_buffer_2_dm_write = back_native_2_dm_stage_write;
-  assign back_native_2_dm_stage_read = back_buffer_2_dm_read;
-  assign back_native_3_dp_stage_writeEnable = back_native_3_dp_writeEnable_regNext;
-  assign back_native_3_dp_stage_write = back_native_3_dp_write_regNext;
-  assign back_native_3_dp_read = back_native_3_dp_stage_read_regNext;
-  assign back_buffer_3_dp_writeEnable = back_native_3_dp_stage_writeEnable;
-  assign back_buffer_3_dp_write = back_native_3_dp_stage_write;
-  assign back_native_3_dp_stage_read = back_buffer_3_dp_read;
-  assign back_native_3_dm_stage_writeEnable = back_native_3_dm_writeEnable_regNext;
-  assign back_native_3_dm_stage_write = back_native_3_dm_write_regNext;
-  assign back_native_3_dm_read = back_native_3_dm_stage_read_regNext;
-  assign back_buffer_3_dm_writeEnable = back_native_3_dm_stage_writeEnable;
-  assign back_buffer_3_dm_write = back_native_3_dm_stage_write;
-  assign back_native_3_dm_stage_read = back_buffer_3_dm_read;
-  assign back_buffer_0_dp_stage_writeEnable = back_buffer_0_dp_writeEnable_regNext;
-  assign back_buffer_0_dp_stage_write = back_buffer_0_dp_write_regNext;
-  assign back_buffer_0_dp_read = back_buffer_0_dp_stage_read_regNext;
-  assign back_buffer_0_dp_stage_read = io_usb_0_dp_read;
-  assign back_buffer_0_dm_stage_writeEnable = back_buffer_0_dm_writeEnable_regNext;
-  assign back_buffer_0_dm_stage_write = back_buffer_0_dm_write_regNext;
-  assign back_buffer_0_dm_read = back_buffer_0_dm_stage_read_regNext;
-  assign back_buffer_0_dm_stage_read = io_usb_0_dm_read;
-  assign back_buffer_1_dp_stage_writeEnable = back_buffer_1_dp_writeEnable_regNext;
-  assign back_buffer_1_dp_stage_write = back_buffer_1_dp_write_regNext;
-  assign back_buffer_1_dp_read = back_buffer_1_dp_stage_read_regNext;
-  assign back_buffer_1_dp_stage_read = io_usb_1_dp_read;
-  assign back_buffer_1_dm_stage_writeEnable = back_buffer_1_dm_writeEnable_regNext;
-  assign back_buffer_1_dm_stage_write = back_buffer_1_dm_write_regNext;
-  assign back_buffer_1_dm_read = back_buffer_1_dm_stage_read_regNext;
-  assign back_buffer_1_dm_stage_read = io_usb_1_dm_read;
-  assign back_buffer_2_dp_stage_writeEnable = back_buffer_2_dp_writeEnable_regNext;
-  assign back_buffer_2_dp_stage_write = back_buffer_2_dp_write_regNext;
-  assign back_buffer_2_dp_read = back_buffer_2_dp_stage_read_regNext;
-  assign back_buffer_2_dp_stage_read = io_usb_2_dp_read;
-  assign back_buffer_2_dm_stage_writeEnable = back_buffer_2_dm_writeEnable_regNext;
-  assign back_buffer_2_dm_stage_write = back_buffer_2_dm_write_regNext;
-  assign back_buffer_2_dm_read = back_buffer_2_dm_stage_read_regNext;
-  assign back_buffer_2_dm_stage_read = io_usb_2_dm_read;
-  assign back_buffer_3_dp_stage_writeEnable = back_buffer_3_dp_writeEnable_regNext;
-  assign back_buffer_3_dp_stage_write = back_buffer_3_dp_write_regNext;
-  assign back_buffer_3_dp_read = back_buffer_3_dp_stage_read_regNext;
-  assign back_buffer_3_dp_stage_read = io_usb_3_dp_read;
-  assign back_buffer_3_dm_stage_writeEnable = back_buffer_3_dm_writeEnable_regNext;
-  assign back_buffer_3_dm_stage_write = back_buffer_3_dm_write_regNext;
-  assign back_buffer_3_dm_read = back_buffer_3_dm_stage_read_regNext;
-  assign back_buffer_3_dm_stage_read = io_usb_3_dm_read;
-  assign io_usb_0_dp_write = back_buffer_0_dp_stage_write;
-  assign io_usb_0_dp_writeEnable = back_buffer_0_dp_stage_writeEnable;
-  assign io_usb_0_dm_write = back_buffer_0_dm_stage_write;
-  assign io_usb_0_dm_writeEnable = back_buffer_0_dm_stage_writeEnable;
-  assign io_usb_1_dp_write = back_buffer_1_dp_stage_write;
-  assign io_usb_1_dp_writeEnable = back_buffer_1_dp_stage_writeEnable;
-  assign io_usb_1_dm_write = back_buffer_1_dm_stage_write;
-  assign io_usb_1_dm_writeEnable = back_buffer_1_dm_stage_writeEnable;
-  assign io_usb_2_dp_write = back_buffer_2_dp_stage_write;
-  assign io_usb_2_dp_writeEnable = back_buffer_2_dp_stage_writeEnable;
-  assign io_usb_2_dm_write = back_buffer_2_dm_stage_write;
-  assign io_usb_2_dm_writeEnable = back_buffer_2_dm_stage_writeEnable;
-  assign io_usb_3_dp_write = back_buffer_3_dp_stage_write;
-  assign io_usb_3_dp_writeEnable = back_buffer_3_dp_stage_writeEnable;
-  assign io_usb_3_dm_write = back_buffer_3_dm_stage_write;
-  assign io_usb_3_dm_writeEnable = back_buffer_3_dm_stage_writeEnable;
+  assign back_buffer_0_dp_write = back_native_0_dp_write_delay_2;
+  assign back_buffer_0_dp_writeEnable = back_native_0_dp_writeEnable_delay_2;
+  assign back_native_0_dp_read = back_buffer_0_dp_read_buffercc_io_dataOut;
+  assign back_buffer_0_dm_write = back_native_0_dm_write_delay_2;
+  assign back_buffer_0_dm_writeEnable = back_native_0_dm_writeEnable_delay_2;
+  assign back_native_0_dm_read = back_buffer_0_dm_read_buffercc_io_dataOut;
+  assign back_buffer_1_dp_write = back_native_1_dp_write_delay_2;
+  assign back_buffer_1_dp_writeEnable = back_native_1_dp_writeEnable_delay_2;
+  assign back_native_1_dp_read = back_buffer_1_dp_read_buffercc_io_dataOut;
+  assign back_buffer_1_dm_write = back_native_1_dm_write_delay_2;
+  assign back_buffer_1_dm_writeEnable = back_native_1_dm_writeEnable_delay_2;
+  assign back_native_1_dm_read = back_buffer_1_dm_read_buffercc_io_dataOut;
+  assign back_buffer_2_dp_write = back_native_2_dp_write_delay_2;
+  assign back_buffer_2_dp_writeEnable = back_native_2_dp_writeEnable_delay_2;
+  assign back_native_2_dp_read = back_buffer_2_dp_read_buffercc_io_dataOut;
+  assign back_buffer_2_dm_write = back_native_2_dm_write_delay_2;
+  assign back_buffer_2_dm_writeEnable = back_native_2_dm_writeEnable_delay_2;
+  assign back_native_2_dm_read = back_buffer_2_dm_read_buffercc_io_dataOut;
+  assign back_buffer_3_dp_write = back_native_3_dp_write_delay_2;
+  assign back_buffer_3_dp_writeEnable = back_native_3_dp_writeEnable_delay_2;
+  assign back_native_3_dp_read = back_buffer_3_dp_read_buffercc_io_dataOut;
+  assign back_buffer_3_dm_write = back_native_3_dm_write_delay_2;
+  assign back_buffer_3_dm_writeEnable = back_native_3_dm_writeEnable_delay_2;
+  assign back_native_3_dm_read = back_buffer_3_dm_read_buffercc_io_dataOut;
+  assign back_buffer_0_dp_read = io_usb_0_dp_read;
+  assign io_usb_0_dp_write = back_buffer_0_dp_write;
+  assign io_usb_0_dp_writeEnable = back_buffer_0_dp_writeEnable;
+  assign back_buffer_0_dm_read = io_usb_0_dm_read;
+  assign io_usb_0_dm_write = back_buffer_0_dm_write;
+  assign io_usb_0_dm_writeEnable = back_buffer_0_dm_writeEnable;
+  assign back_buffer_1_dp_read = io_usb_1_dp_read;
+  assign io_usb_1_dp_write = back_buffer_1_dp_write;
+  assign io_usb_1_dp_writeEnable = back_buffer_1_dp_writeEnable;
+  assign back_buffer_1_dm_read = io_usb_1_dm_read;
+  assign io_usb_1_dm_write = back_buffer_1_dm_write;
+  assign io_usb_1_dm_writeEnable = back_buffer_1_dm_writeEnable;
+  assign back_buffer_2_dp_read = io_usb_2_dp_read;
+  assign io_usb_2_dp_write = back_buffer_2_dp_write;
+  assign io_usb_2_dp_writeEnable = back_buffer_2_dp_writeEnable;
+  assign back_buffer_2_dm_read = io_usb_2_dm_read;
+  assign io_usb_2_dm_write = back_buffer_2_dm_write;
+  assign io_usb_2_dm_writeEnable = back_buffer_2_dm_writeEnable;
+  assign back_buffer_3_dp_read = io_usb_3_dp_read;
+  assign io_usb_3_dp_write = back_buffer_3_dp_write;
+  assign io_usb_3_dp_writeEnable = back_buffer_3_dp_writeEnable;
+  assign back_buffer_3_dm_read = io_usb_3_dm_read;
+  assign io_usb_3_dm_write = back_buffer_3_dm_write;
+  assign io_usb_3_dm_writeEnable = back_buffer_3_dm_writeEnable;
   always @(posedge phy_clk) begin
-    back_native_0_dp_writeEnable_regNext <= back_native_0_dp_writeEnable;
-    back_native_0_dp_write_regNext <= back_native_0_dp_write;
-    back_native_0_dp_stage_read_regNext <= back_native_0_dp_stage_read;
-    back_native_0_dm_writeEnable_regNext <= back_native_0_dm_writeEnable;
-    back_native_0_dm_write_regNext <= back_native_0_dm_write;
-    back_native_0_dm_stage_read_regNext <= back_native_0_dm_stage_read;
-    back_native_1_dp_writeEnable_regNext <= back_native_1_dp_writeEnable;
-    back_native_1_dp_write_regNext <= back_native_1_dp_write;
-    back_native_1_dp_stage_read_regNext <= back_native_1_dp_stage_read;
-    back_native_1_dm_writeEnable_regNext <= back_native_1_dm_writeEnable;
-    back_native_1_dm_write_regNext <= back_native_1_dm_write;
-    back_native_1_dm_stage_read_regNext <= back_native_1_dm_stage_read;
-    back_native_2_dp_writeEnable_regNext <= back_native_2_dp_writeEnable;
-    back_native_2_dp_write_regNext <= back_native_2_dp_write;
-    back_native_2_dp_stage_read_regNext <= back_native_2_dp_stage_read;
-    back_native_2_dm_writeEnable_regNext <= back_native_2_dm_writeEnable;
-    back_native_2_dm_write_regNext <= back_native_2_dm_write;
-    back_native_2_dm_stage_read_regNext <= back_native_2_dm_stage_read;
-    back_native_3_dp_writeEnable_regNext <= back_native_3_dp_writeEnable;
-    back_native_3_dp_write_regNext <= back_native_3_dp_write;
-    back_native_3_dp_stage_read_regNext <= back_native_3_dp_stage_read;
-    back_native_3_dm_writeEnable_regNext <= back_native_3_dm_writeEnable;
-    back_native_3_dm_write_regNext <= back_native_3_dm_write;
-    back_native_3_dm_stage_read_regNext <= back_native_3_dm_stage_read;
-    back_buffer_0_dp_writeEnable_regNext <= back_buffer_0_dp_writeEnable;
-    back_buffer_0_dp_write_regNext <= back_buffer_0_dp_write;
-    back_buffer_0_dp_stage_read_regNext <= back_buffer_0_dp_stage_read;
-    back_buffer_0_dm_writeEnable_regNext <= back_buffer_0_dm_writeEnable;
-    back_buffer_0_dm_write_regNext <= back_buffer_0_dm_write;
-    back_buffer_0_dm_stage_read_regNext <= back_buffer_0_dm_stage_read;
-    back_buffer_1_dp_writeEnable_regNext <= back_buffer_1_dp_writeEnable;
-    back_buffer_1_dp_write_regNext <= back_buffer_1_dp_write;
-    back_buffer_1_dp_stage_read_regNext <= back_buffer_1_dp_stage_read;
-    back_buffer_1_dm_writeEnable_regNext <= back_buffer_1_dm_writeEnable;
-    back_buffer_1_dm_write_regNext <= back_buffer_1_dm_write;
-    back_buffer_1_dm_stage_read_regNext <= back_buffer_1_dm_stage_read;
-    back_buffer_2_dp_writeEnable_regNext <= back_buffer_2_dp_writeEnable;
-    back_buffer_2_dp_write_regNext <= back_buffer_2_dp_write;
-    back_buffer_2_dp_stage_read_regNext <= back_buffer_2_dp_stage_read;
-    back_buffer_2_dm_writeEnable_regNext <= back_buffer_2_dm_writeEnable;
-    back_buffer_2_dm_write_regNext <= back_buffer_2_dm_write;
-    back_buffer_2_dm_stage_read_regNext <= back_buffer_2_dm_stage_read;
-    back_buffer_3_dp_writeEnable_regNext <= back_buffer_3_dp_writeEnable;
-    back_buffer_3_dp_write_regNext <= back_buffer_3_dp_write;
-    back_buffer_3_dp_stage_read_regNext <= back_buffer_3_dp_stage_read;
-    back_buffer_3_dm_writeEnable_regNext <= back_buffer_3_dm_writeEnable;
-    back_buffer_3_dm_write_regNext <= back_buffer_3_dm_write;
-    back_buffer_3_dm_stage_read_regNext <= back_buffer_3_dm_stage_read;
+    back_native_0_dp_write_delay_1 <= back_native_0_dp_write;
+    back_native_0_dp_write_delay_2 <= back_native_0_dp_write_delay_1;
+    back_native_0_dp_writeEnable_delay_1 <= back_native_0_dp_writeEnable;
+    back_native_0_dp_writeEnable_delay_2 <= back_native_0_dp_writeEnable_delay_1;
+    back_native_0_dm_write_delay_1 <= back_native_0_dm_write;
+    back_native_0_dm_write_delay_2 <= back_native_0_dm_write_delay_1;
+    back_native_0_dm_writeEnable_delay_1 <= back_native_0_dm_writeEnable;
+    back_native_0_dm_writeEnable_delay_2 <= back_native_0_dm_writeEnable_delay_1;
+    back_native_1_dp_write_delay_1 <= back_native_1_dp_write;
+    back_native_1_dp_write_delay_2 <= back_native_1_dp_write_delay_1;
+    back_native_1_dp_writeEnable_delay_1 <= back_native_1_dp_writeEnable;
+    back_native_1_dp_writeEnable_delay_2 <= back_native_1_dp_writeEnable_delay_1;
+    back_native_1_dm_write_delay_1 <= back_native_1_dm_write;
+    back_native_1_dm_write_delay_2 <= back_native_1_dm_write_delay_1;
+    back_native_1_dm_writeEnable_delay_1 <= back_native_1_dm_writeEnable;
+    back_native_1_dm_writeEnable_delay_2 <= back_native_1_dm_writeEnable_delay_1;
+    back_native_2_dp_write_delay_1 <= back_native_2_dp_write;
+    back_native_2_dp_write_delay_2 <= back_native_2_dp_write_delay_1;
+    back_native_2_dp_writeEnable_delay_1 <= back_native_2_dp_writeEnable;
+    back_native_2_dp_writeEnable_delay_2 <= back_native_2_dp_writeEnable_delay_1;
+    back_native_2_dm_write_delay_1 <= back_native_2_dm_write;
+    back_native_2_dm_write_delay_2 <= back_native_2_dm_write_delay_1;
+    back_native_2_dm_writeEnable_delay_1 <= back_native_2_dm_writeEnable;
+    back_native_2_dm_writeEnable_delay_2 <= back_native_2_dm_writeEnable_delay_1;
+    back_native_3_dp_write_delay_1 <= back_native_3_dp_write;
+    back_native_3_dp_write_delay_2 <= back_native_3_dp_write_delay_1;
+    back_native_3_dp_writeEnable_delay_1 <= back_native_3_dp_writeEnable;
+    back_native_3_dp_writeEnable_delay_2 <= back_native_3_dp_writeEnable_delay_1;
+    back_native_3_dm_write_delay_1 <= back_native_3_dm_write;
+    back_native_3_dm_write_delay_2 <= back_native_3_dm_write_delay_1;
+    back_native_3_dm_writeEnable_delay_1 <= back_native_3_dm_writeEnable;
+    back_native_3_dm_writeEnable_delay_2 <= back_native_3_dm_writeEnable_delay_1;
   end
 
 
@@ -1454,25 +1384,25 @@ module UsbOhciAxi4_CtrlCc (
   reg        [7:0]    cc_input_tx_ccToggle_io_output_rData_fragment;
   wire                when_Stream_l369;
 
-  UsbOhciAxi4_BufferCC input_lowSpeed_buffercc (
+  UsbOhciAxi4_BufferCC_8 input_lowSpeed_buffercc (
     .io_dataIn  (input_lowSpeed                    ), //i
     .io_dataOut (input_lowSpeed_buffercc_io_dataOut), //o
     .phy_clk    (phy_clk                           ), //i
     .phy_reset  (phy_reset                         )  //i
   );
-  UsbOhciAxi4_BufferCC input_usbReset_buffercc (
+  UsbOhciAxi4_BufferCC_8 input_usbReset_buffercc (
     .io_dataIn  (input_usbReset                    ), //i
     .io_dataOut (input_usbReset_buffercc_io_dataOut), //o
     .phy_clk    (phy_clk                           ), //i
     .phy_reset  (phy_reset                         )  //i
   );
-  UsbOhciAxi4_BufferCC input_usbResume_buffercc (
+  UsbOhciAxi4_BufferCC_8 input_usbResume_buffercc (
     .io_dataIn  (input_usbResume                    ), //i
     .io_dataOut (input_usbResume_buffercc_io_dataOut), //o
     .phy_clk    (phy_clk                            ), //i
     .phy_reset  (phy_reset                          )  //i
   );
-  UsbOhciAxi4_BufferCC_3 output_overcurrent_buffercc (
+  UsbOhciAxi4_BufferCC_11 output_overcurrent_buffercc (
     .io_dataIn  (output_overcurrent                    ), //i
     .io_dataOut (output_overcurrent_buffercc_io_dataOut), //o
     .ctrl_clk   (ctrl_clk                              ), //i
@@ -1512,7 +1442,7 @@ module UsbOhciAxi4_CtrlCc (
     .ctrl_clk                        (ctrl_clk                                               ), //i
     .phy_reset_syncronized           (pulseCCByToggle_phy_reset_syncronized_1                )  //i
   );
-  UsbOhciAxi4_BufferCC_3 output_rx_active_buffercc (
+  UsbOhciAxi4_BufferCC_11 output_rx_active_buffercc (
     .io_dataIn  (output_rx_active                    ), //i
     .io_dataOut (output_rx_active_buffercc_io_dataOut), //o
     .ctrl_clk   (ctrl_clk                            ), //i
@@ -1526,25 +1456,25 @@ module UsbOhciAxi4_CtrlCc (
     .ctrl_clk              (ctrl_clk                               ), //i
     .phy_reset_syncronized (pulseCCByToggle_phy_reset_syncronized_1)  //i
   );
-  UsbOhciAxi4_BufferCC input_ports_0_removable_buffercc (
+  UsbOhciAxi4_BufferCC_8 input_ports_0_removable_buffercc (
     .io_dataIn  (input_ports_0_removable                    ), //i
     .io_dataOut (input_ports_0_removable_buffercc_io_dataOut), //o
     .phy_clk    (phy_clk                                    ), //i
     .phy_reset  (phy_reset                                  )  //i
   );
-  UsbOhciAxi4_BufferCC input_ports_0_power_buffercc (
+  UsbOhciAxi4_BufferCC_8 input_ports_0_power_buffercc (
     .io_dataIn  (input_ports_0_power                    ), //i
     .io_dataOut (input_ports_0_power_buffercc_io_dataOut), //o
     .phy_clk    (phy_clk                                ), //i
     .phy_reset  (phy_reset                              )  //i
   );
-  UsbOhciAxi4_BufferCC_3 output_ports_0_lowSpeed_buffercc (
+  UsbOhciAxi4_BufferCC_11 output_ports_0_lowSpeed_buffercc (
     .io_dataIn  (output_ports_0_lowSpeed                    ), //i
     .io_dataOut (output_ports_0_lowSpeed_buffercc_io_dataOut), //o
     .ctrl_clk   (ctrl_clk                                   ), //i
     .ctrl_reset (ctrl_reset                                 )  //i
   );
-  UsbOhciAxi4_BufferCC_3 output_ports_0_overcurrent_buffercc (
+  UsbOhciAxi4_BufferCC_11 output_ports_0_overcurrent_buffercc (
     .io_dataIn  (output_ports_0_overcurrent                    ), //i
     .io_dataOut (output_ports_0_overcurrent_buffercc_io_dataOut), //o
     .ctrl_clk   (ctrl_clk                                      ), //i
@@ -1614,25 +1544,25 @@ module UsbOhciAxi4_CtrlCc (
     .phy_clk                (phy_clk                                       ), //i
     .ctrl_reset_syncronized (input_tx_ccToggle_ctrl_reset_syncronized_1    )  //i
   );
-  UsbOhciAxi4_BufferCC input_ports_1_removable_buffercc (
+  UsbOhciAxi4_BufferCC_8 input_ports_1_removable_buffercc (
     .io_dataIn  (input_ports_1_removable                    ), //i
     .io_dataOut (input_ports_1_removable_buffercc_io_dataOut), //o
     .phy_clk    (phy_clk                                    ), //i
     .phy_reset  (phy_reset                                  )  //i
   );
-  UsbOhciAxi4_BufferCC input_ports_1_power_buffercc (
+  UsbOhciAxi4_BufferCC_8 input_ports_1_power_buffercc (
     .io_dataIn  (input_ports_1_power                    ), //i
     .io_dataOut (input_ports_1_power_buffercc_io_dataOut), //o
     .phy_clk    (phy_clk                                ), //i
     .phy_reset  (phy_reset                              )  //i
   );
-  UsbOhciAxi4_BufferCC_3 output_ports_1_lowSpeed_buffercc (
+  UsbOhciAxi4_BufferCC_11 output_ports_1_lowSpeed_buffercc (
     .io_dataIn  (output_ports_1_lowSpeed                    ), //i
     .io_dataOut (output_ports_1_lowSpeed_buffercc_io_dataOut), //o
     .ctrl_clk   (ctrl_clk                                   ), //i
     .ctrl_reset (ctrl_reset                                 )  //i
   );
-  UsbOhciAxi4_BufferCC_3 output_ports_1_overcurrent_buffercc (
+  UsbOhciAxi4_BufferCC_11 output_ports_1_overcurrent_buffercc (
     .io_dataIn  (output_ports_1_overcurrent                    ), //i
     .io_dataOut (output_ports_1_overcurrent_buffercc_io_dataOut), //o
     .ctrl_clk   (ctrl_clk                                      ), //i
@@ -1702,25 +1632,25 @@ module UsbOhciAxi4_CtrlCc (
     .phy_clk                (phy_clk                                       ), //i
     .ctrl_reset_syncronized (input_tx_ccToggle_ctrl_reset_syncronized_1    )  //i
   );
-  UsbOhciAxi4_BufferCC input_ports_2_removable_buffercc (
+  UsbOhciAxi4_BufferCC_8 input_ports_2_removable_buffercc (
     .io_dataIn  (input_ports_2_removable                    ), //i
     .io_dataOut (input_ports_2_removable_buffercc_io_dataOut), //o
     .phy_clk    (phy_clk                                    ), //i
     .phy_reset  (phy_reset                                  )  //i
   );
-  UsbOhciAxi4_BufferCC input_ports_2_power_buffercc (
+  UsbOhciAxi4_BufferCC_8 input_ports_2_power_buffercc (
     .io_dataIn  (input_ports_2_power                    ), //i
     .io_dataOut (input_ports_2_power_buffercc_io_dataOut), //o
     .phy_clk    (phy_clk                                ), //i
     .phy_reset  (phy_reset                              )  //i
   );
-  UsbOhciAxi4_BufferCC_3 output_ports_2_lowSpeed_buffercc (
+  UsbOhciAxi4_BufferCC_11 output_ports_2_lowSpeed_buffercc (
     .io_dataIn  (output_ports_2_lowSpeed                    ), //i
     .io_dataOut (output_ports_2_lowSpeed_buffercc_io_dataOut), //o
     .ctrl_clk   (ctrl_clk                                   ), //i
     .ctrl_reset (ctrl_reset                                 )  //i
   );
-  UsbOhciAxi4_BufferCC_3 output_ports_2_overcurrent_buffercc (
+  UsbOhciAxi4_BufferCC_11 output_ports_2_overcurrent_buffercc (
     .io_dataIn  (output_ports_2_overcurrent                    ), //i
     .io_dataOut (output_ports_2_overcurrent_buffercc_io_dataOut), //o
     .ctrl_clk   (ctrl_clk                                      ), //i
@@ -1790,25 +1720,25 @@ module UsbOhciAxi4_CtrlCc (
     .phy_clk                (phy_clk                                       ), //i
     .ctrl_reset_syncronized (input_tx_ccToggle_ctrl_reset_syncronized_1    )  //i
   );
-  UsbOhciAxi4_BufferCC input_ports_3_removable_buffercc (
+  UsbOhciAxi4_BufferCC_8 input_ports_3_removable_buffercc (
     .io_dataIn  (input_ports_3_removable                    ), //i
     .io_dataOut (input_ports_3_removable_buffercc_io_dataOut), //o
     .phy_clk    (phy_clk                                    ), //i
     .phy_reset  (phy_reset                                  )  //i
   );
-  UsbOhciAxi4_BufferCC input_ports_3_power_buffercc (
+  UsbOhciAxi4_BufferCC_8 input_ports_3_power_buffercc (
     .io_dataIn  (input_ports_3_power                    ), //i
     .io_dataOut (input_ports_3_power_buffercc_io_dataOut), //o
     .phy_clk    (phy_clk                                ), //i
     .phy_reset  (phy_reset                              )  //i
   );
-  UsbOhciAxi4_BufferCC_3 output_ports_3_lowSpeed_buffercc (
+  UsbOhciAxi4_BufferCC_11 output_ports_3_lowSpeed_buffercc (
     .io_dataIn  (output_ports_3_lowSpeed                    ), //i
     .io_dataOut (output_ports_3_lowSpeed_buffercc_io_dataOut), //o
     .ctrl_clk   (ctrl_clk                                   ), //i
     .ctrl_reset (ctrl_reset                                 )  //i
   );
-  UsbOhciAxi4_BufferCC_3 output_ports_3_overcurrent_buffercc (
+  UsbOhciAxi4_BufferCC_11 output_ports_3_overcurrent_buffercc (
     .io_dataIn  (output_ports_3_overcurrent                    ), //i
     .io_dataOut (output_ports_3_overcurrent_buffercc_io_dataOut), //o
     .ctrl_clk   (ctrl_clk                                      ), //i
@@ -1983,6 +1913,22 @@ module UsbOhciAxi4_CtrlCc (
 
 
 endmodule
+
+//UsbOhciAxi4_BufferCC_7 replaced by UsbOhciAxi4_BufferCC_8
+
+//UsbOhciAxi4_BufferCC_6 replaced by UsbOhciAxi4_BufferCC_8
+
+//UsbOhciAxi4_BufferCC_5 replaced by UsbOhciAxi4_BufferCC_8
+
+//UsbOhciAxi4_BufferCC_4 replaced by UsbOhciAxi4_BufferCC_8
+
+//UsbOhciAxi4_BufferCC_3 replaced by UsbOhciAxi4_BufferCC_8
+
+//UsbOhciAxi4_BufferCC_2 replaced by UsbOhciAxi4_BufferCC_8
+
+//UsbOhciAxi4_BufferCC_1 replaced by UsbOhciAxi4_BufferCC_8
+
+//UsbOhciAxi4_BufferCC replaced by UsbOhciAxi4_BufferCC_8
 
 module UsbOhciAxi4_UsbLsFsPhy (
   input  wire          io_ctrl_lowSpeed,
@@ -2209,7 +2155,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   wire       [6:0]    _zz_txShared_rxToTxDelay_twoCycle_1;
   wire       [1:0]    _zz_txShared_lowSpeedSof_state;
   wire       [0:0]    _zz_txShared_lowSpeedSof_state_1;
-  wire       [6:0]    _zz_when_UsbHubPhy_l501;
+  wire       [6:0]    _zz_when_UsbHubPhy_l506;
   wire       [11:0]   _zz_ports_0_rx_packet_errorTimeout_trigger;
   wire       [9:0]    _zz_ports_0_rx_packet_errorTimeout_trigger_1;
   wire       [6:0]    _zz_ports_0_rx_disconnect_counter;
@@ -2218,7 +2164,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   wire       [4:0]    _zz_ports_0_fsm_timer_ONE_BIT_1;
   wire       [23:0]   _zz_ports_0_fsm_timer_TWO_BIT;
   wire       [5:0]    _zz_ports_0_fsm_timer_TWO_BIT_1;
-  wire       [6:0]    _zz_when_UsbHubPhy_l501_1;
+  wire       [6:0]    _zz_when_UsbHubPhy_l506_1;
   wire       [11:0]   _zz_ports_1_rx_packet_errorTimeout_trigger;
   wire       [9:0]    _zz_ports_1_rx_packet_errorTimeout_trigger_1;
   wire       [6:0]    _zz_ports_1_rx_disconnect_counter;
@@ -2227,7 +2173,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   wire       [4:0]    _zz_ports_1_fsm_timer_ONE_BIT_1;
   wire       [23:0]   _zz_ports_1_fsm_timer_TWO_BIT;
   wire       [5:0]    _zz_ports_1_fsm_timer_TWO_BIT_1;
-  wire       [6:0]    _zz_when_UsbHubPhy_l501_2;
+  wire       [6:0]    _zz_when_UsbHubPhy_l506_2;
   wire       [11:0]   _zz_ports_2_rx_packet_errorTimeout_trigger;
   wire       [9:0]    _zz_ports_2_rx_packet_errorTimeout_trigger_1;
   wire       [6:0]    _zz_ports_2_rx_disconnect_counter;
@@ -2236,7 +2182,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   wire       [4:0]    _zz_ports_2_fsm_timer_ONE_BIT_1;
   wire       [23:0]   _zz_ports_2_fsm_timer_TWO_BIT;
   wire       [5:0]    _zz_ports_2_fsm_timer_TWO_BIT_1;
-  wire       [6:0]    _zz_when_UsbHubPhy_l501_3;
+  wire       [6:0]    _zz_when_UsbHubPhy_l506_3;
   wire       [11:0]   _zz_ports_3_rx_packet_errorTimeout_trigger;
   wire       [9:0]    _zz_ports_3_rx_packet_errorTimeout_trigger_1;
   wire       [6:0]    _zz_ports_3_rx_disconnect_counter;
@@ -2275,27 +2221,27 @@ module UsbOhciAxi4_UsbLsFsPhy (
   reg                 txShared_encoder_output_data;
   reg        [2:0]    txShared_encoder_counter;
   reg                 txShared_encoder_state;
-  wire                when_UsbHubPhy_l189;
   wire                when_UsbHubPhy_l194;
-  wire                when_UsbHubPhy_l208;
+  wire                when_UsbHubPhy_l199;
+  wire                when_UsbHubPhy_l213;
   reg                 txShared_serialiser_input_valid;
   reg                 txShared_serialiser_input_ready;
   reg        [7:0]    txShared_serialiser_input_data;
   reg                 txShared_serialiser_input_lowSpeed;
   reg        [2:0]    txShared_serialiser_bitCounter;
-  wire                when_UsbHubPhy_l234;
-  wire                when_UsbHubPhy_l240;
+  wire                when_UsbHubPhy_l239;
+  wire                when_UsbHubPhy_l245;
   reg        [4:0]    txShared_lowSpeedSof_timer;
   reg        [1:0]    txShared_lowSpeedSof_state;
   reg                 txShared_lowSpeedSof_increment;
   reg                 txShared_lowSpeedSof_overrideEncoder;
   reg                 txShared_encoder_output_valid_regNext;
-  wire                when_UsbHubPhy_l249;
-  wire                when_UsbHubPhy_l251;
+  wire                when_UsbHubPhy_l254;
+  wire                when_UsbHubPhy_l256;
   wire                io_ctrl_tx_fire;
   reg                 io_ctrl_tx_payload_first;
-  wire                when_UsbHubPhy_l252;
-  wire                when_UsbHubPhy_l259;
+  wire                when_UsbHubPhy_l257;
+  wire                when_UsbHubPhy_l264;
   wire                txShared_lowSpeedSof_valid;
   wire                txShared_lowSpeedSof_data;
   wire                txShared_lowSpeedSof_se0;
@@ -2323,12 +2269,12 @@ module UsbOhciAxi4_UsbLsFsPhy (
   reg                 ports_0_rx_decoder_state;
   reg                 ports_0_rx_decoder_output_valid;
   reg                 ports_0_rx_decoder_output_payload;
-  wire                when_UsbHubPhy_l445;
+  wire                when_UsbHubPhy_l450;
   reg        [2:0]    ports_0_rx_destuffer_counter;
   wire                ports_0_rx_destuffer_unstuffNext;
   wire                ports_0_rx_destuffer_output_valid;
   wire                ports_0_rx_destuffer_output_payload;
-  wire                when_UsbHubPhy_l466;
+  wire                when_UsbHubPhy_l471;
   wire                ports_0_rx_history_updated;
   wire                _zz_ports_0_rx_history_value;
   reg                 _zz_ports_0_rx_history_value_1;
@@ -2345,9 +2291,9 @@ module UsbOhciAxi4_UsbLsFsPhy (
   reg        [6:0]    ports_0_rx_eop_counter;
   wire                ports_0_rx_eop_maxHit;
   reg                 ports_0_rx_eop_hit;
-  wire                when_UsbHubPhy_l493;
-  wire                when_UsbHubPhy_l494;
-  wire                when_UsbHubPhy_l501;
+  wire                when_UsbHubPhy_l498;
+  wire                when_UsbHubPhy_l499;
+  wire                when_UsbHubPhy_l506;
   wire                ports_0_rx_packet_wantExit;
   reg                 ports_0_rx_packet_wantStart;
   wire                ports_0_rx_packet_wantKill;
@@ -2364,7 +2310,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   wire                ports_0_rx_disconnect_hit;
   reg                 ports_0_rx_disconnect_hitLast;
   wire                ports_0_rx_disconnect_event;
-  wire                when_UsbHubPhy_l573;
+  wire                when_UsbHubPhy_l578;
   wire                ports_0_fsm_wantExit;
   reg                 ports_0_fsm_wantStart;
   wire                ports_0_fsm_wantKill;
@@ -2382,7 +2328,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   reg                 ports_0_fsm_resetInProgress;
   reg                 ports_0_fsm_lowSpeedEop;
   wire                ports_0_fsm_forceJ;
-  wire                when_UsbHubPhy_l767;
+  wire                when_UsbHubPhy_l772;
   reg                 ports_1_portLowSpeed;
   reg                 ports_1_rx_enablePackets;
   wire                ports_1_rx_j;
@@ -2392,12 +2338,12 @@ module UsbOhciAxi4_UsbLsFsPhy (
   reg                 ports_1_rx_decoder_state;
   reg                 ports_1_rx_decoder_output_valid;
   reg                 ports_1_rx_decoder_output_payload;
-  wire                when_UsbHubPhy_l445_1;
+  wire                when_UsbHubPhy_l450_1;
   reg        [2:0]    ports_1_rx_destuffer_counter;
   wire                ports_1_rx_destuffer_unstuffNext;
   wire                ports_1_rx_destuffer_output_valid;
   wire                ports_1_rx_destuffer_output_payload;
-  wire                when_UsbHubPhy_l466_1;
+  wire                when_UsbHubPhy_l471_1;
   wire                ports_1_rx_history_updated;
   wire                _zz_ports_1_rx_history_value;
   reg                 _zz_ports_1_rx_history_value_1;
@@ -2414,9 +2360,9 @@ module UsbOhciAxi4_UsbLsFsPhy (
   reg        [6:0]    ports_1_rx_eop_counter;
   wire                ports_1_rx_eop_maxHit;
   reg                 ports_1_rx_eop_hit;
-  wire                when_UsbHubPhy_l493_1;
-  wire                when_UsbHubPhy_l494_1;
-  wire                when_UsbHubPhy_l501_1;
+  wire                when_UsbHubPhy_l498_1;
+  wire                when_UsbHubPhy_l499_1;
+  wire                when_UsbHubPhy_l506_1;
   wire                ports_1_rx_packet_wantExit;
   reg                 ports_1_rx_packet_wantStart;
   wire                ports_1_rx_packet_wantKill;
@@ -2433,7 +2379,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   wire                ports_1_rx_disconnect_hit;
   reg                 ports_1_rx_disconnect_hitLast;
   wire                ports_1_rx_disconnect_event;
-  wire                when_UsbHubPhy_l573_1;
+  wire                when_UsbHubPhy_l578_1;
   wire                ports_1_fsm_wantExit;
   reg                 ports_1_fsm_wantStart;
   wire                ports_1_fsm_wantKill;
@@ -2451,7 +2397,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   reg                 ports_1_fsm_resetInProgress;
   reg                 ports_1_fsm_lowSpeedEop;
   wire                ports_1_fsm_forceJ;
-  wire                when_UsbHubPhy_l767_1;
+  wire                when_UsbHubPhy_l772_1;
   reg                 ports_2_portLowSpeed;
   reg                 ports_2_rx_enablePackets;
   wire                ports_2_rx_j;
@@ -2461,12 +2407,12 @@ module UsbOhciAxi4_UsbLsFsPhy (
   reg                 ports_2_rx_decoder_state;
   reg                 ports_2_rx_decoder_output_valid;
   reg                 ports_2_rx_decoder_output_payload;
-  wire                when_UsbHubPhy_l445_2;
+  wire                when_UsbHubPhy_l450_2;
   reg        [2:0]    ports_2_rx_destuffer_counter;
   wire                ports_2_rx_destuffer_unstuffNext;
   wire                ports_2_rx_destuffer_output_valid;
   wire                ports_2_rx_destuffer_output_payload;
-  wire                when_UsbHubPhy_l466_2;
+  wire                when_UsbHubPhy_l471_2;
   wire                ports_2_rx_history_updated;
   wire                _zz_ports_2_rx_history_value;
   reg                 _zz_ports_2_rx_history_value_1;
@@ -2483,9 +2429,9 @@ module UsbOhciAxi4_UsbLsFsPhy (
   reg        [6:0]    ports_2_rx_eop_counter;
   wire                ports_2_rx_eop_maxHit;
   reg                 ports_2_rx_eop_hit;
-  wire                when_UsbHubPhy_l493_2;
-  wire                when_UsbHubPhy_l494_2;
-  wire                when_UsbHubPhy_l501_2;
+  wire                when_UsbHubPhy_l498_2;
+  wire                when_UsbHubPhy_l499_2;
+  wire                when_UsbHubPhy_l506_2;
   wire                ports_2_rx_packet_wantExit;
   reg                 ports_2_rx_packet_wantStart;
   wire                ports_2_rx_packet_wantKill;
@@ -2502,7 +2448,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   wire                ports_2_rx_disconnect_hit;
   reg                 ports_2_rx_disconnect_hitLast;
   wire                ports_2_rx_disconnect_event;
-  wire                when_UsbHubPhy_l573_2;
+  wire                when_UsbHubPhy_l578_2;
   wire                ports_2_fsm_wantExit;
   reg                 ports_2_fsm_wantStart;
   wire                ports_2_fsm_wantKill;
@@ -2520,7 +2466,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   reg                 ports_2_fsm_resetInProgress;
   reg                 ports_2_fsm_lowSpeedEop;
   wire                ports_2_fsm_forceJ;
-  wire                when_UsbHubPhy_l767_2;
+  wire                when_UsbHubPhy_l772_2;
   reg                 ports_3_portLowSpeed;
   reg                 ports_3_rx_enablePackets;
   wire                ports_3_rx_j;
@@ -2530,12 +2476,12 @@ module UsbOhciAxi4_UsbLsFsPhy (
   reg                 ports_3_rx_decoder_state;
   reg                 ports_3_rx_decoder_output_valid;
   reg                 ports_3_rx_decoder_output_payload;
-  wire                when_UsbHubPhy_l445_3;
+  wire                when_UsbHubPhy_l450_3;
   reg        [2:0]    ports_3_rx_destuffer_counter;
   wire                ports_3_rx_destuffer_unstuffNext;
   wire                ports_3_rx_destuffer_output_valid;
   wire                ports_3_rx_destuffer_output_payload;
-  wire                when_UsbHubPhy_l466_3;
+  wire                when_UsbHubPhy_l471_3;
   wire                ports_3_rx_history_updated;
   wire                _zz_ports_3_rx_history_value;
   reg                 _zz_ports_3_rx_history_value_1;
@@ -2552,9 +2498,9 @@ module UsbOhciAxi4_UsbLsFsPhy (
   reg        [6:0]    ports_3_rx_eop_counter;
   wire                ports_3_rx_eop_maxHit;
   reg                 ports_3_rx_eop_hit;
-  wire                when_UsbHubPhy_l493_3;
-  wire                when_UsbHubPhy_l494_3;
-  wire                when_UsbHubPhy_l501_3;
+  wire                when_UsbHubPhy_l498_3;
+  wire                when_UsbHubPhy_l499_3;
+  wire                when_UsbHubPhy_l506_3;
   wire                ports_3_rx_packet_wantExit;
   reg                 ports_3_rx_packet_wantStart;
   wire                ports_3_rx_packet_wantKill;
@@ -2571,7 +2517,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   wire                ports_3_rx_disconnect_hit;
   reg                 ports_3_rx_disconnect_hitLast;
   wire                ports_3_rx_disconnect_event;
-  wire                when_UsbHubPhy_l573_3;
+  wire                when_UsbHubPhy_l578_3;
   wire                ports_3_fsm_wantExit;
   reg                 ports_3_fsm_wantStart;
   wire                ports_3_fsm_wantKill;
@@ -2589,28 +2535,28 @@ module UsbOhciAxi4_UsbLsFsPhy (
   reg                 ports_3_fsm_resetInProgress;
   reg                 ports_3_fsm_lowSpeedEop;
   wire                ports_3_fsm_forceJ;
-  wire                when_UsbHubPhy_l767_3;
+  wire                when_UsbHubPhy_l772_3;
   reg        [3:0]    txShared_frame_stateReg;
   reg        [3:0]    txShared_frame_stateNext;
-  wire                when_UsbHubPhy_l289;
+  wire                when_UsbHubPhy_l294;
   reg        [1:0]    upstreamRx_stateReg;
   reg        [1:0]    upstreamRx_stateNext;
   reg        [1:0]    ports_0_rx_packet_stateReg;
   reg        [1:0]    ports_0_rx_packet_stateNext;
-  wire                when_UsbHubPhy_l527;
-  wire                when_UsbHubPhy_l549;
+  wire                when_UsbHubPhy_l532;
+  wire                when_UsbHubPhy_l554;
   wire                when_StateMachine_l253;
   wire                when_StateMachine_l253_1;
   reg        [3:0]    ports_0_fsm_stateReg;
   reg        [3:0]    ports_0_fsm_stateNext;
-  wire                when_UsbHubPhy_l638;
-  wire                when_UsbHubPhy_l675;
-  wire                when_UsbHubPhy_l688;
-  wire                when_UsbHubPhy_l697;
-  wire                when_UsbHubPhy_l705;
-  wire                when_UsbHubPhy_l707;
-  wire                when_UsbHubPhy_l748;
-  wire                when_UsbHubPhy_l758;
+  wire                when_UsbHubPhy_l643;
+  wire                when_UsbHubPhy_l680;
+  wire                when_UsbHubPhy_l693;
+  wire                when_UsbHubPhy_l702;
+  wire                when_UsbHubPhy_l710;
+  wire                when_UsbHubPhy_l712;
+  wire                when_UsbHubPhy_l753;
+  wire                when_UsbHubPhy_l763;
   wire                when_StateMachine_l253_2;
   wire                when_StateMachine_l253_3;
   wire                when_StateMachine_l253_4;
@@ -2619,25 +2565,25 @@ module UsbOhciAxi4_UsbLsFsPhy (
   wire                when_StateMachine_l253_7;
   wire                when_StateMachine_l253_8;
   wire                when_StateMachine_l253_9;
-  wire                when_UsbHubPhy_l610;
-  wire                when_UsbHubPhy_l617;
-  wire                when_UsbHubPhy_l618;
+  wire                when_UsbHubPhy_l615;
+  wire                when_UsbHubPhy_l622;
+  wire                when_UsbHubPhy_l623;
   reg        [1:0]    ports_1_rx_packet_stateReg;
   reg        [1:0]    ports_1_rx_packet_stateNext;
-  wire                when_UsbHubPhy_l527_1;
-  wire                when_UsbHubPhy_l549_1;
+  wire                when_UsbHubPhy_l532_1;
+  wire                when_UsbHubPhy_l554_1;
   wire                when_StateMachine_l253_10;
   wire                when_StateMachine_l253_11;
   reg        [3:0]    ports_1_fsm_stateReg;
   reg        [3:0]    ports_1_fsm_stateNext;
-  wire                when_UsbHubPhy_l638_1;
-  wire                when_UsbHubPhy_l675_1;
-  wire                when_UsbHubPhy_l688_1;
-  wire                when_UsbHubPhy_l697_1;
-  wire                when_UsbHubPhy_l705_1;
-  wire                when_UsbHubPhy_l707_1;
-  wire                when_UsbHubPhy_l748_1;
-  wire                when_UsbHubPhy_l758_1;
+  wire                when_UsbHubPhy_l643_1;
+  wire                when_UsbHubPhy_l680_1;
+  wire                when_UsbHubPhy_l693_1;
+  wire                when_UsbHubPhy_l702_1;
+  wire                when_UsbHubPhy_l710_1;
+  wire                when_UsbHubPhy_l712_1;
+  wire                when_UsbHubPhy_l753_1;
+  wire                when_UsbHubPhy_l763_1;
   wire                when_StateMachine_l253_12;
   wire                when_StateMachine_l253_13;
   wire                when_StateMachine_l253_14;
@@ -2646,25 +2592,25 @@ module UsbOhciAxi4_UsbLsFsPhy (
   wire                when_StateMachine_l253_17;
   wire                when_StateMachine_l253_18;
   wire                when_StateMachine_l253_19;
-  wire                when_UsbHubPhy_l610_1;
-  wire                when_UsbHubPhy_l617_1;
-  wire                when_UsbHubPhy_l618_1;
+  wire                when_UsbHubPhy_l615_1;
+  wire                when_UsbHubPhy_l622_1;
+  wire                when_UsbHubPhy_l623_1;
   reg        [1:0]    ports_2_rx_packet_stateReg;
   reg        [1:0]    ports_2_rx_packet_stateNext;
-  wire                when_UsbHubPhy_l527_2;
-  wire                when_UsbHubPhy_l549_2;
+  wire                when_UsbHubPhy_l532_2;
+  wire                when_UsbHubPhy_l554_2;
   wire                when_StateMachine_l253_20;
   wire                when_StateMachine_l253_21;
   reg        [3:0]    ports_2_fsm_stateReg;
   reg        [3:0]    ports_2_fsm_stateNext;
-  wire                when_UsbHubPhy_l638_2;
-  wire                when_UsbHubPhy_l675_2;
-  wire                when_UsbHubPhy_l688_2;
-  wire                when_UsbHubPhy_l697_2;
-  wire                when_UsbHubPhy_l705_2;
-  wire                when_UsbHubPhy_l707_2;
-  wire                when_UsbHubPhy_l748_2;
-  wire                when_UsbHubPhy_l758_2;
+  wire                when_UsbHubPhy_l643_2;
+  wire                when_UsbHubPhy_l680_2;
+  wire                when_UsbHubPhy_l693_2;
+  wire                when_UsbHubPhy_l702_2;
+  wire                when_UsbHubPhy_l710_2;
+  wire                when_UsbHubPhy_l712_2;
+  wire                when_UsbHubPhy_l753_2;
+  wire                when_UsbHubPhy_l763_2;
   wire                when_StateMachine_l253_22;
   wire                when_StateMachine_l253_23;
   wire                when_StateMachine_l253_24;
@@ -2673,25 +2619,25 @@ module UsbOhciAxi4_UsbLsFsPhy (
   wire                when_StateMachine_l253_27;
   wire                when_StateMachine_l253_28;
   wire                when_StateMachine_l253_29;
-  wire                when_UsbHubPhy_l610_2;
-  wire                when_UsbHubPhy_l617_2;
-  wire                when_UsbHubPhy_l618_2;
+  wire                when_UsbHubPhy_l615_2;
+  wire                when_UsbHubPhy_l622_2;
+  wire                when_UsbHubPhy_l623_2;
   reg        [1:0]    ports_3_rx_packet_stateReg;
   reg        [1:0]    ports_3_rx_packet_stateNext;
-  wire                when_UsbHubPhy_l527_3;
-  wire                when_UsbHubPhy_l549_3;
+  wire                when_UsbHubPhy_l532_3;
+  wire                when_UsbHubPhy_l554_3;
   wire                when_StateMachine_l253_30;
   wire                when_StateMachine_l253_31;
   reg        [3:0]    ports_3_fsm_stateReg;
   reg        [3:0]    ports_3_fsm_stateNext;
-  wire                when_UsbHubPhy_l638_3;
-  wire                when_UsbHubPhy_l675_3;
-  wire                when_UsbHubPhy_l688_3;
-  wire                when_UsbHubPhy_l697_3;
-  wire                when_UsbHubPhy_l705_3;
-  wire                when_UsbHubPhy_l707_3;
-  wire                when_UsbHubPhy_l748_3;
-  wire                when_UsbHubPhy_l758_3;
+  wire                when_UsbHubPhy_l643_3;
+  wire                when_UsbHubPhy_l680_3;
+  wire                when_UsbHubPhy_l693_3;
+  wire                when_UsbHubPhy_l702_3;
+  wire                when_UsbHubPhy_l710_3;
+  wire                when_UsbHubPhy_l712_3;
+  wire                when_UsbHubPhy_l753_3;
+  wire                when_UsbHubPhy_l763_3;
   wire                when_StateMachine_l253_32;
   wire                when_StateMachine_l253_33;
   wire                when_StateMachine_l253_34;
@@ -2700,9 +2646,9 @@ module UsbOhciAxi4_UsbLsFsPhy (
   wire                when_StateMachine_l253_37;
   wire                when_StateMachine_l253_38;
   wire                when_StateMachine_l253_39;
-  wire                when_UsbHubPhy_l610_3;
-  wire                when_UsbHubPhy_l617_3;
-  wire                when_UsbHubPhy_l618_3;
+  wire                when_UsbHubPhy_l615_3;
+  wire                when_UsbHubPhy_l622_3;
+  wire                when_UsbHubPhy_l623_3;
   `ifndef SYNTHESIS
   reg [111:0] txShared_frame_stateReg_string;
   reg [111:0] txShared_frame_stateNext_string;
@@ -2739,7 +2685,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   assign _zz_txShared_rxToTxDelay_twoCycle = {2'd0, _zz_txShared_rxToTxDelay_twoCycle_1};
   assign _zz_txShared_lowSpeedSof_state_1 = txShared_lowSpeedSof_increment;
   assign _zz_txShared_lowSpeedSof_state = {1'd0, _zz_txShared_lowSpeedSof_state_1};
-  assign _zz_when_UsbHubPhy_l501 = {1'd0, ports_0_rx_eop_minThreshold};
+  assign _zz_when_UsbHubPhy_l506 = {1'd0, ports_0_rx_eop_minThreshold};
   assign _zz_ports_0_rx_packet_errorTimeout_trigger_1 = (ports_0_rx_packet_errorTimeout_lowSpeed ? 10'h27f : 10'h04f);
   assign _zz_ports_0_rx_packet_errorTimeout_trigger = {2'd0, _zz_ports_0_rx_packet_errorTimeout_trigger_1};
   assign _zz_ports_0_rx_disconnect_counter_1 = (! ports_0_rx_disconnect_hit);
@@ -2748,7 +2694,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   assign _zz_ports_0_fsm_timer_ONE_BIT = {19'd0, _zz_ports_0_fsm_timer_ONE_BIT_1};
   assign _zz_ports_0_fsm_timer_TWO_BIT_1 = (ports_0_fsm_timer_lowSpeed ? 6'h3f : 6'h07);
   assign _zz_ports_0_fsm_timer_TWO_BIT = {18'd0, _zz_ports_0_fsm_timer_TWO_BIT_1};
-  assign _zz_when_UsbHubPhy_l501_1 = {1'd0, ports_1_rx_eop_minThreshold};
+  assign _zz_when_UsbHubPhy_l506_1 = {1'd0, ports_1_rx_eop_minThreshold};
   assign _zz_ports_1_rx_packet_errorTimeout_trigger_1 = (ports_1_rx_packet_errorTimeout_lowSpeed ? 10'h27f : 10'h04f);
   assign _zz_ports_1_rx_packet_errorTimeout_trigger = {2'd0, _zz_ports_1_rx_packet_errorTimeout_trigger_1};
   assign _zz_ports_1_rx_disconnect_counter_1 = (! ports_1_rx_disconnect_hit);
@@ -2757,7 +2703,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   assign _zz_ports_1_fsm_timer_ONE_BIT = {19'd0, _zz_ports_1_fsm_timer_ONE_BIT_1};
   assign _zz_ports_1_fsm_timer_TWO_BIT_1 = (ports_1_fsm_timer_lowSpeed ? 6'h3f : 6'h07);
   assign _zz_ports_1_fsm_timer_TWO_BIT = {18'd0, _zz_ports_1_fsm_timer_TWO_BIT_1};
-  assign _zz_when_UsbHubPhy_l501_2 = {1'd0, ports_2_rx_eop_minThreshold};
+  assign _zz_when_UsbHubPhy_l506_2 = {1'd0, ports_2_rx_eop_minThreshold};
   assign _zz_ports_2_rx_packet_errorTimeout_trigger_1 = (ports_2_rx_packet_errorTimeout_lowSpeed ? 10'h27f : 10'h04f);
   assign _zz_ports_2_rx_packet_errorTimeout_trigger = {2'd0, _zz_ports_2_rx_packet_errorTimeout_trigger_1};
   assign _zz_ports_2_rx_disconnect_counter_1 = (! ports_2_rx_disconnect_hit);
@@ -2766,7 +2712,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   assign _zz_ports_2_fsm_timer_ONE_BIT = {19'd0, _zz_ports_2_fsm_timer_ONE_BIT_1};
   assign _zz_ports_2_fsm_timer_TWO_BIT_1 = (ports_2_fsm_timer_lowSpeed ? 6'h3f : 6'h07);
   assign _zz_ports_2_fsm_timer_TWO_BIT = {18'd0, _zz_ports_2_fsm_timer_TWO_BIT_1};
-  assign _zz_when_UsbHubPhy_l501_3 = {1'd0, ports_3_rx_eop_minThreshold};
+  assign _zz_when_UsbHubPhy_l506_3 = {1'd0, ports_3_rx_eop_minThreshold};
   assign _zz_ports_3_rx_packet_errorTimeout_trigger_1 = (ports_3_rx_packet_errorTimeout_lowSpeed ? 10'h27f : 10'h04f);
   assign _zz_ports_3_rx_packet_errorTimeout_trigger = {2'd0, _zz_ports_3_rx_packet_errorTimeout_trigger_1};
   assign _zz_ports_3_rx_disconnect_counter_1 = (! ports_3_rx_disconnect_hit);
@@ -3116,7 +3062,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
     if(txShared_encoder_input_valid) begin
       if(txShared_encoder_input_data) begin
         if(txShared_timer_oneCycle) begin
-          if(when_UsbHubPhy_l189) begin
+          if(when_UsbHubPhy_l194) begin
             txShared_timer_clear = 1'b1;
           end
         end
@@ -3238,7 +3184,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       if(txShared_encoder_input_data) begin
         if(txShared_timer_oneCycle) begin
           txShared_encoder_input_ready = 1'b1;
-          if(when_UsbHubPhy_l189) begin
+          if(when_UsbHubPhy_l194) begin
             txShared_encoder_input_ready = 1'b0;
           end
         end
@@ -3401,9 +3347,9 @@ module UsbOhciAxi4_UsbLsFsPhy (
     endcase
   end
 
-  assign when_UsbHubPhy_l189 = (txShared_encoder_counter == 3'b101);
-  assign when_UsbHubPhy_l194 = (txShared_encoder_counter == 3'b110);
-  assign when_UsbHubPhy_l208 = (! txShared_encoder_input_valid);
+  assign when_UsbHubPhy_l194 = (txShared_encoder_counter == 3'b101);
+  assign when_UsbHubPhy_l199 = (txShared_encoder_counter == 3'b110);
+  assign when_UsbHubPhy_l213 = (! txShared_encoder_input_valid);
   always @(*) begin
     txShared_serialiser_input_valid = 1'b0;
     case(txShared_frame_stateReg)
@@ -3440,7 +3386,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
     txShared_serialiser_input_ready = 1'b0;
     if(txShared_serialiser_input_valid) begin
       if(txShared_encoder_input_ready) begin
-        if(when_UsbHubPhy_l234) begin
+        if(when_UsbHubPhy_l239) begin
           txShared_serialiser_input_ready = 1'b1;
         end
       end
@@ -3511,22 +3457,22 @@ module UsbOhciAxi4_UsbLsFsPhy (
     endcase
   end
 
-  assign when_UsbHubPhy_l234 = (txShared_serialiser_bitCounter == 3'b111);
-  assign when_UsbHubPhy_l240 = ((! txShared_serialiser_input_valid) || txShared_serialiser_input_ready);
+  assign when_UsbHubPhy_l239 = (txShared_serialiser_bitCounter == 3'b111);
+  assign when_UsbHubPhy_l245 = ((! txShared_serialiser_input_valid) || txShared_serialiser_input_ready);
   always @(*) begin
     txShared_lowSpeedSof_increment = 1'b0;
-    if(when_UsbHubPhy_l251) begin
-      if(when_UsbHubPhy_l252) begin
+    if(when_UsbHubPhy_l256) begin
+      if(when_UsbHubPhy_l257) begin
         txShared_lowSpeedSof_increment = 1'b1;
       end
     end
   end
 
-  assign when_UsbHubPhy_l249 = ((! txShared_encoder_output_valid) && txShared_encoder_output_valid_regNext);
-  assign when_UsbHubPhy_l251 = (txShared_lowSpeedSof_state == 2'b00);
+  assign when_UsbHubPhy_l254 = ((! txShared_encoder_output_valid) && txShared_encoder_output_valid_regNext);
+  assign when_UsbHubPhy_l256 = (txShared_lowSpeedSof_state == 2'b00);
   assign io_ctrl_tx_fire = (io_ctrl_tx_valid && io_ctrl_tx_ready);
-  assign when_UsbHubPhy_l252 = ((io_ctrl_tx_valid && io_ctrl_tx_payload_first) && (io_ctrl_tx_payload_fragment == 8'ha5));
-  assign when_UsbHubPhy_l259 = (txShared_lowSpeedSof_timer == 5'h1f);
+  assign when_UsbHubPhy_l257 = ((io_ctrl_tx_valid && io_ctrl_tx_payload_first) && (io_ctrl_tx_payload_fragment == 8'ha5));
+  assign when_UsbHubPhy_l264 = (txShared_lowSpeedSof_timer == 5'h1f);
   assign txShared_lowSpeedSof_valid = (txShared_lowSpeedSof_state != 2'b00);
   assign txShared_lowSpeedSof_data = 1'b0;
   assign txShared_lowSpeedSof_se0 = (txShared_lowSpeedSof_state != 2'b11);
@@ -3656,7 +3602,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_0_rx_packet_enumDef_PACKET : begin
         if(ports_0_rx_destuffer_output_valid) begin
-          if(when_UsbHubPhy_l527) begin
+          if(when_UsbHubPhy_l532) begin
             io_ctrl_rx_flow_valid = ports_0_rx_enablePackets;
           end
         end
@@ -3671,7 +3617,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_1_rx_packet_enumDef_PACKET : begin
         if(ports_1_rx_destuffer_output_valid) begin
-          if(when_UsbHubPhy_l527_1) begin
+          if(when_UsbHubPhy_l532_1) begin
             io_ctrl_rx_flow_valid = ports_1_rx_enablePackets;
           end
         end
@@ -3686,7 +3632,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_2_rx_packet_enumDef_PACKET : begin
         if(ports_2_rx_destuffer_output_valid) begin
-          if(when_UsbHubPhy_l527_2) begin
+          if(when_UsbHubPhy_l532_2) begin
             io_ctrl_rx_flow_valid = ports_2_rx_enablePackets;
           end
         end
@@ -3701,7 +3647,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_3_rx_packet_enumDef_PACKET : begin
         if(ports_3_rx_destuffer_output_valid) begin
-          if(when_UsbHubPhy_l527_3) begin
+          if(when_UsbHubPhy_l532_3) begin
             io_ctrl_rx_flow_valid = ports_3_rx_enablePackets;
           end
         end
@@ -3887,12 +3833,12 @@ module UsbOhciAxi4_UsbLsFsPhy (
       UsbOhciAxi4_ports_0_fsm_enumDef_SEND_EOP_1 : begin
       end
       UsbOhciAxi4_ports_0_fsm_enumDef_RESTART_S : begin
-        if(when_UsbHubPhy_l748) begin
+        if(when_UsbHubPhy_l753) begin
           resumeFromPort = 1'b1;
         end
       end
       UsbOhciAxi4_ports_0_fsm_enumDef_RESTART_E : begin
-        if(when_UsbHubPhy_l758) begin
+        if(when_UsbHubPhy_l763) begin
           resumeFromPort = 1'b1;
         end
       end
@@ -3923,12 +3869,12 @@ module UsbOhciAxi4_UsbLsFsPhy (
       UsbOhciAxi4_ports_1_fsm_enumDef_SEND_EOP_1 : begin
       end
       UsbOhciAxi4_ports_1_fsm_enumDef_RESTART_S : begin
-        if(when_UsbHubPhy_l748_1) begin
+        if(when_UsbHubPhy_l753_1) begin
           resumeFromPort = 1'b1;
         end
       end
       UsbOhciAxi4_ports_1_fsm_enumDef_RESTART_E : begin
-        if(when_UsbHubPhy_l758_1) begin
+        if(when_UsbHubPhy_l763_1) begin
           resumeFromPort = 1'b1;
         end
       end
@@ -3959,12 +3905,12 @@ module UsbOhciAxi4_UsbLsFsPhy (
       UsbOhciAxi4_ports_2_fsm_enumDef_SEND_EOP_1 : begin
       end
       UsbOhciAxi4_ports_2_fsm_enumDef_RESTART_S : begin
-        if(when_UsbHubPhy_l748_2) begin
+        if(when_UsbHubPhy_l753_2) begin
           resumeFromPort = 1'b1;
         end
       end
       UsbOhciAxi4_ports_2_fsm_enumDef_RESTART_E : begin
-        if(when_UsbHubPhy_l758_2) begin
+        if(when_UsbHubPhy_l763_2) begin
           resumeFromPort = 1'b1;
         end
       end
@@ -3995,12 +3941,12 @@ module UsbOhciAxi4_UsbLsFsPhy (
       UsbOhciAxi4_ports_3_fsm_enumDef_SEND_EOP_1 : begin
       end
       UsbOhciAxi4_ports_3_fsm_enumDef_RESTART_S : begin
-        if(when_UsbHubPhy_l748_3) begin
+        if(when_UsbHubPhy_l753_3) begin
           resumeFromPort = 1'b1;
         end
       end
       UsbOhciAxi4_ports_3_fsm_enumDef_RESTART_E : begin
-        if(when_UsbHubPhy_l758_3) begin
+        if(when_UsbHubPhy_l763_3) begin
           resumeFromPort = 1'b1;
         end
       end
@@ -4078,7 +4024,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   always @(*) begin
     ports_0_rx_decoder_output_payload = 1'bx;
     if(ports_0_filter_io_filtred_sample) begin
-      if(when_UsbHubPhy_l445) begin
+      if(when_UsbHubPhy_l450) begin
         ports_0_rx_decoder_output_payload = 1'b0;
       end else begin
         ports_0_rx_decoder_output_payload = 1'b1;
@@ -4086,11 +4032,11 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
   end
 
-  assign when_UsbHubPhy_l445 = ((ports_0_rx_decoder_state ^ ports_0_filter_io_filtred_d) ^ ports_0_portLowSpeed);
+  assign when_UsbHubPhy_l450 = ((ports_0_rx_decoder_state ^ ports_0_filter_io_filtred_d) ^ ports_0_portLowSpeed);
   assign ports_0_rx_destuffer_unstuffNext = (ports_0_rx_destuffer_counter == 3'b110);
   assign ports_0_rx_destuffer_output_valid = (ports_0_rx_decoder_output_valid && (! ports_0_rx_destuffer_unstuffNext));
   assign ports_0_rx_destuffer_output_payload = ports_0_rx_decoder_output_payload;
-  assign when_UsbHubPhy_l466 = ((! ports_0_rx_decoder_output_payload) || ports_0_rx_destuffer_unstuffNext);
+  assign when_UsbHubPhy_l471 = ((! ports_0_rx_decoder_output_payload) || ports_0_rx_destuffer_unstuffNext);
   assign ports_0_rx_history_updated = ports_0_rx_destuffer_output_valid;
   assign _zz_ports_0_rx_history_value = ports_0_rx_destuffer_output_payload;
   assign ports_0_rx_history_value = {_zz_ports_0_rx_history_value,{_zz_ports_0_rx_history_value_1,{_zz_ports_0_rx_history_value_2,{_zz_ports_0_rx_history_value_3,{_zz_ports_0_rx_history_value_4,{_zz_ports_0_rx_history_value_5,{_zz_ports_0_rx_history_value_6,_zz_ports_0_rx_history_value_7}}}}}}};
@@ -4101,15 +4047,15 @@ module UsbOhciAxi4_UsbLsFsPhy (
   always @(*) begin
     ports_0_rx_eop_hit = 1'b0;
     if(ports_0_rx_j) begin
-      if(when_UsbHubPhy_l501) begin
+      if(when_UsbHubPhy_l506) begin
         ports_0_rx_eop_hit = 1'b1;
       end
     end
   end
 
-  assign when_UsbHubPhy_l493 = ((! ports_0_filter_io_filtred_dp) && (! ports_0_filter_io_filtred_dm));
-  assign when_UsbHubPhy_l494 = (! ports_0_rx_eop_maxHit);
-  assign when_UsbHubPhy_l501 = ((_zz_when_UsbHubPhy_l501 <= ports_0_rx_eop_counter) && (! ports_0_rx_eop_maxHit));
+  assign when_UsbHubPhy_l498 = ((! ports_0_filter_io_filtred_dp) && (! ports_0_filter_io_filtred_dm));
+  assign when_UsbHubPhy_l499 = (! ports_0_rx_eop_maxHit);
+  assign when_UsbHubPhy_l506 = ((_zz_when_UsbHubPhy_l506 <= ports_0_rx_eop_counter) && (! ports_0_rx_eop_maxHit));
   assign ports_0_rx_packet_wantExit = 1'b0;
   always @(*) begin
     ports_0_rx_packet_wantStart = 1'b0;
@@ -4135,7 +4081,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       UsbOhciAxi4_ports_0_rx_packet_enumDef_PACKET : begin
       end
       UsbOhciAxi4_ports_0_rx_packet_enumDef_ERRORED : begin
-        if(when_UsbHubPhy_l549) begin
+        if(when_UsbHubPhy_l554) begin
           ports_0_rx_packet_errorTimeout_clear = 1'b1;
         end
       end
@@ -4152,17 +4098,17 @@ module UsbOhciAxi4_UsbLsFsPhy (
   assign ports_0_rx_packet_errorTimeout_trigger = (ports_0_rx_packet_errorTimeout_counter == _zz_ports_0_rx_packet_errorTimeout_trigger);
   always @(*) begin
     ports_0_rx_disconnect_clear = 1'b0;
-    if(when_UsbHubPhy_l573) begin
+    if(when_UsbHubPhy_l578) begin
       ports_0_rx_disconnect_clear = 1'b1;
     end
-    if(when_UsbHubPhy_l767) begin
+    if(when_UsbHubPhy_l772) begin
       ports_0_rx_disconnect_clear = 1'b1;
     end
   end
 
   assign ports_0_rx_disconnect_hit = (ports_0_rx_disconnect_counter == 7'h68);
   assign ports_0_rx_disconnect_event = (ports_0_rx_disconnect_hit && (! ports_0_rx_disconnect_hitLast));
-  assign when_UsbHubPhy_l573 = ((! ports_0_filter_io_filtred_se0) || io_usb_0_tx_enable);
+  assign when_UsbHubPhy_l578 = ((! ports_0_filter_io_filtred_se0) || io_usb_0_tx_enable);
   assign io_ctrl_ports_0_disconnect = ports_0_rx_disconnect_event;
   assign ports_0_fsm_wantExit = 1'b0;
   always @(*) begin
@@ -4207,7 +4153,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       UsbOhciAxi4_ports_0_fsm_enumDef_POWER_OFF : begin
       end
       UsbOhciAxi4_ports_0_fsm_enumDef_DISCONNECTED : begin
-        if(when_UsbHubPhy_l638) begin
+        if(when_UsbHubPhy_l643) begin
           ports_0_fsm_timer_clear = 1'b1;
         end
       end
@@ -4325,7 +4271,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       UsbOhciAxi4_ports_0_fsm_enumDef_RESETTING_DELAY : begin
       end
       UsbOhciAxi4_ports_0_fsm_enumDef_RESETTING_SYNC : begin
-        if(when_UsbHubPhy_l675) begin
+        if(when_UsbHubPhy_l680) begin
           io_ctrl_ports_0_reset_ready = 1'b1;
         end
       end
@@ -4406,7 +4352,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_0_fsm_enumDef_ENABLED : begin
         io_usb_0_tx_enable = txShared_encoder_output_valid;
-        if(when_UsbHubPhy_l688) begin
+        if(when_UsbHubPhy_l693) begin
           io_usb_0_tx_enable = txShared_lowSpeedSof_valid;
         end
       end
@@ -4447,7 +4393,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_0_fsm_enumDef_ENABLED : begin
         io_usb_0_tx_data = ((txShared_encoder_output_data || ports_0_fsm_forceJ) ^ ports_0_portLowSpeed);
-        if(when_UsbHubPhy_l688) begin
+        if(when_UsbHubPhy_l693) begin
           io_usb_0_tx_data = txShared_lowSpeedSof_data;
         end
       end
@@ -4489,7 +4435,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_0_fsm_enumDef_ENABLED : begin
         io_usb_0_tx_se0 = (txShared_encoder_output_se0 && (! ports_0_fsm_forceJ));
-        if(when_UsbHubPhy_l688) begin
+        if(when_UsbHubPhy_l693) begin
           io_usb_0_tx_se0 = txShared_lowSpeedSof_se0;
         end
       end
@@ -4551,7 +4497,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   end
 
   assign ports_0_fsm_forceJ = (ports_0_portLowSpeed && (! txShared_encoder_output_lowSpeed));
-  assign when_UsbHubPhy_l767 = (((! (ports_0_fsm_stateReg == UsbOhciAxi4_ports_0_fsm_enumDef_ENABLED)) && (! (ports_0_fsm_stateReg == UsbOhciAxi4_ports_0_fsm_enumDef_SUSPENDED))) && (! (ports_0_fsm_stateReg == UsbOhciAxi4_ports_0_fsm_enumDef_DISABLED)));
+  assign when_UsbHubPhy_l772 = (&{(! (ports_0_fsm_stateReg == UsbOhciAxi4_ports_0_fsm_enumDef_DISABLED)),{(! (ports_0_fsm_stateReg == UsbOhciAxi4_ports_0_fsm_enumDef_SUSPENDED)),(! (ports_0_fsm_stateReg == UsbOhciAxi4_ports_0_fsm_enumDef_ENABLED))}});
   assign io_ctrl_ports_1_lowSpeed = ports_1_portLowSpeed;
   assign io_ctrl_ports_1_remoteResume = 1'b0;
   always @(*) begin
@@ -4621,7 +4567,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   always @(*) begin
     ports_1_rx_decoder_output_payload = 1'bx;
     if(ports_1_filter_io_filtred_sample) begin
-      if(when_UsbHubPhy_l445_1) begin
+      if(when_UsbHubPhy_l450_1) begin
         ports_1_rx_decoder_output_payload = 1'b0;
       end else begin
         ports_1_rx_decoder_output_payload = 1'b1;
@@ -4629,11 +4575,11 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
   end
 
-  assign when_UsbHubPhy_l445_1 = ((ports_1_rx_decoder_state ^ ports_1_filter_io_filtred_d) ^ ports_1_portLowSpeed);
+  assign when_UsbHubPhy_l450_1 = ((ports_1_rx_decoder_state ^ ports_1_filter_io_filtred_d) ^ ports_1_portLowSpeed);
   assign ports_1_rx_destuffer_unstuffNext = (ports_1_rx_destuffer_counter == 3'b110);
   assign ports_1_rx_destuffer_output_valid = (ports_1_rx_decoder_output_valid && (! ports_1_rx_destuffer_unstuffNext));
   assign ports_1_rx_destuffer_output_payload = ports_1_rx_decoder_output_payload;
-  assign when_UsbHubPhy_l466_1 = ((! ports_1_rx_decoder_output_payload) || ports_1_rx_destuffer_unstuffNext);
+  assign when_UsbHubPhy_l471_1 = ((! ports_1_rx_decoder_output_payload) || ports_1_rx_destuffer_unstuffNext);
   assign ports_1_rx_history_updated = ports_1_rx_destuffer_output_valid;
   assign _zz_ports_1_rx_history_value = ports_1_rx_destuffer_output_payload;
   assign ports_1_rx_history_value = {_zz_ports_1_rx_history_value,{_zz_ports_1_rx_history_value_1,{_zz_ports_1_rx_history_value_2,{_zz_ports_1_rx_history_value_3,{_zz_ports_1_rx_history_value_4,{_zz_ports_1_rx_history_value_5,{_zz_ports_1_rx_history_value_6,_zz_ports_1_rx_history_value_7}}}}}}};
@@ -4644,15 +4590,15 @@ module UsbOhciAxi4_UsbLsFsPhy (
   always @(*) begin
     ports_1_rx_eop_hit = 1'b0;
     if(ports_1_rx_j) begin
-      if(when_UsbHubPhy_l501_1) begin
+      if(when_UsbHubPhy_l506_1) begin
         ports_1_rx_eop_hit = 1'b1;
       end
     end
   end
 
-  assign when_UsbHubPhy_l493_1 = ((! ports_1_filter_io_filtred_dp) && (! ports_1_filter_io_filtred_dm));
-  assign when_UsbHubPhy_l494_1 = (! ports_1_rx_eop_maxHit);
-  assign when_UsbHubPhy_l501_1 = ((_zz_when_UsbHubPhy_l501_1 <= ports_1_rx_eop_counter) && (! ports_1_rx_eop_maxHit));
+  assign when_UsbHubPhy_l498_1 = ((! ports_1_filter_io_filtred_dp) && (! ports_1_filter_io_filtred_dm));
+  assign when_UsbHubPhy_l499_1 = (! ports_1_rx_eop_maxHit);
+  assign when_UsbHubPhy_l506_1 = ((_zz_when_UsbHubPhy_l506_1 <= ports_1_rx_eop_counter) && (! ports_1_rx_eop_maxHit));
   assign ports_1_rx_packet_wantExit = 1'b0;
   always @(*) begin
     ports_1_rx_packet_wantStart = 1'b0;
@@ -4678,7 +4624,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       UsbOhciAxi4_ports_1_rx_packet_enumDef_PACKET : begin
       end
       UsbOhciAxi4_ports_1_rx_packet_enumDef_ERRORED : begin
-        if(when_UsbHubPhy_l549_1) begin
+        if(when_UsbHubPhy_l554_1) begin
           ports_1_rx_packet_errorTimeout_clear = 1'b1;
         end
       end
@@ -4695,17 +4641,17 @@ module UsbOhciAxi4_UsbLsFsPhy (
   assign ports_1_rx_packet_errorTimeout_trigger = (ports_1_rx_packet_errorTimeout_counter == _zz_ports_1_rx_packet_errorTimeout_trigger);
   always @(*) begin
     ports_1_rx_disconnect_clear = 1'b0;
-    if(when_UsbHubPhy_l573_1) begin
+    if(when_UsbHubPhy_l578_1) begin
       ports_1_rx_disconnect_clear = 1'b1;
     end
-    if(when_UsbHubPhy_l767_1) begin
+    if(when_UsbHubPhy_l772_1) begin
       ports_1_rx_disconnect_clear = 1'b1;
     end
   end
 
   assign ports_1_rx_disconnect_hit = (ports_1_rx_disconnect_counter == 7'h68);
   assign ports_1_rx_disconnect_event = (ports_1_rx_disconnect_hit && (! ports_1_rx_disconnect_hitLast));
-  assign when_UsbHubPhy_l573_1 = ((! ports_1_filter_io_filtred_se0) || io_usb_1_tx_enable);
+  assign when_UsbHubPhy_l578_1 = ((! ports_1_filter_io_filtred_se0) || io_usb_1_tx_enable);
   assign io_ctrl_ports_1_disconnect = ports_1_rx_disconnect_event;
   assign ports_1_fsm_wantExit = 1'b0;
   always @(*) begin
@@ -4750,7 +4696,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       UsbOhciAxi4_ports_1_fsm_enumDef_POWER_OFF : begin
       end
       UsbOhciAxi4_ports_1_fsm_enumDef_DISCONNECTED : begin
-        if(when_UsbHubPhy_l638_1) begin
+        if(when_UsbHubPhy_l643_1) begin
           ports_1_fsm_timer_clear = 1'b1;
         end
       end
@@ -4868,7 +4814,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       UsbOhciAxi4_ports_1_fsm_enumDef_RESETTING_DELAY : begin
       end
       UsbOhciAxi4_ports_1_fsm_enumDef_RESETTING_SYNC : begin
-        if(when_UsbHubPhy_l675_1) begin
+        if(when_UsbHubPhy_l680_1) begin
           io_ctrl_ports_1_reset_ready = 1'b1;
         end
       end
@@ -4949,7 +4895,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_1_fsm_enumDef_ENABLED : begin
         io_usb_1_tx_enable = txShared_encoder_output_valid;
-        if(when_UsbHubPhy_l688_1) begin
+        if(when_UsbHubPhy_l693_1) begin
           io_usb_1_tx_enable = txShared_lowSpeedSof_valid;
         end
       end
@@ -4990,7 +4936,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_1_fsm_enumDef_ENABLED : begin
         io_usb_1_tx_data = ((txShared_encoder_output_data || ports_1_fsm_forceJ) ^ ports_1_portLowSpeed);
-        if(when_UsbHubPhy_l688_1) begin
+        if(when_UsbHubPhy_l693_1) begin
           io_usb_1_tx_data = txShared_lowSpeedSof_data;
         end
       end
@@ -5032,7 +4978,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_1_fsm_enumDef_ENABLED : begin
         io_usb_1_tx_se0 = (txShared_encoder_output_se0 && (! ports_1_fsm_forceJ));
-        if(when_UsbHubPhy_l688_1) begin
+        if(when_UsbHubPhy_l693_1) begin
           io_usb_1_tx_se0 = txShared_lowSpeedSof_se0;
         end
       end
@@ -5094,7 +5040,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   end
 
   assign ports_1_fsm_forceJ = (ports_1_portLowSpeed && (! txShared_encoder_output_lowSpeed));
-  assign when_UsbHubPhy_l767_1 = (((! (ports_1_fsm_stateReg == UsbOhciAxi4_ports_1_fsm_enumDef_ENABLED)) && (! (ports_1_fsm_stateReg == UsbOhciAxi4_ports_1_fsm_enumDef_SUSPENDED))) && (! (ports_1_fsm_stateReg == UsbOhciAxi4_ports_1_fsm_enumDef_DISABLED)));
+  assign when_UsbHubPhy_l772_1 = (&{(! (ports_1_fsm_stateReg == UsbOhciAxi4_ports_1_fsm_enumDef_DISABLED)),{(! (ports_1_fsm_stateReg == UsbOhciAxi4_ports_1_fsm_enumDef_SUSPENDED)),(! (ports_1_fsm_stateReg == UsbOhciAxi4_ports_1_fsm_enumDef_ENABLED))}});
   assign io_ctrl_ports_2_lowSpeed = ports_2_portLowSpeed;
   assign io_ctrl_ports_2_remoteResume = 1'b0;
   always @(*) begin
@@ -5164,7 +5110,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   always @(*) begin
     ports_2_rx_decoder_output_payload = 1'bx;
     if(ports_2_filter_io_filtred_sample) begin
-      if(when_UsbHubPhy_l445_2) begin
+      if(when_UsbHubPhy_l450_2) begin
         ports_2_rx_decoder_output_payload = 1'b0;
       end else begin
         ports_2_rx_decoder_output_payload = 1'b1;
@@ -5172,11 +5118,11 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
   end
 
-  assign when_UsbHubPhy_l445_2 = ((ports_2_rx_decoder_state ^ ports_2_filter_io_filtred_d) ^ ports_2_portLowSpeed);
+  assign when_UsbHubPhy_l450_2 = ((ports_2_rx_decoder_state ^ ports_2_filter_io_filtred_d) ^ ports_2_portLowSpeed);
   assign ports_2_rx_destuffer_unstuffNext = (ports_2_rx_destuffer_counter == 3'b110);
   assign ports_2_rx_destuffer_output_valid = (ports_2_rx_decoder_output_valid && (! ports_2_rx_destuffer_unstuffNext));
   assign ports_2_rx_destuffer_output_payload = ports_2_rx_decoder_output_payload;
-  assign when_UsbHubPhy_l466_2 = ((! ports_2_rx_decoder_output_payload) || ports_2_rx_destuffer_unstuffNext);
+  assign when_UsbHubPhy_l471_2 = ((! ports_2_rx_decoder_output_payload) || ports_2_rx_destuffer_unstuffNext);
   assign ports_2_rx_history_updated = ports_2_rx_destuffer_output_valid;
   assign _zz_ports_2_rx_history_value = ports_2_rx_destuffer_output_payload;
   assign ports_2_rx_history_value = {_zz_ports_2_rx_history_value,{_zz_ports_2_rx_history_value_1,{_zz_ports_2_rx_history_value_2,{_zz_ports_2_rx_history_value_3,{_zz_ports_2_rx_history_value_4,{_zz_ports_2_rx_history_value_5,{_zz_ports_2_rx_history_value_6,_zz_ports_2_rx_history_value_7}}}}}}};
@@ -5187,15 +5133,15 @@ module UsbOhciAxi4_UsbLsFsPhy (
   always @(*) begin
     ports_2_rx_eop_hit = 1'b0;
     if(ports_2_rx_j) begin
-      if(when_UsbHubPhy_l501_2) begin
+      if(when_UsbHubPhy_l506_2) begin
         ports_2_rx_eop_hit = 1'b1;
       end
     end
   end
 
-  assign when_UsbHubPhy_l493_2 = ((! ports_2_filter_io_filtred_dp) && (! ports_2_filter_io_filtred_dm));
-  assign when_UsbHubPhy_l494_2 = (! ports_2_rx_eop_maxHit);
-  assign when_UsbHubPhy_l501_2 = ((_zz_when_UsbHubPhy_l501_2 <= ports_2_rx_eop_counter) && (! ports_2_rx_eop_maxHit));
+  assign when_UsbHubPhy_l498_2 = ((! ports_2_filter_io_filtred_dp) && (! ports_2_filter_io_filtred_dm));
+  assign when_UsbHubPhy_l499_2 = (! ports_2_rx_eop_maxHit);
+  assign when_UsbHubPhy_l506_2 = ((_zz_when_UsbHubPhy_l506_2 <= ports_2_rx_eop_counter) && (! ports_2_rx_eop_maxHit));
   assign ports_2_rx_packet_wantExit = 1'b0;
   always @(*) begin
     ports_2_rx_packet_wantStart = 1'b0;
@@ -5221,7 +5167,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       UsbOhciAxi4_ports_2_rx_packet_enumDef_PACKET : begin
       end
       UsbOhciAxi4_ports_2_rx_packet_enumDef_ERRORED : begin
-        if(when_UsbHubPhy_l549_2) begin
+        if(when_UsbHubPhy_l554_2) begin
           ports_2_rx_packet_errorTimeout_clear = 1'b1;
         end
       end
@@ -5238,17 +5184,17 @@ module UsbOhciAxi4_UsbLsFsPhy (
   assign ports_2_rx_packet_errorTimeout_trigger = (ports_2_rx_packet_errorTimeout_counter == _zz_ports_2_rx_packet_errorTimeout_trigger);
   always @(*) begin
     ports_2_rx_disconnect_clear = 1'b0;
-    if(when_UsbHubPhy_l573_2) begin
+    if(when_UsbHubPhy_l578_2) begin
       ports_2_rx_disconnect_clear = 1'b1;
     end
-    if(when_UsbHubPhy_l767_2) begin
+    if(when_UsbHubPhy_l772_2) begin
       ports_2_rx_disconnect_clear = 1'b1;
     end
   end
 
   assign ports_2_rx_disconnect_hit = (ports_2_rx_disconnect_counter == 7'h68);
   assign ports_2_rx_disconnect_event = (ports_2_rx_disconnect_hit && (! ports_2_rx_disconnect_hitLast));
-  assign when_UsbHubPhy_l573_2 = ((! ports_2_filter_io_filtred_se0) || io_usb_2_tx_enable);
+  assign when_UsbHubPhy_l578_2 = ((! ports_2_filter_io_filtred_se0) || io_usb_2_tx_enable);
   assign io_ctrl_ports_2_disconnect = ports_2_rx_disconnect_event;
   assign ports_2_fsm_wantExit = 1'b0;
   always @(*) begin
@@ -5293,7 +5239,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       UsbOhciAxi4_ports_2_fsm_enumDef_POWER_OFF : begin
       end
       UsbOhciAxi4_ports_2_fsm_enumDef_DISCONNECTED : begin
-        if(when_UsbHubPhy_l638_2) begin
+        if(when_UsbHubPhy_l643_2) begin
           ports_2_fsm_timer_clear = 1'b1;
         end
       end
@@ -5411,7 +5357,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       UsbOhciAxi4_ports_2_fsm_enumDef_RESETTING_DELAY : begin
       end
       UsbOhciAxi4_ports_2_fsm_enumDef_RESETTING_SYNC : begin
-        if(when_UsbHubPhy_l675_2) begin
+        if(when_UsbHubPhy_l680_2) begin
           io_ctrl_ports_2_reset_ready = 1'b1;
         end
       end
@@ -5492,7 +5438,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_2_fsm_enumDef_ENABLED : begin
         io_usb_2_tx_enable = txShared_encoder_output_valid;
-        if(when_UsbHubPhy_l688_2) begin
+        if(when_UsbHubPhy_l693_2) begin
           io_usb_2_tx_enable = txShared_lowSpeedSof_valid;
         end
       end
@@ -5533,7 +5479,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_2_fsm_enumDef_ENABLED : begin
         io_usb_2_tx_data = ((txShared_encoder_output_data || ports_2_fsm_forceJ) ^ ports_2_portLowSpeed);
-        if(when_UsbHubPhy_l688_2) begin
+        if(when_UsbHubPhy_l693_2) begin
           io_usb_2_tx_data = txShared_lowSpeedSof_data;
         end
       end
@@ -5575,7 +5521,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_2_fsm_enumDef_ENABLED : begin
         io_usb_2_tx_se0 = (txShared_encoder_output_se0 && (! ports_2_fsm_forceJ));
-        if(when_UsbHubPhy_l688_2) begin
+        if(when_UsbHubPhy_l693_2) begin
           io_usb_2_tx_se0 = txShared_lowSpeedSof_se0;
         end
       end
@@ -5637,7 +5583,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   end
 
   assign ports_2_fsm_forceJ = (ports_2_portLowSpeed && (! txShared_encoder_output_lowSpeed));
-  assign when_UsbHubPhy_l767_2 = (((! (ports_2_fsm_stateReg == UsbOhciAxi4_ports_2_fsm_enumDef_ENABLED)) && (! (ports_2_fsm_stateReg == UsbOhciAxi4_ports_2_fsm_enumDef_SUSPENDED))) && (! (ports_2_fsm_stateReg == UsbOhciAxi4_ports_2_fsm_enumDef_DISABLED)));
+  assign when_UsbHubPhy_l772_2 = (&{(! (ports_2_fsm_stateReg == UsbOhciAxi4_ports_2_fsm_enumDef_DISABLED)),{(! (ports_2_fsm_stateReg == UsbOhciAxi4_ports_2_fsm_enumDef_SUSPENDED)),(! (ports_2_fsm_stateReg == UsbOhciAxi4_ports_2_fsm_enumDef_ENABLED))}});
   assign io_ctrl_ports_3_lowSpeed = ports_3_portLowSpeed;
   assign io_ctrl_ports_3_remoteResume = 1'b0;
   always @(*) begin
@@ -5707,7 +5653,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
   always @(*) begin
     ports_3_rx_decoder_output_payload = 1'bx;
     if(ports_3_filter_io_filtred_sample) begin
-      if(when_UsbHubPhy_l445_3) begin
+      if(when_UsbHubPhy_l450_3) begin
         ports_3_rx_decoder_output_payload = 1'b0;
       end else begin
         ports_3_rx_decoder_output_payload = 1'b1;
@@ -5715,11 +5661,11 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
   end
 
-  assign when_UsbHubPhy_l445_3 = ((ports_3_rx_decoder_state ^ ports_3_filter_io_filtred_d) ^ ports_3_portLowSpeed);
+  assign when_UsbHubPhy_l450_3 = ((ports_3_rx_decoder_state ^ ports_3_filter_io_filtred_d) ^ ports_3_portLowSpeed);
   assign ports_3_rx_destuffer_unstuffNext = (ports_3_rx_destuffer_counter == 3'b110);
   assign ports_3_rx_destuffer_output_valid = (ports_3_rx_decoder_output_valid && (! ports_3_rx_destuffer_unstuffNext));
   assign ports_3_rx_destuffer_output_payload = ports_3_rx_decoder_output_payload;
-  assign when_UsbHubPhy_l466_3 = ((! ports_3_rx_decoder_output_payload) || ports_3_rx_destuffer_unstuffNext);
+  assign when_UsbHubPhy_l471_3 = ((! ports_3_rx_decoder_output_payload) || ports_3_rx_destuffer_unstuffNext);
   assign ports_3_rx_history_updated = ports_3_rx_destuffer_output_valid;
   assign _zz_ports_3_rx_history_value = ports_3_rx_destuffer_output_payload;
   assign ports_3_rx_history_value = {_zz_ports_3_rx_history_value,{_zz_ports_3_rx_history_value_1,{_zz_ports_3_rx_history_value_2,{_zz_ports_3_rx_history_value_3,{_zz_ports_3_rx_history_value_4,{_zz_ports_3_rx_history_value_5,{_zz_ports_3_rx_history_value_6,_zz_ports_3_rx_history_value_7}}}}}}};
@@ -5730,15 +5676,15 @@ module UsbOhciAxi4_UsbLsFsPhy (
   always @(*) begin
     ports_3_rx_eop_hit = 1'b0;
     if(ports_3_rx_j) begin
-      if(when_UsbHubPhy_l501_3) begin
+      if(when_UsbHubPhy_l506_3) begin
         ports_3_rx_eop_hit = 1'b1;
       end
     end
   end
 
-  assign when_UsbHubPhy_l493_3 = ((! ports_3_filter_io_filtred_dp) && (! ports_3_filter_io_filtred_dm));
-  assign when_UsbHubPhy_l494_3 = (! ports_3_rx_eop_maxHit);
-  assign when_UsbHubPhy_l501_3 = ((_zz_when_UsbHubPhy_l501_3 <= ports_3_rx_eop_counter) && (! ports_3_rx_eop_maxHit));
+  assign when_UsbHubPhy_l498_3 = ((! ports_3_filter_io_filtred_dp) && (! ports_3_filter_io_filtred_dm));
+  assign when_UsbHubPhy_l499_3 = (! ports_3_rx_eop_maxHit);
+  assign when_UsbHubPhy_l506_3 = ((_zz_when_UsbHubPhy_l506_3 <= ports_3_rx_eop_counter) && (! ports_3_rx_eop_maxHit));
   assign ports_3_rx_packet_wantExit = 1'b0;
   always @(*) begin
     ports_3_rx_packet_wantStart = 1'b0;
@@ -5764,7 +5710,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       UsbOhciAxi4_ports_3_rx_packet_enumDef_PACKET : begin
       end
       UsbOhciAxi4_ports_3_rx_packet_enumDef_ERRORED : begin
-        if(when_UsbHubPhy_l549_3) begin
+        if(when_UsbHubPhy_l554_3) begin
           ports_3_rx_packet_errorTimeout_clear = 1'b1;
         end
       end
@@ -5781,17 +5727,17 @@ module UsbOhciAxi4_UsbLsFsPhy (
   assign ports_3_rx_packet_errorTimeout_trigger = (ports_3_rx_packet_errorTimeout_counter == _zz_ports_3_rx_packet_errorTimeout_trigger);
   always @(*) begin
     ports_3_rx_disconnect_clear = 1'b0;
-    if(when_UsbHubPhy_l573_3) begin
+    if(when_UsbHubPhy_l578_3) begin
       ports_3_rx_disconnect_clear = 1'b1;
     end
-    if(when_UsbHubPhy_l767_3) begin
+    if(when_UsbHubPhy_l772_3) begin
       ports_3_rx_disconnect_clear = 1'b1;
     end
   end
 
   assign ports_3_rx_disconnect_hit = (ports_3_rx_disconnect_counter == 7'h68);
   assign ports_3_rx_disconnect_event = (ports_3_rx_disconnect_hit && (! ports_3_rx_disconnect_hitLast));
-  assign when_UsbHubPhy_l573_3 = ((! ports_3_filter_io_filtred_se0) || io_usb_3_tx_enable);
+  assign when_UsbHubPhy_l578_3 = ((! ports_3_filter_io_filtred_se0) || io_usb_3_tx_enable);
   assign io_ctrl_ports_3_disconnect = ports_3_rx_disconnect_event;
   assign ports_3_fsm_wantExit = 1'b0;
   always @(*) begin
@@ -5836,7 +5782,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       UsbOhciAxi4_ports_3_fsm_enumDef_POWER_OFF : begin
       end
       UsbOhciAxi4_ports_3_fsm_enumDef_DISCONNECTED : begin
-        if(when_UsbHubPhy_l638_3) begin
+        if(when_UsbHubPhy_l643_3) begin
           ports_3_fsm_timer_clear = 1'b1;
         end
       end
@@ -5954,7 +5900,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       UsbOhciAxi4_ports_3_fsm_enumDef_RESETTING_DELAY : begin
       end
       UsbOhciAxi4_ports_3_fsm_enumDef_RESETTING_SYNC : begin
-        if(when_UsbHubPhy_l675_3) begin
+        if(when_UsbHubPhy_l680_3) begin
           io_ctrl_ports_3_reset_ready = 1'b1;
         end
       end
@@ -6035,7 +5981,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_3_fsm_enumDef_ENABLED : begin
         io_usb_3_tx_enable = txShared_encoder_output_valid;
-        if(when_UsbHubPhy_l688_3) begin
+        if(when_UsbHubPhy_l693_3) begin
           io_usb_3_tx_enable = txShared_lowSpeedSof_valid;
         end
       end
@@ -6076,7 +6022,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_3_fsm_enumDef_ENABLED : begin
         io_usb_3_tx_data = ((txShared_encoder_output_data || ports_3_fsm_forceJ) ^ ports_3_portLowSpeed);
-        if(when_UsbHubPhy_l688_3) begin
+        if(when_UsbHubPhy_l693_3) begin
           io_usb_3_tx_data = txShared_lowSpeedSof_data;
         end
       end
@@ -6118,7 +6064,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_3_fsm_enumDef_ENABLED : begin
         io_usb_3_tx_se0 = (txShared_encoder_output_se0 && (! ports_3_fsm_forceJ));
-        if(when_UsbHubPhy_l688_3) begin
+        if(when_UsbHubPhy_l693_3) begin
           io_usb_3_tx_se0 = txShared_lowSpeedSof_se0;
         end
       end
@@ -6180,12 +6126,12 @@ module UsbOhciAxi4_UsbLsFsPhy (
   end
 
   assign ports_3_fsm_forceJ = (ports_3_portLowSpeed && (! txShared_encoder_output_lowSpeed));
-  assign when_UsbHubPhy_l767_3 = (((! (ports_3_fsm_stateReg == UsbOhciAxi4_ports_3_fsm_enumDef_ENABLED)) && (! (ports_3_fsm_stateReg == UsbOhciAxi4_ports_3_fsm_enumDef_SUSPENDED))) && (! (ports_3_fsm_stateReg == UsbOhciAxi4_ports_3_fsm_enumDef_DISABLED)));
+  assign when_UsbHubPhy_l772_3 = (&{(! (ports_3_fsm_stateReg == UsbOhciAxi4_ports_3_fsm_enumDef_DISABLED)),{(! (ports_3_fsm_stateReg == UsbOhciAxi4_ports_3_fsm_enumDef_SUSPENDED)),(! (ports_3_fsm_stateReg == UsbOhciAxi4_ports_3_fsm_enumDef_ENABLED))}});
   always @(*) begin
     txShared_frame_stateNext = txShared_frame_stateReg;
     case(txShared_frame_stateReg)
       UsbOhciAxi4_txShared_frame_enumDef_IDLE : begin
-        if(when_UsbHubPhy_l289) begin
+        if(when_UsbHubPhy_l294) begin
           txShared_frame_stateNext = UsbOhciAxi4_txShared_frame_enumDef_TAKE_LINE;
         end
       end
@@ -6251,7 +6197,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
   end
 
-  assign when_UsbHubPhy_l289 = (io_ctrl_tx_valid && (! txShared_rxToTxDelay_active));
+  assign when_UsbHubPhy_l294 = (io_ctrl_tx_valid && (! txShared_rxToTxDelay_active));
   always @(*) begin
     upstreamRx_stateNext = upstreamRx_stateReg;
     case(upstreamRx_stateReg)
@@ -6287,7 +6233,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_0_rx_packet_enumDef_PACKET : begin
         if(ports_0_rx_destuffer_output_valid) begin
-          if(when_UsbHubPhy_l527) begin
+          if(when_UsbHubPhy_l532) begin
             if(ports_0_rx_stuffingError) begin
               ports_0_rx_packet_stateNext = UsbOhciAxi4_ports_0_rx_packet_enumDef_ERRORED;
             end
@@ -6316,8 +6262,8 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
   end
 
-  assign when_UsbHubPhy_l527 = (ports_0_rx_packet_counter == 3'b111);
-  assign when_UsbHubPhy_l549 = ((ports_0_rx_packet_errorTimeout_p != ports_0_filter_io_filtred_dp) || (ports_0_rx_packet_errorTimeout_n != ports_0_filter_io_filtred_dm));
+  assign when_UsbHubPhy_l532 = (ports_0_rx_packet_counter == 3'b111);
+  assign when_UsbHubPhy_l554 = ((ports_0_rx_packet_errorTimeout_p != ports_0_filter_io_filtred_dp) || (ports_0_rx_packet_errorTimeout_n != ports_0_filter_io_filtred_dm));
   assign when_StateMachine_l253 = ((! (ports_0_rx_packet_stateReg == UsbOhciAxi4_ports_0_rx_packet_enumDef_IDLE)) && (ports_0_rx_packet_stateNext == UsbOhciAxi4_ports_0_rx_packet_enumDef_IDLE));
   assign when_StateMachine_l253_1 = ((! (ports_0_rx_packet_stateReg == UsbOhciAxi4_ports_0_rx_packet_enumDef_ERRORED)) && (ports_0_rx_packet_stateNext == UsbOhciAxi4_ports_0_rx_packet_enumDef_ERRORED));
   always @(*) begin
@@ -6346,7 +6292,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
       UsbOhciAxi4_ports_0_fsm_enumDef_RESETTING_SYNC : begin
-        if(when_UsbHubPhy_l675) begin
+        if(when_UsbHubPhy_l680) begin
           ports_0_fsm_stateNext = UsbOhciAxi4_ports_0_fsm_enumDef_ENABLED;
         end
       end
@@ -6354,7 +6300,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         if(io_ctrl_ports_0_suspend_valid) begin
           ports_0_fsm_stateNext = UsbOhciAxi4_ports_0_fsm_enumDef_SUSPENDED;
         end else begin
-          if(when_UsbHubPhy_l697) begin
+          if(when_UsbHubPhy_l702) begin
             ports_0_fsm_stateNext = UsbOhciAxi4_ports_0_fsm_enumDef_RESTART_E;
           end else begin
             if(io_ctrl_usbResume) begin
@@ -6364,10 +6310,10 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
       UsbOhciAxi4_ports_0_fsm_enumDef_SUSPENDED : begin
-        if(when_UsbHubPhy_l705) begin
+        if(when_UsbHubPhy_l710) begin
           ports_0_fsm_stateNext = UsbOhciAxi4_ports_0_fsm_enumDef_RESUMING;
         end else begin
-          if(when_UsbHubPhy_l707) begin
+          if(when_UsbHubPhy_l712) begin
             ports_0_fsm_stateNext = UsbOhciAxi4_ports_0_fsm_enumDef_RESTART_S;
           end
         end
@@ -6388,7 +6334,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
       UsbOhciAxi4_ports_0_fsm_enumDef_RESTART_S : begin
-        if(when_UsbHubPhy_l748) begin
+        if(when_UsbHubPhy_l753) begin
           ports_0_fsm_stateNext = UsbOhciAxi4_ports_0_fsm_enumDef_RESUMING;
         end
         if(ports_0_fsm_timer_RESTART_EOI) begin
@@ -6396,7 +6342,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
       UsbOhciAxi4_ports_0_fsm_enumDef_RESTART_E : begin
-        if(when_UsbHubPhy_l758) begin
+        if(when_UsbHubPhy_l763) begin
           ports_0_fsm_stateNext = UsbOhciAxi4_ports_0_fsm_enumDef_RESUMING;
         end
         if(ports_0_fsm_timer_RESTART_EOI) begin
@@ -6406,7 +6352,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       default : begin
       end
     endcase
-    if(when_UsbHubPhy_l610) begin
+    if(when_UsbHubPhy_l615) begin
       ports_0_fsm_stateNext = UsbOhciAxi4_ports_0_fsm_enumDef_POWER_OFF;
     end else begin
       if(ports_0_rx_disconnect_event) begin
@@ -6416,8 +6362,8 @@ module UsbOhciAxi4_UsbLsFsPhy (
           ports_0_fsm_stateNext = UsbOhciAxi4_ports_0_fsm_enumDef_DISABLED;
         end else begin
           if(io_ctrl_ports_0_reset_valid) begin
-            if(when_UsbHubPhy_l617) begin
-              if(when_UsbHubPhy_l618) begin
+            if(when_UsbHubPhy_l622) begin
+              if(when_UsbHubPhy_l623) begin
                 ports_0_fsm_stateNext = UsbOhciAxi4_ports_0_fsm_enumDef_RESETTING;
               end
             end
@@ -6433,14 +6379,14 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
   end
 
-  assign when_UsbHubPhy_l638 = ((! ports_0_filter_io_filtred_dp) && (! ports_0_filter_io_filtred_dm));
-  assign when_UsbHubPhy_l675 = (! txShared_encoder_output_valid);
-  assign when_UsbHubPhy_l688 = (ports_0_portLowSpeed && txShared_lowSpeedSof_overrideEncoder);
-  assign when_UsbHubPhy_l697 = (Rx_Suspend && (ports_0_filter_io_filtred_se0 || ((! ports_0_filter_io_filtred_se0) && ((! ports_0_filter_io_filtred_d) ^ ports_0_portLowSpeed))));
-  assign when_UsbHubPhy_l705 = (io_ctrl_ports_0_resume_valid || ((! Rx_Suspend) && ((! ports_0_filter_io_filtred_se0) && ((! ports_0_filter_io_filtred_d) ^ ports_0_portLowSpeed))));
-  assign when_UsbHubPhy_l707 = (Rx_Suspend && (ports_0_filter_io_filtred_se0 || ((! ports_0_filter_io_filtred_se0) && ((! ports_0_filter_io_filtred_d) ^ ports_0_portLowSpeed))));
-  assign when_UsbHubPhy_l748 = ((! ports_0_filter_io_filtred_se0) && ((! ports_0_filter_io_filtred_d) ^ ports_0_portLowSpeed));
-  assign when_UsbHubPhy_l758 = ((! ports_0_filter_io_filtred_se0) && ((! ports_0_filter_io_filtred_d) ^ ports_0_portLowSpeed));
+  assign when_UsbHubPhy_l643 = ((! ports_0_filter_io_filtred_dp) && (! ports_0_filter_io_filtred_dm));
+  assign when_UsbHubPhy_l680 = (! txShared_encoder_output_valid);
+  assign when_UsbHubPhy_l693 = (ports_0_portLowSpeed && txShared_lowSpeedSof_overrideEncoder);
+  assign when_UsbHubPhy_l702 = (Rx_Suspend && (ports_0_filter_io_filtred_se0 || ((! ports_0_filter_io_filtred_se0) && ((! ports_0_filter_io_filtred_d) ^ ports_0_portLowSpeed))));
+  assign when_UsbHubPhy_l710 = (io_ctrl_ports_0_resume_valid || ((! Rx_Suspend) && ((! ports_0_filter_io_filtred_se0) && ((! ports_0_filter_io_filtred_d) ^ ports_0_portLowSpeed))));
+  assign when_UsbHubPhy_l712 = (Rx_Suspend && (ports_0_filter_io_filtred_se0 || ((! ports_0_filter_io_filtred_se0) && ((! ports_0_filter_io_filtred_d) ^ ports_0_portLowSpeed))));
+  assign when_UsbHubPhy_l753 = ((! ports_0_filter_io_filtred_se0) && ((! ports_0_filter_io_filtred_d) ^ ports_0_portLowSpeed));
+  assign when_UsbHubPhy_l763 = ((! ports_0_filter_io_filtred_se0) && ((! ports_0_filter_io_filtred_d) ^ ports_0_portLowSpeed));
   assign when_StateMachine_l253_2 = ((! (ports_0_fsm_stateReg == UsbOhciAxi4_ports_0_fsm_enumDef_DISCONNECTED)) && (ports_0_fsm_stateNext == UsbOhciAxi4_ports_0_fsm_enumDef_DISCONNECTED));
   assign when_StateMachine_l253_3 = ((! (ports_0_fsm_stateReg == UsbOhciAxi4_ports_0_fsm_enumDef_RESETTING)) && (ports_0_fsm_stateNext == UsbOhciAxi4_ports_0_fsm_enumDef_RESETTING));
   assign when_StateMachine_l253_4 = ((! (ports_0_fsm_stateReg == UsbOhciAxi4_ports_0_fsm_enumDef_RESETTING_DELAY)) && (ports_0_fsm_stateNext == UsbOhciAxi4_ports_0_fsm_enumDef_RESETTING_DELAY));
@@ -6449,9 +6395,9 @@ module UsbOhciAxi4_UsbLsFsPhy (
   assign when_StateMachine_l253_7 = ((! (ports_0_fsm_stateReg == UsbOhciAxi4_ports_0_fsm_enumDef_SEND_EOP_1)) && (ports_0_fsm_stateNext == UsbOhciAxi4_ports_0_fsm_enumDef_SEND_EOP_1));
   assign when_StateMachine_l253_8 = ((! (ports_0_fsm_stateReg == UsbOhciAxi4_ports_0_fsm_enumDef_RESTART_S)) && (ports_0_fsm_stateNext == UsbOhciAxi4_ports_0_fsm_enumDef_RESTART_S));
   assign when_StateMachine_l253_9 = ((! (ports_0_fsm_stateReg == UsbOhciAxi4_ports_0_fsm_enumDef_RESTART_E)) && (ports_0_fsm_stateNext == UsbOhciAxi4_ports_0_fsm_enumDef_RESTART_E));
-  assign when_UsbHubPhy_l610 = ((! io_ctrl_ports_0_power) || io_ctrl_usbReset);
-  assign when_UsbHubPhy_l617 = (! ports_0_fsm_resetInProgress);
-  assign when_UsbHubPhy_l618 = (ports_0_filter_io_filtred_dm != ports_0_filter_io_filtred_dp);
+  assign when_UsbHubPhy_l615 = ((! io_ctrl_ports_0_power) || io_ctrl_usbReset);
+  assign when_UsbHubPhy_l622 = (! ports_0_fsm_resetInProgress);
+  assign when_UsbHubPhy_l623 = (ports_0_filter_io_filtred_dm != ports_0_filter_io_filtred_dp);
   always @(*) begin
     ports_1_rx_packet_stateNext = ports_1_rx_packet_stateReg;
     case(ports_1_rx_packet_stateReg)
@@ -6462,7 +6408,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_1_rx_packet_enumDef_PACKET : begin
         if(ports_1_rx_destuffer_output_valid) begin
-          if(when_UsbHubPhy_l527_1) begin
+          if(when_UsbHubPhy_l532_1) begin
             if(ports_1_rx_stuffingError) begin
               ports_1_rx_packet_stateNext = UsbOhciAxi4_ports_1_rx_packet_enumDef_ERRORED;
             end
@@ -6491,8 +6437,8 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
   end
 
-  assign when_UsbHubPhy_l527_1 = (ports_1_rx_packet_counter == 3'b111);
-  assign when_UsbHubPhy_l549_1 = ((ports_1_rx_packet_errorTimeout_p != ports_1_filter_io_filtred_dp) || (ports_1_rx_packet_errorTimeout_n != ports_1_filter_io_filtred_dm));
+  assign when_UsbHubPhy_l532_1 = (ports_1_rx_packet_counter == 3'b111);
+  assign when_UsbHubPhy_l554_1 = ((ports_1_rx_packet_errorTimeout_p != ports_1_filter_io_filtred_dp) || (ports_1_rx_packet_errorTimeout_n != ports_1_filter_io_filtred_dm));
   assign when_StateMachine_l253_10 = ((! (ports_1_rx_packet_stateReg == UsbOhciAxi4_ports_1_rx_packet_enumDef_IDLE)) && (ports_1_rx_packet_stateNext == UsbOhciAxi4_ports_1_rx_packet_enumDef_IDLE));
   assign when_StateMachine_l253_11 = ((! (ports_1_rx_packet_stateReg == UsbOhciAxi4_ports_1_rx_packet_enumDef_ERRORED)) && (ports_1_rx_packet_stateNext == UsbOhciAxi4_ports_1_rx_packet_enumDef_ERRORED));
   always @(*) begin
@@ -6521,7 +6467,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
       UsbOhciAxi4_ports_1_fsm_enumDef_RESETTING_SYNC : begin
-        if(when_UsbHubPhy_l675_1) begin
+        if(when_UsbHubPhy_l680_1) begin
           ports_1_fsm_stateNext = UsbOhciAxi4_ports_1_fsm_enumDef_ENABLED;
         end
       end
@@ -6529,7 +6475,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         if(io_ctrl_ports_1_suspend_valid) begin
           ports_1_fsm_stateNext = UsbOhciAxi4_ports_1_fsm_enumDef_SUSPENDED;
         end else begin
-          if(when_UsbHubPhy_l697_1) begin
+          if(when_UsbHubPhy_l702_1) begin
             ports_1_fsm_stateNext = UsbOhciAxi4_ports_1_fsm_enumDef_RESTART_E;
           end else begin
             if(io_ctrl_usbResume) begin
@@ -6539,10 +6485,10 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
       UsbOhciAxi4_ports_1_fsm_enumDef_SUSPENDED : begin
-        if(when_UsbHubPhy_l705_1) begin
+        if(when_UsbHubPhy_l710_1) begin
           ports_1_fsm_stateNext = UsbOhciAxi4_ports_1_fsm_enumDef_RESUMING;
         end else begin
-          if(when_UsbHubPhy_l707_1) begin
+          if(when_UsbHubPhy_l712_1) begin
             ports_1_fsm_stateNext = UsbOhciAxi4_ports_1_fsm_enumDef_RESTART_S;
           end
         end
@@ -6563,7 +6509,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
       UsbOhciAxi4_ports_1_fsm_enumDef_RESTART_S : begin
-        if(when_UsbHubPhy_l748_1) begin
+        if(when_UsbHubPhy_l753_1) begin
           ports_1_fsm_stateNext = UsbOhciAxi4_ports_1_fsm_enumDef_RESUMING;
         end
         if(ports_1_fsm_timer_RESTART_EOI) begin
@@ -6571,7 +6517,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
       UsbOhciAxi4_ports_1_fsm_enumDef_RESTART_E : begin
-        if(when_UsbHubPhy_l758_1) begin
+        if(when_UsbHubPhy_l763_1) begin
           ports_1_fsm_stateNext = UsbOhciAxi4_ports_1_fsm_enumDef_RESUMING;
         end
         if(ports_1_fsm_timer_RESTART_EOI) begin
@@ -6581,7 +6527,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       default : begin
       end
     endcase
-    if(when_UsbHubPhy_l610_1) begin
+    if(when_UsbHubPhy_l615_1) begin
       ports_1_fsm_stateNext = UsbOhciAxi4_ports_1_fsm_enumDef_POWER_OFF;
     end else begin
       if(ports_1_rx_disconnect_event) begin
@@ -6591,8 +6537,8 @@ module UsbOhciAxi4_UsbLsFsPhy (
           ports_1_fsm_stateNext = UsbOhciAxi4_ports_1_fsm_enumDef_DISABLED;
         end else begin
           if(io_ctrl_ports_1_reset_valid) begin
-            if(when_UsbHubPhy_l617_1) begin
-              if(when_UsbHubPhy_l618_1) begin
+            if(when_UsbHubPhy_l622_1) begin
+              if(when_UsbHubPhy_l623_1) begin
                 ports_1_fsm_stateNext = UsbOhciAxi4_ports_1_fsm_enumDef_RESETTING;
               end
             end
@@ -6608,14 +6554,14 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
   end
 
-  assign when_UsbHubPhy_l638_1 = ((! ports_1_filter_io_filtred_dp) && (! ports_1_filter_io_filtred_dm));
-  assign when_UsbHubPhy_l675_1 = (! txShared_encoder_output_valid);
-  assign when_UsbHubPhy_l688_1 = (ports_1_portLowSpeed && txShared_lowSpeedSof_overrideEncoder);
-  assign when_UsbHubPhy_l697_1 = (Rx_Suspend && (ports_1_filter_io_filtred_se0 || ((! ports_1_filter_io_filtred_se0) && ((! ports_1_filter_io_filtred_d) ^ ports_1_portLowSpeed))));
-  assign when_UsbHubPhy_l705_1 = (io_ctrl_ports_1_resume_valid || ((! Rx_Suspend) && ((! ports_1_filter_io_filtred_se0) && ((! ports_1_filter_io_filtred_d) ^ ports_1_portLowSpeed))));
-  assign when_UsbHubPhy_l707_1 = (Rx_Suspend && (ports_1_filter_io_filtred_se0 || ((! ports_1_filter_io_filtred_se0) && ((! ports_1_filter_io_filtred_d) ^ ports_1_portLowSpeed))));
-  assign when_UsbHubPhy_l748_1 = ((! ports_1_filter_io_filtred_se0) && ((! ports_1_filter_io_filtred_d) ^ ports_1_portLowSpeed));
-  assign when_UsbHubPhy_l758_1 = ((! ports_1_filter_io_filtred_se0) && ((! ports_1_filter_io_filtred_d) ^ ports_1_portLowSpeed));
+  assign when_UsbHubPhy_l643_1 = ((! ports_1_filter_io_filtred_dp) && (! ports_1_filter_io_filtred_dm));
+  assign when_UsbHubPhy_l680_1 = (! txShared_encoder_output_valid);
+  assign when_UsbHubPhy_l693_1 = (ports_1_portLowSpeed && txShared_lowSpeedSof_overrideEncoder);
+  assign when_UsbHubPhy_l702_1 = (Rx_Suspend && (ports_1_filter_io_filtred_se0 || ((! ports_1_filter_io_filtred_se0) && ((! ports_1_filter_io_filtred_d) ^ ports_1_portLowSpeed))));
+  assign when_UsbHubPhy_l710_1 = (io_ctrl_ports_1_resume_valid || ((! Rx_Suspend) && ((! ports_1_filter_io_filtred_se0) && ((! ports_1_filter_io_filtred_d) ^ ports_1_portLowSpeed))));
+  assign when_UsbHubPhy_l712_1 = (Rx_Suspend && (ports_1_filter_io_filtred_se0 || ((! ports_1_filter_io_filtred_se0) && ((! ports_1_filter_io_filtred_d) ^ ports_1_portLowSpeed))));
+  assign when_UsbHubPhy_l753_1 = ((! ports_1_filter_io_filtred_se0) && ((! ports_1_filter_io_filtred_d) ^ ports_1_portLowSpeed));
+  assign when_UsbHubPhy_l763_1 = ((! ports_1_filter_io_filtred_se0) && ((! ports_1_filter_io_filtred_d) ^ ports_1_portLowSpeed));
   assign when_StateMachine_l253_12 = ((! (ports_1_fsm_stateReg == UsbOhciAxi4_ports_1_fsm_enumDef_DISCONNECTED)) && (ports_1_fsm_stateNext == UsbOhciAxi4_ports_1_fsm_enumDef_DISCONNECTED));
   assign when_StateMachine_l253_13 = ((! (ports_1_fsm_stateReg == UsbOhciAxi4_ports_1_fsm_enumDef_RESETTING)) && (ports_1_fsm_stateNext == UsbOhciAxi4_ports_1_fsm_enumDef_RESETTING));
   assign when_StateMachine_l253_14 = ((! (ports_1_fsm_stateReg == UsbOhciAxi4_ports_1_fsm_enumDef_RESETTING_DELAY)) && (ports_1_fsm_stateNext == UsbOhciAxi4_ports_1_fsm_enumDef_RESETTING_DELAY));
@@ -6624,9 +6570,9 @@ module UsbOhciAxi4_UsbLsFsPhy (
   assign when_StateMachine_l253_17 = ((! (ports_1_fsm_stateReg == UsbOhciAxi4_ports_1_fsm_enumDef_SEND_EOP_1)) && (ports_1_fsm_stateNext == UsbOhciAxi4_ports_1_fsm_enumDef_SEND_EOP_1));
   assign when_StateMachine_l253_18 = ((! (ports_1_fsm_stateReg == UsbOhciAxi4_ports_1_fsm_enumDef_RESTART_S)) && (ports_1_fsm_stateNext == UsbOhciAxi4_ports_1_fsm_enumDef_RESTART_S));
   assign when_StateMachine_l253_19 = ((! (ports_1_fsm_stateReg == UsbOhciAxi4_ports_1_fsm_enumDef_RESTART_E)) && (ports_1_fsm_stateNext == UsbOhciAxi4_ports_1_fsm_enumDef_RESTART_E));
-  assign when_UsbHubPhy_l610_1 = ((! io_ctrl_ports_1_power) || io_ctrl_usbReset);
-  assign when_UsbHubPhy_l617_1 = (! ports_1_fsm_resetInProgress);
-  assign when_UsbHubPhy_l618_1 = (ports_1_filter_io_filtred_dm != ports_1_filter_io_filtred_dp);
+  assign when_UsbHubPhy_l615_1 = ((! io_ctrl_ports_1_power) || io_ctrl_usbReset);
+  assign when_UsbHubPhy_l622_1 = (! ports_1_fsm_resetInProgress);
+  assign when_UsbHubPhy_l623_1 = (ports_1_filter_io_filtred_dm != ports_1_filter_io_filtred_dp);
   always @(*) begin
     ports_2_rx_packet_stateNext = ports_2_rx_packet_stateReg;
     case(ports_2_rx_packet_stateReg)
@@ -6637,7 +6583,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_2_rx_packet_enumDef_PACKET : begin
         if(ports_2_rx_destuffer_output_valid) begin
-          if(when_UsbHubPhy_l527_2) begin
+          if(when_UsbHubPhy_l532_2) begin
             if(ports_2_rx_stuffingError) begin
               ports_2_rx_packet_stateNext = UsbOhciAxi4_ports_2_rx_packet_enumDef_ERRORED;
             end
@@ -6666,8 +6612,8 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
   end
 
-  assign when_UsbHubPhy_l527_2 = (ports_2_rx_packet_counter == 3'b111);
-  assign when_UsbHubPhy_l549_2 = ((ports_2_rx_packet_errorTimeout_p != ports_2_filter_io_filtred_dp) || (ports_2_rx_packet_errorTimeout_n != ports_2_filter_io_filtred_dm));
+  assign when_UsbHubPhy_l532_2 = (ports_2_rx_packet_counter == 3'b111);
+  assign when_UsbHubPhy_l554_2 = ((ports_2_rx_packet_errorTimeout_p != ports_2_filter_io_filtred_dp) || (ports_2_rx_packet_errorTimeout_n != ports_2_filter_io_filtred_dm));
   assign when_StateMachine_l253_20 = ((! (ports_2_rx_packet_stateReg == UsbOhciAxi4_ports_2_rx_packet_enumDef_IDLE)) && (ports_2_rx_packet_stateNext == UsbOhciAxi4_ports_2_rx_packet_enumDef_IDLE));
   assign when_StateMachine_l253_21 = ((! (ports_2_rx_packet_stateReg == UsbOhciAxi4_ports_2_rx_packet_enumDef_ERRORED)) && (ports_2_rx_packet_stateNext == UsbOhciAxi4_ports_2_rx_packet_enumDef_ERRORED));
   always @(*) begin
@@ -6696,7 +6642,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
       UsbOhciAxi4_ports_2_fsm_enumDef_RESETTING_SYNC : begin
-        if(when_UsbHubPhy_l675_2) begin
+        if(when_UsbHubPhy_l680_2) begin
           ports_2_fsm_stateNext = UsbOhciAxi4_ports_2_fsm_enumDef_ENABLED;
         end
       end
@@ -6704,7 +6650,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         if(io_ctrl_ports_2_suspend_valid) begin
           ports_2_fsm_stateNext = UsbOhciAxi4_ports_2_fsm_enumDef_SUSPENDED;
         end else begin
-          if(when_UsbHubPhy_l697_2) begin
+          if(when_UsbHubPhy_l702_2) begin
             ports_2_fsm_stateNext = UsbOhciAxi4_ports_2_fsm_enumDef_RESTART_E;
           end else begin
             if(io_ctrl_usbResume) begin
@@ -6714,10 +6660,10 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
       UsbOhciAxi4_ports_2_fsm_enumDef_SUSPENDED : begin
-        if(when_UsbHubPhy_l705_2) begin
+        if(when_UsbHubPhy_l710_2) begin
           ports_2_fsm_stateNext = UsbOhciAxi4_ports_2_fsm_enumDef_RESUMING;
         end else begin
-          if(when_UsbHubPhy_l707_2) begin
+          if(when_UsbHubPhy_l712_2) begin
             ports_2_fsm_stateNext = UsbOhciAxi4_ports_2_fsm_enumDef_RESTART_S;
           end
         end
@@ -6738,7 +6684,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
       UsbOhciAxi4_ports_2_fsm_enumDef_RESTART_S : begin
-        if(when_UsbHubPhy_l748_2) begin
+        if(when_UsbHubPhy_l753_2) begin
           ports_2_fsm_stateNext = UsbOhciAxi4_ports_2_fsm_enumDef_RESUMING;
         end
         if(ports_2_fsm_timer_RESTART_EOI) begin
@@ -6746,7 +6692,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
       UsbOhciAxi4_ports_2_fsm_enumDef_RESTART_E : begin
-        if(when_UsbHubPhy_l758_2) begin
+        if(when_UsbHubPhy_l763_2) begin
           ports_2_fsm_stateNext = UsbOhciAxi4_ports_2_fsm_enumDef_RESUMING;
         end
         if(ports_2_fsm_timer_RESTART_EOI) begin
@@ -6756,7 +6702,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       default : begin
       end
     endcase
-    if(when_UsbHubPhy_l610_2) begin
+    if(when_UsbHubPhy_l615_2) begin
       ports_2_fsm_stateNext = UsbOhciAxi4_ports_2_fsm_enumDef_POWER_OFF;
     end else begin
       if(ports_2_rx_disconnect_event) begin
@@ -6766,8 +6712,8 @@ module UsbOhciAxi4_UsbLsFsPhy (
           ports_2_fsm_stateNext = UsbOhciAxi4_ports_2_fsm_enumDef_DISABLED;
         end else begin
           if(io_ctrl_ports_2_reset_valid) begin
-            if(when_UsbHubPhy_l617_2) begin
-              if(when_UsbHubPhy_l618_2) begin
+            if(when_UsbHubPhy_l622_2) begin
+              if(when_UsbHubPhy_l623_2) begin
                 ports_2_fsm_stateNext = UsbOhciAxi4_ports_2_fsm_enumDef_RESETTING;
               end
             end
@@ -6783,14 +6729,14 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
   end
 
-  assign when_UsbHubPhy_l638_2 = ((! ports_2_filter_io_filtred_dp) && (! ports_2_filter_io_filtred_dm));
-  assign when_UsbHubPhy_l675_2 = (! txShared_encoder_output_valid);
-  assign when_UsbHubPhy_l688_2 = (ports_2_portLowSpeed && txShared_lowSpeedSof_overrideEncoder);
-  assign when_UsbHubPhy_l697_2 = (Rx_Suspend && (ports_2_filter_io_filtred_se0 || ((! ports_2_filter_io_filtred_se0) && ((! ports_2_filter_io_filtred_d) ^ ports_2_portLowSpeed))));
-  assign when_UsbHubPhy_l705_2 = (io_ctrl_ports_2_resume_valid || ((! Rx_Suspend) && ((! ports_2_filter_io_filtred_se0) && ((! ports_2_filter_io_filtred_d) ^ ports_2_portLowSpeed))));
-  assign when_UsbHubPhy_l707_2 = (Rx_Suspend && (ports_2_filter_io_filtred_se0 || ((! ports_2_filter_io_filtred_se0) && ((! ports_2_filter_io_filtred_d) ^ ports_2_portLowSpeed))));
-  assign when_UsbHubPhy_l748_2 = ((! ports_2_filter_io_filtred_se0) && ((! ports_2_filter_io_filtred_d) ^ ports_2_portLowSpeed));
-  assign when_UsbHubPhy_l758_2 = ((! ports_2_filter_io_filtred_se0) && ((! ports_2_filter_io_filtred_d) ^ ports_2_portLowSpeed));
+  assign when_UsbHubPhy_l643_2 = ((! ports_2_filter_io_filtred_dp) && (! ports_2_filter_io_filtred_dm));
+  assign when_UsbHubPhy_l680_2 = (! txShared_encoder_output_valid);
+  assign when_UsbHubPhy_l693_2 = (ports_2_portLowSpeed && txShared_lowSpeedSof_overrideEncoder);
+  assign when_UsbHubPhy_l702_2 = (Rx_Suspend && (ports_2_filter_io_filtred_se0 || ((! ports_2_filter_io_filtred_se0) && ((! ports_2_filter_io_filtred_d) ^ ports_2_portLowSpeed))));
+  assign when_UsbHubPhy_l710_2 = (io_ctrl_ports_2_resume_valid || ((! Rx_Suspend) && ((! ports_2_filter_io_filtred_se0) && ((! ports_2_filter_io_filtred_d) ^ ports_2_portLowSpeed))));
+  assign when_UsbHubPhy_l712_2 = (Rx_Suspend && (ports_2_filter_io_filtred_se0 || ((! ports_2_filter_io_filtred_se0) && ((! ports_2_filter_io_filtred_d) ^ ports_2_portLowSpeed))));
+  assign when_UsbHubPhy_l753_2 = ((! ports_2_filter_io_filtred_se0) && ((! ports_2_filter_io_filtred_d) ^ ports_2_portLowSpeed));
+  assign when_UsbHubPhy_l763_2 = ((! ports_2_filter_io_filtred_se0) && ((! ports_2_filter_io_filtred_d) ^ ports_2_portLowSpeed));
   assign when_StateMachine_l253_22 = ((! (ports_2_fsm_stateReg == UsbOhciAxi4_ports_2_fsm_enumDef_DISCONNECTED)) && (ports_2_fsm_stateNext == UsbOhciAxi4_ports_2_fsm_enumDef_DISCONNECTED));
   assign when_StateMachine_l253_23 = ((! (ports_2_fsm_stateReg == UsbOhciAxi4_ports_2_fsm_enumDef_RESETTING)) && (ports_2_fsm_stateNext == UsbOhciAxi4_ports_2_fsm_enumDef_RESETTING));
   assign when_StateMachine_l253_24 = ((! (ports_2_fsm_stateReg == UsbOhciAxi4_ports_2_fsm_enumDef_RESETTING_DELAY)) && (ports_2_fsm_stateNext == UsbOhciAxi4_ports_2_fsm_enumDef_RESETTING_DELAY));
@@ -6799,9 +6745,9 @@ module UsbOhciAxi4_UsbLsFsPhy (
   assign when_StateMachine_l253_27 = ((! (ports_2_fsm_stateReg == UsbOhciAxi4_ports_2_fsm_enumDef_SEND_EOP_1)) && (ports_2_fsm_stateNext == UsbOhciAxi4_ports_2_fsm_enumDef_SEND_EOP_1));
   assign when_StateMachine_l253_28 = ((! (ports_2_fsm_stateReg == UsbOhciAxi4_ports_2_fsm_enumDef_RESTART_S)) && (ports_2_fsm_stateNext == UsbOhciAxi4_ports_2_fsm_enumDef_RESTART_S));
   assign when_StateMachine_l253_29 = ((! (ports_2_fsm_stateReg == UsbOhciAxi4_ports_2_fsm_enumDef_RESTART_E)) && (ports_2_fsm_stateNext == UsbOhciAxi4_ports_2_fsm_enumDef_RESTART_E));
-  assign when_UsbHubPhy_l610_2 = ((! io_ctrl_ports_2_power) || io_ctrl_usbReset);
-  assign when_UsbHubPhy_l617_2 = (! ports_2_fsm_resetInProgress);
-  assign when_UsbHubPhy_l618_2 = (ports_2_filter_io_filtred_dm != ports_2_filter_io_filtred_dp);
+  assign when_UsbHubPhy_l615_2 = ((! io_ctrl_ports_2_power) || io_ctrl_usbReset);
+  assign when_UsbHubPhy_l622_2 = (! ports_2_fsm_resetInProgress);
+  assign when_UsbHubPhy_l623_2 = (ports_2_filter_io_filtred_dm != ports_2_filter_io_filtred_dp);
   always @(*) begin
     ports_3_rx_packet_stateNext = ports_3_rx_packet_stateReg;
     case(ports_3_rx_packet_stateReg)
@@ -6812,7 +6758,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       end
       UsbOhciAxi4_ports_3_rx_packet_enumDef_PACKET : begin
         if(ports_3_rx_destuffer_output_valid) begin
-          if(when_UsbHubPhy_l527_3) begin
+          if(when_UsbHubPhy_l532_3) begin
             if(ports_3_rx_stuffingError) begin
               ports_3_rx_packet_stateNext = UsbOhciAxi4_ports_3_rx_packet_enumDef_ERRORED;
             end
@@ -6841,8 +6787,8 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
   end
 
-  assign when_UsbHubPhy_l527_3 = (ports_3_rx_packet_counter == 3'b111);
-  assign when_UsbHubPhy_l549_3 = ((ports_3_rx_packet_errorTimeout_p != ports_3_filter_io_filtred_dp) || (ports_3_rx_packet_errorTimeout_n != ports_3_filter_io_filtred_dm));
+  assign when_UsbHubPhy_l532_3 = (ports_3_rx_packet_counter == 3'b111);
+  assign when_UsbHubPhy_l554_3 = ((ports_3_rx_packet_errorTimeout_p != ports_3_filter_io_filtred_dp) || (ports_3_rx_packet_errorTimeout_n != ports_3_filter_io_filtred_dm));
   assign when_StateMachine_l253_30 = ((! (ports_3_rx_packet_stateReg == UsbOhciAxi4_ports_3_rx_packet_enumDef_IDLE)) && (ports_3_rx_packet_stateNext == UsbOhciAxi4_ports_3_rx_packet_enumDef_IDLE));
   assign when_StateMachine_l253_31 = ((! (ports_3_rx_packet_stateReg == UsbOhciAxi4_ports_3_rx_packet_enumDef_ERRORED)) && (ports_3_rx_packet_stateNext == UsbOhciAxi4_ports_3_rx_packet_enumDef_ERRORED));
   always @(*) begin
@@ -6871,7 +6817,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
       UsbOhciAxi4_ports_3_fsm_enumDef_RESETTING_SYNC : begin
-        if(when_UsbHubPhy_l675_3) begin
+        if(when_UsbHubPhy_l680_3) begin
           ports_3_fsm_stateNext = UsbOhciAxi4_ports_3_fsm_enumDef_ENABLED;
         end
       end
@@ -6879,7 +6825,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         if(io_ctrl_ports_3_suspend_valid) begin
           ports_3_fsm_stateNext = UsbOhciAxi4_ports_3_fsm_enumDef_SUSPENDED;
         end else begin
-          if(when_UsbHubPhy_l697_3) begin
+          if(when_UsbHubPhy_l702_3) begin
             ports_3_fsm_stateNext = UsbOhciAxi4_ports_3_fsm_enumDef_RESTART_E;
           end else begin
             if(io_ctrl_usbResume) begin
@@ -6889,10 +6835,10 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
       UsbOhciAxi4_ports_3_fsm_enumDef_SUSPENDED : begin
-        if(when_UsbHubPhy_l705_3) begin
+        if(when_UsbHubPhy_l710_3) begin
           ports_3_fsm_stateNext = UsbOhciAxi4_ports_3_fsm_enumDef_RESUMING;
         end else begin
-          if(when_UsbHubPhy_l707_3) begin
+          if(when_UsbHubPhy_l712_3) begin
             ports_3_fsm_stateNext = UsbOhciAxi4_ports_3_fsm_enumDef_RESTART_S;
           end
         end
@@ -6913,7 +6859,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
       UsbOhciAxi4_ports_3_fsm_enumDef_RESTART_S : begin
-        if(when_UsbHubPhy_l748_3) begin
+        if(when_UsbHubPhy_l753_3) begin
           ports_3_fsm_stateNext = UsbOhciAxi4_ports_3_fsm_enumDef_RESUMING;
         end
         if(ports_3_fsm_timer_RESTART_EOI) begin
@@ -6921,7 +6867,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
       UsbOhciAxi4_ports_3_fsm_enumDef_RESTART_E : begin
-        if(when_UsbHubPhy_l758_3) begin
+        if(when_UsbHubPhy_l763_3) begin
           ports_3_fsm_stateNext = UsbOhciAxi4_ports_3_fsm_enumDef_RESUMING;
         end
         if(ports_3_fsm_timer_RESTART_EOI) begin
@@ -6931,7 +6877,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       default : begin
       end
     endcase
-    if(when_UsbHubPhy_l610_3) begin
+    if(when_UsbHubPhy_l615_3) begin
       ports_3_fsm_stateNext = UsbOhciAxi4_ports_3_fsm_enumDef_POWER_OFF;
     end else begin
       if(ports_3_rx_disconnect_event) begin
@@ -6941,8 +6887,8 @@ module UsbOhciAxi4_UsbLsFsPhy (
           ports_3_fsm_stateNext = UsbOhciAxi4_ports_3_fsm_enumDef_DISABLED;
         end else begin
           if(io_ctrl_ports_3_reset_valid) begin
-            if(when_UsbHubPhy_l617_3) begin
-              if(when_UsbHubPhy_l618_3) begin
+            if(when_UsbHubPhy_l622_3) begin
+              if(when_UsbHubPhy_l623_3) begin
                 ports_3_fsm_stateNext = UsbOhciAxi4_ports_3_fsm_enumDef_RESETTING;
               end
             end
@@ -6958,14 +6904,14 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
   end
 
-  assign when_UsbHubPhy_l638_3 = ((! ports_3_filter_io_filtred_dp) && (! ports_3_filter_io_filtred_dm));
-  assign when_UsbHubPhy_l675_3 = (! txShared_encoder_output_valid);
-  assign when_UsbHubPhy_l688_3 = (ports_3_portLowSpeed && txShared_lowSpeedSof_overrideEncoder);
-  assign when_UsbHubPhy_l697_3 = (Rx_Suspend && (ports_3_filter_io_filtred_se0 || ((! ports_3_filter_io_filtred_se0) && ((! ports_3_filter_io_filtred_d) ^ ports_3_portLowSpeed))));
-  assign when_UsbHubPhy_l705_3 = (io_ctrl_ports_3_resume_valid || ((! Rx_Suspend) && ((! ports_3_filter_io_filtred_se0) && ((! ports_3_filter_io_filtred_d) ^ ports_3_portLowSpeed))));
-  assign when_UsbHubPhy_l707_3 = (Rx_Suspend && (ports_3_filter_io_filtred_se0 || ((! ports_3_filter_io_filtred_se0) && ((! ports_3_filter_io_filtred_d) ^ ports_3_portLowSpeed))));
-  assign when_UsbHubPhy_l748_3 = ((! ports_3_filter_io_filtred_se0) && ((! ports_3_filter_io_filtred_d) ^ ports_3_portLowSpeed));
-  assign when_UsbHubPhy_l758_3 = ((! ports_3_filter_io_filtred_se0) && ((! ports_3_filter_io_filtred_d) ^ ports_3_portLowSpeed));
+  assign when_UsbHubPhy_l643_3 = ((! ports_3_filter_io_filtred_dp) && (! ports_3_filter_io_filtred_dm));
+  assign when_UsbHubPhy_l680_3 = (! txShared_encoder_output_valid);
+  assign when_UsbHubPhy_l693_3 = (ports_3_portLowSpeed && txShared_lowSpeedSof_overrideEncoder);
+  assign when_UsbHubPhy_l702_3 = (Rx_Suspend && (ports_3_filter_io_filtred_se0 || ((! ports_3_filter_io_filtred_se0) && ((! ports_3_filter_io_filtred_d) ^ ports_3_portLowSpeed))));
+  assign when_UsbHubPhy_l710_3 = (io_ctrl_ports_3_resume_valid || ((! Rx_Suspend) && ((! ports_3_filter_io_filtred_se0) && ((! ports_3_filter_io_filtred_d) ^ ports_3_portLowSpeed))));
+  assign when_UsbHubPhy_l712_3 = (Rx_Suspend && (ports_3_filter_io_filtred_se0 || ((! ports_3_filter_io_filtred_se0) && ((! ports_3_filter_io_filtred_d) ^ ports_3_portLowSpeed))));
+  assign when_UsbHubPhy_l753_3 = ((! ports_3_filter_io_filtred_se0) && ((! ports_3_filter_io_filtred_d) ^ ports_3_portLowSpeed));
+  assign when_UsbHubPhy_l763_3 = ((! ports_3_filter_io_filtred_se0) && ((! ports_3_filter_io_filtred_d) ^ ports_3_portLowSpeed));
   assign when_StateMachine_l253_32 = ((! (ports_3_fsm_stateReg == UsbOhciAxi4_ports_3_fsm_enumDef_DISCONNECTED)) && (ports_3_fsm_stateNext == UsbOhciAxi4_ports_3_fsm_enumDef_DISCONNECTED));
   assign when_StateMachine_l253_33 = ((! (ports_3_fsm_stateReg == UsbOhciAxi4_ports_3_fsm_enumDef_RESETTING)) && (ports_3_fsm_stateNext == UsbOhciAxi4_ports_3_fsm_enumDef_RESETTING));
   assign when_StateMachine_l253_34 = ((! (ports_3_fsm_stateReg == UsbOhciAxi4_ports_3_fsm_enumDef_RESETTING_DELAY)) && (ports_3_fsm_stateNext == UsbOhciAxi4_ports_3_fsm_enumDef_RESETTING_DELAY));
@@ -6974,9 +6920,9 @@ module UsbOhciAxi4_UsbLsFsPhy (
   assign when_StateMachine_l253_37 = ((! (ports_3_fsm_stateReg == UsbOhciAxi4_ports_3_fsm_enumDef_SEND_EOP_1)) && (ports_3_fsm_stateNext == UsbOhciAxi4_ports_3_fsm_enumDef_SEND_EOP_1));
   assign when_StateMachine_l253_38 = ((! (ports_3_fsm_stateReg == UsbOhciAxi4_ports_3_fsm_enumDef_RESTART_S)) && (ports_3_fsm_stateNext == UsbOhciAxi4_ports_3_fsm_enumDef_RESTART_S));
   assign when_StateMachine_l253_39 = ((! (ports_3_fsm_stateReg == UsbOhciAxi4_ports_3_fsm_enumDef_RESTART_E)) && (ports_3_fsm_stateNext == UsbOhciAxi4_ports_3_fsm_enumDef_RESTART_E));
-  assign when_UsbHubPhy_l610_3 = ((! io_ctrl_ports_3_power) || io_ctrl_usbReset);
-  assign when_UsbHubPhy_l617_3 = (! ports_3_fsm_resetInProgress);
-  assign when_UsbHubPhy_l618_3 = (ports_3_filter_io_filtred_dm != ports_3_filter_io_filtred_dp);
+  assign when_UsbHubPhy_l615_3 = ((! io_ctrl_ports_3_power) || io_ctrl_usbReset);
+  assign when_UsbHubPhy_l622_3 = (! ports_3_fsm_resetInProgress);
+  assign when_UsbHubPhy_l623_3 = (ports_3_filter_io_filtred_dm != ports_3_filter_io_filtred_dp);
   always @(posedge phy_clk or posedge phy_reset) begin
     if(phy_reset) begin
       tickTimer_counter_value <= 2'b00;
@@ -7006,21 +6952,21 @@ module UsbOhciAxi4_UsbLsFsPhy (
       if(txShared_rxToTxDelay_twoCycle) begin
         txShared_rxToTxDelay_active <= 1'b0;
       end
-      if(when_UsbHubPhy_l249) begin
+      if(when_UsbHubPhy_l254) begin
         txShared_lowSpeedSof_overrideEncoder <= 1'b0;
       end
       txShared_lowSpeedSof_state <= (txShared_lowSpeedSof_state + _zz_txShared_lowSpeedSof_state);
-      if(when_UsbHubPhy_l251) begin
-        if(when_UsbHubPhy_l252) begin
+      if(when_UsbHubPhy_l256) begin
+        if(when_UsbHubPhy_l257) begin
           txShared_lowSpeedSof_overrideEncoder <= 1'b1;
         end
       end else begin
-        if(when_UsbHubPhy_l259) begin
+        if(when_UsbHubPhy_l264) begin
           txShared_lowSpeedSof_state <= (txShared_lowSpeedSof_state + 2'b01);
         end
       end
-      if(when_UsbHubPhy_l493) begin
-        if(when_UsbHubPhy_l494) begin
+      if(when_UsbHubPhy_l498) begin
+        if(when_UsbHubPhy_l499) begin
           ports_0_rx_eop_counter <= (ports_0_rx_eop_counter + 7'h01);
         end
       end else begin
@@ -7030,8 +6976,8 @@ module UsbOhciAxi4_UsbLsFsPhy (
       if(ports_0_rx_disconnect_clear) begin
         ports_0_rx_disconnect_counter <= 7'h00;
       end
-      if(when_UsbHubPhy_l493_1) begin
-        if(when_UsbHubPhy_l494_1) begin
+      if(when_UsbHubPhy_l498_1) begin
+        if(when_UsbHubPhy_l499_1) begin
           ports_1_rx_eop_counter <= (ports_1_rx_eop_counter + 7'h01);
         end
       end else begin
@@ -7041,8 +6987,8 @@ module UsbOhciAxi4_UsbLsFsPhy (
       if(ports_1_rx_disconnect_clear) begin
         ports_1_rx_disconnect_counter <= 7'h00;
       end
-      if(when_UsbHubPhy_l493_2) begin
-        if(when_UsbHubPhy_l494_2) begin
+      if(when_UsbHubPhy_l498_2) begin
+        if(when_UsbHubPhy_l499_2) begin
           ports_2_rx_eop_counter <= (ports_2_rx_eop_counter + 7'h01);
         end
       end else begin
@@ -7052,8 +6998,8 @@ module UsbOhciAxi4_UsbLsFsPhy (
       if(ports_2_rx_disconnect_clear) begin
         ports_2_rx_disconnect_counter <= 7'h00;
       end
-      if(when_UsbHubPhy_l493_3) begin
-        if(when_UsbHubPhy_l494_3) begin
+      if(when_UsbHubPhy_l498_3) begin
+        if(when_UsbHubPhy_l499_3) begin
           ports_3_rx_eop_counter <= (ports_3_rx_eop_counter + 7'h01);
         end
       end else begin
@@ -7105,10 +7051,10 @@ module UsbOhciAxi4_UsbLsFsPhy (
       if(txShared_encoder_input_data) begin
         if(txShared_timer_oneCycle) begin
           txShared_encoder_counter <= (txShared_encoder_counter + 3'b001);
-          if(when_UsbHubPhy_l189) begin
+          if(when_UsbHubPhy_l194) begin
             txShared_encoder_state <= (! txShared_encoder_state);
           end
-          if(when_UsbHubPhy_l194) begin
+          if(when_UsbHubPhy_l199) begin
             txShared_encoder_counter <= 3'b000;
           end
         end
@@ -7119,7 +7065,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
         end
       end
     end
-    if(when_UsbHubPhy_l208) begin
+    if(when_UsbHubPhy_l213) begin
       txShared_encoder_counter <= 3'b000;
       txShared_encoder_state <= 1'b1;
     end
@@ -7128,12 +7074,12 @@ module UsbOhciAxi4_UsbLsFsPhy (
         txShared_serialiser_bitCounter <= (txShared_serialiser_bitCounter + 3'b001);
       end
     end
-    if(when_UsbHubPhy_l240) begin
+    if(when_UsbHubPhy_l245) begin
       txShared_serialiser_bitCounter <= 3'b000;
     end
     txShared_encoder_output_valid_regNext <= txShared_encoder_output_valid;
-    if(when_UsbHubPhy_l251) begin
-      if(when_UsbHubPhy_l252) begin
+    if(when_UsbHubPhy_l256) begin
+      if(when_UsbHubPhy_l257) begin
         txShared_lowSpeedSof_timer <= 5'h00;
       end
     end else begin
@@ -7146,7 +7092,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       upstreamRx_timer_counter <= 20'h00000;
     end
     if(ports_0_filter_io_filtred_sample) begin
-      if(when_UsbHubPhy_l445) begin
+      if(when_UsbHubPhy_l450) begin
         ports_0_rx_decoder_state <= (! ports_0_rx_decoder_state);
       end
     end
@@ -7155,7 +7101,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
     if(ports_0_rx_decoder_output_valid) begin
       ports_0_rx_destuffer_counter <= (ports_0_rx_destuffer_counter + 3'b001);
-      if(when_UsbHubPhy_l466) begin
+      if(when_UsbHubPhy_l471) begin
         ports_0_rx_destuffer_counter <= 3'b000;
         if(ports_0_rx_decoder_output_payload) begin
           ports_0_rx_stuffingError <= 1'b1;
@@ -7200,7 +7146,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       ports_0_fsm_timer_counter <= 24'h000000;
     end
     if(ports_1_filter_io_filtred_sample) begin
-      if(when_UsbHubPhy_l445_1) begin
+      if(when_UsbHubPhy_l450_1) begin
         ports_1_rx_decoder_state <= (! ports_1_rx_decoder_state);
       end
     end
@@ -7209,7 +7155,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
     if(ports_1_rx_decoder_output_valid) begin
       ports_1_rx_destuffer_counter <= (ports_1_rx_destuffer_counter + 3'b001);
-      if(when_UsbHubPhy_l466_1) begin
+      if(when_UsbHubPhy_l471_1) begin
         ports_1_rx_destuffer_counter <= 3'b000;
         if(ports_1_rx_decoder_output_payload) begin
           ports_1_rx_stuffingError <= 1'b1;
@@ -7254,7 +7200,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       ports_1_fsm_timer_counter <= 24'h000000;
     end
     if(ports_2_filter_io_filtred_sample) begin
-      if(when_UsbHubPhy_l445_2) begin
+      if(when_UsbHubPhy_l450_2) begin
         ports_2_rx_decoder_state <= (! ports_2_rx_decoder_state);
       end
     end
@@ -7263,7 +7209,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
     if(ports_2_rx_decoder_output_valid) begin
       ports_2_rx_destuffer_counter <= (ports_2_rx_destuffer_counter + 3'b001);
-      if(when_UsbHubPhy_l466_2) begin
+      if(when_UsbHubPhy_l471_2) begin
         ports_2_rx_destuffer_counter <= 3'b000;
         if(ports_2_rx_decoder_output_payload) begin
           ports_2_rx_stuffingError <= 1'b1;
@@ -7308,7 +7254,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
       ports_2_fsm_timer_counter <= 24'h000000;
     end
     if(ports_3_filter_io_filtred_sample) begin
-      if(when_UsbHubPhy_l445_3) begin
+      if(when_UsbHubPhy_l450_3) begin
         ports_3_rx_decoder_state <= (! ports_3_rx_decoder_state);
       end
     end
@@ -7317,7 +7263,7 @@ module UsbOhciAxi4_UsbLsFsPhy (
     end
     if(ports_3_rx_decoder_output_valid) begin
       ports_3_rx_destuffer_counter <= (ports_3_rx_destuffer_counter + 3'b001);
-      if(when_UsbHubPhy_l466_3) begin
+      if(when_UsbHubPhy_l471_3) begin
         ports_3_rx_destuffer_counter <= 3'b000;
         if(ports_3_rx_decoder_output_payload) begin
           ports_3_rx_stuffingError <= 1'b1;
@@ -7439,12 +7385,12 @@ module UsbOhciAxi4_UsbLsFsPhy (
       default : begin
       end
     endcase
-    if(!when_UsbHubPhy_l610) begin
+    if(!when_UsbHubPhy_l615) begin
       if(!ports_0_rx_disconnect_event) begin
         if(!io_ctrl_ports_0_disable_valid) begin
           if(io_ctrl_ports_0_reset_valid) begin
-            if(when_UsbHubPhy_l617) begin
-              if(when_UsbHubPhy_l618) begin
+            if(when_UsbHubPhy_l622) begin
+              if(when_UsbHubPhy_l623) begin
                 ports_0_portLowSpeed <= (! ports_0_filter_io_filtred_d);
               end
             end
@@ -7505,12 +7451,12 @@ module UsbOhciAxi4_UsbLsFsPhy (
       default : begin
       end
     endcase
-    if(!when_UsbHubPhy_l610_1) begin
+    if(!when_UsbHubPhy_l615_1) begin
       if(!ports_1_rx_disconnect_event) begin
         if(!io_ctrl_ports_1_disable_valid) begin
           if(io_ctrl_ports_1_reset_valid) begin
-            if(when_UsbHubPhy_l617_1) begin
-              if(when_UsbHubPhy_l618_1) begin
+            if(when_UsbHubPhy_l622_1) begin
+              if(when_UsbHubPhy_l623_1) begin
                 ports_1_portLowSpeed <= (! ports_1_filter_io_filtred_d);
               end
             end
@@ -7571,12 +7517,12 @@ module UsbOhciAxi4_UsbLsFsPhy (
       default : begin
       end
     endcase
-    if(!when_UsbHubPhy_l610_2) begin
+    if(!when_UsbHubPhy_l615_2) begin
       if(!ports_2_rx_disconnect_event) begin
         if(!io_ctrl_ports_2_disable_valid) begin
           if(io_ctrl_ports_2_reset_valid) begin
-            if(when_UsbHubPhy_l617_2) begin
-              if(when_UsbHubPhy_l618_2) begin
+            if(when_UsbHubPhy_l622_2) begin
+              if(when_UsbHubPhy_l623_2) begin
                 ports_2_portLowSpeed <= (! ports_2_filter_io_filtred_d);
               end
             end
@@ -7637,12 +7583,12 @@ module UsbOhciAxi4_UsbLsFsPhy (
       default : begin
       end
     endcase
-    if(!when_UsbHubPhy_l610_3) begin
+    if(!when_UsbHubPhy_l615_3) begin
       if(!ports_3_rx_disconnect_event) begin
         if(!io_ctrl_ports_3_disable_valid) begin
           if(io_ctrl_ports_3_reset_valid) begin
-            if(when_UsbHubPhy_l617_3) begin
-              if(when_UsbHubPhy_l618_3) begin
+            if(when_UsbHubPhy_l622_3) begin
+              if(when_UsbHubPhy_l623_3) begin
                 ports_3_portLowSpeed <= (! ports_3_filter_io_filtred_d);
               end
             end
@@ -7861,8 +7807,8 @@ module UsbOhciAxi4_UsbOhci (
   wire                fifo_io_push_ready;
   wire                fifo_io_pop_valid;
   wire       [31:0]   fifo_io_pop_payload;
-  wire       [9:0]    fifo_io_occupancy;
-  wire       [9:0]    fifo_io_availability;
+  wire       [8:0]    fifo_io_occupancy;
+  wire       [8:0]    fifo_io_availability;
   wire       [4:0]    token_crc5_io_result;
   wire       [4:0]    token_crc5_io_resultNext;
   wire       [15:0]   dataTx_crc16_io_result;
@@ -7998,7 +7944,7 @@ module UsbOhciAxi4_UsbOhci (
   wire       [13:0]   _zz_endpoint_lastAddress_2;
   wire       [13:0]   _zz_endpoint_lastAddress_3;
   wire       [13:0]   _zz_endpoint_lastAddress_4;
-  wire       [13:0]   _zz_when_UsbOhci_l1331;
+  wire       [13:0]   _zz_when_UsbOhci_l1333;
   wire       [1:0]    _zz_endpoint_TD_words_0;
   wire       [4:0]    _zz_ioDma_cmd_payload_fragment_length_1;
   wire       [3:0]    _zz_ioDma_cmd_payload_last;
@@ -8008,7 +7954,7 @@ module UsbOhciAxi4_UsbOhci (
   wire       [13:0]   _zz__zz_ioDma_cmd_payload_fragment_data_2;
   wire       [13:0]   _zz__zz_ioDma_cmd_payload_fragment_data_3;
   reg        [7:0]    _zz_dataTx_data_payload_fragment;
-  wire       [13:0]   _zz_when_UsbOhci_l1054;
+  wire       [13:0]   _zz_when_UsbOhci_l1056;
   wire       [13:0]   _zz_endpoint_dmaLogic_overflow;
   wire       [13:0]   _zz_endpoint_lastAddress_5;
   wire       [13:0]   _zz_endpoint_lastAddress_6;
@@ -8042,7 +7988,7 @@ module UsbOhciAxi4_UsbOhci (
   wire                dmaCtx_pendingFull;
   wire                dmaCtx_pendingEmpty;
   reg        [5:0]    dmaCtx_beatCounter;
-  wire                when_UsbOhci_l157;
+  wire                when_UsbOhci_l158;
   wire                io_dma_cmd_fire;
   reg                 io_dma_cmd_payload_first;
   wire                _zz_io_dma_cmd_valid;
@@ -8079,7 +8025,7 @@ module UsbOhciAxi4_UsbOhci (
   wire                when_BmbSlaveFactory_l35;
   reg                 doUnschedule;
   reg                 doSoftReset;
-  wire                when_UsbOhci_l236;
+  wire                when_UsbOhci_l238;
   wire       [4:0]    reg_hcRevision_REV;
   reg        [1:0]    reg_hcControl_CBSR;
   reg                 reg_hcControl_PLE;
@@ -8119,7 +8065,7 @@ module UsbOhciAxi4_UsbOhci (
   wire                when_BusSlaveFactory_l379_5;
   reg                 when_BusSlaveFactory_l341_2;
   wire                when_BusSlaveFactory_l347_2;
-  wire                when_UsbOhci_l302;
+  wire                when_UsbOhci_l304;
   reg                 reg_hcInterrupt_WDH_status;
   reg                 when_BusSlaveFactory_l341_3;
   wire                when_BusSlaveFactory_l347_3;
@@ -8128,7 +8074,7 @@ module UsbOhciAxi4_UsbOhci (
   wire                when_BusSlaveFactory_l379_6;
   reg                 when_BusSlaveFactory_l341_4;
   wire                when_BusSlaveFactory_l347_4;
-  wire                when_UsbOhci_l302_1;
+  wire                when_UsbOhci_l304_1;
   reg                 reg_hcInterrupt_SF_status;
   reg                 when_BusSlaveFactory_l341_5;
   wire                when_BusSlaveFactory_l347_5;
@@ -8137,7 +8083,7 @@ module UsbOhciAxi4_UsbOhci (
   wire                when_BusSlaveFactory_l379_7;
   reg                 when_BusSlaveFactory_l341_6;
   wire                when_BusSlaveFactory_l347_6;
-  wire                when_UsbOhci_l302_2;
+  wire                when_UsbOhci_l304_2;
   reg                 reg_hcInterrupt_RD_status;
   reg                 when_BusSlaveFactory_l341_7;
   wire                when_BusSlaveFactory_l347_7;
@@ -8146,7 +8092,7 @@ module UsbOhciAxi4_UsbOhci (
   wire                when_BusSlaveFactory_l379_8;
   reg                 when_BusSlaveFactory_l341_8;
   wire                when_BusSlaveFactory_l347_8;
-  wire                when_UsbOhci_l302_3;
+  wire                when_UsbOhci_l304_3;
   reg                 reg_hcInterrupt_UE_status;
   reg                 when_BusSlaveFactory_l341_9;
   wire                when_BusSlaveFactory_l347_9;
@@ -8155,7 +8101,7 @@ module UsbOhciAxi4_UsbOhci (
   wire                when_BusSlaveFactory_l379_9;
   reg                 when_BusSlaveFactory_l341_10;
   wire                when_BusSlaveFactory_l347_10;
-  wire                when_UsbOhci_l302_4;
+  wire                when_UsbOhci_l304_4;
   reg                 reg_hcInterrupt_FNO_status;
   reg                 when_BusSlaveFactory_l341_11;
   wire                when_BusSlaveFactory_l347_11;
@@ -8164,7 +8110,7 @@ module UsbOhciAxi4_UsbOhci (
   wire                when_BusSlaveFactory_l379_10;
   reg                 when_BusSlaveFactory_l341_12;
   wire                when_BusSlaveFactory_l347_12;
-  wire                when_UsbOhci_l302_5;
+  wire                when_UsbOhci_l304_5;
   reg                 reg_hcInterrupt_RHSC_status;
   reg                 when_BusSlaveFactory_l341_13;
   wire                when_BusSlaveFactory_l347_13;
@@ -8173,7 +8119,7 @@ module UsbOhciAxi4_UsbOhci (
   wire                when_BusSlaveFactory_l379_11;
   reg                 when_BusSlaveFactory_l341_14;
   wire                when_BusSlaveFactory_l347_14;
-  wire                when_UsbOhci_l302_6;
+  wire                when_UsbOhci_l304_6;
   reg                 reg_hcInterrupt_OC_status;
   reg                 when_BusSlaveFactory_l341_15;
   wire                when_BusSlaveFactory_l347_15;
@@ -8224,7 +8170,7 @@ module UsbOhciAxi4_UsbOhci (
   reg                 when_BusSlaveFactory_l341_17;
   wire                when_BusSlaveFactory_l347_17;
   reg                 io_phy_overcurrent_regNext;
-  wire                when_UsbOhci_l409;
+  wire                when_UsbOhci_l411;
   reg                 reg_hcRhStatus_clearGlobalPower;
   reg                 when_BusSlaveFactory_l377_13;
   wire                when_BusSlaveFactory_l379_13;
@@ -8291,15 +8237,15 @@ module UsbOhciAxi4_UsbOhci (
   reg                 reg_hcRhPortStatus_0_PRSC_reg;
   reg                 when_BusSlaveFactory_l377_28;
   wire                when_BusSlaveFactory_l379_28;
-  wire                when_UsbOhci_l460;
-  wire                when_UsbOhci_l460_1;
-  wire                when_UsbOhci_l460_2;
-  wire                when_UsbOhci_l461;
-  wire                when_UsbOhci_l461_1;
   wire                when_UsbOhci_l462;
+  wire                when_UsbOhci_l462_1;
+  wire                when_UsbOhci_l462_2;
   wire                when_UsbOhci_l463;
+  wire                when_UsbOhci_l463_1;
   wire                when_UsbOhci_l464;
-  wire                when_UsbOhci_l470;
+  wire                when_UsbOhci_l465;
+  wire                when_UsbOhci_l466;
+  wire                when_UsbOhci_l472;
   reg                 reg_hcRhPortStatus_0_CCS_regNext;
   wire                io_phy_ports_0_suspend_fire;
   wire                io_phy_ports_0_reset_fire;
@@ -8358,15 +8304,15 @@ module UsbOhciAxi4_UsbOhci (
   reg                 reg_hcRhPortStatus_1_PRSC_reg;
   reg                 when_BusSlaveFactory_l377_40;
   wire                when_BusSlaveFactory_l379_40;
-  wire                when_UsbOhci_l460_3;
-  wire                when_UsbOhci_l460_4;
-  wire                when_UsbOhci_l460_5;
-  wire                when_UsbOhci_l461_2;
-  wire                when_UsbOhci_l461_3;
-  wire                when_UsbOhci_l462_1;
-  wire                when_UsbOhci_l463_1;
+  wire                when_UsbOhci_l462_3;
+  wire                when_UsbOhci_l462_4;
+  wire                when_UsbOhci_l462_5;
+  wire                when_UsbOhci_l463_2;
+  wire                when_UsbOhci_l463_3;
   wire                when_UsbOhci_l464_1;
-  wire                when_UsbOhci_l470_1;
+  wire                when_UsbOhci_l465_1;
+  wire                when_UsbOhci_l466_1;
+  wire                when_UsbOhci_l472_1;
   reg                 reg_hcRhPortStatus_1_CCS_regNext;
   wire                io_phy_ports_1_suspend_fire;
   wire                io_phy_ports_1_reset_fire;
@@ -8425,15 +8371,15 @@ module UsbOhciAxi4_UsbOhci (
   reg                 reg_hcRhPortStatus_2_PRSC_reg;
   reg                 when_BusSlaveFactory_l377_52;
   wire                when_BusSlaveFactory_l379_52;
-  wire                when_UsbOhci_l460_6;
-  wire                when_UsbOhci_l460_7;
-  wire                when_UsbOhci_l460_8;
-  wire                when_UsbOhci_l461_4;
-  wire                when_UsbOhci_l461_5;
-  wire                when_UsbOhci_l462_2;
-  wire                when_UsbOhci_l463_2;
+  wire                when_UsbOhci_l462_6;
+  wire                when_UsbOhci_l462_7;
+  wire                when_UsbOhci_l462_8;
+  wire                when_UsbOhci_l463_4;
+  wire                when_UsbOhci_l463_5;
   wire                when_UsbOhci_l464_2;
-  wire                when_UsbOhci_l470_2;
+  wire                when_UsbOhci_l465_2;
+  wire                when_UsbOhci_l466_2;
+  wire                when_UsbOhci_l472_2;
   reg                 reg_hcRhPortStatus_2_CCS_regNext;
   wire                io_phy_ports_2_suspend_fire;
   wire                io_phy_ports_2_reset_fire;
@@ -8492,15 +8438,15 @@ module UsbOhciAxi4_UsbOhci (
   reg                 reg_hcRhPortStatus_3_PRSC_reg;
   reg                 when_BusSlaveFactory_l377_64;
   wire                when_BusSlaveFactory_l379_64;
-  wire                when_UsbOhci_l460_9;
-  wire                when_UsbOhci_l460_10;
-  wire                when_UsbOhci_l460_11;
-  wire                when_UsbOhci_l461_6;
-  wire                when_UsbOhci_l461_7;
-  wire                when_UsbOhci_l462_3;
-  wire                when_UsbOhci_l463_3;
+  wire                when_UsbOhci_l462_9;
+  wire                when_UsbOhci_l462_10;
+  wire                when_UsbOhci_l462_11;
+  wire                when_UsbOhci_l463_6;
+  wire                when_UsbOhci_l463_7;
   wire                when_UsbOhci_l464_3;
-  wire                when_UsbOhci_l470_3;
+  wire                when_UsbOhci_l465_3;
+  wire                when_UsbOhci_l466_3;
+  wire                when_UsbOhci_l472_3;
   reg                 reg_hcRhPortStatus_3_CCS_regNext;
   wire                io_phy_ports_3_suspend_fire;
   wire                io_phy_ports_3_reset_fire;
@@ -8514,9 +8460,9 @@ module UsbOhciAxi4_UsbOhci (
   wire                frame_limitHit;
   reg        [2:0]    frame_decrementTimer;
   wire                frame_decrementTimerOverflow;
-  wire                when_UsbOhci_l526;
   wire                when_UsbOhci_l528;
-  wire                when_UsbOhci_l540;
+  wire                when_UsbOhci_l530;
+  wire                when_UsbOhci_l542;
   reg                 token_wantExit;
   reg                 token_wantStart;
   reg                 token_wantKill;
@@ -8564,7 +8510,7 @@ module UsbOhciAxi4_UsbOhci (
   reg        [1:0]    priority_counter;
   reg                 priority_tick;
   reg                 priority_skip;
-  wire                when_UsbOhci_l663;
+  wire                when_UsbOhci_l665;
   reg        [2:0]    interruptDelay_counter;
   reg                 interruptDelay_tick;
   wire                interruptDelay_done;
@@ -8572,8 +8518,8 @@ module UsbOhciAxi4_UsbOhci (
   reg                 interruptDelay_disable;
   reg                 interruptDelay_load_valid;
   reg        [2:0]    interruptDelay_load_payload;
-  wire                when_UsbOhci_l685;
-  wire                when_UsbOhci_l689;
+  wire                when_UsbOhci_l687;
+  wire                when_UsbOhci_l691;
   reg                 endpoint_wantExit;
   reg                 endpoint_wantStart;
   reg                 endpoint_wantKill;
@@ -8600,7 +8546,7 @@ module UsbOhciAxi4_UsbOhci (
   wire                endpoint_ED_tdEmpty;
   wire                endpoint_ED_isFs;
   wire                endpoint_ED_isoOut;
-  wire                when_UsbOhci_l750;
+  wire                when_UsbOhci_l752;
   wire       [31:0]   endpoint_TD_address;
   reg        [31:0]   endpoint_TD_words_0;
   reg        [31:0]   endpoint_TD_words_1;
@@ -8666,7 +8612,7 @@ module UsbOhciAxi4_UsbOhci (
   reg                 endpoint_dmaLogic_overflow;
   reg                 endpoint_dmaLogic_underflow;
   wire                endpoint_dmaLogic_underflowError;
-  wire                when_UsbOhci_l938;
+  wire                when_UsbOhci_l940;
   reg        [12:0]   endpoint_dmaLogic_byteCtx_counter;
   wire                endpoint_dmaLogic_byteCtx_last;
   wire       [1:0]    endpoint_dmaLogic_byteCtx_sel;
@@ -8703,55 +8649,55 @@ module UsbOhciAxi4_UsbOhci (
   reg                 hc_error;
   wire                hc_operationalIsDone;
   wire       [1:0]    _zz_reg_hcControl_HCFSWrite_payload;
-  wire                when_BusSlaveFactory_l968;
-  wire                when_BusSlaveFactory_l968_1;
-  wire                when_BusSlaveFactory_l968_2;
-  wire                when_BusSlaveFactory_l968_3;
-  wire                when_BusSlaveFactory_l968_4;
-  wire                when_BusSlaveFactory_l968_5;
-  wire                when_BusSlaveFactory_l968_6;
-  wire                when_BusSlaveFactory_l968_7;
-  wire                when_BusSlaveFactory_l968_8;
-  wire                when_BusSlaveFactory_l968_9;
-  wire                when_BusSlaveFactory_l968_10;
-  wire                when_BusSlaveFactory_l968_11;
-  wire                when_BusSlaveFactory_l968_12;
-  wire                when_BusSlaveFactory_l968_13;
-  wire                when_BusSlaveFactory_l968_14;
-  wire                when_BusSlaveFactory_l968_15;
-  wire                when_BusSlaveFactory_l968_16;
-  wire                when_BusSlaveFactory_l968_17;
-  wire                when_BusSlaveFactory_l968_18;
-  wire                when_BusSlaveFactory_l968_19;
-  wire                when_BusSlaveFactory_l968_20;
-  wire                when_BusSlaveFactory_l968_21;
-  wire                when_BusSlaveFactory_l968_22;
-  wire                when_BusSlaveFactory_l968_23;
-  wire                when_BusSlaveFactory_l968_24;
-  wire                when_BusSlaveFactory_l968_25;
-  wire                when_BusSlaveFactory_l968_26;
-  wire                when_BusSlaveFactory_l968_27;
-  wire                when_BusSlaveFactory_l968_28;
-  wire                when_BusSlaveFactory_l968_29;
-  wire                when_BusSlaveFactory_l968_30;
-  wire                when_BusSlaveFactory_l968_31;
-  wire                when_BusSlaveFactory_l968_32;
-  wire                when_BusSlaveFactory_l968_33;
-  wire                when_BusSlaveFactory_l968_34;
-  wire                when_BusSlaveFactory_l968_35;
-  wire                when_BusSlaveFactory_l968_36;
-  wire                when_BusSlaveFactory_l968_37;
-  wire                when_BusSlaveFactory_l968_38;
-  wire                when_BusSlaveFactory_l968_39;
-  wire                when_BusSlaveFactory_l968_40;
-  wire                when_BusSlaveFactory_l968_41;
-  wire                when_BusSlaveFactory_l968_42;
-  wire                when_BusSlaveFactory_l968_43;
-  wire                when_BusSlaveFactory_l968_44;
-  wire                when_BusSlaveFactory_l968_45;
-  wire                when_BusSlaveFactory_l968_46;
-  reg                 _zz_when_UsbOhci_l253;
-  wire                when_UsbOhci_l253;
+  wire                when_BusSlaveFactory_l1041;
+  wire                when_BusSlaveFactory_l1041_1;
+  wire                when_BusSlaveFactory_l1041_2;
+  wire                when_BusSlaveFactory_l1041_3;
+  wire                when_BusSlaveFactory_l1041_4;
+  wire                when_BusSlaveFactory_l1041_5;
+  wire                when_BusSlaveFactory_l1041_6;
+  wire                when_BusSlaveFactory_l1041_7;
+  wire                when_BusSlaveFactory_l1041_8;
+  wire                when_BusSlaveFactory_l1041_9;
+  wire                when_BusSlaveFactory_l1041_10;
+  wire                when_BusSlaveFactory_l1041_11;
+  wire                when_BusSlaveFactory_l1041_12;
+  wire                when_BusSlaveFactory_l1041_13;
+  wire                when_BusSlaveFactory_l1041_14;
+  wire                when_BusSlaveFactory_l1041_15;
+  wire                when_BusSlaveFactory_l1041_16;
+  wire                when_BusSlaveFactory_l1041_17;
+  wire                when_BusSlaveFactory_l1041_18;
+  wire                when_BusSlaveFactory_l1041_19;
+  wire                when_BusSlaveFactory_l1041_20;
+  wire                when_BusSlaveFactory_l1041_21;
+  wire                when_BusSlaveFactory_l1041_22;
+  wire                when_BusSlaveFactory_l1041_23;
+  wire                when_BusSlaveFactory_l1041_24;
+  wire                when_BusSlaveFactory_l1041_25;
+  wire                when_BusSlaveFactory_l1041_26;
+  wire                when_BusSlaveFactory_l1041_27;
+  wire                when_BusSlaveFactory_l1041_28;
+  wire                when_BusSlaveFactory_l1041_29;
+  wire                when_BusSlaveFactory_l1041_30;
+  wire                when_BusSlaveFactory_l1041_31;
+  wire                when_BusSlaveFactory_l1041_32;
+  wire                when_BusSlaveFactory_l1041_33;
+  wire                when_BusSlaveFactory_l1041_34;
+  wire                when_BusSlaveFactory_l1041_35;
+  wire                when_BusSlaveFactory_l1041_36;
+  wire                when_BusSlaveFactory_l1041_37;
+  wire                when_BusSlaveFactory_l1041_38;
+  wire                when_BusSlaveFactory_l1041_39;
+  wire                when_BusSlaveFactory_l1041_40;
+  wire                when_BusSlaveFactory_l1041_41;
+  wire                when_BusSlaveFactory_l1041_42;
+  wire                when_BusSlaveFactory_l1041_43;
+  wire                when_BusSlaveFactory_l1041_44;
+  wire                when_BusSlaveFactory_l1041_45;
+  wire                when_BusSlaveFactory_l1041_46;
+  reg                 _zz_when_UsbOhci_l255;
+  wire                when_UsbOhci_l255;
   reg        [2:0]    token_stateReg;
   reg        [2:0]    token_stateNext;
   wire                when_StateMachine_l237;
@@ -8768,85 +8714,85 @@ module UsbOhciAxi4_UsbOhci (
   wire                when_Misc_l85;
   reg        [1:0]    sof_stateReg;
   reg        [1:0]    sof_stateNext;
-  wire                when_UsbOhci_l206;
-  wire                when_UsbOhci_l206_1;
-  wire                when_UsbOhci_l626;
+  wire                when_UsbOhci_l207;
+  wire                when_UsbOhci_l207_1;
+  wire                when_UsbOhci_l628;
   wire                when_StateMachine_l237_1;
   reg        [4:0]    endpoint_stateReg;
   reg        [4:0]    endpoint_stateNext;
-  wire                when_UsbOhci_l1128;
-  wire                when_UsbOhci_l1311;
-  wire                when_UsbOhci_l188;
-  wire                when_UsbOhci_l188_1;
-  wire                when_UsbOhci_l188_2;
-  wire                when_UsbOhci_l188_3;
-  wire                when_UsbOhci_l855;
-  wire                when_UsbOhci_l861;
-  wire                when_UsbOhci_l188_4;
-  wire                when_UsbOhci_l188_5;
-  wire                when_UsbOhci_l188_6;
-  wire                when_UsbOhci_l188_7;
-  wire                when_UsbOhci_l891;
-  wire                when_UsbOhci_l188_8;
-  wire                when_UsbOhci_l188_9;
-  wire                when_UsbOhci_l891_1;
-  wire                when_UsbOhci_l188_10;
-  wire                when_UsbOhci_l188_11;
-  wire                when_UsbOhci_l891_2;
-  wire                when_UsbOhci_l188_12;
-  wire                when_UsbOhci_l188_13;
-  wire                when_UsbOhci_l891_3;
-  wire                when_UsbOhci_l188_14;
-  wire                when_UsbOhci_l188_15;
-  wire                when_UsbOhci_l891_4;
-  wire                when_UsbOhci_l188_16;
-  wire                when_UsbOhci_l188_17;
-  wire                when_UsbOhci_l891_5;
-  wire                when_UsbOhci_l188_18;
-  wire                when_UsbOhci_l188_19;
-  wire                when_UsbOhci_l891_6;
-  wire                when_UsbOhci_l188_20;
-  wire                when_UsbOhci_l188_21;
-  wire                when_UsbOhci_l891_7;
-  wire                when_UsbOhci_l188_22;
-  wire                when_UsbOhci_l898;
+  wire                when_UsbOhci_l1130;
+  wire                when_UsbOhci_l1313;
+  wire                when_UsbOhci_l189;
+  wire                when_UsbOhci_l189_1;
+  wire                when_UsbOhci_l189_2;
+  wire                when_UsbOhci_l189_3;
+  wire                when_UsbOhci_l857;
+  wire                when_UsbOhci_l863;
+  wire                when_UsbOhci_l189_4;
+  wire                when_UsbOhci_l189_5;
+  wire                when_UsbOhci_l189_6;
+  wire                when_UsbOhci_l189_7;
+  wire                when_UsbOhci_l893;
+  wire                when_UsbOhci_l189_8;
+  wire                when_UsbOhci_l189_9;
+  wire                when_UsbOhci_l893_1;
+  wire                when_UsbOhci_l189_10;
+  wire                when_UsbOhci_l189_11;
+  wire                when_UsbOhci_l893_2;
+  wire                when_UsbOhci_l189_12;
+  wire                when_UsbOhci_l189_13;
+  wire                when_UsbOhci_l893_3;
+  wire                when_UsbOhci_l189_14;
+  wire                when_UsbOhci_l189_15;
+  wire                when_UsbOhci_l893_4;
+  wire                when_UsbOhci_l189_16;
+  wire                when_UsbOhci_l189_17;
+  wire                when_UsbOhci_l893_5;
+  wire                when_UsbOhci_l189_18;
+  wire                when_UsbOhci_l189_19;
+  wire                when_UsbOhci_l893_6;
+  wire                when_UsbOhci_l189_20;
+  wire                when_UsbOhci_l189_21;
+  wire                when_UsbOhci_l893_7;
+  wire                when_UsbOhci_l189_22;
+  wire                when_UsbOhci_l900;
   wire       [13:0]   _zz_endpoint_lastAddress;
-  wire                when_UsbOhci_l1118;
-  reg                 when_UsbOhci_l1274;
-  wire                when_UsbOhci_l1263;
-  wire                when_UsbOhci_l1283;
-  wire                when_UsbOhci_l1200;
-  wire                when_UsbOhci_l1205;
+  wire                when_UsbOhci_l1120;
+  reg                 when_UsbOhci_l1276;
+  wire                when_UsbOhci_l1265;
+  wire                when_UsbOhci_l1285;
+  wire                when_UsbOhci_l1202;
   wire                when_UsbOhci_l1207;
-  wire                when_UsbOhci_l1331;
-  wire                when_UsbOhci_l1346;
-  wire                when_UsbOhci_l206_2;
-  wire                when_UsbOhci_l206_3;
+  wire                when_UsbOhci_l1209;
+  wire                when_UsbOhci_l1333;
+  wire                when_UsbOhci_l1348;
+  wire                when_UsbOhci_l207_2;
+  wire                when_UsbOhci_l207_3;
   wire       [15:0]   _zz_ioDma_cmd_payload_fragment_data;
-  wire                when_UsbOhci_l1378;
-  wire                when_UsbOhci_l206_4;
-  wire                when_UsbOhci_l1378_1;
-  wire                when_UsbOhci_l206_5;
-  wire                when_UsbOhci_l1378_2;
-  wire                when_UsbOhci_l206_6;
-  wire                when_UsbOhci_l1378_3;
-  wire                when_UsbOhci_l206_7;
-  wire                when_UsbOhci_l1378_4;
-  wire                when_UsbOhci_l206_8;
-  wire                when_UsbOhci_l1378_5;
-  wire                when_UsbOhci_l206_9;
-  wire                when_UsbOhci_l1378_6;
-  wire                when_UsbOhci_l206_10;
-  wire                when_UsbOhci_l1378_7;
-  wire                when_UsbOhci_l206_11;
-  wire                when_UsbOhci_l206_12;
-  wire                when_UsbOhci_l206_13;
-  wire                when_UsbOhci_l206_14;
-  wire                when_UsbOhci_l1393;
-  wire                when_UsbOhci_l206_15;
-  wire                when_UsbOhci_l1408;
-  wire                when_UsbOhci_l1415;
-  wire                when_UsbOhci_l1418;
+  wire                when_UsbOhci_l1380;
+  wire                when_UsbOhci_l207_4;
+  wire                when_UsbOhci_l1380_1;
+  wire                when_UsbOhci_l207_5;
+  wire                when_UsbOhci_l1380_2;
+  wire                when_UsbOhci_l207_6;
+  wire                when_UsbOhci_l1380_3;
+  wire                when_UsbOhci_l207_7;
+  wire                when_UsbOhci_l1380_4;
+  wire                when_UsbOhci_l207_8;
+  wire                when_UsbOhci_l1380_5;
+  wire                when_UsbOhci_l207_9;
+  wire                when_UsbOhci_l1380_6;
+  wire                when_UsbOhci_l207_10;
+  wire                when_UsbOhci_l1380_7;
+  wire                when_UsbOhci_l207_11;
+  wire                when_UsbOhci_l207_12;
+  wire                when_UsbOhci_l207_13;
+  wire                when_UsbOhci_l207_14;
+  wire                when_UsbOhci_l1395;
+  wire                when_UsbOhci_l207_15;
+  wire                when_UsbOhci_l1410;
+  wire                when_UsbOhci_l1417;
+  wire                when_UsbOhci_l1420;
   wire                when_StateMachine_l237_2;
   wire                when_StateMachine_l253_1;
   wire                when_StateMachine_l253_2;
@@ -8854,31 +8800,31 @@ module UsbOhciAxi4_UsbOhci (
   wire                when_StateMachine_l253_4;
   reg        [2:0]    endpoint_dmaLogic_stateReg;
   reg        [2:0]    endpoint_dmaLogic_stateNext;
-  wire                when_UsbOhci_l1025;
-  wire                when_UsbOhci_l1054;
+  wire                when_UsbOhci_l1027;
+  wire                when_UsbOhci_l1056;
   wire       [3:0]    _zz_2;
-  wire                when_UsbOhci_l1063;
-  wire                when_UsbOhci_l1068;
+  wire                when_UsbOhci_l1065;
+  wire                when_UsbOhci_l1070;
   reg                 ioDma_cmd_payload_first;
   wire                when_StateMachine_l253_5;
   reg        [2:0]    operational_stateReg;
   reg        [2:0]    operational_stateNext;
-  wire                when_UsbOhci_l1461;
-  wire                when_UsbOhci_l1488;
-  wire                when_UsbOhci_l1487;
+  wire                when_UsbOhci_l1463;
+  wire                when_UsbOhci_l1490;
+  wire                when_UsbOhci_l1489;
   wire                when_StateMachine_l237_3;
   wire                when_StateMachine_l253_6;
   reg        [2:0]    hc_stateReg;
   reg        [2:0]    hc_stateNext;
-  wire                when_UsbOhci_l1616;
-  wire                when_UsbOhci_l1625;
-  wire                when_UsbOhci_l1628;
-  wire                when_UsbOhci_l1639;
-  wire                when_UsbOhci_l1652;
+  wire                when_UsbOhci_l1618;
+  wire                when_UsbOhci_l1627;
+  wire                when_UsbOhci_l1630;
+  wire                when_UsbOhci_l1641;
+  wire                when_UsbOhci_l1654;
   wire                when_StateMachine_l253_7;
   wire                when_StateMachine_l253_8;
   wire                when_StateMachine_l253_9;
-  wire                when_UsbOhci_l1659;
+  wire                when_UsbOhci_l1661;
   `ifndef SYNTHESIS
   reg [87:0] reg_hcControl_HCFS_string;
   reg [87:0] reg_hcControl_HCFSWrite_payload_string;
@@ -9040,7 +8986,7 @@ module UsbOhciAxi4_UsbOhci (
   assign _zz_endpoint_lastAddress_2 = {1'd0, endpoint_TD_lastOffset};
   assign _zz_endpoint_lastAddress_3 = {1'd0, endpoint_TD_lastOffset};
   assign _zz_endpoint_lastAddress_4 = {1'd0, endpoint_TD_lastOffset};
-  assign _zz_when_UsbOhci_l1331 = {1'd0, endpoint_TD_lastOffset};
+  assign _zz_when_UsbOhci_l1333 = {1'd0, endpoint_TD_lastOffset};
   assign _zz_endpoint_TD_words_0 = (endpoint_TD_EC + 2'b01);
   assign _zz_ioDma_cmd_payload_fragment_length_1 = (endpoint_ED_F ? 5'h1f : 5'h0f);
   assign _zz_ioDma_cmd_payload_last_1 = (endpoint_ED_F ? 3'b111 : 3'b011);
@@ -9049,7 +8995,7 @@ module UsbOhciAxi4_UsbOhci (
   assign _zz__zz_ioDma_cmd_payload_fragment_data = _zz__zz_ioDma_cmd_payload_fragment_data_1[11:0];
   assign _zz__zz_ioDma_cmd_payload_fragment_data_2 = (endpoint_currentAddress - _zz__zz_ioDma_cmd_payload_fragment_data_3);
   assign _zz__zz_ioDma_cmd_payload_fragment_data_3 = {1'd0, endpoint_TD_isoBase};
-  assign _zz_when_UsbOhci_l1054 = {3'd0, endpoint_dmaLogic_fromUsbCounter};
+  assign _zz_when_UsbOhci_l1056 = {3'd0, endpoint_dmaLogic_fromUsbCounter};
   assign _zz_endpoint_dmaLogic_overflow = {3'd0, endpoint_dmaLogic_fromUsbCounter};
   assign _zz_endpoint_lastAddress_5 = (_zz_endpoint_lastAddress_6 - 14'h0001);
   assign _zz_endpoint_lastAddress_6 = (endpoint_currentAddress + _zz_endpoint_lastAddress_7);
@@ -9070,8 +9016,8 @@ module UsbOhciAxi4_UsbOhci (
     .io_pop_ready    (fifo_io_pop_ready         ), //i
     .io_pop_payload  (fifo_io_pop_payload[31:0] ), //o
     .io_flush        (fifo_io_flush             ), //i
-    .io_occupancy    (fifo_io_occupancy[9:0]    ), //o
-    .io_availability (fifo_io_availability[9:0] ), //o
+    .io_occupancy    (fifo_io_occupancy[8:0]    ), //o
+    .io_availability (fifo_io_availability[8:0] ), //o
     .ctrl_clk        (ctrl_clk                  ), //i
     .ctrl_reset      (ctrl_reset                )  //i
   );
@@ -9370,7 +9316,7 @@ module UsbOhciAxi4_UsbOhci (
 
   always @(*) begin
     io_phy_lowSpeed = 1'b0;
-    if(when_UsbOhci_l750) begin
+    if(when_UsbOhci_l752) begin
       io_phy_lowSpeed = endpoint_ED_S;
     end
   end
@@ -9384,7 +9330,7 @@ module UsbOhciAxi4_UsbOhci (
 
   always @(*) begin
     unscheduleAll_ready = 1'b1;
-    if(when_UsbOhci_l157) begin
+    if(when_UsbOhci_l158) begin
       unscheduleAll_ready = 1'b0;
     end
   end
@@ -9393,7 +9339,7 @@ module UsbOhciAxi4_UsbOhci (
   assign ioDma_rsp_fire = (ioDma_rsp_valid && ioDma_rsp_ready);
   assign dmaCtx_pendingFull = dmaCtx_pendingCounter[3];
   assign dmaCtx_pendingEmpty = (dmaCtx_pendingCounter == 4'b0000);
-  assign when_UsbOhci_l157 = (! dmaCtx_pendingEmpty);
+  assign when_UsbOhci_l158 = (! dmaCtx_pendingEmpty);
   assign io_dma_cmd_fire = (io_dma_cmd_valid && io_dma_cmd_ready);
   assign _zz_io_dma_cmd_valid = (! (dmaCtx_pendingFull || (unscheduleAll_valid && io_dma_cmd_payload_first)));
   assign ioDma_cmd_ready = (io_dma_cmd_ready && _zz_io_dma_cmd_valid);
@@ -9945,11 +9891,11 @@ module UsbOhciAxi4_UsbOhci (
       UsbOhciAxi4_sof_enumDef_FRAME_TX : begin
       end
       UsbOhciAxi4_sof_enumDef_FRAME_NUMBER_CMD : begin
-        if(when_UsbOhci_l206) begin
+        if(when_UsbOhci_l207) begin
           ioDma_cmd_payload_fragment_data[31 : 0] = {16'h0000,reg_hcFmNumber_FN};
         end
         if(sof_doInterruptDelay) begin
-          if(when_UsbOhci_l206_1) begin
+          if(when_UsbOhci_l207_1) begin
             ioDma_cmd_payload_fragment_data[31 : 0] = {reg_hcDoneHead_DH_address[31 : 1],reg_hcInterrupt_unmaskedPending};
           end
         end
@@ -10001,75 +9947,75 @@ module UsbOhciAxi4_UsbOhci (
       UsbOhciAxi4_endpoint_enumDef_UPDATE_TD_CMD : begin
         if(endpoint_ED_F) begin
           if(endpoint_TD_isoOverrunReg) begin
-            if(when_UsbOhci_l206_2) begin
+            if(when_UsbOhci_l207_2) begin
               ioDma_cmd_payload_fragment_data[31 : 24] = {{4'b1000,endpoint_TD_words_0[27]},endpoint_TD_FC};
             end
           end else begin
             if(endpoint_TD_isoLastReg) begin
-              if(when_UsbOhci_l206_3) begin
+              if(when_UsbOhci_l207_3) begin
                 ioDma_cmd_payload_fragment_data[31 : 24] = {{4'b0000,endpoint_TD_words_0[27]},endpoint_TD_FC};
               end
             end
-            if(when_UsbOhci_l1378) begin
-              if(when_UsbOhci_l206_4) begin
+            if(when_UsbOhci_l1380) begin
+              if(when_UsbOhci_l207_4) begin
                 ioDma_cmd_payload_fragment_data[15 : 0] = _zz_ioDma_cmd_payload_fragment_data;
               end
             end
-            if(when_UsbOhci_l1378_1) begin
-              if(when_UsbOhci_l206_5) begin
+            if(when_UsbOhci_l1380_1) begin
+              if(when_UsbOhci_l207_5) begin
                 ioDma_cmd_payload_fragment_data[31 : 16] = _zz_ioDma_cmd_payload_fragment_data;
               end
             end
-            if(when_UsbOhci_l1378_2) begin
-              if(when_UsbOhci_l206_6) begin
+            if(when_UsbOhci_l1380_2) begin
+              if(when_UsbOhci_l207_6) begin
                 ioDma_cmd_payload_fragment_data[15 : 0] = _zz_ioDma_cmd_payload_fragment_data;
               end
             end
-            if(when_UsbOhci_l1378_3) begin
-              if(when_UsbOhci_l206_7) begin
+            if(when_UsbOhci_l1380_3) begin
+              if(when_UsbOhci_l207_7) begin
                 ioDma_cmd_payload_fragment_data[31 : 16] = _zz_ioDma_cmd_payload_fragment_data;
               end
             end
-            if(when_UsbOhci_l1378_4) begin
-              if(when_UsbOhci_l206_8) begin
+            if(when_UsbOhci_l1380_4) begin
+              if(when_UsbOhci_l207_8) begin
                 ioDma_cmd_payload_fragment_data[15 : 0] = _zz_ioDma_cmd_payload_fragment_data;
               end
             end
-            if(when_UsbOhci_l1378_5) begin
-              if(when_UsbOhci_l206_9) begin
+            if(when_UsbOhci_l1380_5) begin
+              if(when_UsbOhci_l207_9) begin
                 ioDma_cmd_payload_fragment_data[31 : 16] = _zz_ioDma_cmd_payload_fragment_data;
               end
             end
-            if(when_UsbOhci_l1378_6) begin
-              if(when_UsbOhci_l206_10) begin
+            if(when_UsbOhci_l1380_6) begin
+              if(when_UsbOhci_l207_10) begin
                 ioDma_cmd_payload_fragment_data[15 : 0] = _zz_ioDma_cmd_payload_fragment_data;
               end
             end
-            if(when_UsbOhci_l1378_7) begin
-              if(when_UsbOhci_l206_11) begin
+            if(when_UsbOhci_l1380_7) begin
+              if(when_UsbOhci_l207_11) begin
                 ioDma_cmd_payload_fragment_data[31 : 16] = _zz_ioDma_cmd_payload_fragment_data;
               end
             end
           end
         end else begin
-          if(when_UsbOhci_l206_12) begin
+          if(when_UsbOhci_l207_12) begin
             ioDma_cmd_payload_fragment_data[31 : 24] = {{endpoint_TD_CC,endpoint_TD_EC},endpoint_TD_TNext};
           end
           if(endpoint_TD_upateCBP) begin
-            if(when_UsbOhci_l206_13) begin
+            if(when_UsbOhci_l207_13) begin
               ioDma_cmd_payload_fragment_data[31 : 0] = endpoint_tdUpdateAddress;
             end
           end
         end
         if(endpoint_TD_retire) begin
-          if(when_UsbOhci_l206_14) begin
+          if(when_UsbOhci_l207_14) begin
             ioDma_cmd_payload_fragment_data[31 : 0] = reg_hcDoneHead_DH_address;
           end
         end
       end
       UsbOhciAxi4_endpoint_enumDef_UPDATE_ED_CMD : begin
         if(endpoint_TD_retire) begin
-          if(when_UsbOhci_l206_15) begin
+          if(when_UsbOhci_l207_15) begin
             ioDma_cmd_payload_fragment_data[31 : 0] = {{{endpoint_TD_nextTD,2'b00},endpoint_TD_dataPhaseNext},endpoint_ED_H};
           end
         end
@@ -10108,11 +10054,11 @@ module UsbOhciAxi4_UsbOhci (
       UsbOhciAxi4_sof_enumDef_FRAME_TX : begin
       end
       UsbOhciAxi4_sof_enumDef_FRAME_NUMBER_CMD : begin
-        if(when_UsbOhci_l206) begin
+        if(when_UsbOhci_l207) begin
           ioDma_cmd_payload_fragment_mask[3 : 0] = 4'b1111;
         end
         if(sof_doInterruptDelay) begin
-          if(when_UsbOhci_l206_1) begin
+          if(when_UsbOhci_l207_1) begin
             ioDma_cmd_payload_fragment_mask[3 : 0] = 4'b1111;
           end
         end
@@ -10164,75 +10110,75 @@ module UsbOhciAxi4_UsbOhci (
       UsbOhciAxi4_endpoint_enumDef_UPDATE_TD_CMD : begin
         if(endpoint_ED_F) begin
           if(endpoint_TD_isoOverrunReg) begin
-            if(when_UsbOhci_l206_2) begin
+            if(when_UsbOhci_l207_2) begin
               ioDma_cmd_payload_fragment_mask[3 : 3] = 1'b1;
             end
           end else begin
             if(endpoint_TD_isoLastReg) begin
-              if(when_UsbOhci_l206_3) begin
+              if(when_UsbOhci_l207_3) begin
                 ioDma_cmd_payload_fragment_mask[3 : 3] = 1'b1;
               end
             end
-            if(when_UsbOhci_l1378) begin
-              if(when_UsbOhci_l206_4) begin
+            if(when_UsbOhci_l1380) begin
+              if(when_UsbOhci_l207_4) begin
                 ioDma_cmd_payload_fragment_mask[1 : 0] = 2'b11;
               end
             end
-            if(when_UsbOhci_l1378_1) begin
-              if(when_UsbOhci_l206_5) begin
+            if(when_UsbOhci_l1380_1) begin
+              if(when_UsbOhci_l207_5) begin
                 ioDma_cmd_payload_fragment_mask[3 : 2] = 2'b11;
               end
             end
-            if(when_UsbOhci_l1378_2) begin
-              if(when_UsbOhci_l206_6) begin
+            if(when_UsbOhci_l1380_2) begin
+              if(when_UsbOhci_l207_6) begin
                 ioDma_cmd_payload_fragment_mask[1 : 0] = 2'b11;
               end
             end
-            if(when_UsbOhci_l1378_3) begin
-              if(when_UsbOhci_l206_7) begin
+            if(when_UsbOhci_l1380_3) begin
+              if(when_UsbOhci_l207_7) begin
                 ioDma_cmd_payload_fragment_mask[3 : 2] = 2'b11;
               end
             end
-            if(when_UsbOhci_l1378_4) begin
-              if(when_UsbOhci_l206_8) begin
+            if(when_UsbOhci_l1380_4) begin
+              if(when_UsbOhci_l207_8) begin
                 ioDma_cmd_payload_fragment_mask[1 : 0] = 2'b11;
               end
             end
-            if(when_UsbOhci_l1378_5) begin
-              if(when_UsbOhci_l206_9) begin
+            if(when_UsbOhci_l1380_5) begin
+              if(when_UsbOhci_l207_9) begin
                 ioDma_cmd_payload_fragment_mask[3 : 2] = 2'b11;
               end
             end
-            if(when_UsbOhci_l1378_6) begin
-              if(when_UsbOhci_l206_10) begin
+            if(when_UsbOhci_l1380_6) begin
+              if(when_UsbOhci_l207_10) begin
                 ioDma_cmd_payload_fragment_mask[1 : 0] = 2'b11;
               end
             end
-            if(when_UsbOhci_l1378_7) begin
-              if(when_UsbOhci_l206_11) begin
+            if(when_UsbOhci_l1380_7) begin
+              if(when_UsbOhci_l207_11) begin
                 ioDma_cmd_payload_fragment_mask[3 : 2] = 2'b11;
               end
             end
           end
         end else begin
-          if(when_UsbOhci_l206_12) begin
+          if(when_UsbOhci_l207_12) begin
             ioDma_cmd_payload_fragment_mask[3 : 3] = 1'b1;
           end
           if(endpoint_TD_upateCBP) begin
-            if(when_UsbOhci_l206_13) begin
+            if(when_UsbOhci_l207_13) begin
               ioDma_cmd_payload_fragment_mask[3 : 0] = 4'b1111;
             end
           end
         end
         if(endpoint_TD_retire) begin
-          if(when_UsbOhci_l206_14) begin
+          if(when_UsbOhci_l207_14) begin
             ioDma_cmd_payload_fragment_mask[3 : 0] = 4'b1111;
           end
         end
       end
       UsbOhciAxi4_endpoint_enumDef_UPDATE_ED_CMD : begin
         if(endpoint_TD_retire) begin
-          if(when_UsbOhci_l206_15) begin
+          if(when_UsbOhci_l207_15) begin
             ioDma_cmd_payload_fragment_mask[3 : 0] = 4'b1111;
           end
         end
@@ -10270,7 +10216,7 @@ module UsbOhciAxi4_UsbOhci (
   assign dmaRspMux_data = dmaRspMux_vec_0;
   always @(*) begin
     fifo_io_push_valid = 1'b0;
-    if(when_UsbOhci_l938) begin
+    if(when_UsbOhci_l940) begin
       fifo_io_push_valid = 1'b1;
     end
     if(endpoint_dmaLogic_push) begin
@@ -10280,7 +10226,7 @@ module UsbOhciAxi4_UsbOhci (
 
   always @(*) begin
     fifo_io_push_payload = 32'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
-    if(when_UsbOhci_l938) begin
+    if(when_UsbOhci_l940) begin
       fifo_io_push_payload = ioDma_rsp_payload_fragment_data;
     end
     if(endpoint_dmaLogic_push) begin
@@ -10295,7 +10241,7 @@ module UsbOhciAxi4_UsbOhci (
       end
       UsbOhciAxi4_endpoint_dmaLogic_enumDef_TO_USB : begin
         if(dataTx_data_ready) begin
-          if(when_UsbOhci_l1025) begin
+          if(when_UsbOhci_l1027) begin
             fifo_io_pop_ready = 1'b1;
           end
         end
@@ -10855,7 +10801,7 @@ module UsbOhciAxi4_UsbOhci (
   end
 
   assign ctrl_rsp_payload_fragment_source = io_ctrl_cmd_payload_fragment_source;
-  assign when_UsbOhci_l236 = (! doUnschedule);
+  assign when_UsbOhci_l238 = (! doUnschedule);
   assign reg_hcRevision_REV = 5'h10;
   always @(*) begin
     reg_hcControl_HCFSWrite_valid = 1'b0;
@@ -10937,25 +10883,25 @@ module UsbOhciAxi4_UsbOhci (
   assign when_BusSlaveFactory_l379_3 = io_ctrl_cmd_payload_fragment_data[3];
   always @(*) begin
     reg_hcInterrupt_unmaskedPending = 1'b0;
-    if(when_UsbOhci_l302) begin
+    if(when_UsbOhci_l304) begin
       reg_hcInterrupt_unmaskedPending = 1'b1;
     end
-    if(when_UsbOhci_l302_1) begin
+    if(when_UsbOhci_l304_1) begin
       reg_hcInterrupt_unmaskedPending = 1'b1;
     end
-    if(when_UsbOhci_l302_2) begin
+    if(when_UsbOhci_l304_2) begin
       reg_hcInterrupt_unmaskedPending = 1'b1;
     end
-    if(when_UsbOhci_l302_3) begin
+    if(when_UsbOhci_l304_3) begin
       reg_hcInterrupt_unmaskedPending = 1'b1;
     end
-    if(when_UsbOhci_l302_4) begin
+    if(when_UsbOhci_l304_4) begin
       reg_hcInterrupt_unmaskedPending = 1'b1;
     end
-    if(when_UsbOhci_l302_5) begin
+    if(when_UsbOhci_l304_5) begin
       reg_hcInterrupt_unmaskedPending = 1'b1;
     end
-    if(when_UsbOhci_l302_6) begin
+    if(when_UsbOhci_l304_6) begin
       reg_hcInterrupt_unmaskedPending = 1'b1;
     end
   end
@@ -11030,7 +10976,7 @@ module UsbOhciAxi4_UsbOhci (
   end
 
   assign when_BusSlaveFactory_l347_2 = io_ctrl_cmd_payload_fragment_data[0];
-  assign when_UsbOhci_l302 = (reg_hcInterrupt_SO_status && reg_hcInterrupt_SO_enable);
+  assign when_UsbOhci_l304 = (reg_hcInterrupt_SO_status && reg_hcInterrupt_SO_enable);
   always @(*) begin
     when_BusSlaveFactory_l341_3 = 1'b0;
     case(io_ctrl_cmd_payload_fragment_address)
@@ -11073,7 +11019,7 @@ module UsbOhciAxi4_UsbOhci (
   end
 
   assign when_BusSlaveFactory_l347_4 = io_ctrl_cmd_payload_fragment_data[1];
-  assign when_UsbOhci_l302_1 = (reg_hcInterrupt_WDH_status && reg_hcInterrupt_WDH_enable);
+  assign when_UsbOhci_l304_1 = (reg_hcInterrupt_WDH_status && reg_hcInterrupt_WDH_enable);
   always @(*) begin
     when_BusSlaveFactory_l341_5 = 1'b0;
     case(io_ctrl_cmd_payload_fragment_address)
@@ -11116,7 +11062,7 @@ module UsbOhciAxi4_UsbOhci (
   end
 
   assign when_BusSlaveFactory_l347_6 = io_ctrl_cmd_payload_fragment_data[2];
-  assign when_UsbOhci_l302_2 = (reg_hcInterrupt_SF_status && reg_hcInterrupt_SF_enable);
+  assign when_UsbOhci_l304_2 = (reg_hcInterrupt_SF_status && reg_hcInterrupt_SF_enable);
   always @(*) begin
     when_BusSlaveFactory_l341_7 = 1'b0;
     case(io_ctrl_cmd_payload_fragment_address)
@@ -11159,7 +11105,7 @@ module UsbOhciAxi4_UsbOhci (
   end
 
   assign when_BusSlaveFactory_l347_8 = io_ctrl_cmd_payload_fragment_data[3];
-  assign when_UsbOhci_l302_3 = (reg_hcInterrupt_RD_status && reg_hcInterrupt_RD_enable);
+  assign when_UsbOhci_l304_3 = (reg_hcInterrupt_RD_status && reg_hcInterrupt_RD_enable);
   always @(*) begin
     when_BusSlaveFactory_l341_9 = 1'b0;
     case(io_ctrl_cmd_payload_fragment_address)
@@ -11202,7 +11148,7 @@ module UsbOhciAxi4_UsbOhci (
   end
 
   assign when_BusSlaveFactory_l347_10 = io_ctrl_cmd_payload_fragment_data[4];
-  assign when_UsbOhci_l302_4 = (reg_hcInterrupt_UE_status && reg_hcInterrupt_UE_enable);
+  assign when_UsbOhci_l304_4 = (reg_hcInterrupt_UE_status && reg_hcInterrupt_UE_enable);
   always @(*) begin
     when_BusSlaveFactory_l341_11 = 1'b0;
     case(io_ctrl_cmd_payload_fragment_address)
@@ -11245,7 +11191,7 @@ module UsbOhciAxi4_UsbOhci (
   end
 
   assign when_BusSlaveFactory_l347_12 = io_ctrl_cmd_payload_fragment_data[5];
-  assign when_UsbOhci_l302_5 = (reg_hcInterrupt_FNO_status && reg_hcInterrupt_FNO_enable);
+  assign when_UsbOhci_l304_5 = (reg_hcInterrupt_FNO_status && reg_hcInterrupt_FNO_enable);
   always @(*) begin
     when_BusSlaveFactory_l341_13 = 1'b0;
     case(io_ctrl_cmd_payload_fragment_address)
@@ -11288,7 +11234,7 @@ module UsbOhciAxi4_UsbOhci (
   end
 
   assign when_BusSlaveFactory_l347_14 = io_ctrl_cmd_payload_fragment_data[6];
-  assign when_UsbOhci_l302_6 = (reg_hcInterrupt_RHSC_status && reg_hcInterrupt_RHSC_enable);
+  assign when_UsbOhci_l304_6 = (reg_hcInterrupt_RHSC_status && reg_hcInterrupt_RHSC_enable);
   always @(*) begin
     when_BusSlaveFactory_l341_15 = 1'b0;
     case(io_ctrl_cmd_payload_fragment_address)
@@ -11361,7 +11307,7 @@ module UsbOhciAxi4_UsbOhci (
   end
 
   assign when_BusSlaveFactory_l347_17 = io_ctrl_cmd_payload_fragment_data[17];
-  assign when_UsbOhci_l409 = (io_phy_overcurrent ^ io_phy_overcurrent_regNext);
+  assign when_UsbOhci_l411 = (io_phy_overcurrent ^ io_phy_overcurrent_regNext);
   always @(*) begin
     reg_hcRhStatus_clearGlobalPower = 1'b0;
     if(when_BusSlaveFactory_l377_13) begin
@@ -11734,15 +11680,15 @@ module UsbOhciAxi4_UsbOhci (
   end
 
   assign when_BusSlaveFactory_l379_28 = io_ctrl_cmd_payload_fragment_data[20];
-  assign when_UsbOhci_l460 = ((reg_hcRhPortStatus_0_clearPortEnable || reg_hcRhPortStatus_0_PESC_set) || (! reg_hcRhPortStatus_0_PPS));
-  assign when_UsbOhci_l460_1 = (reg_hcRhPortStatus_0_PRSC_set || reg_hcRhPortStatus_0_PSSC_set);
-  assign when_UsbOhci_l460_2 = (reg_hcRhPortStatus_0_setPortEnable && reg_hcRhPortStatus_0_CCS);
-  assign when_UsbOhci_l461 = (((reg_hcRhPortStatus_0_PSSC_set || reg_hcRhPortStatus_0_PRSC_set) || (! reg_hcRhPortStatus_0_PPS)) || (reg_hcControl_HCFS == UsbOhciAxi4_MainState_RESUME));
-  assign when_UsbOhci_l461_1 = (reg_hcRhPortStatus_0_setPortSuspend && reg_hcRhPortStatus_0_CCS);
-  assign when_UsbOhci_l462 = (reg_hcRhPortStatus_0_setPortSuspend && reg_hcRhPortStatus_0_CCS);
-  assign when_UsbOhci_l463 = (reg_hcRhPortStatus_0_clearSuspendStatus && reg_hcRhPortStatus_0_PSS);
-  assign when_UsbOhci_l464 = (reg_hcRhPortStatus_0_setPortReset && reg_hcRhPortStatus_0_CCS);
-  assign when_UsbOhci_l470 = reg_hcRhDescriptorB_PPCM[0];
+  assign when_UsbOhci_l462 = ((reg_hcRhPortStatus_0_clearPortEnable || reg_hcRhPortStatus_0_PESC_set) || (! reg_hcRhPortStatus_0_PPS));
+  assign when_UsbOhci_l462_1 = (reg_hcRhPortStatus_0_PRSC_set || reg_hcRhPortStatus_0_PSSC_set);
+  assign when_UsbOhci_l462_2 = (reg_hcRhPortStatus_0_setPortEnable && reg_hcRhPortStatus_0_CCS);
+  assign when_UsbOhci_l463 = (((reg_hcRhPortStatus_0_PSSC_set || reg_hcRhPortStatus_0_PRSC_set) || (! reg_hcRhPortStatus_0_PPS)) || (reg_hcControl_HCFS == UsbOhciAxi4_MainState_RESUME));
+  assign when_UsbOhci_l463_1 = (reg_hcRhPortStatus_0_setPortSuspend && reg_hcRhPortStatus_0_CCS);
+  assign when_UsbOhci_l464 = (reg_hcRhPortStatus_0_setPortSuspend && reg_hcRhPortStatus_0_CCS);
+  assign when_UsbOhci_l465 = (reg_hcRhPortStatus_0_clearSuspendStatus && reg_hcRhPortStatus_0_PSS);
+  assign when_UsbOhci_l466 = (reg_hcRhPortStatus_0_setPortReset && reg_hcRhPortStatus_0_CCS);
+  assign when_UsbOhci_l472 = reg_hcRhDescriptorB_PPCM[0];
   assign reg_hcRhPortStatus_0_CSC_set = ((((reg_hcRhPortStatus_0_CCS ^ reg_hcRhPortStatus_0_CCS_regNext) || (reg_hcRhPortStatus_0_setPortEnable && (! reg_hcRhPortStatus_0_CCS))) || (reg_hcRhPortStatus_0_setPortSuspend && (! reg_hcRhPortStatus_0_CCS))) || (reg_hcRhPortStatus_0_setPortReset && (! reg_hcRhPortStatus_0_CCS)));
   assign reg_hcRhPortStatus_0_PESC_set = io_phy_ports_0_overcurrent;
   assign io_phy_ports_0_suspend_fire = (io_phy_ports_0_suspend_valid && io_phy_ports_0_suspend_ready);
@@ -12037,15 +11983,15 @@ module UsbOhciAxi4_UsbOhci (
   end
 
   assign when_BusSlaveFactory_l379_40 = io_ctrl_cmd_payload_fragment_data[20];
-  assign when_UsbOhci_l460_3 = ((reg_hcRhPortStatus_1_clearPortEnable || reg_hcRhPortStatus_1_PESC_set) || (! reg_hcRhPortStatus_1_PPS));
-  assign when_UsbOhci_l460_4 = (reg_hcRhPortStatus_1_PRSC_set || reg_hcRhPortStatus_1_PSSC_set);
-  assign when_UsbOhci_l460_5 = (reg_hcRhPortStatus_1_setPortEnable && reg_hcRhPortStatus_1_CCS);
-  assign when_UsbOhci_l461_2 = (((reg_hcRhPortStatus_1_PSSC_set || reg_hcRhPortStatus_1_PRSC_set) || (! reg_hcRhPortStatus_1_PPS)) || (reg_hcControl_HCFS == UsbOhciAxi4_MainState_RESUME));
-  assign when_UsbOhci_l461_3 = (reg_hcRhPortStatus_1_setPortSuspend && reg_hcRhPortStatus_1_CCS);
-  assign when_UsbOhci_l462_1 = (reg_hcRhPortStatus_1_setPortSuspend && reg_hcRhPortStatus_1_CCS);
-  assign when_UsbOhci_l463_1 = (reg_hcRhPortStatus_1_clearSuspendStatus && reg_hcRhPortStatus_1_PSS);
-  assign when_UsbOhci_l464_1 = (reg_hcRhPortStatus_1_setPortReset && reg_hcRhPortStatus_1_CCS);
-  assign when_UsbOhci_l470_1 = reg_hcRhDescriptorB_PPCM[1];
+  assign when_UsbOhci_l462_3 = ((reg_hcRhPortStatus_1_clearPortEnable || reg_hcRhPortStatus_1_PESC_set) || (! reg_hcRhPortStatus_1_PPS));
+  assign when_UsbOhci_l462_4 = (reg_hcRhPortStatus_1_PRSC_set || reg_hcRhPortStatus_1_PSSC_set);
+  assign when_UsbOhci_l462_5 = (reg_hcRhPortStatus_1_setPortEnable && reg_hcRhPortStatus_1_CCS);
+  assign when_UsbOhci_l463_2 = (((reg_hcRhPortStatus_1_PSSC_set || reg_hcRhPortStatus_1_PRSC_set) || (! reg_hcRhPortStatus_1_PPS)) || (reg_hcControl_HCFS == UsbOhciAxi4_MainState_RESUME));
+  assign when_UsbOhci_l463_3 = (reg_hcRhPortStatus_1_setPortSuspend && reg_hcRhPortStatus_1_CCS);
+  assign when_UsbOhci_l464_1 = (reg_hcRhPortStatus_1_setPortSuspend && reg_hcRhPortStatus_1_CCS);
+  assign when_UsbOhci_l465_1 = (reg_hcRhPortStatus_1_clearSuspendStatus && reg_hcRhPortStatus_1_PSS);
+  assign when_UsbOhci_l466_1 = (reg_hcRhPortStatus_1_setPortReset && reg_hcRhPortStatus_1_CCS);
+  assign when_UsbOhci_l472_1 = reg_hcRhDescriptorB_PPCM[1];
   assign reg_hcRhPortStatus_1_CSC_set = ((((reg_hcRhPortStatus_1_CCS ^ reg_hcRhPortStatus_1_CCS_regNext) || (reg_hcRhPortStatus_1_setPortEnable && (! reg_hcRhPortStatus_1_CCS))) || (reg_hcRhPortStatus_1_setPortSuspend && (! reg_hcRhPortStatus_1_CCS))) || (reg_hcRhPortStatus_1_setPortReset && (! reg_hcRhPortStatus_1_CCS)));
   assign reg_hcRhPortStatus_1_PESC_set = io_phy_ports_1_overcurrent;
   assign io_phy_ports_1_suspend_fire = (io_phy_ports_1_suspend_valid && io_phy_ports_1_suspend_ready);
@@ -12340,15 +12286,15 @@ module UsbOhciAxi4_UsbOhci (
   end
 
   assign when_BusSlaveFactory_l379_52 = io_ctrl_cmd_payload_fragment_data[20];
-  assign when_UsbOhci_l460_6 = ((reg_hcRhPortStatus_2_clearPortEnable || reg_hcRhPortStatus_2_PESC_set) || (! reg_hcRhPortStatus_2_PPS));
-  assign when_UsbOhci_l460_7 = (reg_hcRhPortStatus_2_PRSC_set || reg_hcRhPortStatus_2_PSSC_set);
-  assign when_UsbOhci_l460_8 = (reg_hcRhPortStatus_2_setPortEnable && reg_hcRhPortStatus_2_CCS);
-  assign when_UsbOhci_l461_4 = (((reg_hcRhPortStatus_2_PSSC_set || reg_hcRhPortStatus_2_PRSC_set) || (! reg_hcRhPortStatus_2_PPS)) || (reg_hcControl_HCFS == UsbOhciAxi4_MainState_RESUME));
-  assign when_UsbOhci_l461_5 = (reg_hcRhPortStatus_2_setPortSuspend && reg_hcRhPortStatus_2_CCS);
-  assign when_UsbOhci_l462_2 = (reg_hcRhPortStatus_2_setPortSuspend && reg_hcRhPortStatus_2_CCS);
-  assign when_UsbOhci_l463_2 = (reg_hcRhPortStatus_2_clearSuspendStatus && reg_hcRhPortStatus_2_PSS);
-  assign when_UsbOhci_l464_2 = (reg_hcRhPortStatus_2_setPortReset && reg_hcRhPortStatus_2_CCS);
-  assign when_UsbOhci_l470_2 = reg_hcRhDescriptorB_PPCM[2];
+  assign when_UsbOhci_l462_6 = ((reg_hcRhPortStatus_2_clearPortEnable || reg_hcRhPortStatus_2_PESC_set) || (! reg_hcRhPortStatus_2_PPS));
+  assign when_UsbOhci_l462_7 = (reg_hcRhPortStatus_2_PRSC_set || reg_hcRhPortStatus_2_PSSC_set);
+  assign when_UsbOhci_l462_8 = (reg_hcRhPortStatus_2_setPortEnable && reg_hcRhPortStatus_2_CCS);
+  assign when_UsbOhci_l463_4 = (((reg_hcRhPortStatus_2_PSSC_set || reg_hcRhPortStatus_2_PRSC_set) || (! reg_hcRhPortStatus_2_PPS)) || (reg_hcControl_HCFS == UsbOhciAxi4_MainState_RESUME));
+  assign when_UsbOhci_l463_5 = (reg_hcRhPortStatus_2_setPortSuspend && reg_hcRhPortStatus_2_CCS);
+  assign when_UsbOhci_l464_2 = (reg_hcRhPortStatus_2_setPortSuspend && reg_hcRhPortStatus_2_CCS);
+  assign when_UsbOhci_l465_2 = (reg_hcRhPortStatus_2_clearSuspendStatus && reg_hcRhPortStatus_2_PSS);
+  assign when_UsbOhci_l466_2 = (reg_hcRhPortStatus_2_setPortReset && reg_hcRhPortStatus_2_CCS);
+  assign when_UsbOhci_l472_2 = reg_hcRhDescriptorB_PPCM[2];
   assign reg_hcRhPortStatus_2_CSC_set = ((((reg_hcRhPortStatus_2_CCS ^ reg_hcRhPortStatus_2_CCS_regNext) || (reg_hcRhPortStatus_2_setPortEnable && (! reg_hcRhPortStatus_2_CCS))) || (reg_hcRhPortStatus_2_setPortSuspend && (! reg_hcRhPortStatus_2_CCS))) || (reg_hcRhPortStatus_2_setPortReset && (! reg_hcRhPortStatus_2_CCS)));
   assign reg_hcRhPortStatus_2_PESC_set = io_phy_ports_2_overcurrent;
   assign io_phy_ports_2_suspend_fire = (io_phy_ports_2_suspend_valid && io_phy_ports_2_suspend_ready);
@@ -12643,15 +12589,15 @@ module UsbOhciAxi4_UsbOhci (
   end
 
   assign when_BusSlaveFactory_l379_64 = io_ctrl_cmd_payload_fragment_data[20];
-  assign when_UsbOhci_l460_9 = ((reg_hcRhPortStatus_3_clearPortEnable || reg_hcRhPortStatus_3_PESC_set) || (! reg_hcRhPortStatus_3_PPS));
-  assign when_UsbOhci_l460_10 = (reg_hcRhPortStatus_3_PRSC_set || reg_hcRhPortStatus_3_PSSC_set);
-  assign when_UsbOhci_l460_11 = (reg_hcRhPortStatus_3_setPortEnable && reg_hcRhPortStatus_3_CCS);
-  assign when_UsbOhci_l461_6 = (((reg_hcRhPortStatus_3_PSSC_set || reg_hcRhPortStatus_3_PRSC_set) || (! reg_hcRhPortStatus_3_PPS)) || (reg_hcControl_HCFS == UsbOhciAxi4_MainState_RESUME));
-  assign when_UsbOhci_l461_7 = (reg_hcRhPortStatus_3_setPortSuspend && reg_hcRhPortStatus_3_CCS);
-  assign when_UsbOhci_l462_3 = (reg_hcRhPortStatus_3_setPortSuspend && reg_hcRhPortStatus_3_CCS);
-  assign when_UsbOhci_l463_3 = (reg_hcRhPortStatus_3_clearSuspendStatus && reg_hcRhPortStatus_3_PSS);
-  assign when_UsbOhci_l464_3 = (reg_hcRhPortStatus_3_setPortReset && reg_hcRhPortStatus_3_CCS);
-  assign when_UsbOhci_l470_3 = reg_hcRhDescriptorB_PPCM[3];
+  assign when_UsbOhci_l462_9 = ((reg_hcRhPortStatus_3_clearPortEnable || reg_hcRhPortStatus_3_PESC_set) || (! reg_hcRhPortStatus_3_PPS));
+  assign when_UsbOhci_l462_10 = (reg_hcRhPortStatus_3_PRSC_set || reg_hcRhPortStatus_3_PSSC_set);
+  assign when_UsbOhci_l462_11 = (reg_hcRhPortStatus_3_setPortEnable && reg_hcRhPortStatus_3_CCS);
+  assign when_UsbOhci_l463_6 = (((reg_hcRhPortStatus_3_PSSC_set || reg_hcRhPortStatus_3_PRSC_set) || (! reg_hcRhPortStatus_3_PPS)) || (reg_hcControl_HCFS == UsbOhciAxi4_MainState_RESUME));
+  assign when_UsbOhci_l463_7 = (reg_hcRhPortStatus_3_setPortSuspend && reg_hcRhPortStatus_3_CCS);
+  assign when_UsbOhci_l464_3 = (reg_hcRhPortStatus_3_setPortSuspend && reg_hcRhPortStatus_3_CCS);
+  assign when_UsbOhci_l465_3 = (reg_hcRhPortStatus_3_clearSuspendStatus && reg_hcRhPortStatus_3_PSS);
+  assign when_UsbOhci_l466_3 = (reg_hcRhPortStatus_3_setPortReset && reg_hcRhPortStatus_3_CCS);
+  assign when_UsbOhci_l472_3 = reg_hcRhDescriptorB_PPCM[3];
   assign reg_hcRhPortStatus_3_CSC_set = ((((reg_hcRhPortStatus_3_CCS ^ reg_hcRhPortStatus_3_CCS_regNext) || (reg_hcRhPortStatus_3_setPortEnable && (! reg_hcRhPortStatus_3_CCS))) || (reg_hcRhPortStatus_3_setPortSuspend && (! reg_hcRhPortStatus_3_CCS))) || (reg_hcRhPortStatus_3_setPortReset && (! reg_hcRhPortStatus_3_CCS)));
   assign reg_hcRhPortStatus_3_PESC_set = io_phy_ports_3_overcurrent;
   assign io_phy_ports_3_suspend_fire = (io_phy_ports_3_suspend_valid && io_phy_ports_3_suspend_ready);
@@ -12689,7 +12635,7 @@ module UsbOhciAxi4_UsbOhci (
 
   always @(*) begin
     frame_reload = 1'b0;
-    if(when_UsbOhci_l526) begin
+    if(when_UsbOhci_l528) begin
       if(frame_overflow) begin
         frame_reload = 1'b1;
       end
@@ -12702,7 +12648,7 @@ module UsbOhciAxi4_UsbOhci (
   assign frame_overflow = (reg_hcFmRemaining_FR == 14'h0000);
   always @(*) begin
     frame_tick = 1'b0;
-    if(when_UsbOhci_l526) begin
+    if(when_UsbOhci_l528) begin
       if(frame_overflow) begin
         frame_tick = 1'b1;
       end
@@ -12712,9 +12658,9 @@ module UsbOhciAxi4_UsbOhci (
   assign frame_section1 = (reg_hcPeriodicStart_PS < reg_hcFmRemaining_FR);
   assign frame_limitHit = (frame_limitCounter == 15'h0000);
   assign frame_decrementTimerOverflow = (frame_decrementTimer == 3'b110);
-  assign when_UsbOhci_l526 = (frame_run && io_phy_tick);
-  assign when_UsbOhci_l528 = ((! frame_limitHit) && (! frame_decrementTimerOverflow));
-  assign when_UsbOhci_l540 = (reg_hcFmNumber_FNp1[15] ^ reg_hcFmNumber_FN[15]);
+  assign when_UsbOhci_l528 = (frame_run && io_phy_tick);
+  assign when_UsbOhci_l530 = ((! frame_limitHit) && (! frame_decrementTimerOverflow));
+  assign when_UsbOhci_l542 = (reg_hcFmNumber_FNp1[15] ^ reg_hcFmNumber_FN[15]);
   always @(*) begin
     token_wantExit = 1'b0;
     case(token_stateReg)
@@ -13185,7 +13131,7 @@ module UsbOhciAxi4_UsbOhci (
 
   assign dataRx_history_0 = _zz_dataRx_history_0;
   assign dataRx_history_1 = _zz_dataRx_history_1;
-  assign dataRx_hasError = ({dataRx_crcError,{dataRx_pidError,{dataRx_stuffingError,dataRx_notResponding}}} != 4'b0000);
+  assign dataRx_hasError = (|{dataRx_crcError,{dataRx_pidError,{dataRx_stuffingError,dataRx_notResponding}}});
   always @(*) begin
     dataRx_data_valid = 1'b0;
     case(dataRx_stateReg)
@@ -13320,7 +13266,7 @@ module UsbOhciAxi4_UsbOhci (
       end
       UsbOhciAxi4_endpoint_enumDef_UPDATE_SYNC : begin
         if(dmaCtx_pendingEmpty) begin
-          if(when_UsbOhci_l1418) begin
+          if(when_UsbOhci_l1420) begin
             priority_tick = 1'b1;
           end
         end
@@ -13335,7 +13281,7 @@ module UsbOhciAxi4_UsbOhci (
   always @(*) begin
     priority_skip = 1'b0;
     if(priority_tick) begin
-      if(when_UsbOhci_l663) begin
+      if(when_UsbOhci_l665) begin
         priority_skip = 1'b1;
       end
     end
@@ -13345,7 +13291,7 @@ module UsbOhciAxi4_UsbOhci (
       UsbOhciAxi4_operational_enumDef_ARBITER : begin
         if(!operational_askExit) begin
           if(!frame_limitHit) begin
-            if(!when_UsbOhci_l1487) begin
+            if(!when_UsbOhci_l1489) begin
               priority_skip = 1'b1;
               if(priority_bulk) begin
                 if(operational_allowBulk) begin
@@ -13385,7 +13331,7 @@ module UsbOhciAxi4_UsbOhci (
     endcase
   end
 
-  assign when_UsbOhci_l663 = (priority_bulk || (priority_counter == reg_hcControl_CBSR));
+  assign when_UsbOhci_l665 = (priority_bulk || (priority_counter == reg_hcControl_CBSR));
   always @(*) begin
     interruptDelay_tick = 1'b0;
     case(sof_stateReg)
@@ -13545,8 +13491,8 @@ module UsbOhciAxi4_UsbOhci (
     endcase
   end
 
-  assign when_UsbOhci_l685 = ((interruptDelay_tick && (! interruptDelay_done)) && (! interruptDelay_disabled));
-  assign when_UsbOhci_l689 = (interruptDelay_load_valid && (interruptDelay_load_payload < interruptDelay_counter));
+  assign when_UsbOhci_l687 = ((interruptDelay_tick && (! interruptDelay_done)) && (! interruptDelay_disabled));
+  assign when_UsbOhci_l691 = (interruptDelay_load_valid && (interruptDelay_load_payload < interruptDelay_counter));
   always @(*) begin
     endpoint_wantExit = 1'b0;
     case(endpoint_stateReg)
@@ -13555,7 +13501,7 @@ module UsbOhciAxi4_UsbOhci (
       UsbOhciAxi4_endpoint_enumDef_ED_READ_RSP : begin
       end
       UsbOhciAxi4_endpoint_enumDef_ED_ANALYSE : begin
-        if(when_UsbOhci_l861) begin
+        if(when_UsbOhci_l863) begin
           endpoint_wantExit = 1'b1;
         end
       end
@@ -13616,8 +13562,8 @@ module UsbOhciAxi4_UsbOhci (
       UsbOhciAxi4_operational_enumDef_ARBITER : begin
         if(!operational_askExit) begin
           if(!frame_limitHit) begin
-            if(when_UsbOhci_l1487) begin
-              if(!when_UsbOhci_l1488) begin
+            if(when_UsbOhci_l1489) begin
+              if(!when_UsbOhci_l1490) begin
                 if(!reg_hcPeriodCurrentED_isZero) begin
                   endpoint_wantStart = 1'b1;
                 end
@@ -13675,7 +13621,7 @@ module UsbOhciAxi4_UsbOhci (
   assign endpoint_ED_tdEmpty = (endpoint_ED_tailP == endpoint_ED_headP);
   assign endpoint_ED_isFs = (! endpoint_ED_S);
   assign endpoint_ED_isoOut = endpoint_ED_D[0];
-  assign when_UsbOhci_l750 = (! (endpoint_stateReg == UsbOhciAxi4_endpoint_enumDef_BOOT));
+  assign when_UsbOhci_l752 = (! (endpoint_stateReg == UsbOhciAxi4_endpoint_enumDef_BOOT));
   assign rxTimer_lowSpeed = endpoint_ED_S;
   assign endpoint_TD_address = ({4'd0,endpoint_ED_headP} <<< 3'd4);
   assign endpoint_TD_CC = endpoint_TD_words_0[31 : 28];
@@ -13766,7 +13712,7 @@ module UsbOhciAxi4_UsbOhci (
       UsbOhciAxi4_endpoint_enumDef_ED_READ_RSP : begin
       end
       UsbOhciAxi4_endpoint_enumDef_ED_ANALYSE : begin
-        if(when_UsbOhci_l861) begin
+        if(when_UsbOhci_l863) begin
           endpoint_applyNextED = 1'b1;
         end
       end
@@ -13808,7 +13754,7 @@ module UsbOhciAxi4_UsbOhci (
       end
       UsbOhciAxi4_endpoint_enumDef_UPDATE_SYNC : begin
         if(dmaCtx_pendingEmpty) begin
-          if(when_UsbOhci_l1415) begin
+          if(when_UsbOhci_l1417) begin
             endpoint_applyNextED = 1'b1;
           end
         end
@@ -13842,7 +13788,7 @@ module UsbOhciAxi4_UsbOhci (
       UsbOhciAxi4_endpoint_dmaLogic_enumDef_FROM_USB : begin
       end
       UsbOhciAxi4_endpoint_dmaLogic_enumDef_VALIDATION : begin
-        if(when_UsbOhci_l1068) begin
+        if(when_UsbOhci_l1070) begin
           endpoint_dmaLogic_wantExit = 1'b1;
         end
       end
@@ -13881,7 +13827,7 @@ module UsbOhciAxi4_UsbOhci (
       end
       UsbOhciAxi4_endpoint_enumDef_TD_CHECK_TIME : begin
         if(!endpoint_timeCheck) begin
-          if(!when_UsbOhci_l1118) begin
+          if(!when_UsbOhci_l1120) begin
             endpoint_dmaLogic_wantStart = 1'b1;
           end
         end
@@ -13944,7 +13890,7 @@ module UsbOhciAxi4_UsbOhci (
       UsbOhciAxi4_endpoint_enumDef_TD_CHECK_TIME : begin
       end
       UsbOhciAxi4_endpoint_enumDef_BUFFER_READ : begin
-        if(when_UsbOhci_l1128) begin
+        if(when_UsbOhci_l1130) begin
           if(endpoint_timeCheck) begin
             endpoint_dmaLogic_wantKill = 1'b1;
           end
@@ -14046,7 +13992,7 @@ module UsbOhciAxi4_UsbOhci (
   assign endpoint_dmaLogic_beatCount = _zz_endpoint_dmaLogic_beatCount[6 : 2];
   assign endpoint_dmaLogic_lengthBmb = _zz_endpoint_dmaLogic_lengthBmb[5:0];
   assign endpoint_dmaLogic_underflowError = (endpoint_dmaLogic_underflow && (! endpoint_TD_allowRounding));
-  assign when_UsbOhci_l938 = (((! (endpoint_dmaLogic_stateReg == UsbOhciAxi4_endpoint_dmaLogic_enumDef_BOOT)) && (! endpoint_isIn)) && ioDma_rsp_valid);
+  assign when_UsbOhci_l940 = (((! (endpoint_dmaLogic_stateReg == UsbOhciAxi4_endpoint_dmaLogic_enumDef_BOOT)) && (! endpoint_isIn)) && ioDma_rsp_valid);
   assign endpoint_dmaLogic_byteCtx_last = (endpoint_dmaLogic_byteCtx_counter == endpoint_lastAddress);
   assign endpoint_dmaLogic_byteCtx_sel = endpoint_dmaLogic_byteCtx_counter[1:0];
   always @(*) begin
@@ -14224,54 +14170,54 @@ module UsbOhciAxi4_UsbOhci (
 
   assign _zz_reg_hcControl_HCFSWrite_payload = io_ctrl_cmd_payload_fragment_data[7 : 6];
   assign reg_hcControl_HCFSWrite_payload = _zz_reg_hcControl_HCFSWrite_payload;
-  assign when_BusSlaveFactory_l968 = io_ctrl_cmd_payload_fragment_mask[0];
-  assign when_BusSlaveFactory_l968_1 = io_ctrl_cmd_payload_fragment_mask[0];
-  assign when_BusSlaveFactory_l968_2 = io_ctrl_cmd_payload_fragment_mask[0];
-  assign when_BusSlaveFactory_l968_3 = io_ctrl_cmd_payload_fragment_mask[0];
-  assign when_BusSlaveFactory_l968_4 = io_ctrl_cmd_payload_fragment_mask[0];
-  assign when_BusSlaveFactory_l968_5 = io_ctrl_cmd_payload_fragment_mask[1];
-  assign when_BusSlaveFactory_l968_6 = io_ctrl_cmd_payload_fragment_mask[1];
-  assign when_BusSlaveFactory_l968_7 = io_ctrl_cmd_payload_fragment_mask[1];
-  assign when_BusSlaveFactory_l968_8 = io_ctrl_cmd_payload_fragment_mask[1];
-  assign when_BusSlaveFactory_l968_9 = io_ctrl_cmd_payload_fragment_mask[2];
-  assign when_BusSlaveFactory_l968_10 = io_ctrl_cmd_payload_fragment_mask[3];
-  assign when_BusSlaveFactory_l968_11 = io_ctrl_cmd_payload_fragment_mask[0];
-  assign when_BusSlaveFactory_l968_12 = io_ctrl_cmd_payload_fragment_mask[1];
-  assign when_BusSlaveFactory_l968_13 = io_ctrl_cmd_payload_fragment_mask[2];
-  assign when_BusSlaveFactory_l968_14 = io_ctrl_cmd_payload_fragment_mask[3];
-  assign when_BusSlaveFactory_l968_15 = io_ctrl_cmd_payload_fragment_mask[0];
-  assign when_BusSlaveFactory_l968_16 = io_ctrl_cmd_payload_fragment_mask[1];
-  assign when_BusSlaveFactory_l968_17 = io_ctrl_cmd_payload_fragment_mask[2];
-  assign when_BusSlaveFactory_l968_18 = io_ctrl_cmd_payload_fragment_mask[3];
-  assign when_BusSlaveFactory_l968_19 = io_ctrl_cmd_payload_fragment_mask[0];
-  assign when_BusSlaveFactory_l968_20 = io_ctrl_cmd_payload_fragment_mask[1];
-  assign when_BusSlaveFactory_l968_21 = io_ctrl_cmd_payload_fragment_mask[2];
-  assign when_BusSlaveFactory_l968_22 = io_ctrl_cmd_payload_fragment_mask[3];
-  assign when_BusSlaveFactory_l968_23 = io_ctrl_cmd_payload_fragment_mask[0];
-  assign when_BusSlaveFactory_l968_24 = io_ctrl_cmd_payload_fragment_mask[1];
-  assign when_BusSlaveFactory_l968_25 = io_ctrl_cmd_payload_fragment_mask[2];
-  assign when_BusSlaveFactory_l968_26 = io_ctrl_cmd_payload_fragment_mask[3];
-  assign when_BusSlaveFactory_l968_27 = io_ctrl_cmd_payload_fragment_mask[0];
-  assign when_BusSlaveFactory_l968_28 = io_ctrl_cmd_payload_fragment_mask[1];
-  assign when_BusSlaveFactory_l968_29 = io_ctrl_cmd_payload_fragment_mask[2];
-  assign when_BusSlaveFactory_l968_30 = io_ctrl_cmd_payload_fragment_mask[3];
-  assign when_BusSlaveFactory_l968_31 = io_ctrl_cmd_payload_fragment_mask[0];
-  assign when_BusSlaveFactory_l968_32 = io_ctrl_cmd_payload_fragment_mask[1];
-  assign when_BusSlaveFactory_l968_33 = io_ctrl_cmd_payload_fragment_mask[2];
-  assign when_BusSlaveFactory_l968_34 = io_ctrl_cmd_payload_fragment_mask[3];
-  assign when_BusSlaveFactory_l968_35 = io_ctrl_cmd_payload_fragment_mask[3];
-  assign when_BusSlaveFactory_l968_36 = io_ctrl_cmd_payload_fragment_mask[0];
-  assign when_BusSlaveFactory_l968_37 = io_ctrl_cmd_payload_fragment_mask[1];
-  assign when_BusSlaveFactory_l968_38 = io_ctrl_cmd_payload_fragment_mask[0];
-  assign when_BusSlaveFactory_l968_39 = io_ctrl_cmd_payload_fragment_mask[1];
-  assign when_BusSlaveFactory_l968_40 = io_ctrl_cmd_payload_fragment_mask[1];
-  assign when_BusSlaveFactory_l968_41 = io_ctrl_cmd_payload_fragment_mask[1];
-  assign when_BusSlaveFactory_l968_42 = io_ctrl_cmd_payload_fragment_mask[1];
-  assign when_BusSlaveFactory_l968_43 = io_ctrl_cmd_payload_fragment_mask[1];
-  assign when_BusSlaveFactory_l968_44 = io_ctrl_cmd_payload_fragment_mask[3];
-  assign when_BusSlaveFactory_l968_45 = io_ctrl_cmd_payload_fragment_mask[0];
-  assign when_BusSlaveFactory_l968_46 = io_ctrl_cmd_payload_fragment_mask[2];
-  assign when_UsbOhci_l253 = (doSoftReset || _zz_when_UsbOhci_l253);
+  assign when_BusSlaveFactory_l1041 = io_ctrl_cmd_payload_fragment_mask[0];
+  assign when_BusSlaveFactory_l1041_1 = io_ctrl_cmd_payload_fragment_mask[0];
+  assign when_BusSlaveFactory_l1041_2 = io_ctrl_cmd_payload_fragment_mask[0];
+  assign when_BusSlaveFactory_l1041_3 = io_ctrl_cmd_payload_fragment_mask[0];
+  assign when_BusSlaveFactory_l1041_4 = io_ctrl_cmd_payload_fragment_mask[0];
+  assign when_BusSlaveFactory_l1041_5 = io_ctrl_cmd_payload_fragment_mask[1];
+  assign when_BusSlaveFactory_l1041_6 = io_ctrl_cmd_payload_fragment_mask[1];
+  assign when_BusSlaveFactory_l1041_7 = io_ctrl_cmd_payload_fragment_mask[1];
+  assign when_BusSlaveFactory_l1041_8 = io_ctrl_cmd_payload_fragment_mask[1];
+  assign when_BusSlaveFactory_l1041_9 = io_ctrl_cmd_payload_fragment_mask[2];
+  assign when_BusSlaveFactory_l1041_10 = io_ctrl_cmd_payload_fragment_mask[3];
+  assign when_BusSlaveFactory_l1041_11 = io_ctrl_cmd_payload_fragment_mask[0];
+  assign when_BusSlaveFactory_l1041_12 = io_ctrl_cmd_payload_fragment_mask[1];
+  assign when_BusSlaveFactory_l1041_13 = io_ctrl_cmd_payload_fragment_mask[2];
+  assign when_BusSlaveFactory_l1041_14 = io_ctrl_cmd_payload_fragment_mask[3];
+  assign when_BusSlaveFactory_l1041_15 = io_ctrl_cmd_payload_fragment_mask[0];
+  assign when_BusSlaveFactory_l1041_16 = io_ctrl_cmd_payload_fragment_mask[1];
+  assign when_BusSlaveFactory_l1041_17 = io_ctrl_cmd_payload_fragment_mask[2];
+  assign when_BusSlaveFactory_l1041_18 = io_ctrl_cmd_payload_fragment_mask[3];
+  assign when_BusSlaveFactory_l1041_19 = io_ctrl_cmd_payload_fragment_mask[0];
+  assign when_BusSlaveFactory_l1041_20 = io_ctrl_cmd_payload_fragment_mask[1];
+  assign when_BusSlaveFactory_l1041_21 = io_ctrl_cmd_payload_fragment_mask[2];
+  assign when_BusSlaveFactory_l1041_22 = io_ctrl_cmd_payload_fragment_mask[3];
+  assign when_BusSlaveFactory_l1041_23 = io_ctrl_cmd_payload_fragment_mask[0];
+  assign when_BusSlaveFactory_l1041_24 = io_ctrl_cmd_payload_fragment_mask[1];
+  assign when_BusSlaveFactory_l1041_25 = io_ctrl_cmd_payload_fragment_mask[2];
+  assign when_BusSlaveFactory_l1041_26 = io_ctrl_cmd_payload_fragment_mask[3];
+  assign when_BusSlaveFactory_l1041_27 = io_ctrl_cmd_payload_fragment_mask[0];
+  assign when_BusSlaveFactory_l1041_28 = io_ctrl_cmd_payload_fragment_mask[1];
+  assign when_BusSlaveFactory_l1041_29 = io_ctrl_cmd_payload_fragment_mask[2];
+  assign when_BusSlaveFactory_l1041_30 = io_ctrl_cmd_payload_fragment_mask[3];
+  assign when_BusSlaveFactory_l1041_31 = io_ctrl_cmd_payload_fragment_mask[0];
+  assign when_BusSlaveFactory_l1041_32 = io_ctrl_cmd_payload_fragment_mask[1];
+  assign when_BusSlaveFactory_l1041_33 = io_ctrl_cmd_payload_fragment_mask[2];
+  assign when_BusSlaveFactory_l1041_34 = io_ctrl_cmd_payload_fragment_mask[3];
+  assign when_BusSlaveFactory_l1041_35 = io_ctrl_cmd_payload_fragment_mask[3];
+  assign when_BusSlaveFactory_l1041_36 = io_ctrl_cmd_payload_fragment_mask[0];
+  assign when_BusSlaveFactory_l1041_37 = io_ctrl_cmd_payload_fragment_mask[1];
+  assign when_BusSlaveFactory_l1041_38 = io_ctrl_cmd_payload_fragment_mask[0];
+  assign when_BusSlaveFactory_l1041_39 = io_ctrl_cmd_payload_fragment_mask[1];
+  assign when_BusSlaveFactory_l1041_40 = io_ctrl_cmd_payload_fragment_mask[1];
+  assign when_BusSlaveFactory_l1041_41 = io_ctrl_cmd_payload_fragment_mask[1];
+  assign when_BusSlaveFactory_l1041_42 = io_ctrl_cmd_payload_fragment_mask[1];
+  assign when_BusSlaveFactory_l1041_43 = io_ctrl_cmd_payload_fragment_mask[1];
+  assign when_BusSlaveFactory_l1041_44 = io_ctrl_cmd_payload_fragment_mask[3];
+  assign when_BusSlaveFactory_l1041_45 = io_ctrl_cmd_payload_fragment_mask[0];
+  assign when_BusSlaveFactory_l1041_46 = io_ctrl_cmd_payload_fragment_mask[2];
+  assign when_UsbOhci_l255 = (doSoftReset || _zz_when_UsbOhci_l255);
   always @(*) begin
     token_stateNext = token_stateReg;
     case(token_stateReg)
@@ -14408,7 +14354,7 @@ module UsbOhciAxi4_UsbOhci (
         end
       end
       UsbOhciAxi4_sof_enumDef_FRAME_NUMBER_CMD : begin
-        if(when_UsbOhci_l626) begin
+        if(when_UsbOhci_l628) begin
           sof_stateNext = UsbOhciAxi4_sof_enumDef_FRAME_NUMBER_RSP;
         end
       end
@@ -14428,9 +14374,9 @@ module UsbOhciAxi4_UsbOhci (
     end
   end
 
-  assign when_UsbOhci_l206 = (dmaWriteCtx_counter == 4'b0000);
-  assign when_UsbOhci_l206_1 = (dmaWriteCtx_counter == 4'b0001);
-  assign when_UsbOhci_l626 = (ioDma_cmd_ready && ioDma_cmd_payload_last);
+  assign when_UsbOhci_l207 = (dmaWriteCtx_counter == 4'b0000);
+  assign when_UsbOhci_l207_1 = (dmaWriteCtx_counter == 4'b0001);
+  assign when_UsbOhci_l628 = (ioDma_cmd_ready && ioDma_cmd_payload_last);
   assign when_StateMachine_l237_1 = ((sof_stateReg == UsbOhciAxi4_sof_enumDef_BOOT) && (! (sof_stateNext == UsbOhciAxi4_sof_enumDef_BOOT)));
   always @(*) begin
     endpoint_stateNext = endpoint_stateReg;
@@ -14441,12 +14387,12 @@ module UsbOhciAxi4_UsbOhci (
         end
       end
       UsbOhciAxi4_endpoint_enumDef_ED_READ_RSP : begin
-        if(when_UsbOhci_l855) begin
+        if(when_UsbOhci_l857) begin
           endpoint_stateNext = UsbOhciAxi4_endpoint_enumDef_ED_ANALYSE;
         end
       end
       UsbOhciAxi4_endpoint_enumDef_ED_ANALYSE : begin
-        if(when_UsbOhci_l861) begin
+        if(when_UsbOhci_l863) begin
           endpoint_stateNext = UsbOhciAxi4_endpoint_enumDef_BOOT;
         end else begin
           endpoint_stateNext = UsbOhciAxi4_endpoint_enumDef_TD_READ_CMD;
@@ -14458,7 +14404,7 @@ module UsbOhciAxi4_UsbOhci (
         end
       end
       UsbOhciAxi4_endpoint_enumDef_TD_READ_RSP : begin
-        if(when_UsbOhci_l898) begin
+        if(when_UsbOhci_l900) begin
           endpoint_stateNext = UsbOhciAxi4_endpoint_enumDef_TD_READ_DELAY;
         end
       end
@@ -14480,7 +14426,7 @@ module UsbOhciAxi4_UsbOhci (
         if(endpoint_timeCheck) begin
           endpoint_stateNext = UsbOhciAxi4_endpoint_enumDef_ABORD;
         end else begin
-          if(when_UsbOhci_l1118) begin
+          if(when_UsbOhci_l1120) begin
             endpoint_stateNext = UsbOhciAxi4_endpoint_enumDef_TOKEN;
           end else begin
             endpoint_stateNext = UsbOhciAxi4_endpoint_enumDef_BUFFER_READ;
@@ -14488,7 +14434,7 @@ module UsbOhciAxi4_UsbOhci (
         end
       end
       UsbOhciAxi4_endpoint_enumDef_BUFFER_READ : begin
-        if(when_UsbOhci_l1128) begin
+        if(when_UsbOhci_l1130) begin
           endpoint_stateNext = UsbOhciAxi4_endpoint_enumDef_TOKEN;
           if(endpoint_timeCheck) begin
             endpoint_stateNext = UsbOhciAxi4_endpoint_enumDef_ABORD;
@@ -14530,7 +14476,7 @@ module UsbOhciAxi4_UsbOhci (
                   4'b1110 : begin
                   end
                   4'b0011, 4'b1011 : begin
-                    if(when_UsbOhci_l1263) begin
+                    if(when_UsbOhci_l1265) begin
                       endpoint_stateNext = UsbOhciAxi4_endpoint_enumDef_ACK_TX_0;
                     end
                   end
@@ -14538,9 +14484,9 @@ module UsbOhciAxi4_UsbOhci (
                   end
                 endcase
               end
-              if(when_UsbOhci_l1274) begin
+              if(when_UsbOhci_l1276) begin
                 if(!dataRx_crcError) begin
-                  if(when_UsbOhci_l1283) begin
+                  if(when_UsbOhci_l1285) begin
                     endpoint_stateNext = UsbOhciAxi4_endpoint_enumDef_ACK_TX_0;
                   end
                 end
@@ -14550,9 +14496,9 @@ module UsbOhciAxi4_UsbOhci (
         end
       end
       UsbOhciAxi4_endpoint_enumDef_ACK_RX : begin
-        if(when_UsbOhci_l1205) begin
+        if(when_UsbOhci_l1207) begin
           endpoint_stateNext = UsbOhciAxi4_endpoint_enumDef_UPDATE_TD_PROCESS;
-          if(!when_UsbOhci_l1207) begin
+          if(!when_UsbOhci_l1209) begin
             if(!endpoint_ackRxStuffing) begin
               if(!endpoint_ackRxPidFailure) begin
                 case(endpoint_ackRxPid)
@@ -14590,7 +14536,7 @@ module UsbOhciAxi4_UsbOhci (
         end
       end
       UsbOhciAxi4_endpoint_enumDef_DATA_RX_WAIT_DMA : begin
-        if(when_UsbOhci_l1311) begin
+        if(when_UsbOhci_l1313) begin
           endpoint_stateNext = UsbOhciAxi4_endpoint_enumDef_UPDATE_TD_PROCESS;
         end
       end
@@ -14603,12 +14549,12 @@ module UsbOhciAxi4_UsbOhci (
         end
       end
       UsbOhciAxi4_endpoint_enumDef_UPDATE_TD_CMD : begin
-        if(when_UsbOhci_l1393) begin
+        if(when_UsbOhci_l1395) begin
           endpoint_stateNext = UsbOhciAxi4_endpoint_enumDef_UPDATE_ED_CMD;
         end
       end
       UsbOhciAxi4_endpoint_enumDef_UPDATE_ED_CMD : begin
-        if(when_UsbOhci_l1408) begin
+        if(when_UsbOhci_l1410) begin
           endpoint_stateNext = UsbOhciAxi4_endpoint_enumDef_UPDATE_SYNC;
         end
       end
@@ -14631,50 +14577,50 @@ module UsbOhciAxi4_UsbOhci (
     end
   end
 
-  assign when_UsbOhci_l188 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0000));
-  assign when_UsbOhci_l188_1 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0001));
-  assign when_UsbOhci_l188_2 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0010));
-  assign when_UsbOhci_l188_3 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0011));
-  assign when_UsbOhci_l855 = (ioDma_rsp_valid && ioDma_rsp_payload_last);
-  assign when_UsbOhci_l861 = ((endpoint_ED_H || endpoint_ED_K) || endpoint_ED_tdEmpty);
-  assign when_UsbOhci_l188_4 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0000));
-  assign when_UsbOhci_l188_5 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0001));
-  assign when_UsbOhci_l188_6 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0010));
-  assign when_UsbOhci_l188_7 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0011));
-  assign when_UsbOhci_l891 = (endpoint_TD_isoFrameNumber == 3'b000);
-  assign when_UsbOhci_l188_8 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0100));
-  assign when_UsbOhci_l188_9 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0100));
-  assign when_UsbOhci_l891_1 = (endpoint_TD_isoFrameNumber == 3'b001);
-  assign when_UsbOhci_l188_10 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0100));
-  assign when_UsbOhci_l188_11 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0101));
-  assign when_UsbOhci_l891_2 = (endpoint_TD_isoFrameNumber == 3'b010);
-  assign when_UsbOhci_l188_12 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0101));
-  assign when_UsbOhci_l188_13 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0101));
-  assign when_UsbOhci_l891_3 = (endpoint_TD_isoFrameNumber == 3'b011);
-  assign when_UsbOhci_l188_14 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0101));
-  assign when_UsbOhci_l188_15 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0110));
-  assign when_UsbOhci_l891_4 = (endpoint_TD_isoFrameNumber == 3'b100);
-  assign when_UsbOhci_l188_16 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0110));
-  assign when_UsbOhci_l188_17 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0110));
-  assign when_UsbOhci_l891_5 = (endpoint_TD_isoFrameNumber == 3'b101);
-  assign when_UsbOhci_l188_18 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0110));
-  assign when_UsbOhci_l188_19 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0111));
-  assign when_UsbOhci_l891_6 = (endpoint_TD_isoFrameNumber == 3'b110);
-  assign when_UsbOhci_l188_20 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0111));
-  assign when_UsbOhci_l188_21 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0111));
-  assign when_UsbOhci_l891_7 = (endpoint_TD_isoFrameNumber == 3'b111);
-  assign when_UsbOhci_l188_22 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0111));
-  assign when_UsbOhci_l898 = (ioDma_rsp_fire && ioDma_rsp_payload_last);
+  assign when_UsbOhci_l189 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0000));
+  assign when_UsbOhci_l189_1 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0001));
+  assign when_UsbOhci_l189_2 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0010));
+  assign when_UsbOhci_l189_3 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0011));
+  assign when_UsbOhci_l857 = (ioDma_rsp_valid && ioDma_rsp_payload_last);
+  assign when_UsbOhci_l863 = ((endpoint_ED_H || endpoint_ED_K) || endpoint_ED_tdEmpty);
+  assign when_UsbOhci_l189_4 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0000));
+  assign when_UsbOhci_l189_5 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0001));
+  assign when_UsbOhci_l189_6 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0010));
+  assign when_UsbOhci_l189_7 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0011));
+  assign when_UsbOhci_l893 = (endpoint_TD_isoFrameNumber == 3'b000);
+  assign when_UsbOhci_l189_8 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0100));
+  assign when_UsbOhci_l189_9 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0100));
+  assign when_UsbOhci_l893_1 = (endpoint_TD_isoFrameNumber == 3'b001);
+  assign when_UsbOhci_l189_10 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0100));
+  assign when_UsbOhci_l189_11 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0101));
+  assign when_UsbOhci_l893_2 = (endpoint_TD_isoFrameNumber == 3'b010);
+  assign when_UsbOhci_l189_12 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0101));
+  assign when_UsbOhci_l189_13 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0101));
+  assign when_UsbOhci_l893_3 = (endpoint_TD_isoFrameNumber == 3'b011);
+  assign when_UsbOhci_l189_14 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0101));
+  assign when_UsbOhci_l189_15 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0110));
+  assign when_UsbOhci_l893_4 = (endpoint_TD_isoFrameNumber == 3'b100);
+  assign when_UsbOhci_l189_16 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0110));
+  assign when_UsbOhci_l189_17 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0110));
+  assign when_UsbOhci_l893_5 = (endpoint_TD_isoFrameNumber == 3'b101);
+  assign when_UsbOhci_l189_18 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0110));
+  assign when_UsbOhci_l189_19 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0111));
+  assign when_UsbOhci_l893_6 = (endpoint_TD_isoFrameNumber == 3'b110);
+  assign when_UsbOhci_l189_20 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0111));
+  assign when_UsbOhci_l189_21 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0111));
+  assign when_UsbOhci_l893_7 = (endpoint_TD_isoFrameNumber == 3'b111);
+  assign when_UsbOhci_l189_22 = (ioDma_rsp_valid && (dmaReadCtx_counter == 4'b0111));
+  assign when_UsbOhci_l900 = (ioDma_rsp_fire && ioDma_rsp_payload_last);
   assign _zz_endpoint_lastAddress = (_zz__zz_endpoint_lastAddress - 14'h0001);
-  assign when_UsbOhci_l1118 = (endpoint_isIn || endpoint_zeroLength);
+  assign when_UsbOhci_l1120 = (endpoint_isIn || endpoint_zeroLength);
   always @(*) begin
-    when_UsbOhci_l1274 = 1'b0;
+    when_UsbOhci_l1276 = 1'b0;
     if(endpoint_ED_F) begin
       case(dataRx_pid)
         4'b1110, 4'b1010 : begin
         end
         4'b0011, 4'b1011 : begin
-          when_UsbOhci_l1274 = 1'b1;
+          when_UsbOhci_l1276 = 1'b1;
         end
         default : begin
         end
@@ -14686,8 +14632,8 @@ module UsbOhciAxi4_UsbOhci (
         4'b1110 : begin
         end
         4'b0011, 4'b1011 : begin
-          if(!when_UsbOhci_l1263) begin
-            when_UsbOhci_l1274 = 1'b1;
+          if(!when_UsbOhci_l1265) begin
+            when_UsbOhci_l1276 = 1'b1;
           end
         end
         default : begin
@@ -14696,40 +14642,40 @@ module UsbOhciAxi4_UsbOhci (
     end
   end
 
-  assign when_UsbOhci_l1263 = (dataRx_pid == endpoint_TD_dataPidWrong);
-  assign when_UsbOhci_l1283 = (! endpoint_ED_F);
-  assign when_UsbOhci_l1200 = ((! rxPidOk) || endpoint_ackRxFired);
-  assign when_UsbOhci_l1205 = ((! io_phy_rx_active) && endpoint_ackRxActivated);
-  assign when_UsbOhci_l1207 = (! endpoint_ackRxFired);
-  assign when_UsbOhci_l1331 = ((endpoint_dmaLogic_underflow || (_zz_when_UsbOhci_l1331 < endpoint_currentAddress)) || endpoint_zeroLength);
-  assign when_UsbOhci_l1346 = (endpoint_TD_EC != 2'b10);
-  assign when_UsbOhci_l206_2 = (dmaWriteCtx_counter == 4'b0000);
-  assign when_UsbOhci_l206_3 = (dmaWriteCtx_counter == 4'b0000);
+  assign when_UsbOhci_l1265 = (dataRx_pid == endpoint_TD_dataPidWrong);
+  assign when_UsbOhci_l1285 = (! endpoint_ED_F);
+  assign when_UsbOhci_l1202 = ((! rxPidOk) || endpoint_ackRxFired);
+  assign when_UsbOhci_l1207 = ((! io_phy_rx_active) && endpoint_ackRxActivated);
+  assign when_UsbOhci_l1209 = (! endpoint_ackRxFired);
+  assign when_UsbOhci_l1333 = ((endpoint_dmaLogic_underflow || (_zz_when_UsbOhci_l1333 < endpoint_currentAddress)) || endpoint_zeroLength);
+  assign when_UsbOhci_l1348 = (endpoint_TD_EC != 2'b10);
+  assign when_UsbOhci_l207_2 = (dmaWriteCtx_counter == 4'b0000);
+  assign when_UsbOhci_l207_3 = (dmaWriteCtx_counter == 4'b0000);
   assign _zz_ioDma_cmd_payload_fragment_data = {endpoint_TD_CC,_zz__zz_ioDma_cmd_payload_fragment_data};
-  assign when_UsbOhci_l1378 = (endpoint_TD_isoFrameNumber == 3'b000);
-  assign when_UsbOhci_l206_4 = (dmaWriteCtx_counter == 4'b0100);
-  assign when_UsbOhci_l1378_1 = (endpoint_TD_isoFrameNumber == 3'b001);
-  assign when_UsbOhci_l206_5 = (dmaWriteCtx_counter == 4'b0100);
-  assign when_UsbOhci_l1378_2 = (endpoint_TD_isoFrameNumber == 3'b010);
-  assign when_UsbOhci_l206_6 = (dmaWriteCtx_counter == 4'b0101);
-  assign when_UsbOhci_l1378_3 = (endpoint_TD_isoFrameNumber == 3'b011);
-  assign when_UsbOhci_l206_7 = (dmaWriteCtx_counter == 4'b0101);
-  assign when_UsbOhci_l1378_4 = (endpoint_TD_isoFrameNumber == 3'b100);
-  assign when_UsbOhci_l206_8 = (dmaWriteCtx_counter == 4'b0110);
-  assign when_UsbOhci_l1378_5 = (endpoint_TD_isoFrameNumber == 3'b101);
-  assign when_UsbOhci_l206_9 = (dmaWriteCtx_counter == 4'b0110);
-  assign when_UsbOhci_l1378_6 = (endpoint_TD_isoFrameNumber == 3'b110);
-  assign when_UsbOhci_l206_10 = (dmaWriteCtx_counter == 4'b0111);
-  assign when_UsbOhci_l1378_7 = (endpoint_TD_isoFrameNumber == 3'b111);
-  assign when_UsbOhci_l206_11 = (dmaWriteCtx_counter == 4'b0111);
-  assign when_UsbOhci_l206_12 = (dmaWriteCtx_counter == 4'b0000);
-  assign when_UsbOhci_l206_13 = (dmaWriteCtx_counter == 4'b0001);
-  assign when_UsbOhci_l206_14 = (dmaWriteCtx_counter == 4'b0010);
-  assign when_UsbOhci_l1393 = (ioDma_cmd_ready && ioDma_cmd_payload_last);
-  assign when_UsbOhci_l206_15 = (dmaWriteCtx_counter == 4'b0010);
-  assign when_UsbOhci_l1408 = (ioDma_cmd_ready && ioDma_cmd_payload_last);
-  assign when_UsbOhci_l1415 = (! (endpoint_ED_F && endpoint_TD_isoOverrunReg));
-  assign when_UsbOhci_l1418 = (endpoint_flowType != UsbOhciAxi4_FlowType_PERIODIC);
+  assign when_UsbOhci_l1380 = (endpoint_TD_isoFrameNumber == 3'b000);
+  assign when_UsbOhci_l207_4 = (dmaWriteCtx_counter == 4'b0100);
+  assign when_UsbOhci_l1380_1 = (endpoint_TD_isoFrameNumber == 3'b001);
+  assign when_UsbOhci_l207_5 = (dmaWriteCtx_counter == 4'b0100);
+  assign when_UsbOhci_l1380_2 = (endpoint_TD_isoFrameNumber == 3'b010);
+  assign when_UsbOhci_l207_6 = (dmaWriteCtx_counter == 4'b0101);
+  assign when_UsbOhci_l1380_3 = (endpoint_TD_isoFrameNumber == 3'b011);
+  assign when_UsbOhci_l207_7 = (dmaWriteCtx_counter == 4'b0101);
+  assign when_UsbOhci_l1380_4 = (endpoint_TD_isoFrameNumber == 3'b100);
+  assign when_UsbOhci_l207_8 = (dmaWriteCtx_counter == 4'b0110);
+  assign when_UsbOhci_l1380_5 = (endpoint_TD_isoFrameNumber == 3'b101);
+  assign when_UsbOhci_l207_9 = (dmaWriteCtx_counter == 4'b0110);
+  assign when_UsbOhci_l1380_6 = (endpoint_TD_isoFrameNumber == 3'b110);
+  assign when_UsbOhci_l207_10 = (dmaWriteCtx_counter == 4'b0111);
+  assign when_UsbOhci_l1380_7 = (endpoint_TD_isoFrameNumber == 3'b111);
+  assign when_UsbOhci_l207_11 = (dmaWriteCtx_counter == 4'b0111);
+  assign when_UsbOhci_l207_12 = (dmaWriteCtx_counter == 4'b0000);
+  assign when_UsbOhci_l207_13 = (dmaWriteCtx_counter == 4'b0001);
+  assign when_UsbOhci_l207_14 = (dmaWriteCtx_counter == 4'b0010);
+  assign when_UsbOhci_l1395 = (ioDma_cmd_ready && ioDma_cmd_payload_last);
+  assign when_UsbOhci_l207_15 = (dmaWriteCtx_counter == 4'b0010);
+  assign when_UsbOhci_l1410 = (ioDma_cmd_ready && ioDma_cmd_payload_last);
+  assign when_UsbOhci_l1417 = (! (endpoint_ED_F && endpoint_TD_isoOverrunReg));
+  assign when_UsbOhci_l1420 = (endpoint_flowType != UsbOhciAxi4_FlowType_PERIODIC);
   assign when_StateMachine_l237_2 = ((endpoint_stateReg == UsbOhciAxi4_endpoint_enumDef_BOOT) && (! (endpoint_stateNext == UsbOhciAxi4_endpoint_enumDef_BOOT)));
   assign when_StateMachine_l253_1 = ((! (endpoint_stateReg == UsbOhciAxi4_endpoint_enumDef_TOKEN)) && (endpoint_stateNext == UsbOhciAxi4_endpoint_enumDef_TOKEN));
   assign when_StateMachine_l253_2 = ((! (endpoint_stateReg == UsbOhciAxi4_endpoint_enumDef_DATA_TX)) && (endpoint_stateNext == UsbOhciAxi4_endpoint_enumDef_DATA_TX));
@@ -14758,7 +14704,7 @@ module UsbOhciAxi4_UsbOhci (
         end
       end
       UsbOhciAxi4_endpoint_dmaLogic_enumDef_VALIDATION : begin
-        if(when_UsbOhci_l1068) begin
+        if(when_UsbOhci_l1070) begin
           endpoint_dmaLogic_stateNext = UsbOhciAxi4_endpoint_dmaLogic_enumDef_BOOT;
         end else begin
           if(endpoint_dmaLogic_validated) begin
@@ -14806,15 +14752,15 @@ module UsbOhciAxi4_UsbOhci (
     end
   end
 
-  assign when_UsbOhci_l1025 = (&endpoint_dmaLogic_byteCtx_sel);
-  assign when_UsbOhci_l1054 = (_zz_when_UsbOhci_l1054 < endpoint_transactionSize);
+  assign when_UsbOhci_l1027 = (&endpoint_dmaLogic_byteCtx_sel);
+  assign when_UsbOhci_l1056 = (_zz_when_UsbOhci_l1056 < endpoint_transactionSize);
   assign _zz_2 = ({3'd0,1'b1} <<< endpoint_dmaLogic_byteCtx_sel);
-  assign when_UsbOhci_l1063 = (&endpoint_dmaLogic_byteCtx_sel);
-  assign when_UsbOhci_l1068 = (endpoint_dmaLogic_fromUsbCounter == 11'h000);
+  assign when_UsbOhci_l1065 = (&endpoint_dmaLogic_byteCtx_sel);
+  assign when_UsbOhci_l1070 = (endpoint_dmaLogic_fromUsbCounter == 11'h000);
   assign when_StateMachine_l253_5 = ((! (endpoint_dmaLogic_stateReg == UsbOhciAxi4_endpoint_dmaLogic_enumDef_FROM_USB)) && (endpoint_dmaLogic_stateNext == UsbOhciAxi4_endpoint_dmaLogic_enumDef_FROM_USB));
   assign endpoint_dmaLogic_fsmStopped = (endpoint_dmaLogic_stateReg == UsbOhciAxi4_endpoint_dmaLogic_enumDef_BOOT);
-  assign when_UsbOhci_l1128 = (endpoint_dmaLogic_stateReg == UsbOhciAxi4_endpoint_dmaLogic_enumDef_TO_USB);
-  assign when_UsbOhci_l1311 = (endpoint_dmaLogic_stateReg == UsbOhciAxi4_endpoint_dmaLogic_enumDef_BOOT);
+  assign when_UsbOhci_l1130 = (endpoint_dmaLogic_stateReg == UsbOhciAxi4_endpoint_dmaLogic_enumDef_TO_USB);
+  assign when_UsbOhci_l1313 = (endpoint_dmaLogic_stateReg == UsbOhciAxi4_endpoint_dmaLogic_enumDef_BOOT);
   always @(*) begin
     operational_stateNext = operational_stateReg;
     case(operational_stateReg)
@@ -14830,8 +14776,8 @@ module UsbOhciAxi4_UsbOhci (
           if(frame_limitHit) begin
             operational_stateNext = UsbOhciAxi4_operational_enumDef_WAIT_SOF;
           end else begin
-            if(when_UsbOhci_l1487) begin
-              if(when_UsbOhci_l1488) begin
+            if(when_UsbOhci_l1489) begin
+              if(when_UsbOhci_l1490) begin
                 operational_stateNext = UsbOhciAxi4_operational_enumDef_PERIODIC_HEAD_CMD;
               end else begin
                 if(!reg_hcPeriodCurrentED_isZero) begin
@@ -14894,9 +14840,9 @@ module UsbOhciAxi4_UsbOhci (
     end
   end
 
-  assign when_UsbOhci_l1461 = (operational_allowPeriodic && (! operational_periodicDone));
-  assign when_UsbOhci_l1488 = (! operational_periodicHeadFetched);
-  assign when_UsbOhci_l1487 = ((operational_allowPeriodic && (! operational_periodicDone)) && (! frame_section1));
+  assign when_UsbOhci_l1463 = (operational_allowPeriodic && (! operational_periodicDone));
+  assign when_UsbOhci_l1490 = (! operational_periodicHeadFetched);
+  assign when_UsbOhci_l1489 = ((operational_allowPeriodic && (! operational_periodicDone)) && (! frame_section1));
   assign when_StateMachine_l237_3 = ((operational_stateReg == UsbOhciAxi4_operational_enumDef_BOOT) && (! (operational_stateNext == UsbOhciAxi4_operational_enumDef_BOOT)));
   assign when_StateMachine_l253_6 = ((! (operational_stateReg == UsbOhciAxi4_operational_enumDef_SOF)) && (operational_stateNext == UsbOhciAxi4_operational_enumDef_SOF));
   assign hc_operationalIsDone = (operational_stateReg == UsbOhciAxi4_operational_enumDef_BOOT);
@@ -14915,35 +14861,35 @@ module UsbOhciAxi4_UsbOhci (
         end
       end
       UsbOhciAxi4_hc_enumDef_RESUME : begin
-        if(when_UsbOhci_l1616) begin
+        if(when_UsbOhci_l1618) begin
           hc_stateNext = UsbOhciAxi4_hc_enumDef_OPERATIONAL;
         end
       end
       UsbOhciAxi4_hc_enumDef_OPERATIONAL : begin
       end
       UsbOhciAxi4_hc_enumDef_SUSPEND : begin
-        if(when_UsbOhci_l1625) begin
+        if(when_UsbOhci_l1627) begin
           hc_stateNext = UsbOhciAxi4_hc_enumDef_RESUME;
         end else begin
-          if(when_UsbOhci_l1628) begin
+          if(when_UsbOhci_l1630) begin
             hc_stateNext = UsbOhciAxi4_hc_enumDef_OPERATIONAL;
           end
         end
       end
       UsbOhciAxi4_hc_enumDef_ANY_TO_RESET : begin
-        if(when_UsbOhci_l1639) begin
+        if(when_UsbOhci_l1641) begin
           hc_stateNext = UsbOhciAxi4_hc_enumDef_RESET;
         end
       end
       UsbOhciAxi4_hc_enumDef_ANY_TO_SUSPEND : begin
-        if(when_UsbOhci_l1652) begin
+        if(when_UsbOhci_l1654) begin
           hc_stateNext = UsbOhciAxi4_hc_enumDef_SUSPEND;
         end
       end
       default : begin
       end
     endcase
-    if(when_UsbOhci_l1659) begin
+    if(when_UsbOhci_l1661) begin
       hc_stateNext = UsbOhciAxi4_hc_enumDef_ANY_TO_RESET;
     end
     if(reg_hcCommandStatus_startSoftReset) begin
@@ -14957,15 +14903,15 @@ module UsbOhciAxi4_UsbOhci (
     end
   end
 
-  assign when_UsbOhci_l1616 = (reg_hcControl_HCFSWrite_valid && (reg_hcControl_HCFSWrite_payload == UsbOhciAxi4_MainState_OPERATIONAL));
-  assign when_UsbOhci_l1625 = (reg_hcRhStatus_DRWE && ({reg_hcRhPortStatus_3_CSC_reg,{reg_hcRhPortStatus_2_CSC_reg,{reg_hcRhPortStatus_1_CSC_reg,reg_hcRhPortStatus_0_CSC_reg}}} != 4'b0000));
-  assign when_UsbOhci_l1628 = (reg_hcControl_HCFSWrite_valid && (reg_hcControl_HCFSWrite_payload == UsbOhciAxi4_MainState_OPERATIONAL));
-  assign when_UsbOhci_l1639 = (! doUnschedule);
-  assign when_UsbOhci_l1652 = (((! doUnschedule) && (! doSoftReset)) && hc_operationalIsDone);
+  assign when_UsbOhci_l1618 = (reg_hcControl_HCFSWrite_valid && (reg_hcControl_HCFSWrite_payload == UsbOhciAxi4_MainState_OPERATIONAL));
+  assign when_UsbOhci_l1627 = (reg_hcRhStatus_DRWE && (|{reg_hcRhPortStatus_3_CSC_reg,{reg_hcRhPortStatus_2_CSC_reg,{reg_hcRhPortStatus_1_CSC_reg,reg_hcRhPortStatus_0_CSC_reg}}}));
+  assign when_UsbOhci_l1630 = (reg_hcControl_HCFSWrite_valid && (reg_hcControl_HCFSWrite_payload == UsbOhciAxi4_MainState_OPERATIONAL));
+  assign when_UsbOhci_l1641 = (! doUnschedule);
+  assign when_UsbOhci_l1654 = (((! doUnschedule) && (! doSoftReset)) && hc_operationalIsDone);
   assign when_StateMachine_l253_7 = ((! (hc_stateReg == UsbOhciAxi4_hc_enumDef_OPERATIONAL)) && (hc_stateNext == UsbOhciAxi4_hc_enumDef_OPERATIONAL));
   assign when_StateMachine_l253_8 = ((! (hc_stateReg == UsbOhciAxi4_hc_enumDef_ANY_TO_RESET)) && (hc_stateNext == UsbOhciAxi4_hc_enumDef_ANY_TO_RESET));
   assign when_StateMachine_l253_9 = ((! (hc_stateReg == UsbOhciAxi4_hc_enumDef_ANY_TO_SUSPEND)) && (hc_stateNext == UsbOhciAxi4_hc_enumDef_ANY_TO_SUSPEND));
-  assign when_UsbOhci_l1659 = (reg_hcControl_HCFSWrite_valid && (reg_hcControl_HCFSWrite_payload == UsbOhciAxi4_MainState_RESET));
+  assign when_UsbOhci_l1661 = (reg_hcControl_HCFSWrite_valid && (reg_hcControl_HCFSWrite_payload == UsbOhciAxi4_MainState_RESET));
   always @(posedge ctrl_clk or posedge ctrl_reset) begin
     if(ctrl_reset) begin
       dmaCtx_pendingCounter <= 4'b0000;
@@ -14991,7 +14937,7 @@ module UsbOhciAxi4_UsbOhci (
       reg_hcRhPortStatus_3_CCS_regNext <= 1'b0;
       interruptDelay_counter <= 3'b111;
       endpoint_dmaLogic_push <= 1'b0;
-      _zz_when_UsbOhci_l253 <= 1'b1;
+      _zz_when_UsbOhci_l255 <= 1'b1;
       token_stateReg <= UsbOhciAxi4_token_enumDef_BOOT;
       dataTx_stateReg <= UsbOhciAxi4_dataTx_enumDef_BOOT;
       dataRx_stateReg <= UsbOhciAxi4_dataRx_enumDef_BOOT;
@@ -15029,7 +14975,7 @@ module UsbOhciAxi4_UsbOhci (
       if(unscheduleAll_ready) begin
         doUnschedule <= 1'b0;
       end
-      if(when_UsbOhci_l236) begin
+      if(when_UsbOhci_l238) begin
         doSoftReset <= 1'b0;
       end
       io_phy_overcurrent_regNext <= io_phy_overcurrent;
@@ -15062,14 +15008,14 @@ module UsbOhciAxi4_UsbOhci (
       end
       reg_hcRhPortStatus_3_CCS_regNext <= reg_hcRhPortStatus_3_CCS;
       if(frame_reload) begin
-        if(when_UsbOhci_l540) begin
+        if(when_UsbOhci_l542) begin
           reg_hcFmNumber_overflow <= 1'b1;
         end
       end
-      if(when_UsbOhci_l685) begin
+      if(when_UsbOhci_l687) begin
         interruptDelay_counter <= (interruptDelay_counter - 3'b001);
       end
-      if(when_UsbOhci_l689) begin
+      if(when_UsbOhci_l691) begin
         interruptDelay_counter <= interruptDelay_load_payload;
       end
       if(interruptDelay_disable) begin
@@ -15079,20 +15025,20 @@ module UsbOhciAxi4_UsbOhci (
       case(io_ctrl_cmd_payload_fragment_address)
         12'h004 : begin
           if(ctrl_doWrite) begin
-            if(when_BusSlaveFactory_l968_5) begin
+            if(when_BusSlaveFactory_l1041_5) begin
               reg_hcControl_IR <= io_ctrl_cmd_payload_fragment_data[8];
             end
-            if(when_BusSlaveFactory_l968_6) begin
+            if(when_BusSlaveFactory_l1041_6) begin
               reg_hcControl_RWC <= io_ctrl_cmd_payload_fragment_data[9];
             end
           end
         end
         12'h040 : begin
           if(ctrl_doWrite) begin
-            if(when_BusSlaveFactory_l968_36) begin
+            if(when_BusSlaveFactory_l1041_36) begin
               reg_hcPeriodicStart_PS[7 : 0] <= io_ctrl_cmd_payload_fragment_data[7 : 0];
             end
-            if(when_BusSlaveFactory_l968_37) begin
+            if(when_BusSlaveFactory_l1041_37) begin
               reg_hcPeriodicStart_PS[13 : 8] <= io_ctrl_cmd_payload_fragment_data[13 : 8];
             end
           end
@@ -15100,7 +15046,7 @@ module UsbOhciAxi4_UsbOhci (
         default : begin
         end
       endcase
-      _zz_when_UsbOhci_l253 <= 1'b0;
+      _zz_when_UsbOhci_l255 <= 1'b0;
       token_stateReg <= token_stateNext;
       dataTx_stateReg <= dataTx_stateNext;
       dataRx_stateReg <= dataRx_stateNext;
@@ -15130,7 +15076,7 @@ module UsbOhciAxi4_UsbOhci (
             endpoint_dmaLogic_push <= (|endpoint_dmaLogic_byteCtx_sel);
           end
           if(dataRx_data_valid) begin
-            if(when_UsbOhci_l1063) begin
+            if(when_UsbOhci_l1065) begin
               endpoint_dmaLogic_push <= 1'b1;
             end
           end
@@ -15320,7 +15266,7 @@ module UsbOhciAxi4_UsbOhci (
         reg_hcRhStatus_CCIC <= _zz_reg_hcRhStatus_CCIC[0];
       end
     end
-    if(when_UsbOhci_l409) begin
+    if(when_UsbOhci_l411) begin
       reg_hcRhStatus_CCIC <= 1'b1;
     end
     if(reg_hcRhStatus_setRemoteWakeupEnable) begin
@@ -15374,35 +15320,35 @@ module UsbOhciAxi4_UsbOhci (
     if(reg_hcRhPortStatus_0_PRSC_set) begin
       reg_hcInterrupt_RHSC_status <= 1'b1;
     end
-    if(when_UsbOhci_l460) begin
+    if(when_UsbOhci_l462) begin
       reg_hcRhPortStatus_0_PES <= 1'b0;
     end
-    if(when_UsbOhci_l460_1) begin
+    if(when_UsbOhci_l462_1) begin
       reg_hcRhPortStatus_0_PES <= 1'b1;
     end
-    if(when_UsbOhci_l460_2) begin
+    if(when_UsbOhci_l462_2) begin
       reg_hcRhPortStatus_0_PES <= 1'b1;
-    end
-    if(when_UsbOhci_l461) begin
-      reg_hcRhPortStatus_0_PSS <= 1'b0;
-    end
-    if(when_UsbOhci_l461_1) begin
-      reg_hcRhPortStatus_0_PSS <= 1'b1;
-    end
-    if(when_UsbOhci_l462) begin
-      reg_hcRhPortStatus_0_suspend <= 1'b1;
     end
     if(when_UsbOhci_l463) begin
-      reg_hcRhPortStatus_0_resume <= 1'b1;
+      reg_hcRhPortStatus_0_PSS <= 1'b0;
+    end
+    if(when_UsbOhci_l463_1) begin
+      reg_hcRhPortStatus_0_PSS <= 1'b1;
     end
     if(when_UsbOhci_l464) begin
+      reg_hcRhPortStatus_0_suspend <= 1'b1;
+    end
+    if(when_UsbOhci_l465) begin
+      reg_hcRhPortStatus_0_resume <= 1'b1;
+    end
+    if(when_UsbOhci_l466) begin
       reg_hcRhPortStatus_0_reset <= 1'b1;
     end
     if(reg_hcRhDescriptorA_NPS) begin
       reg_hcRhPortStatus_0_PPS <= 1'b1;
     end else begin
       if(reg_hcRhDescriptorA_PSM) begin
-        if(when_UsbOhci_l470) begin
+        if(when_UsbOhci_l472) begin
           if(reg_hcRhPortStatus_0_clearPortPower) begin
             reg_hcRhPortStatus_0_PPS <= 1'b0;
           end
@@ -15483,35 +15429,35 @@ module UsbOhciAxi4_UsbOhci (
     if(reg_hcRhPortStatus_1_PRSC_set) begin
       reg_hcInterrupt_RHSC_status <= 1'b1;
     end
-    if(when_UsbOhci_l460_3) begin
+    if(when_UsbOhci_l462_3) begin
       reg_hcRhPortStatus_1_PES <= 1'b0;
     end
-    if(when_UsbOhci_l460_4) begin
+    if(when_UsbOhci_l462_4) begin
       reg_hcRhPortStatus_1_PES <= 1'b1;
     end
-    if(when_UsbOhci_l460_5) begin
+    if(when_UsbOhci_l462_5) begin
       reg_hcRhPortStatus_1_PES <= 1'b1;
     end
-    if(when_UsbOhci_l461_2) begin
+    if(when_UsbOhci_l463_2) begin
       reg_hcRhPortStatus_1_PSS <= 1'b0;
     end
-    if(when_UsbOhci_l461_3) begin
+    if(when_UsbOhci_l463_3) begin
       reg_hcRhPortStatus_1_PSS <= 1'b1;
     end
-    if(when_UsbOhci_l462_1) begin
+    if(when_UsbOhci_l464_1) begin
       reg_hcRhPortStatus_1_suspend <= 1'b1;
     end
-    if(when_UsbOhci_l463_1) begin
+    if(when_UsbOhci_l465_1) begin
       reg_hcRhPortStatus_1_resume <= 1'b1;
     end
-    if(when_UsbOhci_l464_1) begin
+    if(when_UsbOhci_l466_1) begin
       reg_hcRhPortStatus_1_reset <= 1'b1;
     end
     if(reg_hcRhDescriptorA_NPS) begin
       reg_hcRhPortStatus_1_PPS <= 1'b1;
     end else begin
       if(reg_hcRhDescriptorA_PSM) begin
-        if(when_UsbOhci_l470_1) begin
+        if(when_UsbOhci_l472_1) begin
           if(reg_hcRhPortStatus_1_clearPortPower) begin
             reg_hcRhPortStatus_1_PPS <= 1'b0;
           end
@@ -15592,35 +15538,35 @@ module UsbOhciAxi4_UsbOhci (
     if(reg_hcRhPortStatus_2_PRSC_set) begin
       reg_hcInterrupt_RHSC_status <= 1'b1;
     end
-    if(when_UsbOhci_l460_6) begin
+    if(when_UsbOhci_l462_6) begin
       reg_hcRhPortStatus_2_PES <= 1'b0;
     end
-    if(when_UsbOhci_l460_7) begin
+    if(when_UsbOhci_l462_7) begin
       reg_hcRhPortStatus_2_PES <= 1'b1;
     end
-    if(when_UsbOhci_l460_8) begin
+    if(when_UsbOhci_l462_8) begin
       reg_hcRhPortStatus_2_PES <= 1'b1;
     end
-    if(when_UsbOhci_l461_4) begin
+    if(when_UsbOhci_l463_4) begin
       reg_hcRhPortStatus_2_PSS <= 1'b0;
     end
-    if(when_UsbOhci_l461_5) begin
+    if(when_UsbOhci_l463_5) begin
       reg_hcRhPortStatus_2_PSS <= 1'b1;
     end
-    if(when_UsbOhci_l462_2) begin
+    if(when_UsbOhci_l464_2) begin
       reg_hcRhPortStatus_2_suspend <= 1'b1;
     end
-    if(when_UsbOhci_l463_2) begin
+    if(when_UsbOhci_l465_2) begin
       reg_hcRhPortStatus_2_resume <= 1'b1;
     end
-    if(when_UsbOhci_l464_2) begin
+    if(when_UsbOhci_l466_2) begin
       reg_hcRhPortStatus_2_reset <= 1'b1;
     end
     if(reg_hcRhDescriptorA_NPS) begin
       reg_hcRhPortStatus_2_PPS <= 1'b1;
     end else begin
       if(reg_hcRhDescriptorA_PSM) begin
-        if(when_UsbOhci_l470_2) begin
+        if(when_UsbOhci_l472_2) begin
           if(reg_hcRhPortStatus_2_clearPortPower) begin
             reg_hcRhPortStatus_2_PPS <= 1'b0;
           end
@@ -15701,35 +15647,35 @@ module UsbOhciAxi4_UsbOhci (
     if(reg_hcRhPortStatus_3_PRSC_set) begin
       reg_hcInterrupt_RHSC_status <= 1'b1;
     end
-    if(when_UsbOhci_l460_9) begin
+    if(when_UsbOhci_l462_9) begin
       reg_hcRhPortStatus_3_PES <= 1'b0;
     end
-    if(when_UsbOhci_l460_10) begin
+    if(when_UsbOhci_l462_10) begin
       reg_hcRhPortStatus_3_PES <= 1'b1;
     end
-    if(when_UsbOhci_l460_11) begin
+    if(when_UsbOhci_l462_11) begin
       reg_hcRhPortStatus_3_PES <= 1'b1;
     end
-    if(when_UsbOhci_l461_6) begin
+    if(when_UsbOhci_l463_6) begin
       reg_hcRhPortStatus_3_PSS <= 1'b0;
     end
-    if(when_UsbOhci_l461_7) begin
+    if(when_UsbOhci_l463_7) begin
       reg_hcRhPortStatus_3_PSS <= 1'b1;
     end
-    if(when_UsbOhci_l462_3) begin
+    if(when_UsbOhci_l464_3) begin
       reg_hcRhPortStatus_3_suspend <= 1'b1;
     end
-    if(when_UsbOhci_l463_3) begin
+    if(when_UsbOhci_l465_3) begin
       reg_hcRhPortStatus_3_resume <= 1'b1;
     end
-    if(when_UsbOhci_l464_3) begin
+    if(when_UsbOhci_l466_3) begin
       reg_hcRhPortStatus_3_reset <= 1'b1;
     end
     if(reg_hcRhDescriptorA_NPS) begin
       reg_hcRhPortStatus_3_PPS <= 1'b1;
     end else begin
       if(reg_hcRhDescriptorA_PSM) begin
-        if(when_UsbOhci_l470_3) begin
+        if(when_UsbOhci_l472_3) begin
           if(reg_hcRhPortStatus_3_clearPortPower) begin
             reg_hcRhPortStatus_3_PPS <= 1'b0;
           end
@@ -15769,9 +15715,9 @@ module UsbOhciAxi4_UsbOhci (
     if(frame_decrementTimerOverflow) begin
       frame_decrementTimer <= 3'b000;
     end
-    if(when_UsbOhci_l526) begin
+    if(when_UsbOhci_l528) begin
       reg_hcFmRemaining_FR <= (reg_hcFmRemaining_FR - 14'h0001);
-      if(when_UsbOhci_l528) begin
+      if(when_UsbOhci_l530) begin
         frame_limitCounter <= (frame_limitCounter - 15'h0001);
       end
     end
@@ -15831,173 +15777,173 @@ module UsbOhciAxi4_UsbOhci (
     case(io_ctrl_cmd_payload_fragment_address)
       12'h004 : begin
         if(ctrl_doWrite) begin
-          if(when_BusSlaveFactory_l968) begin
+          if(when_BusSlaveFactory_l1041) begin
             reg_hcControl_CBSR[1 : 0] <= io_ctrl_cmd_payload_fragment_data[1 : 0];
           end
-          if(when_BusSlaveFactory_l968_1) begin
+          if(when_BusSlaveFactory_l1041_1) begin
             reg_hcControl_PLE <= io_ctrl_cmd_payload_fragment_data[2];
           end
-          if(when_BusSlaveFactory_l968_2) begin
+          if(when_BusSlaveFactory_l1041_2) begin
             reg_hcControl_IE <= io_ctrl_cmd_payload_fragment_data[3];
           end
-          if(when_BusSlaveFactory_l968_3) begin
+          if(when_BusSlaveFactory_l1041_3) begin
             reg_hcControl_CLE <= io_ctrl_cmd_payload_fragment_data[4];
           end
-          if(when_BusSlaveFactory_l968_4) begin
+          if(when_BusSlaveFactory_l1041_4) begin
             reg_hcControl_BLE <= io_ctrl_cmd_payload_fragment_data[5];
           end
-          if(when_BusSlaveFactory_l968_7) begin
+          if(when_BusSlaveFactory_l1041_7) begin
             reg_hcControl_RWE <= io_ctrl_cmd_payload_fragment_data[10];
           end
         end
       end
       12'h018 : begin
         if(ctrl_doWrite) begin
-          if(when_BusSlaveFactory_l968_8) begin
+          if(when_BusSlaveFactory_l1041_8) begin
             reg_hcHCCA_HCCA_reg[7 : 0] <= io_ctrl_cmd_payload_fragment_data[15 : 8];
           end
-          if(when_BusSlaveFactory_l968_9) begin
+          if(when_BusSlaveFactory_l1041_9) begin
             reg_hcHCCA_HCCA_reg[15 : 8] <= io_ctrl_cmd_payload_fragment_data[23 : 16];
           end
-          if(when_BusSlaveFactory_l968_10) begin
+          if(when_BusSlaveFactory_l1041_10) begin
             reg_hcHCCA_HCCA_reg[23 : 16] <= io_ctrl_cmd_payload_fragment_data[31 : 24];
           end
         end
       end
       12'h020 : begin
         if(ctrl_doWrite) begin
-          if(when_BusSlaveFactory_l968_11) begin
+          if(when_BusSlaveFactory_l1041_11) begin
             reg_hcControlHeadED_CHED_reg[3 : 0] <= io_ctrl_cmd_payload_fragment_data[7 : 4];
           end
-          if(when_BusSlaveFactory_l968_12) begin
+          if(when_BusSlaveFactory_l1041_12) begin
             reg_hcControlHeadED_CHED_reg[11 : 4] <= io_ctrl_cmd_payload_fragment_data[15 : 8];
           end
-          if(when_BusSlaveFactory_l968_13) begin
+          if(when_BusSlaveFactory_l1041_13) begin
             reg_hcControlHeadED_CHED_reg[19 : 12] <= io_ctrl_cmd_payload_fragment_data[23 : 16];
           end
-          if(when_BusSlaveFactory_l968_14) begin
+          if(when_BusSlaveFactory_l1041_14) begin
             reg_hcControlHeadED_CHED_reg[27 : 20] <= io_ctrl_cmd_payload_fragment_data[31 : 24];
           end
         end
       end
       12'h024 : begin
         if(ctrl_doWrite) begin
-          if(when_BusSlaveFactory_l968_15) begin
+          if(when_BusSlaveFactory_l1041_15) begin
             reg_hcControlCurrentED_CCED_reg[3 : 0] <= io_ctrl_cmd_payload_fragment_data[7 : 4];
           end
-          if(when_BusSlaveFactory_l968_16) begin
+          if(when_BusSlaveFactory_l1041_16) begin
             reg_hcControlCurrentED_CCED_reg[11 : 4] <= io_ctrl_cmd_payload_fragment_data[15 : 8];
           end
-          if(when_BusSlaveFactory_l968_17) begin
+          if(when_BusSlaveFactory_l1041_17) begin
             reg_hcControlCurrentED_CCED_reg[19 : 12] <= io_ctrl_cmd_payload_fragment_data[23 : 16];
           end
-          if(when_BusSlaveFactory_l968_18) begin
+          if(when_BusSlaveFactory_l1041_18) begin
             reg_hcControlCurrentED_CCED_reg[27 : 20] <= io_ctrl_cmd_payload_fragment_data[31 : 24];
           end
         end
       end
       12'h028 : begin
         if(ctrl_doWrite) begin
-          if(when_BusSlaveFactory_l968_19) begin
+          if(when_BusSlaveFactory_l1041_19) begin
             reg_hcBulkHeadED_BHED_reg[3 : 0] <= io_ctrl_cmd_payload_fragment_data[7 : 4];
           end
-          if(when_BusSlaveFactory_l968_20) begin
+          if(when_BusSlaveFactory_l1041_20) begin
             reg_hcBulkHeadED_BHED_reg[11 : 4] <= io_ctrl_cmd_payload_fragment_data[15 : 8];
           end
-          if(when_BusSlaveFactory_l968_21) begin
+          if(when_BusSlaveFactory_l1041_21) begin
             reg_hcBulkHeadED_BHED_reg[19 : 12] <= io_ctrl_cmd_payload_fragment_data[23 : 16];
           end
-          if(when_BusSlaveFactory_l968_22) begin
+          if(when_BusSlaveFactory_l1041_22) begin
             reg_hcBulkHeadED_BHED_reg[27 : 20] <= io_ctrl_cmd_payload_fragment_data[31 : 24];
           end
         end
       end
       12'h02c : begin
         if(ctrl_doWrite) begin
-          if(when_BusSlaveFactory_l968_23) begin
+          if(when_BusSlaveFactory_l1041_23) begin
             reg_hcBulkCurrentED_BCED_reg[3 : 0] <= io_ctrl_cmd_payload_fragment_data[7 : 4];
           end
-          if(when_BusSlaveFactory_l968_24) begin
+          if(when_BusSlaveFactory_l1041_24) begin
             reg_hcBulkCurrentED_BCED_reg[11 : 4] <= io_ctrl_cmd_payload_fragment_data[15 : 8];
           end
-          if(when_BusSlaveFactory_l968_25) begin
+          if(when_BusSlaveFactory_l1041_25) begin
             reg_hcBulkCurrentED_BCED_reg[19 : 12] <= io_ctrl_cmd_payload_fragment_data[23 : 16];
           end
-          if(when_BusSlaveFactory_l968_26) begin
+          if(when_BusSlaveFactory_l1041_26) begin
             reg_hcBulkCurrentED_BCED_reg[27 : 20] <= io_ctrl_cmd_payload_fragment_data[31 : 24];
           end
         end
       end
       12'h030 : begin
         if(ctrl_doWrite) begin
-          if(when_BusSlaveFactory_l968_27) begin
+          if(when_BusSlaveFactory_l1041_27) begin
             reg_hcDoneHead_DH_reg[3 : 0] <= io_ctrl_cmd_payload_fragment_data[7 : 4];
           end
-          if(when_BusSlaveFactory_l968_28) begin
+          if(when_BusSlaveFactory_l1041_28) begin
             reg_hcDoneHead_DH_reg[11 : 4] <= io_ctrl_cmd_payload_fragment_data[15 : 8];
           end
-          if(when_BusSlaveFactory_l968_29) begin
+          if(when_BusSlaveFactory_l1041_29) begin
             reg_hcDoneHead_DH_reg[19 : 12] <= io_ctrl_cmd_payload_fragment_data[23 : 16];
           end
-          if(when_BusSlaveFactory_l968_30) begin
+          if(when_BusSlaveFactory_l1041_30) begin
             reg_hcDoneHead_DH_reg[27 : 20] <= io_ctrl_cmd_payload_fragment_data[31 : 24];
           end
         end
       end
       12'h034 : begin
         if(ctrl_doWrite) begin
-          if(when_BusSlaveFactory_l968_31) begin
+          if(when_BusSlaveFactory_l1041_31) begin
             reg_hcFmInterval_FI[7 : 0] <= io_ctrl_cmd_payload_fragment_data[7 : 0];
           end
-          if(when_BusSlaveFactory_l968_32) begin
+          if(when_BusSlaveFactory_l1041_32) begin
             reg_hcFmInterval_FI[13 : 8] <= io_ctrl_cmd_payload_fragment_data[13 : 8];
           end
-          if(when_BusSlaveFactory_l968_33) begin
+          if(when_BusSlaveFactory_l1041_33) begin
             reg_hcFmInterval_FSMPS[7 : 0] <= io_ctrl_cmd_payload_fragment_data[23 : 16];
           end
-          if(when_BusSlaveFactory_l968_34) begin
+          if(when_BusSlaveFactory_l1041_34) begin
             reg_hcFmInterval_FSMPS[14 : 8] <= io_ctrl_cmd_payload_fragment_data[30 : 24];
           end
-          if(when_BusSlaveFactory_l968_35) begin
+          if(when_BusSlaveFactory_l1041_35) begin
             reg_hcFmInterval_FIT <= io_ctrl_cmd_payload_fragment_data[31];
           end
         end
       end
       12'h044 : begin
         if(ctrl_doWrite) begin
-          if(when_BusSlaveFactory_l968_38) begin
+          if(when_BusSlaveFactory_l1041_38) begin
             reg_hcLSThreshold_LST[7 : 0] <= io_ctrl_cmd_payload_fragment_data[7 : 0];
           end
-          if(when_BusSlaveFactory_l968_39) begin
+          if(when_BusSlaveFactory_l1041_39) begin
             reg_hcLSThreshold_LST[11 : 8] <= io_ctrl_cmd_payload_fragment_data[11 : 8];
           end
         end
       end
       12'h048 : begin
         if(ctrl_doWrite) begin
-          if(when_BusSlaveFactory_l968_40) begin
+          if(when_BusSlaveFactory_l1041_40) begin
             reg_hcRhDescriptorA_PSM <= io_ctrl_cmd_payload_fragment_data[8];
           end
-          if(when_BusSlaveFactory_l968_41) begin
+          if(when_BusSlaveFactory_l1041_41) begin
             reg_hcRhDescriptorA_NPS <= io_ctrl_cmd_payload_fragment_data[9];
           end
-          if(when_BusSlaveFactory_l968_42) begin
+          if(when_BusSlaveFactory_l1041_42) begin
             reg_hcRhDescriptorA_OCPM <= io_ctrl_cmd_payload_fragment_data[11];
           end
-          if(when_BusSlaveFactory_l968_43) begin
+          if(when_BusSlaveFactory_l1041_43) begin
             reg_hcRhDescriptorA_NOCP <= io_ctrl_cmd_payload_fragment_data[12];
           end
-          if(when_BusSlaveFactory_l968_44) begin
+          if(when_BusSlaveFactory_l1041_44) begin
             reg_hcRhDescriptorA_POTPGT[7 : 0] <= io_ctrl_cmd_payload_fragment_data[31 : 24];
           end
         end
       end
       12'h04c : begin
         if(ctrl_doWrite) begin
-          if(when_BusSlaveFactory_l968_45) begin
+          if(when_BusSlaveFactory_l1041_45) begin
             reg_hcRhDescriptorB_DR[3 : 0] <= io_ctrl_cmd_payload_fragment_data[4 : 1];
           end
-          if(when_BusSlaveFactory_l968_46) begin
+          if(when_BusSlaveFactory_l1041_46) begin
             reg_hcRhDescriptorB_PPCM[3 : 0] <= io_ctrl_cmd_payload_fragment_data[20 : 17];
           end
         end
@@ -16005,7 +15951,7 @@ module UsbOhciAxi4_UsbOhci (
       default : begin
       end
     endcase
-    if(when_UsbOhci_l253) begin
+    if(when_UsbOhci_l255) begin
       reg_hcControl_CBSR <= 2'b00;
       reg_hcControl_PLE <= 1'b0;
       reg_hcControl_IE <= 1'b0;
@@ -16168,16 +16114,16 @@ module UsbOhciAxi4_UsbOhci (
       UsbOhciAxi4_endpoint_enumDef_ED_READ_CMD : begin
       end
       UsbOhciAxi4_endpoint_enumDef_ED_READ_RSP : begin
-        if(when_UsbOhci_l188) begin
+        if(when_UsbOhci_l189) begin
           endpoint_ED_words_0 <= dmaRspMux_vec_0[31 : 0];
         end
-        if(when_UsbOhci_l188_1) begin
+        if(when_UsbOhci_l189_1) begin
           endpoint_ED_words_1 <= dmaRspMux_vec_0[31 : 0];
         end
-        if(when_UsbOhci_l188_2) begin
+        if(when_UsbOhci_l189_2) begin
           endpoint_ED_words_2 <= dmaRspMux_vec_0[31 : 0];
         end
-        if(when_UsbOhci_l188_3) begin
+        if(when_UsbOhci_l189_3) begin
           endpoint_ED_words_3 <= dmaRspMux_vec_0[31 : 0];
         end
       end
@@ -16186,76 +16132,76 @@ module UsbOhciAxi4_UsbOhci (
       UsbOhciAxi4_endpoint_enumDef_TD_READ_CMD : begin
       end
       UsbOhciAxi4_endpoint_enumDef_TD_READ_RSP : begin
-        if(when_UsbOhci_l188_4) begin
+        if(when_UsbOhci_l189_4) begin
           endpoint_TD_words_0 <= dmaRspMux_vec_0[31 : 0];
         end
-        if(when_UsbOhci_l188_5) begin
+        if(when_UsbOhci_l189_5) begin
           endpoint_TD_words_1 <= dmaRspMux_vec_0[31 : 0];
         end
-        if(when_UsbOhci_l188_6) begin
+        if(when_UsbOhci_l189_6) begin
           endpoint_TD_words_2 <= dmaRspMux_vec_0[31 : 0];
         end
-        if(when_UsbOhci_l188_7) begin
+        if(when_UsbOhci_l189_7) begin
           endpoint_TD_words_3 <= dmaRspMux_vec_0[31 : 0];
         end
-        if(when_UsbOhci_l891) begin
-          if(when_UsbOhci_l188_8) begin
+        if(when_UsbOhci_l893) begin
+          if(when_UsbOhci_l189_8) begin
             endpoint_TD_isoBase <= dmaRspMux_vec_0[12 : 0];
           end
-          if(when_UsbOhci_l188_9) begin
+          if(when_UsbOhci_l189_9) begin
             endpoint_TD_isoBaseNext <= dmaRspMux_vec_0[28 : 16];
           end
         end
-        if(when_UsbOhci_l891_1) begin
-          if(when_UsbOhci_l188_10) begin
+        if(when_UsbOhci_l893_1) begin
+          if(when_UsbOhci_l189_10) begin
             endpoint_TD_isoBase <= dmaRspMux_vec_0[28 : 16];
           end
-          if(when_UsbOhci_l188_11) begin
+          if(when_UsbOhci_l189_11) begin
             endpoint_TD_isoBaseNext <= dmaRspMux_vec_0[12 : 0];
           end
         end
-        if(when_UsbOhci_l891_2) begin
-          if(when_UsbOhci_l188_12) begin
+        if(when_UsbOhci_l893_2) begin
+          if(when_UsbOhci_l189_12) begin
             endpoint_TD_isoBase <= dmaRspMux_vec_0[12 : 0];
           end
-          if(when_UsbOhci_l188_13) begin
+          if(when_UsbOhci_l189_13) begin
             endpoint_TD_isoBaseNext <= dmaRspMux_vec_0[28 : 16];
           end
         end
-        if(when_UsbOhci_l891_3) begin
-          if(when_UsbOhci_l188_14) begin
+        if(when_UsbOhci_l893_3) begin
+          if(when_UsbOhci_l189_14) begin
             endpoint_TD_isoBase <= dmaRspMux_vec_0[28 : 16];
           end
-          if(when_UsbOhci_l188_15) begin
+          if(when_UsbOhci_l189_15) begin
             endpoint_TD_isoBaseNext <= dmaRspMux_vec_0[12 : 0];
           end
         end
-        if(when_UsbOhci_l891_4) begin
-          if(when_UsbOhci_l188_16) begin
+        if(when_UsbOhci_l893_4) begin
+          if(when_UsbOhci_l189_16) begin
             endpoint_TD_isoBase <= dmaRspMux_vec_0[12 : 0];
           end
-          if(when_UsbOhci_l188_17) begin
+          if(when_UsbOhci_l189_17) begin
             endpoint_TD_isoBaseNext <= dmaRspMux_vec_0[28 : 16];
           end
         end
-        if(when_UsbOhci_l891_5) begin
-          if(when_UsbOhci_l188_18) begin
+        if(when_UsbOhci_l893_5) begin
+          if(when_UsbOhci_l189_18) begin
             endpoint_TD_isoBase <= dmaRspMux_vec_0[28 : 16];
           end
-          if(when_UsbOhci_l188_19) begin
+          if(when_UsbOhci_l189_19) begin
             endpoint_TD_isoBaseNext <= dmaRspMux_vec_0[12 : 0];
           end
         end
-        if(when_UsbOhci_l891_6) begin
-          if(when_UsbOhci_l188_20) begin
+        if(when_UsbOhci_l893_6) begin
+          if(when_UsbOhci_l189_20) begin
             endpoint_TD_isoBase <= dmaRspMux_vec_0[12 : 0];
           end
-          if(when_UsbOhci_l188_21) begin
+          if(when_UsbOhci_l189_21) begin
             endpoint_TD_isoBaseNext <= dmaRspMux_vec_0[28 : 16];
           end
         end
-        if(when_UsbOhci_l891_7) begin
-          if(when_UsbOhci_l188_22) begin
+        if(when_UsbOhci_l893_7) begin
+          if(when_UsbOhci_l189_22) begin
             endpoint_TD_isoBase <= dmaRspMux_vec_0[28 : 16];
           end
         end
@@ -16293,7 +16239,7 @@ module UsbOhciAxi4_UsbOhci (
         end
       end
       UsbOhciAxi4_endpoint_enumDef_BUFFER_READ : begin
-        if(when_UsbOhci_l1128) begin
+        if(when_UsbOhci_l1130) begin
           if(endpoint_timeCheck) begin
             endpoint_status_1 <= UsbOhciAxi4_endpoint_Status_FRAME_TIME;
           end
@@ -16341,7 +16287,7 @@ module UsbOhciAxi4_UsbOhci (
                     endpoint_TD_words_0[31 : 28] <= 4'b0100;
                   end
                   4'b0011, 4'b1011 : begin
-                    if(when_UsbOhci_l1263) begin
+                    if(when_UsbOhci_l1265) begin
                       endpoint_TD_words_0[31 : 28] <= 4'b0011;
                     end
                   end
@@ -16350,7 +16296,7 @@ module UsbOhciAxi4_UsbOhci (
                   end
                 endcase
               end
-              if(when_UsbOhci_l1274) begin
+              if(when_UsbOhci_l1276) begin
                 if(dataRx_crcError) begin
                   endpoint_TD_words_0[31 : 28] <= 4'b0001;
                 end else begin
@@ -16374,15 +16320,15 @@ module UsbOhciAxi4_UsbOhci (
           if(io_phy_rx_flow_payload_stuffingError) begin
             endpoint_ackRxStuffing <= 1'b1;
           end
-          if(when_UsbOhci_l1200) begin
+          if(when_UsbOhci_l1202) begin
             endpoint_ackRxPidFailure <= 1'b1;
           end
         end
         if(io_phy_rx_active) begin
           endpoint_ackRxActivated <= 1'b1;
         end
-        if(when_UsbOhci_l1205) begin
-          if(when_UsbOhci_l1207) begin
+        if(when_UsbOhci_l1207) begin
+          if(when_UsbOhci_l1209) begin
             endpoint_TD_words_0[31 : 28] <= 4'b0110;
           end else begin
             if(endpoint_ackRxStuffing) begin
@@ -16429,7 +16375,7 @@ module UsbOhciAxi4_UsbOhci (
           endpoint_TD_words_0[27 : 26] <= 2'b00;
           case(endpoint_TD_CC)
             4'b0000 : begin
-              if(when_UsbOhci_l1331) begin
+              if(when_UsbOhci_l1333) begin
                 endpoint_TD_retire <= 1'b1;
               end
               endpoint_TD_dataPhaseUpdate <= 1'b1;
@@ -16446,7 +16392,7 @@ module UsbOhciAxi4_UsbOhci (
             end
             4'b0010, 4'b0001, 4'b0110, 4'b0101, 4'b0111, 4'b0011 : begin
               endpoint_TD_words_0[27 : 26] <= _zz_endpoint_TD_words_0;
-              if(when_UsbOhci_l1346) begin
+              if(when_UsbOhci_l1348) begin
                 endpoint_TD_words_0[31 : 28] <= 4'b0000;
               end else begin
                 endpoint_TD_retire <= 1'b1;
@@ -16496,13 +16442,13 @@ module UsbOhciAxi4_UsbOhci (
       end
       UsbOhciAxi4_endpoint_dmaLogic_enumDef_FROM_USB : begin
         if(dataRx_wantExit) begin
-          endpoint_dmaLogic_underflow <= when_UsbOhci_l1054;
-          endpoint_dmaLogic_overflow <= ((! when_UsbOhci_l1054) && (_zz_endpoint_dmaLogic_overflow != endpoint_transactionSize));
+          endpoint_dmaLogic_underflow <= when_UsbOhci_l1056;
+          endpoint_dmaLogic_overflow <= ((! when_UsbOhci_l1056) && (_zz_endpoint_dmaLogic_overflow != endpoint_transactionSize));
           if(endpoint_zeroLength) begin
             endpoint_dmaLogic_underflow <= 1'b0;
             endpoint_dmaLogic_overflow <= (endpoint_dmaLogic_fromUsbCounter != 11'h000);
           end
-          if(when_UsbOhci_l1054) begin
+          if(when_UsbOhci_l1056) begin
             endpoint_lastAddress <= _zz_endpoint_lastAddress_5[12:0];
           end
         end
@@ -16548,7 +16494,7 @@ module UsbOhciAxi4_UsbOhci (
     case(operational_stateReg)
       UsbOhciAxi4_operational_enumDef_SOF : begin
         if(sof_wantExit) begin
-          if(when_UsbOhci_l1461) begin
+          if(when_UsbOhci_l1463) begin
             reg_hcInterrupt_SO_status <= 1'b1;
             reg_hcCommandStatus_SOC <= (reg_hcCommandStatus_SOC + 2'b01);
           end
@@ -16571,8 +16517,8 @@ module UsbOhciAxi4_UsbOhci (
         end
         if(!operational_askExit) begin
           if(!frame_limitHit) begin
-            if(when_UsbOhci_l1487) begin
-              if(!when_UsbOhci_l1488) begin
+            if(when_UsbOhci_l1489) begin
+              if(!when_UsbOhci_l1490) begin
                 if(reg_hcPeriodCurrentED_isZero) begin
                   operational_periodicDone <= 1'b1;
                 end else begin
@@ -16636,7 +16582,7 @@ module UsbOhciAxi4_UsbOhci (
       UsbOhciAxi4_hc_enumDef_OPERATIONAL : begin
       end
       UsbOhciAxi4_hc_enumDef_SUSPEND : begin
-        if(when_UsbOhci_l1625) begin
+        if(when_UsbOhci_l1627) begin
           reg_hcInterrupt_RD_status <= 1'b1;
         end
       end
@@ -16920,9 +16866,9 @@ module UsbOhciAxi4_BmbToAxi4SharedBridge (
   reg                 pendingWrite;
   reg        [4:0]    pendingCounter;
   wire                io_input_cmd_fire;
-  wire                when_Utils_l688;
+  wire                when_Utils_l706;
   wire                io_input_rsp_fire;
-  wire                when_Utils_l691;
+  wire                when_Utils_l709;
   reg                 states_0_counter_incrementIt;
   reg                 states_0_counter_decrementIt;
   wire       [4:0]    states_0_counter_valueNext;
@@ -16931,8 +16877,8 @@ module UsbOhciAxi4_BmbToAxi4SharedBridge (
   wire                states_0_counter_willOverflowIfInc;
   wire                states_0_counter_willOverflow;
   reg        [4:0]    states_0_counter_finalIncrement;
-  wire                when_Utils_l717;
-  wire                when_Utils_l719;
+  wire                when_Utils_l735;
+  wire                when_Utils_l737;
   wire                when_BmbToAxi4Bridge_l45;
   reg                 states_0_write;
   wire                when_BmbToAxi4Bridge_l47;
@@ -16964,8 +16910,8 @@ module UsbOhciAxi4_BmbToAxi4SharedBridge (
   wire       [3:0]    dataFork_payload_fragment_mask;
   reg                 _zz_cmdFork_valid_1;
   reg                 _zz_dataFork_valid;
-  wire                when_Stream_l1020;
-  wire                when_Stream_l1020_1;
+  wire                when_Stream_l1049;
+  wire                when_Stream_l1049_1;
   wire                cmdFork_fire;
   wire                dataFork_fire;
   reg                 io_input_cmd_payload_first;
@@ -17049,19 +16995,19 @@ module UsbOhciAxi4_BmbToAxi4SharedBridge (
   end
 
   assign io_input_cmd_fire = (io_input_cmd_valid && io_input_cmd_ready);
-  assign when_Utils_l688 = ((1'b1 && io_input_cmd_fire) && io_input_cmd_payload_last);
+  assign when_Utils_l706 = ((1'b1 && io_input_cmd_fire) && io_input_cmd_payload_last);
   assign io_input_rsp_fire = (io_input_rsp_valid && io_input_rsp_ready);
-  assign when_Utils_l691 = ((1'b1 && io_input_rsp_fire) && io_input_rsp_payload_last);
+  assign when_Utils_l709 = ((1'b1 && io_input_rsp_fire) && io_input_rsp_payload_last);
   always @(*) begin
     states_0_counter_incrementIt = 1'b0;
-    if(when_Utils_l688) begin
+    if(when_Utils_l706) begin
       states_0_counter_incrementIt = 1'b1;
     end
   end
 
   always @(*) begin
     states_0_counter_decrementIt = 1'b0;
-    if(when_Utils_l691) begin
+    if(when_Utils_l709) begin
       states_0_counter_decrementIt = 1'b1;
     end
   end
@@ -17069,12 +17015,12 @@ module UsbOhciAxi4_BmbToAxi4SharedBridge (
   assign states_0_counter_mayOverflow = (states_0_counter_value == 5'h1f);
   assign states_0_counter_willOverflowIfInc = (states_0_counter_mayOverflow && (! states_0_counter_decrementIt));
   assign states_0_counter_willOverflow = (states_0_counter_willOverflowIfInc && states_0_counter_incrementIt);
-  assign when_Utils_l717 = (states_0_counter_incrementIt && (! states_0_counter_decrementIt));
+  assign when_Utils_l735 = (states_0_counter_incrementIt && (! states_0_counter_decrementIt));
   always @(*) begin
-    if(when_Utils_l717) begin
+    if(when_Utils_l735) begin
       states_0_counter_finalIncrement = 5'h01;
     end else begin
-      if(when_Utils_l719) begin
+      if(when_Utils_l737) begin
         states_0_counter_finalIncrement = 5'h1f;
       end else begin
         states_0_counter_finalIncrement = 5'h00;
@@ -17082,7 +17028,7 @@ module UsbOhciAxi4_BmbToAxi4SharedBridge (
     end
   end
 
-  assign when_Utils_l719 = ((! states_0_counter_incrementIt) && states_0_counter_decrementIt);
+  assign when_Utils_l737 = ((! states_0_counter_incrementIt) && states_0_counter_decrementIt);
   assign states_0_counter_valueNext = (states_0_counter_value + states_0_counter_finalIncrement);
   assign when_BmbToAxi4Bridge_l45 = (1'b1 && io_input_cmd_fire);
   assign when_BmbToAxi4Bridge_l47 = 1'b1;
@@ -17098,16 +17044,16 @@ module UsbOhciAxi4_BmbToAxi4SharedBridge (
   assign _zz_cmdFork_payload_fragment_mask = io_input_cmd_payload_fragment_mask;
   always @(*) begin
     _zz_io_input_cmd_ready_1 = 1'b1;
-    if(when_Stream_l1020) begin
+    if(when_Stream_l1049) begin
       _zz_io_input_cmd_ready_1 = 1'b0;
     end
-    if(when_Stream_l1020_1) begin
+    if(when_Stream_l1049_1) begin
       _zz_io_input_cmd_ready_1 = 1'b0;
     end
   end
 
-  assign when_Stream_l1020 = ((! cmdFork_ready) && _zz_cmdFork_valid_1);
-  assign when_Stream_l1020_1 = ((! dataFork_ready) && _zz_dataFork_valid);
+  assign when_Stream_l1049 = ((! cmdFork_ready) && _zz_cmdFork_valid_1);
+  assign when_Stream_l1049_1 = ((! dataFork_ready) && _zz_dataFork_valid);
   assign cmdFork_valid = (_zz_cmdFork_valid && _zz_cmdFork_valid_1);
   assign cmdFork_payload_last = _zz_cmdFork_payload_last;
   assign cmdFork_payload_fragment_opcode = _zz_cmdFork_payload_fragment_opcode;
@@ -17300,13 +17246,13 @@ endmodule
 
 //UsbOhciAxi4_PulseCCByToggle_11 replaced by UsbOhciAxi4_PulseCCByToggle_1
 
-//UsbOhciAxi4_BufferCC_20 replaced by UsbOhciAxi4_BufferCC_3
+//UsbOhciAxi4_BufferCC_28 replaced by UsbOhciAxi4_BufferCC_11
 
-//UsbOhciAxi4_BufferCC_19 replaced by UsbOhciAxi4_BufferCC_3
+//UsbOhciAxi4_BufferCC_27 replaced by UsbOhciAxi4_BufferCC_11
 
-//UsbOhciAxi4_BufferCC_18 replaced by UsbOhciAxi4_BufferCC
+//UsbOhciAxi4_BufferCC_26 replaced by UsbOhciAxi4_BufferCC_8
 
-//UsbOhciAxi4_BufferCC_17 replaced by UsbOhciAxi4_BufferCC
+//UsbOhciAxi4_BufferCC_25 replaced by UsbOhciAxi4_BufferCC_8
 
 //UsbOhciAxi4_StreamCCByToggle_12 replaced by UsbOhciAxi4_StreamCCByToggle_1
 
@@ -17322,13 +17268,13 @@ endmodule
 
 //UsbOhciAxi4_PulseCCByToggle_8 replaced by UsbOhciAxi4_PulseCCByToggle_1
 
-//UsbOhciAxi4_BufferCC_16 replaced by UsbOhciAxi4_BufferCC_3
+//UsbOhciAxi4_BufferCC_24 replaced by UsbOhciAxi4_BufferCC_11
 
-//UsbOhciAxi4_BufferCC_15 replaced by UsbOhciAxi4_BufferCC_3
+//UsbOhciAxi4_BufferCC_23 replaced by UsbOhciAxi4_BufferCC_11
 
-//UsbOhciAxi4_BufferCC_14 replaced by UsbOhciAxi4_BufferCC
+//UsbOhciAxi4_BufferCC_22 replaced by UsbOhciAxi4_BufferCC_8
 
-//UsbOhciAxi4_BufferCC_13 replaced by UsbOhciAxi4_BufferCC
+//UsbOhciAxi4_BufferCC_21 replaced by UsbOhciAxi4_BufferCC_8
 
 //UsbOhciAxi4_StreamCCByToggle_8 replaced by UsbOhciAxi4_StreamCCByToggle_1
 
@@ -17344,13 +17290,13 @@ endmodule
 
 //UsbOhciAxi4_PulseCCByToggle_5 replaced by UsbOhciAxi4_PulseCCByToggle_1
 
-//UsbOhciAxi4_BufferCC_12 replaced by UsbOhciAxi4_BufferCC_3
+//UsbOhciAxi4_BufferCC_20 replaced by UsbOhciAxi4_BufferCC_11
 
-//UsbOhciAxi4_BufferCC_11 replaced by UsbOhciAxi4_BufferCC_3
+//UsbOhciAxi4_BufferCC_19 replaced by UsbOhciAxi4_BufferCC_11
 
-//UsbOhciAxi4_BufferCC_10 replaced by UsbOhciAxi4_BufferCC
+//UsbOhciAxi4_BufferCC_18 replaced by UsbOhciAxi4_BufferCC_8
 
-//UsbOhciAxi4_BufferCC_9 replaced by UsbOhciAxi4_BufferCC
+//UsbOhciAxi4_BufferCC_17 replaced by UsbOhciAxi4_BufferCC_8
 
 //UsbOhciAxi4_StreamCCByToggle_4 replaced by UsbOhciAxi4_StreamCCByToggle_1
 
@@ -17382,13 +17328,13 @@ module UsbOhciAxi4_StreamCCByToggle_1 (
   wire                popArea_stream_fire;
   reg                 popArea_hit;
 
-  UsbOhciAxi4_BufferCC_69 outHitSignal_buffercc (
+  UsbOhciAxi4_BufferCC_77 outHitSignal_buffercc (
     .io_dataIn  (outHitSignal                    ), //i
     .io_dataOut (outHitSignal_buffercc_io_dataOut), //o
     .ctrl_clk   (ctrl_clk                        ), //i
     .ctrl_reset (ctrl_reset                      )  //i
   );
-  UsbOhciAxi4_BufferCC_71 pushArea_target_buffercc (
+  UsbOhciAxi4_BufferCC_79 pushArea_target_buffercc (
     .io_dataIn              (pushArea_target                    ), //i
     .io_dataOut             (pushArea_target_buffercc_io_dataOut), //o
     .phy_clk                (phy_clk                            ), //i
@@ -17439,13 +17385,13 @@ endmodule
 
 //UsbOhciAxi4_PulseCCByToggle_2 replaced by UsbOhciAxi4_PulseCCByToggle_1
 
-//UsbOhciAxi4_BufferCC_8 replaced by UsbOhciAxi4_BufferCC_3
+//UsbOhciAxi4_BufferCC_16 replaced by UsbOhciAxi4_BufferCC_11
 
-//UsbOhciAxi4_BufferCC_7 replaced by UsbOhciAxi4_BufferCC_3
+//UsbOhciAxi4_BufferCC_15 replaced by UsbOhciAxi4_BufferCC_11
 
-//UsbOhciAxi4_BufferCC_6 replaced by UsbOhciAxi4_BufferCC
+//UsbOhciAxi4_BufferCC_14 replaced by UsbOhciAxi4_BufferCC_8
 
-//UsbOhciAxi4_BufferCC_5 replaced by UsbOhciAxi4_BufferCC
+//UsbOhciAxi4_BufferCC_13 replaced by UsbOhciAxi4_BufferCC_8
 
 module UsbOhciAxi4_PulseCCByToggle_1 (
   input  wire          io_pulseIn,
@@ -17461,7 +17407,7 @@ module UsbOhciAxi4_PulseCCByToggle_1 (
   wire                outArea_target;
   reg                 outArea_target_regNext;
 
-  UsbOhciAxi4_BufferCC_68 inArea_target_buffercc (
+  UsbOhciAxi4_BufferCC_76 inArea_target_buffercc (
     .io_dataIn             (inArea_target                    ), //i
     .io_dataOut            (inArea_target_buffercc_io_dataOut), //o
     .ctrl_clk              (ctrl_clk                         ), //i
@@ -17490,7 +17436,7 @@ module UsbOhciAxi4_PulseCCByToggle_1 (
 
 endmodule
 
-//UsbOhciAxi4_BufferCC_4 replaced by UsbOhciAxi4_BufferCC_3
+//UsbOhciAxi4_BufferCC_12 replaced by UsbOhciAxi4_BufferCC_11
 
 module UsbOhciAxi4_FlowCCByToggle (
   input  wire          io_input_valid,
@@ -17518,7 +17464,7 @@ module UsbOhciAxi4_FlowCCByToggle (
   (* async_reg = "true" *) reg                 outputArea_flow_m2sPipe_payload_stuffingError;
   (* async_reg = "true" *) reg        [7:0]    outputArea_flow_m2sPipe_payload_data;
 
-  UsbOhciAxi4_BufferCC_68 inputArea_target_buffercc (
+  UsbOhciAxi4_BufferCC_76 inputArea_target_buffercc (
     .io_dataIn             (inputArea_target                    ), //i
     .io_dataOut            (inputArea_target_buffercc_io_dataOut), //o
     .ctrl_clk              (ctrl_clk                            ), //i
@@ -17585,13 +17531,13 @@ module UsbOhciAxi4_PulseCCByToggle (
   wire                outArea_target;
   reg                 outArea_target_regNext;
 
-  UsbOhciAxi4_BufferCC_67 bufferCC (
+  UsbOhciAxi4_BufferCC_75 bufferCC (
     .io_dataIn  (bufferCC_io_dataIn ), //i
     .io_dataOut (bufferCC_io_dataOut), //o
     .ctrl_clk   (ctrl_clk           ), //i
     .phy_reset  (phy_reset          )  //i
   );
-  UsbOhciAxi4_BufferCC_68 inArea_target_buffercc (
+  UsbOhciAxi4_BufferCC_76 inArea_target_buffercc (
     .io_dataIn             (inArea_target                    ), //i
     .io_dataOut            (inArea_target_buffercc_io_dataOut), //o
     .ctrl_clk              (ctrl_clk                         ), //i
@@ -17666,19 +17612,19 @@ module UsbOhciAxi4_StreamCCByToggle (
   (* async_reg = "true" *) reg        [7:0]    popArea_stream_rData_fragment;
   wire                when_Stream_l369;
 
-  UsbOhciAxi4_BufferCC_69 outHitSignal_buffercc (
+  UsbOhciAxi4_BufferCC_77 outHitSignal_buffercc (
     .io_dataIn  (outHitSignal                    ), //i
     .io_dataOut (outHitSignal_buffercc_io_dataOut), //o
     .ctrl_clk   (ctrl_clk                        ), //i
     .ctrl_reset (ctrl_reset                      )  //i
   );
-  UsbOhciAxi4_BufferCC_70 bufferCC (
+  UsbOhciAxi4_BufferCC_78 bufferCC (
     .io_dataIn  (bufferCC_io_dataIn ), //i
     .io_dataOut (bufferCC_io_dataOut), //o
     .phy_clk    (phy_clk            ), //i
     .ctrl_reset (ctrl_reset         )  //i
   );
-  UsbOhciAxi4_BufferCC_71 pushArea_target_buffercc (
+  UsbOhciAxi4_BufferCC_79 pushArea_target_buffercc (
     .io_dataIn              (pushArea_target                    ), //i
     .io_dataOut             (pushArea_target_buffercc_io_dataOut), //o
     .phy_clk                (phy_clk                            ), //i
@@ -17753,7 +17699,7 @@ module UsbOhciAxi4_StreamCCByToggle (
 
 endmodule
 
-module UsbOhciAxi4_BufferCC_3 (
+module UsbOhciAxi4_BufferCC_11 (
   input  wire          io_dataIn,
   output wire          io_dataOut,
   input  wire          ctrl_clk,
@@ -17772,11 +17718,11 @@ module UsbOhciAxi4_BufferCC_3 (
 
 endmodule
 
-//UsbOhciAxi4_BufferCC_2 replaced by UsbOhciAxi4_BufferCC
+//UsbOhciAxi4_BufferCC_10 replaced by UsbOhciAxi4_BufferCC_8
 
-//UsbOhciAxi4_BufferCC_1 replaced by UsbOhciAxi4_BufferCC
+//UsbOhciAxi4_BufferCC_9 replaced by UsbOhciAxi4_BufferCC_8
 
-module UsbOhciAxi4_BufferCC (
+module UsbOhciAxi4_BufferCC_8 (
   input  wire          io_dataIn,
   output wire          io_dataOut,
   input  wire          phy_clk,
@@ -17818,26 +17764,26 @@ module UsbOhciAxi4_UsbLsFsPhyFilter (
   reg                 timer_clear;
   reg        [4:0]    timer_counter;
   wire       [4:0]    timer_counterLimit;
-  wire                when_UsbHubPhy_l93;
+  wire                when_UsbHubPhy_l98;
   wire       [3:0]    timer_sampleAt;
   wire                timer_sampleDo;
   reg                 io_usb_dp_regNext;
   reg                 io_usb_dm_regNext;
-  wire                when_UsbHubPhy_l100;
+  wire                when_UsbHubPhy_l105;
 
   assign _zz_timer_sampleDo = {1'd0, timer_sampleAt};
   always @(*) begin
     timer_clear = 1'b0;
-    if(when_UsbHubPhy_l100) begin
+    if(when_UsbHubPhy_l105) begin
       timer_clear = 1'b1;
     end
   end
 
   assign timer_counterLimit = (io_lowSpeed ? 5'h1f : 5'h03);
-  assign when_UsbHubPhy_l93 = ((timer_counter == timer_counterLimit) || timer_clear);
+  assign when_UsbHubPhy_l98 = ((timer_counter == timer_counterLimit) || timer_clear);
   assign timer_sampleAt = (io_lowSpeed ? 4'b1110 : 4'b0000);
   assign timer_sampleDo = ((timer_counter == _zz_timer_sampleDo) && (! timer_clear));
-  assign when_UsbHubPhy_l100 = ((io_usb_dp ^ io_usb_dp_regNext) || (io_usb_dm ^ io_usb_dm_regNext));
+  assign when_UsbHubPhy_l105 = ((io_usb_dp ^ io_usb_dp_regNext) || (io_usb_dm ^ io_usb_dm_regNext));
   assign io_filtred_dp = io_usb_dp;
   assign io_filtred_dm = io_usb_dm;
   assign io_filtred_d = io_usb_dp;
@@ -17845,7 +17791,7 @@ module UsbOhciAxi4_UsbLsFsPhyFilter (
   assign io_filtred_se0 = ((! io_usb_dp) && (! io_usb_dm));
   always @(posedge phy_clk) begin
     timer_counter <= (timer_counter + 5'h01);
-    if(when_UsbHubPhy_l93) begin
+    if(when_UsbHubPhy_l98) begin
       timer_counter <= 5'h00;
     end
     io_usb_dp_regNext <= io_usb_dp;
@@ -17975,10 +17921,10 @@ module UsbOhciAxi4_Crc_1 (
   wire       [15:0]   _zz_acc_8;
   wire                _zz_io_result;
   wire       [0:0]    _zz_io_result_1;
-  wire       [4:0]    _zz_io_result_2;
+  wire       [6:0]    _zz_io_result_2;
   wire                _zz_io_resultNext;
   wire       [0:0]    _zz_io_resultNext_1;
-  wire       [4:0]    _zz_io_resultNext_2;
+  wire       [6:0]    _zz_io_resultNext_2;
   reg        [15:0]   acc_8;
   reg        [15:0]   acc_7;
   reg        [15:0]   acc_6;
@@ -18000,12 +17946,12 @@ module UsbOhciAxi4_Crc_1 (
   assign _zz_acc_6 = (acc_5 <<< 1);
   assign _zz_acc_7 = (acc_6 <<< 1);
   assign _zz_acc_8 = (acc_7 <<< 1);
-  assign _zz_io_result = stateXor[9];
-  assign _zz_io_result_1 = stateXor[10];
-  assign _zz_io_result_2 = {stateXor[11],{stateXor[12],{stateXor[13],{stateXor[14],stateXor[15]}}}};
-  assign _zz_io_resultNext = accXor[9];
-  assign _zz_io_resultNext_1 = accXor[10];
-  assign _zz_io_resultNext_2 = {accXor[11],{accXor[12],{accXor[13],{accXor[14],accXor[15]}}}};
+  assign _zz_io_result = stateXor[7];
+  assign _zz_io_result_1 = stateXor[8];
+  assign _zz_io_result_2 = {stateXor[9],{stateXor[10],{stateXor[11],{stateXor[12],{stateXor[13],{stateXor[14],stateXor[15]}}}}}};
+  assign _zz_io_resultNext = accXor[7];
+  assign _zz_io_resultNext_1 = accXor[8];
+  assign _zz_io_resultNext_2 = {accXor[9],{accXor[10],{accXor[11],{accXor[12],{accXor[13],{accXor[14],accXor[15]}}}}}};
   always @(*) begin
     acc_8 = acc_7;
     acc_8 = (_zz_acc_8 ^ ((io_input_payload[7] ^ acc_7[15]) ? 16'h8005 : 16'h0000));
@@ -18049,8 +17995,8 @@ module UsbOhciAxi4_Crc_1 (
   assign acc = state;
   assign stateXor = (state ^ 16'hffff);
   assign accXor = (acc_8 ^ 16'hffff);
-  assign io_result = {stateXor[0],{stateXor[1],{stateXor[2],{stateXor[3],{stateXor[4],{stateXor[5],{stateXor[6],{stateXor[7],{stateXor[8],{_zz_io_result,{_zz_io_result_1,_zz_io_result_2}}}}}}}}}}};
-  assign io_resultNext = {accXor[0],{accXor[1],{accXor[2],{accXor[3],{accXor[4],{accXor[5],{accXor[6],{accXor[7],{accXor[8],{_zz_io_resultNext,{_zz_io_resultNext_1,_zz_io_resultNext_2}}}}}}}}}}};
+  assign io_result = {stateXor[0],{stateXor[1],{stateXor[2],{stateXor[3],{stateXor[4],{stateXor[5],{stateXor[6],{_zz_io_result,{_zz_io_result_1,_zz_io_result_2}}}}}}}}};
+  assign io_resultNext = {accXor[0],{accXor[1],{accXor[2],{accXor[3],{accXor[4],{accXor[5],{accXor[6],{_zz_io_resultNext,{_zz_io_resultNext_1,_zz_io_resultNext_2}}}}}}}}};
   always @(posedge ctrl_clk or posedge ctrl_reset) begin
     if(ctrl_reset) begin
       state <= 16'hffff;
@@ -18199,25 +18145,34 @@ module UsbOhciAxi4_StreamFifo (
   input  wire          io_pop_ready,
   output wire [31:0]   io_pop_payload,
   input  wire          io_flush,
-  output wire [9:0]    io_occupancy,
-  output wire [9:0]    io_availability,
+  output wire [8:0]    io_occupancy,
+  output wire [8:0]    io_availability,
   input  wire          ctrl_clk,
   input  wire          ctrl_reset
 );
 
-  reg        [31:0]   _zz_logic_ram_port1;
+  reg        [31:0]   logic_ram_spinal_port1;
+  wire       [8:0]    _zz_logic_ptr_notPow2_counter;
+  wire       [8:0]    _zz_logic_ptr_notPow2_counter_1;
+  wire       [0:0]    _zz_logic_ptr_notPow2_counter_2;
+  wire       [8:0]    _zz_logic_ptr_notPow2_counter_3;
+  wire       [0:0]    _zz_logic_ptr_notPow2_counter_4;
   reg                 _zz_1;
   wire                logic_ptr_doPush;
   wire                logic_ptr_doPop;
   wire                logic_ptr_full;
   wire                logic_ptr_empty;
-  reg        [9:0]    logic_ptr_push;
-  reg        [9:0]    logic_ptr_pop;
-  wire       [9:0]    logic_ptr_occupancy;
-  wire       [9:0]    logic_ptr_popOnIo;
-  wire                when_Stream_l1205;
+  reg        [8:0]    logic_ptr_push;
+  reg        [8:0]    logic_ptr_pop;
+  wire       [8:0]    logic_ptr_occupancy;
+  wire       [8:0]    logic_ptr_popOnIo;
+  wire                when_Stream_l1234;
   reg                 logic_ptr_wentUp;
+  wire                when_Stream_l1269;
+  wire                when_Stream_l1273;
+  reg        [8:0]    logic_ptr_notPow2_counter;
   wire                io_push_fire;
+  wire                io_pop_fire;
   wire                logic_push_onRam_write_valid;
   wire       [8:0]    logic_push_onRam_write_payload_address;
   wire       [31:0]   logic_push_onRam_write_payload_data;
@@ -18238,9 +18193,14 @@ module UsbOhciAxi4_StreamFifo (
   wire                logic_pop_sync_readArbitation_translated_ready;
   wire       [31:0]   logic_pop_sync_readArbitation_translated_payload;
   wire                logic_pop_sync_readArbitation_fire;
-  reg        [9:0]    logic_pop_sync_popReg;
-  reg [31:0] logic_ram [0:511];
+  reg        [8:0]    logic_pop_sync_popReg;
+  reg [31:0] logic_ram [0:271];
 
+  assign _zz_logic_ptr_notPow2_counter = (logic_ptr_notPow2_counter + _zz_logic_ptr_notPow2_counter_1);
+  assign _zz_logic_ptr_notPow2_counter_2 = io_push_fire;
+  assign _zz_logic_ptr_notPow2_counter_1 = {8'd0, _zz_logic_ptr_notPow2_counter_2};
+  assign _zz_logic_ptr_notPow2_counter_4 = io_pop_fire;
+  assign _zz_logic_ptr_notPow2_counter_3 = {8'd0, _zz_logic_ptr_notPow2_counter_4};
   always @(posedge ctrl_clk) begin
     if(_zz_1) begin
       logic_ram[logic_push_onRam_write_payload_address] <= logic_push_onRam_write_payload_data;
@@ -18249,7 +18209,7 @@ module UsbOhciAxi4_StreamFifo (
 
   always @(posedge ctrl_clk) begin
     if(logic_pop_sync_readPort_cmd_valid) begin
-      _zz_logic_ram_port1 <= logic_ram[logic_pop_sync_readPort_cmd_payload];
+      logic_ram_spinal_port1 <= logic_ram[logic_pop_sync_readPort_cmd_payload];
     end
   end
 
@@ -18260,17 +18220,20 @@ module UsbOhciAxi4_StreamFifo (
     end
   end
 
-  assign when_Stream_l1205 = (logic_ptr_doPush != logic_ptr_doPop);
-  assign logic_ptr_empty = (logic_ptr_push == logic_ptr_pop);
-  assign logic_ptr_occupancy = (logic_ptr_push - logic_ptr_popOnIo);
-  assign io_push_ready = (! logic_ptr_full);
+  assign when_Stream_l1234 = (logic_ptr_doPush != logic_ptr_doPop);
+  assign logic_ptr_empty = ((logic_ptr_push == logic_ptr_pop) && (! logic_ptr_wentUp));
+  assign when_Stream_l1269 = (logic_ptr_push == 9'h10f);
+  assign when_Stream_l1273 = (logic_ptr_pop == 9'h10f);
   assign io_push_fire = (io_push_valid && io_push_ready);
+  assign io_pop_fire = (io_pop_valid && io_pop_ready);
+  assign logic_ptr_occupancy = logic_ptr_notPow2_counter;
+  assign io_push_ready = (! logic_ptr_full);
   assign logic_ptr_doPush = io_push_fire;
   assign logic_push_onRam_write_valid = io_push_fire;
-  assign logic_push_onRam_write_payload_address = logic_ptr_push[8:0];
+  assign logic_push_onRam_write_payload_address = logic_ptr_push;
   assign logic_push_onRam_write_payload_data = io_push_payload;
   assign logic_pop_addressGen_valid = (! logic_ptr_empty);
-  assign logic_pop_addressGen_payload = logic_ptr_pop[8:0];
+  assign logic_pop_addressGen_payload = logic_ptr_pop;
   assign logic_pop_addressGen_fire = (logic_pop_addressGen_valid && logic_pop_addressGen_ready);
   assign logic_ptr_doPop = logic_pop_addressGen_fire;
   always @(*) begin
@@ -18283,7 +18246,7 @@ module UsbOhciAxi4_StreamFifo (
   assign when_Stream_l369 = (! logic_pop_sync_readArbitation_valid);
   assign logic_pop_sync_readArbitation_valid = logic_pop_addressGen_rValid;
   assign logic_pop_sync_readArbitation_payload = logic_pop_addressGen_rData;
-  assign logic_pop_sync_readPort_rsp = _zz_logic_ram_port1;
+  assign logic_pop_sync_readPort_rsp = logic_ram_spinal_port1;
   assign logic_pop_sync_readPort_cmd_valid = logic_pop_addressGen_fire;
   assign logic_pop_sync_readPort_cmd_payload = logic_pop_addressGen_payload;
   assign logic_pop_sync_readArbitation_translated_valid = logic_pop_sync_readArbitation_valid;
@@ -18295,31 +18258,42 @@ module UsbOhciAxi4_StreamFifo (
   assign logic_pop_sync_readArbitation_fire = (logic_pop_sync_readArbitation_valid && logic_pop_sync_readArbitation_ready);
   assign logic_ptr_popOnIo = logic_pop_sync_popReg;
   assign io_occupancy = logic_ptr_occupancy;
-  assign io_availability = (10'h200 - logic_ptr_occupancy);
+  assign io_availability = (9'h110 - logic_ptr_occupancy);
   assign logic_ptr_full = 1'b0;
   always @(posedge ctrl_clk or posedge ctrl_reset) begin
     if(ctrl_reset) begin
-      logic_ptr_push <= 10'h000;
-      logic_ptr_pop <= 10'h000;
+      logic_ptr_push <= 9'h000;
+      logic_ptr_pop <= 9'h000;
       logic_ptr_wentUp <= 1'b0;
+      logic_ptr_notPow2_counter <= 9'h000;
       logic_pop_addressGen_rValid <= 1'b0;
-      logic_pop_sync_popReg <= 10'h000;
+      logic_pop_sync_popReg <= 9'h000;
     end else begin
-      if(when_Stream_l1205) begin
+      if(when_Stream_l1234) begin
         logic_ptr_wentUp <= logic_ptr_doPush;
       end
       if(io_flush) begin
         logic_ptr_wentUp <= 1'b0;
       end
       if(logic_ptr_doPush) begin
-        logic_ptr_push <= (logic_ptr_push + 10'h001);
+        logic_ptr_push <= (logic_ptr_push + 9'h001);
+        if(when_Stream_l1269) begin
+          logic_ptr_push <= 9'h000;
+        end
       end
       if(logic_ptr_doPop) begin
-        logic_ptr_pop <= (logic_ptr_pop + 10'h001);
+        logic_ptr_pop <= (logic_ptr_pop + 9'h001);
+        if(when_Stream_l1273) begin
+          logic_ptr_pop <= 9'h000;
+        end
       end
       if(io_flush) begin
-        logic_ptr_push <= 10'h000;
-        logic_ptr_pop <= 10'h000;
+        logic_ptr_push <= 9'h000;
+        logic_ptr_pop <= 9'h000;
+      end
+      logic_ptr_notPow2_counter <= (_zz_logic_ptr_notPow2_counter - _zz_logic_ptr_notPow2_counter_3);
+      if(io_flush) begin
+        logic_ptr_notPow2_counter <= 9'h000;
       end
       if(logic_pop_addressGen_ready) begin
         logic_pop_addressGen_rValid <= logic_pop_addressGen_valid;
@@ -18331,7 +18305,7 @@ module UsbOhciAxi4_StreamFifo (
         logic_pop_sync_popReg <= logic_ptr_pop;
       end
       if(io_flush) begin
-        logic_pop_sync_popReg <= 10'h000;
+        logic_pop_sync_popReg <= 9'h000;
       end
     end
   end
@@ -18367,7 +18341,7 @@ module UsbOhciAxi4_StreamFifo_1 (
   reg        [5:0]    logic_ptr_pop;
   wire       [5:0]    logic_ptr_occupancy;
   wire       [5:0]    logic_ptr_popOnIo;
-  wire                when_Stream_l1205;
+  wire                when_Stream_l1234;
   reg                 logic_ptr_wentUp;
   wire                io_push_fire;
   wire                logic_push_onRam_write_valid;
@@ -18389,7 +18363,7 @@ module UsbOhciAxi4_StreamFifo_1 (
   wire                logic_pop_sync_readArbitation_fire;
   reg        [5:0]    logic_pop_sync_popReg;
 
-  assign when_Stream_l1205 = (logic_ptr_doPush != logic_ptr_doPop);
+  assign when_Stream_l1234 = (logic_ptr_doPush != logic_ptr_doPop);
   assign logic_ptr_full = (((logic_ptr_push ^ logic_ptr_popOnIo) ^ 6'h20) == 6'h00);
   assign logic_ptr_empty = (logic_ptr_push == logic_ptr_pop);
   assign logic_ptr_occupancy = (logic_ptr_push - logic_ptr_popOnIo);
@@ -18430,7 +18404,7 @@ module UsbOhciAxi4_StreamFifo_1 (
       logic_pop_addressGen_rValid <= 1'b0;
       logic_pop_sync_popReg <= 6'h00;
     end else begin
-      if(when_Stream_l1205) begin
+      if(when_Stream_l1234) begin
         logic_ptr_wentUp <= logic_ptr_doPush;
       end
       if(io_flush) begin
@@ -18470,99 +18444,99 @@ module UsbOhciAxi4_StreamFifo_1 (
 
 endmodule
 
-//UsbOhciAxi4_BufferCC_22 replaced by UsbOhciAxi4_BufferCC_71
+//UsbOhciAxi4_BufferCC_30 replaced by UsbOhciAxi4_BufferCC_79
 
-//UsbOhciAxi4_BufferCC_21 replaced by UsbOhciAxi4_BufferCC_69
+//UsbOhciAxi4_BufferCC_29 replaced by UsbOhciAxi4_BufferCC_77
 
-//UsbOhciAxi4_BufferCC_24 replaced by UsbOhciAxi4_BufferCC_71
+//UsbOhciAxi4_BufferCC_32 replaced by UsbOhciAxi4_BufferCC_79
 
-//UsbOhciAxi4_BufferCC_23 replaced by UsbOhciAxi4_BufferCC_69
+//UsbOhciAxi4_BufferCC_31 replaced by UsbOhciAxi4_BufferCC_77
 
-//UsbOhciAxi4_BufferCC_26 replaced by UsbOhciAxi4_BufferCC_71
+//UsbOhciAxi4_BufferCC_34 replaced by UsbOhciAxi4_BufferCC_79
 
-//UsbOhciAxi4_BufferCC_25 replaced by UsbOhciAxi4_BufferCC_69
+//UsbOhciAxi4_BufferCC_33 replaced by UsbOhciAxi4_BufferCC_77
 
-//UsbOhciAxi4_BufferCC_28 replaced by UsbOhciAxi4_BufferCC_71
+//UsbOhciAxi4_BufferCC_36 replaced by UsbOhciAxi4_BufferCC_79
 
-//UsbOhciAxi4_BufferCC_27 replaced by UsbOhciAxi4_BufferCC_69
+//UsbOhciAxi4_BufferCC_35 replaced by UsbOhciAxi4_BufferCC_77
 
-//UsbOhciAxi4_BufferCC_29 replaced by UsbOhciAxi4_BufferCC_68
+//UsbOhciAxi4_BufferCC_37 replaced by UsbOhciAxi4_BufferCC_76
 
-//UsbOhciAxi4_BufferCC_30 replaced by UsbOhciAxi4_BufferCC_68
+//UsbOhciAxi4_BufferCC_38 replaced by UsbOhciAxi4_BufferCC_76
 
-//UsbOhciAxi4_BufferCC_31 replaced by UsbOhciAxi4_BufferCC_68
+//UsbOhciAxi4_BufferCC_39 replaced by UsbOhciAxi4_BufferCC_76
 
-//UsbOhciAxi4_BufferCC_33 replaced by UsbOhciAxi4_BufferCC_71
+//UsbOhciAxi4_BufferCC_41 replaced by UsbOhciAxi4_BufferCC_79
 
-//UsbOhciAxi4_BufferCC_32 replaced by UsbOhciAxi4_BufferCC_69
+//UsbOhciAxi4_BufferCC_40 replaced by UsbOhciAxi4_BufferCC_77
 
-//UsbOhciAxi4_BufferCC_35 replaced by UsbOhciAxi4_BufferCC_71
+//UsbOhciAxi4_BufferCC_43 replaced by UsbOhciAxi4_BufferCC_79
 
-//UsbOhciAxi4_BufferCC_34 replaced by UsbOhciAxi4_BufferCC_69
+//UsbOhciAxi4_BufferCC_42 replaced by UsbOhciAxi4_BufferCC_77
 
-//UsbOhciAxi4_BufferCC_37 replaced by UsbOhciAxi4_BufferCC_71
+//UsbOhciAxi4_BufferCC_45 replaced by UsbOhciAxi4_BufferCC_79
 
-//UsbOhciAxi4_BufferCC_36 replaced by UsbOhciAxi4_BufferCC_69
+//UsbOhciAxi4_BufferCC_44 replaced by UsbOhciAxi4_BufferCC_77
 
-//UsbOhciAxi4_BufferCC_39 replaced by UsbOhciAxi4_BufferCC_71
+//UsbOhciAxi4_BufferCC_47 replaced by UsbOhciAxi4_BufferCC_79
 
-//UsbOhciAxi4_BufferCC_38 replaced by UsbOhciAxi4_BufferCC_69
+//UsbOhciAxi4_BufferCC_46 replaced by UsbOhciAxi4_BufferCC_77
 
-//UsbOhciAxi4_BufferCC_40 replaced by UsbOhciAxi4_BufferCC_68
+//UsbOhciAxi4_BufferCC_48 replaced by UsbOhciAxi4_BufferCC_76
 
-//UsbOhciAxi4_BufferCC_41 replaced by UsbOhciAxi4_BufferCC_68
+//UsbOhciAxi4_BufferCC_49 replaced by UsbOhciAxi4_BufferCC_76
 
-//UsbOhciAxi4_BufferCC_42 replaced by UsbOhciAxi4_BufferCC_68
+//UsbOhciAxi4_BufferCC_50 replaced by UsbOhciAxi4_BufferCC_76
 
-//UsbOhciAxi4_BufferCC_44 replaced by UsbOhciAxi4_BufferCC_71
+//UsbOhciAxi4_BufferCC_52 replaced by UsbOhciAxi4_BufferCC_79
 
-//UsbOhciAxi4_BufferCC_43 replaced by UsbOhciAxi4_BufferCC_69
+//UsbOhciAxi4_BufferCC_51 replaced by UsbOhciAxi4_BufferCC_77
 
-//UsbOhciAxi4_BufferCC_46 replaced by UsbOhciAxi4_BufferCC_71
+//UsbOhciAxi4_BufferCC_54 replaced by UsbOhciAxi4_BufferCC_79
 
-//UsbOhciAxi4_BufferCC_45 replaced by UsbOhciAxi4_BufferCC_69
+//UsbOhciAxi4_BufferCC_53 replaced by UsbOhciAxi4_BufferCC_77
 
-//UsbOhciAxi4_BufferCC_48 replaced by UsbOhciAxi4_BufferCC_71
+//UsbOhciAxi4_BufferCC_56 replaced by UsbOhciAxi4_BufferCC_79
 
-//UsbOhciAxi4_BufferCC_47 replaced by UsbOhciAxi4_BufferCC_69
+//UsbOhciAxi4_BufferCC_55 replaced by UsbOhciAxi4_BufferCC_77
 
-//UsbOhciAxi4_BufferCC_50 replaced by UsbOhciAxi4_BufferCC_71
+//UsbOhciAxi4_BufferCC_58 replaced by UsbOhciAxi4_BufferCC_79
 
-//UsbOhciAxi4_BufferCC_49 replaced by UsbOhciAxi4_BufferCC_69
+//UsbOhciAxi4_BufferCC_57 replaced by UsbOhciAxi4_BufferCC_77
 
-//UsbOhciAxi4_BufferCC_51 replaced by UsbOhciAxi4_BufferCC_68
+//UsbOhciAxi4_BufferCC_59 replaced by UsbOhciAxi4_BufferCC_76
 
-//UsbOhciAxi4_BufferCC_52 replaced by UsbOhciAxi4_BufferCC_68
+//UsbOhciAxi4_BufferCC_60 replaced by UsbOhciAxi4_BufferCC_76
 
-//UsbOhciAxi4_BufferCC_53 replaced by UsbOhciAxi4_BufferCC_68
+//UsbOhciAxi4_BufferCC_61 replaced by UsbOhciAxi4_BufferCC_76
 
-//UsbOhciAxi4_BufferCC_55 replaced by UsbOhciAxi4_BufferCC_71
+//UsbOhciAxi4_BufferCC_63 replaced by UsbOhciAxi4_BufferCC_79
 
-//UsbOhciAxi4_BufferCC_54 replaced by UsbOhciAxi4_BufferCC_69
+//UsbOhciAxi4_BufferCC_62 replaced by UsbOhciAxi4_BufferCC_77
 
-//UsbOhciAxi4_BufferCC_57 replaced by UsbOhciAxi4_BufferCC_71
+//UsbOhciAxi4_BufferCC_65 replaced by UsbOhciAxi4_BufferCC_79
 
-//UsbOhciAxi4_BufferCC_56 replaced by UsbOhciAxi4_BufferCC_69
+//UsbOhciAxi4_BufferCC_64 replaced by UsbOhciAxi4_BufferCC_77
 
-//UsbOhciAxi4_BufferCC_59 replaced by UsbOhciAxi4_BufferCC_71
+//UsbOhciAxi4_BufferCC_67 replaced by UsbOhciAxi4_BufferCC_79
 
-//UsbOhciAxi4_BufferCC_58 replaced by UsbOhciAxi4_BufferCC_69
+//UsbOhciAxi4_BufferCC_66 replaced by UsbOhciAxi4_BufferCC_77
 
-//UsbOhciAxi4_BufferCC_61 replaced by UsbOhciAxi4_BufferCC_71
+//UsbOhciAxi4_BufferCC_69 replaced by UsbOhciAxi4_BufferCC_79
 
-//UsbOhciAxi4_BufferCC_60 replaced by UsbOhciAxi4_BufferCC_69
+//UsbOhciAxi4_BufferCC_68 replaced by UsbOhciAxi4_BufferCC_77
 
-//UsbOhciAxi4_BufferCC_62 replaced by UsbOhciAxi4_BufferCC_68
+//UsbOhciAxi4_BufferCC_70 replaced by UsbOhciAxi4_BufferCC_76
 
-//UsbOhciAxi4_BufferCC_63 replaced by UsbOhciAxi4_BufferCC_68
+//UsbOhciAxi4_BufferCC_71 replaced by UsbOhciAxi4_BufferCC_76
 
-//UsbOhciAxi4_BufferCC_64 replaced by UsbOhciAxi4_BufferCC_68
+//UsbOhciAxi4_BufferCC_72 replaced by UsbOhciAxi4_BufferCC_76
 
-//UsbOhciAxi4_BufferCC_65 replaced by UsbOhciAxi4_BufferCC_68
+//UsbOhciAxi4_BufferCC_73 replaced by UsbOhciAxi4_BufferCC_76
 
-//UsbOhciAxi4_BufferCC_66 replaced by UsbOhciAxi4_BufferCC_68
+//UsbOhciAxi4_BufferCC_74 replaced by UsbOhciAxi4_BufferCC_76
 
-module UsbOhciAxi4_BufferCC_68 (
+module UsbOhciAxi4_BufferCC_76 (
   input  wire          io_dataIn,
   output wire          io_dataOut,
   input  wire          ctrl_clk,
@@ -18586,7 +18560,7 @@ module UsbOhciAxi4_BufferCC_68 (
 
 endmodule
 
-module UsbOhciAxi4_BufferCC_67 (
+module UsbOhciAxi4_BufferCC_75 (
   input  wire          io_dataIn,
   output wire          io_dataOut,
   input  wire          ctrl_clk,
@@ -18610,7 +18584,7 @@ module UsbOhciAxi4_BufferCC_67 (
 
 endmodule
 
-module UsbOhciAxi4_BufferCC_71 (
+module UsbOhciAxi4_BufferCC_79 (
   input  wire          io_dataIn,
   output wire          io_dataOut,
   input  wire          phy_clk,
@@ -18634,7 +18608,7 @@ module UsbOhciAxi4_BufferCC_71 (
 
 endmodule
 
-module UsbOhciAxi4_BufferCC_70 (
+module UsbOhciAxi4_BufferCC_78 (
   input  wire          io_dataIn,
   output wire          io_dataOut,
   input  wire          phy_clk,
@@ -18658,7 +18632,7 @@ module UsbOhciAxi4_BufferCC_70 (
 
 endmodule
 
-module UsbOhciAxi4_BufferCC_69 (
+module UsbOhciAxi4_BufferCC_77 (
   input  wire          io_dataIn,
   output wire          io_dataOut,
   input  wire          ctrl_clk,
