@@ -2,7 +2,6 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 //
-
 `include "axi/assign.svh"
 `include "axi/typedef.svh"
 `include "idma/typedef.svh"
@@ -28,8 +27,8 @@ module dma_core_wrap #(
   input  logic          clk_i,
   input  logic          rst_ni,
   input  logic          testmode_i,
-  output axi_mst_req_t  axi_mst_req_o, 
-  input  axi_mst_rsp_t  axi_mst_rsp_i, 
+  output axi_mst_req_t  axi_mst_req_o,
+  input  axi_mst_rsp_t  axi_mst_rsp_i,
   input  axi_slv_req_t  axi_slv_req_i,
   output axi_slv_rsp_t  axi_slv_rsp_o
 );
@@ -76,10 +75,10 @@ module dma_core_wrap #(
 
   typedef struct packed {
     axi_write_meta_channel_t axi;
-  } write_meta_channel_t; 
+  } write_meta_channel_t;
 
   dma_regs_req_t     dma_reg_req;
-  dma_regs_rsp_t     dma_reg_rsp; 
+  dma_regs_rsp_t     dma_reg_rsp;
 
   idma_nd_req_t      fe_idma_req;
   idma_nd_req_t      idma_nd_req;
@@ -95,7 +94,6 @@ module dma_core_wrap #(
 
   idma_req_t         be_idma_req;
   idma_rsp_t         be_idma_rsp;
-  
 
   logic              be_req_valid;
   logic              be_req_ready;
@@ -152,7 +150,7 @@ module dma_core_wrap #(
     .busy_i         ( busy          ),
     .midend_busy_i  ( me_busy       )
   );
-  
+
   stream_fifo_optimal_wrap #(
     .Depth     ( JobFifoDepth    ),
     .type_t    ( idma_nd_req_t   ),
@@ -170,6 +168,7 @@ module dma_core_wrap #(
     .valid_o    ( idma_nd_req_valid ),
     .ready_i    ( idma_nd_req_ready )
   );
+
   idma_nd_midend #(
     .NumDim        ( NumDim        ),
     .addr_t        ( addr_t        ),
@@ -177,7 +176,7 @@ module dma_core_wrap #(
     .idma_rsp_t    ( idma_rsp_t    ),
     .idma_nd_req_t ( idma_nd_req_t ),
     .RepWidths     ( RepWidth      )
-  ) idma_midend_i (
+  ) i_idma_midend (
     .clk_i,
     .rst_ni,
     .nd_req_i          ( idma_nd_req       ),
@@ -208,7 +207,7 @@ module dma_core_wrap #(
       .HardwareLegalizer    ( 1                    ),
       .RejectZeroTransfers  ( 1                    ),
       .ErrorCap             (  idma_pkg::NO_ERROR_HANDLING ),
-      .PrintFifoInfo        ( 1        ),
+      .PrintFifoInfo        ( 1                    ),
       .NumAxInFlight        ( NumAxInFlight        ),
       .MemSysDepth          ( MemSysDepth          ),
       .idma_req_t           ( idma_req_t           ),
@@ -244,7 +243,7 @@ module dma_core_wrap #(
   assign issue_id  = fe_req_valid & fe_req_ready;
   assign idma_nd_rsp_ready = 1'b1;
 
-   idma_transfer_id_gen #(
+  idma_transfer_id_gen #(
      .IdWidth ( IdCounterWidth )
    ) i_transfer_id_gen (
      .clk_i,
@@ -254,21 +253,20 @@ module dma_core_wrap #(
      .next_o      ( next_id       ),
      .completed_o ( done_id       )
    );
-  
+
   axi_rw_join #(
      .axi_req_t   ( axi_mst_req_t ),
      .axi_resp_t  ( axi_mst_rsp_t )
   ) i_axi_rw_join (
      .clk_i,
-     .rst_ni,  
+     .rst_ni,
      .slv_read_req_i   ( axi_read_req    ),
      .slv_read_resp_o  ( axi_read_rsp    ),
      .slv_write_req_i  ( axi_write_req   ),
      .slv_write_resp_o ( axi_write_rsp   ),
-     .mst_req_o        ( axi_mst_req_o   ), 
-     .mst_resp_i       ( axi_mst_rsp_i   ) 
+     .mst_req_o        ( axi_mst_req_o   ),
+     .mst_resp_i       ( axi_mst_rsp_i   )
   );
 
 endmodule
-
 
