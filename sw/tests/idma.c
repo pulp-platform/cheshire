@@ -26,6 +26,7 @@ int main() {
   printf ("Start iDMA test...\n\r");
 
   int volatile  * ptr;
+  int buff;
  
   volatile uint64_t src_data[8] = {
     0x1032207098001032, 
