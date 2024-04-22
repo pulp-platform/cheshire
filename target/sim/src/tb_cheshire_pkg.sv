@@ -16,13 +16,24 @@ package tb_cheshire_pkg;
       return ret;
     endfunction
 
+    // An embedded 32 bit config
+    function automatic cheshire_cfg_t gen_cheshire_emb_cfg();
+      cheshire_cfg_t ret = DefaultCfg;
+       ret.Vga = 0;
+       ret.SerialLink = 0;
+       ret.AxiDataWidth = 64;
+       ret.AddrWidth = 32;
+      return ret;
+    endfunction
+
     // Number of Cheshire configurations
-    localparam int unsigned NumCheshireConfigs = 32'd2;
+    localparam int unsigned NumCheshireConfigs = 32'd3;
 
     // Assemble a configuration array indexed by a numeric parameter
     localparam cheshire_cfg_t [NumCheshireConfigs-1:0] TbCheshireConfigs = {
-        gen_cheshire_rt_cfg(),   // 1: RT-enabled configuration
-        DefaultCfg               // 0: Default configuration
+    gen_cheshire_emb_cfg(),  // 2: Embedded configuration
+    gen_cheshire_rt_cfg(),   // 1: RT-enabled configuration
+    DefaultCfg               // 0: Default configuration
     };
 
 endpackage
