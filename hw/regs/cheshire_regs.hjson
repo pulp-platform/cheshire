@@ -102,6 +102,7 @@
         { bits: "10", name: "clic",         desc: "Whether CLIC is available"         }
         { bits: "11", name: "irq_router",   desc: "Whether IRQ router is available"   }
         { bits: "12", name: "bus_err",      desc: "Whether UNBENT is available"       }
+        { bits: "13", name: "paper_vga",    desc: "Whether PAPER is available"        }
       ]
     }
 
@@ -128,6 +129,15 @@
         { bits: "15:8",   name: "green_width",  desc: "Green channel width" }
         { bits: "23:16",  name: "blue_width",   desc: "Blue channel width"  }
 
+      ]
+    }
+
+    { name:     "vga_select"
+      desc:     "Select VGA implementation - 0: VGA, 1: PAPER."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0:0", name: "select", desc: "Select VGA implementation - 0: VGA, 1: PAPER." }
       ]
     }
 

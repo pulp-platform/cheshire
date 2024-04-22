@@ -976,6 +976,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   /////////////////////
 
   cheshire_reg_pkg::cheshire_hw2reg_t reg_hw2reg;
+  cheshire_reg_pkg::cheshire_reg2hw_t reg_reg2hw;
 
   assign reg_hw2reg = '{
     boot_mode     : boot_mode_i,
@@ -995,7 +996,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       axirt       : Cfg.AxiRt,
       clic        : Cfg.Clic,
       irq_router  : Cfg.IrqRouter,
-      bus_err     : Cfg.BusErr
+      bus_err     : Cfg.BusErr,
+      paper_vga   : 1'b0
     },
     llc_size      : get_llc_size(Cfg),
     vga_params    : '{
@@ -1014,6 +1016,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .reg_req_i  ( reg_out_req[RegOut.regs] ),
     .reg_rsp_o  ( reg_out_rsp[RegOut.regs] ),
     .hw2reg     ( reg_hw2reg ),
+    .reg2hw     ( reg_reg2hw ),
     .devmode_i  ( 1'b1 )
   );
 
