@@ -38,6 +38,7 @@ int main(void) {
     *reg32(IDMA_BASE, IDMA_LENGTH_OFFSET) = 0x00000040;
     *reg32(IDMA_BASE, IDMA_CONF) = 0x1 << 10;
     *reg32(IDMA_BASE, IDMA_REPS_2) = 0x00000001;
+    // ID has to be read to make it work
     uint32_t id = *reg32(IDMA_BASE, IDMA_NEXT_ID_OFFSET);
     for (int i = 0; i < 8; ++i) {
         volatile uint64_t *dst_addr = (volatile uint64_t *)(DST_ADDR + i * sizeof(uint64_t));
