@@ -20,6 +20,99 @@ set SOC_TCK 20.0
 set soc_clk [get_clocks -of_objects [get_pins i_clkwiz/clk_50]]
 
 ############
+# Hyperram #
+############
+
+set period_hyperbus 100
+
+##  Create RWDS clock (10MHz)
+create_clock -period [expr $period_hyperbus] -name rwds0_clk [get_ports FMC_hyper0_rwds]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets iobuf_rwds0_i/O]
+
+create_clock -period [expr $period_hyperbus] -name rwds1_clk [get_ports FMC_hyper1_rwds]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets iobuf_rwds1_i/O]
+
+## Create the PHY clock
+create_generated_clock [get_pins i_hyperbus/clk_phy_i_0] \
+                       -name clk_phy -source [get_pins i_clkwiz/clk_out1] -divide_by 2
+create_generated_clock [get_nets i_alsaqr/i_host_domain/i_apb_subsystem/i_udma_subsystem/i_hyper_gen[0].i_hyper/i_hyperbus_macro/clk_phy_i_90] \
+                       -name clk_phy_90 -source [get_pins i_clkwiz/clk_out1] -edges {2 4 6}
+
+## PHY0
+set clk_rx_shift [expr $period_hyperbus/10]
+set rwds_input_delay [expr $period_hyperbus/4]
+
+create_generated_clock [get_pins i_hyperbus/i_phy/phy_wrap.phy_unroll[0].i_phy/i_trx/i_delay_rx_rwds_90/hyper_rwds_i*] \
+                       -name clk_rwds_0 -edges {1 2 3} -edge_shift "$clk_rx_shift $clk_rx_shift $clk_rx_shift" \
+                       -source [get_ports FMC_hyper0_rwds]
+
+create_generated_clock  [get_nets i_hyperbus/i_phy/phy_wrap.phy_unroll[0].i_phy/i_trx/src_clk_i] \
+                       -name clk_rwds_sample0 -invert  -divide_by 1  \
+                       -source [get_pins i_hyperbus/i_phy/phy_wrap.phy_unroll[0].i_phy/i_trx/i_delay_rx_rwds_90/hyper_rwds_i*]
+
+## PHY1
+create_generated_clock [get_pins i_hyperbus/i_phy/phy_wrap.phy_unroll[1].i_phy/i_trx/i_delay_rx_rwds_90/hyper_rwds_i*] \
+                       -name clk_rwds_0 -edges {1 2 3} -edge_shift "$clk_rx_shift $clk_rx_shift $clk_rx_shift" \
+                       -source [get_ports FMC_hyper0_rwds]
+
+create_generated_clock  [get_nets i_hyperbus/i_phy/phy_wrap.phy_unroll[1].i_phy/i_trx/src_clk_i] \
+                       -name clk_rwds_sample0 -invert  -divide_by 1  \
+                       -source [get_pins i_hyperbus/i_phy/phy_wrap.phy_unroll[1].i_phy/i_trx/i_delay_rx_rwds_90/hyper_rwds_i*]
+
+## I/O constraints
+set output_ports {{FMC_hyper*_dq*} FMC_hyper*_rwds}
+set_output_delay [expr $period_hyperbus/2 ]          -clock clk_phy_90 [get_ports $output_ports] -max
+set_output_delay [expr $period_hyperbus/-2] -clock clk_phy_90 [get_ports $output_ports] -min -add_delay
+set_output_delay [expr $period_hyperbus/2 ]          -clock clk_phy_90 [get_ports $output_ports] -max -clock_fall -add_delay
+set_output_delay [expr $period_hyperbus/-2] -clock clk_phy_90 [get_ports $output_ports] -min -clock_fall -add_delay
+
+set input_ports {{FMC_hyper*_dq*} FMC_hyper*_rwds}
+set_input_delay -max [expr $period_hyperbus/2] -clock clk_phy [get_ports $input_ports]
+set_input_delay -min [expr $period_hyperbus/2] -clock clk_phy [get_ports $input_ports] -add_delay
+set_input_delay -max [expr $period_hyperbus/2] -clock clk_phy [get_ports $input_ports] -add_delay -clock_fall
+set_input_delay -min [expr $period_hyperbus/2] -clock clk_phy [get_ports $input_ports] -add_delay -clock_fall
+
+## Async
+set_clock_groups -asynchronous -group [get_clocks ALSAQR_CLK] \
+                               -group [get_clocks clk_phy] \
+                               -group [get_clocks clk_phy_90] \
+                               -group [get_clocks { rwds0_clk clk_rwds_0 clk_rwds_sample0 }] \
+                               -group [get_clocks { rwds1_clk clk_rwds_1 clk_rwds_sample1 }]
+
+## FMC
+# Hyper 0
+set_property -dict { PACKAGE_PIN D27 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper0_ck]
+set_property -dict { PACKAGE_PIN C27 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper0_ckn]
+set_property -dict { PACKAGE_PIN J17 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper0_csn0]
+set_property -dict { PACKAGE_PIN H17 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper0_csn1]
+set_property -dict { PACKAGE_PIN F26 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper0_rwds]
+set_property -dict { PACKAGE_PIN D22 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper0_reset]
+set_property -dict { PACKAGE_PIN B29 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper0_dqio0]
+set_property -dict { PACKAGE_PIN C29 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper0_dqio1]
+set_property -dict { PACKAGE_PIN E30 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper0_dqio2]
+set_property -dict { PACKAGE_PIN E29 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper0_dqio3]
+set_property -dict { PACKAGE_PIN E23 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper0_dqio4]
+set_property -dict { PACKAGE_PIN D23 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper0_dqio5]
+set_property -dict { PACKAGE_PIN G22 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper0_dqio6]
+set_property -dict { PACKAGE_PIN F22 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper0_dqio7]
+
+# Hyper 1
+set_property -dict { PACKAGE_PIN D17 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_ck]
+set_property -dict { PACKAGE_PIN D18 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_ckn]
+set_property -dict { PACKAGE_PIN F17 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_csn0]
+set_property -dict { PACKAGE_PIN E21 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_csn1]
+set_property -dict { PACKAGE_PIN A20 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_rwds]
+set_property -dict { PACKAGE_PIN B24 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_reset]
+set_property -dict { PACKAGE_PIN B30 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_dqio0]
+set_property -dict { PACKAGE_PIN A30 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_dqio1]
+set_property -dict { PACKAGE_PIN B28 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_dqio2]
+set_property -dict { PACKAGE_PIN A28 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_dqio3]
+set_property -dict { PACKAGE_PIN D29 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_dqio4]
+set_property -dict { PACKAGE_PIN C30 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_dqio5]
+set_property -dict { PACKAGE_PIN B27 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_dqio6]
+set_property -dict { PACKAGE_PIN A27 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_dqio7]
+
+############
 # Switches #
 ############
 

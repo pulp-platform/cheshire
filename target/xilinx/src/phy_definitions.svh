@@ -20,7 +20,7 @@
   `define USE_JTAG_TRSTN
   `define USE_SD
   `define USE_SWITCHES
-  `define USE_DDR3
+  `define USE_HYPERRAM
   `define USE_FAN
   `define USE_VIO
   `define USE_I2C
@@ -38,6 +38,8 @@
 // DRAM INTERFACES //
 /////////////////////
 
+`ifdef USE_HYPERRAM
+`define USE_HYPERBUS
 `ifdef USE_DDR4
 `define USE_DDR
 `endif
@@ -77,6 +79,36 @@
   output [0:0]  ddr3_cs_n, \
   output [3:0]  ddr3_dm, \
   output [0:0]  ddr3_odt,
+
+`define HYPERBUS_INTF \
+  inout FMC_hyper0_dqio0, \
+  inout FMC_hyper0_dqio1, \
+  inout FMC_hyper0_dqio2, \
+  inout FMC_hyper0_dqio3, \
+  inout FMC_hyper0_dqio4, \
+  inout FMC_hyper0_dqio5, \
+  inout FMC_hyper0_dqio6, \
+  inout FMC_hyper0_dqio7, \
+  inout FMC_hyper0_ck, \
+  inout FMC_hyper0_ckn, \
+  inout FMC_hyper0_csn0, \
+  inout FMC_hyper0_csn1, \
+  inout FMC_hyper0_rwds, \
+  inout FMC_hyper0_reset, \
+  inout FMC_hyper1_dqio0, \
+  inout FMC_hyper1_dqio1, \
+  inout FMC_hyper1_dqio2, \
+  inout FMC_hyper1_dqio3, \
+  inout FMC_hyper1_dqio4, \
+  inout FMC_hyper1_dqio5, \
+  inout FMC_hyper1_dqio6, \
+  inout FMC_hyper1_dqio7, \
+  inout FMC_hyper1_ck, \
+  inout FMC_hyper1_ckn, \
+  inout FMC_hyper1_csn0, \
+  inout FMC_hyper1_csn1, \
+  inout FMC_hyper1_rwds, \
+  inout FMC_hyper1_reset,
 
 `define ila(__name, __signal)  \
   (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [$bits(__signal)-1:0] __name; \
