@@ -1502,6 +1502,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AxiIdWidth         ( Cfg.AxiMstIdWidth       ),
       .AxiUserWidth       ( Cfg.AxiUserWidth        ),
       .AxiSlvIdWidth      ( AxiSlvIdWidth           ),
+      .TFLenWidth         ( Cfg.TFLenWidth          ),
       .NumAxInFlight      ( Cfg.DmaNumAxInFlight    ),
       .MemSysDepth        ( Cfg.DmaMemSysDepth      ),
       .JobFifoDepth       ( Cfg.DmaJobFifoDepth     ),
