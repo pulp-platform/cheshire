@@ -81,7 +81,7 @@ module dma_core_wrap #(
   typedef struct packed {
     axi_write_meta_channel_t axi;
   } write_meta_channel_t;
-  
+
   dma_regs_req_t dma_reg_req;
   dma_regs_rsp_t dma_reg_rsp;
   // 1d-fe signals
@@ -89,16 +89,16 @@ module dma_core_wrap #(
   logic         be_valid_d;
   logic         be_ready_d;
   // nd-fe signals
-  idma_nd_req_t idma_nd_req_d;  
+  idma_nd_req_t idma_nd_req_d;
   logic         idma_nd_req_valid_d;
   logic         idma_nd_req_ready_d;
   // nd-me signals
-  idma_nd_req_t idma_nd_req;  
+  idma_nd_req_t idma_nd_req;
   logic         idma_nd_req_valid;
   logic         idma_nd_req_ready;
   logic         idma_nd_rsp_valid;
   logic         idma_nd_rsp_ready;
-  // be signals 
+  // be signals
   idma_req_t    burst_req;
   logic         be_valid;
   logic         be_ready;
@@ -175,7 +175,7 @@ module dma_core_wrap #(
       .valid_o    ( be_valid        ),
       .ready_i    ( be_ready        )
     );
-  
+
     assign retire_id = idma_rsp_valid & idma_rsp_ready;
     assign issue_id  = be_valid_d & be_ready_d;
     assign idma_rsp_ready = 1'b1;
@@ -256,7 +256,7 @@ module dma_core_wrap #(
       .burst_rsp_ready_o ( idma_rsp_ready    ),
       .busy_o            ( me_busy           )
     );
-    
+
     assign retire_id = idma_nd_rsp_valid & idma_nd_rsp_ready;
     assign issue_id  = idma_nd_req_valid_d & idma_nd_req_ready_d;
     assign idma_nd_rsp_ready = 1'b1;
@@ -271,7 +271,7 @@ module dma_core_wrap #(
       .next_o      ( next_id       ),
       .completed_o ( done_id       )
     );
-  end 
+  end
 
   idma_backend_rw_axi #(
     .CombinedShifter      ( 1'b0                 ),
@@ -316,7 +316,7 @@ module dma_core_wrap #(
     .axi_write_rsp_i      ( axi_write_rsp    ),
     .busy_o               ( busy             )
   );
- 
+
   axi_rw_join #(
    .axi_req_t   ( axi_mst_req_t ),
    .axi_resp_t  ( axi_mst_rsp_t )

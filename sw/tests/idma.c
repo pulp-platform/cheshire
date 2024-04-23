@@ -1,7 +1,7 @@
 // Copyright 2024 ETH Zurich and University of Bologna.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-// 
+//
 // Author: Chaoqun Liang  <chaoqun.liang@unibo.it>
 
 #include <stdio.h>
@@ -24,21 +24,14 @@
 int main() {
 
     if (hart_id() != 0) wfi();
-    
-    volatile uint64_t src_data[8] = {
-        0x1032207098001032,
-        0x3210E20020709800,
-        0x1716151413121110,
-        0x2726252423222120,
-        0x3736353433323130,
-        0x4746454443424140,
-        0x5756555453525150,
-        0x6766656463626160
-    };
+
+    volatile uint64_t src_data[8] = {0x1032207098001032, 0x3210E20020709800, 0x1716151413121110,
++                                     0x2726252423222120, 0x3736353433323130, 0x4746454443424140,
++                                     0x5756555453525150, 0x6766656463626160};
 
     // load data into src address
     for (int i = 0; i < 8; ++i) {
-        volatile uint64_t *src_addr = (volatile uint64_t*)(SRC_ADDR + i * sizeof(uint64_t));
+        volatile uint64_t *src_addr = (volatile uint64_t *)(SRC_ADDR + i * sizeof(uint64_t));
         *src_addr = src_data[i];
     }
 
@@ -54,8 +47,8 @@ int main() {
     ptr = (int *)(IDMA_BASE + IDMA_REPS_2);
     *ptr = 0x00000001;
     ptr = (int *)(IDMA_BASE + IDMA_NEXT_ID_OFFSET);
-    int id = *ptr;  // Read IDMA next ID
-    
+    int id = *ptr; // Read IDMA next ID
+
     int err = 0;
 	for (int i = 0; i < 8; ++i) {
 	    volatile uint64_t *dst_addr = (volatile uint64_t*)(DST_ADDR + i * sizeof(uint64_t));
@@ -67,5 +60,6 @@ int main() {
 
     if(err!= 0) {
         printf("idma failed\n");
-    } else return 0;
+    } else
+        return 0;
 }
