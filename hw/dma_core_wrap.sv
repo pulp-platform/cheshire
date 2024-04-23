@@ -42,7 +42,7 @@ module dma_core_wrap #(
   // local params
   localparam int unsigned IdCounterWidth    = 32'd32;
   localparam int unsigned NumDim            = 32'd2;
-  localparam int unsigned RepWidth          = 32'd32;
+  localparam logic [NumDim-1:0] RepWidth = '{default: 32'd32};
 
   typedef logic [AxiDataWidth-1:0]     data_t;
   typedef logic [AxiDataWidth/8-1:0]   strb_t;
@@ -52,8 +52,8 @@ module dma_core_wrap #(
   typedef logic [AxiUserWidth-1:0]     user_t;
   typedef logic [TFLenWidth-1:0]       tf_len_t;
   typedef logic [IdCounterWidth-1:0]   tf_id_t;
-  typedef logic [RepWidth-1:0]         reps_t;
-  typedef logic [RepWidth-1:0]         strides_t;
+  typedef logic [RepWidth[0]-1:0]      reps_t;
+  typedef logic [RepWidth[0]-1:0]      strides_t;
 
   // AXI4+ATOP typedefs
   `AXI_TYPEDEF_AW_CHAN_T(axi_aw_chan_t, addr_t, id_t, user_t)
@@ -62,7 +62,7 @@ module dma_core_wrap #(
   // iDMA request / response types
   `IDMA_TYPEDEF_FULL_REQ_T(idma_req_t, id_t, addr_t, tf_len_t)
   `IDMA_TYPEDEF_FULL_RSP_T(idma_rsp_t, addr_t)
-  `IDMA_TYPEDEF_FULL_ND_REQ_T(idma_nd_req_t, idma_req_t, tf_len_t, tf_len_t)
+  `IDMA_TYPEDEF_FULL_ND_REQ_T(idma_nd_req_t, idma_req_t, reps_t, strides_t)
 
   `REG_BUS_TYPEDEF_ALL(dma_regs, addr_t, data_t, strb_t)
 
