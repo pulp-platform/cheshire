@@ -41,6 +41,7 @@ sources:
   - hw/regs/cheshire_reg_top.sv
   - hw/cheshire_pkg.sv
   - hw/cva6_wrap.sv
+  - hw/dma_core_wrap.sv
   - hw/cheshire_soc.sv
 
   - target: any(simulation, test)
