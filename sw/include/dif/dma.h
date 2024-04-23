@@ -80,10 +80,8 @@
         *(NAME##_dma_dst_ptr()) = (uint64_t)dst; \
         *(NAME##_dma_num_bytes_ptr()) = size; \
         *(NAME##_dma_num_reps_ptr()) = 0; \
-        *(NAME##_dma_conf_ptr()) = \
-            (DMA_CONF_DECOUPLE << IDMA_REG64_2D_CONF_DECOUPLE_AW_BIT) | \
-            (DMA_CONF_DEBURST << 0) | \
-            (DMA_CONF_SERIALIZE << 0); \
+        *(NAME##_dma_conf_ptr()) = (DMA_CONF_DECOUPLE << IDMA_REG64_2D_CONF_DECOUPLE_AW_BIT) | \
+                                   (DMA_CONF_DEBURST << 0) | (DMA_CONF_SERIALIZE << 0); \
         return *(NAME##_dma_nextid_ptr()); \
     } \
 \
@@ -100,10 +98,8 @@
         *(NAME##_dma_src_ptr()) = (uint64_t)src; \
         *(NAME##_dma_dst_ptr()) = (uint64_t)dst; \
         *(NAME##_dma_num_bytes_ptr()) = size; \
-        *(NAME##_dma_conf_ptr()) = \
-            (DMA_CONF_DECOUPLE << IDMA_REG64_2D_CONF_DECOUPLE_AW_BIT) | \
-            (DMA_CONF_DEBURST << 0) | \
-            (DMA_CONF_SERIALIZE << 0); \
+        *(NAME##_dma_conf_ptr()) = (DMA_CONF_DECOUPLE << IDMA_REG64_2D_CONF_DECOUPLE_AW_BIT) | \
+                                   (DMA_CONF_DEBURST << 0) | (DMA_CONF_SERIALIZE << 0); 
         *(NAME##_dma_src_stride_ptr()) = src_stride; \
         *(NAME##_dma_dst_stride_ptr()) = dst_stride; \
         *(NAME##_dma_num_reps_ptr()) = num_reps; \

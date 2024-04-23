@@ -65,7 +65,7 @@ module dma_core_wrap #(
   `IDMA_TYPEDEF_FULL_ND_REQ_T(idma_nd_req_t, idma_req_t, tf_len_t, tf_len_t)
 
   `REG_BUS_TYPEDEF_ALL(dma_regs, addr_t, data_t, strb_t)
-  
+
   typedef struct packed {
     axi_ar_chan_t ar_chan;
   } axi_read_meta_channel_t;
