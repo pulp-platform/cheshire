@@ -14,7 +14,7 @@
 `include "idma/typedef.svh"
 `include "register_interface/typedef.svh"
 
-module dma_core_wrap #(
+module dma_core_wrap import idma_pkg::*; #(
   parameter int unsigned AxiAddrWidth     = 32'd0,
   parameter int unsigned AxiDataWidth     = 32'd0,
   parameter int unsigned AxiIdWidth       = 32'd0,
