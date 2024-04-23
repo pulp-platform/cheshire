@@ -63,6 +63,13 @@ packages:
     revision: 3718b9930f94a9eaad8ee50b4bccc71df0403084
     version: 0.1.3
     source:
+      Git: https://github.com/pulp-platform/axi_stream.git
+    dependencies:
+    - common_cells
+  axi_vga:
+    revision: 3718b9930f94a9eaad8ee50b4bccc71df0403084
+    version: 0.1.3
+    source:
       Git: https://github.com/pulp-platform/axi_vga.git
     dependencies:
     - axi
@@ -85,8 +92,13 @@ packages:
     - common_cells
     - register_interface
   common_cells:
+<<<<<<< HEAD
     revision: f4d6406070d8e7767e4e9a433f11b039859f03a1
     version: null
+=======
+    revision: 0d67563b6b592549542544f1abc0f43e5d4ee8b4
+    version: 1.35.0
+>>>>>>> 2c3cc40 (Integrate iDMA v0.6.)
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -125,8 +137,13 @@ packages:
     dependencies:
     - common_cells
   idma:
+<<<<<<< HEAD
     revision: 95f366e56f7e772c283fb3c8b343afc4a3978375
     version: 0.6.2
+=======
+    revision: 88fbe67d8350b4de5ceb3673073bc216b8d585b7
+    version: null
+>>>>>>> 2c3cc40 (Integrate iDMA v0.6.)
     source:
       Git: https://github.com/pulp-platform/iDMA.git
     dependencies:
