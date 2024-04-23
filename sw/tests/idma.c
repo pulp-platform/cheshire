@@ -1,7 +1,9 @@
 // Copyright 2024 ETH Zurich and University of Bologna.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-//
+// 
+// Author: Chaoqun Liang  <chaoqun.liang@unibo.it>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -22,8 +24,7 @@
 int main() {
 
     if (hart_id() != 0) wfi();
-    //printf("Start iDMA test...\n\r");
-
+    
     volatile uint64_t src_data[8] = {
         0x1032207098001032,
         0x3210E20020709800,

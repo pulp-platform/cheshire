@@ -4,7 +4,7 @@
 // Copyright 2023 ETH Zurich and University of Bologna.
 
 // Licensing information found in source file:
-//
+// 
 // SPDX-License-Identifier: SHL-0.51
 
 #ifndef _IDMA_REG64_2D_REG_DEFS_
