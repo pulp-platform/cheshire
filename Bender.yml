@@ -17,13 +17,13 @@ dependencies:
   axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc",                    rev: d79a00b    } # branch: astral
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      rev: 6a85f44fd  } # branch: astral
   axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: 0.0.0-alpha.4 }
-  axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",                version: 0.1.1  }
+  axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",                version: =0.1.1  }
   clic:                     { git: "https://github.com/pulp-platform/clic.git",                   version: 3.0.0-for-carfield }
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                  version: 0.2.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           rev: bf98ae5e18 } # branch: master
   common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.0  }
   cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: "dbaecc5"  } # branch: astral
-  iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   rev: 88a7b94    } # branch: cl/cheshire-tpl
+  iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.6.0  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
   redundancy_cells:         { git: "https://github.com/pulp-platform/redundancy_cells.git",       rev: "c37bdb47" } # branch: astral_rebase
