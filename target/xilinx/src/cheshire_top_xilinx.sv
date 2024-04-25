@@ -103,6 +103,11 @@ module cheshire_top_xilinx (
     ret.LlcNotBypass    = 0;
     ret.Dma             = 0;
     ret.Vga             = 0;
+    ret.RegExtNumSlv          = 1;
+    ret.RegExtNumRules        = 1;
+    ret.RegExtRegionIdx   [0] = 0;
+    ret.RegExtRegionStart [0] = 'h4000_0000;
+    ret.RegExtRegionEnd   [0] = 'h6000_0000;
     return ret;
   endfunction
 
@@ -400,6 +405,10 @@ module cheshire_top_xilinx (
   //////////////
   // Hyperbus //
   //////////////
+
+  reg_req_t reg_ext_slv_req;
+  reg_rsp_t reg_ext_slv_rsp;
+
 `ifdef USE_HYPERBUS
   // Signals
   logic [1:0]      hyper_reset_no;
@@ -528,8 +537,8 @@ module cheshire_top_xilinx (
     .axi_ext_mst_rsp_o  ( ),
     .axi_ext_slv_req_o  ( ),
     .axi_ext_slv_rsp_i  ( '0 ),
-    .reg_ext_slv_req_o  ( ),
-    .reg_ext_slv_rsp_i  ( '0 ),
+    .reg_ext_slv_req_o  ( reg_ext_slv_req ),
+    .reg_ext_slv_rsp_i  ( reg_ext_slv_rsp ),
     .intr_ext_i         ( '0 ),
     .intr_ext_o         ( ),
     .xeip_ext_o         ( ),
