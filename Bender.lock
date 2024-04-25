@@ -78,8 +78,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: 13f28aa0021fc22c0d01a12d618fda58d2c93239
-    version: 1.33.0
+    revision: 0d67563b6b592549542544f1abc0f43e5d4ee8b4
+    version: 1.35.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -92,10 +92,10 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 9338c2ca7cf1a47aef54322f89ce867825c3c8d5
+    revision: null
     version: null
     source:
-      Git: https://github.com/pulp-platform/cva6.git
+      Path: /usr/scratch/mountainview/scheremo/cva6
     dependencies:
     - axi
     - common_cells
@@ -145,15 +145,14 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: e25b36670ff7aab3402f40efcc2b11ee0f31cf19
-    version: 0.4.3
+    revision: 146501d80052b61475cdc333d3aab4cd769fd5dc
+    version: 0.3.9
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:
     - apb
     - axi
     - common_cells
-    - common_verification
   riscv-dbg:
     revision: 358f90110220adf7a083f8b65d157e836d706236
     version: 0.8.1

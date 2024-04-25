@@ -21,10 +21,11 @@ package tb_cheshire_pkg;
       cheshire_cfg_t ret = DefaultCfg;
        ret.Vga = 0;
        ret.SerialLink = 0;
-       ret.AxiDataWidth = 64;
-       ret.AddrWidth = 32;
+       ret.AxiUserWidth = 64;
+       // ret.AxiDataWidth = 64;
+       // ret.AddrWidth = 64;
       return ret;
-    endfunction
+    endfunction // gen_cheshire_emb_cfg
 
     // Number of Cheshire configurations
     localparam int unsigned NumCheshireConfigs = 32'd3;

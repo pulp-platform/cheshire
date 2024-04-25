@@ -552,7 +552,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   localparam config_pkg::cva6_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
 
   // Boot from boot ROM only if available, otherwise from platform ROM
-  localparam logic [riscv::XLEN-1:0] BootAddr = riscv::XLEN'(Cfg.Bootrom ? AmBrom : Cfg.PlatformRom);
+  localparam logic [63:0] BootAddr = 64'(Cfg.Bootrom ? AmBrom : Cfg.PlatformRom);
 
   // Debug interface for internal harts
   dm::hartinfo_t [NumIntHarts-1:0] dbg_int_info;
@@ -602,7 +602,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     ) i_core_cva6 (
       .clk_i,
       .rst_ni,
-      .boot_addr_i      ( BootAddr ),
+      .boot_addr_i      ( BootAddr[riscv::XLEN-1:0] ),
       .hart_id_i        ( riscv::XLEN'(i) ),
       .irq_i            ( xeip[i] ),
       .ipi_i            ( msip[i] ),
