@@ -100,6 +100,9 @@ module cheshire_top_xilinx (
     ret.VgaRedWidth     = 5;
     ret.VgaGreenWidth   = 6;
     ret.VgaBlueWidth    = 5;
+    ret.LlcNotBypass    = 0;
+    ret.Dma             = 0;
+    ret.Vga             = 0;
     return ret;
   endfunction
 
@@ -398,6 +401,7 @@ module cheshire_top_xilinx (
   // Hyperbus //
   //////////////
 `ifdef USE_HYPERBUS
+  // Signals
   logic [1:0]      hyper_reset_no;
   logic [1:0][1:0] hyper_cs_no;
   logic [1:0]      hyper_ck_o;
@@ -408,6 +412,15 @@ module cheshire_top_xilinx (
   logic [1:0][7:0] hyper_dq_o;
   logic [1:0][7:0] hyper_dq_i;
   logic [1:0]      hyper_dq_oe_o;
+
+  // Hyperbus address rules
+  typedef struct packed {
+    int unsigned idx;
+    logic [FPGACfg.AddrWidth-1:0] start_addr;
+    logic [FPGACfg.AddrWidth-1:0] end_addr;
+  } hyper_addr_rule_t;
+
+  // Hyperbus
   hyperbus #(
     .NumChips         ( 2 ),
     .NumPhys          ( 2 ),
@@ -454,12 +467,13 @@ module cheshire_top_xilinx (
     .hyper_reset_no
   );
 
+  // Pads
   // PHY0
   (* PULLDOWN = "YES" *) IOBUF iobuf_csn00_i ( .T(1'b0), .I(hyper_cs_no[0][0]), .O(), .IO(FMC_hyper0_csn0) );
   (* PULLDOWN = "YES" *) IOBUF iobuf_csn01_i ( .T(1'b0), .I(hyper_cs_no[0][1]), .O(), .IO(FMC_hyper0_csn1) );
   (* PULLDOWN = "YES" *) IOBUF iobuf_ck0_i ( .T(1'b0), .I(hyper_ck_o[0]), .O(), .IO(FMC_hyper0_ck) );
   (* PULLDOWN = "YES" *) IOBUF iobuf_ckn0_i ( .T(1'b0), .I(hyper_ck_no[0]), .O(), .IO(FMC_hyper0_ckn) );
-  (* PULLDOWN = "YES" *) IOBUF iobuf_rwds0_i ( .T(~hyper_rwds_oe_o[0]), .I(hyper_rwds_o[0]), .O(), .IO(FMC_hyper0_rwds) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_rwds0_i ( .T(~hyper_rwds_oe_o[0]), .I(hyper_rwds_o[0]), .O(hyper_rwds_i[0]), .IO(FMC_hyper0_rwds) );
   (* PULLDOWN = "YES" *) IOBUF iobuf_rst0_i ( .T(1'b0), .I(hyper_reset_no[0]), .O(), .IO(FMC_hyper0_reset) );
   (* PULLDOWN = "YES" *) IOBUF iobuf_dq00_i ( .T(~hyper_dq_oe_o[0]), .I(hyper_dq_o[0][0]), .O(hyper_dq_i[0][0]), .IO(FMC_hyper0_dqio0) );
   (* PULLDOWN = "YES" *) IOBUF iobuf_dq01_i ( .T(~hyper_dq_oe_o[0]), .I(hyper_dq_o[0][1]), .O(hyper_dq_i[0][1]), .IO(FMC_hyper0_dqio1) );
@@ -475,7 +489,7 @@ module cheshire_top_xilinx (
   (* PULLDOWN = "YES" *) IOBUF iobuf_csn11_i ( .T(1'b0), .I(hyper_cs_no[1][1]), .O(), .IO(FMC_hyper1_csn1) );
   (* PULLDOWN = "YES" *) IOBUF iobuf_ck1_i ( .T(1'b0), .I(hyper_ck_o[1]), .O(), .IO(FMC_hyper1_ck) );
   (* PULLDOWN = "YES" *) IOBUF iobuf_ckn1_i ( .T(1'b0), .I(hyper_ck_no[1]), .O(), .IO(FMC_hyper1_ckn) );
-  (* PULLDOWN = "YES" *) IOBUF iobuf_rwds1_i ( .T(~hyper_rwds_oe_o[1]), .I(hyper_rwds_o[1]), .O(), .IO(FMC_hyper1_rwds) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_rwds1_i ( .T(~hyper_rwds_oe_o[1]), .I(hyper_rwds_o[1]), .O(hyper_rwds_i[1]), .IO(FMC_hyper1_rwds) );
   (* PULLDOWN = "YES" *) IOBUF iobuf_rst1_i ( .T(1'b0), .I(hyper_reset_no[1]), .O(), .IO(FMC_hyper1_reset) );
   (* PULLDOWN = "YES" *) IOBUF iobuf_dq10_i ( .T(~hyper_dq_oe_o[1]), .I(hyper_dq_o[1][0]), .O(hyper_dq_i[1][0]), .IO(FMC_hyper1_dqio0) );
   (* PULLDOWN = "YES" *) IOBUF iobuf_dq11_i ( .T(~hyper_dq_oe_o[1]), .I(hyper_dq_o[1][1]), .O(hyper_dq_i[1][1]), .IO(FMC_hyper1_dqio1) );
@@ -485,7 +499,7 @@ module cheshire_top_xilinx (
   (* PULLDOWN = "YES" *) IOBUF iobuf_dq15_i ( .T(~hyper_dq_oe_o[1]), .I(hyper_dq_o[1][5]), .O(hyper_dq_i[1][5]), .IO(FMC_hyper1_dqio5) );
   (* PULLDOWN = "YES" *) IOBUF iobuf_dq16_i ( .T(~hyper_dq_oe_o[1]), .I(hyper_dq_o[1][6]), .O(hyper_dq_i[1][6]), .IO(FMC_hyper1_dqio6) );
   (* PULLDOWN = "YES" *) IOBUF iobuf_dq17_i ( .T(~hyper_dq_oe_o[1]), .I(hyper_dq_o[1][7]), .O(hyper_dq_i[1][7]), .IO(FMC_hyper1_dqio7) );
-`endif //  `ifdef USE_HYPERBUS
+`endif
 
   //////////////////
   // Cheshire SoC //

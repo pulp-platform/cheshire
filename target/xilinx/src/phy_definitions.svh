@@ -40,6 +40,7 @@
 
 `ifdef USE_HYPERRAM
 `define USE_HYPERBUS
+`endif
 `ifdef USE_DDR4
 `define USE_DDR
 `endif
