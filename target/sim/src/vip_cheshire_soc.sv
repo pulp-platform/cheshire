@@ -211,15 +211,15 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     if (wait_cmd) begin
       dm::abstractcs_t acs;
       do begin
-        jtag_dbg.read_dmi_exp_backoff(dm::AbstractCS, acs);
-        if (acs.cmderr) $fatal(1, "[JTAG] Abstract command error!");
+	jtag_dbg.read_dmi_exp_backoff(dm::AbstractCS, acs);
+	if (acs.cmderr) $fatal(1, "[JTAG] Abstract command error!");
       end while (acs.busy);
     end
     if (wait_sba) begin
       dm::sbcs_t sbcs;
       do begin
-        jtag_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
-        if (sbcs.sberror | sbcs.sbbusyerror) $fatal(1, "[JTAG] System bus error!");
+	jtag_dbg.read_dmi_exp_backoff(dm::SBCS, sbcs);
+	if (sbcs.sberror | sbcs.sbbusyerror) $fatal(1, "[JTAG] System bus error!");
       end while (sbcs.sbbusy);
     end
   endtask
@@ -247,7 +247,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     repeat(100) @(posedge jtag_tck);
     jtag_dbg.get_idcode(idcode);
     if (idcode != DutCfg.DbgIdCode)
-        $fatal(1, "[JTAG] Unexpected ID code: expected 0x%h, got 0x%h!", DutCfg.DbgIdCode, idcode);
+	$fatal(1, "[JTAG] Unexpected ID code: expected 0x%h, got 0x%h!", DutCfg.DbgIdCode, idcode);
     // Activate, wait for debug module
     jtag_write(dm::DMControl, dmcontrol);
     do jtag_dbg.read_dmi_exp_backoff(dm::DMControl, dmcontrol);
@@ -307,11 +307,11 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       jtag_write(dm::SBAddress1, sec_addr[63:32]);
       jtag_write(dm::SBAddress0, sec_addr[31:0]);
       for (longint i = 0; i <= sec_len ; i += 8) begin
-        bit checkpoint = (i != 0 && i % 512 == 0);
-        if (checkpoint)
-          $display("[JTAG] - %0d/%0d bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
-        jtag_write(dm::SBData1, {bf[i+7], bf[i+6], bf[i+5], bf[i+4]});
-        jtag_write(dm::SBData0, {bf[i+3], bf[i+2], bf[i+1], bf[i]}, checkpoint, checkpoint);
+	bit checkpoint = (i != 0 && i % 512 == 0);
+	if (checkpoint)
+	  $display("[JTAG] - %0d/%0d bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
+	jtag_write(dm::SBData1, {bf[i+7], bf[i+6], bf[i+5], bf[i+4]});
+	jtag_write(dm::SBData0, {bf[i+3], bf[i+2], bf[i+1], bf[i]}, 1, 1);
       end
     end
     void'(get_entry(entry));
@@ -396,7 +396,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       bit parity;
       #UartBaudPeriod parity = uart_tx;
       if(parity ^ (^bite))
-        $error("[UART] - Parity error detected!");
+	$error("[UART] - Parity error detected!");
     end
     // Stop bit
     #UartBaudPeriod;
@@ -442,15 +442,15 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     forever begin
       uart_read_byte(bite);
       if (uart_boot_ena) begin
-        uart_boot_byte  = bite;
-        uart_boot_ena = 0;
+	uart_boot_byte  = bite;
+	uart_boot_ena = 0;
       end else if (bite == "\n") begin
-        $display("[UART] %s", {>>8{uart_read_buf}});
-        uart_read_buf.delete();
+	$display("[UART] %s", {>>8{uart_read_buf}});
+	uart_read_buf.delete();
       end else if (bite == UartDebugEoc) begin
-        uart_boot_eoc = 1;
+	uart_boot_eoc = 1;
       end else begin
-        uart_read_buf.push_back(bite);
+	uart_read_buf.push_back(bite);
       end
     end
   end
@@ -463,17 +463,17 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     uart_write_byte(len_or_w ? UartDebugCmdRead : UartDebugCmdWrite);
     for (int i = 0; i < 8; ++i)
       uart_write_byte(addr[8*i +: 8]);
-        for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < 8; ++i)
       uart_write_byte(len[8*i +: 8]);
     // Receive and check ACK
     uart_boot_scoop_expect("ACK", UartDebugAck);
     // Send or receive requested data
     for (int i = 0; i < len; ++i) begin
       if (len_or_w) begin
-        uart_boot_scoop(bite);
-        data.push_back(bite);
+	uart_boot_scoop(bite);
+	data.push_back(bite);
       end else begin
-        uart_write_byte(data[i]);
+	uart_write_byte(data[i]);
       end
     end
     // Receive and check EOT
@@ -492,14 +492,14 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       if (read_section(sec_addr, bf, sec_len)) $fatal(1, "[UART] Failed to read ELF section!");
       // Write section in blocks
       for (longint i = 0; i <= sec_len ; i += UartBurstBytes) begin
-        byte_bt bytes [$];
-        if (i != 0)
-          $display("[UART] - %0d/%0d bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
-        for (int b = 0; b < UartBurstBytes; b++) begin
-          if (i+b >= sec_len) break;
-          bytes.push_back(bf [i+b]);
-        end
-        uart_debug_rw(sec_addr + i, 0, bytes);
+	byte_bt bytes [$];
+	if (i != 0)
+	  $display("[UART] - %0d/%0d bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
+	for (int b = 0; b < UartBurstBytes; b++) begin
+	  if (i+b >= sec_len) break;
+	  bytes.push_back(bf [i+b]);
+	end
+	uart_debug_rw(sec_addr + i, 0, bytes);
       end
     end
     void'(get_entry(entry));
@@ -560,7 +560,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   task automatic i2c_eeprom_preload(string image);
     // We overlay the entire memory with an alternating pattern
     for (int k = 0; k < $size(gen_i2c_eeproms[0].i_i2c_eeprom.MemoryBlock); ++k)
-        gen_i2c_eeproms[0].i_i2c_eeprom.MemoryBlock[k] = 'h9a;
+	gen_i2c_eeproms[0].i_i2c_eeprom.MemoryBlock[k] = 'h9a;
     // We load an image into chip 0 only if it exists
     if (image != "")
       $readmemh(image, gen_i2c_eeproms[0].i_i2c_eeprom.MemoryBlock);
@@ -586,7 +586,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   task automatic spih_norflash_preload(string image);
     // We overlay the entire memory with an alternating pattern
     for (int k = 0; k < $size(i_spi_norflash.Mem); ++k)
-        i_spi_norflash.Mem[k] = 'h9a;
+	i_spi_norflash.Mem[k] = 'h9a;
     // We load an image into chip 0 only if it exists
     if (image != "")
       $readmemh(image, i_spi_norflash.Mem);
@@ -818,7 +818,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       addr &= (1 << size) - 1;
       i++;
       if (r.r_resp != axi_pkg::RESP_OKAY)
-        $error("[SLINK] - Read error response: %d!", r.r_resp);
+	$error("[SLINK] - Read error response: %d!", r.r_resp);
     end while (!r.r_last);
     if (SlinkAxiDebug) $display("[SLINK] - Done");
   endtask
@@ -835,10 +835,10 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     input int unsigned idle_cycles
   );
     do begin
-        axi_data_t beats [$];
-        #(ClkPeriodSys * idle_cycles);
-        slink_read_beats(addr, 2, 0, beats);
-        data = beats[0] >> addr[AxiStrbBits-1:0];
+	axi_data_t beats [$];
+	#(ClkPeriodSys * idle_cycles);
+	slink_read_beats(addr, 2, 0, beats);
+	data = beats[0] >> addr[AxiStrbBits-1:0];
     end while (~data[0]);
   endtask
 
@@ -855,28 +855,28 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       // Write section as fixed-size bursts
       bus_offset = sec_addr[AxiStrbBits-1:0];
       for (longint i = 0; i <= sec_len ; i += SlinkBurstBytes) begin
-        axi_data_t beats [$];
-        if (i != 0)
-          $display("[SLINK] - %0d/%0d bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
-        // Assemble beats for current burst from section buffer
-        for (int b = 0; b < SlinkBurstBytes; b += AxiStrbWidth) begin
-          axi_data_t beat;
-          // We handle incomplete bursts
-          if (i+b-bus_offset >= sec_len) break;
-          for (int e = 0; e < AxiStrbWidth; ++e)
-            if (i+b+e < bus_offset) begin
-              beat[8*e +: 8] = '0;
-            end else if (i+b+e-bus_offset >= sec_len) begin
-              beat[8*e +: 8] = '0;
-            end else begin
-              beat[8*e +: 8] = bf [i+b+e-bus_offset];
-            end
+	axi_data_t beats [$];
+	if (i != 0)
+	  $display("[SLINK] - %0d/%0d bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
+	// Assemble beats for current burst from section buffer
+	for (int b = 0; b < SlinkBurstBytes; b += AxiStrbWidth) begin
+	  axi_data_t beat;
+	  // We handle incomplete bursts
+	  if (i+b-bus_offset >= sec_len) break;
+	  for (int e = 0; e < AxiStrbWidth; ++e)
+	    if (i+b+e < bus_offset) begin
+	      beat[8*e +: 8] = '0;
+	    end else if (i+b+e-bus_offset >= sec_len) begin
+	      beat[8*e +: 8] = '0;
+	    end else begin
+	      beat[8*e +: 8] = bf [i+b+e-bus_offset];
+	    end
 
-          beats.push_back(beat);
-        end
-        write_addr = sec_addr + (i==0 ? 0 : i - sec_addr%AxiStrbWidth);
-        // Write this burst
-        slink_write_beats(write_addr, AxiStrbBits, beats);
+	  beats.push_back(beat);
+	end
+	write_addr = sec_addr + (i==0 ? 0 : i - sec_addr%AxiStrbWidth);
+	// Write this burst
+	slink_write_beats(write_addr, AxiStrbBits, beats);
       end
     end
     void'(get_entry(entry));
