@@ -404,7 +404,7 @@ module cheshire_top_xilinx (
     .axi_ext_slv_req_t  ( axi_slv_req_t ),
     .axi_ext_slv_rsp_t  ( axi_slv_rsp_t ),
     .reg_ext_req_t      ( reg_req_t ),
-    .reg_ext_rsp_t      ( reg_req_t )
+    .reg_ext_rsp_t      ( reg_rsp_t )
   ) i_cheshire_soc (
     .clk_i              ( soc_clk ),
     .rst_ni             ( rst_n   ),
