@@ -93,7 +93,15 @@ CHS_SW_DEPS_SRCS += $(wildcard $(OTPROOT)/sw/device/lib/dif/autogen/*.c)
 #############
 
 CHS_SW_INCLUDES   ?= -I$(CHS_SW_DIR)/include $(CHS_SW_DEPS_INCS)
-CHS_SW_LIB_SRCS_S  = $(wildcard $(CHS_SW_DIR)/lib/*.S $(CHS_SW_DIR)/lib/**/*.S)
+CHS_SW_LIB_SRCS_S  = $(wildcard $(CHS_SW_DIR)/lib/*.S)
+
+ifeq (${CHS_XLEN}, 64)
+CHS_SW_LIB_SRCS_S  += $(wildcard $(CHS_SW_DIR)/lib/64/*.S)
+endif
+ifeq (${CHS_XLEN}, 32)
+CHS_SW_LIB_SRCS_S  += $(wildcard $(CHS_SW_DIR)/lib/32/*.S)
+endif
+
 CHS_SW_LIB_SRCS_C  = $(wildcard $(CHS_SW_DIR)/lib/*.c $(CHS_SW_DIR)/lib/**/*.c)
 CHS_SW_LIB_SRCS_O  = $(CHS_SW_DEPS_SRCS:.c=.o) $(CHS_SW_LIB_SRCS_S:.S=.o) $(CHS_SW_LIB_SRCS_C:.c=.o)
 
