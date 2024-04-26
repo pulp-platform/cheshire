@@ -205,7 +205,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     addr_rule_t [AxiOut.num_rules-1:0] ret;
     for (int i = 0; i < AxiOut.num_rules; ++i)
       ret[i] = '{idx: AxiOut.map[i].idx,
-          start_addr: AxiOut.map[i].start, end_addr: AxiOut.map[i].pte};
+	  start_addr: AxiOut.map[i].start, end_addr: AxiOut.map[i].pte};
     return ret;
   endfunction
 
@@ -293,7 +293,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     addr_rule_t [RegOut.num_rules-1:0] ret;
     for (int i = 0; i < RegOut.num_rules; ++i)
       ret[i] = '{idx: RegOut.map[i].idx,
-          start_addr: RegOut.map[i].start, end_addr: RegOut.map[i].pte};
+	  start_addr: RegOut.map[i].start, end_addr: RegOut.map[i].pte};
     return ret;
   endfunction
 
@@ -493,9 +493,9 @@ module cheshire_soc import cheshire_pkg::*; #(
     always_comb begin
       axi_llc_remap_req = axi_llc_cut_req;
       if (axi_llc_cut_req.aw.addr & ~AmSpmRegionMask == AmSpmBaseUncached & ~AmSpmRegionMask)
-        axi_llc_remap_req.aw.addr  = AmSpm | (AmSpmRegionMask & axi_llc_cut_req.aw.addr);
+	axi_llc_remap_req.aw.addr  = AmSpm | (AmSpmRegionMask & axi_llc_cut_req.aw.addr);
       if (axi_llc_cut_req.ar.addr & ~AmSpmRegionMask == AmSpmBaseUncached & ~AmSpmRegionMask)
-        axi_llc_remap_req.ar.addr = AmSpm | (AmSpmRegionMask & axi_llc_cut_req.ar.addr);
+	axi_llc_remap_req.ar.addr = AmSpm | (AmSpmRegionMask & axi_llc_cut_req.ar.addr);
       axi_llc_cut_rsp = axi_llc_remap_rsp;
     end
 
@@ -549,7 +549,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
 
-  localparam config_pkg::cva6_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
+  localparam config_pkg::cva6_cfg_t Cva6Cfg = new_gen_cva6_cfg(Cfg, cva6_config_pkg::cva6_cfg);
 
   // Boot from boot ROM only if available, otherwise from platform ROM
   localparam logic [63:0] BootAddr = 64'(Cfg.Bootrom ? AmBrom : Cfg.PlatformRom);
