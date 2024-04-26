@@ -537,6 +537,78 @@ package cheshire_pkg;
     };
   endfunction
 
+   function automatic config_pkg::cva6_cfg_t new_gen_cva6_cfg(cheshire_cfg_t cfg, config_pkg::cva6_cfg_t cva6cfg);
+    doub_bt SizeSpm = get_llc_size(cfg);
+    doub_bt SizeLlcOut = cfg.LlcOutRegionEnd - cfg.LlcOutRegionStart;
+    doub_bt CieBase   = cfg.Cva6ExtCieOnTop ? 64'h8000_0000 - cfg.Cva6ExtCieLength : 64'h2000_0000;
+    doub_bt NoCieBase = cfg.Cva6ExtCieOnTop ? 64'h2000_0000 : 64'h2000_0000 + cfg.Cva6ExtCieLength;
+    return config_pkg::cva6_cfg_t'{
+      NrCommitPorts         : 2,
+      AxiAddrWidth          : cfg.AddrWidth,
+      AxiDataWidth          : cfg.AxiDataWidth,
+      AxiIdWidth            : Cva6IdWidth,
+      AxiUserWidth          : cfg.AxiUserWidth,
+      NrLoadBufEntries      : 2,
+      FpuEn                 : cva6cfg.FpuEn,
+      XF16                  : cva6cfg.XF16,
+      XF16ALT               : cva6cfg.XF16ALT,
+      XF8                   : cva6cfg.XF8,
+      XF8ALT                : cva6cfg.XF8ALT,
+      RVA                   : cva6cfg.RVA,
+      RVB                   : cva6cfg.RVB,
+      RVV                   : cva6cfg.RVV,
+      RVC                   : cva6cfg.RVC,
+      RVH                   : cva6cfg.RVH,
+      RVZCB                 : cva6cfg.RVZCB,
+      XFVec                 : cva6cfg.XFVec,
+      CvxifEn               : cva6cfg.CvxifEn,
+      ZiCondExtEn           : cva6cfg.ZiCondExtEn,
+      RVSCLIC               : cfg.Clic,
+      RVF                   : cva6cfg.RVF,
+      RVD                   : cva6cfg.RVD,
+      FpPresent             : cva6cfg.FpPresent,
+      NSX                   : cva6cfg.NSX,
+      FLen                  : cva6cfg.FLen,
+      RVFVec                : cva6cfg.RVFVec,
+      XF16Vec               : cva6cfg.XF16Vec,
+      XF16ALTVec            : cva6cfg.XF16ALTVec,
+      XF8Vec                : cva6cfg.XF8Vec,
+      NrRgprPorts           : 0,
+      NrWbPorts             : 0,
+      EnableAccelerator     : 0,
+      RVS                   : cva6cfg.RVS,
+      RVU                   : cva6cfg.RVU,
+      HaltAddress           : AmDbg + 'h800,
+      ExceptionAddress      : AmDbg + 'h808,
+      RASDepth              : cfg.Cva6RASDepth,
+      BTBEntries            : cfg.Cva6BTBEntries,
+      BHTEntries            : cfg.Cva6BHTEntries,
+      DmBaseAddress         : AmDbg,
+      TvalEn                : 1,
+      NrPMPEntries          : cfg.Cva6NrPMPEntries,
+      PMPCfgRstVal          : {16{64'h0}},
+      PMPAddrRstVal         : {16{64'h0}},
+      PMPEntryReadOnly      : 16'd0,
+      NOCType               : config_pkg::NOC_TYPE_AXI4_ATOP,
+      CLICNumInterruptSrc   : NumCoreIrqs + NumIntIntrs + cfg.NumExtClicIntrs,
+      NrNonIdempotentRules  : 2,   // Periphs, ExtNonCIE
+      NonIdempotentAddrBase : {64'h0000_0000, NoCieBase},
+      NonIdempotentLength   : {64'h1000_0000, 64'h6000_0000 - cfg.Cva6ExtCieLength},
+      NrExecuteRegionRules  : 5,   // Debug, Bootrom, AllSPM, LLCOut, ExtCIE
+      ExecuteRegionAddrBase : {AmDbg, AmBrom, AmSpm, cfg.LlcOutRegionStart, CieBase},
+      ExecuteRegionLength   : {64'h40000, 64'h40000, 2*SizeSpm, SizeLlcOut, cfg.Cva6ExtCieLength},
+      NrCachedRegionRules   : 3,   // CachedSPM, LLCOut, ExtCIE
+      CachedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart,  CieBase},
+      CachedRegionLength    : {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength},
+      MaxOutstandingStores  : 7,
+      DebugEn               : 1,
+      NonIdemPotenceEn      : 0,
+      AxiBurstWriteEn       : 0
+    };
+
+
+     endfunction
+
   ////////////////
   //  Defaults  //
   ////////////////

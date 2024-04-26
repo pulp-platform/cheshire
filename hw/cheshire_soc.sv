@@ -625,26 +625,26 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     if (Cfg.BusErr) begin : gen_cva6_bus_err
       axi_err_unit_wrap #(
-        .AddrWidth          ( Cfg.AddrWidth ),
-        .IdWidth            ( Cva6IdWidth   ),
-        .UserErrBits        ( Cfg.AxiUserErrBits ),
-        .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
-        .NumOutstanding     ( Cfg.CoreMaxTxns ),
-        .NumStoredErrors    ( 4 ),
-        .DropOldest         ( 1'b0 ),
-        .axi_req_t          ( axi_cva6_req_t ),
-        .axi_rsp_t          ( axi_cva6_rsp_t ),
-        .reg_req_t          ( reg_req_t ),
-        .reg_rsp_t          ( reg_rsp_t )
+	.AddrWidth          ( Cfg.AddrWidth ),
+	.IdWidth            ( Cva6IdWidth   ),
+	.UserErrBits        ( Cfg.AxiUserErrBits ),
+	.UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
+	.NumOutstanding     ( Cfg.CoreMaxTxns ),
+	.NumStoredErrors    ( 4 ),
+	.DropOldest         ( 1'b0 ),
+	.axi_req_t          ( axi_cva6_req_t ),
+	.axi_rsp_t          ( axi_cva6_rsp_t ),
+	.reg_req_t          ( reg_req_t ),
+	.reg_rsp_t          ( reg_rsp_t )
       ) i_cva6_bus_err (
-        .clk_i,
-        .rst_ni,
-        .testmode_i ( test_mode_i ),
-        .axi_req_i  ( core_out_req ),
-        .axi_rsp_i  ( core_out_rsp ),
-        .err_irq_o  ( core_bus_err_intr[i] ),
-        .reg_req_i  ( reg_out_req[RegOut.bus_err[RegBusErrCoresBase+i]] ),
-        .reg_rsp_o  ( reg_out_rsp[RegOut.bus_err[RegBusErrCoresBase+i]] )
+	.clk_i,
+	.rst_ni,
+	.testmode_i ( test_mode_i ),
+	.axi_req_i  ( core_out_req ),
+	.axi_rsp_i  ( core_out_rsp ),
+	.err_irq_o  ( core_bus_err_intr[i] ),
+	.reg_req_i  ( reg_out_req[RegOut.bus_err[RegBusErrCoresBase+i]] ),
+	.reg_rsp_o  ( reg_out_rsp[RegOut.bus_err[RegBusErrCoresBase+i]] )
       );
     end
 
@@ -655,37 +655,37 @@ module cheshire_soc import cheshire_pkg::*; #(
 
       // Connect interrupts to CLIC
       assign clic_intr = '{
-        intr: intr_routed[IntrRtdCoreBase+i][NumClicSysIntrs-1:0],
-        core: '{
-          meip: xeip[i].m,
-          seip: xeip[i].s,
-          mtip: mtip[i],
-          msip: msip[i],
-          default: '0
-        }
+	intr: intr_routed[IntrRtdCoreBase+i][NumClicSysIntrs-1:0],
+	core: '{
+	  meip: xeip[i].m,
+	  seip: xeip[i].s,
+	  mtip: mtip[i],
+	  msip: msip[i],
+	  default: '0
+	}
       };
 
       clic #(
-        .N_SOURCE   ( NumClicIntrs ),
-        .INTCTLBITS ( Cfg.ClicIntCtlBits ),
-        .reg_req_t  ( reg_req_t ),
-        .reg_rsp_t  ( reg_rsp_t ),
-        .SSCLIC     ( 1 ),
-        .USCLIC     ( 0 )
+	.N_SOURCE   ( NumClicIntrs ),
+	.INTCTLBITS ( Cfg.ClicIntCtlBits ),
+	.reg_req_t  ( reg_req_t ),
+	.reg_rsp_t  ( reg_rsp_t ),
+	.SSCLIC     ( 1 ),
+	.USCLIC     ( 0 )
       ) i_clic (
-        .clk_i,
-        .rst_ni,
-        .reg_req_i      ( reg_out_req[RegOut.clic[i]] ),
-        .reg_rsp_o      ( reg_out_rsp[RegOut.clic[i]] ),
-        .intr_src_i     ( clic_intr ),
-        .irq_valid_o    ( clic_irq_valid ),
-        .irq_ready_i    ( clic_irq_ready ),
-        .irq_id_o       ( clic_irq_id    ),
-        .irq_level_o    ( clic_irq_level ),
-        .irq_shv_o      ( clic_irq_shv   ),
-        .irq_priv_o     ( clic_irq_priv  ),
-        .irq_kill_req_o ( clic_irq_kill_req ),
-        .irq_kill_ack_i ( clic_irq_kill_ack )
+	.clk_i,
+	.rst_ni,
+	.reg_req_i      ( reg_out_req[RegOut.clic[i]] ),
+	.reg_rsp_o      ( reg_out_rsp[RegOut.clic[i]] ),
+	.intr_src_i     ( clic_intr ),
+	.irq_valid_o    ( clic_irq_valid ),
+	.irq_ready_i    ( clic_irq_ready ),
+	.irq_id_o       ( clic_irq_id    ),
+	.irq_level_o    ( clic_irq_level ),
+	.irq_shv_o      ( clic_irq_shv   ),
+	.irq_priv_o     ( clic_irq_priv  ),
+	.irq_kill_req_o ( clic_irq_kill_req ),
+	.irq_kill_ack_i ( clic_irq_kill_ack )
       );
 
     end else begin : gen_no_clic
@@ -1439,26 +1439,26 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     if (Cfg.BusErr) begin : gen_dma_bus_err
       axi_err_unit_wrap #(
-        .AddrWidth          ( Cfg.AddrWidth     ),
-        .IdWidth            ( Cfg.AxiMstIdWidth ),
-        .UserErrBits        ( Cfg.AxiUserErrBits ),
-        .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
-        .NumOutstanding     ( Cfg.DmaNumAxInFlight+Cfg.DmaJobFifoDepth ),
-        .NumStoredErrors    ( 4 ),
-        .DropOldest         ( 1'b0 ),
-        .axi_req_t          ( axi_mst_req_t ),
-        .axi_rsp_t          ( axi_mst_rsp_t ),
-        .reg_req_t          ( reg_req_t ),
-        .reg_rsp_t          ( reg_rsp_t )
+	.AddrWidth          ( Cfg.AddrWidth     ),
+	.IdWidth            ( Cfg.AxiMstIdWidth ),
+	.UserErrBits        ( Cfg.AxiUserErrBits ),
+	.UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
+	.NumOutstanding     ( Cfg.DmaNumAxInFlight+Cfg.DmaJobFifoDepth ),
+	.NumStoredErrors    ( 4 ),
+	.DropOldest         ( 1'b0 ),
+	.axi_req_t          ( axi_mst_req_t ),
+	.axi_rsp_t          ( axi_mst_rsp_t ),
+	.reg_req_t          ( reg_req_t ),
+	.reg_rsp_t          ( reg_rsp_t )
       ) i_dma_bus_err (
-        .clk_i,
-        .rst_ni,
-        .testmode_i ( test_mode_i ),
-        .axi_req_i  ( axi_in_req[AxiIn.dma] ),
-        .axi_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
-        .err_irq_o  ( intr.intn.bus_err.dma ),
-        .reg_req_i  ( reg_out_req[RegOut.bus_err[RegBusErrDma]] ),
-        .reg_rsp_o  ( reg_out_rsp[RegOut.bus_err[RegBusErrDma]] )
+	.clk_i,
+	.rst_ni,
+	.testmode_i ( test_mode_i ),
+	.axi_req_i  ( axi_in_req[AxiIn.dma] ),
+	.axi_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
+	.err_irq_o  ( intr.intn.bus_err.dma ),
+	.reg_req_i  ( reg_out_req[RegOut.bus_err[RegBusErrDma]] ),
+	.reg_rsp_o  ( reg_out_rsp[RegOut.bus_err[RegBusErrDma]] )
       );
     end
 
@@ -1486,9 +1486,9 @@ module cheshire_soc import cheshire_pkg::*; #(
     always_comb begin
       slink_tx_uar_req          = axi_out_req[AxiOut.slink];
       slink_tx_uar_req.aw.addr  = (Cfg.SlinkTxAddrDomain    & ~Cfg.SlinkTxAddrMask) |
-                                  (slink_tx_uar_req.aw.addr &  Cfg.SlinkTxAddrMask);
+				  (slink_tx_uar_req.aw.addr &  Cfg.SlinkTxAddrMask);
       slink_tx_uar_req.ar.addr  = (Cfg.SlinkTxAddrDomain    & ~Cfg.SlinkTxAddrMask) |
-                                  (slink_tx_uar_req.ar.addr &  Cfg.SlinkTxAddrMask);
+				  (slink_tx_uar_req.ar.addr &  Cfg.SlinkTxAddrMask);
       slink_tx_uar_req.aw.user |= (addr_t'(1) << Cfg.SlinkUserAmoBit);
       slink_tx_uar_req.ar.user |= (addr_t'(1) << Cfg.SlinkUserAmoBit);
       slink_tx_uar_req.w.user  |= (addr_t'(1) << Cfg.SlinkUserAmoBit);
@@ -1616,26 +1616,26 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     if (Cfg.BusErr) begin : gen_vga_bus_err
       axi_err_unit_wrap #(
-        .AddrWidth          ( Cfg.AddrWidth     ),
-        .IdWidth            ( Cfg.AxiMstIdWidth ),
-        .UserErrBits        ( Cfg.AxiUserErrBits ),
-        .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
-        .NumOutstanding     ( Cfg.CoreMaxTxns ),
-        .NumStoredErrors    ( 4 ),
-        .DropOldest         ( 1'b0 ),
-        .axi_req_t          ( axi_mst_req_t ),
-        .axi_rsp_t          ( axi_mst_rsp_t ),
-        .reg_req_t          ( reg_req_t ),
-        .reg_rsp_t          ( reg_rsp_t )
+	.AddrWidth          ( Cfg.AddrWidth     ),
+	.IdWidth            ( Cfg.AxiMstIdWidth ),
+	.UserErrBits        ( Cfg.AxiUserErrBits ),
+	.UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
+	.NumOutstanding     ( Cfg.CoreMaxTxns ),
+	.NumStoredErrors    ( 4 ),
+	.DropOldest         ( 1'b0 ),
+	.axi_req_t          ( axi_mst_req_t ),
+	.axi_rsp_t          ( axi_mst_rsp_t ),
+	.reg_req_t          ( reg_req_t ),
+	.reg_rsp_t          ( reg_rsp_t )
       ) i_vga_bus_err (
-        .clk_i,
-        .rst_ni,
-        .testmode_i ( test_mode_i ),
-        .axi_req_i  ( axi_in_req[AxiIn.vga] ),
-        .axi_rsp_i  ( axi_in_rsp[AxiIn.vga] ),
-        .err_irq_o  ( intr.intn.bus_err.vga ),
-        .reg_req_i  ( reg_out_req[RegOut.bus_err[RegBusErrVga]] ),
-        .reg_rsp_o  ( reg_out_rsp[RegOut.bus_err[RegBusErrVga]] )
+	.clk_i,
+	.rst_ni,
+	.testmode_i ( test_mode_i ),
+	.axi_req_i  ( axi_in_req[AxiIn.vga] ),
+	.axi_rsp_i  ( axi_in_rsp[AxiIn.vga] ),
+	.err_irq_o  ( intr.intn.bus_err.vga ),
+	.reg_req_i  ( reg_out_req[RegOut.bus_err[RegBusErrVga]] ),
+	.reg_rsp_o  ( reg_out_rsp[RegOut.bus_err[RegBusErrVga]] )
       );
     end
 
