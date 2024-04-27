@@ -107,7 +107,7 @@ module cheshire_top_xilinx (
     ret.RegExtNumRules        = 1;
     ret.RegExtRegionIdx   [0] = 0;
     ret.RegExtRegionStart [0] = 'h4000_0000;
-    ret.RegExtRegionEnd   [0] = 'h6000_0000;
+    ret.RegExtRegionEnd   [0] = 'h4010_0000;
     return ret;
   endfunction
 

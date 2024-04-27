@@ -23,7 +23,7 @@ set soc_clk [get_clocks -of_objects [get_pins i_clkwiz/clk_50]]
 # Hyperram #
 ############
 
-set period_hyperbus 100
+set period_hyperbus 40
 
 ##  Create RWDS clock (10MHz)
 create_clock -period [expr $period_hyperbus] -name rwds0_clk [get_ports FMC_hyper0_rwds]
@@ -33,10 +33,8 @@ create_clock -period [expr $period_hyperbus] -name rwds1_clk [get_ports FMC_hype
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets iobuf_rwds1_i/O]
 
 ## Create the PHY clock
-create_generated_clock [get_nets i_hyperbus/clk_phy_i_0] \
-                       -name clk_phy -source [get_pins i_clkwiz/clk_50] -divide_by 2
-create_generated_clock [get_nets i_hyperbus/clk_phy_i_90] \
-                       -name clk_phy_90 -source [get_pins i_clkwiz/clk_50] -edges {2 4 6}
+create_generated_clock [get_pins i_hyperbus/clock_generator.ddr_clk/clk0_o] -name clk_phy -source [get_pins i_clkwiz/clk_50] -divide_by 2
+create_generated_clock [get_pins i_hyperbus/clock_generator.ddr_clk/clk90_o] -name clk_phy_90 -source [get_pins i_clkwiz/clk_50] -edges {2 4 6}
 
 ## PHY0
 set clk_rx_shift [expr $period_hyperbus/10]
