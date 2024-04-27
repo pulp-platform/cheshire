@@ -139,20 +139,33 @@ $(foreach link,$(patsubst $(CHS_SW_LD_DIR)/%.ld,%,$(wildcard $(CHS_SW_LD_DIR)/*.
 # Images from CVA6 SDK (built externally)
 CHS_CVA6_SDK_IMGS ?= $(addprefix $(CHS_SW_DIR)/deps/cva6-sdk/install64/,fw_payload.bin uImage)
 
+# Determine size of uImage in blocks of 512 bytes
+IMG_SIZE := $(shell stat -c '%s' $(CHS_SW_DIR)/deps/cva6-sdk/install64/uImage)
+
+# Make number of sectors a multiple of 32 (for FAT) also add 1MB as buffer
+PART_SEC := $(shell echo $$((($(IMG_SIZE) / 512 + 2048) / 32 * 32)))
+
 # Create full Linux disk image
-$(CHS_SW_DIR)/boot/linux.%.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CHS_SW_DIR)/boot/cheshire.%.dtb $(CHS_CVA6_SDK_IMGS)
-	truncate -s $(CHS_SW_DISK_SIZE) $@
-	sgdisk --clear -g --set-alignment=1 \
-		--new=1:64:96 --typecode=1:$(CHS_SW_ZSL_TGUID) \
-		--new=2:128:159 --typecode=2:$(CHS_SW_DTB_TGUID) \
-		--new=3:2048:8191 --typecode=3:$(CHS_SW_FW_TGUID) \
-		--new=4:8192:24575 --typecode=4:8300 \
-		--new=5:24576:0 --typecode=5:8200 \
-		$@
-	dd if=$(word 1,$^) of=$@ bs=512 seek=64 conv=notrunc
-	dd if=$(word 2,$^) of=$@ bs=512 seek=128 conv=notrunc
-	dd if=$(word 3,$^) of=$@ bs=512 seek=2048 conv=notrunc
-	dd if=$(word 4,$^) of=$@ bs=512 seek=8192 conv=notrunc
+$(CHS_SW_DIR)/boot/linux.%.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CHS_SW_DIR)/boot/cheshire.%.dtb $(CHS_CVA6_SDK_I$
+        truncate -s $(CHS_SW_DISK_SIZE) $@
+        sgdisk --clear -g --set-alignment=1 \
+                --new=1:64:96 --typecode=1:$(CHS_SW_ZSL_TGUID) \
+                --new=2:128:159 --typecode=2:$(CHS_SW_DTB_TGUID) \
+                --new=3:2048:8191 --typecode=3:$(CHS_SW_FW_TGUID) \
+                --new=4:8192:$$(($(PART_SEC) + 8192)) --typecode=4:8300 \
+                --new=5:$$(($(PART_SEC) + 8193)):0 --typecode=5:8200 \
+                $@
+        dd if=$(word 1,$^) of=$@ bs=512 seek=64 conv=notrunc
+        dd if=$(word 2,$^) of=$@ bs=512 seek=128 conv=notrunc
+        dd if=$(word 3,$^) of=$@ bs=512 seek=2048 conv=notrunc
+        # Create FAT32 filesystems with uImage
+        dd if=/dev/zero of=$(CHS_SW_DIR)/boot/fat.img bs=512 count=$(PART_SEC)
+        mkfs.fat $(CHS_SW_DIR)/boot/fat.img
+        mcopy -i $(CHS_SW_DIR)/boot/fat.img $(word 4,$^) ::
+        # Write to the SD card image
+        dd if=$(CHS_SW_DIR)/boot/fat.img of=$@ bs=512 seek=8192 conv=notrunc
+        # Cleanup
+        rm $(CHS_SW_DIR)/boot/fat.img
 
 #########
 # Tests #
