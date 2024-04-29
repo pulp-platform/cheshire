@@ -59,6 +59,9 @@ package cheshire_reg_pkg;
     } vga;
     struct packed {
       logic        d;
+    } usb;
+    struct packed {
+      logic        d;
     } axirt;
     struct packed {
       logic        d;
@@ -89,11 +92,11 @@ package cheshire_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    cheshire_hw2reg_boot_mode_reg_t boot_mode; // [166:165]
-    cheshire_hw2reg_rtc_freq_reg_t rtc_freq; // [164:133]
-    cheshire_hw2reg_platform_rom_reg_t platform_rom; // [132:101]
-    cheshire_hw2reg_num_int_harts_reg_t num_int_harts; // [100:69]
-    cheshire_hw2reg_hw_features_reg_t hw_features; // [68:56]
+    cheshire_hw2reg_boot_mode_reg_t boot_mode; // [167:166]
+    cheshire_hw2reg_rtc_freq_reg_t rtc_freq; // [165:134]
+    cheshire_hw2reg_platform_rom_reg_t platform_rom; // [133:102]
+    cheshire_hw2reg_num_int_harts_reg_t num_int_harts; // [101:70]
+    cheshire_hw2reg_hw_features_reg_t hw_features; // [69:56]
     cheshire_hw2reg_llc_size_reg_t llc_size; // [55:24]
     cheshire_hw2reg_vga_params_reg_t vga_params; // [23:0]
   } cheshire_hw2reg_t;
@@ -128,7 +131,7 @@ package cheshire_reg_pkg;
   parameter logic [31:0] CHESHIRE_RTC_FREQ_RESVAL = 32'h 0;
   parameter logic [31:0] CHESHIRE_PLATFORM_ROM_RESVAL = 32'h 0;
   parameter logic [31:0] CHESHIRE_NUM_INT_HARTS_RESVAL = 32'h 0;
-  parameter logic [12:0] CHESHIRE_HW_FEATURES_RESVAL = 13'h 0;
+  parameter logic [13:0] CHESHIRE_HW_FEATURES_RESVAL = 14'h 0;
   parameter logic [31:0] CHESHIRE_LLC_SIZE_RESVAL = 32'h 0;
   parameter logic [23:0] CHESHIRE_VGA_PARAMS_RESVAL = 24'h 0;
 
