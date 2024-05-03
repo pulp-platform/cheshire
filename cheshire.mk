@@ -119,8 +119,8 @@ $(CHS_TAGGER_DIR)/.generated:
 	@touch $@
 
 # iDMA
-include $(IDMA_ROOT)/idma.mk
-$(IDMA_ROOT)/.generated: idma_hw_all
+# include $(IDMA_ROOT)/idma.mk
+# $(IDMA_ROOT)/.generated: idma_hw_all
 $(IDMA_ROOT)/.generated: $(IDMA_ROOT)/target/rtl/idma_reg64_2d.hjson
 	flock -x $@ sh -c "cp $< $(dir $@)/target/rtl/; $(MAKE) -j1 otp" && touch $@
 
@@ -132,7 +132,7 @@ CHS_HW_ALL += $(AXI_VGA_ROOT)/.generated
 CHS_HW_ALL += $(CHS_SLINK_DIR)/.generated
 CHS_HW_ALL += $(CHS_LLC_DIR)/.generated
 CHS_HW_ALL += $(CHS_TAGGER_DIR)/.generated
-CHS_HW_ALL += $(IDMA_ROOT)/.generated
+# CHS_HW_ALL += $(IDMA_ROOT)/.generated
 
 #####################
 # Generate Boot ROM #
