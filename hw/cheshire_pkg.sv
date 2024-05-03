@@ -131,6 +131,7 @@ package cheshire_pkg;
     bit     Gpio;
     bit     Dma;
     bit     SerialLink;
+    bit     MemoryIsland;
     bit     Vga;
     bit     AxiRt;
     bit     Clic;
@@ -155,6 +156,17 @@ package cheshire_pkg;
     bit     LlcOutConnect;
     doub_bt LlcOutRegionStart;
     doub_bt LlcOutRegionEnd;
+
+    // Parameters for Memory Island
+
+    doub_bt MemIslRegionStart;
+    doub_bt MemIslRegionEnd;
+    byte_bt MemIslNarrowToWideFactor;
+    byte_bt MemIslNarrowPorts;
+    byte_bt MemIslWidePorts;
+    byte_bt MemIslNumWideBanks;
+    shrt_bt MemIslWordsPerBank;
+
     // Parameters for VGA
     byte_bt VgaRedWidth;
     byte_bt VgaGreenWidth;
@@ -321,6 +333,7 @@ package cheshire_pkg;
     aw_bt dbg;
     aw_bt reg_demux;
     aw_bt llc;
+    aw_bt memoryisland;
     aw_bt spm;
     aw_bt dma;
     aw_bt slink;
@@ -665,6 +678,7 @@ package cheshire_pkg;
     Gpio              : 1,
     Dma               : 1,
     SerialLink        : 1,
+    MemoryIsland      : 0,
     Vga               : 1,
     AxiRt             : 0,
     Clic              : 0,
@@ -689,6 +703,16 @@ package cheshire_pkg;
     LlcOutConnect     : 1,
     LlcOutRegionStart : 'h8000_0000,
     LlcOutRegionEnd   : 'h1_0000_0000,
+
+    // Memory Island
+    MemIslRegionStart        : 'h1800_0000,
+    MemIslRegionEnd          : 'h2000_0000,
+    MemIslNarrowToWideFactor : 4,
+    MemIslNarrowPorts        : 1,
+    MemIslWidePorts          : 2,
+    MemIslNumWideBanks       : 2,
+    MemIslWordsPerBank       : 1024,
+
     // VGA: RGB332
     VgaRedWidth       : 3,
     VgaGreenWidth     : 3,

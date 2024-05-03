@@ -1353,6 +1353,33 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   end
 
+   if (Cfg.MemoryIsland) begin : gen_memoryisland
+      axi_memory_island_wrap #(
+			       .AddrWidth (Cfg.AddrWidth),
+			       .NarrowDataWidth (Cfg.AxiDataWidth),
+			       .WideDataWidth (Cfg.AxiDataWidth * Cfg.MemIslNarrowToWideFactor),
+			       .AxiNarrowIdWidth (Cfg.AxiMstIdWidth),
+			       .AxiWideIdWidth (Cfg.AxiMstIdWidth),
+			       .axi_narrow_req_t (axi_slv_req_t),
+			       .axi_narrow_rsp_t (axi_slv_rsp_t),
+			       .axi_wide_req_t (mem_isl_wide_axi_slv_req_t),
+			       .axi_wide_rsp_t (mem_isl_wide_axi_slv_rsp_t),
+			       .NumNarrowReq (Cfg.MemIslNarrowPorts),
+			       .NumWideReq (Cfg.MemIslWidePorts),
+			       .NumWideBanks (Cfg.MemIslNumWideBanks),
+			       .NarrowExtraBF (1),
+			       .WordsPerBank (Cfg.MemIslWordsPerBank)
+			       ) i_memory_island (
+						  .clk_i,
+						  .rst_ni,
+						  .axi_narrow_req_i( axi_out_req[AxiOut.memoryisland] ),
+						  .axi_narrow_rsp_o( axi_out_rsp[AxiOut.memoryisland] ),
+						  .axi_wide_req_i('0),
+						  .axi_wide_rsp_o()
+						  );
+
+  end
+
   ///////////
   //  DMA  //
   ///////////
