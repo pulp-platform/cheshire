@@ -37,7 +37,7 @@
 // Component : UsbOhciAxi4
 // Git hash  : ed2ae179904c1c6421617f443c92966db416c54d
 
-`timescale 1ns/1ps
+// `timescale 1ns/1ps
 
 module UsbOhciAxi4 (
   output wire          io_dma_aw_valid,
