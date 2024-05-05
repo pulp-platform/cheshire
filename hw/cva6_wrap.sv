@@ -53,6 +53,8 @@ localparam int unsigned RegFileAddrWidth = $clog2(32);
 localparam int unsigned NumRfWrPorts = 1; // See CVA6ExtendCfg
 localparam int unsigned NumIntRfRdPorts = 2; // See CVA6ExtendCfg
 localparam int unsigned NumFpRfRdPorts = 3; // See CVA6ExtendCfg
+localparam int unsigned NumCsrWrPorts = 1;
+localparam int unsigned NumCsrRdPorts = 1;
 
 typedef struct packed {
   logic we;
@@ -64,6 +66,15 @@ typedef struct packed {
   logic [RegFileAddrWidth-1:0] raddr;
   logic [riscv::XLEN-1:0] rdata;
 } regfile_read_t;
+
+typedef struct packed {
+  logic [riscv::CsrAddrWidth-1:0] addr;
+  logic [riscv::XLEN-1:0] data;
+  logic write;
+  logic [riscv::VLEN-1:0] program_counter;
+  ariane_pkg::exception_t exception;
+  ariane_pkg::scoreboard_entry_t scoreboard_entry;
+} csr_intf_t;
 
 typedef struct packed {
   // cheshire_pkg::doub_bt    bootaddress;
@@ -111,10 +122,6 @@ typedef struct packed {
 } cva6_outputs_t;
 
 typedef struct packed {
-  logic fake;
-} csr_intf_t;
-
-typedef struct packed {
   logic [riscv::XLEN-1:0] program_counter_if;
   logic [riscv::XLEN-1:0] program_counter;
   logic                   is_branch;
@@ -124,7 +131,7 @@ typedef struct packed {
 typedef struct packed {
   regfile_write_t [NumRfWrPorts-1:0] int_regfile_backup;
   regfile_write_t [NumRfWrPorts-1:0] fp_regfile_backup;
-  csr_intf_t csr_backup;
+  csr_intf_t [NumCsrWrPorts-1:0] csr_backup;
   pc_intf_t pc_backup;
 } core_backup_t;
 
@@ -140,13 +147,13 @@ typedef struct packed {
   logic [NumFpRfRdPorts-1:0][riscv::XLEN-1:0] fp_rf_recovery_rdata;
   logic [2**RegFileAddrWidth-1:0][riscv::XLEN-1:0] int_rf_mem;
   logic [2**RegFileAddrWidth-1:0][riscv::XLEN-1:0] fp_rf_mem;
-  csr_intf_t csr_recovery;
+  csr_intf_t [NumCsrRdPorts-1:0] csr_recovery;
   pc_intf_t pc_recovery;
 } rapid_recovery_t;
 
 localparam rapid_recovery_pkg::rapid_recovery_cfg_t CheshireRrCfg = '{
   ReducedCsrsBackupEnable: 0,
-  FullCsrsBackupEnable: 0,
+  FullCsrsBackupEnable: 1,
   IntRegFileBackupEnable: 1,
   FpRegFileBackupEnable: 1,
   ProgramCounterBackupEnable: 1,
@@ -163,6 +170,7 @@ core_backup_t [NumHarts-1:0] backup_bus;
 regfile_read_t [NumHarts-1:0][NumIntRfRdPorts-1:0] int_regfile_read;
 regfile_read_t [NumHarts-1:0][NumFpRfRdPorts-1:0] fp_regfile_read;
 regfile_write_t [NumHarts-1:0][NumRfWrPorts-1:0] int_regfile_backup, fp_regfile_backup;
+csr_intf_t [NumHarts-1:0][NumCsrWrPorts-1:0] csr_backup;
 rapid_recovery_t [NumHarts-1:0] recovery_bus;
 
 for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
@@ -198,20 +206,23 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
   end
 
   always_comb begin
-    backup_bus[i].csr_backup = '0;
     backup_bus[i].pc_backup = '0;
-    for (int j= 0; j < NumRfWrPorts; j++) begin
+    for (int j = 0; j < NumRfWrPorts; j++) begin
       backup_bus[i].int_regfile_backup[j] = int_regfile_backup[i][j];
       backup_bus[i].fp_regfile_backup[j] = fp_regfile_backup[i][j];
     end
+    for (int j = 0; j < NumCsrWrPorts; j++)
+      backup_bus[i].csr_backup[j] = csr_backup[i][j];
   end
 
   cva6 #(
     .CVA6Cfg       ( Cva6Cfg        ),
     .ExternalSrams ( ExternalCaches ),
-    .NumRfCommitPorts (NumRfWrPorts ),
+    .NumRfCommitPorts ( NumRfWrPorts ),
     .NumIntRfRdPorts ( NumIntRfRdPorts ),
     .NumFpRfRdPorts ( NumFpRfRdPorts ),
+    .NumCsrWrPorts ( NumCsrWrPorts ),
+    .NumCsrRdPorts ( NumCsrRdPorts ),
     .axi_ar_chan_t ( axi_ar_chan_t  ),
     .axi_aw_chan_t ( axi_aw_chan_t  ),
     .axi_w_chan_t  ( axi_w_chan_t   ),
@@ -219,6 +230,7 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
     .r_chan_t      ( r_chan_t       ),
     .regfile_write_t (regfile_write_t),
     .regfile_read_t (regfile_read_t),
+    .csr_intf_t ( csr_intf_t ),
     .noc_req_t     ( axi_req_t      ),
     .noc_resp_t    ( axi_rsp_t      )
   ) i_core_cva6    (
@@ -277,6 +289,9 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
     .fp_regfile_check_o ( fp_regfile_read[i] ),
     .fp_regfile_backup_o ( fp_regfile_backup[i] ),
     .fp_regfile_recovery_i (recovery_bus[i].fp_rf_mem),
+    // CSR interface
+    .backup_csr_o     ( csr_backup[i]                 ),
+    .recovery_csr_i   ( recovery_bus[i].csr_recovery  ),
     .noc_req_o        ( core2hmr[i].axi_req           ),
     .noc_resp_i       ( hmr2core[i].axi_rsp           )
   );
@@ -326,10 +341,15 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     .SeparateData      ( 0                 ),
     .RapidRecoveryCfg  ( CheshireRrCfg     ),
     .RfAddrWidth       ( RegFileAddrWidth  ),
+    .CsrAddrWidth      ( riscv::CsrAddrWidth ),
+    .NumCsr            ( riscv::NumCsr     ),
+    .CsrList           ( riscv::CsrList    ),
     .NumIntRfRdPorts   ( NumIntRfRdPorts   ),
     .NumIntRfWrPorts   ( NumRfWrPorts     ),
     .NumFpRfRdPorts    ( NumFpRfRdPorts   ),
     .NumFpRfWrPorts    ( NumRfWrPorts     ),
+    .NumCsrRdPorts     ( NumCsrRdPorts ),
+    .NumCsrWrPorts     ( NumCsrWrPorts ),
     .SysDataWidth      ( riscv::XLEN      ), // 64 bits since we have CVA6
     .all_inputs_t      ( cva6_inputs_t     ), // Inputs from the system to the HMR
     .nominal_outputs_t ( cva6_outputs_t    ),
@@ -339,6 +359,9 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     .rapid_recovery_t  ( rapid_recovery_t ),
     .regfile_write_t   ( regfile_write_t ),
     .csr_intf_t        ( csr_intf_t ),
+    .exception_t       ( ariane_pkg::exception_t ),
+    .scoreboard_entry_t ( ariane_pkg::scoreboard_entry_t ),
+    .csr_reg_t         ( riscv::csr_reg_t ),
     .pc_intf_t         ( pc_intf_t )
   ) i_cva6_hmr (
     .clk_i              ( clk_i         ),
