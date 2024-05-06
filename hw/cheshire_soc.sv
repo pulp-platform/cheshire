@@ -1489,17 +1489,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .mst_req_o  ( dma_cut_req ),
       .mst_resp_i ( dma_cut_rsp )
     );
-/*
-    always_comb begin
-      if(Cfg.IOMMU==0) begin
-        axi_in_req[AxiIn.dma] = axi_dma_req;
-        axi_in_req[AxiIn.dma].aw.user = Cfg.AxiUserDefault;
-        axi_in_req[AxiIn.dma].w.user  = Cfg.AxiUserDefault;
-        axi_in_req[AxiIn.dma].ar.user = Cfg.AxiUserDefault;
-        axi_dma_rsp = axi_in_rsp[AxiIn.dma];
-      end
-    end
-*/
+
     dma_core_wrap #(
       .AxiAddrWidth     ( Cfg.AddrWidth           ),
       .AxiDataWidth     ( Cfg.AxiDataWidth        ),
@@ -1637,51 +1627,51 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign axi_iommu_ds_rsp = axi_in_rsp[AxiIn.iommu];
 
     riscv_iommu #(
-        .IOTLB_ENTRIES	 ( 8	    					       ),
-        .DDTC_ENTRIES		 ( 4							         ),
-        .PDTC_ENTRIES		 ( 4							         ),
-        .MRIFC_ENTRIES	 ( 4							         ),
-        .MSITrans			   ( rv_iommu::MSI_FLAT_MRIF ),
-        .InclPC          ( 1'b0						         ),
+        .IOTLB_ENTRIES   ( 8                       ),
+        .DDTC_ENTRIES    ( 4                       ),
+        .PDTC_ENTRIES    ( 4                       ),
+        .MRIFC_ENTRIES   ( 4							         ),
+        .MSITrans        ( rv_iommu::MSI_FLAT_MRIF ),
+        .InclPC          ( 1'b0                    ),
         .InclBC          ( 1'b1                    ),
-        .InclDBG		     ( 1'b1						         ),
+        .InclDBG         ( 1'b1                    ),
         .IGS             ( rv_iommu::BOTH          ),
         .N_INT_VEC       ( 4                       ),
         .N_IOHPMCTR      ( 8                       ),
-        .ADDR_WIDTH			 ( Cfg.AddrWidth				   ),
-        .DATA_WIDTH			 ( Cfg.AxiDataWidth				 ),
-        .ID_WIDTH			   ( Cfg.AxiMstIdWidth		   ),
-        .ID_SLV_WIDTH		 ( AxiSlvIdWidth           ),
-        .USER_WIDTH		   ( Cfg.AxiUserWidth        ),
-        .aw_chan_t		   ( axi_mst_aw_chan_t       ),
-        .w_chan_t			   ( axi_mst_w_chan_t	       ),
-        .b_chan_t			   ( axi_mst_b_chan_t	       ),
-        .ar_chan_t			 ( axi_mst_ar_chan_t       ),
-        .r_chan_t			   ( axi_mst_r_chan_t	       ),
-        .axi_req_t			 ( axi_mst_req_t		       ),
-        .axi_rsp_t			 ( axi_mst_rsp_t	         ),
-        .axi_req_slv_t	 ( axi_slv_req_t           ),
-        .axi_rsp_slv_t	 ( axi_slv_rsp_t           ),
+        .ADDR_WIDTH      ( Cfg.AddrWidth           ),
+        .DATA_WIDTH      ( Cfg.AxiDataWidth        ),
+        .ID_WIDTH        ( Cfg.AxiMstIdWidth       ),
+        .ID_SLV_WIDTH    ( AxiSlvIdWidth           ),
+        .USER_WIDTH      ( Cfg.AxiUserWidth        ),
+        .aw_chan_t       ( axi_mst_aw_chan_t       ),
+        .w_chan_t        ( axi_mst_w_chan_t        ),
+        .b_chan_t        ( axi_mst_b_chan_t        ),
+        .ar_chan_t       ( axi_mst_ar_chan_t       ),
+        .r_chan_t        ( axi_mst_r_chan_t        ),
+        .axi_req_t       ( axi_mst_req_t           ),
+        .axi_rsp_t       ( axi_mst_rsp_t           ),
+        .axi_req_slv_t   ( axi_slv_req_t           ),
+        .axi_rsp_slv_t   ( axi_slv_rsp_t           ),
         .axi_req_iommu_t ( axi_iommu_req_t         ),
-        .reg_req_t		   ( reg_req_t               ),
-        .reg_rsp_t		   ( reg_rsp_t			         )
+        .reg_req_t       ( reg_req_t               ),
+        .reg_rsp_t       ( reg_rsp_t               )
     ) i_riscv_iommu  (
-        .clk_i			     ( clk_i						     ),
-        .rst_ni				   ( rst_ni					       ),
+        .clk_i           ( clk_i                 ),
+        .rst_ni          ( rst_ni                ),
         // Translation Request Interface (Slave)
-        .dev_tr_req_i	   ( axi_iommu_tr_req		   ),
-        .dev_tr_resp_o   ( axi_iommu_tr_rsp		   ),
+        .dev_tr_req_i    ( axi_iommu_tr_req      ),
+        .dev_tr_resp_o   ( axi_iommu_tr_rsp      ),
         // Translation Completion Interface (Master)
-        .dev_comp_resp_i ( axi_iommu_comp_rsp	   ),
-        .dev_comp_req_o	 ( axi_iommu_comp_req	   ),
+        .dev_comp_resp_i ( axi_iommu_comp_rsp    ),
+        .dev_comp_req_o  ( axi_iommu_comp_req    ),
         // Implicit Memory Accesses Interface (Master)
-        .ds_resp_i			 ( axi_iommu_ds_rsp		   ),
-        .ds_req_o			   ( axi_iommu_ds_req		   ),
+        .ds_resp_i       ( axi_iommu_ds_rsp      ),
+        .ds_req_o        ( axi_iommu_ds_req      ),
         // Programming Interface (Slave)
-        .prog_req_i			( axi_iommu_cfg_req		   ),
-        .prog_resp_o		( axi_iommu_cfg_rsp		   ),
+        .prog_req_i      ( axi_iommu_cfg_req      ),
+        .prog_resp_o     ( axi_iommu_cfg_rsp      ),
         // Interrupts
-        .wsi_wires_o 		(  )
+        .wsi_wires_o     (  )
     );
 
   end else begin
