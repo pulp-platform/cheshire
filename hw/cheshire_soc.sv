@@ -1668,7 +1668,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .wsi_wires_o     (  )
     );
 
-  end else begin // block: gen_iommu
+  end else begin : gen_no_iommu
 
     //Connect DMA to interconnect bypassing IOMMU
     always_comb begin
