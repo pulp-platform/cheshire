@@ -1165,7 +1165,7 @@ module vip_cheshire_soc_tristate import cheshire_pkg::*; (
   assign eth_rxd_i = eth_rxd;
   assign eth_rxck_i = eth_rxck;
   assign eth_rxctl_i = eth_rxctl;
-  
+
 
   bufif1 (eth_mdio_i, eth_mdio, ~eth_mdio_en); 
   bufif1 (eth_mdio, eth_mdio_o, eth_mdio_en);  

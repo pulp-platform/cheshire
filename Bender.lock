@@ -152,13 +152,8 @@ packages:
     dependencies:
     - common_cells
   idma:
-<<<<<<< HEAD
     revision: 88fbe67d8350b4de5ceb3673073bc216b8d585b7
     version: null
-=======
-    revision: a80fcace92b1562e7cd76c8615298b5623ba74d2
-    version: 0.6.0-beta
->>>>>>> 96d0e4e (working sim with local fix on dma)
     source:
       Git: https://github.com/pulp-platform/iDMA.git
     dependencies:
@@ -166,9 +161,7 @@ packages:
     - axi_stream
     - common_cells
     - common_verification
-<<<<<<< HEAD
     - obi
-=======
     - idma_gen
     - register_interface
   idma_gen:
@@ -179,7 +172,6 @@ packages:
     dependencies:
     - axi
     - common_cells
->>>>>>> 96d0e4e (working sim with local fix on dma)
     - register_interface
   irq_router:
     revision: d1d31350b24f3965b3a51e1bc96c71eb34e94db3
