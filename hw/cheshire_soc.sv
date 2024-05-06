@@ -1630,7 +1630,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .IOTLB_ENTRIES   ( 8                       ),
         .DDTC_ENTRIES    ( 4                       ),
         .PDTC_ENTRIES    ( 4                       ),
-        .MRIFC_ENTRIES   ( 4							         ),
+        .MRIFC_ENTRIES   ( 4                       ),
         .MSITrans        ( rv_iommu::MSI_FLAT_MRIF ),
         .InclPC          ( 1'b0                    ),
         .InclBC          ( 1'b1                    ),
@@ -1674,7 +1674,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .wsi_wires_o     (  )
     );
 
-  end else begin
+  end else begin // block: gen_iommu
 
     //Connect DMA to interconnect bypassing IOMMU
     always_comb begin
