@@ -15,7 +15,7 @@ MEMORY {
   /* We assume at least 64 KiB SPM, same minus stack for ROMs. */
   /* If more SPM is available, CRT0 repoints the stack. */
   extrom (rx)   : ORIGIN = 0x00000000, LENGTH = 48K
-  spm (rwx)     : ORIGIN = 0x10000000, LENGTH = 64K
+  spm (rwx)     : ORIGIN = 0x10000000, LENGTH = 1M
   /* We  assume at least 8 MiB of DRAM (minimum for Linux). */
   dram (rwx)    : ORIGIN = 0x80000000, LENGTH = 8M
 }
