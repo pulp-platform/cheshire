@@ -191,7 +191,7 @@ packages:
     - common_cells
     - tech_cells_generic
   riscv-iommu:
-    revision: dfdd69e7bcec60898a290a1f3a09090abc8f347c
+    revision: 1e8f895974b4aad3276660df8b85f77b56ff57f4
     version: null
     source:
       Git: https://github.com/maicolciani/riscv-iommu
