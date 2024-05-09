@@ -41,6 +41,7 @@ BENDER_ROOT ?= $(CHS_ROOT)/.bender
 $(BENDER_ROOT)/.chs_deps:
 	$(BENDER) checkout
 	cd $(CHS_ROOT) && git submodule update --init --recursive sw/deps/printf
+	git submodule update --init --recursive sw/deps/rv_iommu
 	@touch $@
 
 # Make sure dependencies are more up-to-date than any targets run
