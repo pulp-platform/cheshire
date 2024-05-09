@@ -1567,64 +1567,75 @@ module cheshire_soc import cheshire_pkg::*; #(
     axi_slv_req_t axi_iommu_cfg_req;
     axi_slv_rsp_t axi_iommu_cfg_rsp;
 
-    // Connect DMA to transaltion request IOMMU port
+    // Assign axi ports
+    always_comb begin
+      axi_in_req[AxiIn.dma].aw.user = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dma].w.user  = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dma].ar.user = Cfg.AxiUserDefault;
+      axi_iommu_tr_req.aw.user = Cfg.AxiUserDefault;
+      axi_iommu_tr_req.ar.user = Cfg.AxiUserDefault;
+      axi_iommu_tr_req.w.user = Cfg.AxiUserDefault;
 
-    // Handshake signals
-    assign axi_iommu_tr_req.r_ready = axi_dma_req.r_ready;
-    assign axi_iommu_tr_req.w_valid = axi_dma_req.w_valid;
-    assign axi_iommu_tr_req.b_ready = axi_dma_req.b_ready;
+      // Connect DMA to transaltion request IOMMU port
 
-    // extended AW
-    assign axi_iommu_tr_req.aw.id = axi_dma_req.aw.id;
-    assign axi_iommu_tr_req.aw.addr = axi_dma_req.aw.addr;
-    assign axi_iommu_tr_req.aw.len = axi_dma_req.aw.len;
-    assign axi_iommu_tr_req.aw.size = axi_dma_req.aw.size;
-    assign axi_iommu_tr_req.aw.burst = axi_dma_req.aw.burst;
-    assign axi_iommu_tr_req.aw.lock = axi_dma_req.aw.lock;
-    assign axi_iommu_tr_req.aw.cache = axi_dma_req.aw.cache;
-    assign axi_iommu_tr_req.aw.prot = axi_dma_req.aw.prot;
-    assign axi_iommu_tr_req.aw.qos = axi_dma_req.aw.qos;
-    assign axi_iommu_tr_req.aw.region = axi_dma_req.aw.region;
-    assign axi_iommu_tr_req.aw.atop = axi_dma_req.aw.atop;
-    assign axi_iommu_tr_req.aw_valid = axi_dma_req.aw_valid;
-    // Hardwire DVM extension signals
-    assign axi_iommu_tr_req.aw.stream_id = 24'd1;
-    assign axi_iommu_tr_req.aw.ss_id_valid = '0;
-    assign axi_iommu_tr_req.aw.substream_id = '0;
+      // Handshake signals
+      axi_iommu_tr_req.r_ready = axi_dma_req.r_ready;
+      axi_iommu_tr_req.w_valid = axi_dma_req.w_valid;
+      axi_iommu_tr_req.b_ready = axi_dma_req.b_ready;
 
-    // exteneded AR
-    assign axi_iommu_tr_req.ar.id = axi_dma_req.ar.id;
-    assign axi_iommu_tr_req.ar.addr = axi_dma_req.ar.addr;
-    assign axi_iommu_tr_req.ar.len = axi_dma_req.ar.len;
-    assign axi_iommu_tr_req.ar.size = axi_dma_req.ar.size;
-    assign axi_iommu_tr_req.ar.burst = axi_dma_req.ar.burst;
-    assign axi_iommu_tr_req.ar.lock = axi_dma_req.ar.lock;
-    assign axi_iommu_tr_req.ar.cache = axi_dma_req.ar.cache;
-    assign axi_iommu_tr_req.ar.prot = axi_dma_req.ar.prot;
-    assign axi_iommu_tr_req.ar.qos = axi_dma_req.ar.qos;
-    assign axi_iommu_tr_req.ar.region = axi_dma_req.ar.region;
-    assign axi_iommu_tr_req.ar_valid = axi_dma_req.ar_valid;
-    // Hardwire DVM extension signals
-    assign axi_iommu_tr_req.ar.stream_id = 24'd1;
-    assign axi_iommu_tr_req.ar.ss_id_valid = '0;
-    assign axi_iommu_tr_req.ar.substream_id = '0;
+      // extended AW
+      axi_iommu_tr_req.aw.id = axi_dma_req.aw.id;
+      axi_iommu_tr_req.aw.addr = axi_dma_req.aw.addr;
+      axi_iommu_tr_req.aw.len = axi_dma_req.aw.len;
+      axi_iommu_tr_req.aw.size = axi_dma_req.aw.size;
+      axi_iommu_tr_req.aw.burst = axi_dma_req.aw.burst;
+      axi_iommu_tr_req.aw.lock = axi_dma_req.aw.lock;
+      axi_iommu_tr_req.aw.cache = axi_dma_req.aw.cache;
+      axi_iommu_tr_req.aw.prot = axi_dma_req.aw.prot;
+      axi_iommu_tr_req.aw.qos = axi_dma_req.aw.qos;
+      axi_iommu_tr_req.aw.region = axi_dma_req.aw.region;
+      axi_iommu_tr_req.aw.atop = axi_dma_req.aw.atop;
+      axi_iommu_tr_req.aw_valid = axi_dma_req.aw_valid;
+      // Hardwire DVM extension signals
+      axi_iommu_tr_req.aw.stream_id = 24'd1;
+      axi_iommu_tr_req.aw.ss_id_valid = '0;
+      axi_iommu_tr_req.aw.substream_id = '0;
 
-    // W
-    assign axi_iommu_tr_req.w = axi_dma_req.w;
+      // exteneded AR
+      axi_iommu_tr_req.ar.id = axi_dma_req.ar.id;
+      axi_iommu_tr_req.ar.addr = axi_dma_req.ar.addr;
+      axi_iommu_tr_req.ar.len = axi_dma_req.ar.len;
+      axi_iommu_tr_req.ar.size = axi_dma_req.ar.size;
+      axi_iommu_tr_req.ar.burst = axi_dma_req.ar.burst;
+      axi_iommu_tr_req.ar.lock = axi_dma_req.ar.lock;
+      axi_iommu_tr_req.ar.cache = axi_dma_req.ar.cache;
+      axi_iommu_tr_req.ar.prot = axi_dma_req.ar.prot;
+      axi_iommu_tr_req.ar.qos = axi_dma_req.ar.qos;
+      axi_iommu_tr_req.ar.region = axi_dma_req.ar.region;
+      axi_iommu_tr_req.ar_valid = axi_dma_req.ar_valid;
+      // Hardwire DVM extension signals
+      axi_iommu_tr_req.ar.stream_id = 24'd1;
+      axi_iommu_tr_req.ar.ss_id_valid = '0;
+      axi_iommu_tr_req.ar.substream_id = '0;
 
-    assign axi_dma_rsp = axi_iommu_tr_rsp;
+      // W
+      axi_iommu_tr_req.w = axi_dma_req.w;
 
-    // Connect translation completion intf to DMA port on interconnect
-    assign axi_iommu_comp_rsp = axi_in_rsp[AxiIn.dma];
-    assign axi_in_req[AxiIn.dma] = axi_iommu_comp_req;
+      axi_dma_rsp = axi_iommu_tr_rsp;
 
-    // Connect programmi slave interface
-    assign axi_iommu_cfg_req = axi_out_req[AxiOut.iommu];
-    assign axi_out_rsp[AxiOut.iommu] = axi_iommu_cfg_rsp;
+      // Connect translation completion intf to DMA port on interconnect
+      axi_iommu_comp_rsp = axi_in_rsp[AxiIn.dma];
+      axi_in_req[AxiIn.dma] = axi_iommu_comp_req;
 
-    // Connect PTW/mem access master port
-    assign axi_in_req[AxiIn.iommu] = axi_iommu_ds_req;
-    assign axi_iommu_ds_rsp = axi_in_rsp[AxiIn.iommu];
+      // Connect programmi slave interface
+      axi_iommu_cfg_req = axi_out_req[AxiOut.iommu];
+      axi_out_rsp[AxiOut.iommu] = axi_iommu_cfg_rsp;
+
+      // Connect PTW/mem access master port
+      axi_in_req[AxiIn.iommu] = axi_iommu_ds_req;
+      axi_iommu_ds_rsp = axi_in_rsp[AxiIn.iommu];
+
+    end
 
     riscv_iommu #(
         .IOTLB_ENTRIES   ( 8                       ),

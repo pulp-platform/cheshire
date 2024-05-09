@@ -33,7 +33,7 @@
 `define CHESHIRE_TYPEDEF_REG(__name, __addr_t) \
   `REG_BUS_TYPEDEF_ALL(__name, __addr_t, logic [31:0], logic [3:0])
 
-`define AXI_TYPEDEF_IOMMU_AW_CHAN_T(__name, __id_t, __addr_t, __user_t,
+`define AXI_TYPEDEF_IOMMU_AW_CHAN_T(__name, __addr_t, __id_t, __user_t,
                                     iommu_sid_t, iommu_ssidv_t, iommu_ssid_t )  \
   typedef struct packed {                                       \
    __id_t            id;                                        \
@@ -53,7 +53,7 @@
    iommu_ssid_t      substream_id;                              \
   } __name;
 
-`define AXI_TYPEDEF_IOMMU_AR_CHAN_T(__name, __id_t, __addr_t, __user_t,
+`define AXI_TYPEDEF_IOMMU_AR_CHAN_T(__name, __addr_t, __id_t, __user_t,
                                     iommu_sid_t, iommu_ssidv_t, iommu_ssid_t )  \
   typedef struct packed {                                       \
     __id_t            id;                                       \
