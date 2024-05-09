@@ -20,7 +20,6 @@
 #include "rvh_test.h"
 #include "rv_iommu.h"
 
-
 #include "util.h"
 #include "printf.h"
 
@@ -65,8 +64,7 @@ int main(void) {
         }
     }
 
-    if (err != 0)
-        printf("idma failed\n");
+    if (err != 0) printf("idma failed\n");
 
     return err;
 }
