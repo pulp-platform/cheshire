@@ -15,8 +15,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: ac5deb3ff086aa34b168f392c051e92603d6c0e2
-    version: 0.39.2
+    revision: 9402c8a9ce0a7b5253c3c29e788612d771e8b5d6
+    version: 0.39.3
     source:
       Git: https://github.com/pulp-platform/axi
     dependencies:
@@ -24,7 +24,7 @@ packages:
     - common_verification
     - tech_cells_generic
   axi_llc:
-    revision: d79a00b8673b814efacbbe9bf106103407fc401b
+    revision: 4deb8c6281c74b3882846ad933f42a8c6568cbe0
     version: null
     source:
       Git: https://github.com/pulp-platform/axi_llc
@@ -69,8 +69,8 @@ packages:
     - common_cells
     - register_interface
   clic:
-    revision: bf6032e1ea30f3a502aa85906520dece53626eb9
-    version: 3.0.0-rc4
+    revision: 40ae266dab5768f63ca8dabe70e7474feb403bab
+    version: null
     source:
       Git: https://github.com/pulp-platform/clic.git
     dependencies:
@@ -125,7 +125,7 @@ packages:
     dependencies:
     - common_cells
   idma:
-    revision: 5ebff11232c7c5af208067c534b68092cd8506c4
+    revision: 95f366e56f7e772c283fb3c8b343afc4a3978375
     version: 0.6.2
     source:
       Git: https://github.com/pulp-platform/iDMA.git
