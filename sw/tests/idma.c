@@ -37,7 +37,6 @@
 int main(void) {
 
     fencei();
-    init_iommu();
     set_iommu_bare();
 
     int err = 0;
