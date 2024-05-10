@@ -33,11 +33,10 @@
 `define CHESHIRE_TYPEDEF_REG(__name, __addr_t) \
   `REG_BUS_TYPEDEF_ALL(__name, __addr_t, logic [31:0], logic [3:0])
 
-`define AXI_TYPEDEF_IOMMU_AW_CHAN_T(__name, __addr_t, __id_t, __user_t,
-                                    iommu_sid_t, iommu_ssidv_t, iommu_ssid_t )  \
+`define AXI_TYPEDEF_IOMMU_AW_CHAN_T(__name, addr_t, id_t, user_t, sid_t, ssidv_t, ssid_t )  \
   typedef struct packed {                                       \
-   __id_t            id;                                        \
-   __addr_t          addr;                                      \
+   id_t              id;                                        \
+   addr_t            addr;                                      \
    axi_pkg::len_t    len;                                       \
    axi_pkg::size_t   size;                                      \
    axi_pkg::burst_t  burst;                                     \
@@ -47,17 +46,16 @@
    axi_pkg::qos_t    qos;                                       \
    axi_pkg::region_t region;                                    \
    axi_pkg::atop_t   atop;                                      \
-   __user_t          user;                                      \
-   iommu_sid_t       stream_id;                                 \
-   iommu_ssidv_t     ss_id_valid;                               \
-   iommu_ssid_t      substream_id;                              \
+   user_t            user;                                      \
+   sid_t             stream_id;                                 \
+   ssidv_t           ss_id_valid;                               \
+   ssid_t            substream_id;                              \
   } __name;
 
-`define AXI_TYPEDEF_IOMMU_AR_CHAN_T(__name, __addr_t, __id_t, __user_t,
-                                    iommu_sid_t, iommu_ssidv_t, iommu_ssid_t )  \
+`define AXI_TYPEDEF_IOMMU_AR_CHAN_T(__name, addr_t, id_t, user_t, sid_t, ssidv_t, ssid_t )  \
   typedef struct packed {                                       \
-    __id_t            id;                                       \
-    __addr_t          addr;                                     \
+    id_t              id;                                       \
+    addr_t            addr;                                     \
     axi_pkg::len_t    len;                                      \
     axi_pkg::size_t   size;                                     \
     axi_pkg::burst_t  burst;                                    \
@@ -66,10 +64,10 @@
     axi_pkg::prot_t   prot;                                     \
     axi_pkg::qos_t    qos;                                      \
     axi_pkg::region_t region;                                   \
-    __user_t          user;                                     \
-    iommu_sid_t       stream_id;                                \
-    iommu_ssidv_t     ss_id_valid;                              \
-    iommu_ssid_t      substream_id;                             \
+    user_t            user;                                     \
+    sid_t             stream_id;                                \
+    ssidv_t           ss_id_valid;                              \
+    ssid_t            substream_id;                             \
    } __name;
 
 `define CHESHIRE_TYPEDEF_IOMMU(__name, __addr_t, __cfg)                                       \
