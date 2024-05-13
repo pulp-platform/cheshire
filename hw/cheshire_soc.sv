@@ -1562,9 +1562,6 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     // Assign axi ports
     always_comb begin
-      axi_in_req[AxiIn.dma].aw.user = Cfg.AxiUserDefault;
-      axi_in_req[AxiIn.dma].w.user  = Cfg.AxiUserDefault;
-      axi_in_req[AxiIn.dma].ar.user = Cfg.AxiUserDefault;
 
       // Traslation request
       axi_iommu_tr_req.aw.user = Cfg.AxiUserDefault;
@@ -1607,6 +1604,9 @@ module cheshire_soc import cheshire_pkg::*; #(
       axi_dma_rsp = axi_iommu_tr_rsp;
 
       // Traslation completion
+      axi_in_req[AxiIn.dma].aw.user = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dma].w.user  = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dma].ar.user = Cfg.AxiUserDefault;
       axi_in_req[AxiIn.dma].r_ready = axi_iommu_comp_req.r_ready;
       axi_in_req[AxiIn.dma].w_valid = axi_iommu_comp_req.w_valid;
       axi_in_req[AxiIn.dma].b_ready = axi_iommu_comp_req.b_ready;
@@ -1669,9 +1669,35 @@ module cheshire_soc import cheshire_pkg::*; #(
       axi_iommu_ds_rsp = axi_in_rsp[AxiIn.iommu];
 
       // Programming interface
-      axi_iommu_cfg_req = axi_out_req[AxiOut.iommu];
-      axi_out_rsp[AxiOut.iommu] = axi_iommu_cfg_rsp;
+      axi_iommu_cfg_req.r_ready = axi_out_req[AxiOut.iommu].r_ready;
+      axi_iommu_cfg_req.w_valid = axi_out_req[AxiOut.iommu].w_valid;
+      axi_iommu_cfg_req.b_ready = axi_out_req[AxiOut.iommu].b_ready;
+      axi_iommu_cfg_req.aw.id = axi_out_req[AxiOut.iommu].aw.id;
+      axi_iommu_cfg_req.aw.addr = axi_out_req[AxiOut.iommu].aw.addr[47:0];
+      axi_iommu_cfg_req.aw.len = axi_out_req[AxiOut.iommu].aw.len;
+      axi_iommu_cfg_req.aw.size = axi_out_req[AxiOut.iommu].aw.size;
+      axi_iommu_cfg_req.aw.burst = axi_out_req[AxiOut.iommu].aw.burst;
+      axi_iommu_cfg_req.aw.lock = axi_out_req[AxiOut.iommu].aw.lock;
+      axi_iommu_cfg_req.aw.cache = axi_out_req[AxiOut.iommu].aw.cache;
+      axi_iommu_cfg_req.aw.prot = axi_out_req[AxiOut.iommu].aw.prot;
+      axi_iommu_cfg_req.aw.qos = axi_out_req[AxiOut.iommu].aw.qos;
+      axi_iommu_cfg_req.aw.region = axi_out_req[AxiOut.iommu].aw.region;
+      axi_iommu_cfg_req.aw.atop = axi_out_req[AxiOut.iommu].aw.atop;
+      axi_iommu_cfg_req.aw_valid = axi_out_req[AxiOut.iommu].aw_valid;
+      axi_iommu_cfg_req.ar.id = axi_out_req[AxiOut.iommu].ar.id;
+      axi_iommu_cfg_req.ar.addr = axi_out_req[AxiOut.iommu].ar.addr[47:0];
+      axi_iommu_cfg_req.ar.len = axi_out_req[AxiOut.iommu].ar.len;
+      axi_iommu_cfg_req.ar.size = axi_out_req[AxiOut.iommu].ar.size;
+      axi_iommu_cfg_req.ar.burst = axi_out_req[AxiOut.iommu].ar.burst;
+      axi_iommu_cfg_req.ar.lock = axi_out_req[AxiOut.iommu].ar.lock;
+      axi_iommu_cfg_req.ar.cache = axi_out_req[AxiOut.iommu].ar.cache;
+      axi_iommu_cfg_req.ar.prot = axi_out_req[AxiOut.iommu].ar.prot;
+      axi_iommu_cfg_req.ar.qos = axi_out_req[AxiOut.iommu].ar.qos;
+      axi_iommu_cfg_req.ar.region = axi_out_req[AxiOut.iommu].ar.region;
+      axi_iommu_cfg_req.ar_valid = axi_out_req[AxiOut.iommu].ar_valid;
+      axi_iommu_cfg_req.w = axi_out_req[AxiOut.iommu].w;
 
+      axi_out_rsp[AxiOut.iommu] = axi_iommu_cfg_rsp;
     end
 
     riscv_iommu #(
