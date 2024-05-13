@@ -157,8 +157,8 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     // .core_backup_t     ( '0 ), // TODO
     // .bus_outputs_t     ( '0 ), // TODO
     .reg_req_t         ( reg_req_t ), // TODO
-    .reg_rsp_t         ( reg_rsp_t ), // TODO
-    .rapid_recovery_t  ( rapid_recovery_pkg::rapid_recovery_t ) // TODO
+    .reg_rsp_t         ( reg_rsp_t ) // TODO
+    // .rapid_recovery_t  ( rapid_recovery_pkg::rapid_recovery_t ) // TODO
   ) i_cva6_hmr (
     .clk_i              ( clk_i         ),
     .rst_ni             ( rstn_i        ),

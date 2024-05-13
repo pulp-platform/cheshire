@@ -15,8 +15,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: fccffb5953ec8564218ba05e20adbedec845e014
-    version: 0.39.1
+    revision: 9402c8a9ce0a7b5253c3c29e788612d771e8b5d6
+    version: 0.39.3
     source:
       Git: https://github.com/pulp-platform/axi
     dependencies:
@@ -24,7 +24,7 @@ packages:
     - common_verification
     - tech_cells_generic
   axi_llc:
-    revision: d79a00b8673b814efacbbe9bf106103407fc401b
+    revision: 2744693826f9262170e1943d73356a70d4f28e09
     version: null
     source:
       Git: https://github.com/pulp-platform/axi_llc
@@ -32,10 +32,11 @@ packages:
     - axi
     - common_cells
     - common_verification
+    - redundancy_cells
     - register_interface
     - tech_cells_generic
   axi_riscv_atomics:
-    revision: 6a85f44fdb1fe93162de7241476bba81e2247cb5
+    revision: 06d8256ccebb13d50e5feb2c17ce87a2b1f65c46
     version: null
     source:
       Git: https://github.com/pulp-platform/axi_riscv_atomics.git
@@ -53,8 +54,8 @@ packages:
     - common_cells
     - register_interface
   axi_vga:
-    revision: 07be187d1e954d8090031b32d236ad76dc62ce45
-    version: 0.1.1
+    revision: 3718b9930f94a9eaad8ee50b4bccc71df0403084
+    version: 0.1.3
     source:
       Git: https://github.com/pulp-platform/axi_vga.git
     dependencies:
@@ -146,7 +147,7 @@ packages:
     - register_interface
     - tech_cells_generic
   redundancy_cells:
-    revision: c37bdb47339bf70e8323de8df14ea8bbeafb6583
+    revision: 1122ffb6fbb931ad75cfeee26a75341c336df749
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
@@ -156,8 +157,8 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: e25b36670ff7aab3402f40efcc2b11ee0f31cf19
-    version: 0.4.3
+    revision: ae616e5a1ec2b41e72d200e5ab09c65e94aebd3d
+    version: 0.4.4
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:
