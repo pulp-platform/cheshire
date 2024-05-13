@@ -24,7 +24,7 @@ packages:
     - common_verification
     - tech_cells_generic
   axi_llc:
-    revision: d79a00b8673b814efacbbe9bf106103407fc401b
+    revision: 2744693826f9262170e1943d73356a70d4f28e09
     version: null
     source:
       Git: https://github.com/pulp-platform/axi_llc
@@ -32,6 +32,7 @@ packages:
     - axi
     - common_cells
     - common_verification
+    - redundancy_cells
     - register_interface
     - tech_cells_generic
   axi_riscv_atomics:
@@ -163,7 +164,7 @@ packages:
     - register_interface
     - tech_cells_generic
   redundancy_cells:
-    revision: c37bdb47339bf70e8323de8df14ea8bbeafb6583
+    revision: 1122ffb6fbb931ad75cfeee26a75341c336df749
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
