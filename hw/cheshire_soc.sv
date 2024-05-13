@@ -514,6 +514,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AxiUserWidth     ( Cfg.AxiUserWidth ),
       .AxiUserIdMsb     ( Cfg.LlcUserMsb   ),
       .AxiUserIdLsb     ( Cfg.LlcUserLsb   ),
+      .DataEccGranularity( 32 ),
+      .TagEccGranularity ( 32 ),
       .slv_req_t        ( axi_slv_req_t ),
       .slv_resp_t       ( axi_slv_rsp_t ),
       .mst_req_t        ( axi_ext_llc_req_t ),
