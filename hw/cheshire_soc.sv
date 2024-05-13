@@ -1559,33 +1559,28 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   if(Cfg.IOMMU) begin: gen_iommu
 
-    axi_iommu_req_t axi_iommu_tr_req;
+    axi_iommu_req_t     axi_iommu_tr_req;
+    axi_mst_iommu_req_t axi_iommu_comp_req, axi_iommu_ds_req;
+    axi_mst_iommu_rsp_t axi_iommu_tr_rsp, axi_iommu_comp_rsp, axi_iommu_ds_rsp;
 
-    axi_mst_req_t axi_iommu_comp_req, axi_iommu_ds_req;
-    axi_mst_rsp_t axi_iommu_tr_rsp, axi_iommu_comp_rsp, axi_iommu_ds_rsp;
-
-    axi_slv_req_t axi_iommu_cfg_req;
-    axi_slv_rsp_t axi_iommu_cfg_rsp;
+    axi_slv_iommu_req_t axi_iommu_cfg_req;
+    axi_slv_iommu_rsp_t axi_iommu_cfg_rsp;
 
     // Assign axi ports
     always_comb begin
       axi_in_req[AxiIn.dma].aw.user = Cfg.AxiUserDefault;
       axi_in_req[AxiIn.dma].w.user  = Cfg.AxiUserDefault;
       axi_in_req[AxiIn.dma].ar.user = Cfg.AxiUserDefault;
+
+      // Traslation request
       axi_iommu_tr_req.aw.user = Cfg.AxiUserDefault;
       axi_iommu_tr_req.ar.user = Cfg.AxiUserDefault;
       axi_iommu_tr_req.w.user = Cfg.AxiUserDefault;
-
-      // Connect DMA to transaltion request IOMMU port
-
-      // Handshake signals
       axi_iommu_tr_req.r_ready = axi_dma_req.r_ready;
       axi_iommu_tr_req.w_valid = axi_dma_req.w_valid;
       axi_iommu_tr_req.b_ready = axi_dma_req.b_ready;
-
-      // extended AW
       axi_iommu_tr_req.aw.id = axi_dma_req.aw.id;
-      axi_iommu_tr_req.aw.addr = axi_dma_req.aw.addr;
+      axi_iommu_tr_req.aw.addr = {8'b0, axi_dma_req.aw.addr};
       axi_iommu_tr_req.aw.len = axi_dma_req.aw.len;
       axi_iommu_tr_req.aw.size = axi_dma_req.aw.size;
       axi_iommu_tr_req.aw.burst = axi_dma_req.aw.burst;
@@ -1596,14 +1591,11 @@ module cheshire_soc import cheshire_pkg::*; #(
       axi_iommu_tr_req.aw.region = axi_dma_req.aw.region;
       axi_iommu_tr_req.aw.atop = axi_dma_req.aw.atop;
       axi_iommu_tr_req.aw_valid = axi_dma_req.aw_valid;
-      // Hardwire DVM extension signals
       axi_iommu_tr_req.aw.stream_id = 24'd1;
       axi_iommu_tr_req.aw.ss_id_valid = '0;
       axi_iommu_tr_req.aw.substream_id = '0;
-
-      // exteneded AR
       axi_iommu_tr_req.ar.id = axi_dma_req.ar.id;
-      axi_iommu_tr_req.ar.addr = axi_dma_req.ar.addr;
+      axi_iommu_tr_req.ar.addr = {8'b0, axi_dma_req.ar.addr};
       axi_iommu_tr_req.ar.len = axi_dma_req.ar.len;
       axi_iommu_tr_req.ar.size = axi_dma_req.ar.size;
       axi_iommu_tr_req.ar.burst = axi_dma_req.ar.burst;
@@ -1613,27 +1605,78 @@ module cheshire_soc import cheshire_pkg::*; #(
       axi_iommu_tr_req.ar.qos = axi_dma_req.ar.qos;
       axi_iommu_tr_req.ar.region = axi_dma_req.ar.region;
       axi_iommu_tr_req.ar_valid = axi_dma_req.ar_valid;
-      // Hardwire DVM extension signals
       axi_iommu_tr_req.ar.stream_id = 24'd1;
       axi_iommu_tr_req.ar.ss_id_valid = '0;
       axi_iommu_tr_req.ar.substream_id = '0;
-
-      // W
       axi_iommu_tr_req.w = axi_dma_req.w;
 
       axi_dma_rsp = axi_iommu_tr_rsp;
 
-      // Connect translation completion intf to DMA port on interconnect
-      axi_iommu_comp_rsp = axi_in_rsp[AxiIn.dma];
-      axi_in_req[AxiIn.dma] = axi_iommu_comp_req;
+      // Traslation completion
+      axi_in_req[AxiIn.dma].r_ready = axi_iommu_comp_req.r_ready;
+      axi_in_req[AxiIn.dma].w_valid = axi_iommu_comp_req.w_valid;
+      axi_in_req[AxiIn.dma].b_ready = axi_iommu_comp_req.b_ready;
+      axi_in_req[AxiIn.dma].aw.id = axi_iommu_comp_req.aw.id;
+      axi_in_req[AxiIn.dma].aw.addr = axi_iommu_comp_req.aw.addr[47:0];
+      axi_in_req[AxiIn.dma].aw.len = axi_iommu_comp_req.aw.len;
+      axi_in_req[AxiIn.dma].aw.size = axi_iommu_comp_req.aw.size;
+      axi_in_req[AxiIn.dma].aw.burst = axi_iommu_comp_req.aw.burst;
+      axi_in_req[AxiIn.dma].aw.lock = axi_iommu_comp_req.aw.lock;
+      axi_in_req[AxiIn.dma].aw.cache = axi_iommu_comp_req.aw.cache;
+      axi_in_req[AxiIn.dma].aw.prot = axi_iommu_comp_req.aw.prot;
+      axi_in_req[AxiIn.dma].aw.qos = axi_iommu_comp_req.aw.qos;
+      axi_in_req[AxiIn.dma].aw.region = axi_iommu_comp_req.aw.region;
+      axi_in_req[AxiIn.dma].aw.atop = axi_iommu_comp_req.aw.atop;
+      axi_in_req[AxiIn.dma].aw_valid = axi_iommu_comp_req.aw_valid;
+      axi_in_req[AxiIn.dma].ar.id = axi_iommu_comp_req.ar.id;
+      axi_in_req[AxiIn.dma].ar.addr = axi_iommu_comp_req.ar.addr[47:0];
+      axi_in_req[AxiIn.dma].ar.len = axi_iommu_comp_req.ar.len;
+      axi_in_req[AxiIn.dma].ar.size = axi_iommu_comp_req.ar.size;
+      axi_in_req[AxiIn.dma].ar.burst = axi_iommu_comp_req.ar.burst;
+      axi_in_req[AxiIn.dma].ar.lock = axi_iommu_comp_req.ar.lock;
+      axi_in_req[AxiIn.dma].ar.cache = axi_iommu_comp_req.ar.cache;
+      axi_in_req[AxiIn.dma].ar.prot = axi_iommu_comp_req.ar.prot;
+      axi_in_req[AxiIn.dma].ar.qos = axi_iommu_comp_req.ar.qos;
+      axi_in_req[AxiIn.dma].ar.region = axi_iommu_comp_req.ar.region;
+      axi_in_req[AxiIn.dma].ar_valid = axi_iommu_comp_req.ar_valid;
+      axi_in_req[AxiIn.dma].w = axi_iommu_comp_req.w;
 
-      // Connect programmi slave interface
+      axi_iommu_comp_rsp = axi_in_rsp[AxiIn.dma];
+
+      // Data structures (memory access)
+      axi_in_req[AxiIn.iommu].r_ready = axi_iommu_ds_req.r_ready;
+      axi_in_req[AxiIn.iommu].w_valid = axi_iommu_ds_req.w_valid;
+      axi_in_req[AxiIn.iommu].b_ready = axi_iommu_ds_req.b_ready;
+      axi_in_req[AxiIn.iommu].aw.id = axi_iommu_ds_req.aw.id;
+      axi_in_req[AxiIn.iommu].aw.addr = axi_iommu_ds_req.aw.addr[47:0];
+      axi_in_req[AxiIn.iommu].aw.len = axi_iommu_ds_req.aw.len;
+      axi_in_req[AxiIn.iommu].aw.size = axi_iommu_ds_req.aw.size;
+      axi_in_req[AxiIn.iommu].aw.burst = axi_iommu_ds_req.aw.burst;
+      axi_in_req[AxiIn.iommu].aw.lock = axi_iommu_ds_req.aw.lock;
+      axi_in_req[AxiIn.iommu].aw.cache = axi_iommu_ds_req.aw.cache;
+      axi_in_req[AxiIn.iommu].aw.prot = axi_iommu_ds_req.aw.prot;
+      axi_in_req[AxiIn.iommu].aw.qos = axi_iommu_ds_req.aw.qos;
+      axi_in_req[AxiIn.iommu].aw.region = axi_iommu_ds_req.aw.region;
+      axi_in_req[AxiIn.iommu].aw.atop = axi_iommu_ds_req.aw.atop;
+      axi_in_req[AxiIn.iommu].aw_valid = axi_iommu_ds_req.aw_valid;
+      axi_in_req[AxiIn.iommu].ar.id = axi_iommu_ds_req.ar.id;
+      axi_in_req[AxiIn.iommu].ar.addr = axi_iommu_ds_req.ar.addr[47:0];
+      axi_in_req[AxiIn.iommu].ar.len = axi_iommu_ds_req.ar.len;
+      axi_in_req[AxiIn.iommu].ar.size = axi_iommu_ds_req.ar.size;
+      axi_in_req[AxiIn.iommu].ar.burst = axi_iommu_ds_req.ar.burst;
+      axi_in_req[AxiIn.iommu].ar.lock = axi_iommu_ds_req.ar.lock;
+      axi_in_req[AxiIn.iommu].ar.cache = axi_iommu_ds_req.ar.cache;
+      axi_in_req[AxiIn.iommu].ar.prot = axi_iommu_ds_req.ar.prot;
+      axi_in_req[AxiIn.iommu].ar.qos = axi_iommu_ds_req.ar.qos;
+      axi_in_req[AxiIn.iommu].ar.region = axi_iommu_ds_req.ar.region;
+      axi_in_req[AxiIn.iommu].ar_valid = axi_iommu_ds_req.ar_valid;
+      axi_in_req[AxiIn.iommu].w = axi_iommu_ds_req.w;
+
+      axi_iommu_ds_rsp = axi_in_rsp[AxiIn.iommu];
+
+      // Programming interface
       axi_iommu_cfg_req = axi_out_req[AxiOut.iommu];
       axi_out_rsp[AxiOut.iommu] = axi_iommu_cfg_rsp;
-
-      // Connect PTW/mem access master port
-      axi_in_req[AxiIn.iommu] = axi_iommu_ds_req;
-      axi_iommu_ds_rsp = axi_in_rsp[AxiIn.iommu];
 
     end
 
@@ -1649,20 +1692,20 @@ module cheshire_soc import cheshire_pkg::*; #(
         .IGS             ( rv_iommu::BOTH          ),
         .N_INT_VEC       ( 4                       ),
         .N_IOHPMCTR      ( 8                       ),
-        .ADDR_WIDTH      ( Cfg.AddrWidth           ),
+        .ADDR_WIDTH      ( 56                      ),
         .DATA_WIDTH      ( Cfg.AxiDataWidth        ),
         .ID_WIDTH        ( Cfg.AxiMstIdWidth       ),
         .ID_SLV_WIDTH    ( AxiSlvIdWidth           ),
         .USER_WIDTH      ( Cfg.AxiUserWidth        ),
-        .aw_chan_t       ( axi_mst_aw_chan_t       ),
-        .w_chan_t        ( axi_mst_w_chan_t        ),
-        .b_chan_t        ( axi_mst_b_chan_t        ),
-        .ar_chan_t       ( axi_mst_ar_chan_t       ),
-        .r_chan_t        ( axi_mst_r_chan_t        ),
-        .axi_req_t       ( axi_mst_req_t           ),
-        .axi_rsp_t       ( axi_mst_rsp_t           ),
-        .axi_req_slv_t   ( axi_slv_req_t           ),
-        .axi_rsp_slv_t   ( axi_slv_rsp_t           ),
+        .aw_chan_t       ( axi_mst_iommu_aw_chan_t ),
+        .w_chan_t        ( axi_mst_iommu_w_chan_t  ),
+        .b_chan_t        ( axi_mst_iommu_b_chan_t  ),
+        .ar_chan_t       ( axi_mst_iommu_ar_chan_t ),
+        .r_chan_t        ( axi_mst_iommu_r_chan_t  ),
+        .axi_req_t       ( axi_mst_iommu_req_t     ),
+        .axi_rsp_t       ( axi_mst_iommu_rsp_t     ),
+        .axi_req_slv_t   ( axi_slv_iommu_req_t     ),
+        .axi_rsp_slv_t   ( axi_slv_iommu_rsp_t     ),
         .axi_req_iommu_t ( axi_iommu_req_t         ),
         .reg_req_t       ( reg_req_t               ),
         .reg_rsp_t       ( reg_rsp_t               )
