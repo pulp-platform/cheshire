@@ -1669,6 +1669,9 @@ module cheshire_soc import cheshire_pkg::*; #(
       axi_iommu_ds_rsp = axi_in_rsp[AxiIn.iommu];
 
       // Programming interface
+      axi_iommu_cfg_req.aw.user = Cfg.AxiUserDefault;
+      axi_iommu_cfg_req.w.user  = Cfg.AxiUserDefault;
+      axi_iommu_cfg_req.ar.user = Cfg.AxiUserDefault;
       axi_iommu_cfg_req.r_ready = axi_out_req[AxiOut.iommu].r_ready;
       axi_iommu_cfg_req.w_valid = axi_out_req[AxiOut.iommu].w_valid;
       axi_iommu_cfg_req.b_ready = axi_out_req[AxiOut.iommu].b_ready;
