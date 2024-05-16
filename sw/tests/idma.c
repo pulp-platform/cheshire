@@ -36,7 +36,7 @@
 
 int main(void) {
 
-    if(hart_id()!=0) wfi();
+    if (hart_id() != 0) wfi();
 
     fencei();
     set_iommu_bare();

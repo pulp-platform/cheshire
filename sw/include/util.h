@@ -25,11 +25,11 @@ static inline void fence() {
 static inline void fencei() {
     asm volatile("fence.i" ::: "memory");
 }
-/*
+
 static inline void wfi() {
     asm volatile("wfi" ::: "memory");
 }
-*/
+
 // Enables or disables M-mode timer interrupts.
 static inline void set_mtie(int enable) {
     if (enable)
