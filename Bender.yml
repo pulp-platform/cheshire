@@ -23,7 +23,7 @@ dependencies:
   common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           rev: f4d6406070 } # branch: master
   common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.0  }
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.6.2  }
-  cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: c423efc66c } # branch: astral-pulp-v1
+  cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: 2f0d702b58 } # branch: astral-pulp-v1
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
   redundancy_cells:         { git: "https://github.com/pulp-platform/redundancy_cells.git",       rev: "c37bdb47" } # branch: astral_rebase
