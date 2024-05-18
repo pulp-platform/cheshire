@@ -125,6 +125,7 @@ module cheshire_top_xilinx (
   wire soc_clk;
   logic eth_clk_125;
   logic eth_clk_90;
+  logic eth_clk_200;
 
   IBUFDS #(
     .IBUF_LOW_PWR ("FALSE")
@@ -138,7 +139,7 @@ module cheshire_top_xilinx (
     .clk_in1    ( sys_clk      ),
     .reset      ( '0           ),
     .locked     (              ),
-    .clk_200    (              ),
+    .clk_200    ( eth_clk_200  ),
     .clk_50     ( soc_clk      ),
     .clk_125    ( eth_clk_125  ),
     .clk_125_90 ( eth_clk_90   )
@@ -485,8 +486,9 @@ module cheshire_top_xilinx (
     .i2c_scl_o          ( i2c_scl_soc_out ),
     .i2c_scl_i          ( i2c_scl_soc_in  ),
     .i2c_scl_en_o       ( i2c_scl_en      ),
-    .eth_clk_125        ( eth_clk_125 ),
-    .eth_clk_90         ( eth_clk_90  ),
+    .eth_clk125_i       ( eth_clk_125 ),
+    .eth_clk125q_i      ( eth_clk_90  ),
+    .eth_clk200_i       ( eth_clk_200 ),
     .eth_rxck_i         ( eth_rxck    ),
     .eth_rxd_i          ( eth_rxd     ),
     .eth_rxctl_i        ( eth_rxctl   ),
