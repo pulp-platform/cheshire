@@ -29,6 +29,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   input  logic [1:0]  boot_mode_i,
   input  logic        rtc_i,
   input  logic        eth_clk125_i,
+  input  logic        eth_clk125q_i,
   input  logic        eth_clk200_i,
   // External AXI LLC (DRAM) port
   output axi_ext_llc_req_t axi_llc_mst_req_o,
@@ -1312,7 +1313,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     ) i_tx_eth_idma_wrap (
       .clk_i,
       .rst_ni, 
-      .eth_clk_i           ( eth_clk125_i ),
+      .eth_clk125_i        ( eth_clk125_i ),
+      .eth_clk125q_i       ( eth_clk125q_i),
       .eth_clk200_i        ( eth_clk200_i ),
       .phy_rx_clk_i        ( eth_rxck_i   ),
       .phy_rxd_i           ( eth_rxd_i    ),

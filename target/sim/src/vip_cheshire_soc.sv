@@ -21,7 +21,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter time          ClkPeriodSys      = 5ns,
   parameter time          ClkPeriodJtag     = 20ns,
   parameter time          ClkPeriodRtc      = 30518ns,
-  parameter time          ClkPeriodEth125   = 8ns,
+  parameter time          ClkPeriodEth      = 8ns,
   parameter int unsigned  RstCycles         = 5,
   parameter real          TAppl             = 0.1,
   parameter real          TTest             = 0.9,
@@ -70,7 +70,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   inout  wire [SpihNumCs-1:0] spih_csb,
   inout  wire [ 3:0]          spih_sd,
   // Ethernet interface
-  output logic                eth_clk_125,
+  output logic                eth_clk125,
+  output logic                eth_clk125q,
   input  logic [ 3:0]         eth_txd,
   output logic [ 3:0]         eth_rxd,
   input  logic                eth_txck,
@@ -653,7 +654,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   ) i_rx_eth_idma_wrap (
     .clk_i               ( clk             ),
     .rst_ni              ( rst_n           ),  
-    .eth_clk_i           ( eth_clk_125     ),
+    .eth_clk125_i        ( eth_clk125      ),
+    .eth_clk125q_i       ( eth_clk125q     ),
     .phy_rx_clk_i        ( eth_txck        ),
     .phy_rxd_i           ( eth_txd         ),
     .phy_rx_ctl_i        ( eth_txctl       ),
@@ -709,10 +711,21 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   
   initial begin
     forever begin
-    eth_clk_125 <= 0;
-    #(ClkPeriodEth125/2);
-    eth_clk_125 <= 1;
-    #(ClkPeriodEth125/2);
+    eth_clk125 <= 1;
+    #(ClkPeriodEth/2);
+    eth_clk125 <= 0;
+    #(ClkPeriodEth/2);
+    end
+  end
+
+  initial begin
+    forever begin
+    eth_clk125q <= 0;
+    #(ClkPeriodEth/4);
+    eth_clk125q <= 1;
+    #(ClkPeriodEth/2);
+    eth_clk125q <= 0;
+    #(ClkPeriodEth/4);
     end
   end
 
