@@ -71,7 +71,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   inout  wire [ 3:0]          spih_sd,
   // Ethernet interface
   output logic                eth_clk_125,
-  output logic                eth_clk_90,
   input  logic [ 3:0]         eth_txd,
   output logic [ 3:0]         eth_rxd,
   input  logic                eth_txck,
@@ -654,8 +653,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   ) i_rx_eth_idma_wrap (
     .clk_i               ( clk             ),
     .rst_ni              ( rst_n           ),  
-    .eth_clk125_i        ( eth_clk_125     ),
-    .eth_clk125q_i       ( eth_clk_90      ),
+    .eth_clk_i           ( eth_clk_125     ),
     .phy_rx_clk_i        ( eth_txck        ),
     .phy_rxd_i           ( eth_txd         ),
     .phy_rx_ctl_i        ( eth_txctl       ),
@@ -715,17 +713,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     #(ClkPeriodEth125/2);
     eth_clk_125 <= 1;
     #(ClkPeriodEth125/2);
-    end
-  end
-
-  initial begin
-    forever begin
-    eth_clk_90 <= 0;
-    #(ClkPeriodEth125/4);
-    eth_clk_90 <= 1;
-    #(ClkPeriodEth125/2);
-    eth_clk_90 <= 0;
-    #(ClkPeriodEth125/4);
     end
   end
 
@@ -1121,7 +1108,7 @@ module vip_cheshire_soc_tristate import cheshire_pkg::*; (
   inout  wire [SpihNumCs-1:0] spih_csb,
   inout  wire [ 3:0]          spih_sd,
   // Ethernet wires
-  input  wire                 eth_mdio
+  inout  wire                 eth_mdio
 );
 
   // I2C

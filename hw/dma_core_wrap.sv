@@ -15,21 +15,27 @@
 `include "register_interface/typedef.svh"
 
 module dma_core_wrap #(
-  parameter int unsigned AxiAddrWidth     = 32'd0,
-  parameter int unsigned AxiDataWidth     = 32'd0,
-  parameter int unsigned AxiIdWidth       = 32'd0,
-  parameter int unsigned AxiUserWidth     = 32'd0,
-  parameter int unsigned AxiSlvIdWidth    = 32'd0,
-  parameter int unsigned TFLenWidth       = 32'd0,
-  parameter int unsigned NumAxInFlight    = 32'd0,
-  parameter int unsigned MemSysDepth      = 32'd0,
-  parameter int unsigned JobFifoDepth     = 32'd0,
-  parameter bit          RAWCouplingAvail = 32'd0,
-  parameter bit          IsTwoD           = 32'd0,
-  parameter type         axi_mst_req_t    = logic,
-  parameter type         axi_mst_rsp_t    = logic,
-  parameter type         axi_slv_req_t    = logic,
-  parameter type         axi_slv_rsp_t    = logic
+  parameter int unsigned AxiAddrWidth      = 32'd0,
+  parameter int unsigned AxiDataWidth      = 32'd0,
+  parameter int unsigned AxiIdWidth        = 32'd0,
+  parameter int unsigned AxiUserWidth      = 32'd0,
+  parameter int unsigned AxiSlvIdWidth     = 32'd0,
+  parameter int unsigned TFLenWidth        = 32'd0,
+  parameter int unsigned NumAxInFlight     = 32'd0,
+  parameter int unsigned MemSysDepth       = 32'd0,
+  parameter int unsigned JobFifoDepth      = 32'd0,
+  parameter bit          EnableAxiCut      = 1'b1,
+  parameter bit          RAWCouplingAvail  = 32'd0,
+  parameter bit          IsTwoD            = 32'd0,
+  parameter type         axi_mst_aw_chan_t = logic,
+  parameter type         axi_mst_ar_chan_t = logic,
+  parameter type         axi_mst_w_chan_t  = logic,
+  parameter type         axi_mst_r_chan_t  = logic,
+  parameter type         axi_mst_b_chan_t  = logic,
+  parameter type         axi_mst_req_t     = logic,
+  parameter type         axi_mst_rsp_t     = logic,
+  parameter type         axi_slv_req_t     = logic,
+  parameter type         axi_slv_rsp_t     = logic
 ) (
   input  logic          clk_i,
   input  logic          rst_ni,
@@ -113,8 +119,8 @@ module dma_core_wrap #(
   idma_pkg::idma_busy_t busy;
   logic me_busy;
   // internal AXI channels
-  axi_mst_req_t axi_read_req, axi_write_req;
-  axi_mst_rsp_t axi_read_rsp, axi_write_rsp;
+  axi_mst_req_t axi_read_req, axi_write_req, axi_cut_req;
+  axi_mst_rsp_t axi_read_rsp, axi_write_rsp, axi_cut_rsp;
 
   axi_to_reg #(
     .ADDR_WIDTH( AxiAddrWidth     ),
@@ -323,11 +329,29 @@ module dma_core_wrap #(
   ) i_axi_rw_join (
    .clk_i,
    .rst_ni,
-   .slv_read_req_i   ( axi_read_req    ),
-   .slv_read_resp_o  ( axi_read_rsp    ),
-   .slv_write_req_i  ( axi_write_req   ),
-   .slv_write_resp_o ( axi_write_rsp   ),
-   .mst_req_o        ( axi_mst_req_o   ),
-   .mst_resp_i       ( axi_mst_rsp_i   )
+   .slv_read_req_i   ( axi_read_req  ),
+   .slv_read_resp_o  ( axi_read_rsp  ),
+   .slv_write_req_i  ( axi_write_req ),
+   .slv_write_resp_o ( axi_write_rsp ),
+   .mst_req_o        ( axi_cut_req   ),
+   .mst_resp_i       ( axi_cut_rsp   )
+  );
+
+  axi_cut #(
+    .Bypass     ( ~EnableAxiCut ),
+    .aw_chan_t  ( axi_mst_aw_chan_t ),
+    .w_chan_t   ( axi_mst_w_chan_t  ),
+    .b_chan_t   ( axi_mst_b_chan_t  ),
+    .ar_chan_t  ( axi_mst_ar_chan_t ),
+    .r_chan_t   ( axi_mst_r_chan_t  ),
+    .axi_req_t  ( axi_mst_req_t ),
+    .axi_resp_t ( axi_mst_rsp_t )
+  ) i_axi_cut (
+    .clk_i,
+    .rst_ni,
+    .slv_req_i  ( axi_cut_req ),
+    .slv_resp_o ( axi_cut_rsp ),
+    .mst_req_o  ( axi_mst_req_o ),
+    .mst_resp_i ( axi_mst_rsp_i )
   );
 endmodule

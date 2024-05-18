@@ -28,8 +28,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   input  logic        test_mode_i,
   input  logic [1:0]  boot_mode_i,
   input  logic        rtc_i,
-  input  logic        eth_clk_125,
-  input  logic        eth_clk_90, 
+  input  logic        eth_clk125_i,
+  input  logic        eth_clk200_i,
   // External AXI LLC (DRAM) port
   output axi_ext_llc_req_t axi_llc_mst_req_o,
   input  axi_ext_llc_rsp_t axi_llc_mst_rsp_i,
@@ -1379,7 +1379,6 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   end
 
-
   ////////////////
   //  ETHERNET  //
   ////////////////
@@ -1396,22 +1395,22 @@ module cheshire_soc import cheshire_pkg::*; #(
     ) i_tx_eth_idma_wrap (
       .clk_i,
       .rst_ni, 
-      .eth_clk125_i        ( eth_clk_125 ),
-      .eth_clk125q_i       ( eth_clk_90  ),
-      .phy_rx_clk_i        ( eth_rxck_i  ),
-      .phy_rxd_i           ( eth_rxd_i   ),
-      .phy_rx_ctl_i        ( eth_rxctl_i ),
-      .phy_tx_clk_o        ( eth_txck_o  ),
-      .phy_txd_o           ( eth_txd_o   ),
-      .phy_tx_ctl_o        ( eth_txctl_o ),
-      .phy_resetn_o        ( eth_rstn_o  ),  
-      .phy_intn_i          ( 1'b1        ),
-      .phy_pme_i           ( 1'b1        ),
-      .phy_mdio_i          ( eth_mdio_i  ),
-      .phy_mdio_o          ( eth_mdio_o  ),
-      .phy_mdio_oe         ( eth_mdio_oe ),
-      .phy_mdc_o           ( eth_mdc_o   ), 
-      .testmode_i          ( 1'b0        ),
+      .eth_clk_i           ( eth_clk125_i ),
+      .eth_clk200_i        ( eth_clk200_i ),
+      .phy_rx_clk_i        ( eth_rxck_i   ),
+      .phy_rxd_i           ( eth_rxd_i    ),
+      .phy_rx_ctl_i        ( eth_rxctl_i  ),
+      .phy_tx_clk_o        ( eth_txck_o   ),
+      .phy_txd_o           ( eth_txd_o    ),
+      .phy_tx_ctl_o        ( eth_txctl_o  ),
+      .phy_resetn_o        ( eth_rstn_o   ),  
+      .phy_intn_i          ( 1'b1         ),
+      .phy_pme_i           ( 1'b1         ),
+      .phy_mdio_i          ( eth_mdio_i   ),
+      .phy_mdio_o          ( eth_mdio_o   ),
+      .phy_mdio_oe         ( eth_mdio_oe  ),
+      .phy_mdc_o           ( eth_mdc_o    ), 
+      .testmode_i          ( testmode_i   ),
       .axi_req_o           ( axi_in_req[AxiIn.eth]        ),
       .axi_rsp_i           ( axi_in_rsp[AxiIn.eth]        ),
       .reg_req_i           ( reg_out_req[RegOut.ethernet] ),
