@@ -126,6 +126,36 @@ set_property -dict { PACKAGE_PIN T30   IOSTANDARD LVCMOS33 } [get_ports { sd_d_i
 set_property -dict { PACKAGE_PIN AE24  IOSTANDARD LVCMOS33 } [get_ports { sd_reset_o }]; #IO_L12N_T1_MRCC_12 Sch=sd_reset
 set_property -dict { PACKAGE_PIN R28   IOSTANDARD LVCMOS33 } [get_ports { sd_sclk_o }]; #IO_L11P_T1_SRCC_14 Sch=sd_sclk
 
+# Ethernet
+set_property -dict {PACKAGE_PIN A25 IOSTANDARD LVCMOS18} [get_ports { eth_rxd[0] }]; #IO_L21N_T3_DQS_33 Sch=eth_rx_d[0]
+set_property -dict {PACKAGE_PIN E26 IOSTANDARD LVCMOS18} [get_ports { eth_rxd[1] }]; #IO_L21P_T3_DQS_33 Sch=eth_rx_d[1]
+set_property -dict {PACKAGE_PIN F26 IOSTANDARD LVCMOS18} [get_ports { eth_rxd[2] }]; #IO_L20N_T3_33 Sch=eth_rx_d[2]
+set_property -dict {PACKAGE_PIN E25 IOSTANDARD LVCMOS18} [get_ports { eth_rxd[3] }]; #IO_L22P_T3_33 Sch=eth_rx_d[3]
+set_property -dict {PACKAGE_PIN A26 IOSTANDARD LVCMOS18} [get_ports { eth_rxctl }]; #IO_L18P_T2_33 Sch=eth_rx_ctl
+set_property -dict {PACKAGE_PIN F25 IOSTANDARD LVCMOS18} [get_ports { eth_rxck }]; #IO_L13P_T2_MRCC_33 Sch=eth_rx_clk
+set_property -dict {PACKAGE_PIN H27 IOSTANDARD LVCMOS18} [get_ports { eth_txd[0] }]; #IO_L22N_T3_33 Sch=eth_tx_d[0]
+set_property -dict {PACKAGE_PIN H26 IOSTANDARD LVCMOS18} [get_ports { eth_txd[1] }]; #IO_L17P_T2_33 Sch=eth_tx_d[1]
+set_property -dict {PACKAGE_PIN E30 IOSTANDARD LVCMOS18} [get_ports { eth_txd[2] }]; #IO_L18N_T2_33 Sch=eth_tx_d[2]
+set_property -dict {PACKAGE_PIN E29 IOSTANDARD LVCMOS18} [get_ports { eth_txd[3] }]; #IO_L17N_T2_33 Sch=eth_tx_d[3]
+set_property -dict {PACKAGE_PIN G30 IOSTANDARD LVCMOS18} [get_ports { eth_txctl }]; #IO_L20P_T3_33 Sch=eth_tx_en
+set_property -dict {PACKAGE_PIN C29 IOSTANDARD LVCMOS18} [get_ports { eth_txck }]; #IO_L14P_T2_SRCC_33 Sch=eth_tx_clk
+set_property -dict {PACKAGE_PIN C27 IOSTANDARD LVCMOS18} [get_ports { eth_mdio }]; #IO_L23N_T3_33 Sch=eth_mdio
+set_property -dict {PACKAGE_PIN G20 IOSTANDARD LVCMOS18} [get_ports { eth_mdc }]; #IO_L23P_T3_33 Sch=eth_mdc
+#set_property -dict {PACKAGE_PIN H30  IOSTANDARD LVCMOS18} [get_ports { eth_int_b }]; #IO_L1P_T0_32 Sch=eth_intb
+#set_property -dict {PACKAGE_PIN B29  IOSTANDARD LVCMOS18} [get_ports { eth_pme_b }]; #IO_L1N_T0_32 Sch=eth_pmeb
+set_property -dict {PACKAGE_PIN D27 IOSTANDARD LVCMOS18} [get_ports { eth_rst_n }]; #IO_L14N_T2_SRCC_12 Sch=eth_phyrst_n
+
+#############################################
+# Ethernet Constraints for 1Gb/s
+#############################################
+# Modified for 125MHz receive clock
+create_clock -period 8.000 -name eth_rxck [get_ports eth_rxck]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets eth_rxck_IBUF] 
+
+set_clock_groups -asynchronous -group [get_clocks eth_rxck -include_generated_clocks]
+set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins i_clkwiz/clk_125]]
+
+
 # VGA Connector
 set_property -dict { PACKAGE_PIN AH20  IOSTANDARD LVCMOS33 } [get_ports { vga_blue_o[0] }]; #IO_L22N_T3_12 Sch=vga_b[3]
 set_property -dict { PACKAGE_PIN AG20  IOSTANDARD LVCMOS33 } [get_ports { vga_blue_o[1] }]; #IO_L22P_T3_12 Sch=vga_b[4]
