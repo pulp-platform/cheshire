@@ -354,4 +354,5 @@ module dma_core_wrap #(
     .mst_req_o  ( axi_mst_req_o ),
     .mst_resp_i ( axi_mst_rsp_i )
   );
+  
 endmodule
