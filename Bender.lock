@@ -18,7 +18,7 @@ packages:
     revision: 9402c8a9ce0a7b5253c3c29e788612d771e8b5d6
     version: 0.39.3
     source:
-      Git: https://github.com/pulp-platform/axi
+      Git: https://github.com/pulp-platform/axi.git
     dependencies:
     - common_cells
     - common_verification
@@ -27,7 +27,7 @@ packages:
     revision: 4deb8c6281c74b3882846ad933f42a8c6568cbe0
     version: null
     source:
-      Git: https://github.com/pulp-platform/axi_llc
+      Git: https://github.com/pulp-platform/axi_llc.git
     dependencies:
     - axi
     - common_cells
@@ -121,20 +121,7 @@ packages:
     - axi
     - common_cells
     - fpnew
-    - redundancy_cells
     - tech_cells_generic
-  ethernet:
-    revision: ca7feb6e5722aaec7bdb6d71d4cfddfe58f18afd
-    version: null
-    source:
-      Git: https://github.com/pulp-platform/pulp-ethernet.git
-    dependencies:
-    - axi
-    - axi_stream
-    - common_cells
-    - common_verification
-    - idma
-    - register_interface
   fpnew:
     revision: f231041c610f270ffc03cbdac38739ddb6426572
     version: null
@@ -192,12 +179,14 @@ packages:
     revision: c44ff73521186d2bc1dd77a17664539a3b3e2406
     version: null
     source:
-      Git: https://github.com/pulp-platform/redundancy_cells.git
+      Git: https://github.com/pulp-platform/pulp-ethernet.git
     dependencies:
+    - axi
+    - axi_stream
     - common_cells
     - common_verification
+    - idma
     - register_interface
-    - tech_cells_generic
   register_interface:
     revision: ae616e5a1ec2b41e72d200e5ab09c65e94aebd3d
     version: 0.4.4
@@ -225,17 +214,6 @@ packages:
     - axi
     - common_cells
     - register_interface
-  tagger:
-    revision: b288376b65b6bbd5feea196bb3c220f783d96e29
-    version: null
-    source:
-      Git: https://github.com/pulp-platform/transaction-tagger.git
-    dependencies:
-    - axi
-    - common_cells
-    - common_verification
-    - register_interface
-    - tech_cells_generic
   tech_cells_generic:
     revision: 7968dd6e6180df2c644636bc6d2908a49f2190cf
     version: 0.2.13
