@@ -123,9 +123,6 @@ extern "C" {
 #define CHESHIRE_VGA_PARAMS_BLUE_WIDTH_FIELD \
   ((bitfield_field32_t) { .mask = CHESHIRE_VGA_PARAMS_BLUE_WIDTH_MASK, .index = CHESHIRE_VGA_PARAMS_BLUE_WIDTH_OFFSET })
 
-// Available harts' synchronization request.
-#define CHESHIRE_HARTS_SYNC_REG_OFFSET 0x5c
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif

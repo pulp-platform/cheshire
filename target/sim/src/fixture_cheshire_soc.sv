@@ -128,7 +128,7 @@ module fixture_cheshire_soc #(
     .i2c_scl_o          ( i2c_scl_o  ),
     .i2c_scl_i          ( i2c_scl_i  ),
     .i2c_scl_en_o       ( i2c_scl_en ),
-    .eth_clk_i          ( eth_clk_125 ),
+    .eth_clk125_i       ( eth_clk_125 ),
     .eth_rxck_i         ( eth_rxck    ),
     .eth_rxd_i          ( eth_rxd     ),
     .eth_rxctl_i        ( eth_rxctl   ),

@@ -11,16 +11,11 @@ BENDER ?= bender
 VLOG_ARGS ?= -suppress 2583 -suppress 13314
 VSIM      ?= vsim
 
-MAXPARTITION 	?= 16
-CACHE_PARTITION ?= 1
-
-
 # Define used paths (prefixed to avoid name conflicts)
 CHS_ROOT      ?= $(shell $(BENDER) path cheshire)
 CHS_REG_DIR   := $(shell $(BENDER) path register_interface)
 CHS_SLINK_DIR := $(shell $(BENDER) path serial_link)
 CHS_LLC_DIR   := $(shell $(BENDER) path axi_llc)
-CHS_TAGGER_DIR := $(shell $(BENDER) path tagger)
 
 # Define paths used in dependencies
 OTPROOT      := $(shell $(BENDER) path opentitan_peripherals)
@@ -28,7 +23,7 @@ CLINTROOT    := $(shell $(BENDER) path clint)
 AXIRTROOT    := $(shell $(BENDER) path axi_rt)
 AXI_VGA_ROOT := $(shell $(BENDER) path axi_vga)
 IDMA_ROOT    := $(shell $(BENDER) path idma)
-ETH_ROOT     := $(shell $(BENDER) path ethernet)
+ETH_ROOT     := $(shell $(BENDER) path pulp-ethernet)
 
 REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
 
@@ -49,11 +44,6 @@ ifeq ($(shell test -f $(BENDER_ROOT)/.chs_deps && echo 1),)
 -include $(BENDER_ROOT)/.chs_deps
 endif
 
-#idma-gen:
-#	make -C $(IDMA_ROOT) idma_hw_all   
-#	make -C $(IDMA_ROOT) target/rtl/idma_reg64_2d.hjson
-#	make -C $(ETH_ROOT) eth-gen
-
 # Running this target will reset dependencies (without updating the checked-in Bender.lock)
 chs-clean-deps:
 	rm -rf .bender
@@ -64,7 +54,7 @@ chs-clean-deps:
 ######################
 
 CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-CHS_NONFREE_COMMIT ?= d0a0c9a # branch: astral
+CHS_NONFREE_COMMIT ?= 99973e8
 
 chs-nonfree-init:
 	git clone $(CHS_NONFREE_REMOTE) $(CHS_ROOT)/nonfree
@@ -114,16 +104,6 @@ $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
 	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs BENDER="$(BENDER)" && touch $@
 
-# LLC partitioning configuration
-$(CHS_LLC_DIR)/.generated:
-	$(MAKE) -C $(CHS_LLC_DIR) REGWIDTH=64 CACHENUMLINES=256 MAXPARTITION=$(MAXPARTITION) CACHE_PARTITION=$(CACHE_PARTITION) regs
-	@touch $@
-
-# Tagger configuration
-$(CHS_TAGGER_DIR)/.generated:
-	$(MAKE) -C $(CHS_TAGGER_DIR) REGWIDTH=32 MAXPARTITION=$(MAXPARTITION) PATID_LEN=5 regs
-	@touch $@
-
 # iDMA
 $(IDMA_ROOT)/.generated: $(IDMA_ROOT)/target/rtl/idma_reg64_2d.hjson
 	flock -x $@ sh -c "cp $< $(dir $@)/target/rtl/; $(MAKE) -j1 otp" && touch $@
@@ -134,8 +114,6 @@ CHS_HW_ALL += $(OTPROOT)/.generated
 CHS_HW_ALL += $(AXIRTROOT)/.generated
 CHS_HW_ALL += $(AXI_VGA_ROOT)/.generated
 CHS_HW_ALL += $(CHS_SLINK_DIR)/.generated
-CHS_HW_ALL += $(CHS_LLC_DIR)/.generated
-CHS_HW_ALL += $(CHS_TAGGER_DIR)/.generated
 
 #####################
 # Generate Boot ROM #

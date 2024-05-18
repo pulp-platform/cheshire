@@ -15,19 +15,19 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: ac5deb3ff086aa34b168f392c051e92603d6c0e2
-    version: 0.39.2
+    revision: 9402c8a9ce0a7b5253c3c29e788612d771e8b5d6
+    version: 0.39.3
     source:
-      Git: https://github.com/pulp-platform/axi
+      Git: https://github.com/pulp-platform/axi.git
     dependencies:
     - common_cells
     - common_verification
     - tech_cells_generic
   axi_llc:
-    revision: d79a00b8673b814efacbbe9bf106103407fc401b
-    version: null
+    revision: 559bcbd09a5a884dbe31e2d72fd95d024e357f39
+    version: 0.2.1
     source:
-      Git: https://github.com/pulp-platform/axi_llc
+      Git: https://github.com/pulp-platform/axi_llc.git
     dependencies:
     - axi
     - common_cells
@@ -35,8 +35,8 @@ packages:
     - register_interface
     - tech_cells_generic
   axi_riscv_atomics:
-    revision: 6a85f44fdb1fe93162de7241476bba81e2247cb5
-    version: null
+    revision: 0ac3a78fe342c5a5b9b10bff49d58897f773059e
+    version: 0.8.2
     source:
       Git: https://github.com/pulp-platform/axi_riscv_atomics.git
     dependencies:
@@ -52,16 +52,9 @@ packages:
     - axi
     - common_cells
     - register_interface
-  axi_vga:
-    revision: 3718b9930f94a9eaad8ee50b4bccc71df0403084
-    version: 0.1.3
-    source:
-      Git: https://github.com/pulp-platform/axi_stream.git
-    dependencies:
-    - common_cells
-  axi_vga:
-    revision: 3718b9930f94a9eaad8ee50b4bccc71df0403084
-    version: 0.1.3
+  axi_stream:
+    revision: 54891ff40455ca94a37641b9da4604647878cc07
+    version: 0.1.1
     source:
       Git: https://github.com/pulp-platform/axi_stream.git
     dependencies:
@@ -76,8 +69,8 @@ packages:
     - common_cells
     - register_interface
   clic:
-    revision: bf6032e1ea30f3a502aa85906520dece53626eb9
-    version: 3.0.0-rc4
+    revision: 8ed76ffc779a435d0ed034f3068e4c3334fe2ecf
+    version: 2.0.0
     source:
       Git: https://github.com/pulp-platform/clic.git
     dependencies:
@@ -106,7 +99,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: dbaecc59b99e3bb4d89fed546d75080f39bfe4f1
+    revision: 9338c2ca7cf1a47aef54322f89ce867825c3c8d5
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -114,20 +107,7 @@ packages:
     - axi
     - common_cells
     - fpnew
-    - redundancy_cells
     - tech_cells_generic
-  ethernet:
-    revision: ca7feb6e5722aaec7bdb6d71d4cfddfe58f18afd
-    version: null
-    source:
-      Git: https://github.com/pulp-platform/pulp-ethernet.git
-    dependencies:
-    - axi
-    - axi_stream
-    - common_cells
-    - common_verification
-    - idma
-    - register_interface
   fpnew:
     revision: f231041c610f270ffc03cbdac38739ddb6426572
     version: null
@@ -144,8 +124,8 @@ packages:
     dependencies:
     - common_cells
   idma:
-    revision: 88fbe67d8350b4de5ceb3673073bc216b8d585b7
-    version: null
+    revision: 95f366e56f7e772c283fb3c8b343afc4a3978375
+    version: 0.6.2
     source:
       Git: https://github.com/pulp-platform/iDMA.git
     dependencies:
@@ -154,16 +134,6 @@ packages:
     - common_cells
     - common_verification
     - obi
-    - idma_gen
-    - register_interface
-  idma_gen:
-    revision: null
-    version: null
-    source:
-      Path: .bender/git/checkouts/idma-77bf7fa56d324e6a/target/rtl
-    dependencies:
-    - axi
-    - common_cells
     - register_interface
   irq_router:
     revision: d1d31350b24f3965b3a51e1bc96c71eb34e94db3
@@ -191,16 +161,18 @@ packages:
     - common_cells
     - register_interface
     - tech_cells_generic
-  redundancy_cells:
-    revision: c37bdb47339bf70e8323de8df14ea8bbeafb6583
+  pulp-ethernet:
+    revision: bf5fc0055a4d3258361e38ee977566fa312570f0
     version: null
     source:
-      Git: https://github.com/pulp-platform/redundancy_cells.git
+      Git: https://github.com/pulp-platform/pulp-ethernet.git
     dependencies:
+    - axi
+    - axi_stream
     - common_cells
     - common_verification
+    - idma
     - register_interface
-    - tech_cells_generic
   register_interface:
     revision: ae616e5a1ec2b41e72d200e5ab09c65e94aebd3d
     version: 0.4.4
@@ -228,17 +200,6 @@ packages:
     - axi
     - common_cells
     - register_interface
-  tagger:
-    revision: b288376b65b6bbd5feea196bb3c220f783d96e29
-    version: null
-    source:
-      Git: https://github.com/pulp-platform/transaction-tagger.git
-    dependencies:
-    - axi
-    - common_cells
-    - common_verification
-    - register_interface
-    - tech_cells_generic
   tech_cells_generic:
     revision: 7968dd6e6180df2c644636bc6d2908a49f2190cf
     version: 0.2.13
