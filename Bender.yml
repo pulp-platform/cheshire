@@ -32,7 +32,7 @@ dependencies:
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.1  }
   tagger:                   { git: "https://github.com/pulp-platform/transaction-tagger.git",     rev: b288376    }
   unbent:                   { git: "https://github.com/pulp-platform/unbent.git",                 version: 0.1.6  }
-  riscv-iommu:              { git: "https://github.com/maicolciani/riscv-iommu.git",              rev: 6011f133a  } # branch: mc/axi-alignment
+  riscv-iommu:              { git: "https://github.com/zero-day-labs/riscv-iommu.git",            rev: 4df936787  } # branch: pulp
 
 export_include_dirs:
   - hw/include
