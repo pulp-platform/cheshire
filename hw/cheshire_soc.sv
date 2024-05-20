@@ -1751,10 +1751,10 @@ module cheshire_soc import cheshire_pkg::*; #(
         .ds_resp_i       ( axi_iommu_ds_rsp      ),
         .ds_req_o        ( axi_iommu_ds_req      ),
         // Programming Interface (Slave)
-        .prog_req_i      ( axi_iommu_cfg_req      ),
-        .prog_resp_o     ( axi_iommu_cfg_rsp      ),
+        .prog_req_i      ( axi_iommu_cfg_req     ),
+        .prog_resp_o     ( axi_iommu_cfg_rsp     ),
         // Interrupts
-        .wsi_wires_o     (  )
+        .wsi_wires_o     ( intr.intn.iommu       )
     );
 
   end else begin : gen_no_iommu

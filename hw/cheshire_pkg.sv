@@ -227,6 +227,7 @@ package cheshire_pkg;
   // Defined interrupts
   typedef struct packed {
     cheshire_bus_err_intr_t bus_err;
+    logic [3:0] iommu;
     logic [31:0] gpio;
     logic spih_spi_event;
     logic spih_error;
