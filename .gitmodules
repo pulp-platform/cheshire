@@ -8,5 +8,5 @@
 	ignore = dirty
 [submodule "sw/deps/rv_iommu"]
 	path = sw/deps/rv_iommu
-	url = git@github.com:zero-day-labs/riscv-iommu-tests.git
+	url = https://github.com/zero-day-labs/riscv-iommu-tests.git
 	branch = pulp
