@@ -41,12 +41,26 @@ CHS_SW_DEPS_INCS += -I$(CHS_LLC_DIR)/sw/include
 CHS_SW_DEPS_INCS += -I$(AXIRTROOT)/sw/lib
 CHS_SW_DEPS_INCS += -I$(OTPROOT)
 CHS_SW_DEPS_INCS += -I$(OTPROOT)/sw/include
+CHS_SW_DEPS_INCS += -I$(CHS_SW_DIR)/deps/rv_iommu_tests/platform/cva6/inc
+CHS_SW_DEPS_INCS += -I$(CHS_SW_DIR)/deps/rv_iommu_tests/inc
 CHS_SW_DEPS_SRCS  = $(CHS_SW_DIR)/deps/printf/printf.c
 CHS_SW_DEPS_SRCS += $(CHS_LLC_DIR)/sw/lib/axi_llc_reg32.c
 CHS_SW_DEPS_SRCS += $(AXIRTROOT)/sw/lib/axirt.c
 CHS_SW_DEPS_SRCS += $(wildcard $(OTPROOT)/sw/device/lib/base/*.c)
 CHS_SW_DEPS_SRCS += $(wildcard $(OTPROOT)/sw/device/lib/dif/*.c)
 CHS_SW_DEPS_SRCS += $(wildcard $(OTPROOT)/sw/device/lib/dif/autogen/*.c)
+CHS_SW_DEPS_SRCS += $(CHS_LLC_DIR)/sw/lib/axi_llc_reg32.c
+CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/rv_iommu_tests/command_queue.c
+CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/rv_iommu_tests/dbg_if.c
+CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/rv_iommu_tests/device_contexts.c
+CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/rv_iommu_tests/fault_queue.c
+CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/rv_iommu_tests/idma.c
+CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/rv_iommu_tests/iommu_pts.c
+CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/rv_iommu_tests/iommu_tests.c
+CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/rv_iommu_tests/rv_iommu.c
+CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/rv_iommu_tests/main.c
+CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/rv_iommu_tests/msi_pts.c
+CHS_SW_DEPS_SRCS += $(CHS_SW_DIR)/deps/rv_iommu_tests/rvh_test.c
 
 #############
 # Libraries #
