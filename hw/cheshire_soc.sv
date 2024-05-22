@@ -615,18 +615,18 @@ module cheshire_soc import cheshire_pkg::*; #(
   end
 
   cva6_wrap #(
-    .Cfg              ( Cfg                  ),
-    .Cva6Cfg          ( Cva6Cfg              ),
-    .NumHarts         ( NumIntHarts          ),
-    .reg_req_t        ( reg_req_t            ),
-    .reg_rsp_t        ( reg_rsp_t            ),
-    .axi_ar_chan_t    ( axi_cva6_ar_chan_t   ),
-    .axi_aw_chan_t    ( axi_cva6_aw_chan_t   ),
-    .axi_w_chan_t     ( axi_cva6_w_chan_t    ),
-    .b_chan_t         ( axi_cva6_b_chan_t    ),
-    .r_chan_t         ( axi_cva6_r_chan_t    ),
-    .axi_req_t        ( axi_cva6_req_t       ),
-    .axi_rsp_t        ( axi_cva6_rsp_t       )
+    .Cfg              ( Cfg                ),
+    .Cva6Cfg          ( Cva6Cfg            ),
+    .NumHarts         ( NumIntHarts        ),
+    .reg_req_t        ( reg_req_t          ),
+    .reg_rsp_t        ( reg_rsp_t          ),
+    .ar_chan_t        ( ariane_ace::ar_chan_t ),
+    .aw_chan_t        ( ariane_ace::aw_chan_t ),
+    .w_chan_t         ( ariane_ace::ariane_axi_w_chan_t  ),
+    .b_chan_t         ( ariane_ace::ariane_axi_b_chan_t  ),
+    .r_chan_t         ( ariane_ace::r_chan_t  ),
+    .core_req_t       ( ariane_ace::req_t     ),
+    .core_rsp_t       ( ariane_ace::resp_t    )
   ) i_core_wrap       (
     .clk_i            ( clk_i                           ),
     .rstn_i           ( rst_ni                          ),
@@ -649,8 +649,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .clic_kill_ack_o  ( clic_irq_kill_ack               ),
     .reg_req_i        ( reg_out_core_req                ),
     .reg_rsp_o        ( reg_out_core_rsp                ),
-    .axi_req_o        ( core_out_req                    ),
-    .axi_rsp_i        ( core_out_rsp                    )
+    .core_req_o       ( core_out_req                    ),
+    .core_rsp_i       ( core_out_rsp                    )
   );
 
   for (genvar i = 0; i < NumIntHarts; i++) begin : gen_core_surroundings

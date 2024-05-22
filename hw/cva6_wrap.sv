@@ -4,7 +4,7 @@
 //
 // Yvan Tortorella <yvan.tortorella@unibo.it>
 
-`include "axi/assign.svh"
+`include "ace/assign.svh"
 
 module cva6_wrap #(
   parameter cheshire_pkg::cheshire_cfg_t Cfg = '0,
@@ -13,13 +13,13 @@ module cva6_wrap #(
   parameter int unsigned ClicNumIrqs  = $clog2(Cva6Cfg.CLICNumInterruptSrc),
   parameter type reg_req_t = logic,
   parameter type reg_rsp_t = logic,
-  parameter type axi_ar_chan_t = logic,
-  parameter type axi_aw_chan_t = logic,
-  parameter type axi_w_chan_t  = logic,
+  parameter type ar_chan_t = logic,
+  parameter type aw_chan_t = logic,
+  parameter type w_chan_t  = logic,
   parameter type b_chan_t = logic,
   parameter type r_chan_t = logic,
-  parameter type axi_req_t = logic,
-  parameter type axi_rsp_t = logic
+  parameter type core_req_t = logic,
+  parameter type core_rsp_t = logic
 )(
   input  logic                                             clk_i,
   input  logic                                             rstn_i,
@@ -42,8 +42,8 @@ module cva6_wrap #(
   output logic             [NumHarts-1:0]                  clic_kill_ack_o,
   input  reg_req_t                                         reg_req_i,
   output reg_rsp_t                                         reg_rsp_o,
-  output axi_req_t         [NumHarts-1:0]                  axi_req_o,
-  input  axi_rsp_t         [NumHarts-1:0]                  axi_rsp_i
+  output core_req_t        [NumHarts-1:0]                  core_req_o,
+  input  core_rsp_t        [NumHarts-1:0]                  core_rsp_i
 );
 
 typedef struct packed {
@@ -61,7 +61,7 @@ typedef struct packed {
   logic  [5:0]             clic_irq_vsid;
   logic                    clic_irq_shv;
   logic                    clic_kill_req;
-  axi_rsp_t                axi_rsp;
+  core_rsp_t               core_rsp;
 } cva6_inputs_t;
 
 typedef struct packed {
@@ -74,7 +74,7 @@ logic                         cores_sync;
 logic          [NumHarts-1:0] core_setback;
 cva6_inputs_t  [NumHarts-1:0] sys2hmr, hmr2core;
 cva6_outputs_t [NumHarts-1:0] hmr2sys, core2hmr;
-axi_req_t [NumHarts-1:0] core2hmr_axi_req, hmr2sys_axi_req;
+core_req_t [NumHarts-1:0] core2hmr_core_req, hmr2sys_core_req;
 cheshire_pkg::doub_bt [NumHarts-1:0] core_bootaddress;
 
 for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
@@ -93,23 +93,25 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
   assign sys2hmr[i].clic_irq_vsid  = clic_irq_vsid_i[i];
   assign sys2hmr[i].clic_irq_shv   = clic_irq_shv_i[i];
   assign sys2hmr[i].clic_kill_req  = clic_kill_req_i[i];
-  `AXI_ASSIGN_RESP_STRUCT(sys2hmr[i].axi_rsp, axi_rsp_i[i]);
+  // `AXI_ASSIGN_RESP_STRUCT(sys2hmr[i].axi_rsp, core_rsp_i[i]);
+  `ACE_ASSIGN_RESP_STRUCT(sys2hmr[i].core_rsp, core_rsp_i[i])
 
   // Bind HMR outputs to system.
   assign clic_irq_ready_o[i] = hmr2sys[i].clic_irq_ready;
   assign clic_kill_ack_o[i]  = hmr2sys[i].clic_kill_ack;
 //  `AXI_ASSIGN_REQ_STRUCT(axi_req_o[i], hmr2sys[i].axi_req);
-  `AXI_ASSIGN_REQ_STRUCT(axi_req_o[i], hmr2sys_axi_req[i]);
+  // `AXI_ASSIGN_REQ_STRUCT(core_req_o[i], hmr2sys_axi_req[i]);
+  `ACE_ASSIGN_REQ_STRUCT(core_req_o[i], hmr2sys_core_req[i])
 
   cva6 #(
-    .CVA6Cfg       ( Cva6Cfg       ),
-    .axi_ar_chan_t ( axi_ar_chan_t ),
-    .axi_aw_chan_t ( axi_aw_chan_t ),
-    .axi_w_chan_t  ( axi_w_chan_t  ),
-    .b_chan_t      ( b_chan_t      ),
-    .r_chan_t      ( r_chan_t      ),
-    .noc_req_t     ( axi_req_t     ),
-    .noc_resp_t    ( axi_rsp_t     )
+    .CVA6Cfg       ( Cva6Cfg    ),
+    .axi_ar_chan_t ( ar_chan_t  ),
+    .axi_aw_chan_t ( aw_chan_t  ),
+    .axi_w_chan_t  ( w_chan_t   ),
+    .b_chan_t      ( b_chan_t   ),
+    .r_chan_t      ( r_chan_t   ),
+    .noc_req_t     ( core_req_t ),
+    .noc_resp_t    ( core_rsp_t )
   ) i_core_cva6    (
     .clk_i            ( clk_i                         ),
     .rst_ni           ( rstn_i                        ),
@@ -136,8 +138,8 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
     .rvfi_probes_o    (                               ),
     .cvxif_req_o      (                               ),
     .cvxif_resp_i     ( '0                            ),
-    .noc_req_o        ( core2hmr_axi_req[i]           ),
-    .noc_resp_i       ( hmr2core[i].axi_rsp           )
+    .noc_req_o        ( core2hmr_core_req[i]          ),
+    .noc_resp_i       ( hmr2core[i].core_rsp          )
   );
 end
 
@@ -159,7 +161,7 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     .nominal_outputs_t ( cva6_outputs_t    ),
     // .core_backup_t     ( '0 ), // TODO
     // .bus_outputs_t     ( '0 ), // TODO
-    .axi_req_t         ( axi_req_t ),
+    .axi_req_t         ( core_req_t ),
     .reg_req_t         ( reg_req_t ), // TODO
     .reg_rsp_t         ( reg_rsp_t ), // TODO
     .rapid_recovery_t  ( rapid_recovery_pkg::rapid_recovery_t ) // TODO
@@ -194,17 +196,17 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     .sys_inputs_i          ( sys2hmr       ),
     .sys_nominal_outputs_o ( hmr2sys       ),
     .sys_bus_outputs_o     (               ),
-    .sys_axi_outputs_o     ( hmr2sys_axi_req ),
+    .sys_axi_outputs_o     ( hmr2sys_core_req ),
     // CVA6 boot does not rely on fetch enable.
     .sys_fetch_en_i        ( '1            ),
     .enable_bus_vote_i     ( '0            ), // TODO?
 
-    .core_bootaddress_o     ( core_bootaddress ),
-    .core_setback_o         ( core_setback     ),
-    .core_inputs_o          ( hmr2core         ),
-    .core_nominal_outputs_i ( core2hmr         ),
-    .core_bus_outputs_i     ( '0               ), // TODO?
-    .core_axi_outputs_i     ( core2hmr_axi_req )
+    .core_bootaddress_o     ( core_bootaddress  ),
+    .core_setback_o         ( core_setback      ),
+    .core_inputs_o          ( hmr2core          ),
+    .core_nominal_outputs_i ( core2hmr          ),
+    .core_bus_outputs_i     ( '0                ), // TODO?
+    .core_axi_outputs_i     ( core2hmr_core_req )
   );
 
   /* We temporarily hardcode this for permanent lockstep.*/
