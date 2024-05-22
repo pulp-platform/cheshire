@@ -106,10 +106,10 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: f882fce339fabfd2279893b4415d86b42dec8920
+    revision: e7b52ae35e538bae3610718dff061990432c96f4
     version: null
     source:
-      Git: git@iis-git.ee.ethz.ch:github-mirror/cva6.git
+      Git: https://github.com/pulp-platform/cva6.git
     dependencies:
     - ace
     - axi
