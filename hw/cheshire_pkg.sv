@@ -530,7 +530,8 @@ package cheshire_pkg;
       NrCachedRegionRules   : 3,   // CachedSPM, LLCOut, ExtCIE
       CachedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart,  CieBase},
       CachedRegionLength    : {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength},
-      MaxOutstandingStores  : 0,
+      MaxOutstandingCachedStores : 0,
+      MaxOutstandingUncachedStores : 7,
       DebugEn               : 1,
       NonIdemPotenceEn      : 0,
       AxiBurstWriteEn       : 0
