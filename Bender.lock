@@ -22,8 +22,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: ac5deb3ff086aa34b168f392c051e92603d6c0e2
-    version: 0.39.2
+    revision: 9402c8a9ce0a7b5253c3c29e788612d771e8b5d6
+    version: 0.39.3
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -51,8 +51,8 @@ packages:
     - common_cells
     - common_verification
   axi_rt:
-    revision: 2be9d4028cd3fd6617a0302a53212495a4c4e3fa
-    version: 0.0.0-alpha.4
+    revision: 56074a195b1c8b05f4bdd73674e437bbcb35f2cd
+    version: 0.0.0-alpha.7
     source:
       Git: https://github.com/pulp-platform/axi_rt.git
     dependencies:
@@ -85,8 +85,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: 7773d971b9d7bef7f5f6a2ef36ee1e4d02cefcd3
-    version: 1.34.0
+    revision: 0d67563b6b592549542544f1abc0f43e5d4ee8b4
+    version: 1.35.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -99,10 +99,10 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: f882fce339fabfd2279893b4415d86b42dec8920
+    revision: e7b52ae35e538bae3610718dff061990432c96f4
     version: null
     source:
-      Git: git@iis-git.ee.ethz.ch:github-mirror/cva6.git
+      Git: https://github.com/pulp-platform/cva6.git
     dependencies:
     - ace
     - axi
