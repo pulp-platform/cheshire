@@ -754,7 +754,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   //      CCU      //
   ///////////////////
 
-  localparam CCUIdWidth = Cva6IdWidth + $clog2(NumIntHarts) + $clog2(NumIntHarts+1);
+  localparam CCUIdWidth = Cva6IdWidth + $clog2(NumIntHarts) + $clog2(NumIntHarts+1) + 1;
 
   ACE_BUS #(
     .AXI_ADDR_WIDTH ( Cfg.AddrWidth    ),

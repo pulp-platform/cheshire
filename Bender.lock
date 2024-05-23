@@ -1,9 +1,9 @@
 packages:
   ace:
-    revision: f919f5cabf41961321bf37327ab4eb726dfdbd0c
-    version: 0.1.0
+    revision: 9c9c764ae1107eea4f35ca5c271e471e91d4f4ef
+    version: null
     source:
-      Git: https://github.com/planvtech/ace.git
+      Git: https://github.com/pulp-platform/ace.git
     dependencies:
     - axi
   apb:
@@ -51,8 +51,8 @@ packages:
     - common_cells
     - common_verification
   axi_rt:
-    revision: 56074a195b1c8b05f4bdd73674e437bbcb35f2cd
-    version: 0.0.0-alpha.7
+    revision: 2be9d4028cd3fd6617a0302a53212495a4c4e3fa
+    version: 0.0.0-alpha.4
     source:
       Git: https://github.com/pulp-platform/axi_rt.git
     dependencies:
