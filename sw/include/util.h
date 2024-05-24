@@ -9,6 +9,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "params.h"
 
 static inline volatile uint8_t *reg8(void *base, int offs) {
     return (volatile uint8_t *)(base + offs);
@@ -100,10 +101,10 @@ static inline void enable_dcache() {
 
 // The following is for future DMR support
 // Wake up sleeping hart using CLINT
-// static inline void wakeup_hart(unsigned int hart_id) {
-//     *reg32(&__base_clint, 0x4*hart_id) = 0x1;
-//     *reg32(&__base_clint, 0x4*hart_id) = 0x0;
-// }
+static inline void wakeup_hart(unsigned int hart_id) {
+    *reg32(&__base_clint, 0x4*hart_id) = 0x1;
+    *reg32(&__base_clint, 0x4*hart_id) = 0x0;
+}
 
 // Write synchronization request in dedicated register
 // static inline void sync_req(unsigned int hart_id){

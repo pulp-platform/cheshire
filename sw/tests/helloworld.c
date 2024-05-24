@@ -12,13 +12,21 @@
 #include "dif/uart.h"
 #include "params.h"
 #include "util.h"
+#include "printf.h"
 
 int main(void) {
-    char str[] = "Hello World!\r\n";
-    uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
-    uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
-    uart_init(&__base_uart, reset_freq, __BOOT_BAUDRATE);
-    uart_write_str(&__base_uart, str, sizeof(str));
-    uart_write_flush(&__base_uart);
+    uint32_t NumHarts = *reg32(&__base_regs, CHESHIRE_NUM_INT_HARTS_REG_OFFSET);
+    uint32_t OtherHart = NumHarts - 1 - hart_id(); // If hart_id() == 0 -> return 1;
+                                                   // If hart_id() == 1 -> return 0;
+    // Hart 0 enters first
+    if (hart_id() != 0) wfi();
+
+    printf("Hi [%d]!\n", hart_id());
+
+    wakeup_hart(OtherHart);
+
+    wfi();
+
+    // Only core 0 exits.
     return 0;
 }
