@@ -121,6 +121,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   localparam int unsigned IntrRtdPlic     = 0;
   localparam int unsigned IntrRtdCoreBase = 1;
   localparam int unsigned IntrRtdExtBase  = IntrRtdCoreBase + NumIntHarts;
+  localparam int unsigned CCUIdWidth = Cva6IdWidth + $clog2(NumIntHarts) + $clog2(NumIntHarts+1);
 
   // This routable type is as wide or wider than all targets.
   // It must be truncated before target connection.
@@ -143,6 +144,32 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Interrupt requests to all interruptible harts
   cheshire_xeip_t [NumIrqHarts-1:0] xeip;
   logic           [NumIrqHarts-1:0] mtip, msip;
+
+  ACE_BUS #(
+    .AXI_ADDR_WIDTH ( Cfg.AddrWidth    ),
+    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth ),
+    .AXI_ID_WIDTH   ( Cva6IdWidth      ),
+    .AXI_USER_WIDTH ( Cfg.AxiUserWidth )
+  ) core_to_CCU[NumIntHarts-1:0]();
+
+  SNOOP_BUS #(
+    .SNOOP_ADDR_WIDTH ( Cfg.AddrWidth    ),
+    .SNOOP_DATA_WIDTH ( Cfg.AxiDataWidth )
+  ) CCU_to_core[NumIntHarts-1:0]();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( Cfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( CCUIdWidth        ),
+    .AXI_USER_WIDTH ( Cfg.AxiUserWidth  )
+  ) ccu_out_axi();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( Cfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( Cfg.AxiMstIdWidth ),
+    .AXI_USER_WIDTH ( Cfg.AxiUserWidth  )
+  ) ccu_remap_axi();
 
   // Interrupt 0 is hardwired to zero by convention.
   // Other internal interrupts are synchronous (for now) and need not be synced;
@@ -751,44 +778,16 @@ module cheshire_soc import cheshire_pkg::*; #(
       core_out_rsp[i]        = core_ur_rsp[i];
     end
 
-    `ACE_ASSIGN_FROM_REQ(core_to_CCU[i], core_ur_req)
-    `ACE_ASSIGN_TO_RESP(core_ur_rsp, core_to_CCU[i])
-    `SNOOP_ASSIGN_FROM_RESP(CCU_to_core[i], core_ur_req)
-    `SNOOP_ASSIGN_TO_REQ(core_ur_rsp, CCU_to_core[i])
+    `ACE_ASSIGN_FROM_REQ(core_to_CCU[i], core_ur_req[i])
+    `ACE_ASSIGN_TO_RESP(core_ur_rsp[i], core_to_CCU[i])
+    `SNOOP_ASSIGN_FROM_RESP(CCU_to_core[i], core_ur_req[i])
+    `SNOOP_ASSIGN_TO_REQ(core_ur_rsp[i], CCU_to_core[i])
 
   end
 
   ///////////////////
   //      CCU      //
   ///////////////////
-
-  localparam CCUIdWidth = Cva6IdWidth + $clog2(NumIntHarts) + $clog2(NumIntHarts+1);
-
-  ACE_BUS #(
-    .AXI_ADDR_WIDTH ( Cfg.AddrWidth    ),
-    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth ),
-    .AXI_ID_WIDTH   ( Cva6IdWidth      ),
-    .AXI_USER_WIDTH ( Cfg.AxiUserWidth )
-  ) core_to_CCU[NumIntHarts-1:0]();
-
-  SNOOP_BUS #(
-    .SNOOP_ADDR_WIDTH ( Cfg.AddrWidth    ),
-    .SNOOP_DATA_WIDTH ( Cfg.AxiDataWidth )
-  ) CCU_to_core[NumIntHarts-1:0]();
-
-  AXI_BUS #(
-    .AXI_ADDR_WIDTH ( Cfg.AddrWidth     ),
-    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( CCUIdWidth        ),
-    .AXI_USER_WIDTH ( Cfg.AxiUserWidth  )
-  ) ccu_out_axi();
-
-  AXI_BUS #(
-    .AXI_ADDR_WIDTH ( Cfg.AddrWidth     ),
-    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( Cfg.AxiMstIdWidth ),
-    .AXI_USER_WIDTH ( Cfg.AxiUserWidth  )
-  ) ccu_remap_axi();
 
   localparam ace_pkg::ccu_cfg_t CCU_CFG = '{
     NoSlvPorts         : NumIntHarts,
@@ -836,13 +835,13 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   axi_cut #(
     .Bypass     ( ~Cfg.CorePostCut   ),
-    .aw_chan_t  ( axi_cva6_aw_chan_t ),
-    .w_chan_t   ( axi_cva6_w_chan_t  ),
-    .b_chan_t   ( axi_cva6_b_chan_t  ),
-    .ar_chan_t  ( axi_cva6_ar_chan_t ),
-    .r_chan_t   ( axi_cva6_r_chan_t  ),
-    .axi_req_t  ( axi_cva6_req_t     ),
-    .axi_resp_t ( axi_cva6_rsp_t     )
+    .aw_chan_t  ( axi_mst_aw_chan_t ),
+    .w_chan_t   ( axi_mst_w_chan_t  ),
+    .b_chan_t   ( axi_mst_b_chan_t  ),
+    .ar_chan_t  ( axi_mst_ar_chan_t ),
+    .r_chan_t   ( axi_mst_r_chan_t  ),
+    .axi_req_t  ( axi_mst_req_t     ),
+    .axi_resp_t ( axi_mst_rsp_t     )
   ) i_core_axi_cut (
     .clk_i      ( clk_i           ),
     .rst_ni     ( rst_ni          ),
