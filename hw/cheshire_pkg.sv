@@ -554,7 +554,7 @@ package cheshire_pkg;
       NrExecuteRegionRules  : 5,   // Debug, Bootrom, AllSPM, LLCOut, ExtCIE
       ExecuteRegionAddrBase : {AmDbg, AmBrom, AmSpm, cfg.LlcOutRegionStart, CieBase},
       ExecuteRegionLength   : {64'h40000, 64'h40000, 2*SizeSpm, SizeLlcOut, cfg.Cva6ExtCieLength},
-      NrSharedRegionRules   : 3, 
+      NrSharedRegionRules   : 3,
       SharedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart, CieBase},
       SharedRegionLength    : {SizeSpm, SizeLlcOut,            cfg.Cva6ExtCieLength},
       NrCachedRegionRules   : 3,   // CachedSPM, LLCOut, ExtCIE

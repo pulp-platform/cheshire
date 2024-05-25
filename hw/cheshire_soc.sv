@@ -789,7 +789,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   //      CCU      //
   ///////////////////
 
-  localparam ace_pkg::ccu_cfg_t CCU_CFG = '{
+  localparam ace_pkg::ccu_cfg_t CcuCfg = '{
     NoSlvPorts         : NumIntHarts,
     MaxMstTrans        : 2, // Probably requires update
     MaxSlvTrans        : 2, // Probably requires update
@@ -805,7 +805,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   };
 
   ace_ccu_top_intf #(
-    .Cfg ( CCU_CFG )
+    .Cfg ( CcuCfg )
   ) i_ccu (
     .clk_i,
     .rst_ni,

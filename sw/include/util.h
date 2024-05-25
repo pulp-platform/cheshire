@@ -102,8 +102,8 @@ static inline void enable_dcache() {
 // The following is for future DMR support
 // Wake up sleeping hart using CLINT
 static inline void wakeup_hart(unsigned int hart_id) {
-    *reg32(&__base_clint, 0x4*hart_id) = 0x1;
-    *reg32(&__base_clint, 0x4*hart_id) = 0x0;
+    *reg32(&__base_clint, 0x4 * hart_id) = 0x1;
+    *reg32(&__base_clint, 0x4 * hart_id) = 0x0;
 }
 
 // Write synchronization request in dedicated register
