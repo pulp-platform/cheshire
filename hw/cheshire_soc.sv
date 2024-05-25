@@ -684,7 +684,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     if (Cfg.BusErr) begin : gen_cva6_bus_err
       axi_err_unit_wrap #(
-        .AddrWidth          ( Cfg.AddrWidth ),
+        .AddrWidth          ( cva6_config_pkg::CVA6ConfigAxiAddrWidth ),
         .IdWidth            ( Cva6IdWidth   ),
         .UserErrBits        ( Cfg.AxiUserErrBits ),
         .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
