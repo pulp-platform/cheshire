@@ -11,6 +11,7 @@ module cva6_wrap #(
   parameter config_pkg::cva6_cfg_t Cva6Cfg = cva6_config_pkg::cva6_cfg,
   parameter int unsigned NumHarts     = 1,
   parameter int unsigned ClicNumIrqs  = $clog2(Cva6Cfg.CLICNumInterruptSrc),
+  parameter bit          EccEnable    = 1'b1,
   parameter type reg_req_t = logic,
   parameter type reg_rsp_t = logic,
   parameter type axi_ar_chan_t = logic,
@@ -103,6 +104,7 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
 
   cva6 #(
     .CVA6Cfg       ( Cva6Cfg       ),
+    .EccEnable     ( EccEnable     ),
     .axi_ar_chan_t ( axi_ar_chan_t ),
     .axi_aw_chan_t ( axi_aw_chan_t ),
     .axi_w_chan_t  ( axi_w_chan_t  ),
