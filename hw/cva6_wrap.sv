@@ -214,6 +214,7 @@ end else begin : gen_single_core_binding
   assign core_setback = '0;
   assign hmr2core = sys2hmr ;
   assign hmr2sys  = core2hmr;
+  assign hmr2sys_axi_req = core2hmr_axi_req;
 
   // reg error slave when HMR not supported
   reg_err_slv #(
