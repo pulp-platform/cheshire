@@ -9,6 +9,8 @@
 CHS_ROOT ?= $(shell pwd)
 BENDER	 ?= bender -d $(CHS_ROOT)
 
+all:
+
 include cheshire.mk
 
 # Inside the repo, forward (prefixed) all, nonfree, and clean targets
