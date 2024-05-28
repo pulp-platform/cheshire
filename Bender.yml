@@ -14,7 +14,7 @@ package:
 dependencies:
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.1  }
   axi:                      { git: "https://github.com/pulp-platform/axi",                        version: 0.39.1 }
-  axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc",                    rev: 2685bb9    } # branch: zx/ecc
+  axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc",                    rev: 52fdc1b    } # branch: zx/ecc
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      rev: 06d8256    } # branch: astral
   axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: 0.0.0-alpha.4 }
   axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",                version: 0.1.1  }
@@ -26,7 +26,7 @@ dependencies:
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.5.1  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
-  redundancy_cells:         { git: "https://github.com/pulp-platform/redundancy_cells.git",       rev: e8f24c1    }
+  redundancy_cells:         { git: "https://github.com/pulp-platform/redundancy_cells.git",       rev: d702667    }
   register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",     version: 0.4.3  }
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              version: 0.8.0  }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.1  }
