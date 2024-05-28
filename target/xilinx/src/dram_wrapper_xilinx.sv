@@ -359,5 +359,26 @@ module dram_wrapper_xilinx #(
     .*
   );
 `endif  // USE_DDR3
-
+  axi_snoop #(
+  .enable(1'b1),
+  .axi_req_t(axi_dw_iw_req_t),
+  .axi_rsp_t(axi_dw_iw_resp_t)
+)
+i_axi_snoop_cdc_mig_src(
+  .rst_ni(soc_resetn_i),
+  .clk_i(soc_clk_i) , 
+  .axi_req_i(iresizer_cdc_req),
+  .axi_rsp_i(iresizer_cdc_rsp)
+);
+axi_snoop #(
+  .enable(1'b1),
+  .axi_req_t(axi_soc_req_t),
+  .axi_rsp_t(axi_soc_resp_t)
+)
+i_axi_snoop_dw_serializer(
+  .rst_ni(soc_resetn_i),
+  .clk_i(soc_clk_i) , 
+  .axi_req_i(soc_dresizer_req),
+  .axi_rsp_i(dresizer_iresizer_rsp)
+);
 endmodule

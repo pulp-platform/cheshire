@@ -1674,174 +1674,186 @@ module cheshire_soc import cheshire_pkg::*; #(
   .clk_i
   );
  axi_snoop #(
-    .enable(1'b0),
-    .axi_mst_req_t(axi_mst_req_t),
-    .axi_mst_rsp_t(axi_mst_rsp_t)
+    .enable(1'b1),
+    .axi_req_t(axi_mst_req_t),
+    .axi_rsp_t(axi_mst_rsp_t)
   )
-  i_axi_snoop_cva6_mst(
+  i_axi_snoop_cva6_id_serializer(
     .rst_ni,
     .clk_i , 
-    .axi_mst_req_i(axi_in_req[AxiIn.cores[0]]),
-    .axi_mst_rsp_i(axi_in_rsp[AxiIn.cores[0]])
+    .axi_req_i(axi_in_req[AxiIn.cores[0]]),
+    .axi_rsp_i(axi_in_rsp[AxiIn.cores[0]])
   );
 
   axi_snoop #(
     .enable(1'b0),
-    .axi_mst_req_t(axi_ext_llc_req_t),
-    .axi_mst_rsp_t(axi_ext_llc_rsp_t)
+    .axi_req_t(axi_cva6_req_t),
+    .axi_rsp_t(axi_cva6_rsp_t)
+  )
+  i_axi_snoop_cva6_out(
+    .rst_ni,
+    .clk_i , 
+    .axi_req_i(core_out_req),
+    .axi_rsp_i(core_out_rsp)
+  );
+    axi_snoop #(
+    .enable(1'b0),
+    .axi_req_t(axi_cva6_req_t),
+    .axi_rsp_t(axi_cva6_rsp_t)
+  )
+  i_axi_snoop_cva6_ur(
+    .rst_ni,
+    .clk_i , 
+    .axi_req_i(core_ur_req),
+    .axi_rsp_i(core_ur_rsp)
+  );
+
+
+  axi_snoop #(
+    .enable(1'b1),
+    .axi_req_t(axi_ext_llc_req_t),
+    .axi_rsp_t(axi_ext_llc_rsp_t)
   )
 
   i_axi_snoop_dram(
     .rst_ni,
     .clk_i, 
-    .axi_mst_req_i(axi_llc_mst_req_o),
-    .axi_mst_rsp_i(axi_llc_mst_rsp_i)
+    .axi_req_i(axi_llc_mst_req_o),
+    .axi_rsp_i(axi_llc_mst_rsp_i)
   );
 
   axi_snoop #(
     .enable(1'b0),
-    .axi_mst_req_t(axi_cva6_req_t),
-    .axi_mst_rsp_t(axi_cva6_rsp_t)
-  )
-  i_axi_snoop_cva6_slv(
-    .rst_ni,
-    .clk_i , 
-    .axi_mst_req_i(core_ur_req),
-    .axi_mst_rsp_i(core_ur_rsp)
-  );
-
-  axi_snoop #(
-    .enable(1'b1),
-    .axi_mst_req_t(axi_slv_req_t),
-    .axi_mst_rsp_t(axi_slv_rsp_t)
+    .axi_req_t(axi_slv_req_t),
+    .axi_rsp_t(axi_slv_rsp_t)
   ) 
   i_axi_snoop_llc(
     .rst_ni,
     .clk_i,
-    .axi_mst_req_i(axi_llc_remap_req),
-    .axi_mst_rsp_i(axi_llc_remap_rsp)
+    .axi_req_i(axi_llc_remap_req),
+    .axi_rsp_i(axi_llc_remap_rsp)
   );
 
 
   axi_snoop #(
     .enable(1'b0),
-    .axi_mst_req_t(axi_slv_req_t),
-    .axi_mst_rsp_t(axi_slv_rsp_t)
+    .axi_req_t(axi_slv_req_t),
+    .axi_rsp_t(axi_slv_rsp_t)
   )
   i_axi_snoop_llc_amo_mst(
     .rst_ni,
     .clk_i,
-    .axi_mst_req_i(axi_llc_amo_req),
-    .axi_mst_rsp_i(axi_llc_amo_rsp)
+    .axi_req_i(axi_llc_amo_req),
+    .axi_rsp_i(axi_llc_amo_rsp)
   );
 
   axi_snoop #(
     .enable(1'b1),
-    .axi_mst_req_t(axi_slv_req_t),
-    .axi_mst_rsp_t(axi_slv_rsp_t)
+    .axi_req_t(axi_slv_req_t),
+    .axi_rsp_t(axi_slv_rsp_t)
   )
   i_axi_snoop_llc_amo_slv(
     .rst_ni,
     .clk_i,
-    .axi_mst_req_i(axi_out_req[AxiOut.llc] ),
-    .axi_mst_rsp_i(axi_out_rsp[AxiOut.llc])
+    .axi_req_i(axi_out_req[AxiOut.llc] ),
+    .axi_rsp_i(axi_out_rsp[AxiOut.llc])
   );
 
   axi_snoop #(
     .enable(1'b0),
-    .axi_mst_req_t(axi_slv_req_t),
-    .axi_mst_rsp_t(axi_slv_rsp_t)
+    .axi_req_t(axi_slv_req_t),
+    .axi_rsp_t(axi_slv_rsp_t)
   )
   i_axi_snoop_llc_cut_mst(
     .rst_ni,
     .clk_i,
-    .axi_mst_req_i(axi_llc_cut_req),
-    .axi_mst_rsp_i(axi_llc_cut_rsp)
+    .axi_req_i(axi_llc_cut_req),
+    .axi_rsp_i(axi_llc_cut_rsp)
   );
 
   axi_snoop #(
     .enable(1'b0),
-    .axi_mst_req_t(axi_slv_req_t),
-    .axi_mst_rsp_t(axi_slv_rsp_t)
+    .axi_req_t(axi_slv_req_t),
+    .axi_rsp_t(axi_slv_rsp_t)
   )
   i_axi_snoop_llc_cut_slv(
     .rst_ni,
     .clk_i,
-    .axi_mst_req_i(axi_llc_amo_req),
-    .axi_mst_rsp_i(axi_llc_amo_rsp)
+    .axi_req_i(axi_llc_amo_req),
+    .axi_rsp_i(axi_llc_amo_rsp)
   );
 
 
   axi_snoop #(
     .enable(1'b0),
-    .axi_mst_req_t(axi_slv_req_t),
-    .axi_mst_rsp_t(axi_slv_rsp_t)
+    .axi_req_t(axi_slv_req_t),
+    .axi_rsp_t(axi_slv_rsp_t)
 
   )
   i_axi_snoop_regbus(
     .rst_ni,
     .clk_i,
-    .axi_mst_req_i(axi_reg_amo_req),
-    .axi_mst_rsp_i(axi_reg_amo_rsp)
+    .axi_req_i(axi_reg_amo_req),
+    .axi_rsp_i(axi_reg_amo_rsp)
   );
 
   axi_snoop #(
     .enable(1'b0),
-    .axi_mst_req_t(axi_slv_req_t),
-    .axi_mst_rsp_t(axi_slv_rsp_t)
+    .axi_req_t(axi_slv_req_t),
+    .axi_rsp_t(axi_slv_rsp_t)
   )
   i_axi_snoop_jtag(
     .rst_ni,
     .clk_i,
-    .axi_mst_req_i(dbg_slv_axi_amo_req),
-    .axi_mst_rsp_i(dbg_slv_axi_amo_rsp)
+    .axi_req_i(dbg_slv_axi_amo_req),
+    .axi_rsp_i(dbg_slv_axi_amo_rsp)
   );
 
   axi_snoop #(
     .enable(1'b0),
-    .axi_mst_req_t(axi_mst_req_t),
-    .axi_mst_rsp_t(axi_mst_rsp_t)
+    .axi_req_t(axi_mst_req_t),
+    .axi_rsp_t(axi_mst_rsp_t)
   )
   i_axi_snoop_vga(
     .rst_ni,
     .clk_i,
-    .axi_mst_req_i(axi_vga_req),
-    .axi_mst_rsp_i(axi_in_rsp[AxiIn.vga])
+    .axi_req_i(axi_vga_req),
+    .axi_rsp_i(axi_in_rsp[AxiIn.vga])
   );
 
   axi_snoop #(
     .enable(1'b0),
-    .axi_mst_req_t(axi_mst_req_t),
-    .axi_mst_rsp_t(axi_mst_rsp_t)
+    .axi_req_t(axi_mst_req_t),
+    .axi_rsp_t(axi_mst_rsp_t)
   )
   i_axi_snoop_slink(
     .rst_ni,
     .clk_i,
-    .axi_mst_req_i(axi_in_req[AxiIn.slink]),
-    .axi_mst_rsp_i(axi_in_rsp[AxiIn.slink])
+    .axi_req_i(axi_in_req[AxiIn.slink]),
+    .axi_rsp_i(axi_in_rsp[AxiIn.slink])
   );
 
   axi_snoop #(
     .enable(1'b0),
-    .axi_mst_req_t(axi_mst_req_t),
-    .axi_mst_rsp_t(axi_mst_rsp_t)
+    .axi_req_t(axi_mst_req_t),
+    .axi_rsp_t(axi_mst_rsp_t)
   )
   i_axi_snoop_dma_mst(
     .rst_ni,
     .clk_i, 
-    .axi_mst_req_i(axi_dma_req),
-    .axi_mst_rsp_i(axi_in_rsp[AxiIn.dma] )
+    .axi_req_i(axi_dma_req),
+    .axi_rsp_i(axi_in_rsp[AxiIn.dma] )
   );
 
   axi_snoop #(
     .enable(1'b0),
-    .axi_mst_req_t(axi_slv_req_t),
-    .axi_mst_rsp_t(axi_slv_rsp_t)
+    .axi_req_t(axi_slv_req_t),
+    .axi_rsp_t(axi_slv_rsp_t)
   )
   i_axi_snoop_dma_slv(
     .rst_ni,
     .clk_i, 
-    .axi_mst_req_i(dma_cut_req),
-    .axi_mst_rsp_i(dma_cut_rsp)
+    .axi_req_i(dma_cut_req),
+    .axi_rsp_i(dma_cut_rsp)
   );
 endmodule
