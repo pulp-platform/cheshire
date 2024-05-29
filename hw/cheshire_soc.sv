@@ -792,7 +792,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     AxiIdUsedSlvPorts  : Cva6IdWidth,
     UniqueIds          : 1'b1,
     DcacheLineWidth    : ariane_pkg::DCACHE_LINE_WIDTH,
-    DcacheIndexWidth   : ariane_pkg::DCACHE_INDEX_WIDTH,
+    DCacheIndexWidth   : ariane_pkg::DCACHE_INDEX_WIDTH,
     AxiAddrWidth       : Cfg.AddrWidth,
     AxiUserWidth       : Cfg.AxiUserWidth,
     AxiDataWidth       : Cfg.AxiDataWidth
