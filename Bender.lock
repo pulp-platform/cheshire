@@ -1,9 +1,9 @@
 packages:
   ace:
-    revision: f919f5cabf41961321bf37327ab4eb726dfdbd0c
-    version: 0.1.0
+    revision: a4fb469897743ddce15e0abb5072425db13fff46
+    version: null
     source:
-      Git: https://github.com/planvtech/ace.git
+      Git: https://github.com/pulp-platform/ace.git
     dependencies:
     - axi
   apb:
@@ -106,7 +106,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: c2e264acb5111596058b5423138a8b72b291d6b0
+    revision: cdd35064ae9f3ea4f88a91b6ddbe7494ed5b83c2
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -170,7 +170,7 @@ packages:
     - register_interface
     - tech_cells_generic
   redundancy_cells:
-    revision: c44ff73521186d2bc1dd77a17664539a3b3e2406
+    revision: 029eaab828446c2a5d9b8da9036b04b8d2aeeba7
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git

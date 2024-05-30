@@ -26,6 +26,7 @@ module cva6_wrap #(
   input  cheshire_pkg::doub_bt                             bootaddress_i,
   input  cheshire_pkg::doub_bt                             hart_id_i,
   input  logic             [31:0]                          harts_sync_req_i,
+  output logic                                             redundancy_en_o,
   input  logic             [NumHarts-1:0][1:0]             irq_i,
   input  logic             [NumHarts-1:0]                  ipi_i,
   input  logic             [NumHarts-1:0]                  time_irq_i,
@@ -67,7 +68,7 @@ typedef struct packed {
 typedef struct packed {
   logic clic_irq_ready;
   logic clic_kill_ack;
-  // axi_req_t axi_req;
+  core_req_t core_req;
 } cva6_outputs_t;
 
 logic                         cores_sync;
@@ -98,7 +99,8 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
   // Bind HMR outputs to system.
   assign clic_irq_ready_o[i] = hmr2sys[i].clic_irq_ready;
   assign clic_kill_ack_o[i]  = hmr2sys[i].clic_kill_ack;
-  assign core_req_o[i] = hmr2sys_core_req[i];
+  // assign core_req_o[i] = hmr2sys_core_req[i];
+  assign core_req_o[i] = hmr2sys[i].core_req;
 
   cva6 #(
     .CVA6Cfg       ( Cva6Cfg    ),
@@ -135,7 +137,8 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
     .rvfi_probes_o    (                               ),
     .cvxif_req_o      (                               ),
     .cvxif_resp_i     ( '0                            ),
-    .noc_req_o        ( core2hmr_core_req[i]          ),
+    //.noc_req_o        ( core2hmr_core_req[i]          ),
+    .noc_req_o        ( core2hmr[i].core_req          ),
     .noc_resp_i       ( hmr2core[i].core_rsp          )
   );
 end
@@ -151,7 +154,7 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     // .InterleaveGrps    ( 0                 ),
     .RapidRecovery     ( Cfg.RapidRecovery ),
     .SeparateData      ( 0                 ),
-    .SeparateAxiBus    ( 1                 ),
+    .SeparateAxiBus    ( 0                 ),
     .RfAddrWidth       ( 5                 ),
     .SysDataWidth      ( 64                ),
     .all_inputs_t      ( cva6_inputs_t     ), // Inputs from the system to the HMR
@@ -184,6 +187,7 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     // registers to write that a synchronization completed
     // succesfully (??)
     .dmr_cores_synch_i  ( cores_sync ),
+    .redundancy_enable_o ( redundancy_en_o ),
 
     // Rapid recovery buses
     .rapid_recovery_o ( /* TODO */ ),
@@ -193,7 +197,7 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     .sys_inputs_i          ( sys2hmr       ),
     .sys_nominal_outputs_o ( hmr2sys       ),
     .sys_bus_outputs_o     (               ),
-    .sys_axi_outputs_o     ( hmr2sys_core_req ),
+    .sys_axi_outputs_o     ( /*hmr2sys_core_req*/ ),
     // CVA6 boot does not rely on fetch enable.
     .sys_fetch_en_i        ( '1            ),
     .enable_bus_vote_i     ( '0            ), // TODO?
@@ -203,7 +207,7 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     .core_inputs_o          ( hmr2core          ),
     .core_nominal_outputs_i ( core2hmr          ),
     .core_bus_outputs_i     ( '0                ), // TODO?
-    .core_axi_outputs_i     ( core2hmr_core_req )
+    .core_axi_outputs_i     ( '0/*core2hmr_core_req*/ )
   );
 
   /* We temporarily hardcode this for permanent lockstep.*/
@@ -211,8 +215,10 @@ if (NumHarts > 1) begin: gen_multicore_hmr
 end else begin : gen_single_core_binding
   assign core_bootaddress = bootaddress_i;
   assign core_setback = '0;
+  assign redundancy_en_o = '0;
   assign hmr2core = sys2hmr ;
   assign hmr2sys  = core2hmr;
+  assign hmr2sys_core_req = core2hmr_core_req;
 
   // reg error slave when HMR not supported
   reg_err_slv #(

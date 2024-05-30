@@ -19,18 +19,19 @@ int main(void) {
                                                  // If hart_id() == 1 -> return 0;
 
   // Hart 0 enters first
-  if (hart_id() != 0) wfi();
+  //if (hart_id() != 0) wfi();
 
   printf("%d!\n", hart_id());
 
   // Only hart 0 gets here
   if (hart_id() == 0){
     // Check if DMR is enabled. If not, enable it
-    if (!(*reg32(&__base_hmr, HMR_DMR_ENABLE)))
+    if (!(*reg32(&__base_hmr, HMR_DMR_ENABLE))) {
       *reg32(&__base_hmr, HMR_DMR_ENABLE) = 0x1;
-
-    // Wake up sleeping hart
-    wakeup_hart(OtherHart);
+      // Wake up sleeping hart
+      // wakeup_hart(OtherHart);
+      smp_resume();
+    }
   }
 
   chs_hmr_store_state(); // -> Save state on top of the stack

@@ -629,6 +629,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   logic [NumIntHarts-1:0] [7:0]        clic_irq_level;
   logic [NumIntHarts-1:0] [5:0]        clic_irq_vsid;
   riscv::priv_lvl_t  [NumIntHarts-1:0] clic_irq_priv;
+  logic redundant_cores;
 
   reg_req_t reg_out_core_req;
   reg_rsp_t reg_out_core_rsp;
@@ -660,6 +661,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .bootaddress_i    ( BootAddr                        ),
     .hart_id_i        ( '0                              ),
     .harts_sync_req_i ( reg_reg2hw.harts_sync.q         ),
+    .redundancy_en_o  ( redundant_cores                 ),
     .irq_i            ( xeip[NumIntHarts-1:0]           ),
     .ipi_i            ( msip[NumIntHarts-1:0]           ),
     .time_irq_i       ( mtip[NumIntHarts-1:0]           ),
@@ -809,6 +811,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   ) i_ccu (
     .clk_i,
     .rst_ni,
+    .redundant_cores_i ( redundant_cores ),
     .test_i      ( test_mode_i ),
     .slv_ports   ( core_to_CCU ),
     .snoop_ports ( CCU_to_core ),
