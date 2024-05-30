@@ -218,7 +218,7 @@ module cheshire_top_xilinx
     .r_chan_t   ( axi_llc_r_chan_t  ),
     .axi_req_t  ( axi_llc_req_t     ),
     .axi_resp_t ( axi_llc_rsp_t     ),
-    .LogDepth   ( 1                                   )
+    .LogDepth   ( 4                 )
   ) i_axi_cdc_mig (
     .src_clk_i    ( soc_clk           ),
     .src_rst_ni   ( rst_n             ),
