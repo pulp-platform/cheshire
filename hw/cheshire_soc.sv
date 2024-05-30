@@ -784,10 +784,10 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   localparam ace_pkg::ccu_cfg_t CCU_CFG = '{
     NoSlvPorts         : NumIntHarts,
-    MaxMstTrans        : 2, // Probably requires update
-    MaxSlvTrans        : 2, // Probably requires update
+    MaxMstTrans        : 4,
+    MaxSlvTrans        : 4,
     FallThrough        : 1'b0,
-    LatencyMode        : ace_pkg::CUT_ALL_PORTS,
+    LatencyMode        : ace_pkg::NO_LATENCY,
     AxiIdWidthSlvPorts : Cva6IdWidth,
     AxiIdUsedSlvPorts  : Cva6IdWidth,
     UniqueIds          : 1'b1,
