@@ -8,7 +8,7 @@
 
 module fixture_cheshire_soc #(
   /// The selected simulation configuration from the `tb_cheshire_pkg`.
-  parameter int unsigned SelectedCfg = 32'd0
+  parameter int unsigned SelectedCfg = 32'd2
 );
 
   `include "cheshire/typedef.svh"
@@ -163,7 +163,8 @@ module fixture_cheshire_soc #(
     .axi_ext_llc_req_t ( axi_llc_req_t ),
     .axi_ext_llc_rsp_t ( axi_llc_rsp_t ),
     .axi_ext_mst_req_t ( axi_mst_req_t ),
-    .axi_ext_mst_rsp_t ( axi_mst_rsp_t )
+    .axi_ext_mst_rsp_t ( axi_mst_rsp_t ),
+    .RstCycles         (16)
   ) vip (.*);
 
 
@@ -171,6 +172,7 @@ module fixture_cheshire_soc #(
   // co-sim //
   ////////////
 
+`ifndef TARGET_GATE
 `ifdef SPIKE_TANDEM
   localparam NUM_WORDS = 2**24;
   localparam NR_COMMIT_PORTS = 7; // c910 has 7 ex pipe
@@ -450,6 +452,7 @@ module fixture_cheshire_soc #(
   assign preg_value[93] = dut.gen_cva6_cores[0].gen_c910_core.i_c910_axi_wrap.cpu_sub_system_axi_i.x_rv_integration_platform.x_cpu_top.x_ct_top_0.x_ct_core.x_ct_idu_top.x_ct_idu_rf_prf_pregfile.preg93_reg_dout;
   assign preg_value[94] = dut.gen_cva6_cores[0].gen_c910_core.i_c910_axi_wrap.cpu_sub_system_axi_i.x_rv_integration_platform.x_cpu_top.x_ct_top_0.x_ct_core.x_ct_idu_top.x_ct_idu_rf_prf_pregfile.preg94_reg_dout;
   assign preg_value[95] = dut.gen_cva6_cores[0].gen_c910_core.i_c910_axi_wrap.cpu_sub_system_axi_i.x_rv_integration_platform.x_cpu_top.x_ct_top_0.x_ct_core.x_ct_idu_top.x_ct_idu_rf_prf_pregfile.preg95_reg_dout;
+`endif
 
 
 endmodule

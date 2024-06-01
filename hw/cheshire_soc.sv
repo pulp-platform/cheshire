@@ -16,7 +16,116 @@ module cheshire_soc
 // `endif
 #(
   // Cheshire config
+`ifdef TARGET_SYNTHESIS
+  parameter cheshire_cfg_t Cfg = '{
+    // CVA6 parameters
+    Cva6RASDepth      : ariane_pkg::ArianeDefaultConfig.RASDepth,
+    Cva6BTBEntries    : ariane_pkg::ArianeDefaultConfig.BTBEntries,
+    Cva6BHTEntries    : ariane_pkg::ArianeDefaultConfig.BHTEntries,
+    Cva6NrPMPEntries  : 0,
+    Cva6ExtCieLength  : 'h2000_0000,  // [0x2.., 0x4..) is CIE, [0x4.., 0x8..) is non-CIE
+    Cva6ExtCieOnTop   : 0,
+    // Harts
+    Core              : C910,
+    NumCores          : 1,
+    CoreMaxTxns       : 8,
+    CoreMaxTxnsPerId  : 4,
+    CoreUserAmoOffs   : 0, // Convention: lower AMO bits for cores, MSB for serial link
+    // Interrupts
+    NumExtInIntrs     : 0,
+    NumExtClicIntrs   : rv_plic_reg_pkg::NumSrc - $bits(cheshire_int_intr_t),
+    NumExtOutIntrTgts : 0,
+    NumExtOutIntrs    : 0,
+    ClicIntCtlBits    : ariane_pkg::ArianeDefaultConfig.CLICIntCtlBits,
+    NumExtIntrSyncs   : 2,
+    // Interconnect
+    AddrWidth         : soc910_pkg::AxiAddrWidth,
+    AxiDataWidth      : 64,
+    AxiUserWidth      : soc910_pkg::AxiUserWidth,
+    AxiMstIdWidth     : soc910_pkg::AxiIdWidthMaster,
+    AxiMaxMstTrans    : soc910_pkg::AxiMaxMstTrans,
+    AxiMaxSlvTrans    : 24,
+    AxiUserAmoMsb     : 1,
+    AxiUserAmoLsb     : 0,
+    AxiUserErrBits    : 0,
+    AxiUserErrLsb     : 0,
+    AxiUserDefault    : 0,
+    RegMaxReadTxns    : 8,
+    RegMaxWriteTxns   : 8,
+    RegAmoNumCuts     : 1,
+    RegAmoPostCut     : 1,
+    // RTC
+    RtcFreq           : 32768,
+    // Features
+    Bootrom           : 1,
+    Uart              : 1,
+    I2c               : 1,
+    SpiHost           : 1,
+    Gpio              : 1,
+    Dma               : 1,
+    SerialLink        : 1,
+    Vga               : 1,
+    AxiRt             : 0,
+    Clic              : 0,
+    IrqRouter         : 0,
+    BusErr            : 1,
+    // Debug
+    DbgIdCode         : CheshireIdCode,
+    DbgMaxReqs        : 4,
+    DbgMaxReadTxns    : 4,
+    DbgMaxWriteTxns   : 4,
+    DbgAmoNumCuts     : 1,
+    DbgAmoPostCut     : 1,
+    // LLC: 128 KiB, up to 2 GiB DRAM
+    LlcNotBypass      : 1,
+    LlcSetAssoc       : 8,
+    LlcNumLines       : 256,
+    LlcNumBlocks      : 8,
+    LlcMaxReadTxns    : 16,
+    LlcMaxWriteTxns   : 16,
+    LlcAmoNumCuts     : 1,
+    LlcAmoPostCut     : 1,
+    LlcOutConnect     : 1,
+    LlcOutRegionStart : 'h8000_0000,
+    LlcOutRegionEnd   : 'h1_0000_0000,
+    // VGA: RGB332
+    VgaRedWidth       : 3,
+    VgaGreenWidth     : 3,
+    VgaBlueWidth      : 2,
+    VgaHCountWidth    : 24, // TODO: Default is 32; is this needed?
+    VgaVCountWidth    : 24, // TODO: See above
+    // Serial Link: map other chip's lower 32bit to 'h1_000_0000
+    SlinkMaxTxnsPerId : 4,
+    SlinkMaxUniqIds   : 4,
+    SlinkMaxClkDiv    : 1024,
+    SlinkRegionStart  : 'h1_0000_0000,
+    SlinkRegionEnd    : 'h2_0000_0000,
+    SlinkTxAddrMask   : 'hFFFF_FFFF,
+    SlinkTxAddrDomain : 'h0000_0000,
+    SlinkUserAmoBit   : 1,  // Upper atomics bit for serial link
+    // DMA config
+    DmaConfMaxReadTxns  : 4,
+    DmaConfMaxWriteTxns : 4,
+    DmaConfAmoNumCuts   : 1,
+    DmaConfAmoPostCut   : 1,
+    DmaConfEnableTwoD   : 1,
+    DmaNumAxInFlight    : 16,
+    DmaMemSysDepth      : 8,
+    DmaJobFifoDepth     : 2,
+    DmaRAWCouplingAvail : 1,
+    // GPIOs
+    GpioInputSyncs    : 1,
+    // AXI RT
+    AxiRtNumPending     : 16,
+    AxiRtWBufferDepth   : 16,
+    AxiRtNumAddrRegions : 2,
+    AxiRtCutPaths       : 1,
+    // All non-set values should be zero
+    default: '0
+  },
+`else
   parameter cheshire_cfg_t Cfg = '0,
+`endif
   // Debug info for external harts
   parameter dm::hartinfo_t [iomsb(Cfg.NumExtDbgHarts):0] ExtHartinfo = '0,
   // Interconnect types (must agree with Cheshire config)
@@ -606,8 +715,10 @@ module cheshire_soc
   assign intr.intn.bus_err.cores = core_bus_err_intr_comb;
 
   for (genvar i = 0; i < NumIntHarts; i++) begin : gen_cva6_cores
-    axi_cva6_req_t core_out_req, core_ur_req;
-    axi_cva6_rsp_t core_out_rsp, core_ur_rsp;
+    axi_cva6_req_t core_out_req;
+    axi_cva6_rsp_t core_out_rsp;
+    axi_cva6_req_t core_ur_req;
+    axi_cva6_rsp_t core_ur_rsp;
 
     // CLIC interface
     logic clic_irq_valid, clic_irq_ready;
@@ -661,16 +772,20 @@ module cheshire_soc
       axi_c910_rsp_t c910_out_rsp_s2;
       axi_c910_req_t c910_out_req_s3;
       axi_c910_rsp_t c910_out_rsp_s3;
+      axi_c910_req_t c910_out_req_s4;
+      axi_c910_rsp_t c910_out_rsp_s4;
 
       c910_axi_wrap #(
+`ifndef TARGET_GATE
         .AxiSetModifiable ( 1'b1              ),
-        .AxiUnwrapBursts  ( 1'b1              ),
+        .AxiUnwrapBursts  ( 1'b0              ),
         .AddrWidth        ( soc910_pkg::AxiAddrWidth    ),
         .DataWidth        ( soc910_pkg::AxiDataWidth    ),
         .IdWidth          ( soc910_pkg::AxiIdWidthMaster),
         .UserWidth        ( soc910_pkg::AxiUserWidth    ),
         .axi_req_t        ( axi_c910_req_t ),
         .axi_rsp_t        ( axi_c910_rsp_t )
+`endif
       ) i_c910_axi_wrap (
         .clk_i,
         .rst_ni,
@@ -697,6 +812,24 @@ module cheshire_soc
         .axi_rsp_i        ( c910_out_rsp_s1     )
       );
 
+      axi_burst_unwrap #(
+        .MaxReadTxns  ( 32'd8     ),
+        .MaxWriteTxns ( 32'd8     ),
+        .AddrWidth    ( soc910_pkg::AxiAddrWidth ),
+        .DataWidth    ( soc910_pkg::AxiDataWidth ),
+        .IdWidth      ( soc910_pkg::AxiIdWidthMaster   ),
+        .UserWidth    ( soc910_pkg::AxiUserWidth ),
+        .axi_req_t    ( axi_c910_req_t ),
+        .axi_resp_t   ( axi_c910_rsp_t )
+      ) i_c910_axi_burst_unwrap (
+        .clk_i      ( clk_i        ),
+        .rst_ni     ( rst_ni       ),
+        .slv_req_i  ( c910_out_req_s1 ),
+        .slv_resp_o ( c910_out_rsp_s1 ),
+        .mst_req_o  ( c910_out_req_s2 ),
+        .mst_resp_i ( c910_out_rsp_s2 )
+      );
+
       axi_burst_undec #(
       // the whole burst length in bit
         .TotalBurstLength ( 512 ),
@@ -713,11 +846,11 @@ module cheshire_soc
         .clk_i,  // Clock
         .rst_ni,  // Asynchronous reset active low
         // slave port
-        .slv_req_i    (c910_out_req_s1 ),
-        .slv_resp_o   (c910_out_rsp_s1 ),
+        .slv_req_i    (c910_out_req_s2 ),
+        .slv_resp_o   (c910_out_rsp_s2 ),
         // master port
-        .mst_req_o    (c910_out_req_s2),
-        .mst_resp_i   (c910_out_rsp_s2)
+        .mst_req_o    (c910_out_req_s3),
+        .mst_resp_i   (c910_out_rsp_s3)
     );
 
       // axi fifo to close timing
@@ -736,11 +869,11 @@ module cheshire_soc
         .clk_i,  // Clock
         .rst_ni,  // Asynchronous reset active low
         // slave port
-        .slv_req_i    (c910_out_req_s2 ),
-        .slv_resp_o   (c910_out_rsp_s2 ),
+        .slv_req_i    (c910_out_req_s3 ),
+        .slv_resp_o   (c910_out_rsp_s3 ),
         // master port
-        .mst_req_o    (c910_out_req_s3),
-        .mst_resp_i   (c910_out_rsp_s3)
+        .mst_req_o    (c910_out_req_s4),
+        .mst_resp_i   (c910_out_rsp_s4)
       );
 
       axi_dw_converter #(
@@ -764,8 +897,8 @@ module cheshire_soc
         .clk_i,
         .rst_ni,
         // Slave interface
-        .slv_req_i          ( c910_out_req_s3 ),
-        .slv_resp_o         ( c910_out_rsp_s3 ),
+        .slv_req_i          ( c910_out_req_s4 ),
+        .slv_resp_o         ( c910_out_rsp_s4 ),
         // Master interface
         .mst_req_o          ( core_out_req ),
         .mst_resp_i         ( core_out_rsp )
@@ -1266,7 +1399,7 @@ module cheshire_soc
     .reg_req_i  ( reg_out_req[RegOut.plic] ),
     .reg_rsp_o  ( reg_out_rsp[RegOut.plic] ),
     .intr_src_i ( intr_routed[IntrRtdPlic][rv_plic_reg_pkg::NumSrc-1:0] ),
-    .irq_o      ( xeip ),
+    .irq_o      ( xeip[0].m ),
     .irq_id_o   ( ),
     .msip_o     ( )
   );
@@ -1279,7 +1412,12 @@ module cheshire_soc
   /////////////
 
   // if (Cfg.Core == CVA6) begin : gen_cva6_clint
+  logic [1:0] mtip_from_clint;
+  logic [1:0] msip_from_clint;
 
+  assign mtip[0] = |mtip_from_clint;
+  assign msip[0] = |msip_from_clint;
+  
   clint #(
     .reg_req_t  ( reg_req_t ),
     .reg_rsp_t  ( reg_rsp_t )
@@ -1290,8 +1428,8 @@ module cheshire_soc
     .reg_req_i    ( reg_out_req[RegOut.clint] ),
     .reg_rsp_o    ( reg_out_rsp[RegOut.clint] ),
     .rtc_i,
-    .timer_irq_o  ( mtip ),
-    .ipi_o        ( msip )
+    .timer_irq_o  ( mtip_from_clint ),
+    .ipi_o        ( msip_from_clint )
   );
 
   // end

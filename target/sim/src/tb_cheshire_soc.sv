@@ -73,4 +73,12 @@ module tb_cheshire_soc #(
     $finish;
   end
 
+`ifdef TARGET_GATE
+  initial begin: dump_vars
+    // if ($test$plusargs("VCD")) begin
+        $dumpfile("c910_axi_wrap.vcd");
+        $dumpvars(0, fix.dut.gen_cva6_cores[0].gen_c910_core.i_c910_axi_wrap);
+    // end
+  end
+`endif
 endmodule
