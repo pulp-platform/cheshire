@@ -738,8 +738,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   );
   
   initial begin
-   @(posedge clk);
-  $readmemh("rx_mem_init.vmem", i_rx_axi_sim_mem.mem);
+  @(posedge clk);
+  $readmemh("../stimuli/rx_mem_init.vmem", i_rx_axi_sim_mem.mem);
   
   @(posedge clk);
   reg_drv_rx.send_write( 'h0300c000, 32'h98001032, 'hf, reg_error); //lower 32bits of MAC address
