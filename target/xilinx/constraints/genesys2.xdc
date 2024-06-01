@@ -159,7 +159,14 @@ create_clock -period 8.000 -name eth_rxck [get_ports eth_rxck]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets eth_rxck_IBUF] 
 
 set_clock_groups -asynchronous -group [get_clocks eth_rxck -include_generated_clocks]
-set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins i_clkwiz/clk_125]]
+set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins i_clkwiz/clk_500]]
+
+
+set_false_path -from [get_pins i_cheshire_soc/gen_ethernet.i_eth_clk_int_div/div_q_reg[*]/C] -to [get_pins i_cheshire_soc/gen_ethernet.i_eth_clk_int_div/t_ff2_q_reg/D]
+
+set_false_path -from [get_pins i_cheshire_soc/gen_ethernet.i_eth_clk_int_div/clk_div_bypass_en_q_reg/C] -to [get_pins i_cheshire_soc/gen_ethernet.i_eth_clk_int_div/i_clk_bypass_mux/i_BUFGMUX/CE1]
+
+set_false_path -from [get_pins {i_cheshire_soc/gen_ethernet.i_eth_clk_int_div/div_q_reg[*]/C}] -to [get_pins {i_cheshire_soc/gen_ethernet.i_eth_clk_int_div/cycle_cntr_q_reg[*]/D}]
 
 
 # VGA Connector
