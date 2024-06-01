@@ -1353,7 +1353,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     );
 
     eth_idma_wrap#(
-      .DataWidth           ( Cfg.AxiDataWidth  ),    
+      .DataWidth           ( Cfg.AxiDataWidth  ),
       .AddrWidth           ( Cfg.AddrWidth     ),
       .UserWidth           ( Cfg.AxiUserWidth  ),
       .AxiIdWidth          ( Cfg.AxiMstIdWidth ),
@@ -1363,7 +1363,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .reg_rsp_t           ( reg_rsp_t         )
     ) i_tx_eth_idma_wrap (
       .clk_i,
-      .rst_ni, 
+      .rst_ni,
       .eth_clk_i           ( eth_clk      ),
       .phy_rx_clk_i        ( eth_rxck_i   ),
       .phy_rxd_i           ( eth_rxd_i    ),
@@ -1371,13 +1371,13 @@ module cheshire_soc import cheshire_pkg::*; #(
       .phy_tx_clk_o        ( eth_txck_o   ),
       .phy_txd_o           ( eth_txd_o    ),
       .phy_tx_ctl_o        ( eth_txctl_o  ),
-      .phy_resetn_o        ( eth_rstn_o   ),  
+      .phy_resetn_o        ( eth_rstn_o   ),
       .phy_intn_i          ( 1'b1         ),
       .phy_pme_i           ( 1'b1         ),
       .phy_mdio_i          ( eth_mdio_i   ),
       .phy_mdio_o          ( eth_mdio_o   ),
       .phy_mdio_oe         ( eth_mdio_oe  ),
-      .phy_mdc_o           ( eth_mdc_o    ), 
+      .phy_mdc_o           ( eth_mdc_o    ),
       .testmode_i          ( testmode_i   ),
       .axi_req_o           ( axi_in_req[AxiIn.eth]        ),
       .axi_rsp_i           ( axi_in_rsp[AxiIn.eth]        ),
