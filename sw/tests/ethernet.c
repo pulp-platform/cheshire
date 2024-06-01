@@ -69,8 +69,9 @@ int main(void) {
     *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x0;
     *reg32(ETH_BASE, IDMA_RSP_READY_OFFSET) = 0x1;
 
-    while (!((*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19)));
+    while (!((*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19)))
+        ;
 
     printf("Ethernet test pass...\n\r");
     return 0;
- }
+}
