@@ -158,6 +158,9 @@ module cheshire_reg_top #(
   logic vga_params_green_width_re;
   logic [7:0] vga_params_blue_width_qs;
   logic vga_params_blue_width_re;
+  logic [31:0] harts_sync_qs;
+  logic [31:0] harts_sync_wd;
+  logic harts_sync_we;
   logic eth_clk_div_en_qs;
   logic eth_clk_div_en_wd;
   logic eth_clk_div_en_we;
@@ -924,6 +927,33 @@ module cheshire_reg_top #(
   );
 
 
+  // R[harts_sync]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_harts_sync (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (harts_sync_we),
+    .wd     (harts_sync_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.harts_sync.qe),
+    .q      (reg2hw.harts_sync.q ),
+
+    // to register interface (read)
+    .qs     (harts_sync_qs)
+  );
+
+
   // R[eth_clk_div_en]: V(False)
 
   prim_subreg #(
@@ -980,7 +1010,7 @@ module cheshire_reg_top #(
 
 
 
-  logic [24:0] addr_hit;
+  logic [25:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CHESHIRE_SCRATCH_0_OFFSET);
@@ -1006,8 +1036,9 @@ module cheshire_reg_top #(
     addr_hit[20] = (reg_addr == CHESHIRE_HW_FEATURES_OFFSET);
     addr_hit[21] = (reg_addr == CHESHIRE_LLC_SIZE_OFFSET);
     addr_hit[22] = (reg_addr == CHESHIRE_VGA_PARAMS_OFFSET);
-    addr_hit[23] = (reg_addr == CHESHIRE_ETH_CLK_DIV_EN_OFFSET);
-    addr_hit[24] = (reg_addr == CHESHIRE_ETH_CLK_DIV_VALUE_OFFSET);
+    addr_hit[23] = (reg_addr == CHESHIRE_HARTS_SYNC_OFFSET);
+    addr_hit[24] = (reg_addr == CHESHIRE_ETH_CLK_DIV_EN_OFFSET);
+    addr_hit[25] = (reg_addr == CHESHIRE_ETH_CLK_DIV_VALUE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1039,7 +1070,8 @@ module cheshire_reg_top #(
                (addr_hit[21] & (|(CHESHIRE_PERMIT[21] & ~reg_be))) |
                (addr_hit[22] & (|(CHESHIRE_PERMIT[22] & ~reg_be))) |
                (addr_hit[23] & (|(CHESHIRE_PERMIT[23] & ~reg_be))) |
-               (addr_hit[24] & (|(CHESHIRE_PERMIT[24] & ~reg_be)))));
+               (addr_hit[24] & (|(CHESHIRE_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(CHESHIRE_PERMIT[25] & ~reg_be)))));
   end
 
   assign scratch_0_we = addr_hit[0] & reg_we & !reg_error;
@@ -1132,10 +1164,13 @@ module cheshire_reg_top #(
 
   assign vga_params_blue_width_re = addr_hit[22] & reg_re & !reg_error;
 
-  assign eth_clk_div_en_we = addr_hit[23] & reg_we & !reg_error;
+  assign harts_sync_we = addr_hit[23] & reg_we & !reg_error;
+  assign harts_sync_wd = reg_wdata[31:0];
+
+  assign eth_clk_div_en_we = addr_hit[24] & reg_we & !reg_error;
   assign eth_clk_div_en_wd = reg_wdata[0];
 
-  assign eth_clk_div_value_we = addr_hit[24] & reg_we & !reg_error;
+  assign eth_clk_div_value_we = addr_hit[25] & reg_we & !reg_error;
   assign eth_clk_div_value_wd = reg_wdata[19:0];
 
   // Read data return
@@ -1249,10 +1284,14 @@ module cheshire_reg_top #(
       end
 
       addr_hit[23]: begin
-        reg_rdata_next[0] = eth_clk_div_en_qs;
+        reg_rdata_next[31:0] = harts_sync_qs;
       end
 
       addr_hit[24]: begin
+        reg_rdata_next[0] = eth_clk_div_en_qs;
+      end
+
+      addr_hit[25]: begin
         reg_rdata_next[19:0] = eth_clk_div_value_qs;
       end
 
