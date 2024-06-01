@@ -11,7 +11,6 @@ module cva6_wrap #(
   parameter config_pkg::cva6_cfg_t Cva6Cfg = cva6_config_pkg::cva6_cfg,
   parameter int unsigned NumHarts     = 1,
   parameter int unsigned ClicNumIrqs  = $clog2(Cva6Cfg.CLICNumInterruptSrc),
-  parameter bit          EccEnable    = 1'b1,
   parameter type reg_req_t = logic,
   parameter type reg_rsp_t = logic,
   parameter type axi_ar_chan_t = logic,
@@ -68,14 +67,13 @@ typedef struct packed {
 typedef struct packed {
   logic clic_irq_ready;
   logic clic_kill_ack;
-  // axi_req_t axi_req;
+  axi_req_t axi_req;
 } cva6_outputs_t;
 
 logic                         cores_sync;
 logic          [NumHarts-1:0] core_setback;
 cva6_inputs_t  [NumHarts-1:0] sys2hmr, hmr2core;
 cva6_outputs_t [NumHarts-1:0] hmr2sys, core2hmr;
-axi_req_t [NumHarts-1:0] core2hmr_axi_req, hmr2sys_axi_req;
 cheshire_pkg::doub_bt [NumHarts-1:0] core_bootaddress;
 
 for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
@@ -94,17 +92,15 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
   assign sys2hmr[i].clic_irq_vsid  = clic_irq_vsid_i[i];
   assign sys2hmr[i].clic_irq_shv   = clic_irq_shv_i[i];
   assign sys2hmr[i].clic_kill_req  = clic_kill_req_i[i];
-  `AXI_ASSIGN_RESP_STRUCT(sys2hmr[i].axi_rsp, axi_rsp_i[i]);
+  `AXI_ASSIGN_REQ_STRUCT(axi_req_o[i], hmr2sys[i].axi_req);
 
   // Bind HMR outputs to system.
   assign clic_irq_ready_o[i] = hmr2sys[i].clic_irq_ready;
   assign clic_kill_ack_o[i]  = hmr2sys[i].clic_kill_ack;
-//  `AXI_ASSIGN_REQ_STRUCT(axi_req_o[i], hmr2sys[i].axi_req);
-  `AXI_ASSIGN_REQ_STRUCT(axi_req_o[i], hmr2sys_axi_req[i]);
+  `AXI_ASSIGN_REQ_STRUCT(axi_req_o[i], hmr2sys[i].axi_req);
 
   cva6 #(
     .CVA6Cfg       ( Cva6Cfg       ),
-    .EccEnable     ( EccEnable     ),
     .axi_ar_chan_t ( axi_ar_chan_t ),
     .axi_aw_chan_t ( axi_aw_chan_t ),
     .axi_w_chan_t  ( axi_w_chan_t  ),
@@ -138,7 +134,7 @@ for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
     .rvfi_probes_o    (                               ),
     .cvxif_req_o      (                               ),
     .cvxif_resp_i     ( '0                            ),
-    .noc_req_o        ( core2hmr_axi_req[i]           ),
+    .noc_req_o        ( core2hmr[i].axi_req           ),
     .noc_resp_i       ( hmr2core[i].axi_rsp           )
   );
 end
@@ -154,14 +150,12 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     // .InterleaveGrps    ( 0                 ),
     .RapidRecovery     ( Cfg.RapidRecovery ),
     .SeparateData      ( 0                 ),
-    .SeparateAxiBus    ( 1                 ),
     .RfAddrWidth       ( 5                 ),
     .SysDataWidth      ( 64                ),
     .all_inputs_t      ( cva6_inputs_t     ), // Inputs from the system to the HMR
     .nominal_outputs_t ( cva6_outputs_t    ),
     // .core_backup_t     ( '0 ), // TODO
     // .bus_outputs_t     ( '0 ), // TODO
-    .axi_req_t         ( axi_req_t ),
     .reg_req_t         ( reg_req_t ), // TODO
     .reg_rsp_t         ( reg_rsp_t ), // TODO
     .rapid_recovery_t  ( rapid_recovery_pkg::rapid_recovery_t ) // TODO
@@ -196,7 +190,6 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     .sys_inputs_i          ( sys2hmr       ),
     .sys_nominal_outputs_o ( hmr2sys       ),
     .sys_bus_outputs_o     (               ),
-    .sys_axi_outputs_o     ( hmr2sys_axi_req ),
     // CVA6 boot does not rely on fetch enable.
     .sys_fetch_en_i        ( '1            ),
     .enable_bus_vote_i     ( '0            ), // TODO?
@@ -205,8 +198,7 @@ if (NumHarts > 1) begin: gen_multicore_hmr
     .core_setback_o         ( core_setback     ),
     .core_inputs_o          ( hmr2core         ),
     .core_nominal_outputs_i ( core2hmr         ),
-    .core_bus_outputs_i     ( '0               ), // TODO?
-    .core_axi_outputs_i     ( core2hmr_axi_req )
+    .core_bus_outputs_i     ( '0               ) // TODO?
   );
 
   /* We temporarily hardcode this for permanent lockstep.*/
@@ -216,7 +208,6 @@ end else begin : gen_single_core_binding
   assign core_setback = '0;
   assign hmr2core = sys2hmr ;
   assign hmr2sys  = core2hmr;
-  assign hmr2sys_axi_req = core2hmr_axi_req;
 
   // reg error slave when HMR not supported
   reg_err_slv #(

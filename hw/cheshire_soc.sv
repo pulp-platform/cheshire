@@ -631,7 +631,6 @@ module cheshire_soc import cheshire_pkg::*; #(
     .Cfg              ( Cfg                  ),
     .Cva6Cfg          ( Cva6Cfg              ),
     .NumHarts         ( NumIntHarts          ),
-    .EccEnable        ( 1                    ),
     .reg_req_t        ( reg_req_t            ),
     .reg_rsp_t        ( reg_rsp_t            ),
     .axi_ar_chan_t    ( axi_cva6_ar_chan_t   ),

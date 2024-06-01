@@ -85,8 +85,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: f4d6406070d8e7767e4e9a433f11b039859f03a1
-    version: null
+    revision: 0d67563b6b592549542544f1abc0f43e5d4ee8b4
+    version: 1.35.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -99,7 +99,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 25c431b449d9b1760c744af74a6c84d55872f922
+    revision: dbaecc59b99e3bb4d89fed546d75080f39bfe4f1
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -175,7 +175,7 @@ packages:
     - idma
     - register_interface  
   redundancy_cells:
-    revision: c44ff73521186d2bc1dd77a17664539a3b3e2406
+    revision: c37bdb47339bf70e8323de8df14ea8bbeafb6583
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
