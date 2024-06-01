@@ -122,7 +122,7 @@ _soc_init:
     // Init SoC, than jump to main
     jal x1, soc_init
 
- _program_start:
+_program_start:
     // Full fence, then go to main
     fence
     call main

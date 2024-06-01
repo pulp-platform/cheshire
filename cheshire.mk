@@ -190,7 +190,7 @@ include $(CHS_ROOT)/target/xilinx/xilinx.mk
 
 CHS_ALL += $(CHS_SW_ALL) $(CHS_HW_ALL) $(CHS_SIM_ALL)
 
-chs-all:         $(CHS_ALL) 
+chs-all:         $(CHS_ALL)
 chs-sw-all:      $(CHS_SW_ALL)
 chs-hw-all:      $(CHS_HW_ALL)
 chs-bootrom-all: $(CHS_BOOTROM_ALL)

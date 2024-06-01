@@ -617,7 +617,7 @@ package cheshire_pkg;
     AxiUserErrBits    : 0,
     AxiUserErrLsb     : 0,
     AxiUserDefault    : 0,
-    CorePostCut       : 0
+    CorePostCut       : 0,
     RegMaxReadTxns    : 8,
     RegMaxWriteTxns   : 8,
     AxiToRegCut       : 0,
