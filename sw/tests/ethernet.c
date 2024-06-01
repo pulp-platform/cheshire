@@ -1,9 +1,15 @@
+// Copyright 2024 ETH Zurich and University of Bologna.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Chaoqun Liang <chaoqun.liang@unibo.it>
+//
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include "printf.h"
 #include "util.h"
-   
+
 #define ETH_BASE 			 0x0300c000
 
 #define MACLO_OFFSET                 0x0
@@ -70,9 +76,8 @@ int main(void) {
   *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x0;
   *reg32(ETH_BASE, IDMA_RSP_READY_OFFSET) = 0x1;
 
-  while (!(*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19) );
-
+  while (!((*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19) ));
+  
   printf ("Ethernet test pass...\n\r");
   return 0;
 }
-

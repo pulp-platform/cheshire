@@ -21,7 +21,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter time          ClkPeriodSys      = 5ns,
   parameter time          ClkPeriodJtag     = 20ns,
   parameter time          ClkPeriodRtc      = 30518ns,
-  parameter time          ClkPeriodEth      = 8ns,
+  parameter time          ClkPeriodPeriph   = 2ns,
+
   parameter int unsigned  RstCycles         = 5,
   parameter real          TAppl             = 0.1,
   parameter real          TTest             = 0.9,
@@ -47,6 +48,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   output logic       test_mode,
   output logic [1:0] boot_mode,
   output logic       rtc,
+  output logic       periph_clk,
+  output logic       periph_rstn,
   // External AXI LLC (DRAM) port
   input  axi_ext_llc_req_t axi_llc_mst_req,
   output axi_ext_llc_rsp_t axi_llc_mst_rsp,
@@ -70,8 +73,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   inout  wire [SpihNumCs-1:0] spih_csb,
   inout  wire [ 3:0]          spih_sd,
   // Ethernet interface
-  output logic                eth_clk125,
-  output logic                eth_clk125q,
   input  logic [ 3:0]         eth_txd,
   output logic [ 3:0]         eth_rxd,
   input  logic                eth_txck,
@@ -156,6 +157,14 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   ) i_clk_rst_rtc (
     .clk_o  ( rtc ),
     .rst_no ( )
+  );
+
+  clk_rst_gen #(
+    .ClkPeriod    ( ClkPeriodPeriph ),
+    .RstClkCycles ( RstCycles )
+  ) i_clk_rst_periph (
+    .clk_o  ( periph_clk ),
+    .rst_no ( periph_rstn)
   );
 
   initial begin
@@ -641,7 +650,27 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   axi_mst_req_t axi_req_mem;
   axi_mst_rsp_t axi_rsp_mem;
   idma_pkg::idma_busy_t idma_busy_o;
- 
+
+  localparam int unsigned EthDivWidth = 20;
+  localparam int unsigned DefaultEthClkDivValue = 2;
+  logic eth_clk;
+
+  clk_int_div #(
+      .DIV_VALUE_WIDTH       ( EthDivWidth            ),
+      .DEFAULT_DIV_VALUE     ( DefaultEthClkDivValue  ),
+      .ENABLE_CLOCK_IN_RESET ( 0                      )
+    ) i_eth_clk_div (
+      .clk_i          ( periph_clk      ),
+      .rst_ni         ( periph_rstn     ),
+      .en_i           ( 1               ),
+      .test_mode_en_i ( 1'b0            ),
+      .div_i          ( 2               ),
+      .div_valid_i    ( 1'b0            ),
+      .div_ready_o    (                 ),
+      .clk_o          ( eth_clk         ),
+      .cycl_count_o   (                 )
+  );
+
   eth_idma_wrap#(
     .DataWidth           ( DutCfg.AxiDataWidth  ),    
     .AddrWidth           ( DutCfg.AddrWidth     ),
@@ -653,9 +682,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .reg_rsp_t           ( reg_rsp_t            )
   ) i_rx_eth_idma_wrap (
     .clk_i               ( clk             ),
-    .rst_ni              ( rst_n           ),  
-    .eth_clk125_i        ( eth_clk125      ),
-    .eth_clk125q_i       ( eth_clk125q     ),
+    .rst_ni              ( rst_n           ), 
+    .eth_clk_i           ( eth_clk         ),
     .phy_rx_clk_i        ( eth_txck        ),
     .phy_rxd_i           ( eth_txd         ),
     .phy_rx_ctl_i        ( eth_txctl       ),
@@ -709,26 +737,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .mon_w_valid_o      ( /* NOT CONNECTED */ )
   );
   
-  initial begin
-    forever begin
-    eth_clk125 <= 1;
-    #(ClkPeriodEth/2);
-    eth_clk125 <= 0;
-    #(ClkPeriodEth/2);
-    end
-  end
-
-  initial begin
-    forever begin
-    eth_clk125q <= 0;
-    #(ClkPeriodEth/4);
-    eth_clk125q <= 1;
-    #(ClkPeriodEth/2);
-    eth_clk125q <= 0;
-    #(ClkPeriodEth/4);
-    end
-  end
-
   initial begin
    @(posedge clk);
   $readmemh("rx_mem_init.vmem", i_rx_axi_sim_mem.mem);

@@ -28,9 +28,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   input  logic        test_mode_i,
   input  logic [1:0]  boot_mode_i,
   input  logic        rtc_i,
-  input  logic        eth_clk125_i,
-  input  logic        eth_clk125q_i,
-  input  logic        eth_clk200_i,
+  input  logic        periph_clk_i,
+  input  logic        periph_rstn_i,
   // External AXI LLC (DRAM) port
   output axi_ext_llc_req_t axi_llc_mst_req_o,
   input  axi_ext_llc_rsp_t axi_llc_mst_rsp_i,
@@ -1021,6 +1020,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   /////////////////////
 
   cheshire_reg_pkg::cheshire_hw2reg_t reg_hw2reg;
+  cheshire_reg_pkg::cheshire_reg2hw_t reg_reg2hw;
 
   assign reg_hw2reg = '{
     boot_mode     : boot_mode_i,
@@ -1059,6 +1059,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .reg_req_i  ( reg_out_req[RegOut.regs] ),
     .reg_rsp_o  ( reg_out_rsp[RegOut.regs] ),
     .hw2reg     ( reg_hw2reg ),
+    .reg2hw     ( reg_reg2hw ),
     .devmode_i  ( 1'b1 )
   );
 
@@ -1330,6 +1331,27 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  ETHERNET  //
   ////////////////
   if (Cfg.Ethernet) begin : gen_ethernet
+
+    localparam int unsigned EthDivWidth = 20;
+    localparam int unsigned DefaultEthClkDivValue = 2;
+    logic eth_clk;
+
+    clk_int_div #(
+      .DIV_VALUE_WIDTH       ( EthDivWidth            ),
+      .DEFAULT_DIV_VALUE     ( DefaultEthClkDivValue  ),
+      .ENABLE_CLOCK_IN_RESET ( 0                      )
+    ) i_eth_clk_int_div (
+      .clk_i          ( periph_clk_i          ),
+      .rst_ni         ( periph_rstn_i         ),
+      .en_i           ( reg_reg2hw.eth_clk_div_en.q     ),
+      .test_mode_en_i ( test_mode_i           ),
+      .div_i          ( reg_reg2hw.eth_clk_div_value.q  ),
+      .div_valid_i    ( 1'b0                  ),
+      .div_ready_o    (                       ),
+      .clk_o          ( eth_clk               ),
+      .cycl_count_o   (                       )
+    );
+
     eth_idma_wrap#(
       .DataWidth           ( Cfg.AxiDataWidth  ),    
       .AddrWidth           ( Cfg.AddrWidth     ),
@@ -1342,9 +1364,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     ) i_tx_eth_idma_wrap (
       .clk_i,
       .rst_ni, 
-      .eth_clk125_i        ( eth_clk125_i ),
-      .eth_clk125q_i       ( eth_clk125q_i),
-      .eth_clk200_i        ( eth_clk200_i ),
+      .eth_clk_i           ( eth_clk      ),
       .phy_rx_clk_i        ( eth_rxck_i   ),
       .phy_rxd_i           ( eth_rxd_i    ),
       .phy_rx_ctl_i        ( eth_rxctl_i  ),
@@ -1368,7 +1388,12 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   end else begin : gen_no_ethernet
       assign intr.intn.ethernet = 1'b0;
-      assign eth_txck_o = 1'b0;
+      assign eth_txck_o         = 1'b0;
+      assign eth_txd_o          = 4'b0;
+      assign eth_txctl_o        = 1'b0;
+      assign eth_rstn_o         = 1'b0;
+      assign eth_mdio_o         = 1'b0;
+      assign eth_mdc_o          = 1'b0;
   end
 
   ////////////////

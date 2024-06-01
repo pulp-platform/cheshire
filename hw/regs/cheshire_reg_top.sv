@@ -17,6 +17,7 @@ module cheshire_reg_top #(
   input  reg_req_t reg_req_i,
   output reg_rsp_t reg_rsp_o,
   // To HW
+  output cheshire_reg_pkg::cheshire_reg2hw_t reg2hw, // Write
   input  cheshire_reg_pkg::cheshire_hw2reg_t hw2reg, // Read
 
 
@@ -157,6 +158,12 @@ module cheshire_reg_top #(
   logic vga_params_green_width_re;
   logic [7:0] vga_params_blue_width_qs;
   logic vga_params_blue_width_re;
+  logic eth_clk_div_en_qs;
+  logic eth_clk_div_en_wd;
+  logic eth_clk_div_en_we;
+  logic [19:0] eth_clk_div_value_qs;
+  logic [19:0] eth_clk_div_value_wd;
+  logic eth_clk_div_value_we;
 
   // Register instances
 
@@ -917,9 +924,63 @@ module cheshire_reg_top #(
   );
 
 
+  // R[eth_clk_div_en]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_eth_clk_div_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (eth_clk_div_en_we),
+    .wd     (eth_clk_div_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.eth_clk_div_en.qe),
+    .q      (reg2hw.eth_clk_div_en.q ),
+
+    // to register interface (read)
+    .qs     (eth_clk_div_en_qs)
+  );
 
 
-  logic [22:0] addr_hit;
+  // R[eth_clk_div_value]: V(False)
+
+  prim_subreg #(
+    .DW      (20),
+    .SWACCESS("RW"),
+    .RESVAL  (20'ha)
+  ) u_eth_clk_div_value (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (eth_clk_div_value_we),
+    .wd     (eth_clk_div_value_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.eth_clk_div_value.qe),
+    .q      (reg2hw.eth_clk_div_value.q ),
+
+    // to register interface (read)
+    .qs     (eth_clk_div_value_qs)
+  );
+
+
+
+
+  logic [24:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CHESHIRE_SCRATCH_0_OFFSET);
@@ -945,6 +1006,8 @@ module cheshire_reg_top #(
     addr_hit[20] = (reg_addr == CHESHIRE_HW_FEATURES_OFFSET);
     addr_hit[21] = (reg_addr == CHESHIRE_LLC_SIZE_OFFSET);
     addr_hit[22] = (reg_addr == CHESHIRE_VGA_PARAMS_OFFSET);
+    addr_hit[23] = (reg_addr == CHESHIRE_ETH_CLK_DIV_EN_OFFSET);
+    addr_hit[24] = (reg_addr == CHESHIRE_ETH_CLK_DIV_VALUE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -974,7 +1037,9 @@ module cheshire_reg_top #(
                (addr_hit[19] & (|(CHESHIRE_PERMIT[19] & ~reg_be))) |
                (addr_hit[20] & (|(CHESHIRE_PERMIT[20] & ~reg_be))) |
                (addr_hit[21] & (|(CHESHIRE_PERMIT[21] & ~reg_be))) |
-               (addr_hit[22] & (|(CHESHIRE_PERMIT[22] & ~reg_be)))));
+               (addr_hit[22] & (|(CHESHIRE_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(CHESHIRE_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(CHESHIRE_PERMIT[24] & ~reg_be)))));
   end
 
   assign scratch_0_we = addr_hit[0] & reg_we & !reg_error;
@@ -1066,6 +1131,12 @@ module cheshire_reg_top #(
   assign vga_params_green_width_re = addr_hit[22] & reg_re & !reg_error;
 
   assign vga_params_blue_width_re = addr_hit[22] & reg_re & !reg_error;
+
+  assign eth_clk_div_en_we = addr_hit[23] & reg_we & !reg_error;
+  assign eth_clk_div_en_wd = reg_wdata[0];
+
+  assign eth_clk_div_value_we = addr_hit[24] & reg_we & !reg_error;
+  assign eth_clk_div_value_wd = reg_wdata[19:0];
 
   // Read data return
   always_comb begin
@@ -1177,6 +1248,14 @@ module cheshire_reg_top #(
         reg_rdata_next[23:16] = vga_params_blue_width_qs;
       end
 
+      addr_hit[23]: begin
+        reg_rdata_next[0] = eth_clk_div_en_qs;
+      end
+
+      addr_hit[24]: begin
+        reg_rdata_next[19:0] = eth_clk_div_value_qs;
+      end
+
       default: begin
         reg_rdata_next = '1;
       end
@@ -1206,6 +1285,7 @@ module cheshire_reg_top_intf
   input logic rst_ni,
   REG_BUS.in  regbus_slave,
   // To HW
+  output cheshire_reg_pkg::cheshire_reg2hw_t reg2hw, // Write
   input  cheshire_reg_pkg::cheshire_hw2reg_t hw2reg, // Read
   // Config
   input devmode_i // If 1, explicit error return for unmapped register access
@@ -1239,6 +1319,7 @@ module cheshire_reg_top_intf
     .rst_ni,
     .reg_req_i(s_reg_req),
     .reg_rsp_o(s_reg_rsp),
+    .reg2hw, // Write
     .hw2reg, // Read
     .devmode_i
   );

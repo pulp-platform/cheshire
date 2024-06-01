@@ -131,5 +131,27 @@
       ]
     }
 
+    { name:     "eth_clk_div_en",
+      desc:     "Ethernet clock divider enable bit",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval:   "1",
+      hwqe:     "1",
+      fields: [
+        { bits: "0:0" }
+      ]
+    }
+
+    { name:     "eth_clk_div_value",
+      desc:     "Ethernet clock divider value",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval:   "10",
+      hwqe:     "1",
+      fields: [
+        { bits: "19:0" }
+      ]
+    }
+
   ]
 }

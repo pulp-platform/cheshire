@@ -49,8 +49,6 @@ module fixture_cheshire_soc #(
   logic i2c_scl_i;
   logic i2c_scl_en;
 
-  logic       eth_clk125;
-  logic       eth_clk125q;
   logic       eth_rxck;
   logic [3:0] eth_rxd;
   logic       eth_rxctl;
@@ -93,6 +91,8 @@ module fixture_cheshire_soc #(
     .test_mode_i        ( test_mode ),
     .boot_mode_i        ( boot_mode ),
     .rtc_i              ( rtc       ),
+    .periph_clk_i       ( periph_clk  ),
+    .periph_rstn_i      ( periph_rstn ),
     .axi_llc_mst_req_o  ( axi_llc_mst_req ),
     .axi_llc_mst_rsp_i  ( axi_llc_mst_rsp ),
     .axi_ext_mst_req_i  ( '0 ),
@@ -129,8 +129,6 @@ module fixture_cheshire_soc #(
     .i2c_scl_o          ( i2c_scl_o  ),
     .i2c_scl_i          ( i2c_scl_i  ),
     .i2c_scl_en_o       ( i2c_scl_en ),
-    .eth_clk125_i       ( eth_clk125  ),
-    .eth_clk125q_i      ( eth_clk125q ),
     .eth_rxck_i         ( eth_rxck    ),
     .eth_rxd_i          ( eth_rxd     ),
     .eth_rxctl_i        ( eth_rxctl   ),

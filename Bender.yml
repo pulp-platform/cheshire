@@ -32,7 +32,7 @@ dependencies:
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.1  }
   tagger:                   { git: "https://github.com/pulp-platform/transaction-tagger.git",     rev: b288376    }
   unbent:                   { git: "https://github.com/pulp-platform/unbent.git",                 version: 0.1.6  }
-  pulp-ethernet:            { git: "https://github.com/pulp-platform/pulp-ethernet.git",          rev: "28fd13f"  } # branch: cl/eth_idma
+  pulp-ethernet:            { git: "https://github.com/pulp-platform/pulp-ethernet.git",          rev: "bf5fc00"  } # branch: cl/eth_idma
 
 export_include_dirs:
   - hw/include
