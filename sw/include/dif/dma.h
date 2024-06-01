@@ -121,5 +121,3 @@
     }
 
 X(sys, &__base_dma);
-
-#undef X

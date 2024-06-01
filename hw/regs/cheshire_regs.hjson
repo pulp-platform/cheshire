@@ -131,6 +131,16 @@
       ]
     }
 
+    { name:     "harts_sync"
+      desc:     "Available harts' synchronization request."
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwqe:     "true"
+      fields: [
+        { bits: "31:0", name: "hart_sync", desc: "Harts sync request." }
+      ]
+    }
+
     { name:     "eth_clk_div_en",
       desc:     "Ethernet clock divider enable bit",
       swaccess: "rw",

@@ -123,8 +123,7 @@ module cheshire_top_xilinx (
 
   wire sys_clk;
   wire soc_clk;
-  logic eth_clk_125;
-  logic eth_clk_90;
+  logic periph_clk;
   logic eth_clk_200;
 
   IBUFDS #(
@@ -141,8 +140,8 @@ module cheshire_top_xilinx (
     .locked     (              ),
     .clk_200    ( eth_clk_200  ),
     .clk_50     ( soc_clk      ),
-    .clk_125    ( eth_clk_125  ),
-    .clk_125_90 ( eth_clk_90   )
+    .clk_500    ( periph_clk   ),
+    .clk_10     (              )
   );
 
   /////////////////////
@@ -451,6 +450,9 @@ module cheshire_top_xilinx (
     .test_mode_i        ( test_mode_i ),
     .boot_mode_i        ( boot_mode   ),
     .rtc_i              ( rtc_clk_q       ),
+    .periph_clk_i       ( periph_clk    ),
+    .periph_rstn_i      ( rst_n         ),
+    .eth_clk200_i       ( eth_clk_200     ),
     .axi_llc_mst_req_o  ( axi_llc_mst_req ),
     .axi_llc_mst_rsp_i  ( axi_llc_mst_rsp ),
     .axi_ext_mst_req_i  ( '0 ),
@@ -486,9 +488,6 @@ module cheshire_top_xilinx (
     .i2c_scl_o          ( i2c_scl_soc_out ),
     .i2c_scl_i          ( i2c_scl_soc_in  ),
     .i2c_scl_en_o       ( i2c_scl_en      ),
-    .eth_clk125_i       ( eth_clk_125 ),
-    .eth_clk125q_i      ( eth_clk_90  ),
-    .eth_clk200_i       ( eth_clk_200 ),
     .eth_rxck_i         ( eth_rxck    ),
     .eth_rxd_i          ( eth_rxd     ),
     .eth_rxctl_i        ( eth_rxctl   ),
