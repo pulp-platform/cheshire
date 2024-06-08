@@ -12,24 +12,24 @@
 #include "params.h"
 
 // CVA6 HMR Unit
-#define HMR_CORE_OFFS               0x100
-#define HMR_DMR_OFFS                0x200
-#define HMR_TMR_OFFS                0x300
-#define HMR_CORE_INCREMENT          0x010
-#define HMR_CORE_SLL                0x004
-#define HMR_DMR_INCREMENT           0x010
-#define HMR_DMR_SLL                 0x004
-#define HMR_TMR_INCREMENT           0x010
-#define HMR_TMR_SLL                 0x004
+#define HMR_CORE_OFFS 0x100
+#define HMR_DMR_OFFS 0x200
+#define HMR_TMR_OFFS 0x300
+#define HMR_CORE_INCREMENT 0x010
+#define HMR_CORE_SLL 0x004
+#define HMR_DMR_INCREMENT  0x010
+#define HMR_DMR_SLL 0x004
+#define HMR_TMR_INCREMENT 0x010
+#define HMR_TMR_SLL 0x004
 
 // Stack Pointer storage register
 #define HMR_CORE_REGS_SP_STORE_REG_OFFSET 0x8
-#define HMR_DMR_ENABLE_OFFS         0x0
-#define HMR_DMR_CFG_REG_OFFS        0x4
+#define HMR_DMR_ENABLE_OFFS 0x0
+#define HMR_DMR_CFG_REG_OFFS 0x4
 #define HMR_DMR_CHECKPOINT_REG_OFFS 0x8
-#define HMR_DMR_ENABLE              HMR_DMR_OFFS + HMR_DMR_ENABLE_OFFS
-#define HMR_DMR_CFG                 HMR_DMR_OFFS + HMR_DMR_CFG_REG_OFFS
-#define HMR_DMR_CHECKPOINT          HMR_DMR_OFFS + HMR_DMR_CHECKPOINT_REG_OFFS
+#define HMR_DMR_ENABLE HMR_DMR_OFFS + HMR_DMR_ENABLE_OFFS
+#define HMR_DMR_CFG HMR_DMR_OFFS + HMR_DMR_CFG_REG_OFFS
+#define HMR_DMR_CHECKPOINT HMR_DMR_OFFS + HMR_DMR_CHECKPOINT_REG_OFFS
 
 static inline volatile uint8_t *reg8(void *base, int offs) {
     return (volatile uint8_t *)(base + offs);

@@ -82,7 +82,8 @@ int main(void) {
     }
 
     // Resume SMP and launch payload
-    printf("[ZSL] Launch firmware at %lx with device tree at %lx\r\n", __BOOT_ZSL_FW, __BOOT_ZSL_DTB);
+    printf("[ZSL] Launch firmware at %lx with device tree at %lx\r\n", __BOOT_ZSL_FW,
+           __BOOT_ZSL_DTB);
     smp_resume();
     payload_t fw = __BOOT_ZSL_FW;
     fencei();

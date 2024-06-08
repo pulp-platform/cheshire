@@ -10,10 +10,10 @@ void smp_pause(void) {
     uint64_t mhartid = get_mhartid();
     uint64_t next_addr_lo = 0x0;
     uint64_t next_addr_hi = 0x0;
-    
+
     fence();
     if (mhartid != 0x0) {
-        // Enable M-mode software interrupts. 
+        // Enable M-mode software interrupts.
         set_msie(true);
 
         // Remain in WFI until the MSIP bit is set and clear it on wake-up.
@@ -30,7 +30,7 @@ void smp_pause(void) {
         next_addr_hi = (uint64_t)*reg32(&__base_regs, CHESHIRE_SCRATCH_5_REG_OFFSET);
 
         // Flush i-cache and jump.
-        invoke((void*)(next_addr_lo | (next_addr_hi << 32)));
+        invoke((void *)(next_addr_lo | (next_addr_hi << 32)));
     }
 }
 
@@ -46,9 +46,10 @@ void smp_resume(void) {
 
     // Flush cache and wake-up all sleeping cores.
     fence();
-    for (uint32_t i=1; i<num_harts; i++) {
+    for (uint32_t i = 1; i < num_harts; i++) {
         *reg32(&__base_clint, i << 2) = 0x1;
-        while (*reg32(&__base_clint, i << 2));
+        while (*reg32(&__base_clint, i << 2))
+            ;
     }
 
 Lsmp_resume_target:
