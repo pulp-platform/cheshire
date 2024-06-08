@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Emanuele Parisi <emanuele.parisi@unibo.it> 
+// Emanuele Parisi <emanuele.parisi@unibo.it>
 
 #include "smp.h"
 

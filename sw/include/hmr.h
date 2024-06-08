@@ -21,71 +21,69 @@ void __attribute__((naked)) chs_hmr_store_state() {
     // we do not lose menaingful infor before clear
     fencei();
     // Disable caches to store state in memory
-    __asm__ __volatile__ (
-      "csrrwi x0, 0x7C1, 0x0 \n\t"
-      : : : "memory");
+    __asm__ __volatile__("csrrwi x0, 0x7C1, 0x0 \n\t" : : : "memory");
 
-    __asm__ __volatile__ (
-      // Allocate space on top of the stack to store
-      // the state
-      "add  sp, sp, -" QU(HmrStateSize) " \n\t"
+    __asm__ __volatile__(
+        // Allocate space on top of the stack to store
+        // the state
+        "add  sp, sp, -" QU(HmrStateSize) " \n\t"
 
-                                        // Store registers to stack
-                                        // zero not stored as hardwired (x0)
-                                        // ra stored as HMR checkpoint (x1)
-                                        // sp stored to HMR once complete (x2)
-                                        "sd   t0,  0x20(sp) \n\t" //  x5
-                                        "sd   t1,  0x28(sp) \n\t" //  x6
-                                        "sd   t2,  0x30(sp) \n\t" //  x7
-      :
-      :
-      : "memory");
+                                          // Store registers to stack
+                                          // zero not stored as hardwired (x0)
+                                          // ra stored as HMR checkpoint (x1)
+                                          // sp stored to HMR once complete (x2)
+                                          "sd   t0,  0x20(sp) \n\t" //  x5
+                                          "sd   t1,  0x28(sp) \n\t" //  x6
+                                          "sd   t2,  0x30(sp) \n\t" //  x7
+        :
+        :
+        : "memory");
 
-    __asm__ __volatile__ ("sd   gp,  0x10(sp) \n\t" //  x3
-                          "sd   tp,  0x18(sp) \n\t" //  x4
-                          "sd   x8,  0x38(sp) \n\t" //  fp
-                          "sd   s1,  0x40(sp) \n\t" //  x9
-                          "sd   a0,  0x48(sp) \n\t" // x10
-                          "sd   a1,  0x50(sp) \n\t" // x11
-                          "sd   a2,  0x58(sp) \n\t" // x12
-                          "sd   a3,  0x60(sp) \n\t" // x13
-                          "sd   a4,  0x68(sp) \n\t" // x14
-                          "sd   a5,  0x70(sp) \n\t" // x15
-                          "sd   a6,  0x78(sp) \n\t" // x16
-                          "sd   a7,  0x80(sp) \n\t" // x17
-                          "sd   s2,  0x88(sp) \n\t" // x18
-                          "sd   s3,  0x90(sp) \n\t" // x19
-                          "sd   s4,  0x98(sp) \n\t" // x20
-                          "sd   s5,  0xA0(sp) \n\t" // x21
-                          "sd   s6,  0xA8(sp) \n\t" // x22
-                          "sd   s7,  0xB0(sp) \n\t" // x23
-                          "sd   s8,  0xB8(sp) \n\t" // x24
-                          "sd   s9,  0xC0(sp) \n\t" // x25
-                          "sd   s10, 0xC8(sp) \n\t" // x26
-                          "sd   s11, 0xD0(sp) \n\t" // x27
-                          "sd   t3,  0xD8(sp) \n\t" // x28
-                          "sd   t4,  0xE0(sp) \n\t" // x29
-                          "sd   t5,  0xE8(sp) \n\t" // x30
-                          "sd   t6,  0xF0(sp) \n\t" // x31
+    __asm__ __volatile__("sd   gp,  0x10(sp) \n\t" //  x3
+                         "sd   tp,  0x18(sp) \n\t" //  x4
+                         "sd   x8,  0x38(sp) \n\t" //  fp
+                         "sd   s1,  0x40(sp) \n\t" //  x9
+                         "sd   a0,  0x48(sp) \n\t" // x10
+                         "sd   a1,  0x50(sp) \n\t" // x11
+                         "sd   a2,  0x58(sp) \n\t" // x12
+                         "sd   a3,  0x60(sp) \n\t" // x13
+                         "sd   a4,  0x68(sp) \n\t" // x14
+                         "sd   a5,  0x70(sp) \n\t" // x15
+                         "sd   a6,  0x78(sp) \n\t" // x16
+                         "sd   a7,  0x80(sp) \n\t" // x17
+                         "sd   s2,  0x88(sp) \n\t" // x18
+                         "sd   s3,  0x90(sp) \n\t" // x19
+                         "sd   s4,  0x98(sp) \n\t" // x20
+                         "sd   s5,  0xA0(sp) \n\t" // x21
+                         "sd   s6,  0xA8(sp) \n\t" // x22
+                         "sd   s7,  0xB0(sp) \n\t" // x23
+                         "sd   s8,  0xB8(sp) \n\t" // x24
+                         "sd   s9,  0xC0(sp) \n\t" // x25
+                         "sd   s10, 0xC8(sp) \n\t" // x26
+                         "sd   s11, 0xD0(sp) \n\t" // x27
+                         "sd   t3,  0xD8(sp) \n\t" // x28
+                         "sd   t4,  0xE0(sp) \n\t" // x29
+                         "sd   t5,  0xE8(sp) \n\t" // x30
+                         "sd   t6,  0xF0(sp) \n\t" // x31
 
-                          // Manually store necessary CSRs
-                          // "csrr t1,  0x341 \n\t"    // mepc
-                          // "csrr t2,  0x300 \n\t"    // mstatus
-                          // "sw   t1,  0x78(sp) \n\t" // mepc
-                          // "csrr t1,  0x304 \n\t"    // mie
-                          // "sw   t2,  0x7C(sp) \n\t" // mstatus
-                          // "csrr t2,  0x305 \n\t"    // mtvec
-                          // "sw   t1,  0x80(sp) \n\t" // mie
-                          // "csrr t1,  0x340 \n\t"    // mscratch
-                          // "sw   t2,  0x84(sp) \n\t" // mtvec
-                          // "csrr t2,  0x342 \n\t"    // mcause
-                          // "sw   t1,  0x88(sp) \n\t" // mscratch
-                          // "csrr t1,  0x343 \n\t"    // mtval
-                          // "sw   t2,  0x8C(sp) \n\t" // mcause
-                          // "sw   t1,  0x90(sp) \n\t" // mtval
-      :
-      :
-      : "memory");
+                         // Manually store necessary CSRs
+                         // "csrr t1,  0x341 \n\t"    // mepc
+                         // "csrr t2,  0x300 \n\t"    // mstatus
+                         // "sw   t1,  0x78(sp) \n\t" // mepc
+                         // "csrr t1,  0x304 \n\t"    // mie
+                         // "sw   t2,  0x7C(sp) \n\t" // mstatus
+                         // "csrr t2,  0x305 \n\t"    // mtvec
+                         // "sw   t1,  0x80(sp) \n\t" // mie
+                         // "csrr t1,  0x340 \n\t"    // mscratch
+                         // "sw   t2,  0x84(sp) \n\t" // mtvec
+                         // "csrr t2,  0x342 \n\t"    // mcause
+                         // "sw   t1,  0x88(sp) \n\t" // mscratch
+                         // "csrr t1,  0x343 \n\t"    // mtval
+                         // "sw   t2,  0x8C(sp) \n\t" // mcause
+                         // "sw   t1,  0x90(sp) \n\t" // mtval
+                         :
+                         :
+                         : "memory");
 
     // store sp to hmr core reg
     __asm__ __volatile__(
@@ -130,7 +128,7 @@ void __attribute__((naked)) chs_hmr_store_state() {
 }
 
 void __attribute__((naked)) chs_hmr_load_state() {
-  // Read the SP from HMR register
+    // Read the SP from HMR register
     __asm__ __volatile__(
         "csrr t0, mhartid \n\t" // Read core id
         "li t1, " QU(

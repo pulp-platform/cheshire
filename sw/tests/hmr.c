@@ -17,13 +17,12 @@ int main(void) {
     printf("%d!\n", hart_id());
 
     // Only hart 0 gets here
-    if (hart_id() == 0){
-      // Check if DMR is enabled. If not, enable it
-      if (!(*reg32(&__base_hmr, HMR_DMR_ENABLE)))
-        *reg32(&__base_hmr, HMR_DMR_ENABLE) = 0x1;
-      // Wake up the SMP core
-      smp_resume();
-    }
+    if (hart_id() == 0) {
+        // Check if DMR is enabled. If not, enable it
+        if (!(*reg32(&__base_hmr, HMR_DMR_ENABLE))) *reg32(&__base_hmr, HMR_DMR_ENABLE) = 0x1;
+        // Wake up the SMP core
+        smp_resume();
+     }
 
     chs_hmr_store_state(); // -> Save state on top of the stack
                            //    Fence.i to flush caches

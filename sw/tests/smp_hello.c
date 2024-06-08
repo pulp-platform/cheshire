@@ -19,20 +19,14 @@
 uint32_t __attribute__((section(".data"))) semaphore = 0x0;
 
 void semaphore_wait() {
-    asm volatile (
-        "   li t0, 1                    \n"
-        "1:                             \n"
-        "   amoswap.w.aq t0, t0, (%0)   \n"
-        "   bnez t0, 1b                 \n"
-        ::"r"(&semaphore)
-    );
+    asm volatile("   li t0, 1                    \n"
+                 "1:                             \n"
+                 "   amoswap.w.aq t0, t0, (%0)   \n"
+                 "   bnez t0, 1b                 \n" ::"r"(&semaphore));
 }
 
 void semaphore_post() {
-    asm volatile (
-        "   amoswap.w.rl zero, zero, (%0)   \n"
-        ::"r"(&semaphore)
-    );
+    asm volatile("   amoswap.w.rl zero, zero, (%0)   \n" ::"r"(&semaphore));
 }
 
 int main(void) {
