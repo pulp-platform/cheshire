@@ -22,7 +22,7 @@ int main(void) {
         if (!(*reg32(&__base_hmr, HMR_DMR_ENABLE))) *reg32(&__base_hmr, HMR_DMR_ENABLE) = 0x1;
         // Wake up the SMP core
         smp_resume();
-     }
+    }
 
     chs_hmr_store_state(); // -> Save state on top of the stack
                            //    Fence.i to flush caches

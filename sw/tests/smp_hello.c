@@ -36,7 +36,7 @@ int main(void) {
 
     smp_resume();
 
-    for (uint64_t i=0; i<10; i++) {
+    for (uint64_t i = 0; i < 10; i++) {
         semaphore_wait();
         printf("Hello World! - (%d, %d)\r\n", get_mhartid(), i);
         semaphore_post();
