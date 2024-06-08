@@ -10,14 +10,17 @@
 #define QUAUX(X) #X
 #define QU(X) QUAUX(X)
 
-// We save 31 32-bit registers from RF
 #define BaseRegs 0x03000000
 #define BaseHmr 0x0300B000
+// We save 31 32-bit registers from RF
 #define NumRfRegs 0x1F
 #define HmrStateSize 0x8*NumRfRegs
 
 void __attribute__((naked)) chs_hmr_store_state() {
-  // Disable caches
+  // First flush data and instruction caches to ensure
+  // we do not lose menaingful infor before clear
+  fencei();
+  // Disable caches to store state in memory
   __asm__ __volatile__ (
     "csrrwi x0, 0x7C1, 0x0 \n\t"
     : : : "memory");

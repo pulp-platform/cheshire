@@ -19,8 +19,6 @@ int main(void) {
                                                  // If hart_id() == 1 -> return 0;
 
   // Hart 0 enters first
-  //if (hart_id() != 0) wfi();
-
   printf("%d!\n", hart_id());
 
   // Only hart 0 gets here
@@ -35,6 +33,7 @@ int main(void) {
   }
 
   chs_hmr_store_state(); // -> Save state on top of the stack
+                         //    Fence.i to flush caches
                          //    Save sp (x2) in HMR dedicated reg
                          //    Save ra (x1) in DMR checkpoint reg
                          //    Write synchronization request
