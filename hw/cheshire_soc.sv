@@ -812,7 +812,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   axi_id_remap_intf #(
     .AXI_SLV_PORT_ID_WIDTH     ( CCUIdWidth        ),
     .AXI_SLV_PORT_MAX_UNIQ_IDS ( 4                 ),
-    .AXI_MAX_TXNS_PER_ID       ( 1                 ),
+    .AXI_MAX_TXNS_PER_ID       ( 4                 ),
     .AXI_MST_PORT_ID_WIDTH     ( Cfg.AxiMstIdWidth ),
     .AXI_ADDR_WIDTH            ( Cfg.AddrWidth     ),
     .AXI_DATA_WIDTH            ( Cfg.AxiDataWidth  ),
