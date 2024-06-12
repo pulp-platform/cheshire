@@ -7,6 +7,7 @@
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 BENDER ?= bender
+MORTY  ?= morty
 
 VLOG_ARGS ?= -suppress 2583 -suppress 13314
 VSIM      ?= vsim
@@ -160,6 +161,17 @@ CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 #############
 
 include $(CHS_ROOT)/target/xilinx/xilinx.mk
+
+#############
+# Pickle    #
+#############
+
+$(CHS_ROOT)/target/pickle/sources.json: Bender.yml Bender.lock
+	$(BENDER) sources -t fpga -t cv64a6_imafdcsclic_sv39 -t cva6 -f > $@
+
+$(CHS_ROOT)/target/pickle/%.sv: $(CHS_ROOT)/target/pickle/sources.json
+	$(MORTY) -f $^ --top $* -i --sequential --propagate_defines -o $@
+
 
 #################################
 # Phonies (KEEP AT END OF FILE) #
