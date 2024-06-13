@@ -107,6 +107,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Declare interface types internally
   `CHESHIRE_TYPEDEF_ALL(, Cfg)
 
+
   //////////////////
   //  Interrupts  //
   //////////////////
