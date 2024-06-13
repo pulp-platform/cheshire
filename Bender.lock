@@ -77,6 +77,13 @@ packages:
     dependencies:
     - common_cells
     - register_interface
+  cluster_interconnect:
+    revision: 7d0a4f8acae71a583a6713cab5554e60b9bb8d27
+    version: 1.2.1
+    source:
+      Git: https://github.com/pulp-platform/cluster_interconnect.git
+    dependencies:
+    - common_cells
   common_cells:
     revision: 0d67563b6b592549542544f1abc0f43e5d4ee8b4
     version: 1.35.0
@@ -92,10 +99,10 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: null
+    revision: 9cb2112d5b7823a3b4ad42a1a2419b65e623ec14
     version: null
     source:
-      Path: /usr/scratch/mountainview/scheremo/cva6
+      Git: git@github.com:Scheremo/cva6.git
     dependencies:
     - axi
     - common_cells
@@ -135,6 +142,17 @@ packages:
     - axi
     - common_cells
     - register_interface
+  memory_island:
+    revision: null
+    version: null
+    source:
+      Path: ..//memory_island
+    dependencies:
+    - axi
+    - cluster_interconnect
+    - common_cells
+    - common_verification
+    - tech_cells_generic
   opentitan_peripherals:
     revision: cd3153de2783abd3d03d0595e6c4b32413c62f14
     version: 0.4.0
@@ -145,14 +163,15 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: 146501d80052b61475cdc333d3aab4cd769fd5dc
-    version: 0.3.9
+    revision: ae616e5a1ec2b41e72d200e5ab09c65e94aebd3d
+    version: 0.4.4
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:
     - apb
     - axi
     - common_cells
+    - common_verification
   riscv-dbg:
     revision: 358f90110220adf7a083f8b65d157e836d706236
     version: 0.8.1

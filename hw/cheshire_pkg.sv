@@ -364,7 +364,7 @@ package cheshire_pkg;
     if (cfg.Dma)          begin i++; r++; ret.dma = i; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
     if (cfg.SerialLink)   begin i++; r++; ret.slink = i;
 	ret.map[r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
-    if (cfg.MemoryIsland) begin i++; r++; ret.memoryisland = i;
+     if (cfg.MemoryIsland) begin i++; r++; ret.memoryisland = i;
        ret.map[r] = '{i, cfg.MemIslRegionStart, cfg.MemIslRegionEnd}; end
     // External port indices start after internal ones
     i++; r++;
@@ -470,13 +470,13 @@ package cheshire_pkg;
     case (cfg.AxiMstIdWidth)
       // Provide exclusive ID to I-cache to prevent fetch blocking
       1: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 0}, '{Cva6IdBypAccel, 0}, '{Cva6IdBypStore, 0},
-                  '{Cva6IdBypAmo, 0}, '{Cva6IdICache,  1}, '{Cva6IdDCache,   0}};
+		  '{Cva6IdBypAmo, 0}, '{Cva6IdICache,  1}, '{Cva6IdDCache,   0}};
       // Colocate Load/Store and MMU/AMO bypasses, respectively
       2: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 1}, '{Cva6IdBypAccel, 1}, '{Cva6IdBypStore, 1},
-                  '{Cva6IdBypAmo, 0}, '{Cva6IdICache,  2}, '{Cva6IdDCache,   3}};
+		  '{Cva6IdBypAmo, 0}, '{Cva6IdICache,  2}, '{Cva6IdDCache,   3}};
       // Compress output ID space without any serialization
       3: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 1}, '{Cva6IdBypAccel, 6}, '{Cva6IdBypStore, 2},
-                  '{Cva6IdBypAmo, 3}, '{Cva6IdICache,  4}, '{Cva6IdDCache,   5}};
+		  '{Cva6IdBypAmo, 3}, '{Cva6IdICache,  4}, '{Cva6IdDCache,   5}};
       // With 4b of ID or more, no remapping is necessary
       default: return '{default: '{0, 0}};
     endcase

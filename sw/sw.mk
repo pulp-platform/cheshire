@@ -10,6 +10,8 @@
 
 CHS_XLEN ?= 64
 
+ifeq (${CHS_XLEN}, 64)
+
 CHS_SW_64_GCC_BINROOT ?= $(dir $(shell which riscv64-unknown-elf-gcc))
 CHS_SW_64_DTC     ?= dtc
 
@@ -21,6 +23,9 @@ CHS_SW_64_LTOPLUG := $(shell find $(shell dirname $(CHS_SW_64_GCC_BINROOT))/libe
 
 CHS_SW_64_FLAGS   ?= -DOT_PLATFORM_RV32 -march=rv64gc -mabi=lp64d
 
+endif
+ifeq (${CHS_XLEN}, 32)
+
 CHS_SW_32_GCC_BINROOT ?= $(dir $(shell which riscv32-unknown-elf-gcc))
 CHS_SW_32_DTC     ?= dtc
 
@@ -30,7 +35,9 @@ CHS_SW_32_OBJCOPY := $(CHS_SW_32_GCC_BINROOT)/riscv32-unknown-elf-objcopy
 CHS_SW_32_OBJDUMP := $(CHS_SW_32_GCC_BINROOT)/riscv32-unknown-elf-objdump
 CHS_SW_32_LTOPLUG := $(shell find $(shell dirname $(CHS_SW_32_GCC_BINROOT))/libexec/gcc/riscv32-unknown-elf/**/liblto_plugin.so)
 
-CHS_SW_32_FLAGS ?= -DOT_PLATFORM_RV32 -march=rv32imc -mabi=ilp32 
+CHS_SW_32_FLAGS ?= -DOT_PLATFORM_RV32 -march=rv32imc -mabi=ilp32
+
+endif
 
 ifeq (${CHS_XLEN}, 64)
 
@@ -210,10 +217,11 @@ CHS_SW_TEST_SRCS_S  	= $(wildcard $(CHS_SW_DIR)/tests/*.S)
 CHS_SW_TEST_SRCS_C     	= $(wildcard $(CHS_SW_DIR)/tests/*.c)
 CHS_SW_TEST_DRAM_DUMP  	= $(CHS_SW_TEST_SRCS_S:.S=.dram.dump) $(CHS_SW_TEST_SRCS_C:.c=.dram.dump)
 CHS_SW_TEST_SPM_DUMP   	= $(CHS_SW_TEST_SRCS_S:.S=.spm.dump)  $(CHS_SW_TEST_SRCS_C:.c=.spm.dump)
+CHS_SW_TEST_MEMISL_DUMP = $(CHS_SW_TEST_SRCS_S:.S=.memisl.dump)  $(CHS_SW_TEST_SRCS_C:.c=.memisl.dump)
 CHS_SW_TEST_SPM_ROMH   	= $(CHS_SW_TEST_SRCS_S:.S=.rom.memh)  $(CHS_SW_TEST_SRCS_C:.c=.rom.memh)
 CHS_SW_TEST_SPM_GPTH   	= $(CHS_SW_TEST_SRCS_S:.S=.gpt.memh)  $(CHS_SW_TEST_SRCS_C:.c=.gpt.memh)
 
-CHS_SW_TESTS = $(CHS_SW_TEST_DRAM_DUMP) $(CHS_SW_TEST_SPM_DUMP) $(CHS_SW_TEST_SPM_ROMH) $(CHS_SW_TEST_SPM_GPTH)
+CHS_SW_TESTS = $(CHS_SW_TEST_DRAM_DUMP) $(CHS_SW_TEST_SPM_DUMP) $(CHS_SW_TEST_MEMISL_DUMP) $(CHS_SW_TEST_SPM_ROMH) $(CHS_SW_TEST_SPM_GPTH)
 
 #########
 # Clean #

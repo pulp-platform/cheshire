@@ -539,6 +539,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   end else begin : gen_llc_stubout
 
     assign axi_llc_mst_req_o  = '0;
+    assign axi_llc_cut_rsp    = '0;
 
   end
 
@@ -1359,8 +1360,8 @@ module cheshire_soc import cheshire_pkg::*; #(
 			       .AddrWidth (Cfg.AddrWidth),
 			       .NarrowDataWidth (Cfg.AxiDataWidth),
 			       .WideDataWidth (Cfg.AxiDataWidth * Cfg.MemIslNarrowToWideFactor),
-			       .AxiNarrowIdWidth (Cfg.AxiMstIdWidth),
-			       .AxiWideIdWidth (Cfg.AxiMstIdWidth),
+			       .AxiNarrowIdWidth (AxiSlvIdWidth),
+			       .AxiWideIdWidth (AxiSlvIdWidth),
 			       .axi_narrow_req_t (axi_slv_req_t),
 			       .axi_narrow_rsp_t (axi_slv_rsp_t),
 			       .axi_wide_req_t (mem_isl_wide_axi_slv_req_t),
