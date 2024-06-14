@@ -132,11 +132,11 @@ package cheshire_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    cheshire_hw2reg_boot_mode_reg_t boot_mode; // [486:485]
-    cheshire_hw2reg_rtc_freq_reg_t rtc_freq; // [484:453]
-    cheshire_hw2reg_platform_rom_reg_t platform_rom; // [452:421]
-    cheshire_hw2reg_num_int_harts_reg_t num_int_harts; // [420:389]
-    cheshire_hw2reg_hw_features_reg_t hw_features; // [388:376]
+    cheshire_hw2reg_boot_mode_reg_t boot_mode; // [487:486]
+    cheshire_hw2reg_rtc_freq_reg_t rtc_freq; // [485:454]
+    cheshire_hw2reg_platform_rom_reg_t platform_rom; // [453:422]
+    cheshire_hw2reg_num_int_harts_reg_t num_int_harts; // [421:390]
+    cheshire_hw2reg_hw_features_reg_t hw_features; // [389:376]
     cheshire_hw2reg_llc_size_reg_t llc_size; // [375:344]
     cheshire_hw2reg_llc_hit_cnt_write_cache_reg_t llc_hit_cnt_write_cache; // [343:312]
     cheshire_hw2reg_llc_hit_cnt_read_cache_reg_t llc_hit_cnt_read_cache; // [311:280]
