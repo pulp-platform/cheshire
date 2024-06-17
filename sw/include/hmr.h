@@ -115,6 +115,7 @@ void __attribute__((naked)) chs_hmr_store_state() {
                                                                 "li t3, 1 \n\t"
                                                                 "sll t3, t3, t0 \n\t"
                                                                 "or t2, t2, t3 \n\t"
+                                                                "fence \n\t"
                                                                 "sw t2, 0(t1) \n\t"
         :
         :
