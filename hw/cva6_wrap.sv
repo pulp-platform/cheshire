@@ -74,9 +74,19 @@ typedef struct packed {
 logic                         cores_sync;
 logic          [NumHarts-1:0] core_setback;
 cva6_inputs_t  [NumHarts-1:0] sys2hmr, hmr2core;
-cva6_outputs_t [NumHarts-1:0] hmr2sys, core2hmr;
+cva6_outputs_t [NumHarts-1:0] hmr2sys, core2hmr, intermediate_bus;
 core_req_t [NumHarts-1:0] core2hmr_core_req, hmr2sys_core_req;
 cheshire_pkg::doub_bt [NumHarts-1:0] core_bootaddress;
+
+always_comb begin
+  for (int i = 0; i < NumHarts; i++) begin
+    hmr2sys[i] = intermediate_bus[i];
+    if (i%2 != 0 && redundancy_en_o) begin
+      hmr2sys[i].core_req.r_ready = 1'b1;
+      hmr2sys[i].core_req.b_ready = 1'b1;
+    end
+  end
+end
 
 for (genvar i = 0; i < NumHarts; i++) begin: gen_cva6_cores
   // Bind system inputs to HMR.
@@ -195,7 +205,7 @@ if (NumHarts > 1) begin: gen_multicore_hmr
 
     .sys_bootaddress_i     ( bootaddress_i ),
     .sys_inputs_i          ( sys2hmr       ),
-    .sys_nominal_outputs_o ( hmr2sys       ),
+    .sys_nominal_outputs_o ( /*hmr2sys*/intermediate_bus       ),
     .sys_bus_outputs_o     (               ),
     .sys_axi_outputs_o     ( /*hmr2sys_core_req*/ ),
     // CVA6 boot does not rely on fetch enable.
