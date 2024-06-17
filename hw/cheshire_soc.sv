@@ -121,7 +121,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   localparam int unsigned IntrRtdPlic     = 0;
   localparam int unsigned IntrRtdCoreBase = 1;
   localparam int unsigned IntrRtdExtBase  = IntrRtdCoreBase + NumIntHarts;
-  localparam int unsigned CCUIdWidth = Cva6IdWidth + $clog2(NumIntHarts) + $clog2(NumIntHarts+1);
+  localparam int unsigned CCUIdWidth = Cva6IdWidth + $clog2(NumIntHarts) + $clog2(NumIntHarts+1) + 1;
 
   // This routable type is as wide or wider than all targets.
   // It must be truncated before target connection.
@@ -801,6 +801,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     AxiIdUsedSlvPorts  : Cva6IdWidth,
     UniqueIds          : 1'b1,
     DcacheLineWidth    : ariane_pkg::DCACHE_LINE_WIDTH,
+    DcacheIndexWidth   : ariane_pkg::DCACHE_INDEX_WIDTH,
     AxiAddrWidth       : Cfg.AddrWidth,
     AxiUserWidth       : Cfg.AxiUserWidth,
     AxiDataWidth       : Cfg.AxiDataWidth
