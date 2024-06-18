@@ -1340,6 +1340,9 @@ module cheshire_soc import cheshire_pkg::*; #(
   end else begin : gen_no_ethernet
       assign intr.intn.ethernet = 1'b0;
       assign eth_txck_o = 1'b0;
+      assign eth_rstn_o = 1'b0;
+      assign eth_txctl_o = 1'b0;
+      assign eth_txd_o = 4'b0;
   end
 
   ////////////////
