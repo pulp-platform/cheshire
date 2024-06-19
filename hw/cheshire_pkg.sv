@@ -91,6 +91,7 @@ package cheshire_pkg;
     dw_bt   AxiDataWidth;
     dw_bt   AxiUserWidth;
     aw_bt   AxiMstIdWidth;
+    aw_bt   TFLenWidth;
     dw_bt   AxiMaxMstTrans;
     dw_bt   AxiMaxSlvTrans;
     // User signals identify atomics masters.
@@ -100,9 +101,11 @@ package cheshire_pkg;
     dw_bt   AxiUserErrBits;
     dw_bt   AxiUserErrLsb;
     doub_bt AxiUserDefault; // Default user assignment, adjusted by user features (AMO)
+    bit     CorePostCut;
     // Reg parameters
     dw_bt   RegMaxReadTxns;
     dw_bt   RegMaxWriteTxns;
+    bit     AxiToRegCut;
     aw_bt   RegAmoNumCuts;
     bit     RegAmoPostCut;
     bit     RegAdaptMemCut;
@@ -127,6 +130,7 @@ package cheshire_pkg;
     bit     Bootrom;
     bit     Uart;
     bit     I2c;
+    bit     Ethernet;
     bit     SpiHost;
     bit     Gpio;
     bit     Dma;
@@ -212,6 +216,7 @@ package cheshire_pkg;
   typedef struct packed {
     cheshire_bus_err_intr_t bus_err;
     logic [31:0] gpio;
+    logic ethernet;
     logic spih_spi_event;
     logic spih_error;
     logic i2c_host_timeout;
@@ -293,6 +298,7 @@ package cheshire_pkg;
     aw_bt vga;
     aw_bt ext_base;
     aw_bt num_in;
+    aw_bt eth;
   } axi_in_t;
 
   function automatic axi_in_t gen_axi_in(cheshire_cfg_t cfg);
@@ -303,6 +309,7 @@ package cheshire_pkg;
     if (cfg.Dma)        begin i++; ret.dma   = i; end
     if (cfg.SerialLink) begin i++; ret.slink = i; end
     if (cfg.Vga)        begin i++; ret.vga   = i; end
+    if (cfg.Ethernet)   begin i++; ret.eth   = i; end
     i++;
     ret.ext_base = i;
     ret.num_in = i + cfg.AxiExtNumMst;
@@ -380,6 +387,7 @@ package cheshire_pkg;
     aw_bt llc;
     aw_bt uart;
     aw_bt i2c;
+    aw_bt ethernet;
     aw_bt spi_host;
     aw_bt gpio;
     aw_bt slink;
@@ -388,6 +396,7 @@ package cheshire_pkg;
     aw_bt irq_router;
     aw_bt [2**MaxCoresWidth-1:0] bus_err;
     aw_bt [2**MaxCoresWidth-1:0] clic;
+    aw_bt hmr_unit;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
@@ -410,6 +419,7 @@ package cheshire_pkg;
     if (cfg.Vga)          begin i++; ret.vga        = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
     if (cfg.IrqRouter)    begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
     if (cfg.AxiRt)        begin i++; ret.axirt      = i; r++; ret.map[r] = '{i, 'h020c_0000, 'h0210_0000}; end
+    if (cfg.Ethernet)     begin i++; ret.ethernet   = i; r++; ret.map[r] = '{i, 'h0300_c000, 'h0300_d000}; end
     if (cfg.Clic) for (int j = 0; j < cfg.NumCores; j++) begin
       i++; ret.clic[j]    = i; r++; ret.map[r] = '{i, AmClic + j*'h40000, AmClic + (j+1)*'h40000};
     end
@@ -569,8 +579,9 @@ package cheshire_pkg;
     // Interconnect
     AddrWidth         : 48,
     AxiDataWidth      : 64,
-    AxiUserWidth      : 2,  // AMO(2)
+    AxiUserWidth      : 2,  // Convention: bit 0 for core(s), bit 1 for serial link
     AxiMstIdWidth     : 2,
+    TFLenWidth        : 32,
     AxiMaxMstTrans    : 24,
     AxiMaxSlvTrans    : 24,
     AxiUserAmoMsb     : 1, // Convention: lower AMO bits for cores, MSB for serial link
@@ -580,6 +591,7 @@ package cheshire_pkg;
     AxiUserDefault    : 0,
     RegMaxReadTxns    : 8,
     RegMaxWriteTxns   : 8,
+    AxiToRegCut       : 0,
     RegAmoNumCuts     : 1,
     RegAmoPostCut     : 1,
     RegAdaptMemCut    : 1,
@@ -589,12 +601,13 @@ package cheshire_pkg;
     Bootrom           : 1,
     Uart              : 1,
     I2c               : 1,
+    Ethernet          : 1,
     SpiHost           : 1,
     Gpio              : 1,
-    Dma               : 1,
+    Dma               : 0,
     SerialLink        : 1,
     Vga               : 1,
-    AxiRt             : 0,
+    AxiRt             : 1,
     Clic              : 0,
     IrqRouter         : 0,
     BusErr            : 1,

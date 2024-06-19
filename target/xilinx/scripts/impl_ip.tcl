@@ -24,13 +24,15 @@ switch $proj {
                     CONFIG.CLKOUT2_USED {true} \
                     CONFIG.CLKOUT3_USED {true} \
                     CONFIG.CLKOUT4_USED {true} \
-                    CONFIG.CLK_OUT1_PORT {clk_100} \
+                    CONFIG.CLK_OUT1_PORT {clk_200} \
                     CONFIG.CLK_OUT2_PORT {clk_50} \
-                    CONFIG.CLK_OUT3_PORT {clk_20} \
-                    CONFIG.CLK_OUT4_PORT {clk_10} \
+                    CONFIG.CLK_OUT3_PORT {clk_125} \
+                    CONFIG.CLK_OUT4_PORT {clk_125_90} \
+                    CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {200.000} \
                     CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {50.000} \
-                    CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {20.000} \
-                    CONFIG.CLKOUT4_REQUESTED_OUT_FREQ {10.000} \
+                    CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {125.000} \
+                    CONFIG.CLKOUT4_REQUESTED_OUT_FREQ {125.000} \
+                    CONFIG.CLKOUT4_REQUESTED_PHASE {90.000} \
                     CONFIG.CLKIN1_JITTER_PS {50.0} \
                     CONFIG.MMCM_CLKFBOUT_MULT_F {5.000} \
                     CONFIG.MMCM_CLKIN1_PERIOD {5.000} \

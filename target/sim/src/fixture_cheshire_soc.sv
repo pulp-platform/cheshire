@@ -49,6 +49,20 @@ module fixture_cheshire_soc #(
   logic i2c_scl_i;
   logic i2c_scl_en;
 
+  logic       eth_clk125;
+  logic       eth_clk125q;
+  logic       eth_rxck;
+  logic [3:0] eth_rxd;
+  logic       eth_rxctl;
+  logic       eth_txck;
+  logic [3:0] eth_txd;
+  logic       eth_txctl;
+  logic       eth_rstn;  
+  logic       eth_mdio_i;
+  logic       eth_mdio_o;
+  logic       eth_mdio_en;
+  logic       eth_mdc;
+
   logic                 spih_sck_o;
   logic                 spih_sck_en;
   logic [SpihNumCs-1:0] spih_csb_o;
@@ -115,6 +129,19 @@ module fixture_cheshire_soc #(
     .i2c_scl_o          ( i2c_scl_o  ),
     .i2c_scl_i          ( i2c_scl_i  ),
     .i2c_scl_en_o       ( i2c_scl_en ),
+    .eth_clk125_i       ( eth_clk125  ),
+    .eth_clk125q_i      ( eth_clk125q ),
+    .eth_rxck_i         ( eth_rxck    ),
+    .eth_rxd_i          ( eth_rxd     ),
+    .eth_rxctl_i        ( eth_rxctl   ),
+    .eth_txck_o         ( eth_txck    ),
+    .eth_txd_o          ( eth_txd     ),
+    .eth_txctl_o        ( eth_txctl   ),
+    .eth_rstn_o         ( eth_rstn    ),  
+    .eth_mdio_i         ( eth_mdio_i  ),
+    .eth_mdio_o         ( eth_mdio_o  ),
+    .eth_mdio_oe        ( eth_mdio_en ),
+    .eth_mdc_o          ( eth_mdc     ),
     .spih_sck_o         ( spih_sck_o  ),
     .spih_sck_en_o      ( spih_sck_en ),
     .spih_csb_o         ( spih_csb_o  ),
@@ -146,6 +173,8 @@ module fixture_cheshire_soc #(
   wire                 spih_sck;
   wire [SpihNumCs-1:0] spih_csb;
   wire [ 3:0]          spih_sd;
+
+  wire                 eth_mdio;
 
   vip_cheshire_soc_tristate vip_tristate (.*);
 
