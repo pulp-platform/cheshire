@@ -121,7 +121,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   localparam int unsigned IntrRtdPlic     = 0;
   localparam int unsigned IntrRtdCoreBase = 1;
   localparam int unsigned IntrRtdExtBase  = IntrRtdCoreBase + NumIntHarts;
-  localparam int unsigned CCUIdWidth = Cva6IdWidth + $clog2(NumIntHarts) + $clog2(NumIntHarts+1) + 1;
+  localparam int unsigned CCUIdWidth = Cva6IdWidth + $clog2(NumIntHarts) +
+                                       $clog2(NumIntHarts+1) + 1;
 
   // This routable type is as wide or wider than all targets.
   // It must be truncated before target connection.
