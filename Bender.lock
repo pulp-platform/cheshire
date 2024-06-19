@@ -170,7 +170,7 @@ packages:
     - register_interface
     - tech_cells_generic
   redundancy_cells:
-    revision: 9cf639bbbd2ec25bbe9a6d31ed420205d3a7f633
+    revision: efa5d0c42ec319d0cadc5fe3f5d030f74a550714
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
