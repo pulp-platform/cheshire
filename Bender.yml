@@ -27,7 +27,7 @@ dependencies:
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.6.2  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
-  redundancy_cells:         { git: "https://github.com/pulp-platform/redundancy_cells.git",       rev: "efa5d0c4" } # branch: astral-v0
+  redundancy_cells:         { git: "https://github.com/pulp-platform/redundancy_cells.git",       rev: "78aff211" } # branch: astral-v0
   register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",     version: 0.4.4  }
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              version: 0.8.1  }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.1  }
