@@ -113,6 +113,10 @@ package cheshire_pkg;
     byte_bt [2**MaxExtAxiSlvWidth-1:0]  AxiExtRegionIdx;
     doub_bt [2**MaxExtAxiSlvWidth-1:0]  AxiExtRegionStart;
     doub_bt [2**MaxExtAxiSlvWidth-1:0]  AxiExtRegionEnd;
+     // External Wide AXI ports (limited number of ports and rules)
+     bit     [MaxExtAxiMstWidth-1:0]     AxiExtNumWideMst;
+     bit [MaxExtAxiSlvWidth-1:0]	 AxiExtNumWideSlv;
+
     // External reg slaves (limited number of ports and rules)
     bit     [MaxExtRegSlvWidth-1:0]     RegExtNumSlv;
     bit     [MaxExtRegSlvWidth-1:0]     RegExtNumRules;

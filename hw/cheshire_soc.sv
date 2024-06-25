@@ -34,6 +34,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   // External AXI crossbar ports
   input  axi_ext_mst_req_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_req_i,
   output axi_ext_mst_rsp_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_rsp_o,
+  input  axi_ext_wide_mst_req_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_wide_mst_req_i,
+  output axi_ext_wide_mst_rsp_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_wide_mst_rsp_o,
   output axi_ext_slv_req_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_req_o,
   input  axi_ext_slv_rsp_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_rsp_i,
   // External reg demux slaves
