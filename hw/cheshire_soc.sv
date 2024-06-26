@@ -10,18 +10,20 @@
 
 module cheshire_soc import cheshire_pkg::*; #(
   // Cheshire config
-  parameter cheshire_cfg_t Cfg = '0,
+  parameter	 cheshire_cfg_t Cfg = '0,
   // Debug info for external harts
-  parameter dm::hartinfo_t [iomsb(Cfg.NumExtDbgHarts):0] ExtHartinfo = '0,
+  parameter	 dm::hartinfo_t [iomsb(Cfg.NumExtDbgHarts):0] ExtHartinfo = '0,
   // Interconnect types (must agree with Cheshire config)
-  parameter type axi_ext_llc_req_t  = logic,
-  parameter type axi_ext_llc_rsp_t  = logic,
-  parameter type axi_ext_mst_req_t  = logic,
-  parameter type axi_ext_mst_rsp_t  = logic,
-  parameter type axi_ext_slv_req_t  = logic,
-  parameter type axi_ext_slv_rsp_t  = logic,
-  parameter type reg_ext_req_t      = logic,
-  parameter type reg_ext_rsp_t      = logic
+  parameter type axi_ext_llc_req_t = logic,
+  parameter type axi_ext_llc_rsp_t = logic,
+  parameter type axi_ext_mst_req_t = logic,
+  parameter type axi_ext_mst_rsp_t = logic,
+  parameter type axi_ext_wide_mst_req_t = logic,
+  parameter type axi_ext_wide_mst_rsp_t = logic,
+  parameter type axi_ext_slv_req_t = logic,
+  parameter type axi_ext_slv_rsp_t = logic,
+  parameter type reg_ext_req_t = logic,
+  parameter type reg_ext_rsp_t = logic
 ) (
   input  logic        clk_i,
   input  logic        rst_ni,
@@ -1358,6 +1360,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   end
 
    if (Cfg.MemoryIsland) begin : gen_memoryisland
+
+      localparam int WideDataWidth = Cfg.AxiDataWidth * Cfg.MemIslNarrowToWideFactor;
       axi_memory_island_wrap #(
 			       .AddrWidth (Cfg.AddrWidth),
 			       .NarrowDataWidth (Cfg.AxiDataWidth),
@@ -1378,8 +1382,9 @@ module cheshire_soc import cheshire_pkg::*; #(
 						  .rst_ni,
 						  .axi_narrow_req_i( axi_out_req[AxiOut.memoryisland] ),
 						  .axi_narrow_rsp_o( axi_out_rsp[AxiOut.memoryisland] ),
-						  .axi_wide_req_i('0),
-						  .axi_wide_rsp_o()
+						  // SCHEREMO: TODO: Demux wide accesses to go over narrow ports iff address not in memory island range
+						  .axi_wide_req_i(axi_ext_wide_mst_req_i),
+						  .axi_wide_rsp_o(axi_ext_wide_mst_rsp_o)
 						  );
 
   end
