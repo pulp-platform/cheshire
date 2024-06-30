@@ -66,18 +66,18 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   inout  wire i2c_sda,
   inout  wire i2c_scl,
   // Ethernet interface
-  output   logic              clk_200MHz,
-  output  logic               phy_tx_clk,
-  output  logic               eth_clk,
-  inout  wire [ 3:0]          eth_txd,
-  inout  wire [ 3:0]          eth_rxd,
-  inout  wire                 eth_txck,
-  inout  wire                 eth_rxck,
-  inout  wire                 eth_txctl,
-  inout  wire                 eth_rxctl,
-  inout  wire                 eth_rstn,
-  inout  wire                 eth_mdio,
-  inout  wire                 eth_mdc,
+  output logic                clk_200MHz,
+  output logic                phy_tx_clk,
+  output logic                eth_clk,
+  input  logic [ 3:0]         eth_txd,
+  output logic [ 3:0]         eth_rxd,
+  input  logic                eth_txck,
+  output logic                eth_rxck,
+  input  logic                eth_txctl,
+  output logic                eth_rxctl,
+  input  logic                eth_rstn,
+  inout  logic                eth_mdio,
+  input  logic                eth_mdc,
   // SPI host interface
   inout  wire                 spih_sck,
   inout  wire [SpihNumCs-1:0] spih_csb,
@@ -630,17 +630,19 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   typedef axi_test::axi_driver #(.AW(DutCfg.AddrWidth), .DW(DutCfg.AxiDataWidth), .IW(DutCfg.AxiMstIdWidth), .UW(DutCfg.AxiUserWidth), .TA(ClkPeriodSys * TAppl), .TT(ClkPeriodSys * TTest)) axi_drv_t;
   axi_drv_t axi_master_drv =  new(axi_master_dv);
 
-  axi_drv_t::b_beat_t b_beat;
-  axi_drv_t::w_beat_t w_beat = new;
-  axi_drv_t::ax_beat_t aw_beat = new, ar_beat = new;
-  axi_drv_t::r_beat_t r_beat;
+  axi_drv_t::b_beat_t b_beat = new();
+  axi_drv_t::w_beat_t w_beat = new();
+  axi_drv_t::ax_beat_t aw_beat = new(), ar_beat = new();
+  axi_drv_t::r_beat_t r_beat = new();
   //beats
   // axi_test::axi_ax_beat #(.AW(DutCfg.AddrWidth), .IW(DutCfg.AxiMstIdWidth), .UW(DutCfg.AxiUserWidth)) ar_beat = new();
   // axi_test::axi_r_beat  #(.DW(DutCfg.AxiDataWidth), .IW(DutCfg.AxiMstIdWidth), .UW(DutCfg.AxiUserWidth)) r_beat  = new();
   // axi_test::axi_ax_beat #(.AW(DutCfg.AddrWidth), .IW(DutCfg.AxiMstIdWidth), .UW(DutCfg.AxiUserWidth)) aw_beat = new();
   // axi_test::axi_w_beat  #(.DW(DutCfg.AxiDataWidth), .UW(DutCfg.AxiUserWidth))      w_beat  = new();
   // axi_test::axi_b_beat  #(.IW(DutCfg.AxiMstIdWidth), .UW(DutCfg.AxiUserWidth))     b_beat  = new();
-   typedef logic [DutCfg.AddrWidth-1:0]   axi_addr_t;
+  
+
+  typedef logic [DutCfg.AddrWidth-1:0]   axi_addr_t;
 
   task reset_master;
     input axi_drv_t axi_master_drv;
@@ -675,32 +677,61 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   endtask; // write_axi
 
-  eth_rgmii #(
-    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
-    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth     ),
-    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
-    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
-  ) i_eth_rgmii_rx(
-    .clk_i           ( clk           ),
-    .rst_ni          ( rst_n         ),
-    .ethernet        ( axi_master    ),
-    .eth_rxck        ( eth_txck      ),
-    .eth_rxctl       ( eth_txctl     ),
-    .eth_rxd         ( eth_txd       ),
-    .eth_txck        ( eth_rxck      ),
-    .eth_txctl       ( eth_rxctl     ),
-    .eth_txd         ( eth_rxd       ),
-    .eth_rst_n       ( eth_rstn      ),
-    .phy_int_i       ( 1'b1          ),
-    .phy_pme_i       ( 1'b1          ),
-    .phy_mdio_i      ( 1'b0          ),
-    .phy_mdio_o      (               ),
-    .phy_mdio_eo     (               ),
-    .phy_mdc_o       (               ),
-    .clk_200MHz      (  clk_200MHz   ),
-    .phy_tx_clk      (  phy_tx_clk   ),
-    .eth_clk         (  eth_clk      )
+  logic            eth_en, eth_we;
+  logic [DutCfg.AddrWidth-1:0]   eth_addr;
+  logic [DutCfg.AxiDataWidth-1:0]   eth_wrdata, eth_rdata;
+  logic [DutCfg.AxiDataWidth/8-1:0] eth_be;
+
+  axi2mem #(
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth    ),
+    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth    ),
+    .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth    ),
+    .AXI_USER_WIDTH ( DutCfg.AxiUserWidth    )
+  ) i_axi2_rx (
+    .clk_i  ( clk                     ),
+    .rst_ni ( rst_n                   ),
+    .slave  ( axi_master              ),
+    .req_o  ( eth_en                  ),
+    .we_o   ( eth_we                  ),
+    .addr_o ( eth_addr                ),
+    .be_o   ( eth_be                  ),
+    .data_o ( eth_wrdata              ),
+    .data_i ( eth_rdata               )
   );
+
+  framing_top i_eth_rgmii_rx(
+  .msoc_clk         ( clk                    ),
+   .core_lsu_addr   ( eth_addr[14:0]         ),
+   .core_lsu_wdata  ( eth_wrdata             ),
+   .core_lsu_be     ( eth_be                 ),
+   .ce_d            ( eth_en                 ),
+   .we_d            ( eth_en & eth_we        ),
+   .framing_sel     ( eth_en                 ),
+   .framing_rdata   ( eth_rdata              ),
+   .rst_int         ( !rst_n                 ),
+
+   .clk_int         ( phy_tx_clk      ), // 125 MHz in-phase
+   .clk90_int       ( eth_clk         ),    // 125 MHz quadrature
+
+   .phy_rx_clk      ( eth_txck        ),
+   .phy_rxd         ( eth_txd         ),
+   .phy_rx_ctl      ( eth_txctl       ),
+
+   .phy_tx_clk      ( eth_rxck        ),
+   .phy_txd         (eth_rxd          ),
+   .phy_tx_ctl      ( eth_rxctl       ),
+   .phy_reset_n     (eth_rstn         ),
+   .phy_mdc         (                 ),
+
+   .phy_int_n       ( 1'b1            ),
+   .phy_pme_n       ( 1'b1            ),
+
+   .phy_mdio_i      ( 1'b0            ),
+   .phy_mdio_o      (                 ),
+   .phy_mdio_oe     (                 ),
+   .eth_irq         (                 )
+  );
+   
 
   logic [DutCfg.AxiDataWidth:0] data_array [7:0] = {
     64'h1032207098001032, 64'h3210E20020709800, 
@@ -708,8 +739,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     64'h3736353433323130, 64'h4746454443424140, 
     64'h5756555453525150, 64'h6766656463626160
   };
-
-  logic [DutCfg.AxiMstIdWidth-1:0] read_addr [31:0];
 
   initial begin
     forever begin
@@ -728,37 +757,30 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     #(ClkPeriodEth125/2);
     eth_clk <= 0;
     #(ClkPeriodEth125/4);
-  end
-  end
-
-    clk_rst_gen #(
-    .ClkPeriod    ( ClkPeriodEth200 ),
-    .RstClkCycles ( RstCycles )
-  ) i_clk_rst_eth_200 (
-    .clk_o  ( clk_200MHz ),
-    .rst_no ( )
-  );
-
-  initial begin
-    for (int i = 0; i < 8; i++) begin
-       read_addr[i] = 64'h0301_4000 + (i * 8);
     end
   end
 
+  logic [DutCfg.AxiMstIdWidth-1:0] read_addr [31:0];
   logic [DutCfg.AddrWidth-1:0] write_addr [31:0];
 
   initial begin
-      for (int i = 0; i < 8; i++) begin
-          write_addr[i] = 64'h0301_1000 + (i * 8);
-      end
+    for (int i = 0; i < 8; i++) begin
+      read_addr[i] = 64'h0301_4000 + (i * 8);
+    end
+  end
+
+  initial begin
+    for (int i = 0; i < 8; i++) begin
+      write_addr[i] = 64'h0301_1000 + (i * 8);
+    end
   end
 
   logic [63:0] rx_read_data;
-  assign rx_read_data=axi_master.r_data;
+  assign rx_read_data = axi_master.r_data;
 
   event       tx_complete;
   logic       en_rx_memw;
-  assign en_rx_memw = i_eth_rgmii_rx.eth_rgmii.RAMB16_inst_rx.genblk1[0].mem_wrap_rx_inst.enaB;
+  assign en_rx_memw = i_eth_rgmii_rx.RAMB16_inst_rx.genblk1[0].mem_wrap_rx_inst.enaB;
 
   initial begin
     while(1) begin
@@ -782,9 +804,9 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
            $display("Data wrong");
       end
       continue_loop = 0;
-    end      
+    end    
 
-    reset_master(axi_master_drv);
+    axi_master_drv.reset_master();
     repeat(5) @(posedge clk);
     #3000ns;
 
@@ -794,8 +816,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
     // TX BUFFER FILLING ----------------------------------------------
     for(int j=0; j<8; j++) begin
-       write_axi(axi_master_drv, write_addr[j], data_array[j], 'hff);
-       @(posedge clk);
+      write_axi(axi_master_drv, write_addr[j], data_array[j], 'hff);
+      @(posedge clk);
     end
     repeat(10) @(posedge clk);
 
@@ -815,7 +837,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     repeat(20) @(posedge clk);
     $finish;
 
-  end // initial begin
+  end 
 
   ///////////////////
   //  Serial Link  //
@@ -1155,18 +1177,10 @@ module vip_cheshire_soc_tristate import cheshire_pkg::*; (
   output logic [ 3:0]           spih_sd_i,
   input  logic [ 3:0]           spih_sd_o,
   input  logic [ 3:0]           spih_sd_en,
-   // Ethernet pad IO
-  output logic [3:0]            eth_rxd_i,  
-  input  logic [3:0]            eth_txd_o,
-  output logic                  eth_rxck_i,
-  input  logic                  eth_txck_o,
-  output logic                  eth_rxctl_i,
-  input  logic                  eth_txctl_o,
-  input  logic                  eth_rstn_o,
+  // Ethernet pad IO
   input  logic                  eth_mdio_o,
   output logic                  eth_mdio_i,
-  input  logic                  eth_mdio_en,
-  input  logic                  eth_mdc_o,
+  input  logic                  eth_mdio_en,  
   // I2C wires
   inout  wire i2c_sda,
   inout  wire i2c_scl,
@@ -1175,15 +1189,7 @@ module vip_cheshire_soc_tristate import cheshire_pkg::*; (
   inout  wire [SpihNumCs-1:0] spih_csb,
   inout  wire [ 3:0]          spih_sd,
   // Ethernet wires
-  inout  wire [ 3:0]          eth_txd,
-  inout  wire [ 3:0]          eth_rxd,
-  inout  wire                 eth_txck,
-  inout  wire                 eth_rxck,
-  inout  wire                 eth_txctl,
-  inout  wire                 eth_rxctl,
-  inout  wire                 eth_rstn,
-  inout  wire                 eth_mdio,
-  inout  wire                 eth_mdc
+  inout  wire                 eth_mdio
 );
 
   // I2C
@@ -1210,14 +1216,6 @@ module vip_cheshire_soc_tristate import cheshire_pkg::*; (
   end
 
    // Ethernet
-  assign eth_txd = eth_txd_o;
-  assign eth_txck = eth_txck_o;
-  assign eth_txctl = eth_txctl_o;
-  assign eth_mdc = eth_mdc_o;
-  assign eth_rxd_i = eth_rxd;
-  assign eth_rxck_i = eth_rxck;
-  assign eth_rxctl_i = eth_rxctl;
-
   bufif1 (eth_mdio_i, eth_mdio, ~eth_mdio_en); 
   bufif1 (eth_mdio, eth_mdio_o, eth_mdio_en); 
 

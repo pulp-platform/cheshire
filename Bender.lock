@@ -15,8 +15,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: ac5deb3ff086aa34b168f392c051e92603d6c0e2
-    version: 0.39.2
+    revision: 9402c8a9ce0a7b5253c3c29e788612d771e8b5d6
+    version: 0.39.3
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -85,8 +85,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: ad22699793d98ef714f120c6268fe92d096a61e1
-    version: 1.33.1
+    revision: 0d67563b6b592549542544f1abc0f43e5d4ee8b4
+    version: 1.35.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -109,14 +109,13 @@ packages:
     - fpnew
     - tech_cells_generic
   ethernet:
-    revision: c407186b6fe23720767ad65ccd604652ae1c6630
+    revision: 6bc2bd81b7de1ed424f787a3b6480fec53fa9aa0
     version: null
     source:
       Git: git@github.com:AlSaqr-platform/ethernet.git
     dependencies:
     - axi
     - axi_mem_if
-    - common_cells
     - common_verification
   fpnew:
     revision: f231041c610f270ffc03cbdac38739ddb6426572
