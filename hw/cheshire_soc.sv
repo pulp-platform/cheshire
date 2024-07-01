@@ -618,8 +618,8 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   assign intr.intn.bus_err.cores = core_bus_err_intr_comb;
 
-  ariane_ace::req_t [NumIntHarts-1:0] core_out_req, core_ur_req;
-  ariane_ace::resp_t [NumIntHarts-1:0] core_out_rsp, core_ur_rsp;
+  ariane_ace::req_t [NumIntHarts-1:0] core_out_req, core_ur_req, tagger_req;
+  ariane_ace::resp_t [NumIntHarts-1:0] core_out_rsp, core_ur_rsp, tagger_rsp;
 
   // CLIC interface
   logic [NumIntHarts-1:0] clic_irq_valid, clic_irq_ready;
@@ -684,6 +684,33 @@ module cheshire_soc import cheshire_pkg::*; #(
   );
 
   for (genvar i = 0; i < NumIntHarts; i++) begin : gen_core_surroundings
+
+    if (Cfg.LlcCachePartition) begin : gen_tagger
+      tagger #(
+        .DATA_WIDTH       ( Cfg.AxiDataWidth    ),
+        .ADDR_WIDTH       ( Cfg.AddrWidth       ),
+        .MAXPARTITION     ( Cfg.LlcMaxPartition ),
+        .AXI_USER_ID_MSB  ( Cfg.LlcUserMsb      ),
+        .AXI_USER_ID_LSB  ( Cfg.LlcUserLsb      ),
+        .TAGGER_GRAN      ( 3                   ),
+        .axi_req_t        ( ariane_ace::req_t   ),
+        .axi_rsp_t        ( ariane_ace::resp_t  ),
+        .reg_req_t        ( reg_req_t           ),
+        .reg_rsp_t        ( reg_rsp_t           )
+      ) i_tagger (
+        .clk_i,
+        .rst_ni,
+        .slv_req_i ( core_out_req[i] ),
+        .slv_rsp_o ( core_out_rsp[i] ),
+        .mst_req_o ( tagger_req[i] ),
+        .mst_rsp_i ( tagger_rsp[i] ),
+        .cfg_req_i ( reg_out_req[RegOut.tagger[i]] ),
+        .cfg_rsp_o ( reg_out_rsp[RegOut.tagger[i]] )
+      );
+    end else begin : gen_no_tagger
+      assign axi_in_req[AxiIn.cores[i]] = tagger_req[i];
+      assign tagger_rsp = axi_in_rsp[AxiIn.cores[i]];
+    end
 
     if (Cfg.BusErr) begin : gen_cva6_bus_err
       axi_err_unit_wrap #(
@@ -771,14 +798,14 @@ module cheshire_soc import cheshire_pkg::*; #(
     // Map user to AMO domain as we are an atomics-capable master.
     // Within the provided AMO user range, we count up from the provided core AMO offset.
     always_comb begin
-      core_ur_req[i]         = core_out_req[i];
+      core_ur_req[i]         = tagger_req[i];
       core_ur_req[i].aw.user = Cfg.AxiUserDefault;
       core_ur_req[i].ar.user = Cfg.AxiUserDefault;
       core_ur_req[i].w.user  = Cfg.AxiUserDefault;
       core_ur_req[i].aw.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
       core_ur_req[i].ar.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
       core_ur_req[i].w.user  [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
-      core_out_rsp[i]        = core_ur_rsp[i];
+      tagger_rsp[i]          = core_ur_rsp[i];
     end
 
     `ACE_ASSIGN_FROM_REQ(core_to_CCU[i], core_ur_req[i])
@@ -852,36 +879,9 @@ module cheshire_soc import cheshire_pkg::*; #(
     .rst_ni     ( rst_ni          ),
     .slv_req_i  ( ccu_axi_cut_req ),
     .slv_resp_o ( ccu_axi_cut_rsp ),
-    .mst_req_o  ( axi_tagger_req  ),
-    .mst_resp_i ( axi_tagger_rsp  )
+    .mst_req_o  ( axi_in_req[AxiIn.cores] ),
+    .mst_resp_i ( axi_in_rsp[AxiIn.cores] )
   );
-
-  if (Cfg.LlcCachePartition) begin : gen_tagger
-    tagger #(
-      .DATA_WIDTH       ( Cfg.AxiDataWidth    ),
-      .ADDR_WIDTH       ( Cfg.AddrWidth       ),
-      .MAXPARTITION     ( Cfg.LlcMaxPartition ),
-      .AXI_USER_ID_MSB  ( Cfg.LlcUserMsb      ),
-      .AXI_USER_ID_LSB  ( Cfg.LlcUserLsb      ),
-      .TAGGER_GRAN      ( 3                   ),
-      .axi_req_t        ( axi_mst_req_t       ),
-      .axi_rsp_t        ( axi_mst_rsp_t       ),
-      .reg_req_t        ( reg_req_t           ),
-      .reg_rsp_t        ( reg_rsp_t           )
-    ) i_tagger (
-      .clk_i,
-      .rst_ni,
-      .slv_req_i ( axi_tagger_req ),
-      .slv_rsp_o ( axi_tagger_rsp ),
-      .mst_req_o ( axi_in_req[AxiIn.cores] ),
-      .mst_rsp_i ( axi_in_rsp[AxiIn.cores] ),
-      .cfg_req_i ( reg_out_req[RegOut.tagger] ),
-      .cfg_rsp_o ( reg_out_rsp[RegOut.tagger] )
-    );
-  end else begin : gen_no_tagger
-    assign axi_in_req[AxiIn.cores] = axi_tagger_req;
-    assign axi_tagger_rsp = axi_in_rsp[AxiIn.cores];
-  end
 
   /////////////////////////
   //  JTAG Debug Module  //
