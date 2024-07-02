@@ -618,8 +618,8 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   assign intr.intn.bus_err.cores = core_bus_err_intr_comb;
 
-  ariane_ace::req_t [NumIntHarts-1:0] core_out_req, core_ur_req, tagger_req;
-  ariane_ace::resp_t [NumIntHarts-1:0] core_out_rsp, core_ur_rsp, tagger_rsp;
+  ariane_ace::req_t [NumIntHarts-1:0] core_out_req, core_cut_req, core_ur_req, tagger_req;
+  ariane_ace::resp_t [NumIntHarts-1:0] core_out_rsp, core_cut_rsp, core_ur_rsp, tagger_rsp;
 
   // CLIC interface
   logic [NumIntHarts-1:0] clic_irq_valid, clic_irq_ready;
@@ -679,11 +679,32 @@ module cheshire_soc import cheshire_pkg::*; #(
     .clic_kill_ack_o  ( clic_irq_kill_ack               ),
     .reg_req_i        ( reg_out_core_req                ),
     .reg_rsp_o        ( reg_out_core_rsp                ),
-    .core_req_o       ( core_out_req                    ),
-    .core_rsp_i       ( core_out_rsp                    )
+    .core_req_o       ( core_cut_req                    ),
+    .core_rsp_i       ( core_cut_rsp                    )
   );
 
   for (genvar i = 0; i < NumIntHarts; i++) begin : gen_core_surroundings
+
+    ace_cut #(
+      .Bypass ( 0 ),
+      .aw_chan_t ( ariane_ace::aw_chan_t ),
+      .w_chan_t ( ariane_ace::ariane_axi_w_chan_t ),
+      .b_chan_t ( ariane_ace::ariane_axi_b_chan_t ),
+      .ar_chan_t ( ariane_ace::ar_chan_t ),
+      .r_chan_t  ( ariane_ace::r_chan_t ),
+      .ac_chan_t ( ariane_ace::ac_chan_t ),
+      .cd_chan_t ( ariane_ace::cd_chan_t),
+      .cr_chan_t ( snoop_pkg::crresp_t ),
+      .ace_req_t ( ariane_ace::req_t ),
+      .ace_resp_t ( ariane_ace::resp_t )
+    ) i_ace_cut (
+      .clk_i,
+      .rst_ni,
+      .slv_req_i  (core_cut_req[i]),
+      .slv_resp_o (core_cut_rsp[i]),
+      .mst_req_o  (core_out_req[i]),
+      .mst_resp_i (core_out_rsp[i])
+    );
 
     if (Cfg.LlcCachePartition) begin : gen_tagger
       tagger #(
