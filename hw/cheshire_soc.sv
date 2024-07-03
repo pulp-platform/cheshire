@@ -242,8 +242,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   localparam addr_rule_t [AxiOut.num_rules-1:0] AxiMap = gen_axi_map();
 
   // Connectivity of Xbar
-  axi_mst_req_t ccu_axi_cut_req, axi_tagger_req;
-  axi_mst_rsp_t ccu_axi_cut_rsp, axi_tagger_rsp;
+  axi_mst_req_t ccu_axi_cut_req;
+  axi_mst_rsp_t ccu_axi_cut_rsp;
 
   axi_mst_req_t [AxiIn.num_in-1:0]    axi_in_req, axi_rt_in_req;
   axi_mst_rsp_t [AxiIn.num_in-1:0]    axi_in_rsp, axi_rt_in_rsp;
@@ -729,8 +729,8 @@ module cheshire_soc import cheshire_pkg::*; #(
         .cfg_rsp_o ( reg_out_rsp[RegOut.tagger[i]] )
       );
     end else begin : gen_no_tagger
-      assign axi_in_req[AxiIn.cores[i]] = tagger_req[i];
-      assign tagger_rsp = axi_in_rsp[AxiIn.cores[i]];
+      assign tagger_req[i] = core_out_req[i];
+      assign core_out_rsp[i] = tagger_rsp[i];
     end
 
     if (Cfg.BusErr) begin : gen_cva6_bus_err
