@@ -33,14 +33,14 @@ jobs:
         run: pip install -r requirements.txt
       -
         name: Install RISC-V GCC toolchain
-        uses: pulp-platform/pulp-actions/riscv-gcc-install@v2
+        uses: pulp-platform/pulp-actions/riscv-gcc-install@v2.4.1
         with:
           distro: ubuntu-22.04
           nightly-date: '2023.03.14'
           target: riscv64-elf
       -
         name: Install Bender
-        uses: pulp-platform/pulp-actions/bender-install@v2
+        uses: pulp-platform/pulp-actions/bender-install@v2.4.1
         with:
           version: 0.27.1
       -
