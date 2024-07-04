@@ -103,6 +103,12 @@ set usb_clk [get_clocks -of_objects [get_pins i_clkwiz/clk_48]]
 set_max_delay -datapath_only -from $usb_clk -to $soc_clk [expr 0.67 * $SOC_TCK]
 set_max_delay -datapath_only -from $soc_clk -to $usb_clk [expr 0.67 * $SOC_TCK]
 
+set_input_delay  -min -clock $usb_clk [expr 0.10 * $SOC_TCK] [get_ports {usb_d*_i}]
+set_input_delay  -max -clock $usb_clk [expr 0.35 * $SOC_TCK] [get_ports {usb_d*_i}]
+
+set_output_delay -min -clock $usb_clk [expr 0.10 * $SOC_TCK] [get_ports {usb_d*_o usb_d*_oe}]
+set_output_delay -max -clock $usb_clk [expr 0.35 * $SOC_TCK] [get_ports {usb_d*_o usb_d*_oe}]
+
 ###############
 # Assign Pins #
 ###############
