@@ -60,7 +60,9 @@ Cheshire's internal memory map is *static*. While device instantiation and layou
 |                    +-------------------+---------------+------+-------+
 |                    | VGA (Cfg)         | `0x0300_7000` | 4K   |       |
 |                    +-------------------+---------------+------+-------+
-|                    | UNBENT            | `0x0300_8000` | 4K   |       |
+|                    | USB 1.1 (Cfg)     | `0x0300_8000` | 4K   |       |
+|                    +-------------------+---------------+------+-------+
+|                    | UNBENT            | `0x0300_9000` | 4K   |       |
 +--------------------+-------------------+---------------+------+-------+
 | INTCs @ Reg        | PLIC              | `0x0400_0000` | 64M  |       |
 |                    +-------------------+---------------+------+-------+
@@ -110,6 +112,7 @@ The following global parameters control basic functionality and features and can
 | `Dma`         | `bit`        | Whether DMA is available                           |
 | `SerialLink`  | `bit`        | Whether serial link is available                   |
 | `Vga`         | `bit`        | Whether VGA is available                           |
+| `Usb`         | `bit`        | Whether USB 1.1 (OHCI) host is available           |
 | `AxiRt`       | `bit`        | Whether AXI RT is available                        |
 | `Clic`        | `bit`        | Whether CLIC is available                          |
 | `IrqRouter`   | `bit`        | Whether IRQ Router is available                    |
@@ -227,6 +230,17 @@ The [VGA Controller](https://github.com/pulp-platform/axi_vga) enables the drawi
 | `Vga(H|V)CountWidth`       | `aw_bt`      | Horizontal and vertical sync counter width        |
 | `VgaBufferDepth`           | `dw_bt`      | Depth of internal read data FIFO                  |
 | `VgaMaxReadTxns`           | `dw_bt`      | Maximum number of outstanding reads               |
+
+
+### USB 1.1 (OHCI) Controller
+
+The USB 1.1 (OHCI) Host Controller was generated from the [SpinalHDL](https://github.com/SpinalHDL/SpinalHDL) library and provides a fully digital root hub with four ports. Note that it currently only supports single-core CVA6 configurations with the default cache and can only access a 32-bit physical address subspaces. It exposes the following parameters:
+
+| Parameter                  | Type / Range | Description                                       |
+| -------------------------- | ------------ | ------------------------------------------------- |
+| `UsbDmaMaxReads`           | `dw_bt`      | Maximum outstanding reads for USB controller DMA  |
+| `UsbAddrDomain`            | `doub_bt`    | Address domain to cast USB DMA requests into      |
+| `UsbAddrMask`              | `doub_bt`    | Address mask to apply on USB DMA requests         |
 
 ### Serial Link
 
