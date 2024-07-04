@@ -242,7 +242,10 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   // Initialize the debug module
   task automatic jtag_init;
     jtag_idcode_t idcode;
-    dm::dmcontrol_t dmcontrol = '{dmactive: 1, default: '0};
+    dm::dmcontrol_t dmcontrol;
+    for (int i = 0; i < DutCfg.NumCores; i++) begin
+      dmcontrol = '{dmactive: 1, hartsello: i, default: '0};
+    end
     // Check ID code
     repeat(100) @(posedge jtag_tck);
     jtag_dbg.get_idcode(idcode);
@@ -327,11 +330,13 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       $display("[JTAG] Wait for LLC configuration");
       jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
     end
-    // Halt hart 0
-    jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, default: '0});
-    do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
-    while (~status.allhalted);
-    $display("[JTAG] Halted hart 0");
+    for (int i = DutCfg.NumCores - 1; i > - 1 ; i--) begin
+      // Halt all avaialable harts
+      jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, hartsello: i, default: '0});
+      do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
+      while (~status.allhalted);
+      $display("[JTAG] Halted hart %d", i);
+     end
     // Preload binary
     jtag_elf_preload(binary, entry);
   endtask
@@ -341,12 +346,14 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     doub_bt entry;
     jtag_elf_halt_load(binary, entry);
     // Repoint execution
+    for (int i = 0; i < DutCfg.NumCores; i++) begin
     jtag_write(dm::Data1, entry[63:32]);
     jtag_write(dm::Data0, entry[31:0]);
-    jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
-    // Resume hart 0
-    jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
-    $display("[JTAG] Resumed hart 0 from 0x%h", entry);
+      jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
+      // Resume all harts
+      jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, hartsello: i, default: '0});
+      $display("[JTAG] Resumed hart %d from 0x%h", i, entry);
+    end
   endtask
 
   // Wait for termination signal and get return code
