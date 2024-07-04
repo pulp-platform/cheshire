@@ -7,4 +7,4 @@ yapf
 mkdocs
 mkdocs-material
 markdown-grid-tables
-tcllint
+tclint
