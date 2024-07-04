@@ -494,6 +494,7 @@ package cheshire_pkg;
       CvxifEn               : 0,
       ZiCondExtEn           : 1,
       RVSCLIC               : cfg.Clic,
+      RVVCLIC               : 0,
       RVF                   : 1,
       RVD                   : 1,
       FpPresent             : 1,

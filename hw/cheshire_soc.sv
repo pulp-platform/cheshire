@@ -615,7 +615,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clic_irq_level_i ( clic_irq_level ),
       .clic_irq_priv_i  ( clic_irq_priv  ),
       .clic_irq_v_i     ( clic_irq_v     ),
-      .clic_irq_vsid_i  ( clic_irq_vsid_i ),
+      .clic_irq_vsid_i  ( clic_irq_vsid  ),
       .clic_irq_shv_i   ( clic_irq_shv   ),
       .clic_irq_ready_o ( clic_irq_ready ),
       .clic_kill_req_i  ( clic_irq_kill_req ),
