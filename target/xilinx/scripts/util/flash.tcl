@@ -36,9 +36,9 @@ switch $board {
             PROGRAM.CFG_PROGRAM {1} \
             PROGRAM.VERIFY {1} \
             PROGRAM.CHECKSUM {0} \
-        ] $hw_cfgmem
+            ] $hw_cfgmem
     }
-    default {nocfgexit flash_spi $board}
+    default { nocfgexit flash_spi $board }
 }
 
 # Create bitstream to access config memory
