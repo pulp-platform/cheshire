@@ -43,7 +43,10 @@ SECTIONS {
   __base_gpio     = 0x03005000;
   __base_slink    = 0x03006000;
   __base_vga      = 0x03007000;
+  __base_usb      = 0x03008000;
+  __base_bus_err  = 0x03009000;
   __base_plic     = 0x04000000;
+  __base_clic     = 0x08000000;
   __base_spm      = ORIGIN(spm);
   __base_dram     = ORIGIN(dram);
 }

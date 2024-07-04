@@ -9,18 +9,24 @@
 /dts-v1/;
 
 / {
+
   #address-cells = <2>;
   #size-cells = <2>;
   compatible = "eth,cheshire-dev";
   model = "eth,cheshire";
 
-  chosen {
+  chosen: chosen {
+    #address-cells = <2>;
+    #size-cells = <2>;
+    ranges;
     stdout-path = "/soc/serial@3002000:115200";
   };
+
   memory@80000000 {
     device_type = "memory";
     reg = <0x0 0x80000000 0x0 0x40000000>;
   };
+
   cpus {
     #address-cells = <1>;
     #size-cells = <0>;
@@ -42,6 +48,7 @@
       };
     };
   };
+
   soc: soc {
     #address-cells = <2>;
     #size-cells = <2>;
@@ -108,4 +115,5 @@
       reg = <0x0 0x4000000 0x0 0x4000000>;
     };
   };
+
 };

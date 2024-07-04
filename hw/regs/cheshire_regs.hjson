@@ -98,10 +98,11 @@
         { bits: "6",  name: "dma",          desc: "Whether DMA is available"          }
         { bits: "7",  name: "serial_link",  desc: "Whether serial link is available"  }
         { bits: "8",  name: "vga",          desc: "Whether VGA is available"          }
-        { bits: "9",  name: "axirt",        desc: "Whether AXI RT is available"       }
-        { bits: "10", name: "clic",         desc: "Whether CLIC is available"         }
-        { bits: "11", name: "irq_router",   desc: "Whether IRQ router is available"   }
-        { bits: "12", name: "bus_err",      desc: "Whether UNBENT is available"       }
+        { bits: "9",  name: "usb",          desc: "Whether USB is available"          }
+        { bits: "10", name: "axirt",        desc: "Whether AXI RT is available"       }
+        { bits: "11", name: "clic",         desc: "Whether CLIC is available"         }
+        { bits: "12", name: "irq_router",   desc: "Whether IRQ router is available"   }
+        { bits: "13", name: "bus_err",      desc: "Whether UNBENT is available"       }
       ]
     }
 

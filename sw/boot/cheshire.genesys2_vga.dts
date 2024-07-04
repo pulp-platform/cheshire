@@ -1,0 +1,23 @@
+// Copyright 2024 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+//
+// Cyril Koenig <cykoenig@iis.ee.ethz.ch>
+
+/include/ "cheshire.genesys2.dts"
+
+&chosen {
+  #address-cells = <2>;
+  #size-cells = <2>;
+  ranges;
+  bootargs = "console=ttyS0,115200 console=tty0";
+  framebuffer0: framebuffer@A0000000 {
+    compatible = "simple-framebuffer";
+    reg = <0x0 0xA0000000 0x0 (640 * 480 * 2)>;
+    width = <640>;
+    height = <480>;
+    stride = <(640 * 2)>;
+    format = "r5g6b5";
+    status = "okay";
+  };
+};
