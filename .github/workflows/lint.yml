@@ -70,3 +70,22 @@ jobs:
         exclude: |
           ./sw/include/regs/*.h
           ./target/sim/src/elfloader.cpp
+
+  lint-tcl:
+    runs-on: ubuntu-latest
+    steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v3
+    -
+      name: Install Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+        cache: pip
+    -
+      name: Install tclint
+      run: pip install tclint
+    -
+      name: Run Tcllint
+      run: tclint .  --style-spaces-in-braces --style-line-length 100
