@@ -557,8 +557,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   // TODO: Implement X interface support
 
   // Accelerator ports
-  acc_pkg::accelerator_req_t  acc_req;
-  acc_pkg::accelerator_resp_t acc_resp;
+  acc_pkg::cva6_to_acc_t acc_req;
+  acc_pkg::acc_to_cva6_t acc_resp;
 
   // CVA6-Ara memory consistency
   logic                     acc_cons_en;
@@ -567,13 +567,13 @@ module cheshire_soc import cheshire_pkg::*; #(
   logic                     inval_ready;
 
   // Pack invalidation interface into acc interface
-  acc_pkg::accelerator_resp_t acc_resp_pack;
+  acc_pkg::acc_to_cva6_t acc_resp_pack;
   always_comb begin : pack_inval
-    acc_resp_pack             = acc_resp;
-    acc_resp_pack.inval_valid = inval_valid;
-    acc_resp_pack.inval_addr  = inval_addr;
-    inval_ready               = acc_req.inval_ready;
-    acc_cons_en               = acc_req.acc_cons_en;
+    acc_resp_pack                      = acc_resp;
+    acc_resp_pack.acc_resp.inval_valid = inval_valid;
+    acc_resp_pack.acc_resp.inval_addr  = inval_addr;
+    inval_ready                        = acc_req.acc_req.inval_ready;
+    acc_cons_en                        = acc_req.acc_req.acc_cons_en;
   end
 
   `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
@@ -626,8 +626,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_w_chan_t   ( axi_cva6_w_chan_t  ),
       .b_chan_t       ( axi_cva6_b_chan_t  ),
       .r_chan_t       ( axi_cva6_r_chan_t  ),
-      .cvxif_req_t    ( acc_pkg::accelerator_req_t  ),
-      .cvxif_resp_t   ( acc_pkg::accelerator_resp_t ),
+      .cvxif_req_t    ( acc_pkg::cva6_to_acc_t ),
+      .cvxif_resp_t   ( acc_pkg::acc_to_cva6_t ),
       .noc_req_t      ( axi_cva6_req_t ),
       .noc_resp_t     ( axi_cva6_rsp_t )
     ) i_core_cva6 (
