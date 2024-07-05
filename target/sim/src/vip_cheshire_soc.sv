@@ -322,7 +322,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   endtask
 
   // Halt the core and preload a binary
-  task automatic jtag_elf_halt_load(input string binary, output doub_bt entry);
+  task automatic jtag_elf_halt_load(input string binary);
+    doub_bt entry;
     dm::dmstatus_t status;
     // Wait until bootrom initialized LLC
     if (DutCfg.LlcNotBypass) begin
@@ -335,12 +336,10 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, hartsello: i, default: '0});
       do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
       while (~status.allhalted);
-      // jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 0, dmactive: 1, hartsello: i, default: '0});
       $display("[JTAG] Halted hart %d", i);
-      // Preload binary and write DPC entry only at first iteration
-      if (i == 0) begin
-        jtag_elf_preload(binary, entry);
-      end
+      // Preload binary only at first iteration
+      if (i == 0) jtag_elf_preload(binary, entry);
+      // Write binary entry point in DM registers and set it as DPC
       jtag_write(dm::Data1, entry[63:32]);
       jtag_write(dm::Data0, entry[31:0]);
       jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
@@ -356,9 +355,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   // Run a binary
   task automatic jtag_elf_run(input string binary);
-    doub_bt entry;
-    dm::dmstatus_t status;
-    jtag_elf_halt_load(binary, entry);
+    jtag_elf_halt_load(binary);
   endtask
 
   // Wait for termination signal and get return code
