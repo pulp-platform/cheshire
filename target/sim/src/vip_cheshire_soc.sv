@@ -243,20 +243,20 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   task automatic jtag_init;
     jtag_idcode_t idcode;
     dm::dmcontrol_t dmcontrol;
-    for (int i = 0; i < DutCfg.NumCores; i++) begin
-      dmcontrol = '{dmactive: 1, hartsello: i, default: '0};
-    end
     // Check ID code
     repeat(100) @(posedge jtag_tck);
     jtag_dbg.get_idcode(idcode);
     if (idcode != DutCfg.DbgIdCode)
         $fatal(1, "[JTAG] Unexpected ID code: expected 0x%h, got 0x%h!", DutCfg.DbgIdCode, idcode);
     // Activate, wait for debug module
-    jtag_write(dm::DMControl, dmcontrol);
-    do jtag_dbg.read_dmi_exp_backoff(dm::DMControl, dmcontrol);
-    while (~dmcontrol.dmactive);
-    // Activate, wait for system bus
-    jtag_write(dm::SBCS, JtagInitSbcs, 0, 1);
+    for (int i = 0; i < DutCfg.NumCores; i++) begin
+      dmcontrol = '{dmactive: 1, hartsello: i, default: '0};
+      jtag_write(dm::DMControl, dmcontrol);
+      do jtag_dbg.read_dmi_exp_backoff(dm::DMControl, dmcontrol);
+      while (~dmcontrol.dmactive);
+      // Activate, wait for system bus
+      jtag_write(dm::SBCS, JtagInitSbcs, 0, 1);
+    end
     $display("[JTAG] Initialization success");
   endtask
 
@@ -330,30 +330,35 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       $display("[JTAG] Wait for LLC configuration");
       jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
     end
-    for (int i = DutCfg.NumCores - 1; i > - 1 ; i--) begin
+    for (int i = 0; i < DutCfg.NumCores; i++) begin
       // Halt all avaialable harts
       jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, hartsello: i, default: '0});
       do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
       while (~status.allhalted);
+      // jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 0, dmactive: 1, hartsello: i, default: '0});
       $display("[JTAG] Halted hart %d", i);
-     end
-    // Preload binary
-    jtag_elf_preload(binary, entry);
+      // Preload binary and write DPC entry only at first iteration
+      if (i == 0) begin
+        jtag_elf_preload(binary, entry);
+      end
+      jtag_write(dm::Data1, entry[63:32]);
+      jtag_write(dm::Data0, entry[31:0]);
+      jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
+      // Resume all harts
+      jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, hartsello: i, default: '0});
+      do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
+      while (~status.allresumeack);
+      jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 0, dmactive: 1, hartsello: i, default: '0});
+      jtag_write(dm::Command, 32'h0, 0, 1);
+      $display("[JTAG] Resumed hart %d from 0x%h", i, entry);
+    end
   endtask
 
   // Run a binary
   task automatic jtag_elf_run(input string binary);
     doub_bt entry;
+    dm::dmstatus_t status;
     jtag_elf_halt_load(binary, entry);
-    // Repoint execution
-    for (int i = 0; i < DutCfg.NumCores; i++) begin
-    jtag_write(dm::Data1, entry[63:32]);
-    jtag_write(dm::Data0, entry[31:0]);
-      jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
-      // Resume all harts
-      jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, hartsello: i, default: '0});
-      $display("[JTAG] Resumed hart %d from 0x%h", i, entry);
-    end
   endtask
 
   // Wait for termination signal and get return code
