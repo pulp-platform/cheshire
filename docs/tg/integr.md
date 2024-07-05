@@ -2,7 +2,7 @@
 
 Cheshire is designed to be *highly configurable* and provide host and interconnect infrastructure for systems on various scales. Examples of SoCs integrating Cheshire as a host are:
 
-- [Iguana](https://github.com/pulp-platform/iguana), an minimal end-to-end open-source Linux-capable SoC built with open tools.
+- [Basilisk](https://github.com/pulp-platform/cheshire-ihp130-o), an minimal end-to-end open-source Linux-capable SoC built with open tools.
 - [Carfield](https://github.com/pulp-platform/carfield), a mixed-criticality SoC targeting the automotive domain.
 
 ## Using Cheshire In Your Project

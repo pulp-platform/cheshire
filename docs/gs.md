@@ -40,7 +40,6 @@ To build different parts of Cheshire, run `make` followed by these targets:
 - `hw-all`: generated hardware, including IPs and boot ROM
 - `sw-all`: software running on our hardware
 - `sim-all`(†): scripts and external models for simulation
-- `xilinx-all`: scripts for Xilinx FPGA implementation
 
 † *`sim-all` will download externally provided peripheral simulation models, some proprietary and with non-free license terms, from their publically accessible sources; see `Makefile` for details. By running `sim-all` or the default target `all`, you accept this.*
 
