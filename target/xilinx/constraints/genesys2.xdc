@@ -102,16 +102,17 @@ set_false_path -hold -to [get_ports {i2c_scl_io i2c_sda_io}]
 
 set usb_clk [get_clocks -of_objects [get_pins i_clkwiz/clk_48]]
 
-# `set_max_delay -datapath only` implicitly vaives all undesired checks between clocks (setup with skew and hold)
-# We assume here `soc_clk` is the faster clock, and allocate two thirds of its period for the crossing.
-set_max_delay -datapath_only -from $usb_clk -to $soc_clk [expr 0.67 * $SOC_TCK]
-set_max_delay -datapath_only -from $soc_clk -to $usb_clk [expr 0.67 * $SOC_TCK]
+# `set_max_delay -datapath only` implicitly vaives all undesired checks between clocks (setup with
+# skew and hold). We assume here `soc_clk` is the faster clock, and allocate two thirds of its
+# period for the crossing.
+set_max_delay -datapath_only -from $usb_clk -to $soc_clk [expr { 0.67 * $SOC_TCK }]
+set_max_delay -datapath_only -from $soc_clk -to $usb_clk [expr { 0.67 * $SOC_TCK }]
 
-set_input_delay  -min -clock $usb_clk [expr 0.10 * $SOC_TCK] [get_ports {usb_d*_i}]
-set_input_delay  -max -clock $usb_clk [expr 0.35 * $SOC_TCK] [get_ports {usb_d*_i}]
+set_input_delay -min -clock $usb_clk [expr { 0.10 * $SOC_TCK }] [get_ports {usb_d*_i}]
+set_input_delay -max -clock $usb_clk [expr { 0.35 * $SOC_TCK }] [get_ports {usb_d*_i}]
 
-set_output_delay -min -clock $usb_clk [expr 0.10 * $SOC_TCK] [get_ports {usb_d*_o usb_d*_oe}]
-set_output_delay -max -clock $usb_clk [expr 0.35 * $SOC_TCK] [get_ports {usb_d*_o usb_d*_oe}]
+set_output_delay -min -clock $usb_clk [expr { 0.10 * $SOC_TCK }] [get_ports {usb_d*_o usb_d*_oe}]
+set_output_delay -max -clock $usb_clk [expr { 0.35 * $SOC_TCK }] [get_ports {usb_d*_o usb_d*_oe}]
 
 ###############
 # Assign Pins #
@@ -186,5 +187,15 @@ set_property -dict { PACKAGE_PIN Y29   IOSTANDARD LVCMOS33 } [get_ports { jtag_t
 # I2C Bus
 set_property -dict { PACKAGE_PIN AE30  IOSTANDARD LVCMOS33 } [get_ports { i2c_scl_io }]; #IO_L16P_T2_13 Sch=sys_scl
 set_property -dict { PACKAGE_PIN AF30  IOSTANDARD LVCMOS33 } [get_ports { i2c_sda_io }]; #IO_L16N_T2_13 Sch=sys_sda
+
+# PMOD Header JA (USB 1.1 Adapter)
+set_property -dict { PACKAGE_PIN U27   IOSTANDARD LVCMOS33 } [get_ports { usb_dm_io[3] }]; #IO_L13P_T2_MRCC_14 Sch=ja_p[1]
+set_property -dict { PACKAGE_PIN U28   IOSTANDARD LVCMOS33 } [get_ports { usb_dp_io[3] }]; #IO_L13N_T2_MRCC_14 Sch=ja_n[1]
+set_property -dict { PACKAGE_PIN T26   IOSTANDARD LVCMOS33 } [get_ports { usb_dm_io[2] }]; #IO_L12P_T1_MRCC_14 Sch=ja_p[2]
+set_property -dict { PACKAGE_PIN T27   IOSTANDARD LVCMOS33 } [get_ports { usb_dp_io[2] }]; #IO_L12N_T1_MRCC_14 Sch=ja_n[2]
+set_property -dict { PACKAGE_PIN T22   IOSTANDARD LVCMOS33 } [get_ports { usb_dm_io[1] }]; #IO_L5P_T0_D06_14 Sch=ja_p[3]
+set_property -dict { PACKAGE_PIN T23   IOSTANDARD LVCMOS33 } [get_ports { usb_dp_io[1] }]; #IO_L5N_T0_D07_14 Sch=ja_n[3]
+set_property -dict { PACKAGE_PIN T20   IOSTANDARD LVCMOS33 } [get_ports { usb_dm_io[0] }]; #IO_L4P_T0_D04_14 Sch=ja_p[4]
+set_property -dict { PACKAGE_PIN T21   IOSTANDARD LVCMOS33 } [get_ports { usb_dp_io[0] }]; #IO_L4N_T0_D05_14 Sch=ja_n[4]
 
 # tclint-enable line-length, spacing
