@@ -119,10 +119,11 @@ _boot:
 // If main returns, we end up here
 .global _exit
 _exit:
-    // Save the return value to scratch register 2 and wait forever
+    // Save the return value to scratch register 2, try `ebreak`, then wait forever
     slli a0, a0, 1
     ori  a0, a0, 1
     la t0, __base_regs
     sw a0, 8(t0)     // regs.SCRATCH[2]
+    ebreak
 1:  wfi
     j 1b
