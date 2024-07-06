@@ -28,7 +28,7 @@ update_compile_order -fileset sources_1
 
 # Set synthesis properties
 # TODO: investigate resource-affordable retiming
-set_property XPM_LIBRARIES XPM_MEMORY         [current_project]
+set_property XPM_LIBRARIES XPM_MEMORY [current_project]
 set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
 
 # Elaborate and open design to explore all clocks
@@ -60,7 +60,7 @@ gen_reports ${project_root}/reports.impl
 
 # Check timing constraints
 set trep [report_timing_summary -no_header -no_detailed_paths -return_string]
-if {![string match -nocase {*timing constraints are met*} $trep]} {
+if { ![string match -nocase {*timing constraints are met*} $trep] } {
     puts "Error: Timing constraints not met for ${proj} on ${board}."
     return -code error
 }

@@ -18,7 +18,7 @@ switch $proj {
         create_ip -name clk_wiz -vendor xilinx.com -library ip -version 6.0 -module_name $proj
         switch $board {
             genesys2 {
-                set_property -dict  [list \
+                set_property -dict [list \
                     CONFIG.PRIM_SOURCE {No_buffer} \
                     CONFIG.PRIM_IN_FREQ {200.000} \
                     CONFIG.CLKOUT1_USED {true} \
@@ -49,10 +49,10 @@ switch $proj {
                     CONFIG.CLKOUT3_PHASE_ERROR {89.971} \
                     CONFIG.CLKOUT4_JITTER {178.053} \
                     CONFIG.CLKOUT4_PHASE_ERROR {89.971} \
-                ] [get_ips $proj]
+                    ] [get_ips $proj]
             }
             vcu128 {
-                set_property -dict  [list \
+                set_property -dict [list \
                     CONFIG.CLK_IN1_BOARD_INTERFACE {Custom} \
                     CONFIG.RESET_BOARD_INTERFACE {Custom} \
                     CONFIG.USE_RESET {true} \
@@ -85,9 +85,9 @@ switch $proj {
                     CONFIG.CLKOUT3_PHASE_ERROR {89.971} \
                     CONFIG.CLKOUT4_JITTER {178.053} \
                     CONFIG.CLKOUT4_PHASE_ERROR {89.971} \
-                ] [get_ips $proj]
+                    ] [get_ips $proj]
             }
-            default {nocfgexit $proj $board}
+            default { nocfgexit $proj $board }
         }
     }
 
@@ -103,7 +103,7 @@ switch $proj {
                     CONFIG.C_PROBE_OUT1_WIDTH {2} \
                     CONFIG.C_EN_PROBE_IN_ACTIVITY {0} \
                     CONFIG.C_NUM_PROBE_IN {0} \
-                ] [get_ips $proj]
+                    ] [get_ips $proj]
             }
             vcu128 {
                 set_property -dict [list \
@@ -114,9 +114,9 @@ switch $proj {
                     CONFIG.C_PROBE_OUT1_WIDTH {2} \
                     CONFIG.C_EN_PROBE_IN_ACTIVITY {0} \
                     CONFIG.C_NUM_PROBE_IN {0} \
-                ] [get_ips $proj]
+                    ] [get_ips $proj]
             }
-            default {nocfgexit $proj $board}
+            default { nocfgexit $proj $board }
         }
     }
 
@@ -124,7 +124,7 @@ switch $proj {
         create_ip -name mig_7series -vendor xilinx.com -library ip -module_name $proj
         # Inject existing project file
         file copy ${xilinx_root}/src/ips/${board}.${proj}.prj \
-                ${project_root}/${proj}.srcs/sources_1/ip/${proj}/mig_a.prj
+            ${project_root}/${proj}.srcs/sources_1/ip/${proj}/mig_a.prj
         switch $board {
             genesys2 {
                 set_property -dict [list \
@@ -132,9 +132,9 @@ switch $proj {
                     CONFIG.RESET_BOARD_INTERFACE {Custom} \
                     CONFIG.MIG_DONT_TOUCH_PARAM {Custom} \
                     CONFIG.BOARD_MIG_PARAM {Custom} \
-                ] [get_ips $proj]
+                    ] [get_ips $proj]
             }
-            default {nocfgexit $proj $board}
+            default { nocfgexit $proj $board }
         }
     }
 
@@ -160,9 +160,9 @@ switch $proj {
                     CONFIG.C0.BANK_GROUP_WIDTH {1} \
                     CONFIG.C0.CS_WIDTH {2} \
                     CONFIG.C0.DDR4_AxiSelection {true} \
-                ] [get_ips $proj]
+                    ] [get_ips $proj]
             }
-            default {nocfgexit $proj $board}
+            default { nocfgexit $proj $board }
         }
     }
 

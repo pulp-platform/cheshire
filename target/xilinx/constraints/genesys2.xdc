@@ -26,16 +26,18 @@ set soc_clk [get_clocks -of_objects [get_pins i_clkwiz/clk_50]]
 # Testmode is set to 0 during normal use
 set_case_analysis 0 [get_ports test_mode_i]
 
-set_input_delay -min -clock $soc_clk [expr $SOC_TCK * 0.10] [get_ports {boot_mode* fan_sw* test_mode_i}]
-set_input_delay -max -clock $soc_clk [expr $SOC_TCK * 0.35] [get_ports {boot_mode* fan_sw* test_mode_i}]
+set_input_delay -min -clock $soc_clk [expr { $SOC_TCK * 0.10 }] [ \
+    get_ports {boot_mode* fan_sw* test_mode_i}]
+set_input_delay -max -clock $soc_clk [expr { $SOC_TCK * 0.35 }] [ \
+    get_ports {boot_mode* fan_sw* test_mode_i}]
 
-set_output_delay -min -clock $soc_clk [expr $SOC_TCK * 0.10] [get_ports fan_pwm]
-set_output_delay -max -clock $soc_clk [expr $SOC_TCK * 0.35] [get_ports fan_pwm]
+set_output_delay -min -clock $soc_clk [expr { $SOC_TCK * 0.10 }] [get_ports fan_pwm]
+set_output_delay -max -clock $soc_clk [expr { $SOC_TCK * 0.35 }] [get_ports fan_pwm]
 
-set_max_delay [expr 2 * $SOC_TCK] -from [get_ports {boot_mode* fan_sw* test_mode_i}]
+set_max_delay [expr { 2 * $SOC_TCK }] -from [get_ports {boot_mode* fan_sw* test_mode_i}]
 set_false_path -hold -from [get_ports {boot_mode* fan_sw* test_mode_i}]
 
-set_max_delay [expr 2 * $SOC_TCK] -to [get_ports fan_pwm]
+set_max_delay [expr { 2 * $SOC_TCK }] -to [get_ports fan_pwm]
 set_false_path -hold -to [get_ports fan_pwm]
 
 #######
@@ -55,29 +57,31 @@ set_false_path -hold -through $MIG_RST_O
 set_max_delay -through $MIG_RST_O $MIG_TCK
 
 # Limit delay across DRAM CDC (hold already false-pathed)
+# tclint-disable line-length
 set_max_delay -datapath_only \
- -from [get_pins i_dram_wrapper/gen_cdc.i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*reg*/C] \
-  -to [get_pins i_dram_wrapper/gen_cdc.i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*i_sync/reg*/D] $MIG_TCK
+    -from [get_pins i_dram_wrapper/gen_cdc.i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*reg*/C] \
+    -to [get_pins i_dram_wrapper/gen_cdc.i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*i_sync/reg*/D] $MIG_TCK
 set_max_delay -datapath_only \
- -from [get_pins i_dram_wrapper/gen_cdc.i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*reg*/C] \
-  -to [get_pins i_dram_wrapper/gen_cdc.i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] $MIG_TCK
+    -from [get_pins i_dram_wrapper/gen_cdc.i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*reg*/C] \
+    -to [get_pins i_dram_wrapper/gen_cdc.i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] $MIG_TCK
+# tclint-enable line-length
 
 #######
 # VGA #
 #######
 
-set_output_delay -min -clock $soc_clk [expr $SOC_TCK * 0.10] [get_ports vga*]
-set_output_delay -max -clock $soc_clk [expr $SOC_TCK * 0.35] [get_ports vga*]
+set_output_delay -min -clock $soc_clk [expr { $SOC_TCK * 0.10 }] [get_ports vga*]
+set_output_delay -max -clock $soc_clk [expr { $SOC_TCK * 0.35 }] [get_ports vga*]
 
 ########
 # SPIM #
 ########
 
-set_input_delay  -min -clock $soc_clk [expr 0.10 * $SOC_TCK] [get_ports {sd_d_* sd_cd_i}]
-set_input_delay  -max -clock $soc_clk [expr 0.35 * $SOC_TCK] [get_ports {sd_d_* sd_cd_i}]
+set_input_delay -min -clock $soc_clk [expr { 0.10 * $SOC_TCK }] [get_ports {sd_d_* sd_cd_i}]
+set_input_delay -max -clock $soc_clk [expr { 0.35 * $SOC_TCK }] [get_ports {sd_d_* sd_cd_i}]
 # TODO: fix this by raising it back up...
-set_output_delay -min -clock $soc_clk [expr 0.02 * $SOC_TCK] [get_ports {sd_d_* sd_*_o}]
-set_output_delay -max -clock $soc_clk [expr 0.063 * $SOC_TCK] [get_ports {sd_d_* sd_*_o}]
+set_output_delay -min -clock $soc_clk [expr { 0.020 * $SOC_TCK }] [get_ports {sd_d_* sd_*_o}]
+set_output_delay -max -clock $soc_clk [expr { 0.063 * $SOC_TCK }] [get_ports {sd_d_* sd_*_o}]
 
 #######
 # I2C #
@@ -86,10 +90,10 @@ set_output_delay -max -clock $soc_clk [expr 0.063 * $SOC_TCK] [get_ports {sd_d_*
 # I2C High-speed mode is 3.2 Mb/s
 set I2C_IO_SPEED 312.5
 
-set_max_delay [expr $I2C_IO_SPEED * 0.35] -from [get_ports {i2c_scl_io i2c_sda_io}]
+set_max_delay [expr { $I2C_IO_SPEED * 0.35 }] -from [get_ports {i2c_scl_io i2c_sda_io}]
 set_false_path -hold -from [get_ports {i2c_scl_io i2c_sda_io}]
 
-set_max_delay [expr $I2C_IO_SPEED * 0.35] -to [get_ports {i2c_scl_io i2c_sda_io}]
+set_max_delay [expr { $I2C_IO_SPEED * 0.35 }] -to [get_ports {i2c_scl_io i2c_sda_io}]
 set_false_path -hold -to [get_ports {i2c_scl_io i2c_sda_io}]
 
 #######
@@ -98,20 +102,23 @@ set_false_path -hold -to [get_ports {i2c_scl_io i2c_sda_io}]
 
 set usb_clk [get_clocks -of_objects [get_pins i_clkwiz/clk_48]]
 
-# `set_max_delay -datapath only` implicitly vaives all undesired checks between clocks (setup with skew and hold)
-# We assume here `soc_clk` is the faster clock, and allocate two thirds of its period for the crossing.
-set_max_delay -datapath_only -from $usb_clk -to $soc_clk [expr 0.67 * $SOC_TCK]
-set_max_delay -datapath_only -from $soc_clk -to $usb_clk [expr 0.67 * $SOC_TCK]
+# `set_max_delay -datapath only` implicitly vaives all undesired checks between clocks (setup with
+# skew and hold). We assume here `soc_clk` is the faster clock, and allocate two thirds of its
+# period for the crossing.
+set_max_delay -datapath_only -from $usb_clk -to $soc_clk [expr { 0.67 * $SOC_TCK }]
+set_max_delay -datapath_only -from $soc_clk -to $usb_clk [expr { 0.67 * $SOC_TCK }]
 
-set_input_delay  -min -clock $usb_clk [expr 0.10 * $SOC_TCK] [get_ports {usb_d*_i}]
-set_input_delay  -max -clock $usb_clk [expr 0.35 * $SOC_TCK] [get_ports {usb_d*_i}]
+set_input_delay -min -clock $usb_clk [expr { 0.10 * $SOC_TCK }] [get_ports {usb_d*_i}]
+set_input_delay -max -clock $usb_clk [expr { 0.35 * $SOC_TCK }] [get_ports {usb_d*_i}]
 
-set_output_delay -min -clock $usb_clk [expr 0.10 * $SOC_TCK] [get_ports {usb_d*_o usb_d*_oe}]
-set_output_delay -max -clock $usb_clk [expr 0.35 * $SOC_TCK] [get_ports {usb_d*_o usb_d*_oe}]
+set_output_delay -min -clock $usb_clk [expr { 0.10 * $SOC_TCK }] [get_ports {usb_d*_o usb_d*_oe}]
+set_output_delay -max -clock $usb_clk [expr { 0.35 * $SOC_TCK }] [get_ports {usb_d*_o usb_d*_oe}]
 
 ###############
 # Assign Pins #
 ###############
+
+# tclint-disable line-length, spacing
 
 ## Clock Signal
 set_property -dict { PACKAGE_PIN AD11  IOSTANDARD LVDS     } [get_ports { sys_clk_n }]; #IO_L12N_T1_MRCC_33 Sch=sysclk_n
@@ -190,3 +197,5 @@ set_property -dict { PACKAGE_PIN T22   IOSTANDARD LVCMOS33 } [get_ports { usb_dm
 set_property -dict { PACKAGE_PIN T23   IOSTANDARD LVCMOS33 } [get_ports { usb_dp_io[1] }]; #IO_L5N_T0_D07_14 Sch=ja_n[3]
 set_property -dict { PACKAGE_PIN T20   IOSTANDARD LVCMOS33 } [get_ports { usb_dm_io[0] }]; #IO_L4P_T0_D04_14 Sch=ja_p[4]
 set_property -dict { PACKAGE_PIN T21   IOSTANDARD LVCMOS33 } [get_ports { usb_dp_io[0] }]; #IO_L4N_T0_D05_14 Sch=ja_n[4]
+
+# tclint-enable line-length, spacing

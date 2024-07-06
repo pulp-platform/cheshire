@@ -15,7 +15,7 @@ jobs:
     steps:
       -
         name: Mirror and check
-        uses: pulp-platform/pulp-actions/gitlab-ci@v2
+        uses: pulp-platform/pulp-actions/gitlab-ci@v2.4.1
         # Skip on forks or pull requests from forks due to missing secrets.
         if: >
           github.repository == 'pulp-platform/cheshire' &&

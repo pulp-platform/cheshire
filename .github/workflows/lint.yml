@@ -18,7 +18,7 @@ jobs:
       uses: actions/checkout@v3
     -
       name: Check license
-      uses: pulp-platform/pulp-actions/lint-license@v2
+      uses: pulp-platform/pulp-actions/lint-license@v2.4.1
       with:
         license: |
           Copyright (\d{4}(-\d{4})?\s)?(ETH Zurich and University of Bologna|lowRISC contributors).
@@ -70,3 +70,22 @@ jobs:
         exclude: |
           ./sw/include/regs/*.h
           ./target/sim/src/elfloader.cpp
+
+  lint-tcl:
+    runs-on: ubuntu-latest
+    steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v3
+    -
+      name: Install Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+        cache: pip
+    -
+      name: Install tclint
+      run: pip install tclint
+    -
+      name: Run Tcllint
+      run: tclint .  --style-spaces-in-braces --style-line-length 100
