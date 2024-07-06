@@ -78,6 +78,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   input  logic                eth_rstn,
   inout  logic                eth_mdio,
   input  logic                eth_mdc,
+  output logic                r_ready,
+  output logic               continue_loop,
   // SPI host interface
   inout  wire                 spih_sck,
   inout  wire [SpihNumCs-1:0] spih_csb,
@@ -610,37 +612,29 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   ///////////////////
   //    Ethernet   //
   ///////////////////
-
   AXI_BUS_DV#(
     .AXI_ADDR_WIDTH(DutCfg.AddrWidth),
     .AXI_DATA_WIDTH(DutCfg.AxiDataWidth),
     .AXI_ID_WIDTH(DutCfg.AxiMstIdWidth),
     .AXI_USER_WIDTH(DutCfg.AxiUserWidth)
-  )axi_master_dv(clk);
+  )axi_ethernet_dv(clk);
 
   AXI_BUS#(
     .AXI_ADDR_WIDTH(DutCfg.AddrWidth),
     .AXI_DATA_WIDTH(DutCfg.AxiDataWidth),
     .AXI_ID_WIDTH(DutCfg.AxiMstIdWidth),
     .AXI_USER_WIDTH(DutCfg.AxiUserWidth)
-  )axi_master();
+  )axi_ethernet();
 
-  `AXI_ASSIGN(axi_master, axi_master_dv)
+  `AXI_ASSIGN(axi_ethernet, axi_ethernet_dv)
  
-  typedef axi_test::axi_driver #(.AW(DutCfg.AddrWidth), .DW(DutCfg.AxiDataWidth), .IW(DutCfg.AxiMstIdWidth), .UW(DutCfg.AxiUserWidth), .TA(ClkPeriodSys * TAppl), .TT(ClkPeriodSys * TTest)) axi_drv_t;
-  axi_drv_t axi_master_drv =  new(axi_master_dv);
+  typedef axi_test::axi_driver #(.AW(DutCfg.AddrWidth), .DW(DutCfg.AxiDataWidth), .IW(DutCfg.AxiMstIdWidth), .UW(DutCfg.AxiUserWidth), .TA(200ps), .TT(700ps)) axi_drv_t;
+  axi_drv_t axi_ethernet_drv =  new(axi_ethernet_dv);
 
   axi_drv_t::b_beat_t b_beat = new();
   axi_drv_t::w_beat_t w_beat = new();
   axi_drv_t::ax_beat_t aw_beat = new(), ar_beat = new();
   axi_drv_t::r_beat_t r_beat = new();
-  //beats
-  // axi_test::axi_ax_beat #(.AW(DutCfg.AddrWidth), .IW(DutCfg.AxiMstIdWidth), .UW(DutCfg.AxiUserWidth)) ar_beat = new();
-  // axi_test::axi_r_beat  #(.DW(DutCfg.AxiDataWidth), .IW(DutCfg.AxiMstIdWidth), .UW(DutCfg.AxiUserWidth)) r_beat  = new();
-  // axi_test::axi_ax_beat #(.AW(DutCfg.AddrWidth), .IW(DutCfg.AxiMstIdWidth), .UW(DutCfg.AxiUserWidth)) aw_beat = new();
-  // axi_test::axi_w_beat  #(.DW(DutCfg.AxiDataWidth), .UW(DutCfg.AxiUserWidth))      w_beat  = new();
-  // axi_test::axi_b_beat  #(.IW(DutCfg.AxiMstIdWidth), .UW(DutCfg.AxiUserWidth))     b_beat  = new();
-  
 
   typedef logic [DutCfg.AddrWidth-1:0]   axi_addr_t;
 
@@ -677,20 +671,20 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   endtask; // write_axi
 
-  logic            eth_en, eth_we;
+  logic eth_en, eth_we;
   logic [DutCfg.AddrWidth-1:0]   eth_addr;
   logic [DutCfg.AxiDataWidth-1:0]   eth_wrdata, eth_rdata;
   logic [DutCfg.AxiDataWidth/8-1:0] eth_be;
 
   axi2mem #(
-    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth    ),
-    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth    ),
+    .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth   ),
+    .AXI_ADDR_WIDTH ( DutCfg.AddrWidth       ),
     .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth    ),
     .AXI_USER_WIDTH ( DutCfg.AxiUserWidth    )
   ) i_axi2_rx (
     .clk_i  ( clk                     ),
     .rst_ni ( rst_n                   ),
-    .slave  ( axi_master              ),
+    .slave  ( axi_ethernet            ),
     .req_o  ( eth_en                  ),
     .we_o   ( eth_we                  ),
     .addr_o ( eth_addr                ),
@@ -760,23 +754,32 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     end
   end
 
-  logic [DutCfg.AxiMstIdWidth-1:0] read_addr [31:0];
-  logic [DutCfg.AddrWidth-1:0] write_addr [31:0];
-
+  logic [DutCfg.AddrWidth-1:0] read_addr [7:0];
   initial begin
-    for (int i = 0; i < 8; i++) begin
-      read_addr[i] = 64'h0301_4000 + (i * 8);
-    end
+    read_addr[0] = 64'h0301_4000;
+    read_addr[1] = 64'h0301_4008;
+    read_addr[2] = 64'h0301_4010;
+    read_addr[3] = 64'h0301_4018;
+    read_addr[4] = 64'h0301_4020;
+    read_addr[5] = 64'h0301_4028;
+    read_addr[6] = 64'h0301_4030;
+    read_addr[7] = 64'h0301_4038;
   end
-
+  
+  logic [DutCfg.AddrWidth-1:0] write_addr [7:0];
   initial begin
-    for (int i = 0; i < 8; i++) begin
-      write_addr[i] = 64'h0301_1000 + (i * 8);
-    end
+    write_addr[0] = 64'h0301_1000;
+    write_addr[1] = 64'h0301_1008;
+    write_addr[2] = 64'h0301_1010;
+    write_addr[3] = 64'h0301_1018;
+    write_addr[4] = 64'h0301_1020;
+    write_addr[5] = 64'h0301_1028;
+    write_addr[6] = 64'h0301_1030;
+    write_addr[7] = 64'h0301_1038;
   end
 
   logic [63:0] rx_read_data;
-  assign rx_read_data = axi_master.r_data;
+  assign rx_read_data = axi_ethernet.r_data;
 
   event       tx_complete;
   logic       en_rx_memw;
@@ -787,51 +790,66 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
        @(posedge en_rx_memw);
        @(negedge en_rx_memw);
        -> tx_complete;
+           $display("tx_complete triggered at time %0t", $time);
     end
   end
-
+  
+  assign r_ready = en_rx_memw;
   // Check if the data received and stored in the rx memory matches the transmitted data
+  
+  //assign continue_loop = 1;
 
   initial begin
-    automatic int continue_loop = 1;
+    continue_loop = 1;
     while(continue_loop) begin
+          $display("Waiting for tx_complete at time %0t", $time);
       wait(tx_complete.triggered);
+      $display("tx_complete event caught at time %0t", $time);
+      #1;
       for(int i=0; i<8; i++) begin
-        read_axi(axi_master_drv, read_addr[i]);
+      //   logic [DutCfg.AxiMstIdWidth-1:0][31:0] eth_addr;
+      //   eth_addr[i] = 64'h0301_4000 + (i * 'h8);
+        $display("Inside for loop iteration %0d at time %0t", i, $time);
+        //read_axi(axi_master_drv, eth_addr[i]);
+        read_axi(axi_ethernet_drv, read_addr[i]);
+        $display("Reading address %0d at time %0t", eth_addr[i], $time);
         if(rx_read_data == data_array[i])
-          $display(" Data correct");
+          //$display(" Data correct");
+          $display("Data correct for index %0d at time %0t", i, $time);
         else
-           $display("Data wrong");
+          // $display("Data wrong");
+           $display("Data wrong for index %0d at time %0t", i, $time);
       end
       continue_loop = 0;
+          $display("continue_loop set to 0 at time %0t", $time);
     end    
 
-    axi_master_drv.reset_master();
+    reset_master(axi_ethernet_drv);
     repeat(5) @(posedge clk);
     #3000ns;
 
     // Packet length
-    write_axi(axi_master_drv,'h03010810,'h00000040, 'h0f);
+    write_axi(axi_ethernet_drv,'h03010810,'h00000040, 'h0f);
     repeat(5) @(posedge clk);
 
     // TX BUFFER FILLING ----------------------------------------------
     for(int j=0; j<8; j++) begin
-      write_axi(axi_master_drv, write_addr[j], data_array[j], 'hff);
+      write_axi(axi_ethernet_drv, write_addr[j], data_array[j], 'hff);
       @(posedge clk);
     end
     repeat(10) @(posedge clk);
 
     // TRANSMISSION OF PACKET -----------------------------------------
     // 1 --> mac_address[31:0]
-    write_axi(axi_master_drv,'h03010800,'h00890702, 'h0f);
+    write_axi(axi_ethernet_drv,'h03010800,'h00890702, 'h0f);
     @(posedge clk);
 
     // 2 --> {irq_en,promiscuous,spare,loopback,cooked,mac_address[47:32]}
-    write_axi(axi_master_drv,'h03010808,'h00802301, 'h0f);
+    write_axi(axi_ethernet_drv,'h03010808,'h00802301, 'h0f);
     @(posedge clk);
 
     // 3 --> Rx frame check sequence register(read) and last register(write)
-    write_axi(axi_master_drv,'h03010828,'h00000008, 'h0f);
+    write_axi(axi_ethernet_drv,'h03010828,'h00000008, 'h0f);
     @(posedge clk);
 
     repeat(20) @(posedge clk);

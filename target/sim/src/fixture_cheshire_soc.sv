@@ -67,6 +67,9 @@ module fixture_cheshire_soc #(
   logic       eth_mdio_en;
   logic       eth_mdc;
 
+  logic                r_ready;
+  logic               continue_loop;
+
   logic                 spih_sck_o;
   logic                 spih_sck_en;
   logic [SpihNumCs-1:0] spih_csb_o;
