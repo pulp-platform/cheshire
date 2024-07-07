@@ -1306,6 +1306,12 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AddrWidth           ( Cfg.AddrWidth     ),
       .UserWidth           ( Cfg.AxiUserWidth  ),
       .AxiIdWidth          ( Cfg.AxiMstIdWidth ),
+      .NumAxInFlight       ( 32'd15            ),
+      .BufferDepth         ( 32'd2             ),
+      .TFLenWidth          ( 32'd20            ),
+      .MemSysDepth         ( 32'd0             ),
+      .TxFifoLogDepth      ( 32'd2             ),
+      .RxFifoLogDepth      ( 32'd3             ),
       .axi_req_t           ( axi_mst_req_t     ),
       .axi_rsp_t           ( axi_mst_rsp_t     ),
       .reg_req_t           ( reg_req_t         ),
@@ -1334,15 +1340,18 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_rsp_i           ( axi_in_rsp[AxiIn.eth]        ),
       .reg_req_i           ( reg_out_req[RegOut.ethernet] ),
       .reg_rsp_o           ( reg_out_rsp[RegOut.ethernet] ),
-      .eth_irq_o           ( intr.intn.ethernet           )
+      .eth_rx_irq_o        ( intr.intn.ethernet           )
     );
 
   end else begin : gen_no_ethernet
       assign intr.intn.ethernet = 1'b0;
-      assign eth_txck_o = 1'b0;
-      assign eth_rstn_o = 1'b0;
+      assign eth_txck_o  = 1'b0;
+      assign eth_rstn_o  = 1'b0;
       assign eth_txctl_o = 1'b0;
-      assign eth_txd_o = 4'b0;
+      assign eth_txd_o   = 4'b0;
+      assign eth_mdio_o  = '0;
+      assign eth_mdio_oe = '0;
+      assign eth_mdc_o   = '0;
   end
 
   ////////////////

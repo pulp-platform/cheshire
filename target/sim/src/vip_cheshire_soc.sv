@@ -616,8 +616,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   typedef reg_test::reg_driver #(
     .AW(REG_BUS_AW),
     .DW(REG_BUS_DW),
-    .TT(ClkPeriodJtag * TTest),
-    .TA(ClkPeriodJtag * TAppl)
+    .TT(ClkPeriodSys * TTest),
+    .TA(ClkPeriodSys * TAppl)
   ) reg_bus_drv_t;
 
   REG_BUS #(
@@ -627,8 +627,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .clk_i(clk)
   );
   
-  logic reg_error;
-  logic [REG_BUS_DW-1:0] rx_req_ready, rx_rsp_valid;
+  logic reg_error, eth_rx_irq;
+  logic [REG_BUS_DW-1:0] rx_rsp_valid;
 
   reg_bus_drv_t reg_drv_rx  = new(reg_bus_rx);
   
@@ -640,13 +640,18 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
  
   axi_mst_req_t axi_req_mem;
   axi_mst_rsp_t axi_rsp_mem;
-  idma_pkg::idma_busy_t idma_busy_o;
  
   eth_idma_wrap#(
     .DataWidth           ( DutCfg.AxiDataWidth  ),    
     .AddrWidth           ( DutCfg.AddrWidth     ),
     .UserWidth           ( DutCfg.AxiUserWidth  ),
     .AxiIdWidth          ( DutCfg.AxiMstIdWidth ),
+    .NumAxInFlight       ( 32'd15               ),
+    .BufferDepth         ( 32'd2                ),
+    .TFLenWidth          ( 32'd20               ),
+    .MemSysDepth         ( 32'd0                ),
+    .TxFifoLogDepth      ( 32'd2                ),
+    .RxFifoLogDepth      ( 32'd3                ),
     .axi_req_t           ( axi_mst_req_t        ),
     .axi_rsp_t           ( axi_mst_rsp_t        ),
     .reg_req_t           ( reg_req_t            ),
@@ -674,7 +679,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .testmode_i          ( 1'b0            ),
     .axi_req_o           ( axi_req_mem     ),
     .axi_rsp_i           ( axi_rsp_mem     ),
-    .idma_busy_o         ( tx_busy         )
+    .eth_rx_irq_o        ( eth_rx_irq      )
   );
 
   axi_sim_mem #(
@@ -682,31 +687,18 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .DataWidth         ( DutCfg.AxiDataWidth  ),
     .IdWidth           ( DutCfg.AxiMstIdWidth ),
     .UserWidth         ( DutCfg.AxiUserWidth  ),
-    .axi_req_t         ( axi_slv_req_t        ),
-    .axi_rsp_t         ( axi_slv_rsp_t        ),
+    .axi_req_t         ( axi_mst_req_t        ),
+    .axi_rsp_t         ( axi_mst_rsp_t        ),
     .WarnUninitialized ( 1'b0                 ),
     .ClearErrOnAccess  ( 1'b1                 ),
-    .ApplDelay         ( ClkPeriodJtag * TAppl ),
-    .AcqDelay          ( ClkPeriodJtag * TTest )
+    .ApplDelay         ( ClkPeriodSys * TAppl ),
+    .AcqDelay          ( ClkPeriodSys * TTest ),
+    .UninitializedData ( "zeros" )
   ) i_rx_axi_sim_mem (
     .clk_i              ( clk               ),
     .rst_ni             ( rst_n             ),
     .axi_req_i          ( axi_req_mem       ),
-    .axi_rsp_o          ( axi_rsp_mem       ),
-    .mon_r_last_o       ( /* NOT CONNECTED */ ),
-    .mon_r_beat_count_o ( /* NOT CONNECTED */ ),
-    .mon_r_user_o       ( /* NOT CONNECTED */ ),
-    .mon_r_id_o         ( /* NOT CONNECTED */ ),
-    .mon_r_data_o       ( /* NOT CONNECTED */ ),
-    .mon_r_addr_o       ( /* NOT CONNECTED */ ),
-    .mon_r_valid_o      ( /* NOT CONNECTED */ ),
-    .mon_w_last_o       ( /* NOT CONNECTED */ ),
-    .mon_w_beat_count_o ( /* NOT CONNECTED */ ),
-    .mon_w_user_o       ( /* NOT CONNECTED */ ),
-    .mon_w_id_o         ( /* NOT CONNECTED */ ),
-    .mon_w_data_o       ( /* NOT CONNECTED */ ),
-    .mon_w_addr_o       ( /* NOT CONNECTED */ ),
-    .mon_w_valid_o      ( /* NOT CONNECTED */ )
+    .axi_rsp_o          ( axi_rsp_mem       )
   );
   
   initial begin
@@ -730,51 +722,69 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   end
 
   initial begin
-   @(posedge clk);
-  $readmemh("eth_frame.vmem", i_rx_axi_sim_mem.mem);
-  
-  @(posedge clk);
-  reg_drv_rx.send_write( 'h0300c000, 32'h98001032, 'hf, reg_error); //lower 32bits of MAC address
-  @(posedge clk);
-  
-  reg_drv_rx.send_write( 'h0300c004, 32'h00002070, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
-  @(posedge clk);
 
-  reg_drv_rx.send_write( 'h0300c014, 32'h0, 'hf, reg_error ); // SRC_ADDR  
-  @(posedge clk);
-  
-  reg_drv_rx.send_write( 'h0300c018, 32'h0, 'hf, reg_error); // DST_ADDR
-  @(posedge clk);
-
-  reg_drv_rx.send_write( 'h0300c01c, 32'h40,'hf , reg_error); // Size in bytes 
-  @(posedge clk);
-  
-  reg_drv_rx.send_write( 'h0300c020, 32'h0,'hf , reg_error); // src protocol
-  @(posedge clk);
-
-  reg_drv_rx.send_write( 'h0300c024, 32'h5,'hf , reg_error); // dst protocol
-  @(posedge clk);
-
-  reg_drv_rx.send_write( 'h0300c03c, 'h1, 'hf , reg_error);   // req valid
-  @(posedge clk);
-
-  reg_drv_rx.send_write( 'h0300c044, 'h1, 'hf, reg_error); // rsp ready
-  @(posedge clk);
-
-  reg_drv_rx.send_write( 'h0300c03c, 'h1, 'hf , reg_error);   // req valid
-  @(posedge clk);
-
-  while(1) begin
-    reg_drv_rx.send_read( 'h0300c048, rx_rsp_valid, reg_error);
-    if(rx_rsp_valid) begin
-      reg_drv_rx.send_write( 'h0300c044, 32'h0, 'hf , reg_error);  
-      @(posedge clk);
-      break;
-      end
+    @(posedge eth_rx_irq);
     @(posedge clk);
-  end
-end         
-        
+
+    reg_drv_rx.send_write( 'h0300c000, 32'h98001032, 'hf, reg_error); //lower 32bits of MAC address
+    @(posedge clk);
+  
+    reg_drv_rx.send_write( 'h0300c004, 32'h00002070, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c014, 32'h0, 'hf, reg_error ); // SRC_ADDR  
+    @(posedge clk);
+  
+    reg_drv_rx.send_write( 'h0300c018, 32'h0, 'hf, reg_error); // DST_ADDR
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c01c, 32'h40,'hf , reg_error); // Size in bytes 
+    @(posedge clk);
+  
+    reg_drv_rx.send_write( 'h0300c020, 32'h5,'hf , reg_error); // src protocol
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c024, 32'h0,'hf , reg_error); // dst protocol
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c03c, 'h1, 'hf , reg_error);   // req valid
+    @(posedge clk);
+    
+    //wait till all data written into rx_axi_sim_mem
+    while(1) begin
+      reg_drv_rx.send_read( 'h0300c048, rx_rsp_valid, reg_error);
+      if( rx_rsp_valid ) begin
+        break;
+      end
+      @(posedge clk);
+    end
+    
+    // Tx test starts here: external back to core
+    reg_drv_rx.send_write( 'h0300c000, 32'h98001032, 'hf, reg_error); //lower 32bits of MAC address
+    @(posedge clk);
+  
+    reg_drv_rx.send_write( 'h0300c004, 32'h00002070, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c014, 32'h0, 'hf, reg_error ); // SRC_ADDR  
+    @(posedge clk);
+  
+    reg_drv_rx.send_write( 'h0300c018, 32'h0, 'hf, reg_error); // DST_ADDR
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c01c, 32'h40,'hf , reg_error); // Size in bytes 
+    @(posedge clk);
+  
+    reg_drv_rx.send_write( 'h0300c020, 32'h0,'hf , reg_error); // src protocol
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c024, 32'h5,'hf , reg_error); // dst protocol
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c03c, 'h1, 'hf , reg_error);   // req valid
+    @(posedge clk);    
+  end 
+     
   ///////////////////
   //  Serial Link  //
   ///////////////////
