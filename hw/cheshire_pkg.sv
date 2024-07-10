@@ -570,7 +570,7 @@ package cheshire_pkg;
     Cva6ExtCieLength  : 'h2000_0000,  // [0x2.., 0x4..) is CIE, [0x4.., 0x8..) is non-CIE
     Cva6ExtCieOnTop   : 0,
     // Harts
-    NumCores          : 1,
+    NumCores          : 4,
     CoreMaxTxns       : 8,
     CoreMaxTxnsPerId  : 4,
     CoreUserAmoOffs   : 0, // Convention: lower AMO bits for cores, MSB for serial link
@@ -613,7 +613,7 @@ package cheshire_pkg;
     AxiRt             : 0,
     Clic              : 0,
     IrqRouter         : 0,
-    BusErr            : 1,
+    BusErr            : 0,
     // Debug
     DbgIdCode         : CheshireIdCode,
     DbgMaxReqs        : 4,
