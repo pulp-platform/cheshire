@@ -76,7 +76,7 @@ $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv:
 	$(REGTOOL) -r $< --outdir $(dir $@)
 
 # CLINT
-CLINTCORES ?= 1
+CLINTCORES ?= 2
 include $(CLINTROOT)/clint.mk
 $(CLINTROOT)/.generated:
 	flock -x $@ $(MAKE) clint && touch $@
