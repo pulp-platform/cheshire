@@ -109,6 +109,8 @@ module cheshire_soc import cheshire_pkg::*; #(
 );
 
   `include "axi/typedef.svh"
+  `include "ace/typedef.svh"
+  `include "ace/assign.svh"
   `include "common_cells/registers.svh"
   `include "common_cells/assertions.svh"
   `include "cheshire/typedef.svh"
@@ -556,7 +558,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   // TODO: Implement X interface support
 
-  `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
+  // `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
 
   localparam config_pkg::cva6_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
 
@@ -588,8 +590,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   assign intr.intn.bus_err.cores = core_bus_err_intr_comb;
 
   for (genvar i = 0; i < NumIntHarts; i++) begin : gen_cva6_cores
-    axi_cva6_req_t core_out_req, core_ur_req;
-    axi_cva6_rsp_t core_out_rsp, core_ur_rsp;
+    ariane_ace::req_t  core_out_req, core_ur_req;
+    ariane_ace::resp_t core_out_rsp, core_ur_rsp;
 
     // CLIC interface
     logic clic_irq_valid, clic_irq_ready;
@@ -601,13 +603,13 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     cva6 #(
       .CVA6Cfg        ( Cva6Cfg ),
-      .axi_ar_chan_t  ( axi_cva6_ar_chan_t ),
-      .axi_aw_chan_t  ( axi_cva6_aw_chan_t ),
-      .axi_w_chan_t   ( axi_cva6_w_chan_t  ),
-      .b_chan_t       ( axi_cva6_b_chan_t  ),
-      .r_chan_t       ( axi_cva6_r_chan_t  ),
-      .noc_req_t      ( axi_cva6_req_t ),
-      .noc_resp_t     ( axi_cva6_rsp_t )
+      .axi_ar_chan_t  ( ariane_ace::ar_chan_t ),
+      .axi_aw_chan_t  ( ariane_ace::aw_chan_t ),
+      .axi_w_chan_t   ( ariane_ace::ariane_axi_w_chan_t ),
+      .b_chan_t       ( ariane_ace::ariane_axi_b_chan_t ),
+      .r_chan_t       ( ariane_ace::r_chan_t ),
+      .noc_req_t      ( ariane_ace::req_t ),
+      .noc_resp_t     ( ariane_ace::resp_t )
     ) i_core_cva6 (
       .clk_i,
       .rst_ni,
@@ -641,8 +643,8 @@ module cheshire_soc import cheshire_pkg::*; #(
         .NumOutstanding     ( Cfg.CoreMaxTxns ),
         .NumStoredErrors    ( 4 ),
         .DropOldest         ( 1'b0 ),
-        .axi_req_t          ( axi_cva6_req_t ),
-        .axi_rsp_t          ( axi_cva6_rsp_t ),
+        .axi_req_t          ( ariane_ace::req_t ),
+        .axi_rsp_t          ( ariane_ace::resp_t ),
         .reg_req_t          ( reg_req_t ),
         .reg_rsp_t          ( reg_rsp_t )
       ) i_cva6_bus_err (
@@ -721,33 +723,88 @@ module cheshire_soc import cheshire_pkg::*; #(
       core_out_rsp        = core_ur_rsp;
     end
 
-    // CVA6's ID encoding is wasteful; remap it statically pack into available bits
-    axi_id_serialize #(
-      .AxiSlvPortIdWidth      ( Cva6IdWidth     ),
-      .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
-      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth      ),
-      .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
-      .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId   ),
-      .AxiAddrWidth           ( Cfg.AddrWidth    ),
-      .AxiDataWidth           ( Cfg.AxiDataWidth ),
-      .AxiUserWidth           ( Cfg.AxiUserWidth ),
-      .AtopSupport            ( 1 ),
-      .slv_req_t              ( axi_cva6_req_t ),
-      .slv_resp_t             ( axi_cva6_rsp_t ),
-      .mst_req_t              ( axi_mst_req_t  ),
-      .mst_resp_t             ( axi_mst_rsp_t  ),
-      .MstIdBaseOffset        ( '0 ),
-      .IdMapNumEntries        ( Cva6IdsUsed ),
-      .IdMap                  ( gen_cva6_id_map(Cfg) )
-    ) i_axi_id_serialize (
-      .clk_i,
-      .rst_ni,
-      .slv_req_i  ( core_ur_req ),
-      .slv_resp_o ( core_ur_rsp ),
-      .mst_req_o  ( axi_in_req[AxiIn.cores[i]] ),
-      .mst_resp_i ( axi_in_rsp[AxiIn.cores[i]] )
-    );
+    `ACE_ASSIGN_FROM_REQ(core_to_CCU[i], core_ur_req)
+    `ACE_ASSIGN_TO_RESP(core_ur_rsp, core_to_CCU[i])
+    `SNOOP_ASSIGN_FROM_RESP(CCU_to_core[i], core_ur_req)
+    `SNOOP_ASSIGN_TO_REQ(core_ur_rsp, CCU_to_core[i])
   end
+
+  ///////////////////
+  //      CCU      //
+  ///////////////////
+
+  localparam int unsigned CCUIdWidth = Cva6IdWidth + $clog2(NumIntHarts) + $clog2(NumIntHarts+1) + 1;
+
+  ACE_BUS #(
+    .AXI_ADDR_WIDTH ( Cfg.AddrWidth    ),
+    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth ),
+    .AXI_ID_WIDTH   ( Cva6IdWidth      ),
+    .AXI_USER_WIDTH ( Cfg.AxiUserWidth )
+  ) core_to_CCU[NumIntHarts-1:0]();
+
+  SNOOP_BUS #(
+    .SNOOP_ADDR_WIDTH ( Cfg.AddrWidth    ),
+    .SNOOP_DATA_WIDTH ( Cfg.AxiDataWidth )
+  ) CCU_to_core[NumIntHarts-1:0]();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( Cfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( CCUIdWidth        ),
+    .AXI_USER_WIDTH ( Cfg.AxiUserWidth  )
+  ) ccu_out_axi();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( Cfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( Cfg.AxiMstIdWidth ),
+    .AXI_USER_WIDTH ( Cfg.AxiUserWidth  )
+  ) ccu_remap_axi();
+
+  localparam ace_pkg::ccu_cfg_t CCU_CFG = '{
+    NoSlvPorts         : NumIntHarts,
+    MaxMstTrans        : 4,
+    MaxSlvTrans        : 4,
+    FallThrough        : 1'b0,
+    LatencyMode        : ace_pkg::NO_LATENCY,
+    AxiIdWidthSlvPorts : Cva6IdWidth,
+    AxiIdUsedSlvPorts  : Cva6IdWidth,
+    UniqueIds          : 1'b1,
+    DcacheLineWidth    : ariane_pkg::DCACHE_LINE_WIDTH,
+    DcacheIndexWidth   : ariane_pkg::DCACHE_INDEX_WIDTH,
+    AxiAddrWidth       : Cfg.AddrWidth,
+    AxiUserWidth       : Cfg.AxiUserWidth,
+    AxiDataWidth       : Cfg.AxiDataWidth
+  };
+
+  ace_ccu_top_intf #(
+    .Cfg ( CCU_CFG )
+  ) i_ccu (
+    .clk_i,
+    .rst_ni,
+    .test_i      ( test_mode_i ),
+    .slv_ports   ( core_to_CCU ),
+    .snoop_ports ( CCU_to_core ),
+    .mst_ports   ( ccu_out_axi )
+  );
+
+  axi_id_remap_intf #(
+    .AXI_SLV_PORT_ID_WIDTH     ( CCUIdWidth        ),
+    .AXI_SLV_PORT_MAX_UNIQ_IDS ( 4                 ),
+    .AXI_MAX_TXNS_PER_ID       ( 4                 ),
+    .AXI_MST_PORT_ID_WIDTH     ( Cfg.AxiMstIdWidth ),
+    .AXI_ADDR_WIDTH            ( Cfg.AddrWidth     ),
+    .AXI_DATA_WIDTH            ( Cfg.AxiDataWidth  ),
+    .AXI_USER_WIDTH            ( Cfg.AxiUserWidth  )
+  ) i_axi_id_remapper (
+    .clk_i,
+    .rst_ni,
+    .slv ( ccu_out_axi   ),
+    .mst ( ccu_remap_axi )
+  );
+
+  `AXI_ASSIGN_TO_REQ(axi_in_req[AxiIn.cores], ccu_remap_axi)
+  `AXI_ASSIGN_FROM_RESP(ccu_remap_axi, axi_in_rsp[AxiIn.cores])
 
   /////////////////////////
   //  JTAG Debug Module  //
