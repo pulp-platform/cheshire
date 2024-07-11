@@ -36,8 +36,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   // External AXI crossbar ports
   input  axi_ext_mst_req_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_req_i,
   output axi_ext_mst_rsp_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_rsp_o,
-  input  axi_ext_wide_mst_req_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_wide_mst_req_i,
-  output axi_ext_wide_mst_rsp_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_wide_mst_rsp_o,
+  input  axi_ext_wide_mst_req_t [iomsb(Cfg.AxiExtNumWideMst):0] axi_ext_wide_mst_req_i,
+  output axi_ext_wide_mst_rsp_t [iomsb(Cfg.AxiExtNumWideMst):0] axi_ext_wide_mst_rsp_o,
   output axi_ext_slv_req_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_req_o,
   input  axi_ext_slv_rsp_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_rsp_i,
   // External reg demux slaves
@@ -197,6 +197,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Define needed parameters
   localparam int unsigned AxiStrbWidth  = Cfg.AxiDataWidth / 8;
   localparam int unsigned AxiSlvIdWidth = Cfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
+   localparam int unsigned WideSlaveIdWidth = $clog2(Cfg.MemIslWidePorts);
 
   // Type for address map entries
   typedef struct packed {
@@ -1365,9 +1366,9 @@ module cheshire_soc import cheshire_pkg::*; #(
       axi_memory_island_wrap #(
 			       .AddrWidth (Cfg.AddrWidth),
 			       .NarrowDataWidth (Cfg.AxiDataWidth),
-			       .WideDataWidth (Cfg.AxiDataWidth * Cfg.MemIslNarrowToWideFactor),
+			       .WideDataWidth (WideDataWidth),
 			       .AxiNarrowIdWidth (AxiSlvIdWidth),
-			       .AxiWideIdWidth (AxiSlvIdWidth),
+			       .AxiWideIdWidth (WideSlaveIdWidth),
 			       .axi_narrow_req_t (axi_slv_req_t),
 			       .axi_narrow_rsp_t (axi_slv_rsp_t),
 			       .axi_wide_req_t (mem_isl_wide_axi_slv_req_t),
