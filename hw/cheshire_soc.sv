@@ -797,7 +797,7 @@ module cheshire_soc
         .plic_hartx_mint_req_i ({1'b0, xeip[i].m}),
         .plic_hartx_sint_req_i ({1'b0, xeip[i].s}),
         // debug request (async)
-        .debug_req_i      ( '0 ),
+        .debug_req_i      ( dbg_int_req[i] ),
         // External interrupts to c910 internal plic
         .ext_int_i        ( '0 /*{39'b0, intr.ext}*/   ),
         // JTAG

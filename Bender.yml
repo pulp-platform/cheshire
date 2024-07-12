@@ -13,7 +13,7 @@ package:
 
 dependencies:
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.1  }
-  axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.0 }
+  axi:                      { git: "https://github.com/pulp-platform/axi.git",                    rev: ac4a0245   } # zx/axi_burst_unwrap
   axi_llc:                  { git: "https://github.com/Aquaticfuller/axi_llc.git",                rev: edae8021   }
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.8.1  }
   axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: 0.0.0-alpha.4 }
@@ -27,13 +27,13 @@ dependencies:
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
   register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",     version: 0.4.2  }
-  riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              version: 0.8.0  }
+  riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              rev: f69f6342   } # zx/cheshire_c910
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.0  }
   unbent:                   { git: "https://github.com/pulp-platform/unbent.git",                 version: 0.1.5  }
   # soc910:                   { git: "git@iis-git.ee.ethz.ch:nwistoff/soc910.git",                  rev: 7c218d05   }
   # register_interface:       { path: vendor/pulp_register_interface                                                  }
   # soc910:                   { path: soc910/hw/system                                                              }
-  pulp_c910:                { git: "git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git",               rev: 4358d6e7   }
+  pulp_c910:                { git: "git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git",               rev: 0a9d18be   } # zx/axi_burst_unwrap
 
 export_include_dirs:
   - hw/include
