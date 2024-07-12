@@ -103,6 +103,11 @@ $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
 	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs BENDER="$(BENDER)" && touch $@
 
+# iDMA
+$(IDMA_ROOT)/.generated: $(IDMA_ROOT)/target/rtl/idma_reg64_2d.hjson
+	flock -x $@ sh -c "cp $< $(dir $@)/target/rtl/; $(MAKE) -j1 otp" && touch $@
+
+
 CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv
 CHS_HW_ALL += $(CLINTROOT)/.generated
 CHS_HW_ALL += $(OTPROOT)/.generated
