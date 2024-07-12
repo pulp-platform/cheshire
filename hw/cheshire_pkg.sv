@@ -91,6 +91,7 @@ package cheshire_pkg;
     dw_bt   AxiDataWidth;
     dw_bt   AxiUserWidth;
     aw_bt   AxiMstIdWidth;
+    aw_bt   TFLenWidth;
     aw_bt   AxiSlvIdWidth;
     dw_bt   AxiMaxMstTrans;
     dw_bt   AxiMaxSlvTrans;
@@ -663,6 +664,7 @@ package cheshire_pkg;
     AxiDataWidth      : 64,
     AxiUserWidth      : 2,  // AMO(2)
     AxiMstIdWidth     : 2,
+    TFLenWidth        : 32,
     AxiSlvIdWidth     : 3,
     AxiMaxMstTrans    : 24,
     AxiMaxSlvTrans    : 24,
