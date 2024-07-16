@@ -8,7 +8,10 @@
 
 BENDER ?= bender
 
-VLOG_ARGS ?= -suppress 2583 -suppress 13314
+# Caution: Questasim requires this to point to the *actual* install path.
+CXX_PATH := $(shell which $(CXX))
+
+VLOG_ARGS ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
 VSIM      ?= vsim
 
 # Define used paths (prefixed to avoid name conflicts)
@@ -18,11 +21,12 @@ CHS_SLINK_DIR := $(shell $(BENDER) path serial_link)
 CHS_LLC_DIR   := $(shell $(BENDER) path axi_llc)
 
 # Define paths used in dependencies
-OTPROOT      := $(shell $(BENDER) path opentitan_peripherals)
-CLINTROOT    := $(shell $(BENDER) path clint)
-AXIRTROOT    := $(shell $(BENDER) path axi_rt)
-AXI_VGA_ROOT := $(shell $(BENDER) path axi_vga)
-IDMA_ROOT    := $(shell $(BENDER) path idma)
+OTPROOT           := $(shell $(BENDER) path opentitan_peripherals)
+CLINTROOT         := $(shell $(BENDER) path clint)
+AXIRTROOT         := $(shell $(BENDER) path axi_rt)
+AXI_VGA_ROOT      := $(shell $(BENDER) path axi_vga)
+IDMA_ROOT         := $(shell $(BENDER) path idma)
+DRAM_RTL_SIM_ROOT := $(shell $(BENDER) path dram_rtl_sim)
 
 REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
 
@@ -132,9 +136,12 @@ CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/boo
 # Simulation #
 ##############
 
+DRAMSYS_ROOT ?= $(CHS_ROOT)/target/sim/dramsys
+include $(DRAM_RTL_SIM_ROOT)/dram_rtl_sim.mk
+
 $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: $(CHS_ROOT)/Bender.yml
 	$(BENDER) script vsim -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 -t rtl --vlog-arg="$(VLOG_ARGS)" > $@
-	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
+	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11" -cpppath "$(CXX_PATH)"' >> $@
 
 .PRECIOUS: $(CHS_ROOT)/target/sim/models
 $(CHS_ROOT)/target/sim/models:
@@ -154,6 +161,7 @@ $(CHS_ROOT)/target/sim/models/24FC1025.v: $(CHS_ROOT)/Bender.yml | $(CHS_ROOT)/t
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
+CHS_SIM_ALL += dramsys
 
 #############
 # FPGA Flow #
