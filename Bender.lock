@@ -24,7 +24,7 @@ packages:
     - common_verification
     - tech_cells_generic
   axi_llc:
-    revision: 4deb8c6281c74b3882846ad933f42a8c6568cbe0
+    revision: 2c1fecc78b9523ce318c8a1e3be35db1754429ef
     version: null
     source:
       Git: https://github.com/pulp-platform/axi_llc
@@ -32,6 +32,7 @@ packages:
     - axi
     - common_cells
     - common_verification
+    - redundancy_cells
     - register_interface
     - tech_cells_generic
   axi_riscv_atomics:
@@ -44,8 +45,8 @@ packages:
     - common_cells
     - common_verification
   axi_rt:
-    revision: 56074a195b1c8b05f4bdd73674e437bbcb35f2cd
-    version: 0.0.0-alpha.7
+    revision: d5f857e74d0a5db4e4a2cc3652ca4f40f29a1484
+    version: 0.0.0-alpha.8
     source:
       Git: https://github.com/pulp-platform/axi_rt.git
     dependencies:
@@ -85,8 +86,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: f4d6406070d8e7767e4e9a433f11b039859f03a1
-    version: null
+    revision: be3866eb3ed5b8ac7bc9a9ec9f8ae86137cd0a45
+    version: 1.36.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -125,8 +126,8 @@ packages:
     dependencies:
     - common_cells
   idma:
-    revision: 95f366e56f7e772c283fb3c8b343afc4a3978375
-    version: 0.6.2
+    revision: c12caf59bb482fe44b27361f6924ad346b2d22fe
+    version: 0.6.3
     source:
       Git: https://github.com/pulp-platform/iDMA.git
     dependencies:
@@ -163,7 +164,7 @@ packages:
     - register_interface
     - tech_cells_generic
   redundancy_cells:
-    revision: c44ff73521186d2bc1dd77a17664539a3b3e2406
+    revision: f41308f0d9afbcc309592783b0b982a2edbe217a
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
