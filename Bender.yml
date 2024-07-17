@@ -30,7 +30,7 @@ dependencies:
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              version: 0.8.1  }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.1  }
   unbent:                   { git: "https://github.com/pulp-platform/unbent.git",                 version: 0.1.6  }
-  pulp-ethernet:            { git: "https://github.com/pulp-platform/pulp-ethernet.git",          rev: "f01aacf"  } # branch: chs-hs
+  pulp-ethernet:            { git: "https://github.com/pulp-platform/pulp-ethernet.git",          rev: "85679c6"  } # branch: chs-hs
 
 export_include_dirs:
   - hw/include
