@@ -8,7 +8,51 @@
 
 // TODO: Avoid hardcoding in addresses and offsets
 
-#include "smp.h"
+// The hart that non-SMP tests should run on
+#ifndef NONSMP_HART
+#define NONSMP_HART 0
+#endif
+
+// Let non-SMP hart continue and all other harts jump (and loop) in smp_resume
+.macro bootrom_smp_pause reg1, reg2
+    li \reg2, 0x8
+    csrw mie, \reg2
+    li \reg1, NONSMP_HART
+    csrr \reg2, mhartid
+    bne \reg1, \reg2, 2f
+.endm
+
+.macro bootrom_smp_resume reg1, reg2, reg3
+    la \reg1, __base_clint
+    la \reg3, __base_regs
+    lw \reg3, 76(\reg3) // regs.NUM_INT_HARTS
+    slli \reg3, \reg3, 2
+    add \reg3, \reg1, \reg3
+1:
+    li \reg2, 1
+    sw \reg2, 0(\reg1)
+    addi \reg1, \reg1, 4
+    blt \reg1, \reg3, 1b
+2:
+    wfi
+    csrr \reg2, mip
+    andi \reg2, \reg2, 0x8
+    beqz \reg2, 2b
+    la \reg1, __base_clint
+    csrr \reg2, mhartid
+    slli \reg2, \reg2, 2
+    add \reg2, \reg2, \reg1
+    sw zero, 0(\reg2)
+    la \reg3, __base_regs
+    lw \reg3, 76(\reg3) // regs.NUM_INT_HARTS
+    slli \reg3, \reg3, 2
+    add \reg3, \reg1, \reg3
+3:
+    lw \reg2, 0(\reg1)
+    bnez \reg2, 3b
+    addi \reg1, \reg1, 4
+    blt \reg1, \reg3, 3b
+.endm
 
 .section .text._start
 
@@ -47,7 +91,7 @@ _start:
     li x31, 0
 
     // Pause SMP harts
-    smp_pause(t0, t1)
+    bootrom_smp_pause t0, t1
 
     // Init stack and global pointer with safe, linked values
     la sp, __stack_pointer$
@@ -94,7 +138,7 @@ boot_next_stage:
     sw a0, 20(t0)   // regs.SCRATCH[5]
     fence
     // Resume SMP harts
-    smp_resume(t0, t1, t2)
+    bootrom_smp_resume t0, t1, t2
     // Load boot address from global scratch registers
     la t0, __base_regs
     lwu t1, 20(t0)  // regs.SCRATCH[5]
