@@ -28,6 +28,7 @@ sw/deps/.patched
 
 # Test models
 target/sim/models
+target/sim/dramsys
 
 # VSIM generated files
 target/sim/vsim/compile.*.tcl
