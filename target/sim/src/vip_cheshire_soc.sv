@@ -628,6 +628,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   );
   
   logic reg_error, eth_rx_irq;
+  logic dma_en;
   logic [REG_BUS_DW-1:0] rx_rsp_valid;
 
   reg_bus_drv_t reg_drv_rx  = new(reg_bus_rx);
@@ -679,7 +680,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .testmode_i          ( 1'b0            ),
     .axi_req_o           ( axi_req_mem     ),
     .axi_rsp_i           ( axi_rsp_mem     ),
-    .eth_rx_irq_o        ( eth_rx_irq      )
+    .eth_rx_irq_o        ( eth_rx_irq      ),
+    .dma_rx_en           ( dma_en          )
   );
 
   axi_sim_mem #(
@@ -731,15 +733,17 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   
     reg_drv_rx.send_write( 'h0300c004, 32'h00002070, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
     @(posedge clk);
-
+    
+    @(posedge dma_en);
+    
     reg_drv_rx.send_write( 'h0300c014, 32'h0, 'hf, reg_error ); // SRC_ADDR  
     @(posedge clk);
   
     reg_drv_rx.send_write( 'h0300c018, 32'h0, 'hf, reg_error); // DST_ADDR
     @(posedge clk);
 
-    reg_drv_rx.send_write( 'h0300c01c, 32'h40,'hf , reg_error); // Size in bytes 
-    @(posedge clk);
+    // reg_drv_rx.send_write( 'h0300c01c, 32'h40,'hf , reg_error); // Size in bytes 
+    // @(posedge clk);
   
     reg_drv_rx.send_write( 'h0300c020, 32'h5,'hf , reg_error); // src protocol
     @(posedge clk);
