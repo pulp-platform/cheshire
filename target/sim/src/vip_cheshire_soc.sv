@@ -680,8 +680,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .testmode_i          ( 1'b0            ),
     .axi_req_o           ( axi_req_mem     ),
     .axi_rsp_i           ( axi_rsp_mem     ),
-    .eth_rx_irq_o        ( eth_rx_irq      ),
-    .dma_rx_en           ( dma_en          )
+    .eth_rx_irq_o        ( eth_rx_irq      )
   );
 
   axi_sim_mem #(
@@ -734,7 +733,12 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     reg_drv_rx.send_write( 'h0300c004, 32'h00002070, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
     @(posedge clk);
     
-    @(posedge dma_en);
+    while(1) begin
+      reg_drv_rx.send_read( 'h0300c050, dma_en, reg_error);   // req ready 
+      if( dma_en )
+        break;
+      @(posedge clk);
+    end
     
     reg_drv_rx.send_write( 'h0300c014, 32'h0, 'hf, reg_error ); // SRC_ADDR  
     @(posedge clk);

@@ -18,6 +18,7 @@
 #define IDMA_REQ_READY_OFFSET        0x40
 #define IDMA_RSP_READY_OFFSET        0x44
 #define IDMA_RSP_VALID_OFFSET        0x48
+#define IDMA_RX_EN_OFFSET            0x50
 
 #define PLIC_BASE                    0x04000000
 #define RV_PLIC_PRIO19_REG_OFFSET    0x4c
@@ -83,9 +84,11 @@ int main(void) {
   
   // rx irq
   while (!(*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19) );
-
+  // configure ethernet
   *reg32(ETH_BASE, MACLO_OFFSET)          = 0x98001032;  
   *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00012070;  
+  // dma length ready, dma can be configured now
+  while (!(*reg32(ETH_BASE,IDMA_RX_EN_OFFSET)));
 
   *reg32(ETH_BASE, IDMA_SRC_ADDR_OFFSET)  = 0x0; 
   *reg32(ETH_BASE, IDMA_DST_ADDR_OFFSET)  = RX_BASE;
