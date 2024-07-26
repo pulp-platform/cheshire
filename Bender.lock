@@ -15,8 +15,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: 9402c8a9ce0a7b5253c3c29e788612d771e8b5d6
-    version: 0.39.3
+    revision: 587355b77b8ce94dcd600efbd5d5bd118ff913a7
+    version: 0.39.4
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -92,8 +92,8 @@ packages:
     dependencies:
     - common_cells
   common_cells:
-    revision: be3866eb3ed5b8ac7bc9a9ec9f8ae86137cd0a45
-    version: 1.36.0
+    revision: c27bce39ebb2e6bae52f60960814a2afca7bd4cb
+    version: 1.37.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -152,10 +152,10 @@ packages:
     - common_cells
     - register_interface
   memory_island:
-    revision: cfe27a946807713e93ed1be25c241588ffde407f
+    revision: 64828cb7a9ccc1f1656ec92d06129072f445c319
     version: null
     source:
-      Git: git@iis-git.ee.ethz.ch:michaero/memory_island.git
+      Git: https://github.com/pulp-platform/memory_island.git
     dependencies:
     - axi
     - cluster_interconnect
@@ -163,8 +163,8 @@ packages:
     - common_verification
     - tech_cells_generic
   obi:
-    revision: 1aa411df145c4ebdd61f8fed4d003c33f7b20636
-    version: 0.1.2
+    revision: c2141a653c755461ff44f61d12aeb5d99fc8e760
+    version: 0.1.3
     source:
       Git: https://github.com/pulp-platform/obi.git
     dependencies:
