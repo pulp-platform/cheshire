@@ -220,6 +220,10 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Connectivity of Xbar
   axi_mst_req_t [AxiIn.num_in-1:0]    axi_in_req, axi_rt_in_req;
   axi_mst_rsp_t [AxiIn.num_in-1:0]    axi_in_rsp, axi_rt_in_rsp;
+
+  axi_mst_req_t [AxiOut.num_out-1:0][AxiIn.num_in-1:0] axi_unmuxed_req;
+  axi_mst_rsp_t [AxiOut.num_out-1:0][AxiIn.num_in-1:0] axi_unmuxed_rsp;
+
   axi_slv_req_t [AxiOut.num_out-1:0]  axi_out_req;
   axi_slv_rsp_t [AxiOut.num_out-1:0]  axi_out_rsp;
 
@@ -240,36 +244,103 @@ module cheshire_soc import cheshire_pkg::*; #(
     NoAddrRules:        AxiOut.num_rules
   };
 
-  axi_xbar #(
-    .Cfg            ( AxiXbarCfg ),
-    .ATOPs          ( 1  ),
-    .Connectivity   ( '1 ),
-    .slv_aw_chan_t  ( axi_mst_aw_chan_t ),
-    .mst_aw_chan_t  ( axi_slv_aw_chan_t ),
-    .w_chan_t       ( axi_mst_w_chan_t  ),
-    .slv_b_chan_t   ( axi_mst_b_chan_t  ),
-    .mst_b_chan_t   ( axi_slv_b_chan_t  ),
-    .slv_ar_chan_t  ( axi_mst_ar_chan_t ),
-    .mst_ar_chan_t  ( axi_slv_ar_chan_t ),
-    .slv_r_chan_t   ( axi_mst_r_chan_t  ),
-    .mst_r_chan_t   ( axi_slv_r_chan_t  ),
-    .slv_req_t      ( axi_mst_req_t ),
-    .slv_resp_t     ( axi_mst_rsp_t ),
-    .mst_req_t      ( axi_slv_req_t ),
-    .mst_resp_t     ( axi_slv_rsp_t ),
-    .rule_t         ( addr_rule_t )
-  ) i_axi_xbar (
-    .clk_i,
-    .rst_ni,
-    .test_i                 ( test_mode_i ),
-    .slv_ports_req_i        ( axi_rt_in_req ),
-    .slv_ports_resp_o       ( axi_rt_in_rsp ),
-    .mst_ports_req_o        ( axi_out_req ),
-    .mst_ports_resp_i       ( axi_out_rsp ),
-    .addr_map_i             ( AxiMap ),
-    .en_default_mst_port_i  ( '0 ),
-    .default_mst_port_i     ( '0 )
-  );
+  if ( Cfg.MemoryIsland ) begin : gen_unmuxed_xbar
+
+    axi_xbar_unmuxed #(
+      .Cfg          ( AxiXbarCfg ),
+      .ATOPs        ( 1  ),
+      .Connectivity ( '1 ),
+      .aw_chan_t    ( axi_mst_aw_chan_t ),
+      .w_chan_t     ( axi_mst_w_chan_t  ),
+      .b_chan_t     ( axi_mst_b_chan_t  ),
+      .ar_chan_t    ( axi_mst_ar_chan_t ),
+      .r_chan_t     ( axi_mst_r_chan_t  ),
+      .req_t        ( axi_mst_req_t ),
+      .resp_t       ( axi_mst_rsp_t ),
+      .rule_t       ( addr_rule_t )
+    ) i_axi_xbar (
+      .clk_i,
+      .rst_ni,
+      .test_i                 ( test_mode_i ),
+      .slv_ports_req_i        ( axi_rt_in_req ),
+      .slv_ports_resp_o       ( axi_rt_in_rsp ),
+      .mst_ports_req_o        ( axi_unmuxed_req ),
+      .mst_ports_resp_i       ( axi_unmuxed_rsp ),
+      .addr_map_i             ( AxiMap ),
+      .en_default_mst_port_i  ( '0 ),
+      .default_mst_port_i     ( '0 )
+    );
+
+    for (genvar i = 0; i < AxiOut.num_out; i++) begin : gen_xbar_mux
+      if ( i != AxiOut.memoryisland ) begin : gen_mux
+        axi_mux #(
+          .SlvAxiIDWidth ( AxiXbarCfg.AxiIdWidthSlvPorts ),
+          .slv_aw_chan_t ( axi_mst_aw_chan_t             ),
+          .mst_aw_chan_t ( axi_slv_aw_chan_t             ),
+          .w_chan_t      ( axi_mst_w_chan_t              ),
+          .slv_b_chan_t  ( axi_mst_b_chan_t              ),
+          .mst_b_chan_t  ( axi_slv_b_chan_t              ),
+          .slv_ar_chan_t ( axi_mst_ar_chan_t             ),
+          .mst_ar_chan_t ( axi_slv_ar_chan_t             ),
+          .slv_r_chan_t  ( axi_mst_r_chan_t              ),
+          .mst_r_chan_t  ( axi_slv_r_chan_t              ),
+          .slv_req_t     ( axi_mst_req_t                 ),
+          .slv_resp_t    ( axi_mst_rsp_t                 ),
+          .mst_req_t     ( axi_slv_req_t                 ),
+          .mst_resp_t    ( axi_slv_rsp_t                 ),
+          .NoSlvPorts    ( AxiXbarCfg.NoSlvPorts         ),
+          .MaxWTrans     ( AxiXbarCfg.MaxSlvTrans        ),
+          .FallThrough   ( AxiXbarCfg.FallThrough        ),
+          .SpillAw       ( AxiXbarCfg.LatencyMode[4]     ),
+          .SpillW        ( AxiXbarCfg.LatencyMode[3]     ),
+          .SpillB        ( AxiXbarCfg.LatencyMode[2]     ),
+          .SpillAr       ( AxiXbarCfg.LatencyMode[1]     ),
+          .SpillR        ( AxiXbarCfg.LatencyMode[0]     )
+        ) i_axi_mux (
+          .clk_i,
+          .rst_ni,
+          .test_i      ( test_mode_i        ),
+          .slv_reqs_i  ( axi_unmuxed_req[i] ),
+          .slv_resps_o ( axi_unmuxed_rsp[i] ),
+          .mst_req_o   ( axi_out_req[i]     ),
+          .mst_resp_i  ( axi_out_rsp[i]     )
+        );
+
+      end
+    end
+  end else begin : gen_xbar
+    axi_xbar #(
+      .Cfg            ( AxiXbarCfg ),
+      .ATOPs          ( 1  ),
+      .Connectivity   ( '1 ),
+      .slv_aw_chan_t  ( axi_mst_aw_chan_t ),
+      .mst_aw_chan_t  ( axi_slv_aw_chan_t ),
+      .w_chan_t       ( axi_mst_w_chan_t  ),
+      .slv_b_chan_t   ( axi_mst_b_chan_t  ),
+      .mst_b_chan_t   ( axi_slv_b_chan_t  ),
+      .slv_ar_chan_t  ( axi_mst_ar_chan_t ),
+      .mst_ar_chan_t  ( axi_slv_ar_chan_t ),
+      .slv_r_chan_t   ( axi_mst_r_chan_t  ),
+      .mst_r_chan_t   ( axi_slv_r_chan_t  ),
+      .slv_req_t      ( axi_mst_req_t ),
+      .slv_resp_t     ( axi_mst_rsp_t ),
+      .mst_req_t      ( axi_slv_req_t ),
+      .mst_resp_t     ( axi_slv_rsp_t ),
+      .rule_t         ( addr_rule_t )
+    ) i_axi_xbar (
+      .clk_i,
+      .rst_ni,
+      .test_i                 ( test_mode_i ),
+      .slv_ports_req_i        ( axi_rt_in_req ),
+      .slv_ports_resp_o       ( axi_rt_in_rsp ),
+      .mst_ports_req_o        ( axi_out_req ),
+      .mst_ports_resp_i       ( axi_out_rsp ),
+      .addr_map_i             ( AxiMap ),
+      .en_default_mst_port_i  ( '0 ),
+      .default_mst_port_i     ( '0 )
+    );
+  end
+
 
   // Connect external masters
   if (Cfg.AxiExtNumMst > 0) begin : gen_ext_axi_mst
@@ -1360,33 +1431,33 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   end
 
-   if (Cfg.MemoryIsland) begin : gen_memoryisland
+  if (Cfg.MemoryIsland) begin : gen_memoryisland
 
-      localparam int WideDataWidth = Cfg.AxiDataWidth * Cfg.MemIslNarrowToWideFactor;
-      axi_memory_island_wrap #(
-			       .AddrWidth (Cfg.AddrWidth),
-			       .NarrowDataWidth (Cfg.AxiDataWidth),
-			       .WideDataWidth (WideDataWidth),
-			       .AxiNarrowIdWidth (AxiSlvIdWidth),
-			       .AxiWideIdWidth (WideSlaveIdWidth),
-			       .axi_narrow_req_t (axi_slv_req_t),
-			       .axi_narrow_rsp_t (axi_slv_rsp_t),
-			       .axi_wide_req_t (mem_isl_wide_axi_slv_req_t),
-			       .axi_wide_rsp_t (mem_isl_wide_axi_slv_rsp_t),
-			       .NumNarrowReq (Cfg.MemIslNarrowPorts),
-			       .NumWideReq (Cfg.MemIslWidePorts),
-			       .NumWideBanks (Cfg.MemIslNumWideBanks),
-			       .NarrowExtraBF (1),
-			       .WordsPerBank (Cfg.MemIslWordsPerBank)
-			       ) i_memory_island (
-						  .clk_i,
-						  .rst_ni,
-						  .axi_narrow_req_i( axi_out_req[AxiOut.memoryisland] ),
-						  .axi_narrow_rsp_o( axi_out_rsp[AxiOut.memoryisland] ),
-						  // SCHEREMO: TODO: Demux wide accesses to go over narrow ports iff address not in memory island range
-						  .axi_wide_req_i(axi_ext_wide_mst_req_i),
-						  .axi_wide_rsp_o(axi_ext_wide_mst_rsp_o)
-						  );
+    localparam int WideDataWidth = Cfg.AxiDataWidth * Cfg.MemIslNarrowToWideFactor;
+    axi_memory_island_wrap #(
+      .AddrWidth (Cfg.AddrWidth),
+      .NarrowDataWidth (Cfg.AxiDataWidth),
+      .WideDataWidth (WideDataWidth),
+      .AxiNarrowIdWidth (AxiMstIdWidth),
+      .AxiWideIdWidth (WideSlaveIdWidth),
+      .axi_narrow_req_t (axi_mst_req_t),
+      .axi_narrow_rsp_t (axi_mst_rsp_t),
+      .axi_wide_req_t (mem_isl_wide_axi_slv_req_t),
+      .axi_wide_rsp_t (mem_isl_wide_axi_slv_rsp_t),
+      .NumNarrowReq (AxiIn.num_in),
+      .NumWideReq (Cfg.MemIslWidePorts),
+      .NumWideBanks (Cfg.MemIslNumWideBanks),
+      .NarrowExtraBF (1),
+      .WordsPerBank (Cfg.MemIslWordsPerBank)
+    ) i_memory_island (
+      .clk_i,
+      .rst_ni,
+      .axi_narrow_req_i( axi_unmuxed_req[AxiOut.memoryisland] ),
+      .axi_narrow_rsp_o( axi_unmuxed_rsp[AxiOut.memoryisland] ),
+      // SCHEREMO: TODO: Demux wide accesses to go over narrow ports iff address not in memory island range
+      .axi_wide_req_i(axi_ext_wide_mst_req_i),
+      .axi_wide_rsp_o(axi_ext_wide_mst_rsp_o)
+    );
 
   end
 
