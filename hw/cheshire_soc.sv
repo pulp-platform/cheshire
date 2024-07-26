@@ -1438,7 +1438,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AddrWidth (Cfg.AddrWidth),
       .NarrowDataWidth (Cfg.AxiDataWidth),
       .WideDataWidth (WideDataWidth),
-      .AxiNarrowIdWidth (AxiMstIdWidth),
+      .AxiNarrowIdWidth (Cfg.AxiMstIdWidth),
       .AxiWideIdWidth (WideSlaveIdWidth),
       .axi_narrow_req_t (axi_mst_req_t),
       .axi_narrow_rsp_t (axi_mst_rsp_t),
