@@ -114,10 +114,10 @@ package cheshire_pkg;
     bit     [MaxExtAxiSlvWidth-1:0]     AxiExtNumRules;
     byte_bt [2**MaxExtAxiSlvWidth-1:0]  AxiExtRegionIdx;
     doub_bt [2**MaxExtAxiSlvWidth-1:0]  AxiExtRegionStart;
-     doub_bt [2**MaxExtAxiSlvWidth-1:0]  AxiExtRegionEnd;
-     // External Wide AXI ports (limited number of ports and rules)
-     bit     [MaxExtAxiMstWidth-1:0]     AxiExtNumWideMst;
-     bit [MaxExtAxiSlvWidth-1:0]	 AxiExtNumWideSlv;
+    doub_bt [2**MaxExtAxiSlvWidth-1:0]  AxiExtRegionEnd;
+    // External Wide AXI ports (limited number of ports and rules)
+    bit     [MaxExtAxiMstWidth-1:0]     AxiExtNumWideMst;
+    bit     [MaxExtAxiSlvWidth-1:0]     AxiExtNumWideSlv;
 
     // External reg slaves (limited number of ports and rules)
     bit     [MaxExtRegSlvWidth-1:0]     RegExtNumSlv;
@@ -358,7 +358,7 @@ package cheshire_pkg;
     // Whether we have an LLC or a bypass, the output port is has its
     // own Xbar output with the specified region iff it is connected.
     if (cfg.LlcOutConnect) begin i++; r++; ret.llc = i;
-	ret.map[r] = '{i, cfg.LlcOutRegionStart, cfg.LlcOutRegionEnd}; end
+        ret.map[r] = '{i, cfg.LlcOutRegionStart, cfg.LlcOutRegionEnd}; end
     // We can only internally map the SPM region if an LLC exists.
     // Otherwise, we assume external ports map and back the SPM region.
     // We map both the cached and uncached regions.
@@ -369,7 +369,7 @@ package cheshire_pkg;
     end
     if (cfg.Dma)          begin i++; r++; ret.dma = i; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
     if (cfg.SerialLink)   begin i++; r++; ret.slink = i;
-	ret.map[r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
+        ret.map[r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
      if (cfg.MemoryIsland) begin i++; r++; ret.memoryisland = i;
        ret.map[r] = '{i, cfg.MemIslRegionStart, cfg.MemIslRegionEnd}; end
     // External port indices start after internal ones
@@ -380,7 +380,7 @@ package cheshire_pkg;
     // Append external AXI rules to map
     for (int k = 0; k < cfg.AxiExtNumRules; ++k) begin
       ret.map[r] = '{ret.ext_base + cfg.AxiExtRegionIdx[k],
-	  cfg.AxiExtRegionStart[k], cfg.AxiExtRegionEnd[k]};
+          cfg.AxiExtRegionStart[k], cfg.AxiExtRegionEnd[k]};
       r++;
     end
     // Append external reg rules to map; these are directed to the reg demux
@@ -444,7 +444,7 @@ package cheshire_pkg;
     // Append external slaves at end of map
     for (int k = 0; k < cfg.RegExtNumRules; ++k) begin
       ret.map[r] = '{ret.ext_base + cfg.RegExtRegionIdx[k],
-	  cfg.RegExtRegionStart[k], cfg.RegExtRegionEnd[k]};
+          cfg.RegExtRegionStart[k], cfg.RegExtRegionEnd[k]};
       r++;
       end
     return ret;
@@ -476,13 +476,13 @@ package cheshire_pkg;
     case (cfg.AxiMstIdWidth)
       // Provide exclusive ID to I-cache to prevent fetch blocking
       1: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 0}, '{Cva6IdBypAccel, 0}, '{Cva6IdBypStore, 0},
-		  '{Cva6IdBypAmo, 0}, '{Cva6IdICache,  1}, '{Cva6IdDCache,   0}};
+                  '{Cva6IdBypAmo, 0}, '{Cva6IdICache,  1}, '{Cva6IdDCache,   0}};
       // Colocate Load/Store and MMU/AMO bypasses, respectively
       2: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 1}, '{Cva6IdBypAccel, 1}, '{Cva6IdBypStore, 1},
-		  '{Cva6IdBypAmo, 0}, '{Cva6IdICache,  2}, '{Cva6IdDCache,   3}};
+                  '{Cva6IdBypAmo, 0}, '{Cva6IdICache,  2}, '{Cva6IdDCache,   3}};
       // Compress output ID space without any serialization
       3: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 1}, '{Cva6IdBypAccel, 6}, '{Cva6IdBypStore, 2},
-		  '{Cva6IdBypAmo, 3}, '{Cva6IdICache,  4}, '{Cva6IdDCache,   5}};
+                  '{Cva6IdBypAmo, 3}, '{Cva6IdICache,  4}, '{Cva6IdDCache,   5}};
       // With 4b of ID or more, no remapping is necessary
       default: return '{default: '{0, 0}};
     endcase
