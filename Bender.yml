@@ -13,7 +13,7 @@ package:
 
 dependencies:
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.1  }
-  ace:                      { git: "https://github.com/pulp-platform/ace.git",                    rev: 67074011ee002014fa96ddcaa9ce28df3acebe2e } # branch: ace-cut
+  ace:                      { git: "https://github.com/pulp-platform/ace.git",                    rev: ea2fc9ced5be964b47cfcbcd6eb6518771a9e85d } # branch: ace-cut
   axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.3 }
   axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc",                    rev: 4deb8c6    } # branch: astral
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      rev: 034bf8941  } # branch: master
