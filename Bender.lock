@@ -15,8 +15,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: 9402c8a9ce0a7b5253c3c29e788612d771e8b5d6
-    version: 0.39.3
+    revision: 587355b77b8ce94dcd600efbd5d5bd118ff913a7
+    version: 0.39.4
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -162,7 +162,7 @@ packages:
     - register_interface
     - tech_cells_generic
   pulp-ethernet:
-    revision: d97e8e8d0cd26ae6f9ecd9403b370857465a5f59
+    revision: 7cb866430b38fc5281a6ada345146d49d17b977a
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp-ethernet.git
