@@ -119,6 +119,7 @@ _zero_bss_rem:
 
 _entry:
     // Full fence, then jump to main
+    call soc_init
     fence
     call main
 
