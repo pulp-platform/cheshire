@@ -606,7 +606,7 @@ package cheshire_pkg;
     AddrWidth         : 48,
     AxiDataWidth      : 64,
     AxiUserWidth      : 2,  // Convention: bit 0 for core(s), bit 1 for serial link
-    AxiMstIdWidth     : 2,
+    AxiMstIdWidth     : 3,
     TFLenWidth        : 32,
     AxiMaxMstTrans    : 24,
     AxiMaxSlvTrans    : 24,
