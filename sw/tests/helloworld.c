@@ -17,7 +17,7 @@
 
 int main(void) {
 
-    printf("Hi [%d]!\n", hart_id());
+    printf("Hi!\n");
 
     return 0;
 }
