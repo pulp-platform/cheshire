@@ -633,7 +633,7 @@ package cheshire_pkg;
     Dma               : 1,
     SerialLink        : 1,
     Vga               : 1,
-    AxiRt             : 0,
+    AxiRt             : 1,
     Clic              : 0,
     IrqRouter         : 0,
     BusErr            : 1,
