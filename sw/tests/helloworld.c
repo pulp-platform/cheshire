@@ -12,21 +12,12 @@
 #include "dif/uart.h"
 #include "params.h"
 #include "util.h"
+#include "smp.h"
 #include "printf.h"
 
 int main(void) {
-    uint32_t NumHarts = *reg32(&__base_regs, CHESHIRE_NUM_INT_HARTS_REG_OFFSET);
-    uint32_t OtherHart = NumHarts - 1 - hart_id(); // If hart_id() == 0 -> return 1;
-                                                   // If hart_id() == 1 -> return 0;
-    // Hart 0 enters first
-    if (hart_id() != 0) wfi();
 
     printf("Hi [%d]!\n", hart_id());
 
-    wakeup_hart(OtherHart);
-
-    wfi();
-
-    // Only core 0 exits.
     return 0;
 }
