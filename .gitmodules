@@ -6,10 +6,9 @@
 	path = sw/deps/cva6-sdk
 	url = https://github.com/pulp-platform/cva6-sdk.git
 	ignore = dirty
-[submodule "sw/deps/rv_iommu_tests"]
-	path = sw/deps/rv_iommu_tests
-	url = https://github.com/zero-day-labs/riscv-iommu-tests.git
-	branch = pulp
 [submodule "sw/deps/riscv-iommu-tests"]
 	path = sw/deps/riscv-iommu-tests
+	url = git@github.com:zero-day-labs/riscv-iommu-tests.git
+[submodule "sw/deps/rv_iommu-tests"]
+	path = sw/deps/rv_iommu-tests
 	url = git@github.com:zero-day-labs/riscv-iommu-tests.git
