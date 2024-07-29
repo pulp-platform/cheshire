@@ -9,6 +9,6 @@
 [submodule "sw/deps/riscv-iommu-tests"]
 	path = sw/deps/riscv-iommu-tests
 	url = git@github.com:zero-day-labs/riscv-iommu-tests.git
-[submodule "sw/deps/rv_iommu-tests"]
-	path = sw/deps/rv_iommu-tests
+[submodule "sw/deps/rv_iommu_tests"]
+	path = sw/deps/rv_iommu_tests
 	url = git@github.com:zero-day-labs/riscv-iommu-tests.git
