@@ -10,13 +10,11 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "iommu_tests.h"
-#include "command_queue.h"
-#include "fault_queue.h"
-#include "device_contexts.h"
-#include "msi_pts.h"
-#include "iommu_pts.h"
-#include "hpm.h"
+#include "rv_iommu_tests.h"
+#include "rv_iommu_cq.h"
+#include "rv_iommu_fq.h"
+#include "rv_iommu_dc.h"
+#include "rv_iommu_hpm.h"
 #include "rvh_test.h"
 #include "rv_iommu.h"
 
