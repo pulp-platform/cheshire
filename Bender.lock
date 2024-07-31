@@ -191,7 +191,7 @@ packages:
     - common_cells
     - tech_cells_generic
   riscv-iommu:
-    revision: 41da12d33e548224b7ed9795164b25c4d9ebd6b4
+    revision: c1dea3732d0d05e5659b31773e43f3364bc866fc
     version: null
     source:
       Git: https://github.com/zero-day-labs/riscv-iommu
