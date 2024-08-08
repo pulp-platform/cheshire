@@ -8,17 +8,17 @@
 
 #define MACLO_OFFSET                 0x0
 #define MACHI_OFFSET                 0x4
-#define IRQ_OFFSET                   0x10
-#define IDMA_SRC_ADDR_OFFSET         0x14
-#define IDMA_DST_ADDR_OFFSET         0x18
-#define IDMA_LENGTH_OFFSET           0x1c
-#define IDMA_SRC_PROTO_OFFSET        0x20
-#define IDMA_DST_PROTO_OFFSET        0x24
-#define IDMA_REQ_VALID_OFFSET        0x3c
-#define IDMA_REQ_READY_OFFSET        0x40
-#define IDMA_RSP_READY_OFFSET        0x44
-#define IDMA_RSP_VALID_OFFSET        0x48
-#define IDMA_RX_EN_OFFSET            0x50
+#define IRQ_OFFSET                   0x18
+#define IDMA_SRC_ADDR_OFFSET         0x1c
+#define IDMA_DST_ADDR_OFFSET         0x20
+#define IDMA_LENGTH_OFFSET           0x24
+#define IDMA_SRC_PROTO_OFFSET        0x28
+#define IDMA_DST_PROTO_OFFSET        0x2c
+#define IDMA_REQ_VALID_OFFSET        0x44
+#define IDMA_REQ_READY_OFFSET        0x48
+#define IDMA_RSP_READY_OFFSET        0x4c
+#define IDMA_RSP_VALID_OFFSET        0x50
+#define IDMA_RX_EN_OFFSET            0x54
 
 #define PLIC_BASE                    0x04000000
 #define RV_PLIC_PRIO19_REG_OFFSET    0x4c
@@ -49,7 +49,7 @@ int main(void) {
  *reg32(PLIC_BASE, RV_PLIC_IE0_0_REG_OFFSET)  |= (1 << (RV_PLIC_IE0_0_E_19_BIT)); // Enable interrupt number ;
 
   volatile uint64_t data_to_write[DATA_CHUNK] = {
-        0x1032207098001032, 
+        0x0207230100890702, 
         0x3210400020709800,
         0x1716151413121110, 
         0x2726252423222120,
@@ -65,9 +65,9 @@ int main(void) {
         *tx_addr = data_to_write[i];
   }
 
-  *reg32(ETH_BASE, MACLO_OFFSET)          = 0x98001032;
+  *reg32(ETH_BASE, MACLO_OFFSET)          = 0x00890702;
   // High 16 bit Mac Address
-  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00002070;
+  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00002301;
   // DMA Source Address
   *reg32(ETH_BASE, IDMA_SRC_ADDR_OFFSET)  = TX_BASE;
   // DMA Destination Address
@@ -85,8 +85,8 @@ int main(void) {
   // rx irq
   while (!(*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19) );
   // configure ethernet
-  *reg32(ETH_BASE, MACLO_OFFSET)          = 0x98001032;  
-  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00012070;  
+  *reg32(ETH_BASE, MACLO_OFFSET)          = 0x00890702;  
+  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00002301;  
   // dma length ready, dma can be configured now
   while (!(*reg32(ETH_BASE,IDMA_RX_EN_OFFSET)));
 

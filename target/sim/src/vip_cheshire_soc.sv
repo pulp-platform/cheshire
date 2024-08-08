@@ -727,40 +727,37 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     @(posedge eth_rx_irq);
     @(posedge clk);
 
-    reg_drv_rx.send_write( 'h0300c000, 32'h98001032, 'hf, reg_error); //lower 32bits of MAC address
+    reg_drv_rx.send_write( 'h0300c000, 32'h00890702, 'hf, reg_error); //lower 32bits of MAC address
     @(posedge clk);
   
-    reg_drv_rx.send_write( 'h0300c004, 32'h00002070, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+    reg_drv_rx.send_write( 'h0300c004, 16'h2301, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
     @(posedge clk);
     
     while(1) begin
-      reg_drv_rx.send_read( 'h0300c050, dma_en, reg_error);   // req ready 
+      reg_drv_rx.send_read( 'h0300c054, dma_en, reg_error);   // req ready 
       if( dma_en )
         break;
       @(posedge clk);
     end
     
-    reg_drv_rx.send_write( 'h0300c014, 32'h0, 'hf, reg_error ); // SRC_ADDR  
+    reg_drv_rx.send_write( 'h0300c01c, 32'h0, 'hf, reg_error ); // SRC_ADDR  
     @(posedge clk);
   
-    reg_drv_rx.send_write( 'h0300c018, 32'h0, 'hf, reg_error); // DST_ADDR
+    reg_drv_rx.send_write( 'h0300c020, 32'h0, 'hf, reg_error); // DST_ADDR
     @(posedge clk);
-
-    // reg_drv_rx.send_write( 'h0300c01c, 32'h40,'hf , reg_error); // Size in bytes 
-    // @(posedge clk);
   
-    reg_drv_rx.send_write( 'h0300c020, 32'h5,'hf , reg_error); // src protocol
+    reg_drv_rx.send_write( 'h0300c028, 32'h5,'hf , reg_error); // src protocol
     @(posedge clk);
 
-    reg_drv_rx.send_write( 'h0300c024, 32'h0,'hf , reg_error); // dst protocol
+    reg_drv_rx.send_write( 'h0300c02c, 32'h0,'hf , reg_error); // dst protocol
     @(posedge clk);
 
-    reg_drv_rx.send_write( 'h0300c03c, 'h1, 'hf , reg_error);   // req valid
+    reg_drv_rx.send_write( 'h0300c044, 'h1, 'hf , reg_error);   // req valid
     @(posedge clk);
     
     //wait till all data written into rx_axi_sim_mem
     while(1) begin
-      reg_drv_rx.send_read( 'h0300c048, rx_rsp_valid, reg_error);
+      reg_drv_rx.send_read( 'h0300c050, rx_rsp_valid, reg_error);
       if( rx_rsp_valid ) begin
         break;
       end
@@ -768,28 +765,28 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     end
     
     // Tx test starts here: external back to core
-    reg_drv_rx.send_write( 'h0300c000, 32'h98001032, 'hf, reg_error); //lower 32bits of MAC address
+    reg_drv_rx.send_write( 'h0300c000, 32'h00890702, 'hf, reg_error); //lower 32bits of MAC address
     @(posedge clk);
   
-    reg_drv_rx.send_write( 'h0300c004, 32'h00002070, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+    reg_drv_rx.send_write( 'h0300c004, 16'h2301, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
     @(posedge clk);
 
-    reg_drv_rx.send_write( 'h0300c014, 32'h0, 'hf, reg_error ); // SRC_ADDR  
+    reg_drv_rx.send_write( 'h0300c01c, 32'h0, 'hf, reg_error ); // SRC_ADDR  
     @(posedge clk);
   
-    reg_drv_rx.send_write( 'h0300c018, 32'h0, 'hf, reg_error); // DST_ADDR
+    reg_drv_rx.send_write( 'h0300c020, 32'h0, 'hf, reg_error); // DST_ADDR
     @(posedge clk);
 
-    reg_drv_rx.send_write( 'h0300c01c, 32'h40,'hf , reg_error); // Size in bytes 
+    reg_drv_rx.send_write( 'h0300c024, 32'h40,'hf , reg_error); // Size in bytes 
     @(posedge clk);
   
-    reg_drv_rx.send_write( 'h0300c020, 32'h0,'hf , reg_error); // src protocol
+    reg_drv_rx.send_write( 'h0300c028, 32'h0,'hf , reg_error); // src protocol
     @(posedge clk);
 
-    reg_drv_rx.send_write( 'h0300c024, 32'h5,'hf , reg_error); // dst protocol
+    reg_drv_rx.send_write( 'h0300c02c, 32'h5,'hf , reg_error); // dst protocol
     @(posedge clk);
 
-    reg_drv_rx.send_write( 'h0300c03c, 'h1, 'hf , reg_error);   // req valid
+    reg_drv_rx.send_write( 'h0300c044, 'h1, 'hf , reg_error);   // req valid
     @(posedge clk);    
   end 
      
