@@ -23,13 +23,18 @@ package tb_cheshire_pkg;
     ret.SerialLink = 0;
     ret.AxiDataWidth = 32;
     ret.AddrWidth = 32;
+    ret.LlcOutRegionEnd = 'hFFFF_FFFF;
     return ret;
   endfunction : gen_cheshire_emb_cfg
 
   function automatic cheshire_cfg_t gen_cheshire_memisl_cfg();
     cheshire_cfg_t ret = gen_cheshire_emb_cfg();
-    ret.MemoryIsland  = 1;
-    ret.LlcNotBypass  = 0;
+    ret.Vga = 0;
+    ret.SerialLink = 0;
+    ret.AxiDataWidth = 32;
+    ret.AddrWidth = 32;
+    ret.MemoryIsland = 1;
+    ret.LlcNotBypass = 0;
     ret.LlcOutConnect = 0;
     return ret;
   endfunction : gen_cheshire_memisl_cfg

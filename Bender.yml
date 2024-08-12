@@ -22,7 +22,7 @@ dependencies:
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                  version: 0.2.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           version: 1.33.0 }
   common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.0  }
-  cva6:                     { git: "https://github.com/Scheremo/cva6.git", rev: convolve  }
+  cva6:                     { git: "https://github.com/Scheremo/cva6.git", rev: 637a0e6cbc8ec395c4bb4f54ee9dc1110d3fb1ac  }
   memory_island:            { git: "https://github.com/pulp-platform/memory_island.git",          rev: 64828cb7a9ccc1f1656ec92d06129072f445c319 } # main branch
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.6.2  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }

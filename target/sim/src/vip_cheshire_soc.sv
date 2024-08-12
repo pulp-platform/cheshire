@@ -12,68 +12,68 @@
 module vip_cheshire_soc
   import cheshire_pkg::*;
 #(
-    // DUT (must be set)
-    parameter cheshire_cfg_t DutCfg            = '0,
-    parameter type           axi_ext_llc_req_t = logic,
-    parameter type           axi_ext_llc_rsp_t = logic,
-    parameter type           axi_ext_mst_req_t = logic,
-    parameter type           axi_ext_mst_rsp_t = logic,
-    // Timing
-    parameter time           ClkPeriodSys      = 5ns,
-    parameter time           ClkPeriodJtag     = 20ns,
-    parameter time           ClkPeriodRtc      = 30518ns,
-    parameter int unsigned   RstCycles         = 5,
-    parameter real           TAppl             = 0.1,
-    parameter real           TTest             = 0.9,
-    // UART
-    parameter int unsigned   UartBaudRate      = 115200,
-    parameter int unsigned   UartParityEna     = 0,
-    parameter int unsigned   UartBurstBytes    = 256,
-    parameter int unsigned   UartWaitCycles    = 60,
-    // Serial Link
-    parameter int unsigned   SlinkMaxWaitAx    = 100,
-    parameter int unsigned   SlinkMaxWaitR     = 5,
-    parameter int unsigned   SlinkMaxWaitResp  = 20,
-    parameter int unsigned   SlinkBurstBytes   = 1024,
-    parameter int unsigned   SlinkMaxTxns      = 32,
-    parameter int unsigned   SlinkMaxTxnsPerId = 16,
-    parameter bit            SlinkAxiDebug     = 0,
-    // Derived Parameters;  *do not override*
-    parameter int unsigned   AxiStrbWidth      = DutCfg.AxiDataWidth / 8,
-    parameter int unsigned   AxiStrbBits       = $clog2(DutCfg.AxiDataWidth / 8)
+  // DUT (must be set)
+  parameter cheshire_cfg_t DutCfg            = '0,
+  parameter type           axi_ext_llc_req_t = logic,
+  parameter type           axi_ext_llc_rsp_t = logic,
+  parameter type           axi_ext_mst_req_t = logic,
+  parameter type           axi_ext_mst_rsp_t = logic,
+  // Timing
+  parameter time           ClkPeriodSys      = 5ns,
+  parameter time           ClkPeriodJtag     = 20ns,
+  parameter time           ClkPeriodRtc      = 30518ns,
+  parameter int unsigned   RstCycles         = 5,
+  parameter real           TAppl             = 0.1,
+  parameter real           TTest             = 0.9,
+  // UART
+  parameter int unsigned   UartBaudRate      = 115200,
+  parameter int unsigned   UartParityEna     = 0,
+  parameter int unsigned   UartBurstBytes    = 256,
+  parameter int unsigned   UartWaitCycles    = 60,
+  // Serial Link
+  parameter int unsigned   SlinkMaxWaitAx    = 100,
+  parameter int unsigned   SlinkMaxWaitR     = 5,
+  parameter int unsigned   SlinkMaxWaitResp  = 20,
+  parameter int unsigned   SlinkBurstBytes   = 1024,
+  parameter int unsigned   SlinkMaxTxns      = 32,
+  parameter int unsigned   SlinkMaxTxnsPerId = 16,
+  parameter bit            SlinkAxiDebug     = 0,
+  // Derived Parameters;  *do not override*
+  parameter int unsigned   AxiStrbWidth      = DutCfg.AxiDataWidth / 8,
+  parameter int unsigned   AxiStrbBits       = $clog2(DutCfg.AxiDataWidth / 8)
 ) (
-    output logic                                                   clk,
-    output logic                                                   rst_n,
-    output logic                                                   test_mode,
-    output logic             [             1:0]                    boot_mode,
-    output logic                                                   rtc,
-    // External AXI LLC (DRAM) port
-    input  axi_ext_llc_req_t                                       axi_llc_mst_req,
-    output axi_ext_llc_rsp_t                                       axi_llc_mst_rsp,
-    // External serial link AXI port
-    input  axi_ext_mst_req_t                                       axi_slink_mst_req,
-    output axi_ext_mst_rsp_t                                       axi_slink_mst_rsp,
-    // JTAG interface
-    output logic                                                   jtag_tck,
-    output logic                                                   jtag_trst_n,
-    output logic                                                   jtag_tms,
-    output logic                                                   jtag_tdi,
-    input  logic                                                   jtag_tdo,
-    // UART interface
-    input  logic                                                   uart_tx,
-    output logic                                                   uart_rx,
-    // I2C interface
-    inout  wire                                                    i2c_sda,
-    inout  wire                                                    i2c_scl,
-    // SPI host interface
-    inout  wire                                                    spih_sck,
-    inout  wire              [   SpihNumCs-1:0]                    spih_csb,
-    inout  wire              [             3:0]                    spih_sd,
-    // Serial link interface
-    output logic             [SlinkNumChan-1:0]                    slink_rcv_clk_i,
-    input  logic             [SlinkNumChan-1:0]                    slink_rcv_clk_o,
-    output logic             [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i,
-    input  logic             [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o
+  output logic                                                   clk,
+  output logic                                                   rst_n,
+  output logic                                                   test_mode,
+  output logic             [             1:0]                    boot_mode,
+  output logic                                                   rtc,
+  // External AXI LLC (DRAM) port
+  input  axi_ext_llc_req_t                                       axi_llc_mst_req,
+  output axi_ext_llc_rsp_t                                       axi_llc_mst_rsp,
+  // External serial link AXI port
+  input  axi_ext_mst_req_t                                       axi_slink_mst_req,
+  output axi_ext_mst_rsp_t                                       axi_slink_mst_rsp,
+  // JTAG interface
+  output logic                                                   jtag_tck,
+  output logic                                                   jtag_trst_n,
+  output logic                                                   jtag_tms,
+  output logic                                                   jtag_tdi,
+  input  logic                                                   jtag_tdo,
+  // UART interface
+  input  logic                                                   uart_tx,
+  output logic                                                   uart_rx,
+  // I2C interface
+  inout  wire                                                    i2c_sda,
+  inout  wire                                                    i2c_scl,
+  // SPI host interface
+  inout  wire                                                    spih_sck,
+  inout  wire              [   SpihNumCs-1:0]                    spih_csb,
+  inout  wire              [             3:0]                    spih_sd,
+  // Serial link interface
+  output logic             [SlinkNumChan-1:0]                    slink_rcv_clk_i,
+  input  logic             [SlinkNumChan-1:0]                    slink_rcv_clk_o,
+  output logic             [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i,
+  input  logic             [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o
 );
 
   `include "cheshire/typedef.svh"
@@ -102,35 +102,35 @@ module vip_cheshire_soc
   ////////////
 
   axi_sim_mem #(
-      .AddrWidth        (DutCfg.AddrWidth),
-      .DataWidth        (DutCfg.AxiDataWidth),
-      .IdWidth          ($bits(axi_llc_id_t)),
-      .UserWidth        (DutCfg.AxiUserWidth),
-      .axi_req_t        (axi_llc_req_t),
-      .axi_rsp_t        (axi_llc_rsp_t),
-      .WarnUninitialized(0),
-      .ClearErrOnAccess (1),
-      .ApplDelay        (ClkPeriodSys * TAppl),
-      .AcqDelay         (ClkPeriodSys * TTest)
+    .AddrWidth        (DutCfg.AddrWidth),
+    .DataWidth        (DutCfg.AxiDataWidth),
+    .IdWidth          ($bits(axi_llc_id_t)),
+    .UserWidth        (DutCfg.AxiUserWidth),
+    .axi_req_t        (axi_llc_req_t),
+    .axi_rsp_t        (axi_llc_rsp_t),
+    .WarnUninitialized(0),
+    .ClearErrOnAccess (1),
+    .ApplDelay        (ClkPeriodSys * TAppl),
+    .AcqDelay         (ClkPeriodSys * TTest)
   ) i_dram_sim_mem (
-      .clk_i             (clk),
-      .rst_ni            (rst_n),
-      .axi_req_i         (axi_llc_mst_req),
-      .axi_rsp_o         (axi_llc_mst_rsp),
-      .mon_w_valid_o     (),
-      .mon_w_addr_o      (),
-      .mon_w_data_o      (),
-      .mon_w_id_o        (),
-      .mon_w_user_o      (),
-      .mon_w_beat_count_o(),
-      .mon_w_last_o      (),
-      .mon_r_valid_o     (),
-      .mon_r_addr_o      (),
-      .mon_r_data_o      (),
-      .mon_r_id_o        (),
-      .mon_r_user_o      (),
-      .mon_r_beat_count_o(),
-      .mon_r_last_o      ()
+    .clk_i             (clk),
+    .rst_ni            (rst_n),
+    .axi_req_i         (axi_llc_mst_req),
+    .axi_rsp_o         (axi_llc_mst_rsp),
+    .mon_w_valid_o     (),
+    .mon_w_addr_o      (),
+    .mon_w_data_o      (),
+    .mon_w_id_o        (),
+    .mon_w_user_o      (),
+    .mon_w_beat_count_o(),
+    .mon_w_last_o      (),
+    .mon_r_valid_o     (),
+    .mon_r_addr_o      (),
+    .mon_r_data_o      (),
+    .mon_r_id_o        (),
+    .mon_r_user_o      (),
+    .mon_r_beat_count_o(),
+    .mon_r_last_o      ()
   );
 
   ///////////////////////////////
@@ -138,19 +138,19 @@ module vip_cheshire_soc
   ///////////////////////////////
 
   clk_rst_gen #(
-      .ClkPeriod   (ClkPeriodSys),
-      .RstClkCycles(RstCycles)
+    .ClkPeriod   (ClkPeriodSys),
+    .RstClkCycles(RstCycles)
   ) i_clk_rst_sys (
-      .clk_o (clk),
-      .rst_no(rst_n)
+    .clk_o (clk),
+    .rst_no(rst_n)
   );
 
   clk_rst_gen #(
-      .ClkPeriod   (ClkPeriodRtc),
-      .RstClkCycles(RstCycles)
+    .ClkPeriod   (ClkPeriodRtc),
+    .RstClkCycles(RstCycles)
   ) i_clk_rst_rtc (
-      .clk_o (rtc),
-      .rst_no()
+    .clk_o (rtc),
+    .rst_no()
   );
 
   initial begin
@@ -180,20 +180,20 @@ module vip_cheshire_soc
 
   // Generate clock
   clk_rst_gen #(
-      .ClkPeriod   (ClkPeriodJtag),
-      .RstClkCycles(RstCycles)
+    .ClkPeriod   (ClkPeriodJtag),
+    .RstClkCycles(RstCycles)
   ) i_clk_jtag (
-      .clk_o (jtag_tck),
-      .rst_no()
+    .clk_o (jtag_tck),
+    .rst_no()
   );
 
   // Define test bus and driver
   JTAG_DV jtag (jtag_tck);
 
   typedef jtag_test::riscv_dbg#(
-      .IrLength(5),
-      .TA      (ClkPeriodJtag * TAppl),
-      .TT      (ClkPeriodJtag * TTest)
+    .IrLength(5),
+    .TA      (ClkPeriodJtag * TAppl),
+    .TT      (ClkPeriodJtag * TTest)
   ) riscv_dbg_t;
 
   riscv_dbg_t::jtag_driver_t jtag_dv = new(jtag);
@@ -292,7 +292,7 @@ module vip_cheshire_soc
     $display("[JTAG] Preloading ELF binary: %s", binary);
     if (read_elf(binary)) $fatal(1, "[JTAG] Failed to load ELF!");
     while (get_section(
-        sec_addr, sec_len
+      sec_addr, sec_len
     )) begin
       byte bf[] = new[sec_len];
       $display("[JTAG] Preloading section at 0x%h (%0d bytes)", sec_addr, sec_len);
@@ -305,12 +305,9 @@ module vip_cheshire_soc
         bit checkpoint = (i != 0 && i % 512 == 0);
         if (checkpoint)
           $display(
-              "[JTAG] - %0d/%0d bytes (%0d%%)",
-              i,
-              sec_len,
-              i * 100 / (sec_len > 1 ? sec_len - 1 : 1)
+            "[JTAG] - %0d/%0d bytes (%0d%%)", i, sec_len, i * 100 / (sec_len > 1 ? sec_len - 1 : 1)
           );
-        jtag_write(dm::SBData1, {bf[i+7], bf[i+6], bf[i+5], bf[i+4]});
+        jtag_write(dm::SBData1, {bf[i+7], bf[i+6], bf[i+5], bf[i+4]}, 0, 1);
         jtag_write(dm::SBData0, {bf[i+3], bf[i+2], bf[i+1], bf[i]}, 1, 1);
       end
     end
@@ -484,7 +481,7 @@ module vip_cheshire_soc
     $display("[UART] Preloading ELF binary: %s", binary);
     if (read_elf(binary)) $fatal(1, "[UART] Failed to load ELF!");
     while (get_section(
-        sec_addr, sec_len
+      sec_addr, sec_len
     )) begin
       byte bf[] = new[sec_len];
       $display("[UART] Preloading section at 0x%h (%0d bytes)", sec_addr, sec_len);
@@ -494,10 +491,7 @@ module vip_cheshire_soc
         byte_bt bytes[$];
         if (i != 0)
           $display(
-              "[UART] - %0d/%0d bytes (%0d%%)",
-              i,
-              sec_len,
-              i * 100 / (sec_len > 1 ? sec_len - 1 : 1)
+            "[UART] - %0d/%0d bytes (%0d%%)", i, sec_len, i * 100 / (sec_len > 1 ? sec_len - 1 : 1)
           );
         for (int b = 0; b < UartBurstBytes; b++) begin
           if (i + b >= sec_len) break;
@@ -548,13 +542,13 @@ module vip_cheshire_soc
   // however, the boot ROM will always boot from chip 0.
   for (genvar i = 0; i < 2; i++) begin : gen_i2c_eeproms
     M24FC1025 i_i2c_eeprom (
-        .RESET(rst_n),
-        .A0   (i[0]),
-        .A1   (1'b0),
-        .A2   (1'b1),
-        .WP   (i2c_wp[i]),
-        .SDA  (i2c_sda),
-        .SCL  (i2c_scl)
+      .RESET(rst_n),
+      .A0   (i[0]),
+      .A1   (1'b0),
+      .A2   (1'b1),
+      .WP   (i2c_wp[i]),
+      .SDA  (i2c_sda),
+      .SCL  (i2c_scl)
     );
   end
 
@@ -573,14 +567,14 @@ module vip_cheshire_soc
 
   // We connect one chip at CS1, where we can boot from this flash.
   s25fs512s #(
-      .UserPreload(0)
+    .UserPreload(0)
   ) i_spi_norflash (
-      .SI      (spih_sd[0]),
-      .SO      (spih_sd[1]),
-      .WPNeg   (spih_sd[2]),
-      .RESETNeg(spih_sd[3]),
-      .SCK     (spih_sck),
-      .CSNeg   (spih_csb[1])
+    .SI      (spih_sd[0]),
+    .SO      (spih_sd[1]),
+    .WPNeg   (spih_sd[2]),
+    .RESETNeg(spih_sd[3]),
+    .SCK     (spih_sck),
+    .CSNeg   (spih_csb[1])
   );
 
   // Preload function called by testbench
@@ -599,69 +593,69 @@ module vip_cheshire_soc
   axi_mst_rsp_t slink_axi_mst_rsp, slink_axi_slv_rsp;
 
   AXI_BUS_DV #(
-      .AXI_ADDR_WIDTH(DutCfg.AddrWidth),
-      .AXI_DATA_WIDTH(DutCfg.AxiDataWidth),
-      .AXI_ID_WIDTH  (DutCfg.AxiMstIdWidth),
-      .AXI_USER_WIDTH(DutCfg.AxiUserWidth)
+    .AXI_ADDR_WIDTH(DutCfg.AddrWidth),
+    .AXI_DATA_WIDTH(DutCfg.AxiDataWidth),
+    .AXI_ID_WIDTH  (DutCfg.AxiMstIdWidth),
+    .AXI_USER_WIDTH(DutCfg.AxiUserWidth)
   ) slink_mst_vip_dv (
-      .clk_i(clk)
+    .clk_i(clk)
   );
 
   AXI_BUS #(
-      .AXI_ADDR_WIDTH(DutCfg.AddrWidth),
-      .AXI_DATA_WIDTH(DutCfg.AxiDataWidth),
-      .AXI_ID_WIDTH  (DutCfg.AxiMstIdWidth),
-      .AXI_USER_WIDTH(DutCfg.AxiUserWidth)
+    .AXI_ADDR_WIDTH(DutCfg.AddrWidth),
+    .AXI_DATA_WIDTH(DutCfg.AxiDataWidth),
+    .AXI_ID_WIDTH  (DutCfg.AxiMstIdWidth),
+    .AXI_USER_WIDTH(DutCfg.AxiUserWidth)
   )
-      slink_mst_ext (), slink_mst_vip (), slink_mst ();
+    slink_mst_ext (), slink_mst_vip (), slink_mst ();
 
   AXI_BUS #(
-      .AXI_ADDR_WIDTH(DutCfg.AddrWidth),
-      .AXI_DATA_WIDTH(DutCfg.AxiDataWidth),
-      .AXI_ID_WIDTH  (DutCfg.AxiMstIdWidth + 1),
-      .AXI_USER_WIDTH(DutCfg.AxiUserWidth)
+    .AXI_ADDR_WIDTH(DutCfg.AddrWidth),
+    .AXI_DATA_WIDTH(DutCfg.AxiDataWidth),
+    .AXI_ID_WIDTH  (DutCfg.AxiMstIdWidth + 1),
+    .AXI_USER_WIDTH(DutCfg.AxiUserWidth)
   ) slink_mst_mux ();
 
   AXI_BUS_DV #(
-      .AXI_ADDR_WIDTH(DutCfg.AddrWidth),
-      .AXI_DATA_WIDTH(DutCfg.AxiDataWidth),
-      .AXI_ID_WIDTH  (DutCfg.AxiMstIdWidth),
-      .AXI_USER_WIDTH(DutCfg.AxiUserWidth)
+    .AXI_ADDR_WIDTH(DutCfg.AddrWidth),
+    .AXI_DATA_WIDTH(DutCfg.AxiDataWidth),
+    .AXI_ID_WIDTH  (DutCfg.AxiMstIdWidth),
+    .AXI_USER_WIDTH(DutCfg.AxiUserWidth)
   ) slink_slv (
-      .clk_i(clk)
+    .clk_i(clk)
   );
 
   // Multiplex internal and external AXI requests
   axi_mux_intf #(
-      .SLV_AXI_ID_WIDTH(DutCfg.AxiMstIdWidth),
-      .MST_AXI_ID_WIDTH(DutCfg.AxiMstIdWidth + 1),
-      .AXI_ADDR_WIDTH  (DutCfg.AddrWidth),
-      .AXI_DATA_WIDTH  (DutCfg.AxiDataWidth),
-      .AXI_USER_WIDTH  (DutCfg.AxiUserWidth),
-      .NO_SLV_PORTS    (2)
+    .SLV_AXI_ID_WIDTH(DutCfg.AxiMstIdWidth),
+    .MST_AXI_ID_WIDTH(DutCfg.AxiMstIdWidth + 1),
+    .AXI_ADDR_WIDTH  (DutCfg.AddrWidth),
+    .AXI_DATA_WIDTH  (DutCfg.AxiDataWidth),
+    .AXI_USER_WIDTH  (DutCfg.AxiUserWidth),
+    .NO_SLV_PORTS    (2)
   ) i_axi_mux_slink (
-      .clk_i (clk),
-      .rst_ni(rst_n),
-      .test_i(test_mode),
-      .slv   ('{slink_mst_vip, slink_mst_ext}),
-      .mst   (slink_mst_mux)
+    .clk_i (clk),
+    .rst_ni(rst_n),
+    .test_i(test_mode),
+    .slv   ('{slink_mst_vip, slink_mst_ext}),
+    .mst   (slink_mst_mux)
   );
 
   // Serialize away added AXI index bits
   axi_id_serialize_intf #(
-      .AXI_SLV_PORT_ID_WIDTH       (DutCfg.AxiMstIdWidth + 1),
-      .AXI_SLV_PORT_MAX_TXNS       (SlinkMaxTxns),
-      .AXI_MST_PORT_ID_WIDTH       (DutCfg.AxiMstIdWidth),
-      .AXI_MST_PORT_MAX_UNIQ_IDS   (2 ** DutCfg.AxiMstIdWidth),
-      .AXI_MST_PORT_MAX_TXNS_PER_ID(SlinkMaxTxnsPerId),
-      .AXI_ADDR_WIDTH              (DutCfg.AddrWidth),
-      .AXI_DATA_WIDTH              (DutCfg.AxiDataWidth),
-      .AXI_USER_WIDTH              (DutCfg.AxiUserWidth)
+    .AXI_SLV_PORT_ID_WIDTH       (DutCfg.AxiMstIdWidth + 1),
+    .AXI_SLV_PORT_MAX_TXNS       (SlinkMaxTxns),
+    .AXI_MST_PORT_ID_WIDTH       (DutCfg.AxiMstIdWidth),
+    .AXI_MST_PORT_MAX_UNIQ_IDS   (2 ** DutCfg.AxiMstIdWidth),
+    .AXI_MST_PORT_MAX_TXNS_PER_ID(SlinkMaxTxnsPerId),
+    .AXI_ADDR_WIDTH              (DutCfg.AddrWidth),
+    .AXI_DATA_WIDTH              (DutCfg.AxiDataWidth),
+    .AXI_USER_WIDTH              (DutCfg.AxiUserWidth)
   ) i_axi_id_serialize_slink (
-      .clk_i (clk),
-      .rst_ni(rst_n),
-      .slv   (slink_mst_mux),
-      .mst   (slink_mst)
+    .clk_i (clk),
+    .rst_ni(rst_n),
+    .slv   (slink_mst_mux),
+    .mst   (slink_mst)
   );
 
   `AXI_ASSIGN(slink_mst_vip, slink_mst_vip_dv)
@@ -677,62 +671,62 @@ module vip_cheshire_soc
 
   // Mirror instance of serial link, reflecting another chip
   serial_link #(
-      .axi_req_t  (axi_mst_req_t),
-      .axi_rsp_t  (axi_mst_rsp_t),
-      .cfg_req_t  (reg_req_t),
-      .cfg_rsp_t  (reg_rsp_t),
-      .aw_chan_t  (axi_mst_aw_chan_t),
-      .ar_chan_t  (axi_mst_ar_chan_t),
-      .r_chan_t   (axi_mst_r_chan_t),
-      .w_chan_t   (axi_mst_w_chan_t),
-      .b_chan_t   (axi_mst_b_chan_t),
-      .hw2reg_t   (serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t),
-      .reg2hw_t   (serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t),
-      .NumChannels(SlinkNumChan),
-      .NumLanes   (SlinkNumLanes),
-      .MaxClkDiv  (SlinkMaxClkDiv)
+    .axi_req_t  (axi_mst_req_t),
+    .axi_rsp_t  (axi_mst_rsp_t),
+    .cfg_req_t  (reg_req_t),
+    .cfg_rsp_t  (reg_rsp_t),
+    .aw_chan_t  (axi_mst_aw_chan_t),
+    .ar_chan_t  (axi_mst_ar_chan_t),
+    .r_chan_t   (axi_mst_r_chan_t),
+    .w_chan_t   (axi_mst_w_chan_t),
+    .b_chan_t   (axi_mst_b_chan_t),
+    .hw2reg_t   (serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t),
+    .reg2hw_t   (serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t),
+    .NumChannels(SlinkNumChan),
+    .NumLanes   (SlinkNumLanes),
+    .MaxClkDiv  (SlinkMaxClkDiv)
   ) i_serial_link (
-      .clk_i        (clk),
-      .rst_ni       (rst_n),
-      .clk_sl_i     (clk),
-      .rst_sl_ni    (rst_n),
-      .clk_reg_i    (clk),
-      .rst_reg_ni   (rst_n),
-      .testmode_i   (test_mode),
-      .axi_in_req_i (slink_axi_mst_req),
-      .axi_in_rsp_o (slink_axi_mst_rsp),
-      .axi_out_req_o(slink_axi_slv_req),
-      .axi_out_rsp_i(slink_axi_slv_rsp),
-      .cfg_req_i    ('0),
-      .cfg_rsp_o    (),
-      .ddr_rcv_clk_i(slink_rcv_clk_o),
-      .ddr_rcv_clk_o(slink_rcv_clk_i),
-      .ddr_i        (slink_o),
-      .ddr_o        (slink_i),
-      .isolated_i   ('0),
-      .isolate_o    (),
-      .clk_ena_o    (),
-      .reset_no     ()
+    .clk_i        (clk),
+    .rst_ni       (rst_n),
+    .clk_sl_i     (clk),
+    .rst_sl_ni    (rst_n),
+    .clk_reg_i    (clk),
+    .rst_reg_ni   (rst_n),
+    .testmode_i   (test_mode),
+    .axi_in_req_i (slink_axi_mst_req),
+    .axi_in_rsp_o (slink_axi_mst_rsp),
+    .axi_out_req_o(slink_axi_slv_req),
+    .axi_out_rsp_i(slink_axi_slv_rsp),
+    .cfg_req_i    ('0),
+    .cfg_rsp_o    (),
+    .ddr_rcv_clk_i(slink_rcv_clk_o),
+    .ddr_rcv_clk_o(slink_rcv_clk_i),
+    .ddr_i        (slink_o),
+    .ddr_o        (slink_i),
+    .isolated_i   ('0),
+    .isolate_o    (),
+    .clk_ena_o    (),
+    .reset_no     ()
   );
 
   // We terminate the slave interface with a random agent
   axi_test::axi_rand_slave #(
-      .AW                  (DutCfg.AddrWidth),
-      .DW                  (DutCfg.AxiDataWidth),
-      .IW                  (DutCfg.AxiMstIdWidth),
-      .UW                  (DutCfg.AxiUserWidth),
-      .MAPPED              (1'b1),
-      .TA                  (ClkPeriodSys * TAppl),
-      .TT                  (ClkPeriodSys * TTest),
-      .RAND_RESP           (0),
-      .AX_MIN_WAIT_CYCLES  (0),
-      .AX_MAX_WAIT_CYCLES  (SlinkMaxWaitAx),
-      .R_MIN_WAIT_CYCLES   (0),
-      .R_MAX_WAIT_CYCLES   (SlinkMaxWaitR),
-      .RESP_MIN_WAIT_CYCLES(0),
-      .RESP_MAX_WAIT_CYCLES(SlinkMaxWaitResp)
+    .AW                  (DutCfg.AddrWidth),
+    .DW                  (DutCfg.AxiDataWidth),
+    .IW                  (DutCfg.AxiMstIdWidth),
+    .UW                  (DutCfg.AxiUserWidth),
+    .MAPPED              (1'b1),
+    .TA                  (ClkPeriodSys * TAppl),
+    .TT                  (ClkPeriodSys * TTest),
+    .RAND_RESP           (0),
+    .AX_MIN_WAIT_CYCLES  (0),
+    .AX_MAX_WAIT_CYCLES  (SlinkMaxWaitAx),
+    .R_MIN_WAIT_CYCLES   (0),
+    .R_MAX_WAIT_CYCLES   (SlinkMaxWaitR),
+    .RESP_MIN_WAIT_CYCLES(0),
+    .RESP_MAX_WAIT_CYCLES(SlinkMaxWaitResp)
   ) i_slink_rand_slv = new(
-      slink_slv
+    slink_slv
   );
 
   initial begin
@@ -741,12 +735,12 @@ module vip_cheshire_soc
 
   // We use an AXI driver to inject serial link transfers
   typedef axi_test::axi_driver#(
-      .AW(DutCfg.AddrWidth),
-      .DW(DutCfg.AxiDataWidth),
-      .IW(DutCfg.AxiMstIdWidth),
-      .UW(DutCfg.AxiUserWidth),
-      .TA(ClkPeriodSys * TAppl),
-      .TT(ClkPeriodSys * TTest)
+    .AW(DutCfg.AddrWidth),
+    .DW(DutCfg.AxiDataWidth),
+    .IW(DutCfg.AxiMstIdWidth),
+    .UW(DutCfg.AxiUserWidth),
+    .TA(ClkPeriodSys * TAppl),
+    .TT(ClkPeriodSys * TTest)
   ) slink_axi_driver_t;
 
   slink_axi_driver_t slink_axi_driver = new(slink_mst_vip_dv);
@@ -838,7 +832,7 @@ module vip_cheshire_soc
     $display("[SLINK] Preloading ELF binary: %s", binary);
     if (read_elf(binary)) $fatal(1, "[SLINK] Failed to load ELF!");
     while (get_section(
-        sec_addr, sec_len
+      sec_addr, sec_len
     )) begin
       byte bf[] = new[sec_len];
       $display("[SLINK] Preloading section at 0x%h (%0d bytes)", sec_addr, sec_len);
@@ -849,10 +843,7 @@ module vip_cheshire_soc
         axi_data_t beats[$];
         if (i != 0)
           $display(
-              "[SLINK] - %0d/%0d bytes (%0d%%)",
-              i,
-              sec_len,
-              i * 100 / (sec_len > 1 ? sec_len - 1 : 1)
+            "[SLINK] - %0d/%0d bytes (%0d%%)", i, sec_len, i * 100 / (sec_len > 1 ? sec_len - 1 : 1)
           );
         // Assemble beats for current burst from section buffer
         for (int b = 0; b < SlinkBurstBytes; b += AxiStrbWidth) begin
@@ -913,28 +904,28 @@ endmodule
 module vip_cheshire_soc_tristate
   import cheshire_pkg::*;
 (
-    // I2C pad IO
-    output logic                 i2c_sda_i,
-    input  logic                 i2c_sda_o,
-    input  logic                 i2c_sda_en,
-    output logic                 i2c_scl_i,
-    input  logic                 i2c_scl_o,
-    input  logic                 i2c_scl_en,
-    // SPI host pad IO
-    input  logic                 spih_sck_o,
-    input  logic                 spih_sck_en,
-    input  logic [SpihNumCs-1:0] spih_csb_o,
-    input  logic [SpihNumCs-1:0] spih_csb_en,
-    output logic [          3:0] spih_sd_i,
-    input  logic [          3:0] spih_sd_o,
-    input  logic [          3:0] spih_sd_en,
-    // I2C wires
-    inout  wire                  i2c_sda,
-    inout  wire                  i2c_scl,
-    // SPI host wires
-    inout  wire                  spih_sck,
-    inout  wire  [SpihNumCs-1:0] spih_csb,
-    inout  wire  [          3:0] spih_sd
+  // I2C pad IO
+  output logic                 i2c_sda_i,
+  input  logic                 i2c_sda_o,
+  input  logic                 i2c_sda_en,
+  output logic                 i2c_scl_i,
+  input  logic                 i2c_scl_o,
+  input  logic                 i2c_scl_en,
+  // SPI host pad IO
+  input  logic                 spih_sck_o,
+  input  logic                 spih_sck_en,
+  input  logic [SpihNumCs-1:0] spih_csb_o,
+  input  logic [SpihNumCs-1:0] spih_csb_en,
+  output logic [          3:0] spih_sd_i,
+  input  logic [          3:0] spih_sd_o,
+  input  logic [          3:0] spih_sd_en,
+  // I2C wires
+  inout  wire                  i2c_sda,
+  inout  wire                  i2c_scl,
+  // SPI host wires
+  inout  wire                  spih_sck,
+  inout  wire  [SpihNumCs-1:0] spih_csb,
+  inout  wire  [          3:0] spih_sd
 );
 
   // I2C
