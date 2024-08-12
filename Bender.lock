@@ -109,7 +109,7 @@ packages:
     revision: 9cb2112d5b7823a3b4ad42a1a2419b65e623ec14
     version: null
     source:
-      Git: git@github.com:Scheremo/cva6.git
+      Git: https://github.com/Scheremo/cva6.git
     dependencies:
     - axi
     - common_cells
