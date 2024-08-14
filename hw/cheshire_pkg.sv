@@ -169,6 +169,7 @@ package cheshire_pkg;
 
     doub_bt MemIslRegionStart;
     doub_bt MemIslRegionEnd;
+    aw_bt   MemIslAxiMstIdWidth;
     byte_bt MemIslNarrowToWideFactor;
     byte_bt MemIslNarrowPorts;
     byte_bt MemIslWidePorts;
@@ -235,27 +236,27 @@ package cheshire_pkg;
   // Defined interrupts
   typedef struct packed {
     cheshire_bus_err_intr_t bus_err;
-    logic [31:0] gpio;
-    logic usb;
-    logic spih_spi_event;
-    logic spih_error;
-    logic i2c_host_timeout;
-    logic i2c_unexp_stop;
-    logic i2c_acq_full;
-    logic i2c_tx_overflow;
-    logic i2c_tx_stretch;
-    logic i2c_cmd_complete;
-    logic i2c_sda_unstable;
-    logic i2c_stretch_timeout;
-    logic i2c_sda_interference;
-    logic i2c_scl_interference;
-    logic i2c_nak;
-    logic i2c_rx_overflow;
-    logic i2c_fmt_overflow;
-    logic i2c_rx_threshold;
-    logic i2c_fmt_threshold;
-    logic uart;
-    logic zero;
+    logic [31:0]            gpio;
+    logic                   usb;
+    logic                   spih_spi_event;
+    logic                   spih_error;
+    logic                   i2c_host_timeout;
+    logic                   i2c_unexp_stop;
+    logic                   i2c_acq_full;
+    logic                   i2c_tx_overflow;
+    logic                   i2c_tx_stretch;
+    logic                   i2c_cmd_complete;
+    logic                   i2c_sda_unstable;
+    logic                   i2c_stretch_timeout;
+    logic                   i2c_sda_interference;
+    logic                   i2c_scl_interference;
+    logic                   i2c_nak;
+    logic                   i2c_rx_overflow;
+    logic                   i2c_fmt_overflow;
+    logic                   i2c_rx_threshold;
+    logic                   i2c_fmt_threshold;
+    logic                   uart;
+    logic                   zero;
   } cheshire_int_intr_t;
 
   typedef struct packed {
@@ -312,17 +313,17 @@ package cheshire_pkg;
   // AXI Xbar master indices
   typedef struct packed {
     aw_bt [2**MaxCoresWidth-1:0] cores;
-    aw_bt dbg;
-    aw_bt dma;
-    aw_bt slink;
-    aw_bt vga;
-    aw_bt usb;
-    aw_bt ext_base;
-    aw_bt num_in;
+    aw_bt                        dbg;
+    aw_bt                        dma;
+    aw_bt                        slink;
+    aw_bt                        vga;
+    aw_bt                        usb;
+    aw_bt                        ext_base;
+    aw_bt                        num_in;
   } axi_in_t;
 
   function automatic axi_in_t gen_axi_in(cheshire_cfg_t cfg);
-    axi_in_t ret = '{default: '0};
+    axi_in_t     ret = '{default: '0};
     int unsigned i = 0;
     for (int j = 0; j < cfg.NumCores; j++) begin
       ret.cores[i] = i;
@@ -360,16 +361,16 @@ package cheshire_pkg;
 
   // AXI Xbar slave indices and map
   typedef struct packed {
-    aw_bt dbg;
-    aw_bt reg_demux;
-    aw_bt llc;
-    aw_bt memoryisland;
-    aw_bt spm;
-    aw_bt dma;
-    aw_bt slink;
-    aw_bt ext_base;
-    aw_bt num_out;
-    aw_bt num_rules;
+    aw_bt                 dbg;
+    aw_bt                 reg_demux;
+    aw_bt                 llc;
+    aw_bt                 memoryisland;
+    aw_bt                 spm;
+    aw_bt                 dma;
+    aw_bt                 slink;
+    aw_bt                 ext_base;
+    aw_bt                 num_out;
+    aw_bt                 num_rules;
     arul_t [aw_bt'(-1):0] map;
   } axi_out_t;
 
@@ -384,7 +385,7 @@ package cheshire_pkg;
     if (cfg.LlcOutConnect) begin
       i++;
       r++;
-      ret.llc = i;
+      ret.llc    = i;
       ret.map[r] = '{i, cfg.LlcOutRegionStart, cfg.LlcOutRegionEnd};
     end
     // We can only internally map the SPM region if an LLC exists.
@@ -400,7 +401,7 @@ package cheshire_pkg;
     if (cfg.Dma) begin
       i++;
       r++;
-      ret.dma = i;
+      ret.dma    = i;
       ret.map[r] = '{i, 'h0100_0000, 'h0100_1000};
     end
     if (cfg.SerialLink) begin
@@ -413,7 +414,7 @@ package cheshire_pkg;
       i++;
       r++;
       ret.memoryisland = i;
-      ret.map[r] = '{i, cfg.MemIslRegionStart, cfg.MemIslRegionEnd};
+      ret.map[r]       = '{i, cfg.MemIslRegionStart, cfg.MemIslRegionEnd};
     end
     // External port indices start after internal ones
     i++;
@@ -440,27 +441,27 @@ package cheshire_pkg;
 
   // Reg demux slave indices and map
   typedef struct packed {
-    aw_bt err;  // Error slave for decoder; has no rules
-    aw_bt clint;
-    aw_bt plic;
-    aw_bt regs;
-    aw_bt bootrom;
-    aw_bt llc;
-    aw_bt uart;
-    aw_bt i2c;
-    aw_bt spi_host;
-    aw_bt gpio;
-    aw_bt slink;
-    aw_bt vga;
-    aw_bt usb;
-    aw_bt axirt;
-    aw_bt irq_router;
+    aw_bt                        err;         // Error slave for decoder; has no rules
+    aw_bt                        clint;
+    aw_bt                        plic;
+    aw_bt                        regs;
+    aw_bt                        bootrom;
+    aw_bt                        llc;
+    aw_bt                        uart;
+    aw_bt                        i2c;
+    aw_bt                        spi_host;
+    aw_bt                        gpio;
+    aw_bt                        slink;
+    aw_bt                        vga;
+    aw_bt                        usb;
+    aw_bt                        axirt;
+    aw_bt                        irq_router;
     aw_bt [2**MaxCoresWidth-1:0] bus_err;
     aw_bt [2**MaxCoresWidth-1:0] clic;
-    aw_bt ext_base;
-    aw_bt num_out;
-    aw_bt num_rules;
-    arul_t [aw_bt'(-1):0] map;
+    aw_bt                        ext_base;
+    aw_bt                        num_out;
+    aw_bt                        num_rules;
+    arul_t [aw_bt'(-1):0]        map;
   } reg_out_t;
 
   function automatic reg_out_t gen_reg_out(cheshire_cfg_t cfg);
@@ -880,6 +881,7 @@ package cheshire_pkg;
       MemIslRegionStart        :
       'h1800_0000,
       MemIslRegionEnd          : 'h1804_0000,
+      MemIslAxiMstIdWidth      : 2,
       MemIslNarrowToWideFactor : 4,
       MemIslNarrowPorts        : 1,
       MemIslWidePorts          : 2,

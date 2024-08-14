@@ -39,8 +39,8 @@
   localparam type __prefix``_axi_data_t    = logic [wideDataWidth   -1:0]; \
   localparam type __prefix``_axi_strb_t    = logic [wideDataWidth/8 -1:0]; \
   localparam type __prefix``_axi_user_t    = logic [__cfg.AxiUserWidth   -1:0]; \
-  localparam type __prefix``_axi_mst_id_t  = logic [0:0]; \
-  localparam type __prefix``_axi_slv_id_t  = logic [$clog2(__cfg.MemIslWidePorts):0]; \
+  localparam type __prefix``_axi_mst_id_t  = logic [__cfg.MemIslAxiMstIdWidth-1:0]; \
+  localparam type __prefix``_axi_slv_id_t  = logic [__cfg.MemIslAxiMstIdWidth + $clog2(__cfg.MemIslWidePorts)-1:0]; \
   `CHESHIRE_TYPEDEF_AXI_CT(__prefix``_axi_mst, __prefix``addr_t, \
       __prefix``_axi_mst_id_t, __prefix``_axi_data_t, __prefix``_axi_strb_t, __prefix``_axi_user_t) \
   `CHESHIRE_TYPEDEF_AXI_CT(__prefix``_axi_slv, __prefix``addr_t, \
