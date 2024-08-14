@@ -1399,7 +1399,7 @@ module cheshire_soc
     .reg_req_i  ( reg_out_req[RegOut.plic] ),
     .reg_rsp_o  ( reg_out_rsp[RegOut.plic] ),
     .intr_src_i ( intr_routed[IntrRtdPlic][rv_plic_reg_pkg::NumSrc-1:0] ),
-    .irq_o      ( xeip[0].m ),
+    .irq_o      ( xeip[0] ),
     .irq_id_o   ( ),
     .msip_o     ( )
   );
@@ -1412,12 +1412,7 @@ module cheshire_soc
   /////////////
 
   // if (Cfg.Core == CVA6) begin : gen_cva6_clint
-  logic [1:0] mtip_from_clint;
-  logic [1:0] msip_from_clint;
 
-  assign mtip[0] = |mtip_from_clint;
-  assign msip[0] = |msip_from_clint;
-  
   clint #(
     .reg_req_t  ( reg_req_t ),
     .reg_rsp_t  ( reg_rsp_t )
@@ -1428,8 +1423,8 @@ module cheshire_soc
     .reg_req_i    ( reg_out_req[RegOut.clint] ),
     .reg_rsp_o    ( reg_out_rsp[RegOut.clint] ),
     .rtc_i,
-    .timer_irq_o  ( mtip_from_clint ),
-    .ipi_o        ( msip_from_clint )
+    .timer_irq_o  ( mtip[0] ),
+    .ipi_o        ( msip[0] )
   );
 
   // end
