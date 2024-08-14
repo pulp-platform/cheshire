@@ -1378,20 +1378,20 @@ module cheshire_soc
 
     localparam int WideDataWidth = Cfg.AxiDataWidth * Cfg.MemIslNarrowToWideFactor;
     axi_memory_island_wrap #(
-      .AddrWidth(Cfg.AddrWidth),
-      .NarrowDataWidth(Cfg.AxiDataWidth),
-      .WideDataWidth(WideDataWidth),
+      .AddrWidth       (Cfg.AddrWidth),
+      .NarrowDataWidth (Cfg.AxiDataWidth),
+      .WideDataWidth   (WideDataWidth),
       .AxiNarrowIdWidth(AxiSlvIdWidth),
-      .AxiWideIdWidth(WideSlaveIdWidth),
+      .AxiWideIdWidth  (WideSlaveIdWidth),
       .axi_narrow_req_t(axi_slv_req_t),
       .axi_narrow_rsp_t(axi_slv_rsp_t),
-      .axi_wide_req_t(mem_isl_wide_axi_slv_req_t),
-      .axi_wide_rsp_t(mem_isl_wide_axi_slv_rsp_t),
-      .NumNarrowReq(Cfg.MemIslNarrowPorts),
-      .NumWideReq(Cfg.MemIslWidePorts),
-      .NumWideBanks(Cfg.MemIslNumWideBanks),
-      .NarrowExtraBF(1),
-      .WordsPerBank(Cfg.MemIslWordsPerBank)
+      .axi_wide_req_t  (mem_isl_wide_axi_mst_req_t),
+      .axi_wide_rsp_t  (mem_isl_wide_axi_mst_rsp_t),
+      .NumNarrowReq    (Cfg.MemIslNarrowPorts),
+      .NumWideReq      (Cfg.MemIslWidePorts),
+      .NumWideBanks    (Cfg.MemIslNumWideBanks),
+      .NarrowExtraBF   (1),
+      .WordsPerBank    (Cfg.MemIslWordsPerBank)
     ) i_memory_island (
       .clk_i,
       .rst_ni,
