@@ -9,6 +9,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+
+#include "iommu_tests.h"
+#include "command_queue.h"
+#include "fault_queue.h"
+#include "device_contexts.h"
+#include "msi_pts.h"
+#include "iommu_pts.h"
+#include "hpm.h"
+#include "rvh_test.h"
+#include "rv_iommu.h"
+
 #include "util.h"
 #include "printf.h"
 
@@ -24,6 +35,12 @@
 #define IDMA_CONF 0x00000000
 
 int main(void) {
+
+    if (hart_id() != 0) wfi();
+
+    fencei();
+    set_iommu_bare();
+
     int err = 0;
     volatile uint64_t src_data[8] = {0x1032207098001032, 0x3210E20020709800, 0x1716151413121110,
                                      0x2726252423222120, 0x3736353433323130, 0x4746454443424140,
@@ -47,8 +64,8 @@ int main(void) {
             err++;
         }
     }
-    if (err != 0) {
-        printf("idma failed\n");
-    } else
-        return 0;
+
+    if (err != 0) printf("idma failed\n");
+
+    return err;
 }
