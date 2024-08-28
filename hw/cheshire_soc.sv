@@ -607,10 +607,12 @@ module cheshire_soc import cheshire_pkg::*; #(
       .b_chan_t       ( axi_cva6_b_chan_t  ),
       .r_chan_t       ( axi_cva6_r_chan_t  ),
       .noc_req_t      ( axi_cva6_req_t ),
-      .noc_resp_t     ( axi_cva6_rsp_t )
+      .noc_resp_t     ( axi_cva6_rsp_t ),
+      .EccEnable      ( 1'b1           )
     ) i_core_cva6 (
       .clk_i,
       .rst_ni,
+      .clear_i          ( 1'b0     ),
       .boot_addr_i      ( BootAddr ),
       .hart_id_i        ( 64'(i) ),
       .irq_i            ( xeip[i] ),
