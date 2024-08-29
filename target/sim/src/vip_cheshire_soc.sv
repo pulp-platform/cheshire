@@ -12,7 +12,7 @@
 module vip_cheshire_soc import cheshire_pkg::*; #(
   // DUT (must be set)
   parameter cheshire_cfg_t DutCfg           = '0,
-  parameter bit           UseDRAMSys        = 1'b0,
+  parameter bit           UseDRAMSys        = 0,
   parameter type          axi_ext_llc_req_t = logic,
   parameter type          axi_ext_llc_rsp_t = logic,
   parameter type          axi_ext_mst_req_t = logic,
@@ -94,8 +94,12 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   ////////////
 
   if (UseDRAMSys) begin : gen_dramsys
-    dram_sim_engine #(.ClkPeriod(ClkPeriodSys)) i_dram_sim_engine (.clk_i(clk), .rst_ni(rst_n));
-
+    dram_sim_engine #(
+      .ClkPeriod  ( ClkPeriodSys )
+    ) i_dram_sim_engine (
+      .clk_i  ( clk   ),
+      .rst_ni ( rst_n )
+    );
     axi_dram_sim #(
       .AxiAddrWidth ( DutCfg.AddrWidth ),
       .AxiDataWidth ( DutCfg.AxiDataWidth ),
@@ -117,7 +121,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       .axi_req_i  ( axi_llc_mst_req ),
       .axi_resp_o ( axi_llc_mst_rsp )
     );
-  end else begin : gen_behav_mem
+  end else begin : gen_no_dramsys
     axi_sim_mem #(
       .AddrWidth          ( DutCfg.AddrWidth    ),
       .DataWidth          ( DutCfg.AxiDataWidth ),

@@ -161,7 +161,7 @@ $(CHS_ROOT)/target/sim/models/24FC1025.v: $(CHS_ROOT)/Bender.yml | $(CHS_ROOT)/t
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
-CHS_SIM_ALL += dramsys
+CHS_SIM_ALL += $(DRAMSYS_ROOT)/build/lib/libsystemc.so
 
 #############
 # FPGA Flow #

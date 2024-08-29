@@ -11,7 +11,10 @@ module tb_cheshire_soc #(
   parameter bit          UseDRAMSys  = 1'b0
 );
 
-  fixture_cheshire_soc #(.SelectedCfg(SelectedCfg), .UseDRAMSys(UseDRAMSys)) fix();
+  fixture_cheshire_soc #(
+    .SelectedCfg  (SelectedCfg),
+    .UseDRAMSys   (UseDRAMSys)
+  ) fix();
 
   string      preload_elf;
   string      boot_hex;
