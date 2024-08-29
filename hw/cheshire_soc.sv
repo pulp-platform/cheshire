@@ -1377,6 +1377,35 @@ module cheshire_soc
   if (Cfg.MemoryIsland) begin : gen_memoryisland
 
     localparam int WideDataWidth = Cfg.AxiDataWidth * Cfg.MemIslNarrowToWideFactor;
+
+     axi_slv_req_t axi_memory_island_amo_req;
+     axi_slv_rsp_t axi_memory_island_amo_rsp;
+
+    // Shim atomics, which are not supported by LLC
+    // TODO: This should be a filter, but how do we filter RISC-V atomics?
+    axi_riscv_atomics_structs #(
+      .AxiAddrWidth     ( Cfg.AddrWidth    ),
+      .AxiDataWidth     ( Cfg.AxiDataWidth ),
+      .AxiIdWidth       ( AxiSlvIdWidth    ),
+      .AxiUserWidth     ( Cfg.AxiUserWidth ),
+      .AxiMaxReadTxns   ( Cfg.LlcMaxReadTxns  ),
+      .AxiMaxWriteTxns  ( Cfg.LlcMaxWriteTxns ),
+      .AxiUserAsId      ( 1 ),
+      .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
+      .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
+      .RiscvWordWidth   ( riscv::XLEN ),
+      .NAxiCuts         ( Cfg.LlcAmoNumCuts ),
+      .axi_req_t        ( axi_slv_req_t ),
+      .axi_rsp_t        ( axi_slv_rsp_t )
+    ) i_memory_island_atomics (
+      .clk_i,
+      .rst_ni,
+      .axi_slv_req_i ( axi_out_req[AxiOut.memoryisland] ),
+      .axi_slv_rsp_o ( axi_out_rsp[AxiOut.memoryisland] ),
+      .axi_mst_req_o ( axi_memory_island_amo_req ),
+      .axi_mst_rsp_i ( axi_memory_island_amo_rsp )
+    );
+
     axi_memory_island_wrap #(
       .AddrWidth       (Cfg.AddrWidth),
       .NarrowDataWidth (Cfg.AxiDataWidth),
@@ -1395,8 +1424,8 @@ module cheshire_soc
     ) i_memory_island (
       .clk_i,
       .rst_ni,
-      .axi_narrow_req_i(axi_out_req[AxiOut.memoryisland]),
-      .axi_narrow_rsp_o(axi_out_rsp[AxiOut.memoryisland]),
+      .axi_narrow_req_i(axi_memory_island_amo_req),
+      .axi_narrow_rsp_o(axi_memory_island_amo_rsp),
       // SCHEREMO: TODO: Demux wide accesses to go over narrow ports iff address not in memory island range
       .axi_wide_req_i  (axi_ext_wide_mst_req_i),
       .axi_wide_rsp_o  (axi_ext_wide_mst_rsp_o)
