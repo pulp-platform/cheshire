@@ -26,6 +26,7 @@ IDMA_ROOT    := $(shell $(BENDER) path idma)
 
 REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
 
+EXTRA_DEFS :=
 ################
 # Dependencies #
 ################
@@ -133,7 +134,7 @@ CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/boo
 ##############
 
 $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: $(CHS_ROOT)/Bender.yml
-	$(BENDER) script vsim -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 -t rtl --vlog-arg="$(VLOG_ARGS)" > $@
+	$(BENDER) script vsim -t sim -t cv64a6_imafdch_sv39_wb -t test -t cva6 -t rtl $(EXTRA_DEFS) --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
 .PRECIOUS: $(CHS_ROOT)/target/sim/models
