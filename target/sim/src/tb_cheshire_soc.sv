@@ -8,12 +8,12 @@
 module tb_cheshire_soc #(
   /// The selected simulation configuration from the `tb_cheshire_pkg`.
   parameter int unsigned SelectedCfg = 32'd0,
-  parameter bit          UseDRAMSys  = 1'b0
+  parameter bit          UseDramSys  = 1'b0
 );
 
   fixture_cheshire_soc #(
     .SelectedCfg  (SelectedCfg),
-    .UseDRAMSys   (UseDRAMSys)
+    .UseDramSys   (UseDramSys)
   ) fix();
 
   string      preload_elf;

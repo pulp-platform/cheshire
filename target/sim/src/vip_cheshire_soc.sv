@@ -12,7 +12,7 @@
 module vip_cheshire_soc import cheshire_pkg::*; #(
   // DUT (must be set)
   parameter cheshire_cfg_t DutCfg           = '0,
-  parameter bit           UseDRAMSys        = 0,
+  parameter bit           UseDramSys        = 0,
   parameter type          axi_ext_llc_req_t = logic,
   parameter type          axi_ext_llc_rsp_t = logic,
   parameter type          axi_ext_mst_req_t = logic,
@@ -93,7 +93,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   //  DRAM  //
   ////////////
 
-  if (UseDRAMSys) begin : gen_dramsys
+  if (UseDramSys) begin : gen_dramsys
     dram_sim_engine #(
       .ClkPeriod  ( ClkPeriodSys )
     ) i_dram_sim_engine (

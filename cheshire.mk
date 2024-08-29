@@ -8,7 +8,7 @@
 
 BENDER ?= bender
 
-# Caution: Questasim requires this to point to the *actual* install path.
+# Caution: Questasim requires this to point to the *actual* compiler install path
 CXX_PATH := $(shell which $(CXX))
 
 VLOG_ARGS ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
@@ -50,7 +50,8 @@ endif
 # Running this target will reset dependencies (without updating the checked-in Bender.lock)
 chs-clean-deps:
 	rm -rf .bender
-	cd $(CHS_ROOT) && git submodule deinit -f sw/deps/printf
+	cd $(CHS_ROOT) && rm -rf target/sim/models target/sim/dramsys
+	cd $(CHS_ROOT) && git submodule deinit -f sw/deps/*
 
 ######################
 # Nonfree components #
@@ -136,9 +137,6 @@ CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/boo
 # Simulation #
 ##############
 
-DRAMSYS_ROOT ?= $(CHS_ROOT)/target/sim/dramsys
-include $(DRAM_RTL_SIM_ROOT)/dram_rtl_sim.mk
-
 $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: $(CHS_ROOT)/Bender.yml
 	$(BENDER) script vsim -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 -t rtl --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11" -cpppath "$(CXX_PATH)"' >> $@
@@ -161,7 +159,15 @@ $(CHS_ROOT)/target/sim/models/24FC1025.v: $(CHS_ROOT)/Bender.yml | $(CHS_ROOT)/t
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
-CHS_SIM_ALL += $(DRAMSYS_ROOT)/build/lib/libsystemc.so
+
+###########
+# DRAMSys #
+###########
+
+DRAMSYS_ROOT ?= $(CHS_ROOT)/target/sim/dramsys
+include $(DRAM_RTL_SIM_ROOT)/dram_rtl_sim.mk
+
+CHS_DRAMSYS_ALL += $(DRAMSYS_ROOT)/build/lib/libsystemc.so
 
 #############
 # FPGA Flow #
@@ -182,4 +188,5 @@ chs-sw-all:      $(CHS_SW_ALL)
 chs-hw-all:      $(CHS_HW_ALL)
 chs-bootrom-all: $(CHS_BOOTROM_ALL)
 chs-sim-all:     $(CHS_SIM_ALL)
+chs-dramsys-all: $(CHS_DRAMSYS_ALL)
 chs-xilinx-all:  $(CHS_XILINX_ALL)

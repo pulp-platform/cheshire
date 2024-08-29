@@ -38,7 +38,7 @@ if { [info exists IMAGE] } { append pargs "+IMAGE=${IMAGE} " }
 
 # DRAMSys
 if { [info exists USE_DRAMSYS] } {
-    append flags "-GUseDRAMSys=${USE_DRAMSYS} "
+    append flags "-GUseDramSys=${USE_DRAMSYS} "
     if { ${USE_DRAMSYS} } {
         set DRAMSYS_ROOT "../dramsys"
         set DRAMSYS_LIB "${DRAMSYS_ROOT}/build/lib"

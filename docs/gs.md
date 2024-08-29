@@ -20,6 +20,7 @@ The project is structured as follows:
 To *build* Cheshire, you will need:
 
 - GNU Make `>= 3.82`
+- CMake `>=3.24.0`
 - Python `>= 3.9`
 - Bender `>= 0.27.1`
 - RISCV GCC `>= 11.2.0`
@@ -56,6 +57,7 @@ The following additional targets are not invoked by the above, but also availabl
 - `bootrom-all`: Rebuilds the boot ROM. This is not done by default as reproducible builds (as checked by CI) can only be guaranteed for fixed compiler versions.
 - `nonfree-init`: Clones our internal repository with nonfree resources we cannot release, including our internal CI. *This is not necessary to use Cheshire*.
 - `clean-deps`: Removes checked-out bender dependencies and submodules. This is useful when references to dependencies are updated.
+- `dramsys-all`: Builds [DRAMSys-based DRAM Simulation](https://github.com/pulp-platform/dram_rtl_sim) for Cheshire's simulation targets; see [Testbench](tg/sim.md#DramSys).
 
 ## Targets
 

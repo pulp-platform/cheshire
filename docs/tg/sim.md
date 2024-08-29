@@ -21,12 +21,14 @@ We provide a SystemVerilog testbench for `cheshire_soc` running baremetal progra
 
 Preloading boot modes expect an ELF executable to be passed through `BINARY`, while autonomous boot modes expect a disk image (GPT formatted or raw code) to be passed through `IMAGE`. For more information on how to build software for Cheshire and its boot process, see [Software Stack](../um/sw.md).
 
-The `SELCFG` parameter selects the simulation configuration specified in the `tb_cheshire_pkg` package. If not set or set to `0`, the default configuration is selected.
+The `SELCFG` environment variable selects the Cheshire configuration used in simulations. Possible configurations are specified in the `tb_cheshire_pkg` package. If not set or set to `0`, the default configuration is selected.
 
-| `SELCFG` | Configuration (`tb_cheshire_pkg`)         |
+| `SELCFG` | Configuration in (`tb_cheshire_pkg`)      |
 | -------- | ----------------------------------------- |
 | 0        | Default configuration from `cheshire_pkg` |
 | 1        | AXI-RT-enabled configuration              |
+
+The `USE_DRAMSYS` environment variable controls whether simulations are linked against and use DRAMSys for DRAM simulation. Note that before starting a simulation using DRAMSys, it must be built with `make chs-dramsys-all` first.
 
 For simulation of Cheshire in other designs, we provide the module `cheshire_vip` encapsulating all verification IPs and their interfaces. For details, see [Verifying Cheshire In-System](integr.md#verifying-cheshire-in-system).
 
