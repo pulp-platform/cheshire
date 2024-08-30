@@ -151,13 +151,13 @@ module cheshire_soc
   } cheshire_intr_clic_t;
 
   // Interrupts from internal devices and external sources
-  cheshire_intr_t intr;
+  cheshire_intr_t                      intr;
 
   // Interrupts from router (or target fanout)
   cheshire_intr_t [NumRtdIntrTgts-1:0] intr_routed;
 
   // Interrupt requests to all interruptible harts
-  cheshire_xeip_t [NumIrqHarts-1:0] xeip;
+  cheshire_xeip_t [   NumIrqHarts-1:0] xeip;
   logic [NumIrqHarts-1:0] mtip, msip;
 
   // Interrupt 0 is hardwired to zero by convention.
@@ -215,8 +215,8 @@ module cheshire_soc
   // Type for address map entries
   typedef struct packed {
     logic [$bits(aw_bt)-1:0] idx;
-    addr_t start_addr;
-    addr_t end_addr;
+    addr_t                   start_addr;
+    addr_t                   end_addr;
   } addr_rule_t;
 
   // Generate address map
@@ -224,9 +224,9 @@ module cheshire_soc
     addr_rule_t [AxiOut.num_rules-1:0] ret;
     for (int i = 0; i < AxiOut.num_rules; ++i)
     ret[i] = '{
-      idx: AxiOut.map[i].idx,
-      start_addr: AxiOut.map[i].start,
-      end_addr: AxiOut.map[i].pte
+        idx: AxiOut.map[i].idx,
+        start_addr: AxiOut.map[i].start,
+        end_addr: AxiOut.map[i].pte
     };
     return ret;
   endfunction
@@ -241,19 +241,19 @@ module cheshire_soc
 
   // Configure AXI Xbar
   localparam axi_pkg::xbar_cfg_t AxiXbarCfg = '{
-    NoSlvPorts: AxiIn.num_in,
-    NoMstPorts: AxiOut.num_out,
-    MaxMstTrans: Cfg.AxiMaxMstTrans,
-    MaxSlvTrans: Cfg.AxiMaxSlvTrans,
-    FallThrough: 0,
-    LatencyMode: axi_pkg::CUT_ALL_PORTS,
-    PipelineStages: 0,
-    AxiIdWidthSlvPorts: Cfg.AxiMstIdWidth,
-    AxiIdUsedSlvPorts: Cfg.AxiMstIdWidth,
-    UniqueIds: 0,
-    AxiAddrWidth: Cfg.AddrWidth,
-    AxiDataWidth: Cfg.AxiDataWidth,
-    NoAddrRules: AxiOut.num_rules
+      NoSlvPorts: AxiIn.num_in,
+      NoMstPorts: AxiOut.num_out,
+      MaxMstTrans: Cfg.AxiMaxMstTrans,
+      MaxSlvTrans: Cfg.AxiMaxSlvTrans,
+      FallThrough: 0,
+      LatencyMode: axi_pkg::CUT_ALL_PORTS,
+      PipelineStages: 0,
+      AxiIdWidthSlvPorts: Cfg.AxiMstIdWidth,
+      AxiIdUsedSlvPorts: Cfg.AxiMstIdWidth,
+      UniqueIds: 0,
+      AxiAddrWidth: Cfg.AddrWidth,
+      AxiDataWidth: Cfg.AxiDataWidth,
+      NoAddrRules: AxiOut.num_rules
   };
 
   axi_xbar #(
@@ -290,7 +290,7 @@ module cheshire_soc
   // Connect external masters
   if (Cfg.AxiExtNumMst > 0) begin : gen_ext_axi_mst
     assign axi_in_req[AxiIn.num_in-1:AxiIn.ext_base] = axi_ext_mst_req_i;
-    assign axi_ext_mst_rsp_o = axi_in_rsp[AxiIn.num_in-1:AxiIn.ext_base];
+    assign axi_ext_mst_rsp_o                         = axi_in_rsp[AxiIn.num_in-1:AxiIn.ext_base];
   end else begin : gen_no_ext_axi_mst
     assign axi_ext_mst_rsp_o = '0;
   end
@@ -315,9 +315,9 @@ module cheshire_soc
     addr_rule_t [RegOut.num_rules-1:0] ret;
     for (int i = 0; i < RegOut.num_rules; ++i)
     ret[i] = '{
-      idx: RegOut.map[i].idx,
-      start_addr: RegOut.map[i].start,
-      end_addr: RegOut.map[i].pte
+        idx: RegOut.map[i].idx,
+        start_addr: RegOut.map[i].start,
+        end_addr: RegOut.map[i].pte
     };
     return ret;
   endfunction
@@ -329,10 +329,10 @@ module cheshire_soc
   axi_slv_req_t axi_reg_amo_req, axi_reg_cut_req;
   axi_slv_rsp_t axi_reg_amo_rsp, axi_reg_cut_rsp;
 
-  reg_req_t reg_in_req;
-  reg_rsp_t reg_in_rsp;
+  reg_req_t                      reg_in_req;
+  reg_rsp_t                      reg_in_rsp;
 
-  logic [AxiSlvIdWidth-1:0] reg_id;
+  logic     [ AxiSlvIdWidth-1:0] reg_id;
 
   reg_req_t [RegOut.num_out-1:0] reg_out_req;
   reg_rsp_t [RegOut.num_out-1:0] reg_out_rsp;
@@ -681,9 +681,15 @@ module cheshire_soc
 
       // Connect interrupts to CLIC
       assign clic_intr = '{
-          intr: intr_routed[IntrRtdCoreBase+i][NumClicSysIntrs-1:0],
-          core: '{meip: xeip[i].m, seip: xeip[i].s, mtip: mtip[i], msip: msip[i], default: '0}
-        };
+              intr: intr_routed[IntrRtdCoreBase+i][NumClicSysIntrs-1:0],
+              core: '{
+                  meip: xeip[i].m,
+                  seip: xeip[i].s,
+                  mtip: mtip[i],
+                  msip: msip[i],
+                  default: '0
+              }
+          };
 
       clic #(
         .N_SOURCE  (NumClicIntrs),
@@ -996,35 +1002,36 @@ module cheshire_soc
   /////////////////////
 
   cheshire_reg_pkg::cheshire_hw2reg_t reg_hw2reg;
+  cheshire_reg_pkg::cheshire_reg2hw_t reg_reg2hw;
 
   assign reg_hw2reg = '{
-      boot_mode     : boot_mode_i,
-      rtc_freq      : Cfg.RtcFreq,
-      platform_rom  : Cfg.PlatformRom,
-      num_int_harts : NumIntHarts,
-      hw_features   : '{
-        bootrom     : Cfg.Bootrom,
-        llc         : Cfg.LlcNotBypass,
-        uart        : Cfg.Uart,
-        i2c         : Cfg.I2c,
-        gpio        : Cfg.Gpio,
-        spi_host    : Cfg.SpiHost,
-        dma         : Cfg.Dma,
-        serial_link : Cfg.SerialLink,
-        vga         : Cfg.Vga,
-        usb         : Cfg.Usb,
-        axirt       : Cfg.AxiRt,
-        clic        : Cfg.Clic,
-        irq_router  : Cfg.IrqRouter,
-        bus_err     : Cfg.BusErr
-      },
-      llc_size      : get_llc_size(Cfg),
-      vga_params    : '{
-        red_width   : Cfg.VgaRedWidth,
-        green_width : Cfg.VgaGreenWidth,
-        blue_width  : Cfg.VgaBlueWidth
-      }
-    };
+          boot_mode     : boot_mode_i,
+          rtc_freq      : Cfg.RtcFreq,
+          platform_rom  : Cfg.PlatformRom,
+          num_int_harts : NumIntHarts,
+          hw_features   : '{
+              bootrom     : Cfg.Bootrom,
+              llc         : Cfg.LlcNotBypass,
+              uart        : Cfg.Uart,
+              i2c         : Cfg.I2c,
+              gpio        : Cfg.Gpio,
+              spi_host    : Cfg.SpiHost,
+              dma         : Cfg.Dma,
+              serial_link : Cfg.SerialLink,
+              vga         : Cfg.Vga,
+              usb         : Cfg.Usb,
+              axirt       : Cfg.AxiRt,
+              clic        : Cfg.Clic,
+              irq_router  : Cfg.IrqRouter,
+              bus_err     : Cfg.BusErr
+          },
+          llc_size      : get_llc_size(Cfg),
+          vga_params    : '{
+              red_width   : Cfg.VgaRedWidth,
+              green_width : Cfg.VgaGreenWidth,
+              blue_width  : Cfg.VgaBlueWidth
+          }
+      };
 
   cheshire_reg_top #(
     .reg_req_t(reg_req_t),
@@ -1035,6 +1042,7 @@ module cheshire_soc
     .reg_req_i(reg_out_req[RegOut.regs]),
     .reg_rsp_o(reg_out_rsp[RegOut.regs]),
     .hw2reg   (reg_hw2reg),
+    .reg2hw   (reg_reg2hw),
     .devmode_i(1'b1)
   );
 
@@ -1208,12 +1216,24 @@ module cheshire_soc
 
   if (Cfg.Uart) begin : gen_uart
 
+    logic uart_clk_gated;
+    logic uart_clk_gate_en;
+
+    assign uart_clk_gate_en = reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_uart.q;
+
+    tc_clk_gating i_uart_clk_gate (
+      .clk_i    (clk_i),
+      .en_i     (~uart_clk_gate_en),
+      .test_en_i(1'b0),
+      .clk_o    (uart_clk_gated)
+    );
+
     reg_uart_wrap #(
       .AddrWidth(Cfg.AddrWidth),
       .reg_req_t(reg_req_t),
       .reg_rsp_t(reg_rsp_t)
     ) i_uart (
-      .clk_i,
+      .clk_i    (uart_clk_gated),
       .rst_ni,
       .reg_req_i(reg_out_req[RegOut.uart]),
       .reg_rsp_o(reg_out_rsp[RegOut.uart]),
@@ -1232,11 +1252,11 @@ module cheshire_soc
 
   end else begin : gen_no_uart
 
-    assign uart_rts_no  = 0;
-    assign uart_dtr_no  = 0;
-    assign uart_tx_o    = 0;
+    assign uart_rts_no    = 0;
+    assign uart_dtr_no    = 0;
+    assign uart_tx_o      = 0;
 
-    assign intr.intn.uart  = 0;
+    assign intr.intn.uart = 0;
 
   end
 
@@ -1246,11 +1266,23 @@ module cheshire_soc
 
   if (Cfg.I2c) begin : gen_i2c
 
+    logic i2c_clk_gated;
+    logic i2c_clk_gate_en;
+
+    assign i2c_clk_gate_en = reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_i2c.q;
+
+    tc_clk_gating i_i2c_clk_gate (
+      .clk_i    (clk_i),
+      .en_i     (~i2c_clk_gate_en),
+      .test_en_i(1'b0),
+      .clk_o    (i2c_clk_gated)
+    );
+
     i2c #(
       .reg_req_t(reg_req_t),
       .reg_rsp_t(reg_rsp_t)
     ) i_i2c (
-      .clk_i,
+      .clk_i                  (i2c_clk_gated),
       .rst_ni,
       .reg_req_i              (reg_out_req[RegOut.i2c]),
       .reg_rsp_o              (reg_out_rsp[RegOut.i2c]),
@@ -1308,6 +1340,18 @@ module cheshire_soc
 
   if (Cfg.SpiHost) begin : gen_spi_host
 
+    logic spih_clk_gated;
+    logic spih_clk_gate_en;
+
+    assign spih_clk_gate_en = reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_spih.q;
+
+    tc_clk_gating i_spih_clk_gate (
+      .clk_i    (clk_i),
+      .en_i     (~spih_clk_gate_en),
+      .test_en_i(1'b0),
+      .clk_o    (spih_clk_gated)
+    );
+
     // Last CS is an internal dummy for devices that need it
     logic spih_csb_dummy, spih_csb_dummy_en;
 
@@ -1315,7 +1359,7 @@ module cheshire_soc
       .reg_req_t(reg_req_t),
       .reg_rsp_t(reg_rsp_t)
     ) i_spi_host (
-      .clk_i,
+      .clk_i           (spih_clk_gated),
       .rst_ni,
       .reg_req_i       (reg_out_req[RegOut.spi_host]),
       .reg_rsp_o       (reg_out_rsp[RegOut.spi_host]),
@@ -1350,12 +1394,24 @@ module cheshire_soc
 
   if (Cfg.Gpio) begin : gen_gpio
 
+    logic gpio_clk_gated;
+    logic gpio_clk_gate_en;
+
+    assign gpio_clk_gate_en = reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_gpio.q;
+
+    tc_clk_gating i_gpio_clk_gate (
+      .clk_i    (clk_i),
+      .en_i     (~gpio_clk_gate_en),
+      .test_en_i(1'b0),
+      .clk_o    (gpio_clk_gated)
+    );
+
     gpio #(
       .reg_req_t  (reg_req_t),
       .reg_rsp_t  (reg_rsp_t),
       .GpioAsyncOn(Cfg.GpioInputSyncs)
     ) i_gpio (
-      .clk_i,
+      .clk_i        (gpio_clk_gated),
       .rst_ni,
       .reg_req_i    (reg_out_req[RegOut.gpio]),
       .reg_rsp_o    (reg_out_rsp[RegOut.gpio]),
@@ -1378,32 +1434,32 @@ module cheshire_soc
 
     localparam int WideDataWidth = Cfg.AxiDataWidth * Cfg.MemIslNarrowToWideFactor;
 
-     axi_slv_req_t axi_memory_island_amo_req;
-     axi_slv_rsp_t axi_memory_island_amo_rsp;
+    axi_slv_req_t axi_memory_island_amo_req;
+    axi_slv_rsp_t axi_memory_island_amo_rsp;
 
     // Shim atomics, which are not supported by LLC
     // TODO: This should be a filter, but how do we filter RISC-V atomics?
     axi_riscv_atomics_structs #(
-      .AxiAddrWidth     ( Cfg.AddrWidth    ),
-      .AxiDataWidth     ( Cfg.AxiDataWidth ),
-      .AxiIdWidth       ( AxiSlvIdWidth    ),
-      .AxiUserWidth     ( Cfg.AxiUserWidth ),
-      .AxiMaxReadTxns   ( Cfg.LlcMaxReadTxns  ),
-      .AxiMaxWriteTxns  ( Cfg.LlcMaxWriteTxns ),
-      .AxiUserAsId      ( 1 ),
-      .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
-      .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-      .RiscvWordWidth   ( riscv::XLEN ),
-      .NAxiCuts         ( Cfg.LlcAmoNumCuts ),
-      .axi_req_t        ( axi_slv_req_t ),
-      .axi_rsp_t        ( axi_slv_rsp_t )
+      .AxiAddrWidth   (Cfg.AddrWidth),
+      .AxiDataWidth   (Cfg.AxiDataWidth),
+      .AxiIdWidth     (AxiSlvIdWidth),
+      .AxiUserWidth   (Cfg.AxiUserWidth),
+      .AxiMaxReadTxns (Cfg.LlcMaxReadTxns),
+      .AxiMaxWriteTxns(Cfg.LlcMaxWriteTxns),
+      .AxiUserAsId    (1),
+      .AxiUserIdMsb   (Cfg.AxiUserAmoMsb),
+      .AxiUserIdLsb   (Cfg.AxiUserAmoLsb),
+      .RiscvWordWidth (riscv::XLEN),
+      .NAxiCuts       (Cfg.LlcAmoNumCuts),
+      .axi_req_t      (axi_slv_req_t),
+      .axi_rsp_t      (axi_slv_rsp_t)
     ) i_memory_island_atomics (
       .clk_i,
       .rst_ni,
-      .axi_slv_req_i ( axi_out_req[AxiOut.memoryisland] ),
-      .axi_slv_rsp_o ( axi_out_rsp[AxiOut.memoryisland] ),
-      .axi_mst_req_o ( axi_memory_island_amo_req ),
-      .axi_mst_rsp_i ( axi_memory_island_amo_rsp )
+      .axi_slv_req_i(axi_out_req[AxiOut.memoryisland]),
+      .axi_slv_rsp_o(axi_out_rsp[AxiOut.memoryisland]),
+      .axi_mst_req_o(axi_memory_island_amo_req),
+      .axi_mst_rsp_i(axi_memory_island_amo_rsp)
     );
 
     axi_memory_island_wrap #(
@@ -1569,6 +1625,9 @@ module cheshire_soc
     axi_mst_req_t slink_tx_idr_req;
     axi_mst_rsp_t slink_tx_idr_rsp;
 
+    logic         slink_clk_gated;
+    logic         slink_clk_gate_en;
+
     // TX outgoing channels: Remap address and set serial link user bit
     always_comb begin
       slink_tx_uar_req = axi_out_req[AxiOut.slink];
@@ -1607,6 +1666,15 @@ module cheshire_soc
       .mst_resp_i(slink_tx_idr_rsp)
     );
 
+    assign slink_clk_gate_en = reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_slink.q;
+
+    tc_clk_gating i_slink_clk_gate (
+      .clk_i    (clk_i),
+      .en_i     (~slink_clk_gate_en),
+      .test_en_i(1'b0),
+      .clk_o    (slink_clk_gated)
+    );
+
     serial_link #(
       .axi_req_t  (axi_mst_req_t),
       .axi_rsp_t  (axi_mst_rsp_t),
@@ -1623,7 +1691,7 @@ module cheshire_soc
       .NumLanes   (SlinkNumLanes),
       .MaxClkDiv  (SlinkMaxClkDiv)
     ) i_serial_link (
-      .clk_i,
+      .clk_i        (slink_clk_gated),
       .rst_ni,
       .clk_sl_i     (clk_i),
       .rst_sl_ni    (rst_ni),
@@ -1661,12 +1729,24 @@ module cheshire_soc
 
     axi_mst_req_t axi_vga_req;
 
+    logic         vga_clk_gated;
+    logic         vga_clk_gate_en;
+
     always_comb begin
       axi_in_req[AxiIn.vga]         = axi_vga_req;
       axi_in_req[AxiIn.vga].aw.user = Cfg.AxiUserDefault;
       axi_in_req[AxiIn.vga].w.user  = Cfg.AxiUserDefault;
       axi_in_req[AxiIn.vga].ar.user = Cfg.AxiUserDefault;
     end
+
+    assign vga_clk_gate_en = reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_vga.q;
+
+    tc_clk_gating i_vga_clk_gate (
+      .clk_i    (clk_i),
+      .en_i     (~vga_clk_gate_en),
+      .test_en_i(1'b0),
+      .clk_o    (vga_clk_gated)
+    );
 
     axi_vga #(
       .RedWidth    (Cfg.VgaRedWidth),
@@ -1687,7 +1767,7 @@ module cheshire_soc
       .reg_req_t   (reg_req_t),
       .reg_resp_t  (reg_rsp_t)
     ) i_axi_vga (
-      .clk_i,
+      .clk_i         (vga_clk_gated),
       .rst_ni,
       .test_mode_en_i(test_mode_i),
       .reg_req_i     (reg_out_req[RegOut.vga]),
@@ -1746,6 +1826,18 @@ module cheshire_soc
 
   if (Cfg.Usb) begin : gen_usb
 
+    logic usb_clk_gated;
+    logic usb_clk_gate_en;
+
+    assign usb_clk_gate_en = reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_usb.q;
+
+    tc_clk_gating i_usb_clk_gate (
+      .clk_i    (clk_i),
+      .en_i     (~usb_clk_gate_en),
+      .test_en_i(1'b0),
+      .clk_o    (usb_clk_gated)
+    );
+
     // TODO: USB has no internal error handling, so it should have a bus error unit.
 
     spinal_usb_ohci #(
@@ -1763,7 +1855,7 @@ module cheshire_soc
       .axi_req_t    (axi_mst_req_t),
       .axi_rsp_t    (axi_mst_rsp_t)
     ) i_spinal_usb_ohci (
-      .soc_clk_i  (clk_i),
+      .soc_clk_i  (usb_clk_gated),
       .soc_rst_ni (rst_ni),
       .ctrl_req_i (reg_out_req[RegOut.usb]),
       .ctrl_rsp_o (reg_out_rsp[RegOut.usb]),
@@ -1782,10 +1874,10 @@ module cheshire_soc
 
   end else begin : gen_no_usb
 
-    assign usb_dm_o    = '0;
-    assign usb_dm_oe_o = '0;
-    assign usb_dp_o    = '0;
-    assign usb_dp_oe_o = '0;
+    assign usb_dm_o      = '0;
+    assign usb_dm_oe_o   = '0;
+    assign usb_dp_o      = '0;
+    assign usb_dp_oe_o   = '0;
 
     assign intr.intn.usb = 0;
 

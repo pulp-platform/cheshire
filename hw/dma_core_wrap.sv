@@ -15,35 +15,35 @@
 `include "register_interface/typedef.svh"
 
 module dma_core_wrap #(
-    parameter int unsigned AxiAddrWidth      = 32'd0,
-    parameter int unsigned AxiDataWidth      = 32'd0,
-    parameter int unsigned AxiIdWidth        = 32'd0,
-    parameter int unsigned AxiUserWidth      = 32'd0,
-    parameter int unsigned AxiSlvIdWidth     = 32'd0,
-    parameter int unsigned TFLenWidth        = 32'd0,
-    parameter int unsigned NumAxInFlight     = 32'd0,
-    parameter int unsigned MemSysDepth       = 32'd0,
-    parameter int unsigned JobFifoDepth      = 32'd0,
-    parameter bit          EnableAxiCut      = 1'b1,
-    parameter bit          RAWCouplingAvail  = 32'd0,
-    parameter bit          IsTwoD            = 32'd0,
-    parameter type         axi_mst_aw_chan_t = logic,
-    parameter type         axi_mst_ar_chan_t = logic,
-    parameter type         axi_mst_w_chan_t  = logic,
-    parameter type         axi_mst_r_chan_t  = logic,
-    parameter type         axi_mst_b_chan_t  = logic,
-    parameter type         axi_mst_req_t     = logic,
-    parameter type         axi_mst_rsp_t     = logic,
-    parameter type         axi_slv_req_t     = logic,
-    parameter type         axi_slv_rsp_t     = logic
+  parameter int unsigned AxiAddrWidth      = 32'd0,
+  parameter int unsigned AxiDataWidth      = 32'd0,
+  parameter int unsigned AxiIdWidth        = 32'd0,
+  parameter int unsigned AxiUserWidth      = 32'd0,
+  parameter int unsigned AxiSlvIdWidth     = 32'd0,
+  parameter int unsigned TFLenWidth        = 32'd0,
+  parameter int unsigned NumAxInFlight     = 32'd0,
+  parameter int unsigned MemSysDepth       = 32'd0,
+  parameter int unsigned JobFifoDepth      = 32'd0,
+  parameter bit          EnableAxiCut      = 1'b1,
+  parameter bit          RAWCouplingAvail  = 32'd0,
+  parameter bit          IsTwoD            = 32'd0,
+  parameter type         axi_mst_aw_chan_t = logic,
+  parameter type         axi_mst_ar_chan_t = logic,
+  parameter type         axi_mst_w_chan_t  = logic,
+  parameter type         axi_mst_r_chan_t  = logic,
+  parameter type         axi_mst_b_chan_t  = logic,
+  parameter type         axi_mst_req_t     = logic,
+  parameter type         axi_mst_rsp_t     = logic,
+  parameter type         axi_slv_req_t     = logic,
+  parameter type         axi_slv_rsp_t     = logic
 ) (
-    input  logic         clk_i,
-    input  logic         rst_ni,
-    input  logic         testmode_i,
-    output axi_mst_req_t axi_mst_req_o,
-    input  axi_mst_rsp_t axi_mst_rsp_i,
-    input  axi_slv_req_t axi_slv_req_i,
-    output axi_slv_rsp_t axi_slv_rsp_o
+  input  logic         clk_i,
+  input  logic         rst_ni,
+  input  logic         testmode_i,
+  output axi_mst_req_t axi_mst_req_o,
+  input  axi_mst_rsp_t axi_mst_rsp_i,
+  input  axi_slv_req_t axi_slv_req_i,
+  output axi_slv_rsp_t axi_slv_rsp_o
 );
   // local params
   localparam int unsigned IdCounterWidth = 32'd32;
@@ -109,241 +109,241 @@ module dma_core_wrap #(
   logic [IdCounterWidth-1:0] done_id, next_id;
   // status signals
   idma_pkg::idma_busy_t busy;
-  logic me_busy;
+  logic                 me_busy;
   // internal AXI channels
   axi_mst_req_t axi_read_req, axi_write_req, axi_cut_req;
   axi_mst_rsp_t axi_read_rsp, axi_write_rsp, axi_cut_rsp;
 
   axi_to_reg #(
-      .ADDR_WIDTH(AxiAddrWidth),
-      .DATA_WIDTH(AxiDataWidth),
-      .ID_WIDTH  (AxiSlvIdWidth),
-      .USER_WIDTH(AxiUserWidth),
-      .axi_req_t (axi_slv_req_t),
-      .axi_rsp_t (axi_slv_rsp_t),
-      .reg_req_t (dma_regs_req_t),
-      .reg_rsp_t (dma_regs_rsp_t)
+    .ADDR_WIDTH(AxiAddrWidth),
+    .DATA_WIDTH(AxiDataWidth),
+    .ID_WIDTH  (AxiSlvIdWidth),
+    .USER_WIDTH(AxiUserWidth),
+    .axi_req_t (axi_slv_req_t),
+    .axi_rsp_t (axi_slv_rsp_t),
+    .reg_req_t (dma_regs_req_t),
+    .reg_rsp_t (dma_regs_rsp_t)
   ) i_axi_translate (
-      .clk_i,
-      .rst_ni,
-      .testmode_i(1'b0),
-      .axi_req_i (axi_slv_req_i),
-      .axi_rsp_o (axi_slv_rsp_o),
-      .reg_req_o (dma_reg_req),
-      .reg_rsp_i (dma_reg_rsp)
+    .clk_i,
+    .rst_ni,
+    .testmode_i(1'b0),
+    .axi_req_i (axi_slv_req_i),
+    .axi_rsp_o (axi_slv_rsp_o),
+    .reg_req_o (dma_reg_req),
+    .reg_rsp_i (dma_reg_rsp)
   );
 
   if (!IsTwoD) begin : gen_one_d
     idma_reg64_1d #(
-        .NumRegs       (32'd1),
-        .NumStreams    (32'd1),
-        .IdCounterWidth(IdCounterWidth),
-        .reg_req_t     (dma_regs_req_t),
-        .reg_rsp_t     (dma_regs_rsp_t),
-        .dma_req_t     (idma_req_t)
+      .NumRegs       (32'd1),
+      .NumStreams    (32'd1),
+      .IdCounterWidth(IdCounterWidth),
+      .reg_req_t     (dma_regs_req_t),
+      .reg_rsp_t     (dma_regs_rsp_t),
+      .dma_req_t     (idma_req_t)
     ) i_dma_frontend_1d (
-        .clk_i,
-        .rst_ni,
-        .dma_ctrl_req_i(dma_reg_req),
-        .dma_ctrl_rsp_o(dma_reg_rsp),
-        .dma_req_o     (burst_req_d),
-        .req_valid_o   (be_valid_d),
-        .req_ready_i   (be_ready_d),
-        .next_id_i     (next_id),
-        .stream_idx_o  (),
-        .done_id_i     (done_id),
-        .busy_i        (idma_busy),
-        .midend_busy_i (0)
+      .clk_i,
+      .rst_ni,
+      .dma_ctrl_req_i(dma_reg_req),
+      .dma_ctrl_rsp_o(dma_reg_rsp),
+      .dma_req_o     (burst_req_d),
+      .req_valid_o   (be_valid_d),
+      .req_ready_i   (be_ready_d),
+      .next_id_i     (next_id),
+      .stream_idx_o  (),
+      .done_id_i     (done_id),
+      .busy_i        (idma_busy),
+      .midend_busy_i (0)
     );
 
     stream_fifo_optimal_wrap #(
-        .Depth    (JobFifoDepth),
-        .type_t   (idma_req_t),
-        .PrintInfo(1'b0)
+      .Depth    (JobFifoDepth),
+      .type_t   (idma_req_t),
+      .PrintInfo(1'b0)
     ) i_stream_fifo_jobs_1d (
-        .clk_i,
-        .rst_ni,
-        .testmode_i,
-        .flush_i(1'b0),
-        .usage_o(  /* NC */),
-        .data_i (burst_req_d),
-        .valid_i(be_valid_d),
-        .ready_o(be_ready_d),
-        .data_o (burst_req),
-        .valid_o(be_valid),
-        .ready_i(be_ready)
+      .clk_i,
+      .rst_ni,
+      .testmode_i,
+      .flush_i(1'b0),
+      .usage_o(  /* NC */),
+      .data_i (burst_req_d),
+      .valid_i(be_valid_d),
+      .ready_o(be_ready_d),
+      .data_o (burst_req),
+      .valid_o(be_valid),
+      .ready_i(be_ready)
     );
 
-    assign retire_id = idma_rsp_valid & idma_rsp_ready;
-    assign issue_id = be_valid_d & be_ready_d;
+    assign retire_id      = idma_rsp_valid & idma_rsp_ready;
+    assign issue_id       = be_valid_d & be_ready_d;
     assign idma_rsp_ready = 1'b1;
 
     idma_transfer_id_gen #(
-        .IdWidth(IdCounterWidth)
+      .IdWidth(IdCounterWidth)
     ) i_transfer_id_gen_1d (
-        .clk_i,
-        .rst_ni,
-        .issue_i    (issue_id),
-        .retire_i   (retire_id),
-        .next_o     (next_id),
-        .completed_o(done_id)
+      .clk_i,
+      .rst_ni,
+      .issue_i    (issue_id),
+      .retire_i   (retire_id),
+      .next_o     (next_id),
+      .completed_o(done_id)
     );
 
   end else begin : gen_two
     idma_reg64_2d #(
-        .NumRegs       (32'd1),
-        .NumStreams    (32'd1),
-        .IdCounterWidth(IdCounterWidth),
-        .reg_req_t     (dma_regs_req_t),
-        .reg_rsp_t     (dma_regs_rsp_t),
-        .dma_req_t     (idma_nd_req_t)
+      .NumRegs       (32'd1),
+      .NumStreams    (32'd1),
+      .IdCounterWidth(IdCounterWidth),
+      .reg_req_t     (dma_regs_req_t),
+      .reg_rsp_t     (dma_regs_rsp_t),
+      .dma_req_t     (idma_nd_req_t)
     ) idma_frontend_2d (
-        .clk_i,
-        .rst_ni,
-        .dma_ctrl_req_i(dma_reg_req),
-        .dma_ctrl_rsp_o(dma_reg_rsp),
-        .dma_req_o     (idma_nd_req_d),
-        .req_valid_o   (idma_nd_req_valid_d),
-        .req_ready_i   (idma_nd_req_ready_d),
-        .next_id_i     (next_id),
-        .stream_idx_o  (),
-        .done_id_i     (done_id),
-        .busy_i        (busy),
-        .midend_busy_i (me_busy)
+      .clk_i,
+      .rst_ni,
+      .dma_ctrl_req_i(dma_reg_req),
+      .dma_ctrl_rsp_o(dma_reg_rsp),
+      .dma_req_o     (idma_nd_req_d),
+      .req_valid_o   (idma_nd_req_valid_d),
+      .req_ready_i   (idma_nd_req_ready_d),
+      .next_id_i     (next_id),
+      .stream_idx_o  (),
+      .done_id_i     (done_id),
+      .busy_i        (busy),
+      .midend_busy_i (me_busy)
     );
 
     stream_fifo_optimal_wrap #(
-        .Depth    (JobFifoDepth),
-        .type_t   (idma_nd_req_t),
-        .PrintInfo(1'b0)
+      .Depth    (JobFifoDepth),
+      .type_t   (idma_nd_req_t),
+      .PrintInfo(1'b0)
     ) i_stream_fifo_jobs_2d (
-        .clk_i,
-        .rst_ni,
-        .testmode_i,
-        .flush_i(1'b0),
-        .usage_o(  /* NC */),
-        .data_i (idma_nd_req_d),
-        .valid_i(idma_nd_req_valid_d),
-        .ready_o(idma_nd_req_ready_d),
-        .data_o (idma_nd_req),
-        .valid_o(idma_nd_req_valid),
-        .ready_i(idma_nd_req_ready)
+      .clk_i,
+      .rst_ni,
+      .testmode_i,
+      .flush_i(1'b0),
+      .usage_o(  /* NC */),
+      .data_i (idma_nd_req_d),
+      .valid_i(idma_nd_req_valid_d),
+      .ready_o(idma_nd_req_ready_d),
+      .data_o (idma_nd_req),
+      .valid_o(idma_nd_req_valid),
+      .ready_i(idma_nd_req_ready)
     );
 
     idma_nd_midend #(
-        .NumDim       (NumDim),
-        .addr_t       (addr_t),
-        .idma_req_t   (idma_req_t),
-        .idma_rsp_t   (idma_rsp_t),
-        .idma_nd_req_t(idma_nd_req_t),
-        .RepWidths    (RepWidth)
+      .NumDim       (NumDim),
+      .addr_t       (addr_t),
+      .idma_req_t   (idma_req_t),
+      .idma_rsp_t   (idma_rsp_t),
+      .idma_nd_req_t(idma_nd_req_t),
+      .RepWidths    (RepWidth)
     ) i_idma_midend (
-        .clk_i,
-        .rst_ni,
-        .nd_req_i         (idma_nd_req),
-        .nd_req_valid_i   (idma_nd_req_valid),
-        .nd_req_ready_o   (idma_nd_req_ready),
-        .nd_rsp_o         (),
-        .nd_rsp_valid_o   (idma_nd_rsp_valid),
-        .nd_rsp_ready_i   (idma_nd_rsp_ready),
-        .burst_req_o      (burst_req),
-        .burst_req_valid_o(be_valid),
-        .burst_req_ready_i(be_ready),
-        .burst_rsp_i      (idma_rsp),
-        .burst_rsp_valid_i(idma_rsp_valid),
-        .burst_rsp_ready_o(idma_rsp_ready),
-        .busy_o           (me_busy)
+      .clk_i,
+      .rst_ni,
+      .nd_req_i         (idma_nd_req),
+      .nd_req_valid_i   (idma_nd_req_valid),
+      .nd_req_ready_o   (idma_nd_req_ready),
+      .nd_rsp_o         (),
+      .nd_rsp_valid_o   (idma_nd_rsp_valid),
+      .nd_rsp_ready_i   (idma_nd_rsp_ready),
+      .burst_req_o      (burst_req),
+      .burst_req_valid_o(be_valid),
+      .burst_req_ready_i(be_ready),
+      .burst_rsp_i      (idma_rsp),
+      .burst_rsp_valid_i(idma_rsp_valid),
+      .burst_rsp_ready_o(idma_rsp_ready),
+      .busy_o           (me_busy)
     );
 
-    assign retire_id = idma_nd_rsp_valid & idma_nd_rsp_ready;
-    assign issue_id = idma_nd_req_valid_d & idma_nd_req_ready_d;
+    assign retire_id         = idma_nd_rsp_valid & idma_nd_rsp_ready;
+    assign issue_id          = idma_nd_req_valid_d & idma_nd_req_ready_d;
     assign idma_nd_rsp_ready = 1'b1;
 
     idma_transfer_id_gen #(
-        .IdWidth(IdCounterWidth)
+      .IdWidth(IdCounterWidth)
     ) i_transfer_id_gen_2d (
-        .clk_i,
-        .rst_ni,
-        .issue_i    (issue_id),
-        .retire_i   (retire_id),
-        .next_o     (next_id),
-        .completed_o(done_id)
+      .clk_i,
+      .rst_ni,
+      .issue_i    (issue_id),
+      .retire_i   (retire_id),
+      .next_o     (next_id),
+      .completed_o(done_id)
     );
   end
 
   idma_backend_rw_axi #(
-      .CombinedShifter     (1'b0),
-      .DataWidth           (AxiDataWidth),
-      .AddrWidth           (AxiAddrWidth),
-      .AxiIdWidth          (AxiIdWidth),
-      .UserWidth           (AxiUserWidth),
-      .TFLenWidth          (TFLenWidth),
-      .MaskInvalidData     (1),
-      .BufferDepth         (3),
-      .RAWCouplingAvail    (RAWCouplingAvail),
-      .HardwareLegalizer   (1),
-      .RejectZeroTransfers (1),
-      .ErrorCap            (idma_pkg::NO_ERROR_HANDLING),
-      .PrintFifoInfo       (1),
-      .NumAxInFlight       (NumAxInFlight),
-      .MemSysDepth         (MemSysDepth),
-      .idma_req_t          (idma_req_t),
-      .idma_rsp_t          (idma_rsp_t),
-      .idma_eh_req_t       (idma_pkg::idma_eh_req_t),
-      .idma_busy_t         (idma_pkg::idma_busy_t),
-      .axi_req_t           (axi_mst_req_t),
-      .axi_rsp_t           (axi_mst_rsp_t),
-      .write_meta_channel_t(write_meta_channel_t),
-      .read_meta_channel_t (read_meta_channel_t)
+    .CombinedShifter     (1'b0),
+    .DataWidth           (AxiDataWidth),
+    .AddrWidth           (AxiAddrWidth),
+    .AxiIdWidth          (AxiIdWidth),
+    .UserWidth           (AxiUserWidth),
+    .TFLenWidth          (TFLenWidth),
+    .MaskInvalidData     (1),
+    .BufferDepth         (3),
+    .RAWCouplingAvail    (RAWCouplingAvail),
+    .HardwareLegalizer   (1),
+    .RejectZeroTransfers (1),
+    .ErrorCap            (idma_pkg::NO_ERROR_HANDLING),
+    .PrintFifoInfo       (1),
+    .NumAxInFlight       (NumAxInFlight),
+    .MemSysDepth         (MemSysDepth),
+    .idma_req_t          (idma_req_t),
+    .idma_rsp_t          (idma_rsp_t),
+    .idma_eh_req_t       (idma_pkg::idma_eh_req_t),
+    .idma_busy_t         (idma_pkg::idma_busy_t),
+    .axi_req_t           (axi_mst_req_t),
+    .axi_rsp_t           (axi_mst_rsp_t),
+    .write_meta_channel_t(write_meta_channel_t),
+    .read_meta_channel_t (read_meta_channel_t)
   ) i_idma_backend (
-      .clk_i,
-      .rst_ni,
-      .testmode_i     (1'b0),
-      .idma_req_i     (burst_req),
-      .req_valid_i    (be_valid),
-      .req_ready_o    (be_ready),
-      .idma_rsp_o     (idma_rsp),
-      .rsp_valid_o    (idma_rsp_valid),
-      .rsp_ready_i    (idma_rsp_ready),
-      .idma_eh_req_i  ('0),
-      .eh_req_valid_i ('0),
-      .eh_req_ready_o (),
-      .axi_read_req_o (axi_read_req),
-      .axi_read_rsp_i (axi_read_rsp),
-      .axi_write_req_o(axi_write_req),
-      .axi_write_rsp_i(axi_write_rsp),
-      .busy_o         (busy)
+    .clk_i,
+    .rst_ni,
+    .testmode_i     (1'b0),
+    .idma_req_i     (burst_req),
+    .req_valid_i    (be_valid),
+    .req_ready_o    (be_ready),
+    .idma_rsp_o     (idma_rsp),
+    .rsp_valid_o    (idma_rsp_valid),
+    .rsp_ready_i    (idma_rsp_ready),
+    .idma_eh_req_i  ('0),
+    .eh_req_valid_i ('0),
+    .eh_req_ready_o (),
+    .axi_read_req_o (axi_read_req),
+    .axi_read_rsp_i (axi_read_rsp),
+    .axi_write_req_o(axi_write_req),
+    .axi_write_rsp_i(axi_write_rsp),
+    .busy_o         (busy)
   );
 
   axi_rw_join #(
-      .axi_req_t (axi_mst_req_t),
-      .axi_resp_t(axi_mst_rsp_t)
+    .axi_req_t (axi_mst_req_t),
+    .axi_resp_t(axi_mst_rsp_t)
   ) i_axi_rw_join (
-      .clk_i,
-      .rst_ni,
-      .slv_read_req_i  (axi_read_req),
-      .slv_read_resp_o (axi_read_rsp),
-      .slv_write_req_i (axi_write_req),
-      .slv_write_resp_o(axi_write_rsp),
-      .mst_req_o       (axi_cut_req),
-      .mst_resp_i      (axi_cut_rsp)
+    .clk_i,
+    .rst_ni,
+    .slv_read_req_i  (axi_read_req),
+    .slv_read_resp_o (axi_read_rsp),
+    .slv_write_req_i (axi_write_req),
+    .slv_write_resp_o(axi_write_rsp),
+    .mst_req_o       (axi_cut_req),
+    .mst_resp_i      (axi_cut_rsp)
   );
 
   axi_cut #(
-      .Bypass    (~EnableAxiCut),
-      .aw_chan_t (axi_mst_aw_chan_t),
-      .w_chan_t  (axi_mst_w_chan_t),
-      .b_chan_t  (axi_mst_b_chan_t),
-      .ar_chan_t (axi_mst_ar_chan_t),
-      .r_chan_t  (axi_mst_r_chan_t),
-      .axi_req_t (axi_mst_req_t),
-      .axi_resp_t(axi_mst_rsp_t)
+    .Bypass    (~EnableAxiCut),
+    .aw_chan_t (axi_mst_aw_chan_t),
+    .w_chan_t  (axi_mst_w_chan_t),
+    .b_chan_t  (axi_mst_b_chan_t),
+    .ar_chan_t (axi_mst_ar_chan_t),
+    .r_chan_t  (axi_mst_r_chan_t),
+    .axi_req_t (axi_mst_req_t),
+    .axi_resp_t(axi_mst_rsp_t)
   ) i_axi_cut (
-      .clk_i,
-      .rst_ni,
-      .slv_req_i (axi_cut_req),
-      .slv_resp_o(axi_cut_rsp),
-      .mst_req_o (axi_mst_req_o),
-      .mst_resp_i(axi_mst_rsp_i)
+    .clk_i,
+    .rst_ni,
+    .slv_req_i (axi_cut_req),
+    .slv_resp_o(axi_cut_rsp),
+    .mst_req_o (axi_mst_req_o),
+    .mst_resp_i(axi_mst_rsp_i)
   );
 endmodule
