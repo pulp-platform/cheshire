@@ -21,7 +21,7 @@ CHS_SW_64_OBJCOPY := $(CHS_SW_64_GCC_BINROOT)/riscv64-unknown-elf-objcopy
 CHS_SW_64_OBJDUMP := $(CHS_SW_64_GCC_BINROOT)/riscv64-unknown-elf-objdump
 CHS_SW_64_LTOPLUG := $(shell find $(shell dirname $(CHS_SW_64_GCC_BINROOT))/libexec/gcc/riscv64-unknown-elf/**/liblto_plugin.so)
 
-CHS_SW_64_FLAGS   ?= -DOT_PLATFORM_RV32 -march=rv64gc -mabi=lp64d
+CHS_SW_64_FLAGS   ?= -DOT_PLATFORM_RV32 -march=rv64gc_zifencei -mabi=lp64d
 
 endif
 ifeq (${CHS_XLEN}, 32)
