@@ -1217,13 +1217,13 @@ module cheshire_soc
   if (Cfg.Uart) begin : gen_uart
 
     logic uart_clk_gated;
-    logic uart_clk_gate_en;
+    logic uart_clk_gate_en_n;
 
-    assign uart_clk_gate_en = reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_uart.q;
+    assign uart_clk_gate_en_n = ~reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_uart.q;
 
     tc_clk_gating i_uart_clk_gate (
       .clk_i    (clk_i),
-      .en_i     (~uart_clk_gate_en),
+      .en_i     (uart_clk_gate_en_n),
       .test_en_i(1'b0),
       .clk_o    (uart_clk_gated)
     );
@@ -1267,13 +1267,13 @@ module cheshire_soc
   if (Cfg.I2c) begin : gen_i2c
 
     logic i2c_clk_gated;
-    logic i2c_clk_gate_en;
+    logic i2c_clk_gate_en_n;
 
-    assign i2c_clk_gate_en = reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_i2c.q;
+    assign i2c_clk_gate_en_n = ~reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_i2c.q;
 
     tc_clk_gating i_i2c_clk_gate (
       .clk_i    (clk_i),
-      .en_i     (~i2c_clk_gate_en),
+      .en_i     (i2c_clk_gate_en_n),
       .test_en_i(1'b0),
       .clk_o    (i2c_clk_gated)
     );
@@ -1341,13 +1341,13 @@ module cheshire_soc
   if (Cfg.SpiHost) begin : gen_spi_host
 
     logic spih_clk_gated;
-    logic spih_clk_gate_en;
+    logic spih_clk_gate_en_n;
 
-    assign spih_clk_gate_en = reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_spih.q;
+    assign spih_clk_gate_en_n = ~reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_spih.q;
 
     tc_clk_gating i_spih_clk_gate (
       .clk_i    (clk_i),
-      .en_i     (~spih_clk_gate_en),
+      .en_i     (spih_clk_gate_en_n),
       .test_en_i(1'b0),
       .clk_o    (spih_clk_gated)
     );
@@ -1395,13 +1395,13 @@ module cheshire_soc
   if (Cfg.Gpio) begin : gen_gpio
 
     logic gpio_clk_gated;
-    logic gpio_clk_gate_en;
+    logic gpio_clk_gate_en_n;
 
-    assign gpio_clk_gate_en = reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_gpio.q;
+    assign gpio_clk_gate_en_n = ~reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_gpio.q;
 
     tc_clk_gating i_gpio_clk_gate (
       .clk_i    (clk_i),
-      .en_i     (~gpio_clk_gate_en),
+      .en_i     (gpio_clk_gate_en_n),
       .test_en_i(1'b0),
       .clk_o    (gpio_clk_gated)
     );
@@ -1626,7 +1626,7 @@ module cheshire_soc
     axi_mst_rsp_t slink_tx_idr_rsp;
 
     logic         slink_clk_gated;
-    logic         slink_clk_gate_en;
+    logic         slink_clk_gate_en_n;
 
     // TX outgoing channels: Remap address and set serial link user bit
     always_comb begin
@@ -1666,11 +1666,11 @@ module cheshire_soc
       .mst_resp_i(slink_tx_idr_rsp)
     );
 
-    assign slink_clk_gate_en = reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_slink.q;
+    assign slink_clk_gate_en_n = ~reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_slink.q;
 
     tc_clk_gating i_slink_clk_gate (
       .clk_i    (clk_i),
-      .en_i     (~slink_clk_gate_en),
+      .en_i     (slink_clk_gate_en_n),
       .test_en_i(1'b0),
       .clk_o    (slink_clk_gated)
     );
@@ -1730,7 +1730,7 @@ module cheshire_soc
     axi_mst_req_t axi_vga_req;
 
     logic         vga_clk_gated;
-    logic         vga_clk_gate_en;
+    logic         vga_clk_gate_en_n;
 
     always_comb begin
       axi_in_req[AxiIn.vga]         = axi_vga_req;
@@ -1739,11 +1739,11 @@ module cheshire_soc
       axi_in_req[AxiIn.vga].ar.user = Cfg.AxiUserDefault;
     end
 
-    assign vga_clk_gate_en = reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_vga.q;
+    assign vga_clk_gate_en_n = ~reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_vga.q;
 
     tc_clk_gating i_vga_clk_gate (
       .clk_i    (clk_i),
-      .en_i     (~vga_clk_gate_en),
+      .en_i     (vga_clk_gate_en_n),
       .test_en_i(1'b0),
       .clk_o    (vga_clk_gated)
     );
@@ -1827,13 +1827,13 @@ module cheshire_soc
   if (Cfg.Usb) begin : gen_usb
 
     logic usb_clk_gated;
-    logic usb_clk_gate_en;
+    logic usb_clk_gate_en_n;
 
-    assign usb_clk_gate_en = reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_usb.q;
+    assign usb_clk_gate_en_n = ~reg_reg2hw.clk_gate_en_peripherals.clk_gate_en_usb.q;
 
     tc_clk_gating i_usb_clk_gate (
       .clk_i    (clk_i),
-      .en_i     (~usb_clk_gate_en),
+      .en_i     (usb_clk_gate_en_n),
       .test_en_i(1'b0),
       .clk_o    (usb_clk_gated)
     );
