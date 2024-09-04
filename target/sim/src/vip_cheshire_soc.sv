@@ -242,18 +242,21 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   // Initialize the debug module
   task automatic jtag_init;
     jtag_idcode_t idcode;
-    dm::dmcontrol_t dmcontrol = '{dmactive: 1, default: '0};
+    dm::dmcontrol_t dmcontrol;
     // Check ID code
     repeat(100) @(posedge jtag_tck);
     jtag_dbg.get_idcode(idcode);
     if (idcode != DutCfg.DbgIdCode)
         $fatal(1, "[JTAG] Unexpected ID code: expected 0x%h, got 0x%h!", DutCfg.DbgIdCode, idcode);
     // Activate, wait for debug module
-    jtag_write(dm::DMControl, dmcontrol);
-    do jtag_dbg.read_dmi_exp_backoff(dm::DMControl, dmcontrol);
-    while (~dmcontrol.dmactive);
-    // Activate, wait for system bus
-    jtag_write(dm::SBCS, JtagInitSbcs, 0, 1);
+    for (int i = 0; i < DutCfg.NumCores; i++) begin
+      dmcontrol = '{dmactive: 1, hartsello: i, default: '0};
+      jtag_write(dm::DMControl, dmcontrol);
+      do jtag_dbg.read_dmi_exp_backoff(dm::DMControl, dmcontrol);
+      while (~dmcontrol.dmactive);
+      // Activate, wait for system bus
+      jtag_write(dm::SBCS, JtagInitSbcs, 0, 1);
+    end
     $display("[JTAG] Initialization success");
   endtask
 
@@ -319,7 +322,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   endtask
 
   // Halt the core and preload a binary
-  task automatic jtag_elf_halt_load(input string binary, output doub_bt entry);
+  task automatic jtag_elf_halt_load(input string binary);
+    doub_bt entry;
     dm::dmstatus_t status;
     // Wait until bootrom initialized LLC
     if (DutCfg.LlcNotBypass) begin
@@ -327,26 +331,31 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       $display("[JTAG] Wait for LLC configuration");
       jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
     end
-    // Halt hart 0
-    jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, default: '0});
-    do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
-    while (~status.allhalted);
-    $display("[JTAG] Halted hart 0");
-    // Preload binary
-    jtag_elf_preload(binary, entry);
+    for (int i = 0; i < DutCfg.NumCores; i++) begin
+      // Halt all avaialable harts
+      jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, hartsello: i, default: '0});
+      do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
+      while (~status.allhalted);
+      $display("[JTAG] Halted hart %d", i);
+      // Preload binary only at first iteration
+      if (i == 0) jtag_elf_preload(binary, entry);
+      // Write binary entry point in DM registers and set it as DPC
+      jtag_write(dm::Data1, entry[63:32]);
+      jtag_write(dm::Data0, entry[31:0]);
+      jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
+      // Resume all harts
+      jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, hartsello: i, default: '0});
+      do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
+      while (~status.allresumeack);
+      jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 0, dmactive: 1, hartsello: i, default: '0});
+      jtag_write(dm::Command, 32'h0, 0, 1);
+      $display("[JTAG] Resumed hart %d from 0x%h", i, entry);
+    end
   endtask
 
   // Run a binary
   task automatic jtag_elf_run(input string binary);
-    doub_bt entry;
-    jtag_elf_halt_load(binary, entry);
-    // Repoint execution
-    jtag_write(dm::Data1, entry[63:32]);
-    jtag_write(dm::Data0, entry[31:0]);
-    jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
-    // Resume hart 0
-    jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
-    $display("[JTAG] Resumed hart 0 from 0x%h", entry);
+    jtag_elf_halt_load(binary);
   endtask
 
   // Wait for termination signal and get return code

@@ -100,6 +100,8 @@ module cheshire_soc import cheshire_pkg::*; #(
 );
 
   `include "axi/typedef.svh"
+  `include "ace/typedef.svh"
+  `include "ace/assign.svh"
   `include "common_cells/registers.svh"
   `include "common_cells/assertions.svh"
   `include "cheshire/typedef.svh"
@@ -119,6 +121,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   localparam int unsigned IntrRtdPlic     = 0;
   localparam int unsigned IntrRtdCoreBase = 1;
   localparam int unsigned IntrRtdExtBase  = IntrRtdCoreBase + NumIntHarts;
+  localparam int unsigned CCUIdWidth = Cva6IdWidth + $clog2(NumIntHarts) +
+                                       $clog2(NumIntHarts+1) + 1;
 
   // This routable type is as wide or wider than all targets.
   // It must be truncated before target connection.
@@ -141,6 +145,32 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Interrupt requests to all interruptible harts
   cheshire_xeip_t [NumIrqHarts-1:0] xeip;
   logic           [NumIrqHarts-1:0] mtip, msip;
+
+  ACE_BUS #(
+    .AXI_ADDR_WIDTH ( Cfg.AddrWidth    ),
+    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth ),
+    .AXI_ID_WIDTH   ( Cva6IdWidth      ),
+    .AXI_USER_WIDTH ( Cfg.AxiUserWidth )
+  ) core_to_CCU[NumIntHarts-1:0]();
+
+  SNOOP_BUS #(
+    .SNOOP_ADDR_WIDTH ( Cfg.AddrWidth    ),
+    .SNOOP_DATA_WIDTH ( Cfg.AxiDataWidth )
+  ) CCU_to_core[NumIntHarts-1:0]();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( Cfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( CCUIdWidth        ),
+    .AXI_USER_WIDTH ( Cfg.AxiUserWidth  )
+  ) ccu_out_axi();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( Cfg.AddrWidth     ),
+    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( Cfg.AxiMstIdWidth ),
+    .AXI_USER_WIDTH ( Cfg.AxiUserWidth  )
+  ) ccu_remap_axi();
 
   // Interrupt 0 is hardwired to zero by convention.
   // Other internal interrupts are synchronous (for now) and need not be synced;
@@ -212,6 +242,9 @@ module cheshire_soc import cheshire_pkg::*; #(
   localparam addr_rule_t [AxiOut.num_rules-1:0] AxiMap = gen_axi_map();
 
   // Connectivity of Xbar
+  axi_mst_req_t ccu_axi_cut_req;
+  axi_mst_rsp_t ccu_axi_cut_rsp;
+
   axi_mst_req_t [AxiIn.num_in-1:0]    axi_in_req, axi_rt_in_req;
   axi_mst_rsp_t [AxiIn.num_in-1:0]    axi_in_rsp, axi_rt_in_rsp;
   axi_slv_req_t [AxiOut.num_out-1:0]  axi_out_req;
@@ -587,11 +620,8 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   assign intr.intn.bus_err.cores = core_bus_err_intr_comb;
 
-  axi_mst_req_t [AxiIn.num_in-1:0] tagger_req;
-  axi_mst_rsp_t [AxiIn.num_in-1:0] tagger_rsp;
-
-  axi_cva6_req_t [NumIntHarts-1:0] core_out_req, core_out_cut_req, core_ur_req;
-  axi_cva6_rsp_t [NumIntHarts-1:0] core_out_rsp, core_out_cut_rsp, core_ur_rsp;
+  ariane_ace::req_t [NumIntHarts-1:0] core_out_req, core_cut_req, core_ur_req, tagger_req;
+  ariane_ace::resp_t [NumIntHarts-1:0] core_out_rsp, core_cut_rsp, core_ur_rsp, tagger_rsp;
 
   // CLIC interface
   logic [NumIntHarts-1:0] clic_irq_valid, clic_irq_ready;
@@ -602,6 +632,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   logic [NumIntHarts-1:0] [7:0]        clic_irq_level;
   logic [NumIntHarts-1:0] [5:0]        clic_irq_vsid;
   riscv::priv_lvl_t  [NumIntHarts-1:0] clic_irq_priv;
+  logic redundant_cores;
 
   reg_req_t reg_out_core_req;
   reg_rsp_t reg_out_core_rsp;
@@ -615,25 +646,26 @@ module cheshire_soc import cheshire_pkg::*; #(
   end
 
   cva6_wrap #(
-    .Cfg              ( Cfg                  ),
-    .Cva6Cfg          ( Cva6Cfg              ),
-    .NumHarts         ( NumIntHarts          ),
-    .EccEnable        ( 1                    ),
-    .reg_req_t        ( reg_req_t            ),
-    .reg_rsp_t        ( reg_rsp_t            ),
-    .axi_ar_chan_t    ( axi_cva6_ar_chan_t   ),
-    .axi_aw_chan_t    ( axi_cva6_aw_chan_t   ),
-    .axi_w_chan_t     ( axi_cva6_w_chan_t    ),
-    .b_chan_t         ( axi_cva6_b_chan_t    ),
-    .r_chan_t         ( axi_cva6_r_chan_t    ),
-    .axi_req_t        ( axi_cva6_req_t       ),
-    .axi_rsp_t        ( axi_cva6_rsp_t       )
+    .Cfg              ( Cfg                ),
+    .EccEnable        ( 1                  ),
+    .Cva6Cfg          ( Cva6Cfg            ),
+    .NumHarts         ( NumIntHarts        ),
+    .reg_req_t        ( reg_req_t          ),
+    .reg_rsp_t        ( reg_rsp_t          ),
+    .ar_chan_t        ( ariane_ace::ar_chan_t ),
+    .aw_chan_t        ( ariane_ace::aw_chan_t ),
+    .w_chan_t         ( ariane_ace::ariane_axi_w_chan_t  ),
+    .b_chan_t         ( ariane_ace::ariane_axi_b_chan_t  ),
+    .r_chan_t         ( ariane_ace::r_chan_t  ),
+    .core_req_t       ( ariane_ace::req_t     ),
+    .core_rsp_t       ( ariane_ace::resp_t    )
   ) i_core_wrap       (
     .clk_i            ( clk_i                           ),
     .rstn_i           ( rst_ni                          ),
     .bootaddress_i    ( BootAddr                        ),
     .hart_id_i        ( '0                              ),
     .harts_sync_req_i ( reg_reg2hw.harts_sync.q         ),
+    .redundancy_en_o  ( redundant_cores                 ),
     .irq_i            ( xeip[NumIntHarts-1:0]           ),
     .ipi_i            ( msip[NumIntHarts-1:0]           ),
     .time_irq_i       ( mtip[NumIntHarts-1:0]           ),
@@ -650,23 +682,71 @@ module cheshire_soc import cheshire_pkg::*; #(
     .clic_kill_ack_o  ( clic_irq_kill_ack               ),
     .reg_req_i        ( reg_out_core_req                ),
     .reg_rsp_o        ( reg_out_core_rsp                ),
-    .axi_req_o        ( core_out_req                    ),
-    .axi_rsp_i        ( core_out_rsp                    )
+    .core_req_o       ( core_cut_req                    ),
+    .core_rsp_i       ( core_cut_rsp                    )
   );
 
   for (genvar i = 0; i < NumIntHarts; i++) begin : gen_core_surroundings
 
+    ace_cut #(
+      .Bypass ( 0 ),
+      .aw_chan_t ( ariane_ace::aw_chan_t ),
+      .w_chan_t ( ariane_ace::ariane_axi_w_chan_t ),
+      .b_chan_t ( ariane_ace::ariane_axi_b_chan_t ),
+      .ar_chan_t ( ariane_ace::ar_chan_t ),
+      .r_chan_t  ( ariane_ace::r_chan_t ),
+      .ac_chan_t ( ariane_ace::ac_chan_t ),
+      .cd_chan_t ( ariane_ace::cd_chan_t),
+      .cr_chan_t ( snoop_pkg::crresp_t ),
+      .ace_req_t ( ariane_ace::req_t ),
+      .ace_resp_t ( ariane_ace::resp_t )
+    ) i_ace_cut (
+      .clk_i,
+      .rst_ni,
+      .slv_req_i  (core_cut_req[i]),
+      .slv_resp_o (core_cut_rsp[i]),
+      .mst_req_o  (core_out_req[i]),
+      .mst_resp_i (core_out_rsp[i])
+    );
+
+    if (Cfg.LlcCachePartition) begin : gen_tagger
+      tagger #(
+        .DATA_WIDTH       ( Cfg.AxiDataWidth    ),
+        .ADDR_WIDTH       ( Cfg.AddrWidth       ),
+        .MAXPARTITION     ( Cfg.LlcMaxPartition ),
+        .AXI_USER_ID_MSB  ( Cfg.LlcUserMsb      ),
+        .AXI_USER_ID_LSB  ( Cfg.LlcUserLsb      ),
+        .TAGGER_GRAN      ( 3                   ),
+        .axi_req_t        ( ariane_ace::req_t   ),
+        .axi_rsp_t        ( ariane_ace::resp_t  ),
+        .reg_req_t        ( reg_req_t           ),
+        .reg_rsp_t        ( reg_rsp_t           )
+      ) i_tagger (
+        .clk_i,
+        .rst_ni,
+        .slv_req_i ( core_out_req[i] ),
+        .slv_rsp_o ( core_out_rsp[i] ),
+        .mst_req_o ( tagger_req[i] ),
+        .mst_rsp_i ( tagger_rsp[i] ),
+        .cfg_req_i ( reg_out_req[RegOut.tagger[i]] ),
+        .cfg_rsp_o ( reg_out_rsp[RegOut.tagger[i]] )
+      );
+    end else begin : gen_no_tagger
+      assign tagger_req[i] = core_out_req[i];
+      assign core_out_rsp[i] = tagger_rsp[i];
+    end
+
     if (Cfg.BusErr) begin : gen_cva6_bus_err
       axi_err_unit_wrap #(
-        .AddrWidth          ( Cfg.AddrWidth ),
+        .AddrWidth          ( cva6_config_pkg::CVA6ConfigAxiAddrWidth ),
         .IdWidth            ( Cva6IdWidth   ),
         .UserErrBits        ( Cfg.AxiUserErrBits ),
         .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
         .NumOutstanding     ( Cfg.CoreMaxTxns ),
         .NumStoredErrors    ( 4 ),
         .DropOldest         ( 1'b0 ),
-        .axi_req_t          ( axi_cva6_req_t ),
-        .axi_rsp_t          ( axi_cva6_rsp_t ),
+        .axi_req_t          ( ariane_ace::req_t  ),
+        .axi_rsp_t          ( ariane_ace::resp_t ),
         .reg_req_t          ( reg_req_t ),
         .reg_rsp_t          ( reg_rsp_t )
       ) i_cva6_bus_err (
@@ -739,91 +819,93 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     end
 
-    axi_cut #(
-      .Bypass     ( ~Cfg.CorePostCut   ),
-      .aw_chan_t  ( axi_cva6_aw_chan_t ),
-      .w_chan_t   ( axi_cva6_w_chan_t  ),
-      .b_chan_t   ( axi_cva6_b_chan_t  ),
-      .ar_chan_t  ( axi_cva6_ar_chan_t ),
-      .r_chan_t   ( axi_cva6_r_chan_t  ),
-      .axi_req_t  ( axi_cva6_req_t     ),
-      .axi_resp_t ( axi_cva6_rsp_t     )
-    ) i_core_axi_cut (
-      .clk_i      ( clk_i               ),
-      .rst_ni     ( rst_ni              ),
-      .slv_req_i  ( core_out_req[i]     ),
-      .slv_resp_o ( core_out_rsp[i]     ),
-      .mst_req_o  ( core_out_cut_req[i] ),
-      .mst_resp_i ( core_out_cut_rsp[i] )
-    );
-
     // Map user to AMO domain as we are an atomics-capable master.
     // Within the provided AMO user range, we count up from the provided core AMO offset.
     always_comb begin
-      core_ur_req[i]         = core_out_cut_req[i];
+      core_ur_req[i]         = tagger_req[i];
       core_ur_req[i].aw.user = Cfg.AxiUserDefault;
       core_ur_req[i].ar.user = Cfg.AxiUserDefault;
       core_ur_req[i].w.user  = Cfg.AxiUserDefault;
       core_ur_req[i].aw.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
       core_ur_req[i].ar.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
       core_ur_req[i].w.user  [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
-      core_out_cut_rsp[i]    = core_ur_rsp[i];
+      tagger_rsp[i]          = core_ur_rsp[i];
     end
 
-    // CVA6's ID encoding is wasteful; remap it statically pack into available bits
-    axi_id_serialize #(
-      .AxiSlvPortIdWidth      ( Cva6IdWidth     ),
-      .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
-      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth      ),
-      .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
-      .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId   ),
-      .AxiAddrWidth           ( Cfg.AddrWidth    ),
-      .AxiDataWidth           ( Cfg.AxiDataWidth ),
-      .AxiUserWidth           ( Cfg.AxiUserWidth ),
-      .AtopSupport            ( 1 ),
-      .slv_req_t              ( axi_cva6_req_t ),
-      .slv_resp_t             ( axi_cva6_rsp_t ),
-      .mst_req_t              ( axi_mst_req_t  ),
-      .mst_resp_t             ( axi_mst_rsp_t  ),
-      .MstIdBaseOffset        ( '0 ),
-      .IdMapNumEntries        ( Cva6IdsUsed ),
-      .IdMap                  ( gen_cva6_id_map(Cfg) )
-    ) i_axi_id_serialize (
-      .clk_i,
-      .rst_ni,
-      .slv_req_i  ( core_ur_req[i] ),
-      .slv_resp_o ( core_ur_rsp[i] ),
-      .mst_req_o  ( tagger_req[i] ),
-      .mst_resp_i ( tagger_rsp[i] )
-    );
+    `ACE_ASSIGN_FROM_REQ(core_to_CCU[i], core_ur_req[i])
+    `ACE_ASSIGN_TO_RESP(core_ur_rsp[i], core_to_CCU[i])
+    `SNOOP_ASSIGN_FROM_RESP(CCU_to_core[i], core_ur_req[i])
+    `SNOOP_ASSIGN_TO_REQ(core_ur_rsp[i], CCU_to_core[i])
 
-    if (Cfg.LlcCachePartition) begin : gen_tagger
-        tagger #(
-          .DATA_WIDTH       ( Cfg.AxiDataWidth    ),
-          .ADDR_WIDTH       ( Cfg.AddrWidth       ),
-          .MAXPARTITION     ( Cfg.LlcMaxPartition ),
-          .AXI_USER_ID_MSB  ( Cfg.LlcUserMsb      ),
-          .AXI_USER_ID_LSB  ( Cfg.LlcUserLsb      ),
-          .TAGGER_GRAN      ( 3                   ),
-          .axi_req_t        ( axi_mst_req_t       ),
-          .axi_rsp_t        ( axi_mst_rsp_t       ),
-          .reg_req_t        ( reg_req_t           ),
-          .reg_rsp_t        ( reg_rsp_t           )
-        ) i_tagger (
-          .clk_i,
-          .rst_ni,
-          .slv_req_i        ( tagger_req[i]              ),
-          .slv_rsp_o        ( tagger_rsp[i]              ),
-          .mst_req_o        ( axi_in_req[AxiIn.cores[i]] ),
-          .mst_rsp_i        ( axi_in_rsp[AxiIn.cores[i]] ),
-          .cfg_req_i        ( reg_out_req[RegOut.tagger[i]] ),
-          .cfg_rsp_o        ( reg_out_rsp[RegOut.tagger[i]] )
-        );
-    end else begin : gen_no_tagger
-      assign axi_in_req[AxiIn.cores[i]] = tagger_req[i];
-      assign tagger_rsp[i] = axi_in_rsp[AxiIn.cores[i]];
-    end
   end
+
+  ///////////////////
+  //      CCU      //
+  ///////////////////
+
+  localparam ace_pkg::ccu_cfg_t CcuCfg = '{
+    NoSlvPorts         : NumIntHarts,
+    MaxMstTrans        : 2, // Probably requires update
+    MaxSlvTrans        : 2, // Probably requires update
+    FallThrough        : 1'b0,
+    LatencyMode        : ace_pkg::CUT_ALL_PORTS,
+    AxiIdWidthSlvPorts : Cva6IdWidth,
+    AxiIdUsedSlvPorts  : Cva6IdWidth,
+    UniqueIds          : 1'b1,
+    DcacheLineWidth    : ariane_pkg::DCACHE_LINE_WIDTH,
+    DcacheIndexWidth   : ariane_pkg::DCACHE_INDEX_WIDTH,
+    AxiAddrWidth       : Cfg.AddrWidth,
+    AxiUserWidth       : Cfg.AxiUserWidth,
+    AxiDataWidth       : Cfg.AxiDataWidth
+  };
+
+  ace_ccu_top_intf #(
+    .Cfg ( CcuCfg )
+  ) i_ccu (
+    .clk_i,
+    .rst_ni,
+    .redundant_cores_i ( redundant_cores ),
+    .test_i      ( test_mode_i ),
+    .slv_ports   ( core_to_CCU ),
+    .snoop_ports ( CCU_to_core ),
+    .mst_ports   ( ccu_out_axi )
+  );
+
+  axi_id_remap_intf #(
+    .AXI_SLV_PORT_ID_WIDTH     ( CCUIdWidth        ),
+    .AXI_SLV_PORT_MAX_UNIQ_IDS ( 4                 ),
+    .AXI_MAX_TXNS_PER_ID       ( 1                 ),
+    .AXI_MST_PORT_ID_WIDTH     ( Cfg.AxiMstIdWidth ),
+    .AXI_ADDR_WIDTH            ( Cfg.AddrWidth     ),
+    .AXI_DATA_WIDTH            ( Cfg.AxiDataWidth  ),
+    .AXI_USER_WIDTH            ( Cfg.AxiUserWidth  )
+  ) i_axi_id_remapper (
+    .clk_i,
+    .rst_ni,
+    .slv ( ccu_out_axi   ),
+    .mst ( ccu_remap_axi )
+  );
+
+  `AXI_ASSIGN_TO_REQ(ccu_axi_cut_req, ccu_remap_axi)
+  `AXI_ASSIGN_FROM_RESP(ccu_remap_axi, ccu_axi_cut_rsp)
+
+  axi_cut #(
+    .Bypass     ( ~Cfg.CorePostCut   ),
+    .aw_chan_t  ( axi_mst_aw_chan_t ),
+    .w_chan_t   ( axi_mst_w_chan_t  ),
+    .b_chan_t   ( axi_mst_b_chan_t  ),
+    .ar_chan_t  ( axi_mst_ar_chan_t ),
+    .r_chan_t   ( axi_mst_r_chan_t  ),
+    .axi_req_t  ( axi_mst_req_t     ),
+    .axi_resp_t ( axi_mst_rsp_t     )
+  ) i_core_axi_cut (
+    .clk_i      ( clk_i           ),
+    .rst_ni     ( rst_ni          ),
+    .slv_req_i  ( ccu_axi_cut_req ),
+    .slv_resp_o ( ccu_axi_cut_rsp ),
+    .mst_req_o  ( axi_in_req[AxiIn.cores] ),
+    .mst_resp_i ( axi_in_rsp[AxiIn.cores] )
+  );
 
   /////////////////////////
   //  JTAG Debug Module  //
@@ -1760,7 +1842,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .wsi_wires_o     ( intr.intn.iommu       )
     );
 
-  end else begin : gen_no_iommu
+  end else if (Cfg.Dma) begin : gen_no_iommu
 
     //Connect DMA to interconnect bypassing IOMMU
     always_comb begin

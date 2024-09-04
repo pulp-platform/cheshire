@@ -1,4 +1,11 @@
 packages:
+  ace:
+    revision: ea2fc9ced5be964b47cfcbcd6eb6518771a9e85d
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/ace.git
+    dependencies:
+    - axi
   apb:
     revision: 77ddf073f194d44b9119949d2421be59789e69ae
     version: 0.2.4
@@ -15,16 +22,16 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: 9402c8a9ce0a7b5253c3c29e788612d771e8b5d6
-    version: 0.39.3
+    revision: 587355b77b8ce94dcd600efbd5d5bd118ff913a7
+    version: 0.39.4
     source:
-      Git: https://github.com/pulp-platform/axi
+      Git: https://github.com/pulp-platform/axi.git
     dependencies:
     - common_cells
     - common_verification
     - tech_cells_generic
   axi_llc:
-    revision: 62079f9cc13e64d1ef131377aee6801eeef52642
+    revision: 2f23e6fc40ac7256f177a44c1f106c70c05c6cca
     version: null
     source:
       Git: https://github.com/pulp-platform/axi_llc
@@ -45,8 +52,8 @@ packages:
     - common_cells
     - common_verification
   axi_rt:
-    revision: 56074a195b1c8b05f4bdd73674e437bbcb35f2cd
-    version: 0.0.0-alpha.7
+    revision: d5f857e74d0a5db4e4a2cc3652ca4f40f29a1484
+    version: 0.0.0-alpha.8
     source:
       Git: https://github.com/pulp-platform/axi_rt.git
     dependencies:
@@ -86,8 +93,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: f4d6406070d8e7767e4e9a433f11b039859f03a1
-    version: null
+    revision: c27bce39ebb2e6bae52f60960814a2afca7bd4cb
+    version: 1.37.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -100,11 +107,12 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 8ccc3ff4d5dd51278d4af2b1e587b760a8e52b0d
+    revision: 125c68eeb1a64c20db652be15491c19e03730b70
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
     dependencies:
+    - ace
     - axi
     - common_cells
     - fpnew
@@ -126,8 +134,8 @@ packages:
     dependencies:
     - common_cells
   idma:
-    revision: 95f366e56f7e772c283fb3c8b343afc4a3978375
-    version: 0.6.2
+    revision: c12caf59bb482fe44b27361f6924ad346b2d22fe
+    version: 0.6.3
     source:
       Git: https://github.com/pulp-platform/iDMA.git
     dependencies:
@@ -147,8 +155,8 @@ packages:
     - common_cells
     - register_interface
   obi:
-    revision: 1aa411df145c4ebdd61f8fed4d003c33f7b20636
-    version: 0.1.2
+    revision: 5321106817e177d6c16ecc4daa922b96b1bc946b
+    version: 0.1.5
     source:
       Git: https://github.com/pulp-platform/obi.git
     dependencies:
@@ -164,7 +172,7 @@ packages:
     - register_interface
     - tech_cells_generic
   redundancy_cells:
-    revision: f41308f0d9afbcc309592783b0b982a2edbe217a
+    revision: 9e31f7c6c24877eaf58279903e7a162b16c9a721
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
@@ -192,13 +200,13 @@ packages:
     - common_cells
     - tech_cells_generic
   riscv-iommu:
-    revision: 26ae5a84468d3bf8c888340b12fe592b112c706d
+    revision: c1dea3732d0d05e5659b31773e43f3364bc866fc
     version: null
     source:
-      Git: https://github.com/zero-day-labs/riscv-iommu
+      Git: https://github.com/zero-day-labs/riscv-iommu.git
     dependencies:
-    - common_cells
     - axi
+    - common_cells
     - register_interface
   serial_link:
     revision: 5a25f5a71074f1ebb6de7b5280f2b16924bcc666
