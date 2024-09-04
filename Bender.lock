@@ -145,8 +145,8 @@ packages:
     - common_cells
     - register_interface
   obi:
-    revision: c2141a653c755461ff44f61d12aeb5d99fc8e760
-    version: 0.1.3
+    revision: 5321106817e177d6c16ecc4daa922b96b1bc946b
+    version: 0.1.5
     source:
       Git: https://github.com/pulp-platform/obi.git
     dependencies:
@@ -162,7 +162,7 @@ packages:
     - register_interface
     - tech_cells_generic
   pulp-ethernet:
-    revision: 19a8d32a5fa8e234a710a22d179da6b56e21bb58
+    revision: db28e88102bea25ac585d493158c0f0ab2585b3e
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp-ethernet.git
@@ -192,8 +192,8 @@ packages:
     - common_cells
     - tech_cells_generic
   serial_link:
-    revision: 5a25f5a71074f1ebb6de7b5280f2b16924bcc666
-    version: 1.1.1
+    revision: c55df03a1da06b00e567cf968b1b1a5f40c9f802
+    version: 1.1.2
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:
