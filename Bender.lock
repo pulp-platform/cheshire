@@ -31,7 +31,7 @@ packages:
     - common_verification
     - tech_cells_generic
   axi_llc:
-    revision: 4deb8c6281c74b3882846ad933f42a8c6568cbe0
+    revision: 2f23e6fc40ac7256f177a44c1f106c70c05c6cca
     version: null
     source:
       Git: https://github.com/pulp-platform/axi_llc
@@ -39,6 +39,7 @@ packages:
     - axi
     - common_cells
     - common_verification
+    - redundancy_cells
     - register_interface
     - tech_cells_generic
   axi_riscv_atomics:
@@ -106,7 +107,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 0baa33078c3e6c827fee4e7abef0a69737c27b3a
+    revision: 125c68eeb1a64c20db652be15491c19e03730b70
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -115,6 +116,7 @@ packages:
     - axi
     - common_cells
     - fpnew
+    - redundancy_cells
     - tech_cells_generic
   fpnew:
     revision: f231041c610f270ffc03cbdac38739ddb6426572
@@ -153,8 +155,8 @@ packages:
     - common_cells
     - register_interface
   obi:
-    revision: c2141a653c755461ff44f61d12aeb5d99fc8e760
-    version: 0.1.3
+    revision: 5321106817e177d6c16ecc4daa922b96b1bc946b
+    version: 0.1.5
     source:
       Git: https://github.com/pulp-platform/obi.git
     dependencies:
@@ -170,7 +172,7 @@ packages:
     - register_interface
     - tech_cells_generic
   redundancy_cells:
-    revision: 78aff2115bddcbb6970c37d19da50e6bc59e5c8a
+    revision: 9e31f7c6c24877eaf58279903e7a162b16c9a721
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
@@ -197,6 +199,15 @@ packages:
     dependencies:
     - common_cells
     - tech_cells_generic
+  riscv-iommu:
+    revision: c1dea3732d0d05e5659b31773e43f3364bc866fc
+    version: null
+    source:
+      Git: https://github.com/zero-day-labs/riscv-iommu.git
+    dependencies:
+    - axi
+    - common_cells
+    - register_interface
   serial_link:
     revision: 5a25f5a71074f1ebb6de7b5280f2b16924bcc666
     version: 1.1.1
