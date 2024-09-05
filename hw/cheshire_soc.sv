@@ -360,6 +360,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .RiscvWordWidth   ( 64 ),
     .NAxiCuts         ( Cfg.RegAmoNumCuts ),
     .FullBandwidth    ( 1 ),
+    .CutOupPopInpGnt  ( 1 ),
     .axi_req_t        ( axi_slv_req_t ),
     .axi_rsp_t        ( axi_slv_rsp_t )
   ) i_reg_atomics (
