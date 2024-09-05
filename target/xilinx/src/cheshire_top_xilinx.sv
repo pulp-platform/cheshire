@@ -259,10 +259,12 @@ module cheshire_top_xilinx (
   ///////////////////////
   // Ethernet Adaption //
   //////////////////////
- logic eth_mdio_i;
- logic eth_mdio_o;
- logic eth_mdio_oe;
- 
+  logic eth_mdio_i;
+  logic eth_mdio_o;
+  logic eth_mdio_oe;
+  
+  //`ifdef USE_ETHERNET
+
   IOBUF #(
     .DRIVE        ( 12          ), // Specify the output drive strength
     .IBUF_LOW_PWR ( "FALSE"     ), // Low Power - "TRUE", High Performance = "FALSE"
@@ -274,6 +276,8 @@ module cheshire_top_xilinx (
     .I   ( eth_mdio_o   ),   // Buffer input
     .T   ( ~eth_mdio_oe )    // 3-state enable input, high=input, low=output
   );
+
+  //`endif
 
   ///////////////
   // SPI to SD //
