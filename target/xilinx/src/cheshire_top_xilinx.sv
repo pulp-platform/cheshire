@@ -259,8 +259,6 @@ module cheshire_top_xilinx (
   ///////////////////////
   // Ethernet Adaption //
   //////////////////////
-`ifdef USE_ETHERNET
-
  logic eth_mdio_i;
  logic eth_mdio_o;
  logic eth_mdio_oe;
@@ -276,7 +274,6 @@ module cheshire_top_xilinx (
     .I   ( eth_mdio_o   ),   // Buffer input
     .T   ( ~eth_mdio_oe )    // 3-state enable input, high=input, low=output
   );
-  `endif
 
   ///////////////
   // SPI to SD //

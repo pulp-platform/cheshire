@@ -1349,9 +1349,6 @@ module cheshire_soc import cheshire_pkg::*; #(
       assign eth_rstn_o  = 1'b0;
       assign eth_txctl_o = 1'b0;
       assign eth_txd_o   = 4'b0;
-      assign eth_mdio_o  = '0;
-      assign eth_mdio_oe = '0;
-      assign eth_mdc_o   = '0;
   end
 
   ////////////////
