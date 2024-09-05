@@ -495,7 +495,7 @@ module cheshire_top_xilinx (
     .eth_rstn_o         ( eth_rstn    ),  
     .eth_mdio_i         ( eth_mdio_i  ),
     .eth_mdio_o         ( eth_mdio_o  ),
-    .eth_mdio_oe        ( eth_mdio_en ),
+    .eth_mdio_oe        ( eth_mdio_oe ),
     .eth_mdc_o          ( eth_mdc     ),
     .spih_sck_o         ( spi_sck_soc     ),
     .spih_sck_en_o      ( spi_sck_en      ),
