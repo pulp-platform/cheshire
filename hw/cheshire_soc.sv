@@ -690,6 +690,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     ace_cut #(
       .Bypass ( 0 ),
+      .AceBypass ( 0 ),
       .aw_chan_t ( ariane_ace::aw_chan_t ),
       .w_chan_t ( ariane_ace::ariane_axi_w_chan_t ),
       .b_chan_t ( ariane_ace::ariane_axi_b_chan_t ),
