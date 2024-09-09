@@ -12,7 +12,6 @@ BENDER ?= bender
 CXX_PATH := $(shell which $(CXX))
 
 VLOG_ARGS ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
-VSIM      ?= vsim
 
 # Define used paths (prefixed to avoid name conflicts)
 CHS_ROOT      ?= $(shell $(BENDER) path cheshire)
