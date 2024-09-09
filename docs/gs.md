@@ -34,6 +34,15 @@ cargo install bender
 
 Depending on your desired target, additional dependencies may be needed.
 
+## Tool Paths
+
+Our build system assumes sane default paths for tools. However, you may need to repoint the following environment variables to specify the correct install locations on your system:
+
+- `BENDER`: Path to Bender binary.
+- `CXX_PATH`: Path to host C++ compiler within full toolchain installation (used for SystemVerilog DPI).
+- `CHS_SW_GCC_BINROOT`: Path of RV64 GCC compiler within full toolchain installation.
+- `CHS_SW_DTC`: Linux device tree compiler.
+
 ## Building Cheshire
 
 To build different parts of Cheshire, run `make` followed by these targets:
