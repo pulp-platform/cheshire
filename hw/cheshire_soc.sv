@@ -721,6 +721,10 @@ module cheshire_soc import cheshire_pkg::*; #(
       core_out_rsp        = core_ur_rsp;
     end
 
+    // TODO: remove this bypass again
+    assign axi_in_req[AxiIn.cores[i]] = core_ur_req;
+    assign core_ur_rsp = axi_in_rsp[AxiIn.cores[i]];
+    /*
     // CVA6's ID encoding is wasteful; remap it statically pack into available bits
     axi_id_serialize #(
       .AxiSlvPortIdWidth      ( Cva6IdWidth     ),
@@ -747,6 +751,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .mst_req_o  ( axi_in_req[AxiIn.cores[i]] ),
       .mst_resp_i ( axi_in_rsp[AxiIn.cores[i]] )
     );
+    */
   end
 
   /////////////////////////

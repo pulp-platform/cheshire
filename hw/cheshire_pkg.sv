@@ -581,7 +581,7 @@ package cheshire_pkg;
     AddrWidth         : 48,
     AxiDataWidth      : 64,
     AxiUserWidth      : 2,  // AMO(2)
-    AxiMstIdWidth     : 2,
+    AxiMstIdWidth     : 4,
     AxiMaxMstTrans    : 24,
     AxiMaxSlvTrans    : 24,
     AxiUserAmoMsb     : 1, // Convention: lower AMO bits for cores, MSB for serial link
