@@ -11,6 +11,12 @@ We currently provide working setups for:
 
 We are working on support for more boards in the future.
 
+We assume that the `VIVADO` environment variable points to the main binary of your Vivado installation. Before proceeding, you can set this variable for your current shell as follows:
+
+```
+export VIVADO="/path/to/your/vivado"
+```
+
 ## Implementation
 
 Generate the bitstream `target/xilinx/out/cheshire.<myboard>.bit` for your desired board by running:

@@ -13,15 +13,13 @@ all:
 
 include cheshire.mk
 
-# Inside the repo, forward (prefixed) all, nonfree, and clean targets
-all:
-	@$(MAKE) chs-all
+# Locally, make Cheshire phonies available without `chs_` prefix
+define chs_phony_fwd_rule
+$(patsubst chs-%,%,$(1)): $(1)
+endef
 
-%-all:
-	@$(MAKE) chs-$*-all
+$(foreach phony,$(CHS_PHONY),$(eval $(call chs_phony_fwd_rule,$(phony))))
 
-nonfree-%:
-	@$(MAKE) chs-nonfree-$*
-
-clean-%:
-	@$(MAKE) chs-clean-$*
+help:
+	@echo "Possible phonies (may not all be implemented):"
+	@$(foreach phony,$(sort $(CHS_PHONY)),echo '- $(patsubst chs-%,%,$(phony))';)

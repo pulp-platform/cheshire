@@ -12,7 +12,6 @@ BENDER ?= bender
 CXX_PATH := $(shell which $(CXX))
 
 VLOG_ARGS ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
-VSIM      ?= vsim
 
 # Define used paths (prefixed to avoid name conflicts)
 CHS_ROOT      ?= $(shell $(BENDER) path cheshire)
@@ -48,6 +47,7 @@ ifeq ($(shell test -f $(BENDER_ROOT)/.chs_deps && echo 1),)
 endif
 
 # Running this target will reset dependencies (without updating the checked-in Bender.lock)
+CHS_PHONY += chs-clean-deps
 chs-clean-deps:
 	rm -rf .bender
 	cd $(CHS_ROOT) && rm -rf target/sim/models target/sim/dramsys
@@ -60,6 +60,7 @@ chs-clean-deps:
 CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
 CHS_NONFREE_COMMIT ?= f731b17
 
+CHS_PHONY += chs-nonfree-init
 chs-nonfree-init:
 	git clone $(CHS_NONFREE_REMOTE) $(CHS_ROOT)/nonfree
 	cd $(CHS_ROOT)/nonfree && git checkout $(CHS_NONFREE_COMMIT)
@@ -179,8 +180,6 @@ include $(CHS_ROOT)/target/xilinx/xilinx.mk
 # Phonies (KEEP AT END OF FILE) #
 #################################
 
-.PHONY: chs-all chs-nonfree-init chs-clean-deps chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-dramsys-all chs-xilinx-all
-
 CHS_ALL += $(CHS_SW_ALL) $(CHS_HW_ALL) $(CHS_SIM_ALL)
 
 chs-all:         $(CHS_ALL)
@@ -190,3 +189,7 @@ chs-bootrom-all: $(CHS_BOOTROM_ALL)
 chs-sim-all:     $(CHS_SIM_ALL)
 chs-dramsys-all: $(CHS_DRAMSYS_ALL)
 chs-xilinx-all:  $(CHS_XILINX_ALL)
+
+CHS_PHONY += chs-all chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-dramsys-all chs-xilinx-all
+
+.PHONY: $(CHS_PHONY)
