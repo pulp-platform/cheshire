@@ -10,7 +10,123 @@
 
 module cheshire_soc import cheshire_pkg::*; #(
   // Cheshire config
+`ifdef TARGET_SYNTHESIS
+  parameter cheshire_cfg_t Cfg = '{
+    // CVA6 parameters
+    Cva6RASDepth      : 2,
+    Cva6BTBEntries    : 32,
+    Cva6BHTEntries    : 128,
+    Cva6NrPMPEntries  : 0,
+    Cva6ExtCieLength  : 'h2000_0000,  // [0x2.., 0x4..) is CIE, [0x4.., 0x8..) is non-CIE
+    Cva6ExtCieOnTop   : 0,
+    // Harts
+    NumCores          : 1,
+    CoreMaxTxns       : 8,
+    CoreMaxTxnsPerId  : 4,
+    CoreUserAmoOffs   : 0, // Convention: lower AMO bits for cores, MSB for serial link
+    // Interrupts
+    NumExtInIntrs     : 0,
+    NumExtClicIntrs   : NumExtPlicIntrs,
+    NumExtOutIntrTgts : 0,
+    NumExtOutIntrs    : 0,
+    ClicIntCtlBits    : 8,
+    NumExtIntrSyncs   : 2,
+    // Interconnect
+    AddrWidth         : 48,
+    AxiDataWidth      : 64,
+    AxiUserWidth      : 2,  // AMO(2)
+    AxiMstIdWidth     : 2,
+    AxiMaxMstTrans    : 24,
+    AxiMaxSlvTrans    : 24,
+    AxiUserAmoMsb     : 1, // Convention: lower AMO bits for cores, MSB for serial link
+    AxiUserAmoLsb     : 0, // Convention: lower AMO bits for cores, MSB for serial link
+    AxiUserErrBits    : 0,
+    AxiUserErrLsb     : 0,
+    AxiUserDefault    : 0,
+    RegMaxReadTxns    : 8,
+    RegMaxWriteTxns   : 8,
+    RegAmoNumCuts     : 1,
+    RegAmoPostCut     : 1,
+    RegAdaptMemCut    : 1,
+    // RTC
+    RtcFreq           : 32768,
+    // Features
+    Bootrom           : 1,
+    Uart              : 1,
+    I2c               : 1,
+    SpiHost           : 1,
+    Gpio              : 1,
+    Dma               : 1,
+    SerialLink        : 1,
+    Vga               : 1,
+    Usb               : 1,
+    AxiRt             : 0,
+    Clic              : 0,
+    IrqRouter         : 0,
+    BusErr            : 1,
+    // Debug
+    DbgIdCode         : CheshireIdCode,
+    DbgMaxReqs        : 4,
+    DbgMaxReadTxns    : 4,
+    DbgMaxWriteTxns   : 4,
+    DbgAmoNumCuts     : 1,
+    DbgAmoPostCut     : 1,
+    // LLC: 128 KiB, up to 2 GiB DRAM
+    LlcNotBypass      : 1,
+    LlcSetAssoc       : 8,
+    LlcNumLines       : 256,
+    LlcNumBlocks      : 8,
+    LlcMaxReadTxns    : 16,
+    LlcMaxWriteTxns   : 16,
+    LlcAmoNumCuts     : 1,
+    LlcAmoPostCut     : 1,
+    LlcOutConnect     : 1,
+    LlcOutRegionStart : 'h8000_0000,
+    LlcOutRegionEnd   : 64'h1_0000_0000,
+    // VGA: RGB332
+    VgaRedWidth       : 3,
+    VgaGreenWidth     : 3,
+    VgaBlueWidth      : 2,
+    VgaHCountWidth    : 24, // TODO: Default is 32; is this needed?
+    VgaVCountWidth    : 24, // TODO: See above
+    VgaBufferDepth    : 16,
+    VgaMaxReadTxns    : 24,
+    // Serial Link: map other chip's lower 32bit to 'h1_000_0000
+    SlinkMaxTxnsPerId : 4,
+    SlinkMaxUniqIds   : 4,
+    SlinkMaxClkDiv    : 1024,
+    SlinkRegionStart  : 64'h1_0000_0000,
+    SlinkRegionEnd    : 64'h2_0000_0000,
+    SlinkTxAddrMask   : 'hFFFF_FFFF,
+    SlinkTxAddrDomain : 'h0000_0000,
+    SlinkUserAmoBit   : 1,  // Convention: lower AMO bits for cores, MSB for serial link
+    // USB config
+    UsbDmaMaxReads    : 16,
+    UsbAddrMask       : 'hFFFF_FFFF,
+    UsbAddrDomain     : 'h0000_0000,
+    // DMA config
+    DmaConfMaxReadTxns  : 4,
+    DmaConfMaxWriteTxns : 4,
+    DmaConfAmoNumCuts   : 1,
+    DmaConfAmoPostCut   : 1,
+    DmaConfEnableTwoD   : 1,
+    DmaNumAxInFlight    : 16,
+    DmaMemSysDepth      : 8,
+    DmaJobFifoDepth     : 2,
+    DmaRAWCouplingAvail : 1,
+    // GPIOs
+    GpioInputSyncs    : 1,
+    // AXI RT
+    AxiRtNumPending     : 16,
+    AxiRtWBufferDepth   : 16,
+    AxiRtNumAddrRegions : 2,
+    AxiRtCutPaths       : 1,
+    // All non-set values should be zero
+    default: '0
+  },
+`else
   parameter cheshire_cfg_t Cfg = '0,
+`endif
   // Debug info for external harts
   parameter dm::hartinfo_t [iomsb(Cfg.NumExtDbgHarts):0] ExtHartinfo = '0,
   // Interconnect types (must agree with Cheshire config)
@@ -600,6 +716,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     riscv::priv_lvl_t  clic_irq_priv;
 
     cva6 #(
+`ifndef TARGET_GATE
       .CVA6Cfg        ( Cva6Cfg ),
       .axi_ar_chan_t  ( axi_cva6_ar_chan_t ),
       .axi_aw_chan_t  ( axi_cva6_aw_chan_t ),
@@ -608,6 +725,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .r_chan_t       ( axi_cva6_r_chan_t  ),
       .noc_req_t      ( axi_cva6_req_t ),
       .noc_resp_t     ( axi_cva6_rsp_t )
+`endif
     ) i_core_cva6 (
       .clk_i,
       .rst_ni,

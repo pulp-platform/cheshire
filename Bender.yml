@@ -22,7 +22,7 @@ dependencies:
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                  version: 0.2.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           version: 1.33.0 }
   common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.0  }
-  cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: pulp-v1.0.0 }
+  cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: 7e72ff5    }
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.5.1  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
@@ -58,3 +58,53 @@ sources:
       - target/xilinx/src/dram_wrapper_xilinx.sv
       - target/xilinx/src/fan_ctrl.sv
       - target/xilinx/src/cheshire_top_xilinx.sv
+  
+  - target: any(gate)
+    defines:
+      # Defines without value:
+      IVCS_INIT_MEM: ~
+      IVCS_FAST_FUNC: ~
+    files:
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cheshire/working_dir/cell_model/GF22FDX_SC8T_104CPP_BASE_CSC20SL.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cheshire/working_dir/cell_model/GF22FDX_SC8T_104CPP_BASE_CSC20L.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cheshire/working_dir/cell_model/GF22FDX_SC8T_104CPP_BASE_CSC24SL.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cheshire/working_dir/cell_model/GF22FDX_SC8T_104CPP_BASE_CSC24L.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cheshire/working_dir/cell_model/GF22FDX_SC8T_104CPP_BASE_CSC28SL.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cheshire/working_dir/cell_model/GF22FDX_SC8T_104CPP_BASE_CSC28L.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cheshire/working_dir/cell_model/prim.v
+
+      # - /usr/pack/gf-22-kgf/invecas/std8t/2020.01/GF22FDX_SC8T_104CPP_BASE_CSC20SL_FDK_RELV06R40/model/verilog/GF22FDX_SC8T_104CPP_BASE_CSC20SL.v
+      # - /usr/pack/gf-22-kgf/invecas/std8t/2020.01/GF22FDX_SC8T_104CPP_BASE_CSC20L_FDK_RELV06R40/model/verilog/GF22FDX_SC8T_104CPP_BASE_CSC20L.v
+      # - /usr/pack/gf-22-kgf/invecas/std8t/2020.01/GF22FDX_SC8T_104CPP_BASE_CSC24SL_FDK_RELV06R40/model/verilog/GF22FDX_SC8T_104CPP_BASE_CSC24SL.v
+      # - /usr/pack/gf-22-kgf/invecas/std8t/2020.01/GF22FDX_SC8T_104CPP_BASE_CSC24L_FDK_RELV06R40/model/verilog/GF22FDX_SC8T_104CPP_BASE_CSC24L.v
+      # - /usr/pack/gf-22-kgf/invecas/std8t/2020.01/GF22FDX_SC8T_104CPP_BASE_CSC28SL_FDK_RELV06R40/model/verilog/GF22FDX_SC8T_104CPP_BASE_CSC28SL.v
+      # - /usr/pack/gf-22-kgf/invecas/std8t/2020.01/GF22FDX_SC8T_104CPP_BASE_CSC28L_FDK_RELV06R40/model/verilog/GF22FDX_SC8T_104CPP_BASE_CSC28L.v
+
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cva6pp_gf22_cva6/gf22/sourcecode/mems/model/verilog/IN22FDX_R1PH_NFHN_W00256B021M02C256.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cva6pp_gf22_cva6/gf22/sourcecode/mems/model/verilog/IN22FDX_R1PH_NFHN_W00256B023M02C256.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cva6pp_gf22_cva6/gf22/sourcecode/mems/model/verilog/IN22FDX_R1PH_NFHN_W00256B027M02C256.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cva6pp_gf22_cva6/gf22/sourcecode/mems/model/verilog/IN22FDX_R1PH_NFHN_W00256B044M02C256.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cva6pp_gf22_cva6/gf22/sourcecode/mems/model/verilog/IN22FDX_R1PH_NFHN_W00256B045M02C256.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cva6pp_gf22_cva6/gf22/sourcecode/mems/model/verilog/IN22FDX_R1PH_NFHN_W00256B046M02C256.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cva6pp_gf22_cva6/gf22/sourcecode/mems/model/verilog/IN22FDX_R1PH_NFHN_W00256B049M02C256.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cva6pp_gf22_cva6/gf22/sourcecode/mems/model/verilog/IN22FDX_R1PH_NFHN_W00256B128M02C256.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cva6pp_gf22_cva6/gf22/sourcecode/mems/model/verilog/IN22FDX_R1PH_NFHN_W00256B136M02C256.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cva6pp_gf22_cva6/gf22/sourcecode/mems/model/verilog/IN22FDX_R1PH_NFHN_W00256B144M02C256.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cva6pp_gf22_cva6/gf22/sourcecode/mems/model/verilog/IN22FDX_R1PH_NFHN_W00512B128M02C256.v
+
+      # - /usr/pack/gf-22-kgf/dz/mem/R1PH/V04R20SZ/model/verilog/IN22FDX_R1PH_NFHN_W01024B032M04C256.v
+      # - /usr/pack/gf-22-kgf/dz/mem/R1PH/V04R20SZ/model/verilog/IN22FDX_R1PH_NFHN_W00128B025M02C256.v
+      # - /usr/pack/gf-22-kgf/dz/mem/R1PH/V04R20SZ/model/verilog/IN22FDX_R1PH_NFHN_W00512B032M02C256.v
+      # - /usr/pack/gf-22-kgf/dz/mem/R1PH/V04R20SZ/model/verilog/IN22FDX_R1PH_NFHN_W00256B023M02C256.v
+      # - /usr/pack/gf-22-kgf/dz/mem/R1PH/V04R20SZ/model/verilog/IN22FDX_R1PH_NFHN_W00256B128M02C256.v
+
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cheshire/working_dir/cell_model/GF22FDX_SC8T_104CPP_HPK_CSL.v
+      # - /usr/pack/gf-22-kgf/invecas/std/2020.01/GF22FDX_SC8T_104CPP_HPK_CSL_FDK_RELV03R40/model/verilog/GF22FDX_SC8T_104CPP_HPK_CSL.v
+
+
+      # synthesis netlist:
+      # - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cva6pp_gf22/gf22/synopsys/runs/c910MULTI_T1400___19_52_46__13_08_2024/netlists/c910_axi_wrap.v
+      # post layout netlist:
+      # - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cva6pp_gf22_cva6/gf22/innovus/out/cva6.v
+      - /usr/scratch2/larain1/zexifu/cheshire_try_bak/cva6pp_gf22_cva6/gf22/innovus_20240831_025704/innovus_800/out/cva6.v
+

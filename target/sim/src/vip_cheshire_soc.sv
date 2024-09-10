@@ -17,7 +17,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter type          axi_ext_mst_req_t = logic,
   parameter type          axi_ext_mst_rsp_t = logic,
   // Timing
-  parameter time          ClkPeriodSys      = 5ns,
+  parameter time          ClkPeriodSys      = 1ns,
   parameter time          ClkPeriodJtag     = 20ns,
   parameter time          ClkPeriodRtc      = 30518ns,
   parameter int unsigned  RstCycles         = 5,
@@ -91,6 +91,46 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   ////////////
   //  DRAM  //
   ////////////
+
+  // Preload function called by testbench
+  task automatic memory_preload(string image);
+    // // We overlay the entire memory with an alternating pattern
+    // for (int k = 0; k < $size(i_dram_sim_mem.mem); ++k)
+    //   i_dram_sim_mem.mem[k] = 'h9a;
+    // We load an image into chip 0 only if it exists
+    if (image != "") begin
+      $readmemh(image, i_dram_sim_mem.mem);
+      $display("rtl load image: %s", image);
+    end
+  endtask
+
+  // Run a binary
+  task automatic memory_elf_run(input string binary);
+    doub_bt entry;
+    entry = DutCfg.LlcOutRegionStart;
+    // Preload
+    // We overlay the entire memory with an alternating pattern
+    for (int k = 0; k < $size(i_dram_sim_mem.mem); ++k)
+      i_dram_sim_mem.mem[k] = 'h9a;
+
+    memory_preload(binary);
+    // $stop();
+    for(longint unsigned i = 'h80000000; i < 'h80000000+8; i++) begin
+      $display("%h, 0x%h", i, i_dram_sim_mem.mem[i]);
+    end
+    // for(longint unsigned i = 'h80200000; i < 'h80200000+8; i++) begin
+    //   $display("%h, 0x%h", i, i_dram_sim_mem.mem[i]);
+    // end
+    // for(longint unsigned i = 'h80800000; i < 'h80800000+8; i++) begin
+    //   $display("%h, 0x%h", i, i_dram_sim_mem.mem[i]);
+    // end
+    // Write entry point
+    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_1_OFFSET, entry[63:32]);
+    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_0_OFFSET, entry[32:0]);
+    // Resume hart 0
+    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, 2);
+    $display("[SLINK] Wrote launch signal and entry point 0x%h", entry);
+  endtask
 
   axi_sim_mem #(
     .AddrWidth          ( DutCfg.AddrWidth    ),
