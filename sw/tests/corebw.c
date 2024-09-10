@@ -53,7 +53,7 @@ int main(void) {
 
     uint64_t cycles = get_mcycle() - start;
 
-    uint64_t rel_tp_perc_w = (100 * BLOCK_SIZE) / cycles;
+    uint64_t rel_tp_perc_w = (1000 * BLOCK_SIZE) / cycles;
 
     start = get_mcycle();
 
@@ -84,9 +84,9 @@ int main(void) {
 
     cycles = get_mcycle() - start;
 
-    uint64_t rel_tp_perc_r = (100 * BLOCK_SIZE) / cycles;
+    uint64_t rel_tp_perc_r = (1000 * BLOCK_SIZE) / cycles;
 
-    printf("WTP: %d%%, RTP: %d%%\r\n", rel_tp_perc_w, rel_tp_perc_r);
+    printf("WTP: %d%%0, RTP: %d%%0\r\n", rel_tp_perc_w, rel_tp_perc_r);
 
     uart_write_flush(&__base_uart);
 
