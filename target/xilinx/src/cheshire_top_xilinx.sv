@@ -496,7 +496,7 @@ module cheshire_top_xilinx (
     .eth_txck_o         ( eth_txck    ),
     .eth_txd_o          ( eth_txd     ),
     .eth_txctl_o        ( eth_txctl   ),
-    .eth_rstn_o         ( eth_rstn    ),  
+    .eth_rstn_o         ( eth_rst_n   ),  
     .eth_mdio_i         ( eth_mdio_i  ),
     .eth_mdio_o         ( eth_mdio_o  ),
     .eth_mdio_oe        ( eth_mdio_oe ),

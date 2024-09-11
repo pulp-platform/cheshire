@@ -1301,6 +1301,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  ETHERNET  //
   ////////////////
   if (Cfg.Ethernet) begin : gen_ethernet
+    logic eth_int_n, eth_pme_n;
     eth_idma_wrap#(
       .DataWidth           ( Cfg.AxiDataWidth  ),    
       .AddrWidth           ( Cfg.AddrWidth     ),
@@ -1329,8 +1330,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .phy_txd_o           ( eth_txd_o    ),
       .phy_tx_ctl_o        ( eth_txctl_o  ),
       .phy_resetn_o        ( eth_rstn_o   ),  
-      .phy_intn_i          ( 1'b1         ),
-      .phy_pme_i           ( 1'b1         ),
+      .phy_intn_i          ( eth_int_n    ),
+      .phy_pme_i           ( eth_pme_n    ),
       .phy_mdio_i          ( eth_mdio_i   ),
       .phy_mdio_o          ( eth_mdio_o   ),
       .phy_mdio_oe         ( eth_mdio_oe  ),
