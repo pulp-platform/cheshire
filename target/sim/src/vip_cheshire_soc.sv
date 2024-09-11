@@ -723,18 +723,21 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   end
 
   initial begin
+    
+    wait_for_reset();
 
-    @(posedge eth_rx_irq);
-    @(posedge clk);
+    @(posedge clk)
 
     reg_drv_rx.send_write( 'h0300c000, 32'h00890702, 'hf, reg_error); //lower 32bits of MAC address
     @(posedge clk);
-  
-    reg_drv_rx.send_write( 'h0300c004, 16'h2301, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+
+    reg_drv_rx.send_write( 'h0300c004, 'h802301, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
     @(posedge clk);
     
+    @(posedge eth_rx_irq);
+
     while(1) begin
-      reg_drv_rx.send_read( 'h0300c054, dma_en, reg_error);   // req ready 
+      reg_drv_rx.send_read( 'h0300c054, dma_en, reg_error);   // req ready with packet length
       if( dma_en )
         break;
       @(posedge clk);
@@ -742,10 +745,10 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     
     reg_drv_rx.send_write( 'h0300c01c, 32'h0, 'hf, reg_error ); // SRC_ADDR  
     @(posedge clk);
-  
+    
     reg_drv_rx.send_write( 'h0300c020, 32'h0, 'hf, reg_error); // DST_ADDR
     @(posedge clk);
-  
+
     reg_drv_rx.send_write( 'h0300c028, 32'h5,'hf , reg_error); // src protocol
     @(posedge clk);
 
@@ -763,12 +766,12 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       end
       @(posedge clk);
     end
-    
+
     // Tx test starts here: external back to core
     reg_drv_rx.send_write( 'h0300c000, 32'h00890702, 'hf, reg_error); //lower 32bits of MAC address
     @(posedge clk);
   
-    reg_drv_rx.send_write( 'h0300c004, 16'h2301, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+    reg_drv_rx.send_write( 'h0300c004, 32'h00802301, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
     @(posedge clk);
 
     reg_drv_rx.send_write( 'h0300c01c, 32'h0, 'hf, reg_error ); // SRC_ADDR  
