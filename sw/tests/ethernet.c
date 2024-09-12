@@ -50,14 +50,14 @@ int main(void) {
  *reg32(PLIC_BASE, RV_PLIC_IE0_0_REG_OFFSET)  |= (1 << (RV_PLIC_IE0_0_E_19_BIT)); // Enable interrupt number ;
 
   volatile uint64_t data_to_write[DATA_CHUNK] = {
-        0x0207230100890702, 
+        0x1032230100890702, 
         0x3210400020709800,
-        0x1716151413121110, 
-        0x2726252423222120,
-        0x3736353433323130, 
-        0x4746454443424140,
-        0x5756555453525150, 
-        0x6766656463626160
+        0x35ED077D93FC89BA, 
+        0x56BE7F8D79A46B8C,
+        0xAEB3F2D1446FE19E, 
+        0x7D21C83EFF976DB8,
+        0x940D2024EB89AC07, 
+        0x2B9EBCDC4561DA5C
   };
 
   // load data into mem
@@ -66,9 +66,9 @@ int main(void) {
         *tx_addr = data_to_write[i];
   }
 
-  *reg32(ETH_BASE, MACLO_OFFSET)          = 0x00890702;
-  // High 16 bit Mac Address
-  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00802301;
+  *reg32(ETH_BASE, MACLO_OFFSET)          = 0x89000123;
+  // High 16 bit Mac Address and irq_en
+  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00800207;
   // DMA Source Address
   *reg32(ETH_BASE, IDMA_SRC_ADDR_OFFSET)  = TX_BASE;
   // DMA Destination Address
@@ -83,17 +83,17 @@ int main(void) {
   // Validate Request to DMA
   *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
 
-  // uint32_t *mdio;
-  // // mdio = reg32(ETH_BASE, ETH_MDIO_OFFSET);  
-  // mdio = 0x0300c008;
-  // printf("MDIO value: 0x%08X\n", *mdio);
+  uint32_t *mdio;
+  // mdio = reg32(ETH_BASE, ETH_MDIO_OFFSET);  
+  mdio = 0x0300c008;
+  printf("MDIO value: 0x%08X\n", *mdio);
   
   // configure ethernet
-  *reg32(ETH_BASE, MACLO_OFFSET)          = 0x00890702;  
-  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00802301; 
+  *reg32(ETH_BASE, MACLO_OFFSET)          = 0x89000123;  
+  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00800207; 
   // rx irq
   while (!(*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19) );
-   
+
   // dma length ready, dma can be configured now
   while (!(*reg32(ETH_BASE,IDMA_RX_EN_OFFSET)));
 
@@ -103,6 +103,10 @@ int main(void) {
   *reg32(ETH_BASE, IDMA_SRC_PROTO_OFFSET) = 0x5;
   *reg32(ETH_BASE, IDMA_DST_PROTO_OFFSET) = 0x0;
   *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
+
+  uint32_t *rx_fcs;
+  rx_fcs = 0x0300c014;
+  printf("rfcs value: 0x%08X\n", *rx_fcs);
 
   // wait until DMA moves all data
   while (!(*reg32(ETH_BASE, IDMA_RSP_VALID_OFFSET)));

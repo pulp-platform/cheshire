@@ -728,10 +728,10 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
     @(posedge clk)
 
-    reg_drv_rx.send_write( 'h0300c000, 32'h00890702, 'hf, reg_error); //lower 32bits of MAC address
+    reg_drv_rx.send_write( 'h0300c000, 32'h89000123, 'hf, reg_error); //lower 32bits of MAC address
     @(posedge clk);
 
-    reg_drv_rx.send_write( 'h0300c004, 'h802301, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+    reg_drv_rx.send_write( 'h0300c004, 32'h00800207, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
     @(posedge clk);
     
     @(posedge eth_rx_irq);
@@ -768,10 +768,10 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     end
 
     // Tx test starts here: external back to core
-    reg_drv_rx.send_write( 'h0300c000, 32'h00890702, 'hf, reg_error); //lower 32bits of MAC address
+    reg_drv_rx.send_write( 'h0300c000, 32'h89000123, 'hf, reg_error); //lower 32bits of MAC address
     @(posedge clk);
   
-    reg_drv_rx.send_write( 'h0300c004, 32'h00802301, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+    reg_drv_rx.send_write( 'h0300c004, 32'h00800207, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
     @(posedge clk);
 
     reg_drv_rx.send_write( 'h0300c01c, 32'h0, 'hf, reg_error ); // SRC_ADDR  
