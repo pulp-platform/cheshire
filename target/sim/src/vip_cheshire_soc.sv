@@ -723,35 +723,38 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   end
 
   initial begin
-
-    @(posedge eth_rx_irq);
+    
     @(posedge clk);
-
-    reg_drv_rx.send_write( 'h0300c000, 32'h00890702, 'hf, reg_error); //lower 32bits of MAC address
+     $display("0");
+    reg_drv_rx.send_write( 'h0300c000, 32'h00222222, 'hf, reg_error); //lower 32bits of MAC address
     @(posedge clk);
-  
-    reg_drv_rx.send_write( 'h0300c004, 16'h2301, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+     $display("1");
+    reg_drv_rx.send_write( 'h0300c004, 'h801111, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+    @(posedge clk);
+     $display("2");
+    
     @(posedge clk);
     
-    while(1) begin
-      reg_drv_rx.send_read( 'h0300c054, dma_en, reg_error);   // req ready 
-      if( dma_en )
-        break;
-      @(posedge clk);
-    end
+    // while(1) begin
+    //   reg_drv_rx.send_read( 'h0300c054, dma_en, reg_error);   // req ready 
+    //   if( dma_en )
+    //     break;
+    //   @(posedge clk);
+    // end
     
     reg_drv_rx.send_write( 'h0300c01c, 32'h0, 'hf, reg_error ); // SRC_ADDR  
     @(posedge clk);
-  
+    
+    $display("3");
     reg_drv_rx.send_write( 'h0300c020, 32'h0, 'hf, reg_error); // DST_ADDR
     @(posedge clk);
-  
+    $display("4");
     reg_drv_rx.send_write( 'h0300c028, 32'h5,'hf , reg_error); // src protocol
     @(posedge clk);
-
+    $display("5");
     reg_drv_rx.send_write( 'h0300c02c, 32'h0,'hf , reg_error); // dst protocol
     @(posedge clk);
-
+    $display("6");
     reg_drv_rx.send_write( 'h0300c044, 'h1, 'hf , reg_error);   // req valid
     @(posedge clk);
     
@@ -764,11 +767,14 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       @(posedge clk);
     end
     
+    @(posedge eth_rx_irq);
+     
+
     // Tx test starts here: external back to core
     reg_drv_rx.send_write( 'h0300c000, 32'h00890702, 'hf, reg_error); //lower 32bits of MAC address
     @(posedge clk);
   
-    reg_drv_rx.send_write( 'h0300c004, 16'h2301, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+    reg_drv_rx.send_write( 'h0300c004, 32'h00802301, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
     @(posedge clk);
 
     reg_drv_rx.send_write( 'h0300c01c, 32'h0, 'hf, reg_error ); // SRC_ADDR  

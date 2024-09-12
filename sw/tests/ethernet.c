@@ -19,6 +19,7 @@
 #define IDMA_RSP_READY_OFFSET        0x4c
 #define IDMA_RSP_VALID_OFFSET        0x50
 #define IDMA_RX_EN_OFFSET            0x54
+#define ETH_MDIO_OFFSET              0x8
 
 #define PLIC_BASE                    0x04000000
 #define RV_PLIC_PRIO19_REG_OFFSET    0x4c
@@ -37,7 +38,7 @@
 #define TX_BASE 0x14000000
 #define RX_BASE 0x14001000
 
-#define PRINTF_ON
+//#define PRINTF_ON
 
 int main(void) { 
   
@@ -67,7 +68,7 @@ int main(void) {
 
   *reg32(ETH_BASE, MACLO_OFFSET)          = 0x00890702;
   // High 16 bit Mac Address
-  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00002301;
+  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00802301;
   // DMA Source Address
   *reg32(ETH_BASE, IDMA_SRC_ADDR_OFFSET)  = TX_BASE;
   // DMA Destination Address
@@ -81,12 +82,18 @@ int main(void) {
 
   // Validate Request to DMA
   *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
+
+  uint32_t *mdio;
+  // mdio = reg32(ETH_BASE, ETH_MDIO_OFFSET);  
+  mdio = 0x0300c008;
+  printf("MDIO value: 0x%08X\n", *mdio);
   
-  // rx irq
-  while (!(*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19) );
   // configure ethernet
   *reg32(ETH_BASE, MACLO_OFFSET)          = 0x00890702;  
-  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00002301;  
+  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00802301; 
+  // rx irq
+  while (!(*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19) );
+   
   // dma length ready, dma can be configured now
   while (!(*reg32(ETH_BASE,IDMA_RX_EN_OFFSET)));
 

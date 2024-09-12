@@ -138,7 +138,7 @@ module fixture_cheshire_soc #(
     .eth_txd_o          ( eth_txd     ),
     .eth_txctl_o        ( eth_txctl   ),
     .eth_rstn_o         ( eth_rstn    ),  
-    .eth_mdio_i         ( eth_mdio_i  ),
+    .eth_mdio_i         ( 1'b0        ),// eth_mdio_i
     .eth_mdio_o         ( eth_mdio_o  ),
     .eth_mdio_oe        ( eth_mdio_en ),
     .eth_mdc_o          ( eth_mdc     ),
