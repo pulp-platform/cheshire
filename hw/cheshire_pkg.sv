@@ -480,74 +480,43 @@ package cheshire_pkg;
     endcase
   endfunction
 
-  function automatic config_pkg::cva6_cfg_t gen_cva6_cfg(cheshire_cfg_t cfg);
+  function automatic config_pkg::cva6_user_cfg_t gen_cva6_cfg(cheshire_cfg_t cfg);
     doub_bt SizeSpm = get_llc_size(cfg);
     doub_bt SizeLlcOut = cfg.LlcOutRegionEnd - cfg.LlcOutRegionStart;
     doub_bt CieBase   = cfg.Cva6ExtCieOnTop ? 64'h8000_0000 - cfg.Cva6ExtCieLength : 64'h2000_0000;
     doub_bt NoCieBase = cfg.Cva6ExtCieOnTop ? 64'h2000_0000 : 64'h2000_0000 + cfg.Cva6ExtCieLength;
-    return config_pkg::cva6_cfg_t'{
-      NrCommitPorts         : 2,
-      AxiAddrWidth          : cfg.AddrWidth,
-      AxiDataWidth          : cfg.AxiDataWidth,
-      AxiIdWidth            : Cva6IdWidth,
-      AxiUserWidth          : cfg.AxiUserWidth,
-      NrLoadBufEntries      : 2,
-      FpuEn                 : 1,
-      XF16                  : 0,
-      XF16ALT               : 0,
-      XF8                   : 0,
-      XF8ALT                : 0,
-      RVA                   : 1,
-      RVB                   : 0,
-      RVV                   : 0,
-      RVC                   : 1,
-      RVH                   : 1,
-      RVZCB                 : 1,
-      XFVec                 : 0,
-      CvxifEn               : 0,
-      ZiCondExtEn           : 1,
-      RVSCLIC               : cfg.Clic,
-      RVF                   : 1,
-      RVD                   : 1,
-      FpPresent             : 1,
-      NSX                   : 0,
-      FLen                  : 64,
-      RVFVec                : 0,
-      XF16Vec               : 0,
-      XF16ALTVec            : 0,
-      XF8Vec                : 0,
-      NrRgprPorts           : 0,
-      NrWbPorts             : 0,
-      EnableAccelerator     : 0,
-      RVS                   : 1,
-      RVU                   : 1,
-      HaltAddress           : 'h800, // Relative to AmDbg
-      ExceptionAddress      : 'h810, // Relative to AmDbg
-      RASDepth              : cfg.Cva6RASDepth,
-      BTBEntries            : cfg.Cva6BTBEntries,
-      BHTEntries            : cfg.Cva6BHTEntries,
-      DmBaseAddress         : AmDbg,
-      TvalEn                : 1,
-      NrPMPEntries          : cfg.Cva6NrPMPEntries,
-      PMPCfgRstVal          : {16{64'h0}},
-      PMPAddrRstVal         : {16{64'h0}},
-      PMPEntryReadOnly      : 16'd0,
-      NOCType               : config_pkg::NOC_TYPE_AXI4_ATOP,
-      CLICNumInterruptSrc   : NumCoreIrqs + NumIntIntrs + cfg.NumExtClicIntrs,
-      NrNonIdempotentRules  : 2,   // Periphs, ExtNonCIE
-      NonIdempotentAddrBase : {64'h0000_0000, NoCieBase},
-      NonIdempotentLength   : {64'h1000_0000, 64'h6000_0000 - cfg.Cva6ExtCieLength},
-      NrExecuteRegionRules  : 5,   // Debug, Bootrom, AllSPM, LLCOut, ExtCIE
-      ExecuteRegionAddrBase : {AmDbg, AmBrom, AmSpm, cfg.LlcOutRegionStart, CieBase},
-      ExecuteRegionLength   : {64'h40000, 64'h40000, 2*SizeSpm, SizeLlcOut, cfg.Cva6ExtCieLength},
-      NrCachedRegionRules   : 3,   // CachedSPM, LLCOut, ExtCIE
-      CachedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart,  CieBase},
-      CachedRegionLength    : {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength},
-      MaxOutstandingStores  : 7,
-      DebugEn               : 1,
-      NonIdemPotenceEn      : 0,
-      AxiBurstWriteEn       : 0
-    };
+    // Base our config on the upstream default for this variant
+    config_pkg::cva6_user_cfg_t ret = cva6_config_pkg::cva6_cfg;
+    // Modify what we need to
+    ret.AxiAddrWidth          = cfg.AddrWidth;
+    ret.AxiDataWidth          = cfg.AxiDataWidth;
+    ret.AxiIdWidth            = Cva6IdWidth;
+    ret.AxiUserWidth          = cfg.AxiUserWidth;
+    ret.DmBaseAddress         = AmDbg;
+    ret.HaltAddress           = 'h800; // Relative to AmDbg
+    ret.ExceptionAddress      = 'h810; // Relative to AmDbg
+    ret.NrNonIdempotentRules  = 2;   // Periphs, ExtNonCI;
+    ret.NonIdempotentAddrBase = {64'h0000_0000, NoCieBase};
+    ret.NOCType               = config_pkg::NOC_TYPE_AXI4_ATOP;
+    ret.NonIdempotentLength   = {64'h1000_0000, 64'h6000_0000 - cfg.Cva6ExtCieLength};
+    ret.NrExecuteRegionRules  = 5;   // Debug, Bootrom, AllSPM, LLCOut, ExtCI;
+    ret.ExecuteRegionAddrBase = {AmDbg, AmBrom, AmSpm, cfg.LlcOutRegionStart, CieBase};
+    ret.ExecuteRegionLength   = {64'h40000, 64'h40000, 2*SizeSpm, SizeLlcOut, cfg.Cva6ExtCieLength};
+    ret.NrCachedRegionRules   = 3;   // CachedSPM, LLCOut, ExtCI;
+    ret.CachedRegionAddrBase  = {AmSpm,   cfg.LlcOutRegionStart,  CieBase};
+    ret.CachedRegionLength    = {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength};
+    ret.DebugEn               = 1;
+    ret.RVSCLIC               = cfg.Clic;
+    ret.CLICNumInterruptSrc   = NumCoreIrqs + NumIntIntrs + cfg.NumExtClicIntrs;
+    // TODO: Should some things be removed from the main config?
+    // TODO: Should other things be added to the main config?
+    // TODO: Tune missing parameters of interest (esp. cache and interconnect) properly
+    ret.RASDepth              = cfg.Cva6RASDepth;
+    ret.BTBEntries            = cfg.Cva6BTBEntries;
+    ret.BHTEntries            = cfg.Cva6BHTEntries;
+    ret.NrPMPEntries          = cfg.Cva6NrPMPEntries;
+    // Return modified config
+    return ret;
   endfunction
 
   ////////////////
