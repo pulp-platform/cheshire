@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 //
-// Nicole Narr <narrn@student.ethz.ch>
+//  Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 // Thomas Benz <tbenz@iis.ee.ethz.ch>
@@ -12,20 +12,18 @@ module cheshire_soc
   import cheshire_pkg::*;
 #(
   // Cheshire config
-  parameter cheshire_cfg_t                               Cfg                    = '0,
+  parameter cheshire_cfg_t                               Cfg               = '0,
   // Debug info for external harts
-  parameter dm::hartinfo_t [iomsb(Cfg.NumExtDbgHarts):0] ExtHartinfo            = '0,
+  parameter dm::hartinfo_t [iomsb(Cfg.NumExtDbgHarts):0] ExtHartinfo       = '0,
   // Interconnect types (must agree with Cheshire config)
-  parameter type                                         axi_ext_llc_req_t      = logic,
-  parameter type                                         axi_ext_llc_rsp_t      = logic,
-  parameter type                                         axi_ext_mst_req_t      = logic,
-  parameter type                                         axi_ext_mst_rsp_t      = logic,
-  parameter type                                         axi_ext_wide_mst_req_t = logic,
-  parameter type                                         axi_ext_wide_mst_rsp_t = logic,
-  parameter type                                         axi_ext_slv_req_t      = logic,
-  parameter type                                         axi_ext_slv_rsp_t      = logic,
-  parameter type                                         reg_ext_req_t          = logic,
-  parameter type                                         reg_ext_rsp_t          = logic
+  parameter type                                         axi_ext_llc_req_t = logic,
+  parameter type                                         axi_ext_llc_rsp_t = logic,
+  parameter type                                         axi_ext_mst_req_t = logic,
+  parameter type                                         axi_ext_mst_rsp_t = logic,
+  parameter type                                         axi_ext_slv_req_t = logic,
+  parameter type                                         axi_ext_slv_rsp_t = logic,
+  parameter type                                         reg_ext_req_t     = logic,
+  parameter type                                         reg_ext_rsp_t     = logic
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -38,8 +36,6 @@ module cheshire_soc
   // External AXI crossbar ports
   input axi_ext_mst_req_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_req_i,
   output axi_ext_mst_rsp_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_rsp_o,
-  input axi_ext_wide_mst_req_t [iomsb(Cfg.AxiExtNumWideMst):0] axi_ext_wide_mst_req_i,
-  output axi_ext_wide_mst_rsp_t [iomsb(Cfg.AxiExtNumWideMst):0] axi_ext_wide_mst_rsp_o,
   output axi_ext_slv_req_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_req_o,
   input axi_ext_slv_rsp_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_rsp_i,
   // External reg demux slaves
@@ -210,7 +206,6 @@ module cheshire_soc
   // Define needed parameters
   localparam int unsigned AxiStrbWidth = Cfg.AxiDataWidth / 8;
   localparam int unsigned AxiSlvIdWidth = Cfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
-  localparam int unsigned WideSlaveIdWidth = $clog2(Cfg.MemIslWidePorts);
 
   // Type for address map entries
   typedef struct packed {
@@ -1427,65 +1422,6 @@ module cheshire_soc
     assign gpio_en_o      = '0;
 
     assign intr.intn.gpio = '0;
-
-  end
-
-  if (Cfg.MemoryIsland) begin : gen_memoryisland
-
-    localparam int WideDataWidth = Cfg.AxiDataWidth * Cfg.MemIslNarrowToWideFactor;
-
-    axi_slv_req_t axi_memory_island_amo_req;
-    axi_slv_rsp_t axi_memory_island_amo_rsp;
-
-    // Shim atomics, which are not supported by LLC
-    // TODO: This should be a filter, but how do we filter RISC-V atomics?
-    axi_riscv_atomics_structs #(
-      .AxiAddrWidth   (Cfg.AddrWidth),
-      .AxiDataWidth   (Cfg.AxiDataWidth),
-      .AxiIdWidth     (AxiSlvIdWidth),
-      .AxiUserWidth   (Cfg.AxiUserWidth),
-      .AxiMaxReadTxns (Cfg.LlcMaxReadTxns),
-      .AxiMaxWriteTxns(Cfg.LlcMaxWriteTxns),
-      .AxiUserAsId    (1),
-      .AxiUserIdMsb   (Cfg.AxiUserAmoMsb),
-      .AxiUserIdLsb   (Cfg.AxiUserAmoLsb),
-      .RiscvWordWidth (riscv::XLEN),
-      .NAxiCuts       (Cfg.LlcAmoNumCuts),
-      .axi_req_t      (axi_slv_req_t),
-      .axi_rsp_t      (axi_slv_rsp_t)
-    ) i_memory_island_atomics (
-      .clk_i,
-      .rst_ni,
-      .axi_slv_req_i(axi_out_req[AxiOut.memoryisland]),
-      .axi_slv_rsp_o(axi_out_rsp[AxiOut.memoryisland]),
-      .axi_mst_req_o(axi_memory_island_amo_req),
-      .axi_mst_rsp_i(axi_memory_island_amo_rsp)
-    );
-
-    axi_memory_island_wrap #(
-      .AddrWidth       (Cfg.AddrWidth),
-      .NarrowDataWidth (Cfg.AxiDataWidth),
-      .WideDataWidth   (WideDataWidth),
-      .AxiNarrowIdWidth(AxiSlvIdWidth),
-      .AxiWideIdWidth  (WideSlaveIdWidth),
-      .axi_narrow_req_t(axi_slv_req_t),
-      .axi_narrow_rsp_t(axi_slv_rsp_t),
-      .axi_wide_req_t  (mem_isl_wide_axi_mst_req_t),
-      .axi_wide_rsp_t  (mem_isl_wide_axi_mst_rsp_t),
-      .NumNarrowReq    (Cfg.MemIslNarrowPorts),
-      .NumWideReq      (Cfg.MemIslWidePorts),
-      .NumWideBanks    (Cfg.MemIslNumWideBanks),
-      .NarrowExtraBF   (1),
-      .WordsPerBank    (Cfg.MemIslWordsPerBank)
-    ) i_memory_island (
-      .clk_i,
-      .rst_ni,
-      .axi_narrow_req_i(axi_memory_island_amo_req),
-      .axi_narrow_rsp_o(axi_memory_island_amo_rsp),
-      // SCHEREMO: TODO: Demux wide accesses to go over narrow ports iff address not in memory island range
-      .axi_wide_req_i  (axi_ext_wide_mst_req_i),
-      .axi_wide_rsp_o  (axi_ext_wide_mst_rsp_o)
-    );
 
   end
 
