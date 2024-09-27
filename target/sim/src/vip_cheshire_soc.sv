@@ -448,6 +448,7 @@ module vip_cheshire_soc
         uart_boot_eoc = 1;
       end else begin
         uart_read_buf.push_back(bite);
+        $display("Read Byte: %s", bite);
       end
     end
   end
