@@ -9,6 +9,8 @@
 INCLUDE common.ldh
 
 SECTIONS {
+  __stack_pointer$  = ORIGIN(memisl) + LENGTH(memisl);
+
   .text : {
     *(.text._start)
     *(.text)
