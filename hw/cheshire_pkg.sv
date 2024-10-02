@@ -629,10 +629,10 @@ package cheshire_pkg;
     LlcOutConnect     : 1,
     LlcOutRegionStart : 'h8000_0000,
     LlcOutRegionEnd   : 64'h1_0000_0000,
-    // VGA: RGB332
-    VgaRedWidth       : 3,
-    VgaGreenWidth     : 3,
-    VgaBlueWidth      : 2,
+    // VGA: RGB565
+    VgaRedWidth       : 5,
+    VgaGreenWidth     : 6,
+    VgaBlueWidth      : 5,
     VgaHCountWidth    : 24, // TODO: Default is 32; is this needed?
     VgaVCountWidth    : 24, // TODO: See above
     VgaBufferDepth    : 16,
