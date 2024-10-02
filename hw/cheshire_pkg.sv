@@ -463,7 +463,7 @@ package cheshire_pkg;
 
   // Choose static colocation of IDs based on how heavily used and/or critical they are
   function automatic cva6_id_map_t gen_cva6_id_map(cheshire_cfg_t cfg);
-    localparam int unsigned ArrayDefaultValue[2] = '{0, 0}; // slang workaround
+    localparam int unsigned DefaultMapEntry[2] = '{0, 0};
     case (cfg.AxiMstIdWidth)
       // Provide exclusive ID to I-cache to prevent fetch blocking
       1: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 0}, '{Cva6IdBypAccel, 0}, '{Cva6IdBypStore, 0},
@@ -474,8 +474,9 @@ package cheshire_pkg;
       // Compress output ID space without any serialization
       3: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 1}, '{Cva6IdBypAccel, 6}, '{Cva6IdBypStore, 2},
                   '{Cva6IdBypAmo, 3}, '{Cva6IdICache,  4}, '{Cva6IdDCache,   5}};
-      // With 4b of ID or more, no remapping is necessary
-      default: return '{default: ArrayDefaultValue};
+      // With 4b of ID or more, no remapping is necessary; return redundant 0 -> 0 ID remaps.
+      // This leaves ID mapping unaltered only if `MstIdBaseOffset` in `axi_id_serialize` is 0.
+      default: return '{default: DefaultMapEntry};
     endcase
   endfunction
 
