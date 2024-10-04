@@ -4,6 +4,13 @@
 //
 // Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
+`ifdef TARGET_VCU118
+  `define USE_RESET
+  `define USE_SD
+  `define USE_DDR4
+  `define USE_VIO
+`endif
+
 `ifdef TARGET_VCU128
   `define USE_RESET
   `define USE_JTAG
@@ -45,6 +52,27 @@
 `define USE_DDR
 `endif
 
+`ifdef TARGET_VCU118
+`define DDR4_INTF \
+  input  	        c0_sys_clk_p, \
+  input 	        c0_sys_clk_n, \
+  output          c0_ddr4_reset_n, \
+  output [0:0]    c0_ddr4_ck_t, \
+  output [0:0]    c0_ddr4_ck_c, \
+  output          c0_ddr4_act_n, \
+  output [16:0]   c0_ddr4_adr, \
+  output [1:0]    c0_ddr4_ba, \
+  output [0:0]    c0_ddr4_bg, \
+  output [0:0]    c0_ddr4_cke, \
+  output [0:0]    c0_ddr4_odt, \
+  output [0:0]    c0_ddr4_cs_n, \
+  inout  [7:0]    c0_ddr4_dm_dbi_n, \
+  inout  [63:0]   c0_ddr4_dq, \
+  inout  [7:0]    c0_ddr4_dqs_c, \
+  inout  [7:0]    c0_ddr4_dqs_t,
+`endif 
+
+`ifdef TARGET_VCU128
 `define DDR4_INTF \
   output          c0_ddr4_reset_n, \
   output [0:0]    c0_ddr4_ck_t, \
@@ -60,6 +88,7 @@
   inout  [71:0]   c0_ddr4_dq, \
   inout  [8:0]    c0_ddr4_dqs_c, \
   inout  [8:0]    c0_ddr4_dqs_t,
+`endif 
 
 `define DDR3_INTF \
   output        ddr3_ck_p, \

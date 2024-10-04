@@ -52,7 +52,9 @@ module cheshire_top_xilinx (
   input  logic        sd_cd_i,
   output logic        sd_cmd_o,
   inout  wire  [3:0]  sd_d_io,
+`ifndef TARGET_VCU118  
   output logic        sd_reset_o,
+`endif  
   output logic        sd_sclk_o,
 `endif
 
@@ -257,8 +259,10 @@ module cheshire_top_xilinx (
   logic [3:0] spi_sd_en;
 
 `ifdef USE_SD
+`ifndef TARGET_VCU118
   // Assert reset low => Apply power to the SD Card
   assign sd_reset_o       = 1'b0;
+`endif   
   // SCK  - SD CLK signal
   assign sd_sclk_o        = spi_sck_en    ? spi_sck_soc       : 1'b1;
   // CS   - SD DAT3 signal
