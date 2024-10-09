@@ -1,0 +1,29 @@
+$date
+        2024-Oct-09 10:28:21
+$end
+$version
+        Vivado v2022.1 (64-bit)
+$end
+$timescale
+        1ps
+$end
+$scope module dut $end
+$var reg 2 " vio_boot_mode [1:0] $end
+$var reg 1 $ vio_boot_mode_sel $end
+$var reg 1 % vio_reset $end
+$var reg 1 & _TRIGGER $end
+$var reg 1 ' _WINDOW $end
+$var reg 1 ( _GAP $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b0 "
+0$
+0%
+0&
+1'
+0(
+$end
+#8192
+1&
