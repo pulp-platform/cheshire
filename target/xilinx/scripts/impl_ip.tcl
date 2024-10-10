@@ -21,13 +21,15 @@ switch $proj {
                 set_property -dict  [list \
                     CONFIG.PRIM_SOURCE {No_buffer} \
                     CONFIG.PRIM_IN_FREQ {200.000} \
+                    CONFIG.CLKOUT1_USED {true} \
                     CONFIG.CLKOUT2_USED {true} \
                     CONFIG.CLKOUT3_USED {true} \
                     CONFIG.CLKOUT4_USED {true} \
-                    CONFIG.CLK_OUT1_PORT {clk_100} \
+                    CONFIG.CLK_OUT1_PORT {clk_200} \
                     CONFIG.CLK_OUT2_PORT {clk_50} \
                     CONFIG.CLK_OUT3_PORT {clk_20} \
                     CONFIG.CLK_OUT4_PORT {clk_10} \
+                    CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {200.000} \
                     CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {50.000} \
                     CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {20.000} \
                     CONFIG.CLKOUT4_REQUESTED_OUT_FREQ {10.000} \
@@ -35,9 +37,10 @@ switch $proj {
                     CONFIG.MMCM_CLKFBOUT_MULT_F {5.000} \
                     CONFIG.MMCM_CLKIN1_PERIOD {5.000} \
                     CONFIG.MMCM_CLKIN2_PERIOD {10.0} \
-                    CONFIG.MMCM_CLKOUT1_DIVIDE {20} \
+                    CONFIG.MMCM_CLKOUT1_DIVIDE {200} \
                     CONFIG.MMCM_CLKOUT2_DIVIDE {50} \
-                    CONFIG.MMCM_CLKOUT3_DIVIDE {100} \
+                    CONFIG.MMCM_CLKOUT3_DIVIDE {20} \
+                    CONFIG.MMCM_CLKOUT4_DIVIDE {10} \
                     CONFIG.NUM_OUT_CLKS {4} \
                     CONFIG.CLKOUT1_JITTER {112.316} \
                     CONFIG.CLKOUT1_PHASE_ERROR {89.971} \
