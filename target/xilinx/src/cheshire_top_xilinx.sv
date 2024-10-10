@@ -121,6 +121,7 @@ module cheshire_top_xilinx (
 
   wire sys_clk;
   wire soc_clk;
+  wire hyp_clk;
 
   IBUFDS #(
     .IBUF_LOW_PWR ("FALSE")
@@ -134,8 +135,8 @@ module cheshire_top_xilinx (
     .clk_in1  ( sys_clk ),
     .reset    ( '0 ),
     .locked   ( ),
-    .clk_100  ( ),
-    .clk_50   ( soc_clk  ),
+    .clk_200  ( hyp_clk ),
+    .clk_50   ( soc_clk ),
     .clk_20   ( ),
     .clk_10   ( )
   );
@@ -429,6 +430,50 @@ module cheshire_top_xilinx (
     logic [FPGACfg.AddrWidth-1:0] end_addr;
   } hyper_addr_rule_t;
 
+  axi_llc_req_t axi_hyp_req;
+  axi_llc_rsp_t axi_hyp_rsp;
+  reg_req_t reg_hyp_req;
+  reg_rsp_t reg_hyp_rsp;
+
+  axi_cdc #(
+    .aw_chan_t  ( axi_llc_aw_chan_t ), // AW Channel Type
+    .w_chan_t   ( axi_llc_w_chan_t  ), //  W Channel Type
+    .b_chan_t   ( axi_llc_b_chan_t  ), //  B Channel Type
+    .ar_chan_t  ( axi_llc_ar_chan_t ), // AR Channel Type
+    .r_chan_t   ( axi_llc_r_chan_t  ), //  R Channel Type
+    .axi_req_t  ( axi_llc_req_t     ), // encapsulates request channels
+    .axi_resp_t ( axi_llc_rsp_t     ), // encapsulates request channels
+    /// Depth of the FIFO crossing the clock domain, given as 2**LOG_DEPTH.
+    .LogDepth   (3),
+    /// Number of synchronization registers to insert on the async pointers
+    .SyncStages (3)
+  ) i_axi_hyper_cdc (
+    // slave side - clocked by `src_clk_i`
+    .src_clk_i  ( soc_clk ),
+    .src_rst_ni ( rst_n   ),
+    .src_req_i  ( axi_llc_mst_req ),
+    .src_resp_o ( axi_llc_mst_rsp ),
+    // master side - clocked by `dst_clk_i`
+    .dst_clk_i  ( hyp_clk ),
+    .dst_rst_ni ( rst_n   ),
+    .dst_req_o  ( axi_hyp_req ),
+    .dst_resp_i ( axi_hyp_rsp )
+  );
+
+  reg_cdc #(
+    .req_t ( reg_req_t ),
+    .rsp_t ( reg_rsp_t )
+  ) i_reg_hyper_cdc (
+    .src_clk_i  ( soc_clk ),
+    .src_rst_ni ( rst_n   ),
+    .src_req_i  ( reg_ext_slv_req ),
+    .src_rsp_o  ( reg_ext_slv_rsp ),
+    .dst_clk_i  ( hyp_clk ),
+    .dst_rst_ni ( rst_n   ),
+    .dst_req_o  ( reg_hyp_req ),
+    .dst_rsp_i  ( reg_hyp_rsp )
+  );
+
   // Hyperbus
   hyperbus #(
     .NumChips         ( 2 ),
@@ -455,15 +500,15 @@ module cheshire_top_xilinx (
   ) i_hyperbus (
     // WARNING: Keeping system and PHY synchronous works only with careful constraints.
     // DO NOT copy-paste this to other projects without consideration; you were warned.
-    .clk_phy_i        ( soc_clk      ),
+    .clk_phy_i        ( hyp_clk      ),
     .rst_phy_ni       ( rst_n        ),
-    .clk_sys_i        ( soc_clk      ),
+    .clk_sys_i        ( hyp_clk      ),
     .rst_sys_ni       ( rst_n        ),
     .test_mode_i,
-    .axi_req_i        ( axi_llc_mst_req ),
-    .axi_rsp_o        ( axi_llc_mst_rsp ),
-    .reg_req_i        ( reg_ext_slv_req ),
-    .reg_rsp_o        ( reg_ext_slv_rsp ),
+    .axi_req_i        ( axi_hyp_req ),
+    .axi_rsp_o        ( axi_hyp_rsp ),
+    .reg_req_i        ( reg_hyp_req ),
+    .reg_rsp_o        ( reg_hyp_rsp ),
     .hyper_cs_no,
     .hyper_ck_o,
     .hyper_ck_no,
