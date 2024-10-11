@@ -23,6 +23,8 @@ set soc_clk [get_clocks -of_objects [get_pins i_clkwiz/clk_50]]
 set HYP_TCK 5.0
 set hyp_clk [get_clocks -of_objects [get_pins i_clkwiz/clk_200]]
 
+set_false_path -hold -setup -from [get_pins i_rstgen/i_rstgen_bypass/synch_regs_q_reg[3]/C]
+
 ############
 # Hyperram #
 ############
