@@ -1005,7 +1005,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       axirt       : Cfg.AxiRt,
       clic        : Cfg.Clic,
       irq_router  : Cfg.IrqRouter,
-      bus_err     : Cfg.BusErr
+      bus_err     : Cfg.BusErr,
+      new_usb     : Cfg.NewUsb
     },
     llc_size      : get_llc_size(Cfg),
     vga_params    : '{
@@ -1711,6 +1712,30 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign usb_dp_oe_o = '0;
 
     assign intr.intn.usb = 0;
+
+  end
+
+  ///////////////
+  //  New USB  //
+  ///////////////
+
+  if (Cfg.NewUsb) begin : gen_new_usb
+
+    // Register port: tied-off
+    // TODO: your magic here
+    // reg_out_req[RegOut.new_usb]
+    assign reg_out_rsp[RegOut.new_usb] = '0;
+
+    // DMA port tied-off
+    assign axi_in_req[AxiIn.new_usb] = '0;
+
+    // IRQ tied-off
+    assign intr.intn.new_usb = '0;
+
+  end else begin : gen_no_new_usb
+
+    // tie-off other signals (USB PHY, IRQs)
+    assign intr.intn.new_usb = '0;
 
   end
 

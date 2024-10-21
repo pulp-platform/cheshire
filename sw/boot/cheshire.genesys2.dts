@@ -24,4 +24,10 @@
     interrupt-parent = <&PLIC0>;
     interrupts = <19>;
   };
+  new_usb@300a000 {
+    compatible = "generic-ohci";
+    reg = <0x0 0x300a000 0x0 0x1000>;
+    interrupt-parent = <&PLIC0>;
+    interrupts = <20>;
+  };
 };

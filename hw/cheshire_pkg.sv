@@ -134,6 +134,7 @@ package cheshire_pkg;
     bit     SerialLink;
     bit     Vga;
     bit     Usb;
+    bit     NewUsb;
     bit     AxiRt;
     bit     Clic;
     bit     IrqRouter;
@@ -178,6 +179,8 @@ package cheshire_pkg;
     dw_bt   UsbDmaMaxReads;
     doub_bt UsbAddrMask;
     doub_bt UsbAddrDomain;
+    // TODO: parameter for NewUsb (FIFO depth...)
+    /// ...
     // Parameters for DMA
     dw_bt   DmaConfMaxReadTxns;
     dw_bt   DmaConfMaxWriteTxns;
@@ -218,6 +221,7 @@ package cheshire_pkg;
   typedef struct packed {
     cheshire_bus_err_intr_t bus_err;
     logic [31:0] gpio;
+    logic new_usb;
     logic usb;
     logic spih_spi_event;
     logic spih_error;
@@ -299,6 +303,7 @@ package cheshire_pkg;
     aw_bt slink;
     aw_bt vga;
     aw_bt usb;
+    aw_bt new_usb;
     aw_bt ext_base;
     aw_bt num_in;
   } axi_in_t;
@@ -308,10 +313,11 @@ package cheshire_pkg;
     int unsigned i = 0;
     for (int j = 0; j < cfg.NumCores; j++) begin ret.cores[i] = i; i++; end
     ret.dbg = i;
-    if (cfg.Dma)        begin i++; ret.dma   = i; end
-    if (cfg.SerialLink) begin i++; ret.slink = i; end
-    if (cfg.Vga)        begin i++; ret.vga   = i; end
-    if (cfg.Usb)        begin i++; ret.usb   = i; end
+    if (cfg.Dma)        begin i++; ret.dma     = i; end
+    if (cfg.SerialLink) begin i++; ret.slink   = i; end
+    if (cfg.Vga)        begin i++; ret.vga     = i; end
+    if (cfg.Usb)        begin i++; ret.usb     = i; end
+    if (cfg.NewUsb)     begin i++; ret.new_usb = i; end
     i++;
     ret.ext_base = i;
     ret.num_in = i + cfg.AxiExtNumMst;
@@ -394,6 +400,7 @@ package cheshire_pkg;
     aw_bt slink;
     aw_bt vga;
     aw_bt usb;
+    aw_bt new_usb;
     aw_bt axirt;
     aw_bt irq_router;
     aw_bt [2**MaxCoresWidth-1:0] bus_err;
@@ -419,6 +426,7 @@ package cheshire_pkg;
     if (cfg.SerialLink)   begin i++; ret.slink      = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
     if (cfg.Vga)          begin i++; ret.vga        = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
     if (cfg.Usb)          begin i++; ret.usb        = i; r++; ret.map[r] = '{i, 'h0300_8000, 'h0300_9000}; end
+    if (cfg.NewUsb)       begin i++; ret.new_usb    = i; r++; ret.map[r] = '{i, 'h0300_a000, 'h0300_b000}; end
     if (cfg.IrqRouter)    begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
     if (cfg.AxiRt)        begin i++; ret.axirt      = i; r++; ret.map[r] = '{i, 'h020c_0000, 'h0210_0000}; end
     if (cfg.Clic) for (int j = 0; j < cfg.NumCores; j++) begin
@@ -608,6 +616,7 @@ package cheshire_pkg;
     SerialLink        : 1,
     Vga               : 1,
     Usb               : 1,
+    NewUsb            : 1,
     AxiRt             : 0,
     Clic              : 0,
     IrqRouter         : 0,
