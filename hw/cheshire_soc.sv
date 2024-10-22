@@ -812,7 +812,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
       // Issue invalidations to CVA6 L1D$
       axi_inval_filter #(
-        .MaxTxns    ( 4                               ),
+        .MaxTxns    ( Cfg.AraParMemReq                ),
         .AddrWidth  ( Cfg.AddrWidth                   ),
         .L1LineWidth( ariane_pkg::DCACHE_LINE_WIDTH/8 ),
         .aw_chan_t  ( axi_ara_wide_aw_chan_t          ),
@@ -835,7 +835,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       axi_dw_converter #(
         .AxiSlvPortDataWidth ( AraDataWideWidth       ),
         .AxiMstPortDataWidth ( Cfg.AxiDataWidth       ),
-        .AxiMaxReads         ( 4                      ), // TODO: Tune this w.r.t. ARA_NR_LANES
+        .AxiMaxReads         ( Cfg.AraParMemReq       ),
         .AxiAddrWidth        ( Cfg.AddrWidth          ),
         .AxiIdWidth          ( Cfg.AxiMstIdWidth      ),
         .aw_chan_t           ( axi_ara_wide_aw_chan_t ),

@@ -200,6 +200,7 @@ package cheshire_pkg;
     // Parameters for Ara
     byte_bt AraNrLanes;
     word_bt AraVLEN;
+    byte_bt AraParMemReq;
   } cheshire_cfg_t;
 
   //////////////////
@@ -679,6 +680,7 @@ package cheshire_pkg;
     // Ara
     AraNrLanes          : 2,
     AraVLEN             : 2048,
+    AraParMemReq        : 4,
     // All non-set values should be zero
     default: '0
   };
