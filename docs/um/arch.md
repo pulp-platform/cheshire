@@ -7,6 +7,7 @@ Cheshire is highly configurable; available features and resources depend on its 
 - **Cores**:
     - Up to 31 Linux-capable CVA6 cores with self-invalidation-based coherence
     - A RISC-V debug module with JTAG transport
+    - An Ara RISC-V vector accelerator
 
 - **Peripherals**:
     - Various standard IO interfaces (UART, I2C, SPI, and GPIOs)
@@ -134,6 +135,19 @@ Cheshire defaults on using CVA6 with hypervisor and CLIC support enabled; RV32 c
 | `CoreUserAmoOffs`            | `doub_bt`    | Base offset for core IDs within user AMO range  |
 
 Each CVA6 core is a standalone AXI4 manager at the crossbar. Coherence is maintained through a self-invalidation scheme and RISC-V atomics are handled through a custom, user-channel-based AXI4 extension. For the latter, we wrap the cores and other managers to give each a default user channel assignment and, for atomics-capable managers, a unique ID on a slice of user bits.
+
+### Ara Vector Accelerator
+
+[Ara](https://github.com/pulp-platform/ara) is a RISC-V V vector coprocessor tightly coupled with CVA6. Ara can be instantiated in Cheshire to enable RISC-V V support. Ara exposes the following parameters:
+
+| Parameter                | Type / Range | Description                                                     |
+| ------------------------ | ------------ | --------------------------------------------------------------- |
+| `Ara`                    | `bit`        | Enable the Ara Vector Accelerator                               |
+| `AraNrLanes`             | `byte_bt`    | Number of parallel vector lanes in Ara                          |
+| `AraVlen`                | `word_bt`    | RISC-V V VLEN parameter (default vector register length in bit) |
+| `AraParMemReq`           | `byte_bt`    | Number of possible outstanding memory requests from Ara         |
+
+Ara has a private AXI memory port resized to 64-bit to fit the current L2 memory bandwidth. Currently, we tested 2-lane Ara instances with `VLEN = 2048` without performance loss. Higher lane counts will instantiate a memory port with bandwidth greater than 64-bit/cycle. However, this will be bottlenecked by the current memory bandwidth (64-bit/cycle).
 
 ### Interconnect
 
