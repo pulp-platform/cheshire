@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Thomas Benz <tbenz@iis.ee.ethz.ch>
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 //
-// Validate the budget functionality of AXI RT
+// Validate the isolation functionality of AXI-REALM
 
 #include "axirt.h"
 #include "dif/dma.h"
@@ -28,9 +27,11 @@
 // AXI-REALM
 #define CVA6_ALLOCATED_BUDGET 0x10000000
 #define CVA6_ALLOCATED_PERIOD 0x10000000
-#define DMA_ALLOCATED_BUDGET 0x10000000
+#define DMA_ALLOCATED_BUDGET \
+    (DMA_TOTAL_SIZE_BYTES / 2) // Set budget as half of the number of bytes to
+                               // transfer intentionally
 #define DMA_ALLOCATED_PERIOD 0x10000000
-#define FRAGMENTATION_SIZE_BEATS 1 // Max fragmentation applied to bursts
+#define FRAGMENTATION_SIZE_BEATS 256 // No fragmentation applied to bursts
 
 int main(void) {
 
@@ -67,7 +68,6 @@ int main(void) {
     fence();
 
     volatile uint64_t *sys_src = (volatile uint64_t *)SRC_ADDR;
-    volatile uint64_t *sys_dst = (volatile uint64_t *)DST_ADDR;
 
     // initialize src region
     for (int i = 0; i < DMA_NUM_BEATS; i++) {
@@ -75,29 +75,14 @@ int main(void) {
         fence();
     }
 
-    // launch blocking DMA transfer
-    sys_dma_2d_blk_memcpy(DST_ADDR, SRC_ADDR, DMA_SIZE_BYTES, DMA_DST_STRIDE, DMA_SRC_STRIDE,
-                          DMA_NUM_REPS);
+    // launch non-blocking DMA transfer
+    sys_dma_2d_memcpy(DST_ADDR, SRC_ADDR, DMA_SIZE_BYTES, DMA_DST_STRIDE, DMA_SRC_STRIDE,
+                      DMA_NUM_REPS);
 
-    // Check DMA transfers against gold.
-    for (volatile int i = 0; i < DMA_NUM_BEATS; i++) {
-        CHECK_ASSERT(20, sys_dst[i] == sys_src[i]);
-    }
+    // Poll isolate to check if AXI-REALM isolates the dma when the budget is exceeded. Should
+    // return 1 if dma is isolated.
+    uint8_t isolate_status = __axirt_poll_isolate(AXIREALM_MNGR_ID_DMA);
 
-    // read budget registers for dma and compare
-    volatile uint32_t dma_read_budget_left =
-        *reg32(&__base_axirt, AXI_RT_READ_BUDGET_LEFT_4_REG_OFFSET);
-    volatile uint32_t dma_write_budget_left =
-        *reg32(&__base_axirt, AXI_RT_WRITE_BUDGET_LEFT_4_REG_OFFSET);
-
-    // check budget: return 0 if (initial budget - final budget) matches number of transferred
-    // bytes, otherwise return 1
-    volatile uint8_t dma_r_difference =
-        (DMA_ALLOCATED_BUDGET - dma_read_budget_left) != DMA_TOTAL_SIZE_BYTES;
-    volatile uint8_t dma_w_difference =
-        (DMA_ALLOCATED_BUDGET - dma_write_budget_left) != DMA_TOTAL_SIZE_BYTES;
-    // w and r are symmetric on the dma: left budgets should be equal
-    volatile uint8_t dma_rw_mismatch = dma_read_budget_left != dma_write_budget_left;
-
-    return dma_rw_mismatch | dma_r_difference | dma_w_difference;
+    // return 0 if manager was correctly isolated
+    return !isolate_status;
 }

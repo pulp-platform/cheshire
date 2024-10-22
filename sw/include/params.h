@@ -51,3 +51,12 @@ static const uint64_t __BOOT_DTB_TYPE_GUID[2] = {0x42DE2AEFBA442F61UL, 0x9DCB3A5
 
 // GUID of firmware partition we boot into
 static const uint64_t __BOOT_FW_TYPE_GUID[2] = {0x4B0D3F5B99EC86DAUL, 0x59F8A5CFBAC44B8FUL};
+
+// IDs for AXI-REALM managers
+// Adjust if more CVA6 cores, default to 1
+enum axirealm_mngr_id {
+    AXIREALM_MNGR_ID_CVA60 = 0,
+    AXIREALM_MNGR_ID_DBG = 1,
+    AXIREALM_MNGR_ID_DMA = 2,
+    AXIREALM_MNGR_ID_SL = 3
+};
