@@ -21,7 +21,7 @@ package tb_cheshire_pkg;
       cheshire_cfg_t ret = DefaultCfg;
       ret.Ara        = 1;
       ret.AraNrLanes = 2;
-      ret.AraVLEN    = 2048;
+      ret.AraVlen    = 2048;
       return ret;
     endfunction
 

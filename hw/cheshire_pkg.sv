@@ -199,7 +199,7 @@ package cheshire_pkg;
     bit     AxiRtEnableChecks;
     // Parameters for Ara
     byte_bt AraNrLanes;
-    word_bt AraVLEN;
+    word_bt AraVlen;
     byte_bt AraParMemReq;
   } cheshire_cfg_t;
 
@@ -679,7 +679,7 @@ package cheshire_pkg;
     AxiRtCutPaths       : 1,
     // Ara
     AraNrLanes          : 2,
-    AraVLEN             : 2048,
+    AraVlen             : 2048,
     AraParMemReq        : 4,
     // All non-set values should be zero
     default: '0

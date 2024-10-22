@@ -788,7 +788,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
       ara #(
         .NrLanes      ( Cfg.AraNrLanes         ),
-        .VLEN         ( Cfg.AraVLEN            ),
+        .VLEN         ( Cfg.AraVlen            ),
         .AxiDataWidth ( AraDataWideWidth       ),
         .AxiAddrWidth ( Cfg.AddrWidth          ),
         .axi_ar_t     ( axi_ara_wide_ar_chan_t ),
