@@ -864,9 +864,9 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     end else begin : gen_no_ara
       // Tie-to-safe the Ara-related signals
-      assign acc_resp              = '0;
-      assign inval_valid           = '0;
-      assign inval_addr            = '0;
+      assign acc_resp    = '0;
+      assign inval_valid = '0;
+      assign inval_addr  = '0;
     end
   end
 
