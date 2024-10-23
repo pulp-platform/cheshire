@@ -1721,10 +1721,19 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   if (Cfg.NewUsb) begin : gen_new_usb
 
-    // Register port: tied-off
-    // TODO: your magic here
-    // reg_out_req[RegOut.new_usb]
-    assign reg_out_rsp[RegOut.new_usb] = '0;
+
+    newusb_reg_top #(
+      .reg_req_t  ( reg_req_t ),
+      .reg_rsp_t  ( reg_rsp_t )
+    ) i_regs (
+      .clk_i,
+      .rst_ni,
+      .reg_req_i ( reg_out_req[RegOut.new_usb] ),
+      .reg_rsp_o ( reg_out_rsp[RegOut.new_usb] ),
+      .reg2hw    ( /* NC */  ),
+      .hw2reg    ( '0        ),
+      .devmode_i (  1'b1     )
+    );
 
     // DMA port tied-off
     assign axi_in_req[AxiIn.new_usb] = '0;

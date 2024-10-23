@@ -19,10 +19,11 @@
     { name:     "HcRevision"
       desc:     "OHCI Revision Number Register"
       swaccess: "ro"
-      hwaccess: "hrw"
+      hwaccess: "none"
       fields: [
         { bits:   "31:8"
           name:   "Reserved"
+          desc:   "Reserved"
           resval: "0"
         }
         { bits:   "7:0"
@@ -36,10 +37,12 @@
     { name:     "HcControl"
       desc:     "HC Control Operating Mode Register"
       swaccess: "ro"
-      hwaccess: "hrw"
+      hwaccess: "hwo"
+      hwext:    "true"
       fields: [
         { bits:   "31:11"
           name:   "Reserved"
+          desc:   "Reserved"
           resval: "0"
         }
         { bits:     "10"
@@ -147,10 +150,12 @@
     { name:     "HcCommandStatus"
       desc:     "HC Command and Status Register"
       swaccess: "ro"
-      hwaccess: "hrw"
+      hwaccess: "hwo"
+      hwext:    "true"
       fields: [
         { bits:   "31:18"
-          name:   "Reserved"
+          name:   "ReservedUpper"
+          desc:   "ReservedUpper"
           resval: "0"
         }
         { bits:   "17:16"
@@ -159,7 +164,8 @@
           resval: "0"
         }
         { bits:   "15:4"
-          name:   "Reserved"
+          name:   "ReservedLower"
+          desc:   "ReservedLower"
           resval: "0"
         }
         { bits:     "3"
@@ -212,10 +218,12 @@
     { name:     "HcInterruptStatus"
       desc:     "HC Interrupt and Status Register"
       swaccess: "ro"
-      hwaccess: "hrw"
+      hwaccess: "hwo"
+      hwext:    "true"
       fields: [
         { bits:   "31"
-          name:   "Reserved"
+          name:   "ReservedUpper"
+          desc:   "ReservedUpper"
           resval: "0"
         }
         { bits:     "30"
@@ -226,7 +234,8 @@
           resval:   "0"
         }
         { bits:   "29:7"
-          name:   "Reserved"
+          name:   "ReservedLower"
+          desc:   "ReservedLower"
           resval: "0"
         }
         { bits:     "6"
@@ -312,7 +321,8 @@
     { name:     "HcInterruptEnable"
       desc:     "HC Interrupt Enable Register"
       swaccess: "ro"
-      hwaccess: "hrw"
+      hwaccess: "hwo"
+      hwext:    "true"
       fields: [
         { bits:     "31"
           name:     "MIE"
@@ -338,6 +348,7 @@
         }
         { bits:   "29:7"
           name:   "Reserved"
+          desc:   "Reserved"
           resval: "0"
         }
         { bits:     "6"
@@ -423,7 +434,8 @@
     { name:     "HcInterruptDisable"
       desc:     "HC Interrupt Disable Register"
       swaccess: "ro"
-      hwaccess: "hrw"
+      hwaccess: "hwo"
+      hwext:    "true"
       fields: [
         { bits:     "31"
           name:     "MIE"
@@ -449,6 +461,7 @@
         }
         { bits:   "29:7"
           name:   "Reserved"
+          desc:   "Reserved"
           resval: "0"
         }
         { bits:     "6"
@@ -534,7 +547,8 @@
     { name:     "HcHCAA"
       desc:     "HC HCAA Address Register"
       swaccess: "ro"
-      hwaccess: "hrw"
+      hwaccess: "hwo"
+      hwext:    "true"
       fields: [
         { bits:     "31:8"
           name:     "HCCA"
@@ -544,7 +558,8 @@
           resval:   "0"
         }
         { bits:     "7:0"
-          name:     "0"
+          name:     "Zero"
+          desc:     "Zero"
           swaccess: "rw"
           hwaccess: "hrw"
           resval:   "0"
@@ -563,7 +578,8 @@
           resval:   "0"
         }
         { bits:     "3:0"
-          name:     "0"
+          name:     "Zero"
+          desc:     "Zero"
           resval:   "0"
         }
       ]
@@ -582,7 +598,8 @@
           resval:   "0"
         }
         { bits:     "3:0"
-          name:     "0"
+          name:     "Zero"
+          desc:     "Zero"
           swaccess: "rw"
           hwaccess: "hrw"
           resval:   "0"
@@ -603,7 +620,8 @@
           resval:   "0"
         }
         { bits:     "3:0"
-          name:     "0"
+          name:     "Zero"
+          desc:     "Zero"
           swaccess: "rw"
           hwaccess: "hrw"
           resval:   "0"
@@ -624,7 +642,8 @@
           resval:   "0"
         }
         { bits:     "3:0"
-          name:     "0"
+          name:     "Zero"
+          desc:     "Zero"
           swaccess: "rw"
           hwaccess: "hrw"
           resval:   "0"
@@ -645,7 +664,8 @@
           resval:   "0"
         }
         { bits:     "3:0"
-          name:     "0"
+          name:     "Zero"
+          desc:     "Zero"
           swaccess: "rw"
           hwaccess: "hrw"
           resval:   "0"
@@ -665,7 +685,8 @@
           resval:   "0"
         }
         { bits:     "3:0"
-          name:     "0"
+          name:     "Zero"
+          desc:     "Zero"
           resval:   "0"
         }
       ]
@@ -691,6 +712,7 @@
         }
         { bits:   "15:14"
           name:   "Reserved"
+          desc:   "Reserved"
           resval: "0"
         }
         { bits:     "13:0"
@@ -715,6 +737,7 @@
         }
         { bits:   "30:14"
           name:   "Reserved"
+          desc:   "Reserved"
           resval: "0"
         }
         { bits:     "13:0"
@@ -732,6 +755,7 @@
       fields: [
         { bits:   "31:16"
           name:   "Reserved"
+          desc:   "Reserved"
           resval: "0"
         }
         { bits:     "15:0"
@@ -749,6 +773,7 @@
       fields: [
         { bits:   "31:14"
           name:   "Reserved"
+          desc:   "Reserved"
           resval: "0"
         }
         { bits:     "13:0"
@@ -768,6 +793,7 @@
       fields: [
         { bits:   "31:12"
           name:   "Reserved"
+          desc:   "Reserved"
           resval: "0"
         }
         { bits:     "11:0"
@@ -794,6 +820,7 @@
         }
         { bits:   "23:13"
           name:   "Reserved"
+          desc:   "Reserved"
           resval: "0"
         }
         { bits:     "12"
@@ -887,7 +914,8 @@
           hwaccess: "hrw"
         }
         { bits:     "30:18"
-          name:     "Reserved"
+          name:     "ReservedUpper"
+          desc:     "ReservedUpper"
           resval:   "0"
         }
         { bits:     "17"
@@ -912,7 +940,8 @@
           resval:   "0"
         }
         { bits:     "14:2"
-          name:     "Reserved"
+          name:     "ReservedLower"
+          desc:     "ReservedLower"
           resval:   "0"
         }
         { bits:     "1"
@@ -930,13 +959,14 @@
       ]
     }
 
-    { name:     "HcRhPortStatus[1]"
+    { name:     "HcRhPortStatus_1"
       desc:     "HC Port 1 Status and Control Register"
       swaccess: "ro"
       hwaccess: "hrw"
       fields: [
         { bits:     "31:21"
-          name:     "Reserved"
+          name:     "ReservedUpper"
+          desc:     "ReservedUpper"
           resval:   "0"
         }
         { bits:     "20"
@@ -975,7 +1005,8 @@
           resval:   "0"
         }
         { bits:     "15:10"
-          name:     "Reserved"
+          name:     "ReservedMid"
+          desc:     "ReservedMid"
           resval:   "0"
         }
         { bits:     "9"
@@ -993,7 +1024,8 @@
           resval:   "0"
         }
         { bits:     "7:5"
-          name:     "Reserved"
+          name:     "ReservedLower"
+          desc:     "ReservedLower"
           resval:   "0"
         }
         { bits:     "4"
@@ -1034,13 +1066,14 @@
       ]
     }
 
-    { name:     "HcRhPortStatus[2]"
+    { name:     "HcRhPortStatus_2"
       desc:     "HC Port 2 Status and Control Register"
       swaccess: "ro"
       hwaccess: "hrw"
       fields: [
         { bits:     "31:21"
-          name:     "Reserved"
+          name:     "ReservedUpper"
+          desc:     "ReservedUpper"
           resval:   "0"
         }
         { bits:     "20"
@@ -1079,7 +1112,8 @@
           resval:   "0"
         }
         { bits:     "15:10"
-          name:     "Reserved"
+          name:     "ReservedMid"
+          desc:     "ReservedMid"
           resval:   "0"
         }
         { bits:     "9"
@@ -1097,7 +1131,8 @@
           resval:   "0"
         }
         { bits:     "7:5"
-          name:     "Reserved"
+          name:     "ReservedLower"
+          desc:     "ReservedLower"
           resval:   "0"
         }
         { bits:     "4"
@@ -1138,13 +1173,14 @@
       ]
     }
 
-    { name:     "HcRhPortStatus[3]"
+    { name:     "HcRhPortStatus_3"
       desc:     "HC Port 3 Status and Control Register"
       swaccess: "ro"
       hwaccess: "hrw"
       fields: [
         { bits:     "31:21"
-          name:     "Reserved"
+          name:     "ReservedUpper"
+          desc:     "ReservedUpper"
           resval:   "0"
         }
         { bits:     "20"
@@ -1183,7 +1219,8 @@
           resval:   "0"
         }
         { bits:     "15:10"
-          name:     "Reserved"
+          name:     "ReservedMid"
+          desc:     "ReservedMid"
           resval:   "0"
         }
         { bits:     "9"
@@ -1201,7 +1238,8 @@
           resval:   "0"
         }
         { bits:     "7:5"
-          name:     "Reserved"
+          name:     "ReservedLower"
+          desc:     "ReservedLower"
           resval:   "0"
         }
         { bits:     "4"
@@ -1242,13 +1280,14 @@
       ]
     }
 
-    { name:     "HcRhPortStatus[4]"
+    { name:     "HcRhPortStatus_4"
       desc:     "HC Port 4 Status and Control Register"
       swaccess: "ro"
       hwaccess: "hrw"
       fields: [
         { bits:     "31:21"
-          name:     "Reserved"
+          name:     "ReservedUpper"
+          desc:     "ReservedUpper"
           resval:   "0"
         }
         { bits:     "20"
@@ -1287,7 +1326,8 @@
           resval:   "0"
         }
         { bits:     "15:10"
-          name:     "Reserved"
+          name:     "ReservedMid"
+          desc:     "ReservedMid"
           resval:   "0"
         }
         { bits:     "9"
@@ -1305,7 +1345,8 @@
           resval:   "0"
         }
         { bits:     "7:5"
-          name:     "Reserved"
+          name:     "ReservedLower"
+          desc:     "ReservedLower"
           resval:   "0"
         }
         { bits:     "4"
@@ -1346,13 +1387,14 @@
       ]
     }
 
-    { name:     "HcRhPortStatus[5]"
+    { name:     "HcRhPortStatus_5"
       desc:     "HC Port 5 Status and Control Register"
       swaccess: "ro"
       hwaccess: "hrw"
       fields: [
         { bits:     "31:21"
-          name:     "Reserved"
+          name:     "ReservedUpper"
+          desc:     "ReservedUpper"
           resval:   "0"
         }
         { bits:     "20"
@@ -1391,7 +1433,8 @@
           resval:   "0"
         }
         { bits:     "15:10"
-          name:     "Reserved"
+          name:     "ReservedMid"
+          desc:     "ReservedMid"
           resval:   "0"
         }
         { bits:     "9"
@@ -1409,7 +1452,8 @@
           resval:   "0"
         }
         { bits:     "7:5"
-          name:     "Reserved"
+          name:     "ReservedLower"
+          desc:     "ReservedLower"
           resval:   "0"
         }
         { bits:     "4"
@@ -1450,13 +1494,14 @@
       ]
     }
 
-    { name:     "HcRhPortStatus[6]"
+    { name:     "HcRhPortStatus_6"
       desc:     "HC Port 6 Status and Control Register"
       swaccess: "ro"
       hwaccess: "hrw"
       fields: [
         { bits:     "31:21"
-          name:     "Reserved"
+          name:     "ReservedUpper"
+          desc:     "ReservedUpper"
           resval:   "0"
         }
         { bits:     "20"
@@ -1495,7 +1540,8 @@
           resval:   "0"
         }
         { bits:     "15:10"
-          name:     "Reserved"
+          name:     "ReservedMid"
+          desc:     "ReservedMid"
           resval:   "0"
         }
         { bits:     "9"
@@ -1513,7 +1559,8 @@
           resval:   "0"
         }
         { bits:     "7:5"
-          name:     "Reserved"
+          name:     "ReservedLower"
+          desc:     "ReservedLower"
           resval:   "0"
         }
         { bits:     "4"
@@ -1554,13 +1601,14 @@
       ]
     }
 
-    { name:     "HcRhPortStatus[7]"
+    { name:     "HcRhPortStatus_7"
       desc:     "HC Port 7 Status and Control Register"
       swaccess: "ro"
       hwaccess: "hrw"
       fields: [
         { bits:     "31:21"
-          name:     "Reserved"
+          name:     "ReservedUpper"
+          desc:     "ReservedUpper"
           resval:   "0"
         }
         { bits:     "20"
@@ -1599,7 +1647,8 @@
           resval:   "0"
         }
         { bits:     "15:10"
-          name:     "Reserved"
+          name:     "ReservedMid"
+          desc:     "ReservedMid"
           resval:   "0"
         }
         { bits:     "9"
@@ -1617,7 +1666,8 @@
           resval:   "0"
         }
         { bits:     "7:5"
-          name:     "Reserved"
+          name:     "ReservedLower"
+          desc:     "ReservedLower"
           resval:   "0"
         }
         { bits:     "4"
@@ -1658,13 +1708,14 @@
       ]
     }
 
-    { name:     "HcRhPortStatus[8]"
+    { name:     "HcRhPortStatus_8"
       desc:     "HC Port 8 Status and Control Register"
       swaccess: "ro"
       hwaccess: "hrw"
       fields: [
         { bits:     "31:21"
-          name:     "Reserved"
+          name:     "ReservedUpper"
+          desc:     "ReservedUpper"
           resval:   "0"
         }
         { bits:     "20"
@@ -1703,7 +1754,8 @@
           resval:   "0"
         }
         { bits:     "15:10"
-          name:     "Reserved"
+          name:     "ReservedMid"
+          desc:     "ReservedMid"
           resval:   "0"
         }
         { bits:     "9"
@@ -1721,7 +1773,8 @@
           resval:   "0"
         }
         { bits:     "7:5"
-          name:     "Reserved"
+          name:     "ReservedLower"
+          desc:     "ReservedLower"
           resval:   "0"
         }
         { bits:     "4"
@@ -1761,9 +1814,6 @@
         }
       ]
     }
-
-
-    
 
   ]
 }
