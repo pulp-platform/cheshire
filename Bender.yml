@@ -10,6 +10,7 @@ package:
     - "Paul Scheffler <paulsc@iis.ee.ethz.ch>"
     - "Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>"
     - "Thomas Benz <tbenz@iis.ee.ethz.ch>"
+    - "Fabian Hauser <fhauser@student.ethz.ch>"
 
 dependencies:
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.1  }
@@ -42,6 +43,8 @@ sources:
   - hw/regs/cheshire_reg_pkg.sv
   - hw/regs/cheshire_reg_top.sv
   - hw/cheshire_idma_wrap.sv
+  - hw/newusb_regs/cheshire_reg_pkg.sv
+  - hw/newusb_regs/cheshire_reg_top.sv
   - hw/cheshire_pkg.sv
   - hw/cheshire_soc.sv
 
