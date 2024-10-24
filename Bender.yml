@@ -43,8 +43,8 @@ sources:
   - hw/regs/cheshire_reg_pkg.sv
   - hw/regs/cheshire_reg_top.sv
   - hw/cheshire_idma_wrap.sv
-  - hw/newusb_regs/cheshire_reg_pkg.sv
-  - hw/newusb_regs/cheshire_reg_top.sv
+  - hw/newusb_regs/newusb_reg_pkg.sv
+  - hw/newusb_regs/newusb_reg_top.sv
   - hw/cheshire_pkg.sv
   - hw/cheshire_soc.sv
 
