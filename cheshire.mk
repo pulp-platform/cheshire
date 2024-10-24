@@ -14,7 +14,7 @@ CXX_PATH := $(shell which $(CXX))
 VLOG_ARGS ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
 
 # Bender flags for CVA6; specify configuration target here.
-CHS_CVA6_BENDER_FLAGS ?= -t cv64a6_imafdchsclic_sv39_hpdcache -t cva6
+CHS_CVA6_BENDER_FLAGS ?= -t cv64a6_imafdc_sv39 -t cva6
 
 # Define used paths (prefixed to avoid name conflicts)
 CHS_ROOT      ?= $(shell $(BENDER) path cheshire)
