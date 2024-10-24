@@ -44,8 +44,8 @@ packages:
     - common_cells
     - common_verification
   axi_rt:
-    revision: d5f857e74d0a5db4e4a2cc3652ca4f40f29a1484
-    version: 0.0.0-alpha.8
+    revision: 641ea950e24722af747033f2ab85f0e48ea8d7f8
+    version: 0.0.0-alpha.9
     source:
       Git: https://github.com/pulp-platform/axi_rt.git
     dependencies:
@@ -99,7 +99,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 637a0e6cbc8ec395c4bb4f54ee9dc1110d3fb1ac
+    revision: 630bd959c9cc69a35d461a2abc205310d2edacf8
     version: null
     source:
       Git: https://github.com/Scheremo/cva6.git
