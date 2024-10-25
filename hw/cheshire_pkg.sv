@@ -463,7 +463,7 @@ package cheshire_pkg;
 
   // Choose static colocation of IDs based on how heavily used and/or critical they are
   function automatic cva6_id_map_t gen_cva6_id_map(cheshire_cfg_t cfg);
-    localparam int unsigned DefaultMapEntry[2] = '{0, 0};
+    int unsigned DefaultMapEntry[2] = '{0, 0};
     case (cfg.AxiMstIdWidth)
       // Provide exclusive ID to I-cache to prevent fetch blocking
       1: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 0}, '{Cva6IdBypAccel, 0}, '{Cva6IdBypStore, 0},
