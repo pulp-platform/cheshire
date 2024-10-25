@@ -648,7 +648,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
     .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
     .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
-  ) slink_mst_ext(), slink_mst_vip(), slink_mst();
+  ) slink_mst_ext(), slink_mst_vip(), slink_mst(), slink_slvs_mux[0:1]();
 
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( DutCfg.AddrWidth       ),
@@ -666,6 +666,9 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .clk_i  ( clk )
   );
 
+  `AXI_ASSIGN (slink_slvs_mux[0], slink_mst_ext)
+  `AXI_ASSIGN (slink_slvs_mux[1], slink_mst_vip)
+
   // Multiplex internal and external AXI requests
   axi_mux_intf #(
     .SLV_AXI_ID_WIDTH ( DutCfg.AxiMstIdWidth   ),
@@ -678,7 +681,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .clk_i  ( clk ),
     .rst_ni ( rst_n ),
     .test_i ( test_mode ),
-    .slv    ( '{slink_mst_vip, slink_mst_ext} ),
+    .slv    ( slink_slvs_mux ),
     .mst    ( slink_mst_mux  )
   );
 
