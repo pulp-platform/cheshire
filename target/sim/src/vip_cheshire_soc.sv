@@ -954,27 +954,27 @@ endmodule
 
 module vip_cheshire_soc_tristate import cheshire_pkg::*; (
   // I2C pad IO
-  output logic  i2c_sda_i,
-  input  logic  i2c_sda_o,
-  input  logic  i2c_sda_en,
-  output logic  i2c_scl_i,
-  input  logic  i2c_scl_o,
-  input  logic  i2c_scl_en,
+  output i2c_sda_i,
+  input  i2c_sda_o,
+  input  i2c_sda_en,
+  output i2c_scl_i,
+  input  i2c_scl_o,
+  input  i2c_scl_en,
   // SPI host pad IO
-  input  logic                  spih_sck_o,
-  input  logic                  spih_sck_en,
-  input  logic [SpihNumCs-1:0]  spih_csb_o,
-  input  logic [SpihNumCs-1:0]  spih_csb_en,
-  output logic [ 3:0]           spih_sd_i,
-  input  logic [ 3:0]           spih_sd_o,
-  input  logic [ 3:0]           spih_sd_en,
+  input                   spih_sck_o,
+  input                   spih_sck_en,
+  input  [SpihNumCs-1:0]  spih_csb_o,
+  input  [SpihNumCs-1:0]  spih_csb_en,
+  output [ 3:0]           spih_sd_i,
+  input  [ 3:0]           spih_sd_o,
+  input  [ 3:0]           spih_sd_en,
   // I2C wires
-  inout  wire i2c_sda,
-  inout  wire i2c_scl,
+  inout  i2c_sda,
+  inout  i2c_scl,
   // SPI host wires
-  inout  wire                 spih_sck,
-  inout  wire [SpihNumCs-1:0] spih_csb,
-  inout  wire [ 3:0]          spih_sd
+  inout                  spih_sck,
+  inout  [SpihNumCs-1:0] spih_csb,
+  inout  [ 3:0]          spih_sd
 );
 
   // I2C
