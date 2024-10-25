@@ -228,7 +228,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   assign jtag.tdo     = jtag_tdo;
 
   initial begin
-    @(negedge rst_n);
+    wait_for_reset();
     jtag_dbg.reset_master();
   end
 
@@ -469,6 +469,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   initial begin
     static byte_bt uart_read_buf [$];
     byte_bt bite;
+    string to_print;
     wait_for_reset();
     forever begin
       uart_read_byte(bite);
@@ -477,7 +478,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
         uart_boot_ena = 0;
       end else if (bite == "\n") begin
         if (uart_read_buf.size() > 0) begin
-          $display("[UART] %s", {>>8{uart_read_buf}});
+          to_print = {>>8{uart_read_buf}};
+          $display("[UART] %s", to_print);
           uart_read_buf.delete();
         end else begin
           $display("[UART]");
@@ -648,7 +650,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .AXI_DATA_WIDTH ( DutCfg.AxiDataWidth  ),
     .AXI_ID_WIDTH   ( DutCfg.AxiMstIdWidth ),
     .AXI_USER_WIDTH ( DutCfg.AxiUserWidth  )
-  ) slink_mst_ext(), slink_mst_vip(), slink_mst();
+  ) slink_mst_ext(), slink_mst_vip(), slink_mst(), slink_slvs_mux[0:1]();
 
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( DutCfg.AddrWidth       ),
@@ -666,6 +668,9 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .clk_i  ( clk )
   );
 
+  `AXI_ASSIGN (slink_slvs_mux[0], slink_mst_ext)
+  `AXI_ASSIGN (slink_slvs_mux[1], slink_mst_vip)
+
   // Multiplex internal and external AXI requests
   axi_mux_intf #(
     .SLV_AXI_ID_WIDTH ( DutCfg.AxiMstIdWidth   ),
@@ -678,7 +683,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .clk_i  ( clk ),
     .rst_ni ( rst_n ),
     .test_i ( test_mode ),
-    .slv    ( '{slink_mst_vip, slink_mst_ext} ),
+    .slv    ( slink_slvs_mux ),
     .mst    ( slink_mst_mux  )
   );
 
@@ -785,7 +790,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   slink_axi_driver_t slink_axi_driver = new (slink_mst_vip_dv);
 
   initial begin
-    @(negedge rst_n);
+    wait_for_reset();
     slink_axi_driver.reset_master();
   end
 
@@ -951,27 +956,27 @@ endmodule
 
 module vip_cheshire_soc_tristate import cheshire_pkg::*; (
   // I2C pad IO
-  output logic  i2c_sda_i,
-  input  logic  i2c_sda_o,
-  input  logic  i2c_sda_en,
-  output logic  i2c_scl_i,
-  input  logic  i2c_scl_o,
-  input  logic  i2c_scl_en,
+  output i2c_sda_i,
+  input  i2c_sda_o,
+  input  i2c_sda_en,
+  output i2c_scl_i,
+  input  i2c_scl_o,
+  input  i2c_scl_en,
   // SPI host pad IO
-  input  logic                  spih_sck_o,
-  input  logic                  spih_sck_en,
-  input  logic [SpihNumCs-1:0]  spih_csb_o,
-  input  logic [SpihNumCs-1:0]  spih_csb_en,
-  output logic [ 3:0]           spih_sd_i,
-  input  logic [ 3:0]           spih_sd_o,
-  input  logic [ 3:0]           spih_sd_en,
+  input                   spih_sck_o,
+  input                   spih_sck_en,
+  input  [SpihNumCs-1:0]  spih_csb_o,
+  input  [SpihNumCs-1:0]  spih_csb_en,
+  output [ 3:0]           spih_sd_i,
+  input  [ 3:0]           spih_sd_o,
+  input  [ 3:0]           spih_sd_en,
   // I2C wires
-  inout  wire i2c_sda,
-  inout  wire i2c_scl,
+  inout  i2c_sda,
+  inout  i2c_scl,
   // SPI host wires
-  inout  wire                 spih_sck,
-  inout  wire [SpihNumCs-1:0] spih_csb,
-  inout  wire [ 3:0]          spih_sd
+  inout                  spih_sck,
+  inout  [SpihNumCs-1:0] spih_csb,
+  inout  [ 3:0]          spih_sd
 );
 
   // I2C
