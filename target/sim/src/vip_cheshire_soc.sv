@@ -477,7 +477,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
         uart_boot_ena = 0;
       end else if (bite == "\n") begin
         if (uart_read_buf.size() > 0) begin
-          $display("[UART] %s", {>>8{uart_read_buf}});
+          string to_print = {>>8{uart_read_buf}};
+          $display("[UART] %s", to_print);
           uart_read_buf.delete();
         end else begin
           $display("[UART]");
