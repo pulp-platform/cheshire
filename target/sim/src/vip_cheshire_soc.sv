@@ -469,6 +469,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   initial begin
     static byte_bt uart_read_buf [$];
     byte_bt bite;
+    string to_print;
     wait_for_reset();
     forever begin
       uart_read_byte(bite);
@@ -477,7 +478,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
         uart_boot_ena = 0;
       end else if (bite == "\n") begin
         if (uart_read_buf.size() > 0) begin
-          string to_print = {>>8{uart_read_buf}};
+          to_print = {>>8{uart_read_buf}};
           $display("[UART] %s", to_print);
           uart_read_buf.delete();
         end else begin
