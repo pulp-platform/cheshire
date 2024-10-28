@@ -228,7 +228,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   assign jtag.tdo     = jtag_tdo;
 
   initial begin
-    @(negedge rst_n);
+    wait_for_reset();
     jtag_dbg.reset_master();
   end
 
@@ -790,7 +790,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   slink_axi_driver_t slink_axi_driver = new (slink_mst_vip_dv);
 
   initial begin
-    @(negedge rst_n);
+    wait_for_reset();
     slink_axi_driver.reset_master();
   end
 
