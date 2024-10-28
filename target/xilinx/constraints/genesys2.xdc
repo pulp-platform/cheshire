@@ -25,6 +25,10 @@ set soc_clk [get_clocks -of_objects [get_pins i_clkwiz/clk_50]]
 
 set period_hyperbus 40
 
+set_property keep_hierarchy yes [get_cells -hier -filter {ORIG_REF_NAME=="hyperbus_delay" || REF_NAME=="hyperbus_delay"}]
+set_property keep_hierarchy yes [get_cells -hier -filter {ORIG_REF_NAME=="hyperbus_clk_gen" || REF_NAME=="hyperbus_clk_gen"}]
+set_property keep_hierarchy yes [get_cells -hier -filter {ORIG_REF_NAME=="cdc_fifo_gray" || REF_NAME=="cdc_fifo_gray"}]
+
 ##  Create RWDS clock (10MHz)
 create_clock -period [expr $period_hyperbus] -name rwds0_clk [get_ports FMC_hyper0_rwds]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets iobuf_rwds0_i/O]
@@ -58,13 +62,13 @@ create_generated_clock  [get_nets i_hyperbus/i_phy/phy_wrap.phy_unroll[1].i_phy/
                        -source [get_pins i_hyperbus/i_phy/phy_wrap.phy_unroll[1].i_phy/i_trx/i_delay_rx_rwds_90/in_i]
 
 ## I/O constraints
-set output_ports {{FMC_hyper*_dq*} FMC_hyper*_rwds}
+set output_ports {FMC_hyper*_dq* FMC_hyper*_rwds}
 set_output_delay [expr $period_hyperbus/2 ] -clock clk_phy_90 [get_ports $output_ports] -max
 set_output_delay [expr $period_hyperbus/-2] -clock clk_phy_90 [get_ports $output_ports] -min -add_delay
 set_output_delay [expr $period_hyperbus/2 ] -clock clk_phy_90 [get_ports $output_ports] -max -clock_fall -add_delay
 set_output_delay [expr $period_hyperbus/-2] -clock clk_phy_90 [get_ports $output_ports] -min -clock_fall -add_delay
 
-set input_ports {{FMC_hyper*_dq*} FMC_hyper*_rwds}
+set input_ports {FMC_hyper*_dq* FMC_hyper*_rwds}
 set_input_delay -max [expr $period_hyperbus/2] -clock clk_phy [get_ports $input_ports]
 set_input_delay -min [expr $period_hyperbus/2] -clock clk_phy [get_ports $input_ports] -add_delay
 set_input_delay -max [expr $period_hyperbus/2] -clock clk_phy [get_ports $input_ports] -add_delay -clock_fall
@@ -109,6 +113,12 @@ set_property -dict { PACKAGE_PIN D29 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1
 set_property -dict { PACKAGE_PIN C30 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_dqio5]
 set_property -dict { PACKAGE_PIN B27 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_dqio6]
 set_property -dict { PACKAGE_PIN A27 IOSTANDARD LVCMOS12 } [get_ports FMC_hyper1_dqio7]
+
+# Sys reset pin
+set sys_rst_pin i_rstgen/i_rstgen_bypass/i_tc_clk_mux2_rst_no/i_BUFGMUX/O
+
+set_max_delay -reset -through [get_pins $sys_rst_pin] [expr 0.8*20]
+set_false_path -hold -through [get_pins $sys_rst_pin]
 
 ############
 # Switches #
