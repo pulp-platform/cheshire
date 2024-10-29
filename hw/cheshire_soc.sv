@@ -1755,7 +1755,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .phy_dp_oe_o  ( usb_dp_oe_o )
     );
 
-  end else begin : gen_no_usb
+  end else begin : gen_no_new_usb
 
     assign usb_dm_o    = '0;
     assign usb_dm_oe_o = '0;
