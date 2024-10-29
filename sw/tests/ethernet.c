@@ -83,6 +83,9 @@ int main(void) {
   while(!(*reg32(ETH_BASE, IDMA_REQ_READY_OFFSET)));
   // Validate Request to DMA
   *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
+  *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x0;
+  // DMA completes data moving
+  while (!(*reg32(ETH_BASE, IDMA_RSP_VALID_OFFSET)));
 
   // configure ethernet
   *reg32(ETH_BASE, MACLO_OFFSET)          = 0x89000123;
@@ -96,19 +99,24 @@ int main(void) {
   *reg32(ETH_BASE, IDMA_DST_ADDR_OFFSET)  = RX_BASE;
   *reg32(ETH_BASE, IDMA_SRC_PROTO_OFFSET) = 0x5;
   *reg32(ETH_BASE, IDMA_DST_PROTO_OFFSET) = 0x0;
-  *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
 
   while(!(*reg32(ETH_BASE, IDMA_REQ_READY_OFFSET)));
+  *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
+  *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x0;
+
   // wait until DMA moves all data
   while (!(*reg32(ETH_BASE, IDMA_RSP_VALID_OFFSET)));
 
-  uint32_t error = 0;
+  volatile uint32_t error = 0;
 
   for (int i = 0; i < DATA_CHUNK; ++i) {
     volatile uint64_t *rx_addr = (volatile uint64_t*)(RX_BASE + i * sizeof(uint64_t));
-    uint64_t data_read = *rx_addr;
+    volatile uint64_t data_read = *rx_addr;
 
-    if (data_read != data_to_write[i]) error ++;
+    if (data_read != data_to_write[i]) {
+      printf("Error at index %d: expected 0x%lx, got 0x%lx\n", i, data_to_write[i], data_read);
+      error++;
+    }
   }
 
   return error;
