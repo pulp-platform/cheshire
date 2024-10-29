@@ -19,16 +19,15 @@ fi
 [[ -z "${VERDI_VERSION}" ]] && VERDI_VERSION=""
 [[ -z "${VCS_VERSION}" ]]   && VCS_VERSION=""
 [[ -z "${VCS_BIN}" ]]       && VCS_BIN="${VCS_VERSION} vcs"
-[[ -z "${VERDI_HOME}" ]]    && echo "Please set \$VERDI_HOME" && exit 1
-[[ -z "${VCS_HOME}" ]]      && echo "Please set \$VCS_HOME"   && exit 1
 
 flags="-full64 -kdb "
 # Set default to fast simulation flags.
 if [ -z "${VCSARGS}" ]; then
-    flags+="-O2 -debug_access+all "
+    # Use -debug_access+all for waveform debugging
+    flags+="-O2 -debug_access=r -debug_region=1,${TESTBENCH} "
 fi
 
-# flags+="-cpp ${CXX_PATH} "
+flags+="-cpp ${CXX_PATH} "
 [[ -n "${SELCFG}" ]]   && flags+="-pvalue+SelectedCfg=${SELCFG} "
 
 pargs=""
@@ -43,13 +42,16 @@ if [ -n "${USE_DRAMSYS}" ]; then
     if [[ "${USE_DRAMSYS}" == 1 ]]; then
         DRAMSYS_ROOT="../dramsys"
         DRAMSYS_LIB="${DRAMSYS_ROOT}/build/lib"
-        flags+="-y ${DRAMSYS_LIB}/libsystemc "
-        flags+="-y ${DRAMSYS_LIB}/libDRAMSys_Simulator "
         pargs+="+DRAMSYS_RES=${DRAMSYS_ROOT}/configs "
+        pargs+="-sv_lib ${DRAMSYS_LIB}/libDRAMSys_Simulator "
     fi
 fi
 
-${VERDI_VERSION} ${VCS_BIN} ${flags} ../src/elfloader.cpp ${TESTBENCH} | tee elaborate.log
+COLOR_NC='\e[0m'
+COLOR_BLUE='\e[0;34m'
 
-echo "${VCS_VERSION} ${VERDI_VERSION} ./simv ${pargs}"
-${VCS_VERSION} ${VERDI_VERSION} ./simv ${pargs}
+${VCS_BIN} ${flags} ../src/elfloader.cpp ${TESTBENCH} | tee elaborate.log
+
+# Start simulation
+printf ${COLOR_BLUE}"${VCS_VERSION} ${VERDI_VERSION} ./simv ${pargs}"${COLOR_NC}"\n"
+${VCS_VERSION} ${VERDI_VERSION} ./simv ${pargs} | tee simulate.log
