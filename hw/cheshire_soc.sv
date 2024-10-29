@@ -1718,35 +1718,82 @@ module cheshire_soc import cheshire_pkg::*; #(
   ///////////////
   //  New USB  //
   ///////////////
-
+  
   if (Cfg.NewUsb) begin : gen_new_usb
 
+    // TODO: USB has no internal error handling, so it should have a bus error unit.
 
-    newusb_reg_top #(
-      .reg_req_t  ( reg_req_t ),
-      .reg_rsp_t  ( reg_rsp_t )
-    ) i_regs (
-      .clk_i,
-      .rst_ni,
-      .reg_req_i ( reg_out_req[RegOut.new_usb] ),
-      .reg_rsp_o ( reg_out_rsp[RegOut.new_usb] ),
-      .reg2hw    ( /* NC */  ),
-      .hw2reg    ( '0        ),
-      .devmode_i (  1'b1     )
+    new_usb_ohci #(
+      .AxiMaxReads    ( Cfg.UsbDmaMaxReads ),
+      .AxiAddrWidth   ( Cfg.AddrWidth     ),
+      .AxiDataWidth   ( Cfg.AxiDataWidth  ),
+      .AxiIdWidth     ( Cfg.AxiMstIdWidth ),
+      .AxiUserWidth   ( Cfg.AxiUserWidth  ),
+      .AxiId          ( '0 ),
+      .AxiUser        ( Cfg.AxiUserDefault ),
+      .AxiAddrDomain  ( Cfg.UsbAddrDomain ),
+      .AxiAddrMask    ( Cfg.UsbAddrMask   ),
+      .reg_req_t      ( reg_req_t ),
+      .reg_rsp_t      ( reg_rsp_t ),
+      .axi_req_t      ( axi_mst_req_t ),
+      .axi_rsp_t      ( axi_mst_rsp_t )
+    ) i_new_usb_ohci (
+      .soc_clk_i    ( clk_i  ),
+      .soc_rst_ni   ( rst_ni ),
+      .ctrl_req_i   ( reg_out_req[RegOut.new_usb] ),
+      .ctrl_rsp_o   ( reg_out_rsp[RegOut.new_usb] ),
+      .dma_req_o    ( axi_in_req[AxiIn.new_usb] ),
+      .dma_rsp_i    ( axi_in_rsp[AxiIn.new_usb] ),
+      .intr_o       ( intr.intn.usb ),
+      .phy_clk_i    ( usb_clk_i   ),
+      .phy_rst_ni   ( usb_rst_ni  ),
+      .phy_dm_i     ( usb_dm_i    ),
+      .phy_dm_o     ( usb_dm_o    ),
+      .phy_dm_oe_o  ( usb_dm_oe_o ),
+      .phy_dp_i     ( usb_dp_i    ),
+      .phy_dp_o     ( usb_dp_o    ),
+      .phy_dp_oe_o  ( usb_dp_oe_o )
     );
 
-    // DMA port tied-off
-    assign axi_in_req[AxiIn.new_usb] = '0;
+  end else begin : gen_no_usb
 
-    // IRQ tied-off
-    assign intr.intn.new_usb = '0;
+    assign usb_dm_o    = '0;
+    assign usb_dm_oe_o = '0;
+    assign usb_dp_o    = '0;
+    assign usb_dp_oe_o = '0;
 
-  end else begin : gen_no_new_usb
-
-    // tie-off other signals (USB PHY, IRQs)
-    assign intr.intn.new_usb = '0;
+    assign intr.intn.new_usb = 0;
 
   end
+
+  //if (Cfg.NewUsb) begin : gen_new_usb
+//
+//
+  //  newusb_reg_top #(
+  //    .reg_req_t  ( reg_req_t ),
+  //    .reg_rsp_t  ( reg_rsp_t )
+  //  ) i_regs (
+  //    .clk_i,
+  //    .rst_ni,
+  //    .reg_req_i ( reg_out_req[RegOut.new_usb] ), //SW HCD
+  //    .reg_rsp_o ( reg_out_rsp[RegOut.new_usb] ), //SW HCD
+  //    .reg2hw    ( /* NC */  ), //HW HC
+  //    .hw2reg    ( '0        ), //HW HC
+  //    .devmode_i (  1'b1     )
+  //  );
+//
+  //  // DMA port tied-off
+  //  assign axi_in_req[AxiIn.new_usb] = '0;
+//
+  //  // IRQ tied-off
+  //  assign intr.intn.new_usb = '0;
+//
+  //end else begin : gen_no_new_usb
+//
+  //  // tie-off other signals (USB PHY, IRQs)
+  //  assign intr.intn.new_usb = '0;
+//
+  //end
 
   //////////////////
   //  Assertions  //

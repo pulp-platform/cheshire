@@ -32,6 +32,7 @@ package cheshire_pkg;
   localparam int unsigned SlinkMaxClkDiv  = 1 << serial_link_single_channel_reg_pkg::Log2MaxClkDiv;
   localparam int unsigned ClintNumCores   = clint_reg_pkg::NumCores;
   localparam int unsigned UsbNumPorts     = spinal_usb_ohci_pkg::NumPhyPorts;
+  localparam int unsigned NewUsbNumPorts     = new_usb_ohci_pkg::NumPhyPorts;
 
   // Default JTAG ID code type
   typedef struct packed {
