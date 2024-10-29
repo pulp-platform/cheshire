@@ -80,6 +80,7 @@ int main(void) {
   // Destination Protocol
   *reg32(ETH_BASE, IDMA_DST_PROTO_OFFSET) = 0x5;
 
+  while(!(*reg32(ETH_BASE, IDMA_REQ_READY_OFFSET)));
   // Validate Request to DMA
   *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
 
@@ -87,7 +88,7 @@ int main(void) {
   *reg32(ETH_BASE, MACLO_OFFSET)          = 0x89000123;
   *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00800207;
   // rx irq
-  while (!(*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19) );
+  while (!((*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19) ));
   // dma length ready, dma can be configured now
   while (!(*reg32(ETH_BASE,IDMA_RX_EN_OFFSET)));
 
@@ -97,6 +98,7 @@ int main(void) {
   *reg32(ETH_BASE, IDMA_DST_PROTO_OFFSET) = 0x0;
   *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
 
+  while(!(*reg32(ETH_BASE, IDMA_REQ_READY_OFFSET)));
   // wait until DMA moves all data
   while (!(*reg32(ETH_BASE, IDMA_RSP_VALID_OFFSET)));
 
