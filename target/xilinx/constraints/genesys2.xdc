@@ -74,6 +74,9 @@ set_input_delay -min [expr $period_hyperbus/2] -clock clk_phy [get_ports $input_
 set_input_delay -max [expr $period_hyperbus/2] -clock clk_phy [get_ports $input_ports] -add_delay -clock_fall
 set_input_delay -min [expr $period_hyperbus/2] -clock clk_phy [get_ports $input_ports] -add_delay -clock_fall
 
+# Deactivate clk fall for no ddr reg
+set_max_delay -from {FMC_hyper*_rwds} -to {i_hyperbus/i_phy/phy_wrap.phy_unroll*.i_phy/i_trx/rwds_sample_o_reg/D} [expr 0.8*$period_hyperbus ]
+
 ## Async
 set_clock_groups -asynchronous -group [get_clocks sys_clk] \
                                -group [get_clocks clk_phy] \
