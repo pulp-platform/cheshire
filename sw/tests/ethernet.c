@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "printf.h"
 #include "util.h"
-   
+
 #define ETH_BASE 			               0x0300c000
 
 #define MACLO_OFFSET                 0x0
@@ -40,23 +40,23 @@
 
 //#define PRINTF_ON
 
-int main(void) { 
-  
+int main(void) {
+
   #ifdef PRINTF_ON
     printf ("Start test Ethernet...\n\r");
-  #endif 
+  #endif
 
  *reg32(PLIC_BASE, RV_PLIC_PRIO19_REG_OFFSET) = 1;
  *reg32(PLIC_BASE, RV_PLIC_IE0_0_REG_OFFSET)  |= (1 << (RV_PLIC_IE0_0_E_19_BIT)); // Enable interrupt number ;
 
   volatile uint64_t data_to_write[DATA_CHUNK] = {
-        0x0207230100890702, 
+        0x0207230100890702,
         0x3210400020709800,
-        0x1716151413121110, 
+        0x1716151413121110,
         0x2726252423222120,
-        0x3736353433323130, 
+        0x3736353433323130,
         0x4746454443424140,
-        0x5756555453525150, 
+        0x5756555453525150,
         0x6766656463626160
   };
 
@@ -76,7 +76,7 @@ int main(void) {
   // Data length
   *reg32(ETH_BASE, IDMA_LENGTH_OFFSET)    = DATA_CHUNK*BYTE_SIZE;
   // Source Protocol
-  *reg32(ETH_BASE, IDMA_DST_PROTO_OFFSET) = 0x0;
+  *reg32(ETH_BASE, IDMA_SRC_PROTO_OFFSET) = 0x0;
   // Destination Protocol
   *reg32(ETH_BASE, IDMA_DST_PROTO_OFFSET) = 0x5;
 
@@ -85,13 +85,13 @@ int main(void) {
 
   // configure ethernet
   *reg32(ETH_BASE, MACLO_OFFSET)          = 0x89000123;
-  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00800207; 
+  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00800207;
   // rx irq
   while (!(*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19) );
   // dma length ready, dma can be configured now
   while (!(*reg32(ETH_BASE,IDMA_RX_EN_OFFSET)));
 
-  *reg32(ETH_BASE, IDMA_SRC_ADDR_OFFSET)  = 0x0; 
+  *reg32(ETH_BASE, IDMA_SRC_ADDR_OFFSET)  = 0x0;
   *reg32(ETH_BASE, IDMA_DST_ADDR_OFFSET)  = RX_BASE;
   *reg32(ETH_BASE, IDMA_SRC_PROTO_OFFSET) = 0x5;
   *reg32(ETH_BASE, IDMA_DST_PROTO_OFFSET) = 0x0;
@@ -111,4 +111,3 @@ int main(void) {
 
   return error;
 }
-
