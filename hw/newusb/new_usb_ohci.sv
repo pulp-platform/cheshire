@@ -84,15 +84,13 @@ newusb_reg_top #(
   .devmode_i (  1'b1      )
 );
 
-  assign dma_req_o = '0;
-  // IRQ tied-off
-  assign intr_o = '0;
+assign dma_req_o = '0;
+// IRQ tied-off
+assign intr_o = '0;
 
-  assign phy_dm_o    = '0;
-  assign phy_dm_oe_o = '0;
-  assign phy_dp_o    = '0;
-  assign phy_dp_oe_o = '0;
-
-  assign intr.intn.new_usb = 0;
+assign phy_dm_o    = '0;
+assign phy_dm_oe_o = '0;
+assign phy_dp_o    = '0;
+assign phy_dp_oe_o = '0;
   
 endmodule
