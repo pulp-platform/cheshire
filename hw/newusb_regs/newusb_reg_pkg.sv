@@ -423,294 +423,6 @@ package newusb_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-    } ccs;
-    struct packed {
-      logic        q;
-    } pes;
-    struct packed {
-      logic        q;
-    } pss;
-    struct packed {
-      logic        q;
-    } poci;
-    struct packed {
-      logic        q;
-    } prs;
-    struct packed {
-      logic [2:0]  q;
-    } reservedlower;
-    struct packed {
-      logic        q;
-    } pps;
-    struct packed {
-      logic        q;
-    } lsda;
-    struct packed {
-      logic [5:0]  q;
-    } reservedmid;
-    struct packed {
-      logic        q;
-    } csc;
-    struct packed {
-      logic        q;
-    } pesc;
-    struct packed {
-      logic        q;
-    } pssc;
-    struct packed {
-      logic        q;
-    } ocic;
-    struct packed {
-      logic        q;
-    } prsc;
-    struct packed {
-      logic [10:0] q;
-    } reservedupper;
-  } newusb_reg2hw_hcrhportstatus_3_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        q;
-    } ccs;
-    struct packed {
-      logic        q;
-    } pes;
-    struct packed {
-      logic        q;
-    } pss;
-    struct packed {
-      logic        q;
-    } poci;
-    struct packed {
-      logic        q;
-    } prs;
-    struct packed {
-      logic [2:0]  q;
-    } reservedlower;
-    struct packed {
-      logic        q;
-    } pps;
-    struct packed {
-      logic        q;
-    } lsda;
-    struct packed {
-      logic [5:0]  q;
-    } reservedmid;
-    struct packed {
-      logic        q;
-    } csc;
-    struct packed {
-      logic        q;
-    } pesc;
-    struct packed {
-      logic        q;
-    } pssc;
-    struct packed {
-      logic        q;
-    } ocic;
-    struct packed {
-      logic        q;
-    } prsc;
-    struct packed {
-      logic [10:0] q;
-    } reservedupper;
-  } newusb_reg2hw_hcrhportstatus_4_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        q;
-    } ccs;
-    struct packed {
-      logic        q;
-    } pes;
-    struct packed {
-      logic        q;
-    } pss;
-    struct packed {
-      logic        q;
-    } poci;
-    struct packed {
-      logic        q;
-    } prs;
-    struct packed {
-      logic [2:0]  q;
-    } reservedlower;
-    struct packed {
-      logic        q;
-    } pps;
-    struct packed {
-      logic        q;
-    } lsda;
-    struct packed {
-      logic [5:0]  q;
-    } reservedmid;
-    struct packed {
-      logic        q;
-    } csc;
-    struct packed {
-      logic        q;
-    } pesc;
-    struct packed {
-      logic        q;
-    } pssc;
-    struct packed {
-      logic        q;
-    } ocic;
-    struct packed {
-      logic        q;
-    } prsc;
-    struct packed {
-      logic [10:0] q;
-    } reservedupper;
-  } newusb_reg2hw_hcrhportstatus_5_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        q;
-    } ccs;
-    struct packed {
-      logic        q;
-    } pes;
-    struct packed {
-      logic        q;
-    } pss;
-    struct packed {
-      logic        q;
-    } poci;
-    struct packed {
-      logic        q;
-    } prs;
-    struct packed {
-      logic [2:0]  q;
-    } reservedlower;
-    struct packed {
-      logic        q;
-    } pps;
-    struct packed {
-      logic        q;
-    } lsda;
-    struct packed {
-      logic [5:0]  q;
-    } reservedmid;
-    struct packed {
-      logic        q;
-    } csc;
-    struct packed {
-      logic        q;
-    } pesc;
-    struct packed {
-      logic        q;
-    } pssc;
-    struct packed {
-      logic        q;
-    } ocic;
-    struct packed {
-      logic        q;
-    } prsc;
-    struct packed {
-      logic [10:0] q;
-    } reservedupper;
-  } newusb_reg2hw_hcrhportstatus_6_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        q;
-    } ccs;
-    struct packed {
-      logic        q;
-    } pes;
-    struct packed {
-      logic        q;
-    } pss;
-    struct packed {
-      logic        q;
-    } poci;
-    struct packed {
-      logic        q;
-    } prs;
-    struct packed {
-      logic [2:0]  q;
-    } reservedlower;
-    struct packed {
-      logic        q;
-    } pps;
-    struct packed {
-      logic        q;
-    } lsda;
-    struct packed {
-      logic [5:0]  q;
-    } reservedmid;
-    struct packed {
-      logic        q;
-    } csc;
-    struct packed {
-      logic        q;
-    } pesc;
-    struct packed {
-      logic        q;
-    } pssc;
-    struct packed {
-      logic        q;
-    } ocic;
-    struct packed {
-      logic        q;
-    } prsc;
-    struct packed {
-      logic [10:0] q;
-    } reservedupper;
-  } newusb_reg2hw_hcrhportstatus_7_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        q;
-    } ccs;
-    struct packed {
-      logic        q;
-    } pes;
-    struct packed {
-      logic        q;
-    } pss;
-    struct packed {
-      logic        q;
-    } poci;
-    struct packed {
-      logic        q;
-    } prs;
-    struct packed {
-      logic [2:0]  q;
-    } reservedlower;
-    struct packed {
-      logic        q;
-    } pps;
-    struct packed {
-      logic        q;
-    } lsda;
-    struct packed {
-      logic [5:0]  q;
-    } reservedmid;
-    struct packed {
-      logic        q;
-    } csc;
-    struct packed {
-      logic        q;
-    } pesc;
-    struct packed {
-      logic        q;
-    } pssc;
-    struct packed {
-      logic        q;
-    } ocic;
-    struct packed {
-      logic        q;
-    } prsc;
-    struct packed {
-      logic [10:0] q;
-    } reservedupper;
-  } newusb_reg2hw_hcrhportstatus_8_reg_t;
-
-  typedef struct packed {
-    struct packed {
       logic [1:0]  d;
     } cbsr;
     struct packed {
@@ -1214,446 +926,56 @@ package newusb_reg_pkg;
     } reservedupper;
   } newusb_hw2reg_hcrhportstatus_2_reg_t;
 
-  typedef struct packed {
-    struct packed {
-      logic        d;
-      logic        de;
-    } ccs;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pes;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pss;
-    struct packed {
-      logic        d;
-      logic        de;
-    } poci;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prs;
-    struct packed {
-      logic [2:0]  d;
-      logic        de;
-    } reservedlower;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pps;
-    struct packed {
-      logic        d;
-      logic        de;
-    } lsda;
-    struct packed {
-      logic [5:0]  d;
-      logic        de;
-    } reservedmid;
-    struct packed {
-      logic        d;
-      logic        de;
-    } csc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pesc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pssc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ocic;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prsc;
-    struct packed {
-      logic [10:0] d;
-      logic        de;
-    } reservedupper;
-  } newusb_hw2reg_hcrhportstatus_3_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        d;
-      logic        de;
-    } ccs;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pes;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pss;
-    struct packed {
-      logic        d;
-      logic        de;
-    } poci;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prs;
-    struct packed {
-      logic [2:0]  d;
-      logic        de;
-    } reservedlower;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pps;
-    struct packed {
-      logic        d;
-      logic        de;
-    } lsda;
-    struct packed {
-      logic [5:0]  d;
-      logic        de;
-    } reservedmid;
-    struct packed {
-      logic        d;
-      logic        de;
-    } csc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pesc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pssc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ocic;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prsc;
-    struct packed {
-      logic [10:0] d;
-      logic        de;
-    } reservedupper;
-  } newusb_hw2reg_hcrhportstatus_4_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        d;
-      logic        de;
-    } ccs;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pes;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pss;
-    struct packed {
-      logic        d;
-      logic        de;
-    } poci;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prs;
-    struct packed {
-      logic [2:0]  d;
-      logic        de;
-    } reservedlower;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pps;
-    struct packed {
-      logic        d;
-      logic        de;
-    } lsda;
-    struct packed {
-      logic [5:0]  d;
-      logic        de;
-    } reservedmid;
-    struct packed {
-      logic        d;
-      logic        de;
-    } csc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pesc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pssc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ocic;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prsc;
-    struct packed {
-      logic [10:0] d;
-      logic        de;
-    } reservedupper;
-  } newusb_hw2reg_hcrhportstatus_5_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        d;
-      logic        de;
-    } ccs;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pes;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pss;
-    struct packed {
-      logic        d;
-      logic        de;
-    } poci;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prs;
-    struct packed {
-      logic [2:0]  d;
-      logic        de;
-    } reservedlower;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pps;
-    struct packed {
-      logic        d;
-      logic        de;
-    } lsda;
-    struct packed {
-      logic [5:0]  d;
-      logic        de;
-    } reservedmid;
-    struct packed {
-      logic        d;
-      logic        de;
-    } csc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pesc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pssc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ocic;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prsc;
-    struct packed {
-      logic [10:0] d;
-      logic        de;
-    } reservedupper;
-  } newusb_hw2reg_hcrhportstatus_6_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        d;
-      logic        de;
-    } ccs;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pes;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pss;
-    struct packed {
-      logic        d;
-      logic        de;
-    } poci;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prs;
-    struct packed {
-      logic [2:0]  d;
-      logic        de;
-    } reservedlower;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pps;
-    struct packed {
-      logic        d;
-      logic        de;
-    } lsda;
-    struct packed {
-      logic [5:0]  d;
-      logic        de;
-    } reservedmid;
-    struct packed {
-      logic        d;
-      logic        de;
-    } csc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pesc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pssc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ocic;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prsc;
-    struct packed {
-      logic [10:0] d;
-      logic        de;
-    } reservedupper;
-  } newusb_hw2reg_hcrhportstatus_7_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        d;
-      logic        de;
-    } ccs;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pes;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pss;
-    struct packed {
-      logic        d;
-      logic        de;
-    } poci;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prs;
-    struct packed {
-      logic [2:0]  d;
-      logic        de;
-    } reservedlower;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pps;
-    struct packed {
-      logic        d;
-      logic        de;
-    } lsda;
-    struct packed {
-      logic [5:0]  d;
-      logic        de;
-    } reservedmid;
-    struct packed {
-      logic        d;
-      logic        de;
-    } csc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pesc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pssc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ocic;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prsc;
-    struct packed {
-      logic [10:0] d;
-      logic        de;
-    } reservedupper;
-  } newusb_hw2reg_hcrhportstatus_8_reg_t;
-
   // Register -> HW type
   typedef struct packed {
-    newusb_reg2hw_hccontrol_reg_t hccontrol; // [776:766]
-    newusb_reg2hw_hccommandstatus_reg_t hccommandstatus; // [765:762]
-    newusb_reg2hw_hcinterruptstatus_reg_t hcinterruptstatus; // [761:754]
-    newusb_reg2hw_hcinterruptenable_reg_t hcinterruptenable; // [753:745]
-    newusb_reg2hw_hcinterruptdisable_reg_t hcinterruptdisable; // [744:736]
-    newusb_reg2hw_hchcaa_reg_t hchcaa; // [735:704]
-    newusb_reg2hw_hcperiodcurrented_reg_t hcperiodcurrented; // [703:672]
-    newusb_reg2hw_hccontrolheaded_reg_t hccontrolheaded; // [671:640]
-    newusb_reg2hw_hccontrolcurrented_reg_t hccontrolcurrented; // [639:608]
-    newusb_reg2hw_hcbulkheaded_reg_t hcbulkheaded; // [607:576]
-    newusb_reg2hw_hcbulkcurrented_reg_t hcbulkcurrented; // [575:544]
-    newusb_reg2hw_hcdonehead_reg_t hcdonehead; // [543:512]
-    newusb_reg2hw_hcfminterval_reg_t hcfminterval; // [511:480]
-    newusb_reg2hw_hcfmremaining_reg_t hcfmremaining; // [479:448]
-    newusb_reg2hw_hcfmnumber_reg_t hcfmnumber; // [447:416]
-    newusb_reg2hw_hcperiodicstart_reg_t hcperiodicstart; // [415:384]
-    newusb_reg2hw_hclsthreshold_reg_t hclsthreshold; // [383:352]
-    newusb_reg2hw_hcrhdescriptora_reg_t hcrhdescriptora; // [351:320]
-    newusb_reg2hw_hcrhdescriptorb_reg_t hcrhdescriptorb; // [319:288]
-    newusb_reg2hw_hcrhstatus_reg_t hcrhstatus; // [287:256]
-    newusb_reg2hw_hcrhportstatus_1_reg_t hcrhportstatus_1; // [255:224]
-    newusb_reg2hw_hcrhportstatus_2_reg_t hcrhportstatus_2; // [223:192]
-    newusb_reg2hw_hcrhportstatus_3_reg_t hcrhportstatus_3; // [191:160]
-    newusb_reg2hw_hcrhportstatus_4_reg_t hcrhportstatus_4; // [159:128]
-    newusb_reg2hw_hcrhportstatus_5_reg_t hcrhportstatus_5; // [127:96]
-    newusb_reg2hw_hcrhportstatus_6_reg_t hcrhportstatus_6; // [95:64]
-    newusb_reg2hw_hcrhportstatus_7_reg_t hcrhportstatus_7; // [63:32]
-    newusb_reg2hw_hcrhportstatus_8_reg_t hcrhportstatus_8; // [31:0]
+    newusb_reg2hw_hccontrol_reg_t hccontrol; // [584:574]
+    newusb_reg2hw_hccommandstatus_reg_t hccommandstatus; // [573:570]
+    newusb_reg2hw_hcinterruptstatus_reg_t hcinterruptstatus; // [569:562]
+    newusb_reg2hw_hcinterruptenable_reg_t hcinterruptenable; // [561:553]
+    newusb_reg2hw_hcinterruptdisable_reg_t hcinterruptdisable; // [552:544]
+    newusb_reg2hw_hchcaa_reg_t hchcaa; // [543:512]
+    newusb_reg2hw_hcperiodcurrented_reg_t hcperiodcurrented; // [511:480]
+    newusb_reg2hw_hccontrolheaded_reg_t hccontrolheaded; // [479:448]
+    newusb_reg2hw_hccontrolcurrented_reg_t hccontrolcurrented; // [447:416]
+    newusb_reg2hw_hcbulkheaded_reg_t hcbulkheaded; // [415:384]
+    newusb_reg2hw_hcbulkcurrented_reg_t hcbulkcurrented; // [383:352]
+    newusb_reg2hw_hcdonehead_reg_t hcdonehead; // [351:320]
+    newusb_reg2hw_hcfminterval_reg_t hcfminterval; // [319:288]
+    newusb_reg2hw_hcfmremaining_reg_t hcfmremaining; // [287:256]
+    newusb_reg2hw_hcfmnumber_reg_t hcfmnumber; // [255:224]
+    newusb_reg2hw_hcperiodicstart_reg_t hcperiodicstart; // [223:192]
+    newusb_reg2hw_hclsthreshold_reg_t hclsthreshold; // [191:160]
+    newusb_reg2hw_hcrhdescriptora_reg_t hcrhdescriptora; // [159:128]
+    newusb_reg2hw_hcrhdescriptorb_reg_t hcrhdescriptorb; // [127:96]
+    newusb_reg2hw_hcrhstatus_reg_t hcrhstatus; // [95:64]
+    newusb_reg2hw_hcrhportstatus_1_reg_t hcrhportstatus_1; // [63:32]
+    newusb_reg2hw_hcrhportstatus_2_reg_t hcrhportstatus_2; // [31:0]
   } newusb_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    newusb_hw2reg_hccontrol_reg_t hccontrol; // [1058:1027]
-    newusb_hw2reg_hccommandstatus_reg_t hccommandstatus; // [1026:995]
-    newusb_hw2reg_hcinterruptstatus_reg_t hcinterruptstatus; // [994:963]
-    newusb_hw2reg_hcinterruptenable_reg_t hcinterruptenable; // [962:931]
-    newusb_hw2reg_hcinterruptdisable_reg_t hcinterruptdisable; // [930:899]
-    newusb_hw2reg_hchcaa_reg_t hchcaa; // [898:867]
-    newusb_hw2reg_hcperiodcurrented_reg_t hcperiodcurrented; // [866:833]
-    newusb_hw2reg_hccontrolheaded_reg_t hccontrolheaded; // [832:799]
-    newusb_hw2reg_hccontrolcurrented_reg_t hccontrolcurrented; // [798:765]
-    newusb_hw2reg_hcbulkheaded_reg_t hcbulkheaded; // [764:731]
-    newusb_hw2reg_hcbulkcurrented_reg_t hcbulkcurrented; // [730:697]
-    newusb_hw2reg_hcdonehead_reg_t hcdonehead; // [696:663]
-    newusb_hw2reg_hcfminterval_reg_t hcfminterval; // [662:627]
-    newusb_hw2reg_hcfmremaining_reg_t hcfmremaining; // [626:592]
-    newusb_hw2reg_hcfmnumber_reg_t hcfmnumber; // [591:558]
-    newusb_hw2reg_hcperiodicstart_reg_t hcperiodicstart; // [557:524]
-    newusb_hw2reg_hclsthreshold_reg_t hclsthreshold; // [523:490]
-    newusb_hw2reg_hcrhdescriptora_reg_t hcrhdescriptora; // [489:450]
-    newusb_hw2reg_hcrhdescriptorb_reg_t hcrhdescriptorb; // [449:416]
-    newusb_hw2reg_hcrhstatus_reg_t hcrhstatus; // [415:376]
-    newusb_hw2reg_hcrhportstatus_1_reg_t hcrhportstatus_1; // [375:329]
-    newusb_hw2reg_hcrhportstatus_2_reg_t hcrhportstatus_2; // [328:282]
-    newusb_hw2reg_hcrhportstatus_3_reg_t hcrhportstatus_3; // [281:235]
-    newusb_hw2reg_hcrhportstatus_4_reg_t hcrhportstatus_4; // [234:188]
-    newusb_hw2reg_hcrhportstatus_5_reg_t hcrhportstatus_5; // [187:141]
-    newusb_hw2reg_hcrhportstatus_6_reg_t hcrhportstatus_6; // [140:94]
-    newusb_hw2reg_hcrhportstatus_7_reg_t hcrhportstatus_7; // [93:47]
-    newusb_hw2reg_hcrhportstatus_8_reg_t hcrhportstatus_8; // [46:0]
+    newusb_hw2reg_hccontrol_reg_t hccontrol; // [776:745]
+    newusb_hw2reg_hccommandstatus_reg_t hccommandstatus; // [744:713]
+    newusb_hw2reg_hcinterruptstatus_reg_t hcinterruptstatus; // [712:681]
+    newusb_hw2reg_hcinterruptenable_reg_t hcinterruptenable; // [680:649]
+    newusb_hw2reg_hcinterruptdisable_reg_t hcinterruptdisable; // [648:617]
+    newusb_hw2reg_hchcaa_reg_t hchcaa; // [616:585]
+    newusb_hw2reg_hcperiodcurrented_reg_t hcperiodcurrented; // [584:551]
+    newusb_hw2reg_hccontrolheaded_reg_t hccontrolheaded; // [550:517]
+    newusb_hw2reg_hccontrolcurrented_reg_t hccontrolcurrented; // [516:483]
+    newusb_hw2reg_hcbulkheaded_reg_t hcbulkheaded; // [482:449]
+    newusb_hw2reg_hcbulkcurrented_reg_t hcbulkcurrented; // [448:415]
+    newusb_hw2reg_hcdonehead_reg_t hcdonehead; // [414:381]
+    newusb_hw2reg_hcfminterval_reg_t hcfminterval; // [380:345]
+    newusb_hw2reg_hcfmremaining_reg_t hcfmremaining; // [344:310]
+    newusb_hw2reg_hcfmnumber_reg_t hcfmnumber; // [309:276]
+    newusb_hw2reg_hcperiodicstart_reg_t hcperiodicstart; // [275:242]
+    newusb_hw2reg_hclsthreshold_reg_t hclsthreshold; // [241:208]
+    newusb_hw2reg_hcrhdescriptora_reg_t hcrhdescriptora; // [207:168]
+    newusb_hw2reg_hcrhdescriptorb_reg_t hcrhdescriptorb; // [167:134]
+    newusb_hw2reg_hcrhstatus_reg_t hcrhstatus; // [133:94]
+    newusb_hw2reg_hcrhportstatus_1_reg_t hcrhportstatus_1; // [93:47]
+    newusb_hw2reg_hcrhportstatus_2_reg_t hcrhportstatus_2; // [46:0]
   } newusb_hw2reg_t;
 
   // Register offsets
@@ -1680,12 +1002,6 @@ package newusb_reg_pkg;
   parameter logic [BlockAw-1:0] NEWUSB_HCRHSTATUS_OFFSET = 7'h 50;
   parameter logic [BlockAw-1:0] NEWUSB_HCRHPORTSTATUS_1_OFFSET = 7'h 54;
   parameter logic [BlockAw-1:0] NEWUSB_HCRHPORTSTATUS_2_OFFSET = 7'h 58;
-  parameter logic [BlockAw-1:0] NEWUSB_HCRHPORTSTATUS_3_OFFSET = 7'h 5c;
-  parameter logic [BlockAw-1:0] NEWUSB_HCRHPORTSTATUS_4_OFFSET = 7'h 60;
-  parameter logic [BlockAw-1:0] NEWUSB_HCRHPORTSTATUS_5_OFFSET = 7'h 64;
-  parameter logic [BlockAw-1:0] NEWUSB_HCRHPORTSTATUS_6_OFFSET = 7'h 68;
-  parameter logic [BlockAw-1:0] NEWUSB_HCRHPORTSTATUS_7_OFFSET = 7'h 6c;
-  parameter logic [BlockAw-1:0] NEWUSB_HCRHPORTSTATUS_8_OFFSET = 7'h 70;
 
   // Reset values for hwext registers and their fields
   parameter logic [31:0] NEWUSB_HCCONTROL_RESVAL = 32'h 0;
@@ -1768,17 +1084,11 @@ package newusb_reg_pkg;
     NEWUSB_HCRHDESCRIPTORB,
     NEWUSB_HCRHSTATUS,
     NEWUSB_HCRHPORTSTATUS_1,
-    NEWUSB_HCRHPORTSTATUS_2,
-    NEWUSB_HCRHPORTSTATUS_3,
-    NEWUSB_HCRHPORTSTATUS_4,
-    NEWUSB_HCRHPORTSTATUS_5,
-    NEWUSB_HCRHPORTSTATUS_6,
-    NEWUSB_HCRHPORTSTATUS_7,
-    NEWUSB_HCRHPORTSTATUS_8
+    NEWUSB_HCRHPORTSTATUS_2
   } newusb_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] NEWUSB_PERMIT [29] = '{
+  parameter logic [3:0] NEWUSB_PERMIT [23] = '{
     4'b 1111, // index[ 0] NEWUSB_HCREVISION
     4'b 1111, // index[ 1] NEWUSB_HCCONTROL
     4'b 1111, // index[ 2] NEWUSB_HCCOMMANDSTATUS
@@ -1801,13 +1111,7 @@ package newusb_reg_pkg;
     4'b 1111, // index[19] NEWUSB_HCRHDESCRIPTORB
     4'b 1111, // index[20] NEWUSB_HCRHSTATUS
     4'b 1111, // index[21] NEWUSB_HCRHPORTSTATUS_1
-    4'b 1111, // index[22] NEWUSB_HCRHPORTSTATUS_2
-    4'b 1111, // index[23] NEWUSB_HCRHPORTSTATUS_3
-    4'b 1111, // index[24] NEWUSB_HCRHPORTSTATUS_4
-    4'b 1111, // index[25] NEWUSB_HCRHPORTSTATUS_5
-    4'b 1111, // index[26] NEWUSB_HCRHPORTSTATUS_6
-    4'b 1111, // index[27] NEWUSB_HCRHPORTSTATUS_7
-    4'b 1111  // index[28] NEWUSB_HCRHPORTSTATUS_8
+    4'b 1111  // index[22] NEWUSB_HCRHPORTSTATUS_2
   };
 
 endpackage

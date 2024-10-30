@@ -7,6 +7,7 @@
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 // Thomas Benz <tbenz@iis.ee.ethz.ch>
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
+// Fabian Hauser <fhauser@student.ethz.ch>
 
 module cheshire_soc import cheshire_pkg::*; #(
   // Cheshire config
@@ -1694,22 +1695,22 @@ module cheshire_soc import cheshire_pkg::*; #(
       .dma_req_o    ( axi_in_req[AxiIn.usb] ),
       .dma_rsp_i    ( axi_in_rsp[AxiIn.usb] ),
       .intr_o       ( intr.intn.usb ),
-      .phy_clk_i    ( usb_clk_i   ),
-      .phy_rst_ni   ( usb_rst_ni  ),
-      .phy_dm_i     ( usb_dm_i    ),
-      .phy_dm_o     ( usb_dm_o    ),
-      .phy_dm_oe_o  ( usb_dm_oe_o ),
-      .phy_dp_i     ( usb_dp_i    ),
-      .phy_dp_o     ( usb_dp_o    ),
-      .phy_dp_oe_o  ( usb_dp_oe_o )
+      .phy_clk_i    ( usb_clk_i  ),
+      .phy_rst_ni   ( usb_rst_ni ),
+      .phy_dm_i     ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'b0, usb_dm_i    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
+      .phy_dm_o     ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'bX, usb_dm_o    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
+      .phy_dm_oe_o  ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'bX, usb_dm_oe_o [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
+      .phy_dp_i     ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'b0, usb_dp_i    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
+      .phy_dp_o     ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'bX, usb_dp_o    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
+      .phy_dp_oe_o  ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'bX, usb_dp_oe_o [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } )
     );
 
   end else begin : gen_no_usb
 
-    assign usb_dm_o    = '0;
-    assign usb_dm_oe_o = '0;
-    assign usb_dp_o    = '0;
-    assign usb_dp_oe_o = '0;
+    assign usb_dm_o    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] = '0;
+    assign usb_dm_oe_o [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] = '0;
+    assign usb_dp_o    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] = '0;
+    assign usb_dp_oe_o [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] = '0;
 
     assign intr.intn.usb = 0;
 
@@ -1723,6 +1724,10 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     // TODO: USB has no internal error handling, so it should have a bus error unit.
 
+    // TODO: Test out different port numbers, 
+    // currently 4 phyports, (2,3) are connected to spinal (0,1), spinal (2,3) tied to zero 
+    // currently 4 phyports, (0,1) are connected to newusb (0,1)
+
     new_usb_ohci #(
       .AxiMaxReads    ( Cfg.UsbDmaMaxReads ),
       .AxiAddrWidth   ( Cfg.AddrWidth     ),
@@ -1731,8 +1736,6 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AxiUserWidth   ( Cfg.AxiUserWidth  ),
       .AxiId          ( '0 ),
       .AxiUser        ( Cfg.AxiUserDefault ),
-      .AxiAddrDomain  ( Cfg.UsbAddrDomain ),
-      .AxiAddrMask    ( Cfg.UsbAddrMask   ),
       .reg_req_t      ( reg_req_t ),
       .reg_rsp_t      ( reg_rsp_t ),
       .axi_req_t      ( axi_mst_req_t ),
@@ -1745,55 +1748,26 @@ module cheshire_soc import cheshire_pkg::*; #(
       .dma_req_o    ( axi_in_req[AxiIn.new_usb] ),
       .dma_rsp_i    ( axi_in_rsp[AxiIn.new_usb] ),
       .intr_o       ( intr.intn.usb ),
-      .phy_clk_i    ( usb_clk_i   ),
-      .phy_rst_ni   ( usb_rst_ni  ),
-      .phy_dm_i     ( usb_dm_i    ),
-      .phy_dm_o     ( usb_dm_o    ),
-      .phy_dm_oe_o  ( usb_dm_oe_o ),
-      .phy_dp_i     ( usb_dp_i    ),
-      .phy_dp_o     ( usb_dp_o    ),
-      .phy_dp_oe_o  ( usb_dp_oe_o )
+      .phy_clk_i    ( usb_clk_i  ),
+      .phy_rst_ni   ( usb_rst_ni ),
+      .phy_dm_i     ( usb_dm_i    [NewUsbNumPorts-1:0]),
+      .phy_dm_o     ( usb_dm_o    [NewUsbNumPorts-1:0]),
+      .phy_dm_oe_o  ( usb_dm_oe_o [NewUsbNumPorts-1:0]),
+      .phy_dp_i     ( usb_dp_i    [NewUsbNumPorts-1:0]),
+      .phy_dp_o     ( usb_dp_o    [NewUsbNumPorts-1:0]),
+      .phy_dp_oe_o  ( usb_dp_oe_o [NewUsbNumPorts-1:0])
     );
 
   end else begin : gen_no_new_usb
 
-    assign usb_dm_o    = '0;
-    assign usb_dm_oe_o = '0;
-    assign usb_dp_o    = '0;
-    assign usb_dp_oe_o = '0;
+    assign usb_dm_o    [NewUsbNumPorts-1:0] = '0;
+    assign usb_dm_oe_o [NewUsbNumPorts-1:0] = '0;
+    assign usb_dp_o    [NewUsbNumPorts-1:0] = '0;
+    assign usb_dp_oe_o [NewUsbNumPorts-1:0] = '0;
 
     assign intr.intn.new_usb = 0;
 
   end
-
-  //if (Cfg.NewUsb) begin : gen_new_usb
-//
-//
-  //  newusb_reg_top #(
-  //    .reg_req_t  ( reg_req_t ),
-  //    .reg_rsp_t  ( reg_rsp_t )
-  //  ) i_regs (
-  //    .clk_i,
-  //    .rst_ni,
-  //    .reg_req_i ( reg_out_req[RegOut.new_usb] ), //SW HCD
-  //    .reg_rsp_o ( reg_out_rsp[RegOut.new_usb] ), //SW HCD
-  //    .reg2hw    ( /* NC */  ), //HW HC
-  //    .hw2reg    ( '0        ), //HW HC
-  //    .devmode_i (  1'b1     )
-  //  );
-//
-  //  // DMA port tied-off
-  //  assign axi_in_req[AxiIn.new_usb] = '0;
-//
-  //  // IRQ tied-off
-  //  assign intr.intn.new_usb = '0;
-//
-  //end else begin : gen_no_new_usb
-//
-  //  // tie-off other signals (USB PHY, IRQs)
-  //  assign intr.intn.new_usb = '0;
-//
-  //end
 
   //////////////////
   //  Assertions  //

@@ -13,19 +13,18 @@
 // because the package values need to influence the configuration inside newusb_regs.hjson.
 package new_usb_ohci_pkg;
   //Supports between 1-15 ports
-  localparam int unsigned NumPhyPorts = 8;
-  //To Do: Overcurrent protection global/individual
+  localparam int unsigned NumPhyPorts = 2; //Todo: parametrize registers and everything else, currently only 2
+  // Todo: Overcurrent protection global/individual
   //       0: off
   //       1: global
   //       2: individual
-  //To Do: Power switching protection global/individual
+  // Todo: Power switching protection global/individual
   //       0: off
   //       1: global
   //       2: individual
-  //To Do: Fifodepth
-  //To Do: Usb Dmalength
-  //To Do: Beats per Dmalength
-  //To Do: words per Beat
+  // Todo: Interrupt routing
+  // Todo: Fifodepth, usbdmalength, etc.
+
 endpackage
 
 module new_usb_ohci import new_usb_ohci_pkg::*; #(
@@ -89,8 +88,11 @@ newusb_reg_top #(
   // IRQ tied-off
   assign intr_o = '0;
 
-  // assign usb_dm_o    = '0;
-  // assign usb_dm_oe_o = '0;
-  // assign usb_dp_o    = '0;
-  // assign usb_dp_oe_o = '0;
+  assign phy_dm_o    = '0;
+  assign phy_dm_oe_o = '0;
+  assign phy_dp_o    = '0;
+  assign phy_dp_oe_o = '0;
+
+  assign intr.intn.new_usb = 0;
+  
 endmodule

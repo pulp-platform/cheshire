@@ -7,6 +7,7 @@
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 // Thomas Benz <tbenz@iis.ee.ethz.ch>
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
+// Fabian Hauser <fhauser@student.ethz.ch>
 
 package cheshire_pkg;
 
@@ -26,13 +27,16 @@ package cheshire_pkg;
   localparam int unsigned MaxExtRegSlvWidth = 4;
 
   // Parameters defined by generated hardware (regenerate to adapt)
-  localparam int unsigned SpihNumCs       = spi_host_reg_pkg::NumCS - 1;  // Last CS is dummy
-  localparam int unsigned SlinkNumChan    = serial_link_single_channel_reg_pkg::NumChannels;
-  localparam int unsigned SlinkNumLanes   = serial_link_single_channel_reg_pkg::NumBits/2;
-  localparam int unsigned SlinkMaxClkDiv  = 1 << serial_link_single_channel_reg_pkg::Log2MaxClkDiv;
-  localparam int unsigned ClintNumCores   = clint_reg_pkg::NumCores;
-  localparam int unsigned UsbNumPorts     = spinal_usb_ohci_pkg::NumPhyPorts;
-  localparam int unsigned NewUsbNumPorts     = new_usb_ohci_pkg::NumPhyPorts;
+  localparam int unsigned SpihNumCs             = spi_host_reg_pkg::NumCS - 1;  // Last CS is dummy
+  localparam int unsigned SlinkNumChan          = serial_link_single_channel_reg_pkg::NumChannels;
+  localparam int unsigned SlinkNumLanes         = serial_link_single_channel_reg_pkg::NumBits/2;
+  localparam int unsigned SlinkMaxClkDiv        = 1 << serial_link_single_channel_reg_pkg::Log2MaxClkDiv;
+  localparam int unsigned ClintNumCores         = clint_reg_pkg::NumCores;
+  localparam int unsigned NewUsbNumPorts        = new_usb_ohci_pkg::NumPhyPorts;
+  localparam int unsigned SpinalUsbNumPorts_max = spinal_usb_ohci_pkg::NumPhyPorts; //The available port number is fixed because the SpinalUSB is already generated
+  localparam int unsigned SpinalUsbNumPorts     = 2; //Select how many of the SpinalUsbNumPorts_max ports you want to use. The rest is tied to zero.
+  localparam int unsigned UsbNumPorts           = NewUsbNumPorts + SpinalUsbNumPorts;
+
 
   // Default JTAG ID code type
   typedef struct packed {
@@ -180,8 +184,8 @@ package cheshire_pkg;
     dw_bt   UsbDmaMaxReads;
     doub_bt UsbAddrMask;
     doub_bt UsbAddrDomain;
-    // TODO: parameter for NewUsb (FIFO depth...)
-    /// ...
+    // Parameter for NewUsb
+    dw_bt   NewUsbDmaMaxReads;
     // Parameters for DMA
     dw_bt   DmaConfMaxReadTxns;
     dw_bt   DmaConfMaxWriteTxns;
@@ -662,6 +666,8 @@ package cheshire_pkg;
     UsbDmaMaxReads    : 16,
     UsbAddrMask       : 'hFFFF_FFFF,
     UsbAddrDomain     : 'h0000_0000,
+    // NewUSB config
+    NewUsbDmaMaxReads : 16,
     // DMA config
     DmaConfMaxReadTxns  : 4,
     DmaConfMaxWriteTxns : 4,
