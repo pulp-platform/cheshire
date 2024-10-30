@@ -1697,12 +1697,12 @@ module cheshire_soc import cheshire_pkg::*; #(
       .intr_o       ( intr.intn.usb ),
       .phy_clk_i    ( usb_clk_i  ),
       .phy_rst_ni   ( usb_rst_ni ),
-      .phy_dm_i     ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'b0, usb_dm_i    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
-      .phy_dm_o     ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'bX, usb_dm_o    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
-      .phy_dm_oe_o  ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'bX, usb_dm_oe_o [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
-      .phy_dp_i     ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'b0, usb_dp_i    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
-      .phy_dp_o     ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'bX, usb_dp_o    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
-      .phy_dp_oe_o  ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'bX, usb_dp_oe_o [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } )
+      .phy_dm_i     ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'('b0), usb_dm_i    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
+      .phy_dm_o     ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'('bX), usb_dm_o    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
+      .phy_dm_oe_o  ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'('bX), usb_dm_oe_o [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
+      .phy_dp_i     ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'('b0), usb_dp_i    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
+      .phy_dp_o     ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'('bX), usb_dp_o    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
+      .phy_dp_oe_o  ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'('bX), usb_dp_oe_o [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } )
     );
 
   end else begin : gen_no_usb
