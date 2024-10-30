@@ -15,8 +15,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: ac5deb3ff086aa34b168f392c051e92603d6c0e2
-    version: 0.39.2
+    revision: 587355b77b8ce94dcd600efbd5d5bd118ff913a7
+    version: 0.39.4
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -44,8 +44,8 @@ packages:
     - common_cells
     - common_verification
   axi_rt:
-    revision: 56074a195b1c8b05f4bdd73674e437bbcb35f2cd
-    version: 0.0.0-alpha.7
+    revision: 641ea950e24722af747033f2ab85f0e48ea8d7f8
+    version: 0.0.0-alpha.9
     source:
       Git: https://github.com/pulp-platform/axi_rt.git
     dependencies:
@@ -53,8 +53,8 @@ packages:
     - common_cells
     - register_interface
   axi_vga:
-    revision: 3718b9930f94a9eaad8ee50b4bccc71df0403084
-    version: 0.1.3
+    revision: 4d3e70d4f47bb74edc1ab68d99ffc02382e0fb9e
+    version: 0.1.4
     source:
       Git: https://github.com/pulp-platform/axi_vga.git
     dependencies:
@@ -78,8 +78,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: 13f28aa0021fc22c0d01a12d618fda58d2c93239
-    version: 1.33.0
+    revision: c27bce39ebb2e6bae52f60960814a2afca7bd4cb
+    version: 1.37.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -123,6 +123,16 @@ packages:
       Git: https://github.com/pulp-platform/fpu_div_sqrt_mvp.git
     dependencies:
     - common_cells
+  hyperbus:
+    revision: d5b0064a0579f1a559f003f94721055d497af51d
+    version: 0.0.6
+    source:
+      Git: https://github.com/pulp-platform/hyperbus.git
+    dependencies:
+    - axi
+    - common_cells
+    - register_interface
+    - tech_cells_generic
   idma:
     revision: ca1b28816a3706be0bf9ce01378246d5346384f0
     version: 0.5.1
@@ -152,8 +162,8 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: ae616e5a1ec2b41e72d200e5ab09c65e94aebd3d
-    version: 0.4.4
+    revision: 5daa85d164cf6b54ad061ea1e4c6f3624556e467
+    version: 0.4.5
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:
@@ -170,8 +180,8 @@ packages:
     - common_cells
     - tech_cells_generic
   serial_link:
-    revision: 5a25f5a71074f1ebb6de7b5280f2b16924bcc666
-    version: 1.1.1
+    revision: c55df03a1da06b00e567cf968b1b1a5f40c9f802
+    version: 1.1.2
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:

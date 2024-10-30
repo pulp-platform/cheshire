@@ -614,4 +614,23 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .usb_dp_oe_o
   );
 
+
+// Debug
+ (* dont_touch = "yes" *) (* mark_debug = "true" *) logic soc_clk;
+ (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [1:0] boot_mode;
+ 
+ (* dont_touch = "yes" *) (* mark_debug = "true" *) logic reg_ext_slv_req;
+ (* dont_touch = "yes" *) (* mark_debug = "true" *) logic reg_ext_slv_rsp;
+ 
+ (* dont_touch = "yes" *) (* mark_debug = "true" *) logic axi_llc_mst_req;
+ (* dont_touch = "yes" *) (* mark_debug = "true" *) logic axi_llc_mst_rsp;
+ 
+ (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [7:0] hyper_ck_o;
+ (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [7:0] hyper_rwds_o;
+ 
+ (* dont_touch = "yes" *) (* mark_debug = "true" *) logic axi_req_o;
+ (* dont_touch = "yes" *) (* mark_debug = "true" *) logic axi_resp_i;
+ (* dont_touch = "yes" *) (* mark_debug = "true" *) logic pc_commit;
+ (* dont_touch = "yes" *) (* mark_debug = "true" *) logic csr_regfile_i;
+ 
 endmodule
