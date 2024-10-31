@@ -1673,6 +1673,13 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     // TODO: USB has no internal error handling, so it should have a bus error unit.
 
+    cheshire_intr_t [NumRtdIntrTgts-1:0] intr_routed;
+
+    logic [(SpinalUsbNumPorts_max-SpinalUsbNumPorts)-1:0] unused1;
+    logic [(SpinalUsbNumPorts_max-SpinalUsbNumPorts)-1:0] unused2;
+    logic [(SpinalUsbNumPorts_max-SpinalUsbNumPorts)-1:0] unused3;
+    logic [(SpinalUsbNumPorts_max-SpinalUsbNumPorts)-1:0] unused4;
+
     spinal_usb_ohci #(
       .AxiMaxReads    ( Cfg.UsbDmaMaxReads ),
       .AxiAddrWidth   ( Cfg.AddrWidth     ),
@@ -1698,11 +1705,11 @@ module cheshire_soc import cheshire_pkg::*; #(
       .phy_clk_i    ( usb_clk_i  ),
       .phy_rst_ni   ( usb_rst_ni ),
       .phy_dm_i     ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'('b0), usb_dm_i    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
-      .phy_dm_o     ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'('bZ), usb_dm_o    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
-      .phy_dm_oe_o  ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'('bZ), usb_dm_oe_o [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
+      .phy_dm_o     ( {unused1,                                         usb_dm_o    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
+      .phy_dm_oe_o  ( {unused2,                                         usb_dm_oe_o [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
       .phy_dp_i     ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'('b0), usb_dp_i    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
-      .phy_dp_o     ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'('bZ), usb_dp_o    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
-      .phy_dp_oe_o  ( {(SpinalUsbNumPorts_max-SpinalUsbNumPorts)'('bZ), usb_dp_oe_o [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } )
+      .phy_dp_o     ( {unused3,                                         usb_dp_o    [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } ),
+      .phy_dp_oe_o  ( {unused4,                                         usb_dp_oe_o [UsbNumPorts-1:UsbNumPorts-SpinalUsbNumPorts] } )
     );
 
   end else begin : gen_no_usb
@@ -1747,7 +1754,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .ctrl_rsp_o   ( reg_out_rsp[RegOut.new_usb] ),
       .dma_req_o    ( axi_in_req[AxiIn.new_usb] ),
       .dma_rsp_i    ( axi_in_rsp[AxiIn.new_usb] ),
-      .intr_o       ( intr.intn.usb ),
+      .intr_o       ( intr.intn.new_usb ),
       .phy_clk_i    ( usb_clk_i  ),
       .phy_rst_ni   ( usb_rst_ni ),
       .phy_dm_i     ( usb_dm_i    [NewUsbNumPorts-1:0]),
