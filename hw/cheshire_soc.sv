@@ -429,8 +429,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .req_t    ( reg_req_t ),
     .rsp_t    ( reg_rsp_t )
   ) i_reg_err_slv (
-    .req_i  ( reg_out_req[RegOut.err] ),
-    .rsp_o  ( reg_out_rsp[RegOut.err] )
+    .req_i  ( reg_out_req[RegOut.err] )
+   // .rsp_o  ( reg_out_rsp[RegOut.err] )
   );
 
   // Connect external slaves
@@ -1301,8 +1301,43 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  ETHERNET  //
   ////////////////
   if (Cfg.Ethernet) begin : gen_ethernet
+
+    axi_mst_req_t eth_req;
+    axi_mst_rsp_t eth_rsp;
+
+    // slv_guard_top #(
+    //   .AddrWidth    ( Cfg.AddrWidth       ),
+    //   .DataWidth    ( Cfg.AxiDataWidth    ),
+    //   .StrbWidth    ( AxiStrbWidth        ),
+    //   .AxiIdWidth   ( Cfg.AxiMstIdWidth   ),
+    //   .AxiUserWidth ( Cfg.AxiUserWidth    ),
+    //   .MaxUniqIds   ( 4                   ),
+    //   .MaxTxnsPerId ( 12                  ),
+    //   .CntWidth     ( 10                  ),
+    //   .HsCntWidth   ( 3                   ),
+    //   .req_t        ( axi_mst_req_t       ),
+    //   .rsp_t        ( axi_mst_rsp_t       ),
+    //   .slv_req_t    ( axi_mst_req_t       ),
+    //   .slv_rsp_t    ( axi_mst_rsp_t       ),
+    //   .reg_req_t    ( reg_req_t           ),
+    //   .reg_rsp_t    ( reg_rsp_t           )
+    // ) i_ethernet_guard (
+    //   .clk_i,
+    //   .rst_ni,
+    //   .guard_ena_i (   1'b1         ),
+    //   .req_i       (   eth_req      ),
+    //   .rsp_o       (   eth_rsp      ),
+    //   .req_o       (   axi_in_req[AxiIn.eth]         ),
+    //   .rsp_i       (   axi_in_rsp[AxiIn.eth]         ),
+    //   .reg_req_i   (   reg_out_req[RegOut.slv_guard] ),
+    //   .reg_rsp_o   (   reg_out_rsp[RegOut.slv_guard] ),
+    //   .irq_o       (   intr.intn.slv_guard           ),
+    //   .rst_req_o   (                                 ),
+    //   .rst_stat_i  (   1'b0                          )
+    //  );
+
     eth_idma_wrap#(
-      .DataWidth           ( Cfg.AxiDataWidth  ),    
+      .DataWidth           ( Cfg.AxiDataWidth  ),
       .AddrWidth           ( Cfg.AddrWidth     ),
       .UserWidth           ( Cfg.AxiUserWidth  ),
       .AxiIdWidth          ( Cfg.AxiMstIdWidth ),
@@ -1310,34 +1345,34 @@ module cheshire_soc import cheshire_pkg::*; #(
       .BufferDepth         ( 32'd2             ),
       .TFLenWidth          ( 32'd20            ),
       .MemSysDepth         ( 32'd0             ),
-      .TxFifoLogDepth      ( 32'd2             ),
-      .RxFifoLogDepth      ( 32'd3             ),
+      .TxFifoLogDepth      ( 32'd5             ),
+      .RxFifoLogDepth      ( 32'd5             ),
       .axi_req_t           ( axi_mst_req_t     ),
       .axi_rsp_t           ( axi_mst_rsp_t     ),
       .reg_req_t           ( reg_req_t         ),
       .reg_rsp_t           ( reg_rsp_t         )
     ) i_tx_eth_idma_wrap (
       .clk_i,
-      .rst_ni, 
+      .rst_ni,
       .eth_clk125_i        ( eth_clk125_i ),
       .eth_clk125q_i       ( eth_clk125q_i),
-      .eth_clk200_i        ( eth_clk200_i ),
+      .eth_clk200_i        ( 1'b0         ),
       .phy_rx_clk_i        ( eth_rxck_i   ),
       .phy_rxd_i           ( eth_rxd_i    ),
       .phy_rx_ctl_i        ( eth_rxctl_i  ),
       .phy_tx_clk_o        ( eth_txck_o   ),
       .phy_txd_o           ( eth_txd_o    ),
       .phy_tx_ctl_o        ( eth_txctl_o  ),
-      .phy_resetn_o        ( eth_rstn_o   ),  
+      .phy_resetn_o        ( eth_rstn_o   ),
       .phy_intn_i          ( 1'b1         ),
       .phy_pme_i           ( 1'b1         ),
-      .phy_mdio_i          ( eth_mdio_i   ),
+      .phy_mdio_i          ( 1'b1         ),
       .phy_mdio_o          ( eth_mdio_o   ),
       .phy_mdio_oe         ( eth_mdio_oe  ),
-      .phy_mdc_o           ( eth_mdc_o    ), 
-      .testmode_i          ( testmode_i   ),
-      .axi_req_o           ( axi_in_req[AxiIn.eth]        ),
-      .axi_rsp_i           ( axi_in_rsp[AxiIn.eth]        ),
+      .phy_mdc_o           ( eth_mdc_o    ),
+      .testmode_i          ( 1'b0         ),
+      .axi_req_o           ( axi_in_req[AxiIn.eth]      ), // eth_req
+      .axi_rsp_i           ( axi_in_rsp[AxiIn.eth]       ), // eth_rsp
       .reg_req_i           ( reg_out_req[RegOut.ethernet] ),
       .reg_rsp_o           ( reg_out_rsp[RegOut.ethernet] ),
       .eth_rx_irq_o        ( intr.intn.ethernet           )

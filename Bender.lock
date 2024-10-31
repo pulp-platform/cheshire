@@ -15,8 +15,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: 9402c8a9ce0a7b5253c3c29e788612d771e8b5d6
-    version: 0.39.3
+    revision: 853ede23b2a9837951b74dbdc6d18c3eef5bac7d
+    version: 0.39.5
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -34,6 +34,15 @@ packages:
     - common_verification
     - register_interface
     - tech_cells_generic
+  axi_monitor:
+    revision: 990cdc733198eddda9f7f79b5633dd78fedd9ed7
+    version: null
+    source:
+      Git: https://github.com/chaoqun-liang/axi_monitor.git
+    dependencies:
+    - axi
+    - common_cells
+    - register_interface
   axi_riscv_atomics:
     revision: 0ac3a78fe342c5a5b9b10bff49d58897f773059e
     version: 0.8.2
@@ -44,8 +53,8 @@ packages:
     - common_cells
     - common_verification
   axi_rt:
-    revision: d5f857e74d0a5db4e4a2cc3652ca4f40f29a1484
-    version: 0.0.0-alpha.8
+    revision: 641ea950e24722af747033f2ab85f0e48ea8d7f8
+    version: 0.0.0-alpha.9
     source:
       Git: https://github.com/pulp-platform/axi_rt.git
     dependencies:
@@ -60,8 +69,8 @@ packages:
     dependencies:
     - common_cells
   axi_vga:
-    revision: 3718b9930f94a9eaad8ee50b4bccc71df0403084
-    version: 0.1.3
+    revision: 4d3e70d4f47bb74edc1ab68d99ffc02382e0fb9e
+    version: 0.1.4
     source:
       Git: https://github.com/pulp-platform/axi_vga.git
     dependencies:
@@ -85,8 +94,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: 0d67563b6b592549542544f1abc0f43e5d4ee8b4
-    version: 1.35.0
+    revision: c27bce39ebb2e6bae52f60960814a2afca7bd4cb
+    version: 1.37.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -145,8 +154,8 @@ packages:
     - common_cells
     - register_interface
   obi:
-    revision: 1aa411df145c4ebdd61f8fed4d003c33f7b20636
-    version: 0.1.2
+    revision: 5321106817e177d6c16ecc4daa922b96b1bc946b
+    version: 0.1.5
     source:
       Git: https://github.com/pulp-platform/obi.git
     dependencies:
@@ -162,7 +171,7 @@ packages:
     - register_interface
     - tech_cells_generic
   pulp-ethernet:
-    revision: f01aacf5746751d57f0b8340f21756791fd3a2aa
+    revision: 85739c2d1ccd6c1c2ea1c5b95effcace234baa81
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp-ethernet.git
@@ -174,8 +183,8 @@ packages:
     - idma
     - register_interface
   register_interface:
-    revision: ae616e5a1ec2b41e72d200e5ab09c65e94aebd3d
-    version: 0.4.4
+    revision: 5daa85d164cf6b54ad061ea1e4c6f3624556e467
+    version: 0.4.5
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:
@@ -192,8 +201,8 @@ packages:
     - common_cells
     - tech_cells_generic
   serial_link:
-    revision: 5a25f5a71074f1ebb6de7b5280f2b16924bcc666
-    version: 1.1.1
+    revision: c55df03a1da06b00e567cf968b1b1a5f40c9f802
+    version: 1.1.2
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:

@@ -29,10 +29,10 @@
 #define ETH_MDIO_OFFSET              0x8
 
 #define PLIC_BASE                    0x04000000
-#define RV_PLIC_PRIO20_REG_OFFSET    0x50
+#define RV_PLIC_PRIO19_REG_OFFSET    0x4c
 #define RV_PLIC_IE0_0_REG_OFFSET     0x2000
 #define RV_PLIC_CC0_REG_OFFSET       0x200004
-#define RV_PLIC_IE0_0_E_20_BIT       20
+#define RV_PLIC_IE0_0_E_19_BIT       19
 #define PLIC_ENABLE_REG_BASE         PLIC_BASE + RV_PLIC_IE0_0_REG_OFFSET
 #define PLIC_CLAIM_COMPLETE_BASE     PLIC_BASE + RV_PLIC_CC0_REG_OFFSET
 
@@ -45,16 +45,54 @@
 #define TX_BASE 0x14000000
 #define RX_BASE 0x14001000
 
+#define GUARD_BASE 			                      0x030f0000
+#define SLV_GUARD_BUDGET_AWVLD_AWRDY_OFFSET   0x4
+#define SLV_GUARD_BUDGET_UNIT_W_OFFSET        0x8
+#define SLV_GUARD_BUDGET_WVLD_WRDY_OFFSET     0xc
+#define SLV_GUARD_BUDGET_WLAST_BVLD_OFFSET    0x10
+#define SLV_GUARD_BUDGET_BVLD_BRDY_OFFSET     0x14
+
+#define SLV_GUARD_BUDGET_ARVLD_ARRDY_OFFSET   0x18
+#define SLV_GUARD_BUDGET_UNIT_R_OFFSET        0x1c
+#define SLV_GUARD_BUDGET_RVLD_RRDY_OFFSET     0x20
+
+#define SLV_GUARD_RESET_OFFSET                0x24
+#define SLV_GUARD_IRQ_OFFSET                  0x28
+#define SLV_GUARD_IRQ_ADDR_OFFSET             0x2c
+
+#define SLV_GUARD_LATENCY_AWVLD_AWRDY_OFFSET  0x30
+#define SLV_GUARD_LATENCY_AWVLD_WFIRST_OFFSET 0x34
+#define SLV_GUARD_LATENCY_WVLD_WRDY_OFFSET    0x38
+#define SLV_GUARD_LATENCY_WVLD_WLAST_OFFSET   0x3c
+#define SLV_GUARD_LATENCY_WLAST_BVLD_OFFSET   0x40
+#define SLV_GUARD_LATENCY_WLAST_BRDY_OFFSET   0x44
+#define SLV_GUARD_LATENCY_ARVLD_ARRDY_OFFSET  0x48
+#define SLV_GUARD_LATENCY_ARVLD_RVLD_OFFSET   0x4c
+#define SLV_GUARD_LATENCY_RVLD_RRDY_OFFSET    0x50
+#define SLV_GUARD_LATENCY_RVLD_RLAST_OFFSET   0x54
+
 #define PRINTF_ON
 
 int main(void) {
 
   #ifdef PRINTF_ON
-    printf ("Start test Ethernet...\n\r");
+    printf ("Start slave guard test...\n\r");
   #endif
+ // first configure slave guard, then start ethernet
+ // write budgets
 
- *reg32(PLIC_BASE, RV_PLIC_PRIO20_REG_OFFSET) = 1;
- *reg32(PLIC_BASE, RV_PLIC_IE0_0_REG_OFFSET)  |= (1 << (RV_PLIC_IE0_0_E_20_BIT)); // Enable interrupt number ;
+ *reg32( GUARD_BASE, SLV_GUARD_BUDGET_AWVLD_AWRDY_OFFSET )       = 0x010;
+ *reg32( GUARD_BASE, SLV_GUARD_BUDGET_UNIT_W_OFFSET )            = 0x005;
+ *reg32( GUARD_BASE, SLV_GUARD_BUDGET_WVLD_WRDY_OFFSET )         = 0x100;
+ *reg32(GUARD_BASE, SLV_GUARD_BUDGET_WLAST_BVLD_OFFSET)          = 0x100;
+ *reg32(GUARD_BASE, SLV_GUARD_BUDGET_BVLD_BRDY_OFFSET)           = 0x100;
+ // read budgets
+ *reg32(GUARD_BASE, SLV_GUARD_BUDGET_ARVLD_ARRDY_OFFSET)         = 0x100;
+ *reg32(GUARD_BASE, SLV_GUARD_BUDGET_UNIT_R_OFFSET)              = 0x100;
+ *reg32(GUARD_BASE, SLV_GUARD_BUDGET_RVLD_RRDY_OFFSET)           = 0x100;
+
+ *reg32(PLIC_BASE, RV_PLIC_PRIO19_REG_OFFSET) = 1;
+ *reg32(PLIC_BASE, RV_PLIC_IE0_0_REG_OFFSET)  |= (1 << (RV_PLIC_IE0_0_E_19_BIT)); // Enable interrupt number ;
 
   volatile uint64_t data_to_write[DATA_CHUNK] = {
         0x0207230100890702,
@@ -83,50 +121,40 @@ int main(void) {
   // Data length
   *reg32(ETH_BASE, IDMA_LENGTH_OFFSET)    = DATA_CHUNK*BYTE_SIZE;
   // Source Protocol
-  *reg32(ETH_BASE, IDMA_SRC_PROTO_OFFSET) = 0x0;
+  *reg32(ETH_BASE, IDMA_DST_PROTO_OFFSET) = 0x0;
   // Destination Protocol
   *reg32(ETH_BASE, IDMA_DST_PROTO_OFFSET) = 0x5;
 
-  while(!(*reg32(ETH_BASE, IDMA_REQ_READY_OFFSET)));
   // Validate Request to DMA
   *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
-  //*reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x0;
-  // DMA completes data moving
-  while (!(*reg32(ETH_BASE, IDMA_RSP_VALID_OFFSET)));
 
   // configure ethernet
   *reg32(ETH_BASE, MACLO_OFFSET)          = 0x89000123;
   *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00800207;
   // rx irq
-  while (!((*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << RV_PLIC_IE0_0_E_20_BIT) ));
-  //printf("irq received\n");
+  while (!(*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19) );
+
   // dma length ready, dma can be configured now
   while (!(*reg32(ETH_BASE,IDMA_RX_EN_OFFSET)));
-  //printf("DMA RX enabled\n");
 
   *reg32(ETH_BASE, IDMA_SRC_ADDR_OFFSET)  = 0x0;
   *reg32(ETH_BASE, IDMA_DST_ADDR_OFFSET)  = RX_BASE;
   *reg32(ETH_BASE, IDMA_SRC_PROTO_OFFSET) = 0x5;
   *reg32(ETH_BASE, IDMA_DST_PROTO_OFFSET) = 0x0;
-
-  while(!(*reg32(ETH_BASE, IDMA_REQ_READY_OFFSET)));
   *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
-  //*reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x0;
 
   // wait until DMA moves all data
   while (!(*reg32(ETH_BASE, IDMA_RSP_VALID_OFFSET)));
 
-  volatile uint32_t error = 0;
+  uint32_t error = 0;
 
   for (int i = 0; i < DATA_CHUNK; ++i) {
     volatile uint64_t *rx_addr = (volatile uint64_t*)(RX_BASE + i * sizeof(uint64_t));
-    volatile uint64_t data_read = *rx_addr;
+    uint64_t data_read = *rx_addr;
 
-    if (data_read != data_to_write[i]) {
-      printf("Error at index %d: expected 0x%lx, got 0x%lx\n", i, data_to_write[i], data_read);
-      error++;
-    }
+    if (data_read != data_to_write[i]) error ++;
   }
 
   return error;
+
 }

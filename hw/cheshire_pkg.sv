@@ -140,6 +140,7 @@ package cheshire_pkg;
     bit     Clic;
     bit     IrqRouter;
     bit     BusErr;
+    bit     Slv_guard;
     // Parameters for Debug Module
     jtag_idcode_t DbgIdCode;
     dw_bt   DbgMaxReqs;
@@ -217,6 +218,7 @@ package cheshire_pkg;
     cheshire_bus_err_intr_t bus_err;
     logic [31:0] gpio;
     logic ethernet;
+    logic slv_guard;
     logic spih_spi_event;
     logic spih_error;
     logic i2c_host_timeout;
@@ -388,6 +390,7 @@ package cheshire_pkg;
     aw_bt uart;
     aw_bt i2c;
     aw_bt ethernet;
+    aw_bt slv_guard;
     aw_bt spi_host;
     aw_bt gpio;
     aw_bt slink;
@@ -420,6 +423,7 @@ package cheshire_pkg;
     if (cfg.IrqRouter)    begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
     if (cfg.AxiRt)        begin i++; ret.axirt      = i; r++; ret.map[r] = '{i, 'h020c_0000, 'h0210_0000}; end
     if (cfg.Ethernet)     begin i++; ret.ethernet   = i; r++; ret.map[r] = '{i, 'h0300_c000, 'h0300_d000}; end
+    if (cfg.Slv_guard)    begin i++; ret.slv_guard  = i; r++; ret.map[r] = '{i, 'h030f_0000, 'h030f_1000}; end
     if (cfg.Clic) for (int j = 0; j < cfg.NumCores; j++) begin
       i++; ret.clic[j]    = i; r++; ret.map[r] = '{i, AmClic + j*'h40000, AmClic + (j+1)*'h40000};
     end
