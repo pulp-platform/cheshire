@@ -218,6 +218,7 @@ package cheshire_pkg;
   typedef struct packed {
     cheshire_bus_err_intr_t bus_err;
     logic [31:0] gpio;
+    logic dma;
     logic usb;
     logic spih_spi_event;
     logic spih_error;
@@ -295,7 +296,8 @@ package cheshire_pkg;
   typedef struct packed {
     aw_bt [2**MaxCoresWidth-1:0] cores;
     aw_bt dbg;
-    aw_bt dma;
+    aw_bt dma_fe;
+    aw_bt dma_be;
     aw_bt slink;
     aw_bt vga;
     aw_bt usb;
@@ -308,7 +310,8 @@ package cheshire_pkg;
     int unsigned i = 0;
     for (int j = 0; j < cfg.NumCores; j++) begin ret.cores[i] = i; i++; end
     ret.dbg = i;
-    if (cfg.Dma)        begin i++; ret.dma   = i; end
+    if (cfg.Dma)        begin i++; ret.dma_fe = i; end
+    if (cfg.Dma)        begin i++; ret.dma_be = i; end
     if (cfg.SerialLink) begin i++; ret.slink = i; end
     if (cfg.Vga)        begin i++; ret.vga   = i; end
     if (cfg.Usb)        begin i++; ret.usb   = i; end
@@ -331,7 +334,7 @@ package cheshire_pkg;
     aw_bt reg_demux;
     aw_bt llc;
     aw_bt spm;
-    aw_bt dma;
+    aw_bt dma_fe;
     aw_bt slink;
     aw_bt ext_base;
     aw_bt num_out;
@@ -357,7 +360,7 @@ package cheshire_pkg;
       r++; ret.map[r] = '{i, AmSpm, AmSpm + SizeSpm};
       r++; ret.map[r] = '{i, AmSpm + 'h0400_0000, AmSpm + 'h0400_0000 + SizeSpm};
     end
-    if (cfg.Dma)          begin i++; r++; ret.dma = i; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
+    if (cfg.Dma)          begin i++; r++; ret.dma_fe = i; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
     if (cfg.SerialLink)   begin i++; r++; ret.slink = i;
         ret.map[r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
     // External port indices start after internal ones
@@ -392,6 +395,7 @@ package cheshire_pkg;
     aw_bt spi_host;
     aw_bt gpio;
     aw_bt slink;
+    aw_bt dma_fe;
     aw_bt vga;
     aw_bt usb;
     aw_bt axirt;
@@ -417,6 +421,7 @@ package cheshire_pkg;
     if (cfg.SpiHost)      begin i++; ret.spi_host   = i; r++; ret.map[r] = '{i, 'h0300_4000, 'h0300_5000}; end
     if (cfg.Gpio)         begin i++; ret.gpio       = i; r++; ret.map[r] = '{i, 'h0300_5000, 'h0300_6000}; end
     if (cfg.SerialLink)   begin i++; ret.slink      = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
+    if (cfg.Dma)          begin i++; ret.dma_fe     = i; r++; ret.map[r] = '{i, 'h0300_a000, 'h0300_b000}; end
     if (cfg.Vga)          begin i++; ret.vga        = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
     if (cfg.Usb)          begin i++; ret.usb        = i; r++; ret.map[r] = '{i, 'h0300_8000, 'h0300_9000}; end
     if (cfg.IrqRouter)    begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
