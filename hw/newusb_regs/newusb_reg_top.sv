@@ -68,8 +68,7 @@ module newusb_reg_top #(
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic [7:0] hcrevision_rev_qs;
-  logic [23:0] hcrevision_reserved_qs;
+  logic [7:0] hcrevision_qs;
   logic [1:0] hccontrol_cbsr_qs;
   logic [1:0] hccontrol_cbsr_wd;
   logic hccontrol_cbsr_we;
@@ -106,8 +105,6 @@ module newusb_reg_top #(
   logic hccontrol_rwe_wd;
   logic hccontrol_rwe_we;
   logic hccontrol_rwe_re;
-  logic [20:0] hccontrol_reserved_qs;
-  logic hccontrol_reserved_re;
   logic hccommandstatus_hcr_qs;
   logic hccommandstatus_hcr_wd;
   logic hccommandstatus_hcr_we;
@@ -342,96 +339,90 @@ module newusb_reg_top #(
   logic [12:0] hcrhstatus_reservedupper_qs;
   logic hcrhstatus_crwe_wd;
   logic hcrhstatus_crwe_we;
-  logic hcrhportstatus_1_ccs_qs;
-  logic hcrhportstatus_1_ccs_wd;
-  logic hcrhportstatus_1_ccs_we;
-  logic hcrhportstatus_1_pes_qs;
-  logic hcrhportstatus_1_pes_wd;
-  logic hcrhportstatus_1_pes_we;
-  logic hcrhportstatus_1_pss_qs;
-  logic hcrhportstatus_1_pss_wd;
-  logic hcrhportstatus_1_pss_we;
-  logic hcrhportstatus_1_poci_qs;
-  logic hcrhportstatus_1_poci_wd;
-  logic hcrhportstatus_1_poci_we;
-  logic hcrhportstatus_1_prs_qs;
-  logic hcrhportstatus_1_prs_wd;
-  logic hcrhportstatus_1_prs_we;
-  logic [2:0] hcrhportstatus_1_reservedlower_qs;
-  logic hcrhportstatus_1_pps_qs;
-  logic hcrhportstatus_1_pps_wd;
-  logic hcrhportstatus_1_pps_we;
-  logic hcrhportstatus_1_lsda_qs;
-  logic hcrhportstatus_1_lsda_wd;
-  logic hcrhportstatus_1_lsda_we;
-  logic [5:0] hcrhportstatus_1_reservedmid_qs;
-  logic hcrhportstatus_1_csc_qs;
-  logic hcrhportstatus_1_csc_wd;
-  logic hcrhportstatus_1_csc_we;
-  logic hcrhportstatus_1_pesc_qs;
-  logic hcrhportstatus_1_pesc_wd;
-  logic hcrhportstatus_1_pesc_we;
-  logic hcrhportstatus_1_pssc_qs;
-  logic hcrhportstatus_1_pssc_wd;
-  logic hcrhportstatus_1_pssc_we;
-  logic hcrhportstatus_1_ocic_qs;
-  logic hcrhportstatus_1_ocic_wd;
-  logic hcrhportstatus_1_ocic_we;
-  logic hcrhportstatus_1_prsc_qs;
-  logic hcrhportstatus_1_prsc_wd;
-  logic hcrhportstatus_1_prsc_we;
-  logic [10:0] hcrhportstatus_1_reservedupper_qs;
-  logic hcrhportstatus_2_ccs_qs;
-  logic hcrhportstatus_2_ccs_wd;
-  logic hcrhportstatus_2_ccs_we;
-  logic hcrhportstatus_2_pes_qs;
-  logic hcrhportstatus_2_pes_wd;
-  logic hcrhportstatus_2_pes_we;
-  logic hcrhportstatus_2_pss_qs;
-  logic hcrhportstatus_2_pss_wd;
-  logic hcrhportstatus_2_pss_we;
-  logic hcrhportstatus_2_poci_qs;
-  logic hcrhportstatus_2_poci_wd;
-  logic hcrhportstatus_2_poci_we;
-  logic hcrhportstatus_2_prs_qs;
-  logic hcrhportstatus_2_prs_wd;
-  logic hcrhportstatus_2_prs_we;
-  logic [2:0] hcrhportstatus_2_reservedlower_qs;
-  logic hcrhportstatus_2_pps_qs;
-  logic hcrhportstatus_2_pps_wd;
-  logic hcrhportstatus_2_pps_we;
-  logic hcrhportstatus_2_lsda_qs;
-  logic hcrhportstatus_2_lsda_wd;
-  logic hcrhportstatus_2_lsda_we;
-  logic [5:0] hcrhportstatus_2_reservedmid_qs;
-  logic hcrhportstatus_2_csc_qs;
-  logic hcrhportstatus_2_csc_wd;
-  logic hcrhportstatus_2_csc_we;
-  logic hcrhportstatus_2_pesc_qs;
-  logic hcrhportstatus_2_pesc_wd;
-  logic hcrhportstatus_2_pesc_we;
-  logic hcrhportstatus_2_pssc_qs;
-  logic hcrhportstatus_2_pssc_wd;
-  logic hcrhportstatus_2_pssc_we;
-  logic hcrhportstatus_2_ocic_qs;
-  logic hcrhportstatus_2_ocic_wd;
-  logic hcrhportstatus_2_ocic_we;
-  logic hcrhportstatus_2_prsc_qs;
-  logic hcrhportstatus_2_prsc_wd;
-  logic hcrhportstatus_2_prsc_we;
-  logic [10:0] hcrhportstatus_2_reservedupper_qs;
+  logic hcrhportstatus_0_ccs_0_qs;
+  logic hcrhportstatus_0_ccs_0_wd;
+  logic hcrhportstatus_0_ccs_0_we;
+  logic hcrhportstatus_0_pes_0_qs;
+  logic hcrhportstatus_0_pes_0_wd;
+  logic hcrhportstatus_0_pes_0_we;
+  logic hcrhportstatus_0_pss_0_qs;
+  logic hcrhportstatus_0_pss_0_wd;
+  logic hcrhportstatus_0_pss_0_we;
+  logic hcrhportstatus_0_poci_0_qs;
+  logic hcrhportstatus_0_poci_0_wd;
+  logic hcrhportstatus_0_poci_0_we;
+  logic hcrhportstatus_0_prs_0_qs;
+  logic hcrhportstatus_0_prs_0_wd;
+  logic hcrhportstatus_0_prs_0_we;
+  logic [2:0] hcrhportstatus_0_reservedlower_0_qs;
+  logic hcrhportstatus_0_pps_0_qs;
+  logic hcrhportstatus_0_pps_0_wd;
+  logic hcrhportstatus_0_pps_0_we;
+  logic hcrhportstatus_0_lsda_0_qs;
+  logic hcrhportstatus_0_lsda_0_wd;
+  logic hcrhportstatus_0_lsda_0_we;
+  logic [5:0] hcrhportstatus_0_reservedmid_0_qs;
+  logic hcrhportstatus_0_csc_0_qs;
+  logic hcrhportstatus_0_csc_0_wd;
+  logic hcrhportstatus_0_csc_0_we;
+  logic hcrhportstatus_0_pesc_0_qs;
+  logic hcrhportstatus_0_pesc_0_wd;
+  logic hcrhportstatus_0_pesc_0_we;
+  logic hcrhportstatus_0_pssc_0_qs;
+  logic hcrhportstatus_0_pssc_0_wd;
+  logic hcrhportstatus_0_pssc_0_we;
+  logic hcrhportstatus_0_ocic_0_qs;
+  logic hcrhportstatus_0_ocic_0_wd;
+  logic hcrhportstatus_0_ocic_0_we;
+  logic hcrhportstatus_0_prsc_0_qs;
+  logic hcrhportstatus_0_prsc_0_wd;
+  logic hcrhportstatus_0_prsc_0_we;
+  logic [10:0] hcrhportstatus_0_reservedupper_0_qs;
+  logic hcrhportstatus_1_ccs_1_qs;
+  logic hcrhportstatus_1_ccs_1_wd;
+  logic hcrhportstatus_1_ccs_1_we;
+  logic hcrhportstatus_1_pes_1_qs;
+  logic hcrhportstatus_1_pes_1_wd;
+  logic hcrhportstatus_1_pes_1_we;
+  logic hcrhportstatus_1_pss_1_qs;
+  logic hcrhportstatus_1_pss_1_wd;
+  logic hcrhportstatus_1_pss_1_we;
+  logic hcrhportstatus_1_poci_1_qs;
+  logic hcrhportstatus_1_poci_1_wd;
+  logic hcrhportstatus_1_poci_1_we;
+  logic hcrhportstatus_1_prs_1_qs;
+  logic hcrhportstatus_1_prs_1_wd;
+  logic hcrhportstatus_1_prs_1_we;
+  logic [2:0] hcrhportstatus_1_reservedlower_1_qs;
+  logic hcrhportstatus_1_pps_1_qs;
+  logic hcrhportstatus_1_pps_1_wd;
+  logic hcrhportstatus_1_pps_1_we;
+  logic hcrhportstatus_1_lsda_1_qs;
+  logic hcrhportstatus_1_lsda_1_wd;
+  logic hcrhportstatus_1_lsda_1_we;
+  logic [5:0] hcrhportstatus_1_reservedmid_1_qs;
+  logic hcrhportstatus_1_csc_1_qs;
+  logic hcrhportstatus_1_csc_1_wd;
+  logic hcrhportstatus_1_csc_1_we;
+  logic hcrhportstatus_1_pesc_1_qs;
+  logic hcrhportstatus_1_pesc_1_wd;
+  logic hcrhportstatus_1_pesc_1_we;
+  logic hcrhportstatus_1_pssc_1_qs;
+  logic hcrhportstatus_1_pssc_1_wd;
+  logic hcrhportstatus_1_pssc_1_we;
+  logic hcrhportstatus_1_ocic_1_qs;
+  logic hcrhportstatus_1_ocic_1_wd;
+  logic hcrhportstatus_1_ocic_1_we;
+  logic hcrhportstatus_1_prsc_1_qs;
+  logic hcrhportstatus_1_prsc_1_wd;
+  logic hcrhportstatus_1_prsc_1_we;
+  logic [10:0] hcrhportstatus_1_reservedupper_1_qs;
 
   // Register instances
   // R[hcrevision]: V(False)
 
-  //   F[rev]: 7:0
   // constant-only read
-  assign hcrevision_rev_qs = 8'h10;
-
-
-  //   F[reserved]: 31:8
-  // constant-only read
-  assign hcrevision_reserved_qs = 24'h0;
+  assign hcrevision_qs = 8'h10;
 
 
   // R[hccontrol]: V(True)
@@ -568,21 +559,6 @@ module newusb_reg_top #(
     .qe     (),
     .q      (reg2hw.hccontrol.rwe.q ),
     .qs     (hccontrol_rwe_qs)
-  );
-
-
-  //   F[reserved]: 31:11
-  prim_subreg_ext #(
-    .DW    (21)
-  ) u_hccontrol_reserved (
-    .re     (hccontrol_reserved_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.hccontrol.reserved.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (hccontrol_reserved_qs)
   );
 
 
@@ -2308,144 +2284,536 @@ module newusb_reg_top #(
   );
 
 
+
+  // Subregister 0 of Multireg hcrhportstatus
+  // R[hcrhportstatus_0]: V(False)
+
+  // F[ccs_0]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_hcrhportstatus_0_ccs_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (hcrhportstatus_0_ccs_0_we),
+    .wd     (hcrhportstatus_0_ccs_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.hcrhportstatus[0].ccs.de),
+    .d      (hw2reg.hcrhportstatus[0].ccs.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hcrhportstatus[0].ccs.q ),
+
+    // to register interface (read)
+    .qs     (hcrhportstatus_0_ccs_0_qs)
+  );
+
+
+  // F[pes_0]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_hcrhportstatus_0_pes_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (hcrhportstatus_0_pes_0_we),
+    .wd     (hcrhportstatus_0_pes_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.hcrhportstatus[0].pes.de),
+    .d      (hw2reg.hcrhportstatus[0].pes.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hcrhportstatus[0].pes.q ),
+
+    // to register interface (read)
+    .qs     (hcrhportstatus_0_pes_0_qs)
+  );
+
+
+  // F[pss_0]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_hcrhportstatus_0_pss_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (hcrhportstatus_0_pss_0_we),
+    .wd     (hcrhportstatus_0_pss_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.hcrhportstatus[0].pss.de),
+    .d      (hw2reg.hcrhportstatus[0].pss.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hcrhportstatus[0].pss.q ),
+
+    // to register interface (read)
+    .qs     (hcrhportstatus_0_pss_0_qs)
+  );
+
+
+  // F[poci_0]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_hcrhportstatus_0_poci_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (hcrhportstatus_0_poci_0_we),
+    .wd     (hcrhportstatus_0_poci_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.hcrhportstatus[0].poci.de),
+    .d      (hw2reg.hcrhportstatus[0].poci.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hcrhportstatus[0].poci.q ),
+
+    // to register interface (read)
+    .qs     (hcrhportstatus_0_poci_0_qs)
+  );
+
+
+  // F[prs_0]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_hcrhportstatus_0_prs_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (hcrhportstatus_0_prs_0_we),
+    .wd     (hcrhportstatus_0_prs_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.hcrhportstatus[0].prs.de),
+    .d      (hw2reg.hcrhportstatus[0].prs.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hcrhportstatus[0].prs.q ),
+
+    // to register interface (read)
+    .qs     (hcrhportstatus_0_prs_0_qs)
+  );
+
+
+  // F[reservedlower_0]: 7:5
+  prim_subreg #(
+    .DW      (3),
+    .SWACCESS("RO"),
+    .RESVAL  (3'h0)
+  ) u_hcrhportstatus_0_reservedlower_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.hcrhportstatus[0].reservedlower.de),
+    .d      (hw2reg.hcrhportstatus[0].reservedlower.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hcrhportstatus[0].reservedlower.q ),
+
+    // to register interface (read)
+    .qs     (hcrhportstatus_0_reservedlower_0_qs)
+  );
+
+
+  // F[pps_0]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_hcrhportstatus_0_pps_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (hcrhportstatus_0_pps_0_we),
+    .wd     (hcrhportstatus_0_pps_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.hcrhportstatus[0].pps.de),
+    .d      (hw2reg.hcrhportstatus[0].pps.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hcrhportstatus[0].pps.q ),
+
+    // to register interface (read)
+    .qs     (hcrhportstatus_0_pps_0_qs)
+  );
+
+
+  // F[lsda_0]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_hcrhportstatus_0_lsda_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (hcrhportstatus_0_lsda_0_we),
+    .wd     (hcrhportstatus_0_lsda_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.hcrhportstatus[0].lsda.de),
+    .d      (hw2reg.hcrhportstatus[0].lsda.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hcrhportstatus[0].lsda.q ),
+
+    // to register interface (read)
+    .qs     (hcrhportstatus_0_lsda_0_qs)
+  );
+
+
+  // F[reservedmid_0]: 15:10
+  prim_subreg #(
+    .DW      (6),
+    .SWACCESS("RO"),
+    .RESVAL  (6'h0)
+  ) u_hcrhportstatus_0_reservedmid_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.hcrhportstatus[0].reservedmid.de),
+    .d      (hw2reg.hcrhportstatus[0].reservedmid.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hcrhportstatus[0].reservedmid.q ),
+
+    // to register interface (read)
+    .qs     (hcrhportstatus_0_reservedmid_0_qs)
+  );
+
+
+  // F[csc_0]: 16:16
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_hcrhportstatus_0_csc_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (hcrhportstatus_0_csc_0_we),
+    .wd     (hcrhportstatus_0_csc_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.hcrhportstatus[0].csc.de),
+    .d      (hw2reg.hcrhportstatus[0].csc.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hcrhportstatus[0].csc.q ),
+
+    // to register interface (read)
+    .qs     (hcrhportstatus_0_csc_0_qs)
+  );
+
+
+  // F[pesc_0]: 17:17
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_hcrhportstatus_0_pesc_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (hcrhportstatus_0_pesc_0_we),
+    .wd     (hcrhportstatus_0_pesc_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.hcrhportstatus[0].pesc.de),
+    .d      (hw2reg.hcrhportstatus[0].pesc.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hcrhportstatus[0].pesc.q ),
+
+    // to register interface (read)
+    .qs     (hcrhportstatus_0_pesc_0_qs)
+  );
+
+
+  // F[pssc_0]: 18:18
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_hcrhportstatus_0_pssc_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (hcrhportstatus_0_pssc_0_we),
+    .wd     (hcrhportstatus_0_pssc_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.hcrhportstatus[0].pssc.de),
+    .d      (hw2reg.hcrhportstatus[0].pssc.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hcrhportstatus[0].pssc.q ),
+
+    // to register interface (read)
+    .qs     (hcrhportstatus_0_pssc_0_qs)
+  );
+
+
+  // F[ocic_0]: 19:19
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_hcrhportstatus_0_ocic_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (hcrhportstatus_0_ocic_0_we),
+    .wd     (hcrhportstatus_0_ocic_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.hcrhportstatus[0].ocic.de),
+    .d      (hw2reg.hcrhportstatus[0].ocic.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hcrhportstatus[0].ocic.q ),
+
+    // to register interface (read)
+    .qs     (hcrhportstatus_0_ocic_0_qs)
+  );
+
+
+  // F[prsc_0]: 20:20
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_hcrhportstatus_0_prsc_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (hcrhportstatus_0_prsc_0_we),
+    .wd     (hcrhportstatus_0_prsc_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.hcrhportstatus[0].prsc.de),
+    .d      (hw2reg.hcrhportstatus[0].prsc.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hcrhportstatus[0].prsc.q ),
+
+    // to register interface (read)
+    .qs     (hcrhportstatus_0_prsc_0_qs)
+  );
+
+
+  // F[reservedupper_0]: 31:21
+  prim_subreg #(
+    .DW      (11),
+    .SWACCESS("RO"),
+    .RESVAL  (11'h0)
+  ) u_hcrhportstatus_0_reservedupper_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.hcrhportstatus[0].reservedupper.de),
+    .d      (hw2reg.hcrhportstatus[0].reservedupper.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hcrhportstatus[0].reservedupper.q ),
+
+    // to register interface (read)
+    .qs     (hcrhportstatus_0_reservedupper_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg hcrhportstatus
   // R[hcrhportstatus_1]: V(False)
 
-  //   F[ccs]: 0:0
+  // F[ccs_1]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_hcrhportstatus_1_ccs (
+  ) u_hcrhportstatus_1_ccs_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (hcrhportstatus_1_ccs_we),
-    .wd     (hcrhportstatus_1_ccs_wd),
+    .we     (hcrhportstatus_1_ccs_1_we),
+    .wd     (hcrhportstatus_1_ccs_1_wd),
 
     // from internal hardware
-    .de     (hw2reg.hcrhportstatus_1.ccs.de),
-    .d      (hw2reg.hcrhportstatus_1.ccs.d ),
+    .de     (hw2reg.hcrhportstatus[1].ccs.de),
+    .d      (hw2reg.hcrhportstatus[1].ccs.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.hcrhportstatus_1.ccs.q ),
+    .q      (reg2hw.hcrhportstatus[1].ccs.q ),
 
     // to register interface (read)
-    .qs     (hcrhportstatus_1_ccs_qs)
+    .qs     (hcrhportstatus_1_ccs_1_qs)
   );
 
 
-  //   F[pes]: 1:1
+  // F[pes_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_hcrhportstatus_1_pes (
+  ) u_hcrhportstatus_1_pes_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (hcrhportstatus_1_pes_we),
-    .wd     (hcrhportstatus_1_pes_wd),
+    .we     (hcrhportstatus_1_pes_1_we),
+    .wd     (hcrhportstatus_1_pes_1_wd),
 
     // from internal hardware
-    .de     (hw2reg.hcrhportstatus_1.pes.de),
-    .d      (hw2reg.hcrhportstatus_1.pes.d ),
+    .de     (hw2reg.hcrhportstatus[1].pes.de),
+    .d      (hw2reg.hcrhportstatus[1].pes.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.hcrhportstatus_1.pes.q ),
+    .q      (reg2hw.hcrhportstatus[1].pes.q ),
 
     // to register interface (read)
-    .qs     (hcrhportstatus_1_pes_qs)
+    .qs     (hcrhportstatus_1_pes_1_qs)
   );
 
 
-  //   F[pss]: 2:2
+  // F[pss_1]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_hcrhportstatus_1_pss (
+  ) u_hcrhportstatus_1_pss_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (hcrhportstatus_1_pss_we),
-    .wd     (hcrhportstatus_1_pss_wd),
+    .we     (hcrhportstatus_1_pss_1_we),
+    .wd     (hcrhportstatus_1_pss_1_wd),
 
     // from internal hardware
-    .de     (hw2reg.hcrhportstatus_1.pss.de),
-    .d      (hw2reg.hcrhportstatus_1.pss.d ),
+    .de     (hw2reg.hcrhportstatus[1].pss.de),
+    .d      (hw2reg.hcrhportstatus[1].pss.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.hcrhportstatus_1.pss.q ),
+    .q      (reg2hw.hcrhportstatus[1].pss.q ),
 
     // to register interface (read)
-    .qs     (hcrhportstatus_1_pss_qs)
+    .qs     (hcrhportstatus_1_pss_1_qs)
   );
 
 
-  //   F[poci]: 3:3
+  // F[poci_1]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_hcrhportstatus_1_poci (
+  ) u_hcrhportstatus_1_poci_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (hcrhportstatus_1_poci_we),
-    .wd     (hcrhportstatus_1_poci_wd),
+    .we     (hcrhportstatus_1_poci_1_we),
+    .wd     (hcrhportstatus_1_poci_1_wd),
 
     // from internal hardware
-    .de     (hw2reg.hcrhportstatus_1.poci.de),
-    .d      (hw2reg.hcrhportstatus_1.poci.d ),
+    .de     (hw2reg.hcrhportstatus[1].poci.de),
+    .d      (hw2reg.hcrhportstatus[1].poci.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.hcrhportstatus_1.poci.q ),
+    .q      (reg2hw.hcrhportstatus[1].poci.q ),
 
     // to register interface (read)
-    .qs     (hcrhportstatus_1_poci_qs)
+    .qs     (hcrhportstatus_1_poci_1_qs)
   );
 
 
-  //   F[prs]: 4:4
+  // F[prs_1]: 4:4
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_hcrhportstatus_1_prs (
+  ) u_hcrhportstatus_1_prs_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (hcrhportstatus_1_prs_we),
-    .wd     (hcrhportstatus_1_prs_wd),
+    .we     (hcrhportstatus_1_prs_1_we),
+    .wd     (hcrhportstatus_1_prs_1_wd),
 
     // from internal hardware
-    .de     (hw2reg.hcrhportstatus_1.prs.de),
-    .d      (hw2reg.hcrhportstatus_1.prs.d ),
+    .de     (hw2reg.hcrhportstatus[1].prs.de),
+    .d      (hw2reg.hcrhportstatus[1].prs.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.hcrhportstatus_1.prs.q ),
+    .q      (reg2hw.hcrhportstatus[1].prs.q ),
 
     // to register interface (read)
-    .qs     (hcrhportstatus_1_prs_qs)
+    .qs     (hcrhportstatus_1_prs_1_qs)
   );
 
 
-  //   F[reservedlower]: 7:5
+  // F[reservedlower_1]: 7:5
   prim_subreg #(
     .DW      (3),
     .SWACCESS("RO"),
     .RESVAL  (3'h0)
-  ) u_hcrhportstatus_1_reservedlower (
+  ) u_hcrhportstatus_1_reservedlower_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -2453,76 +2821,76 @@ module newusb_reg_top #(
     .wd     ('0  ),
 
     // from internal hardware
-    .de     (hw2reg.hcrhportstatus_1.reservedlower.de),
-    .d      (hw2reg.hcrhportstatus_1.reservedlower.d ),
+    .de     (hw2reg.hcrhportstatus[1].reservedlower.de),
+    .d      (hw2reg.hcrhportstatus[1].reservedlower.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.hcrhportstatus_1.reservedlower.q ),
+    .q      (reg2hw.hcrhportstatus[1].reservedlower.q ),
 
     // to register interface (read)
-    .qs     (hcrhportstatus_1_reservedlower_qs)
+    .qs     (hcrhportstatus_1_reservedlower_1_qs)
   );
 
 
-  //   F[pps]: 8:8
+  // F[pps_1]: 8:8
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_hcrhportstatus_1_pps (
+  ) u_hcrhportstatus_1_pps_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (hcrhportstatus_1_pps_we),
-    .wd     (hcrhportstatus_1_pps_wd),
+    .we     (hcrhportstatus_1_pps_1_we),
+    .wd     (hcrhportstatus_1_pps_1_wd),
 
     // from internal hardware
-    .de     (hw2reg.hcrhportstatus_1.pps.de),
-    .d      (hw2reg.hcrhportstatus_1.pps.d ),
+    .de     (hw2reg.hcrhportstatus[1].pps.de),
+    .d      (hw2reg.hcrhportstatus[1].pps.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.hcrhportstatus_1.pps.q ),
+    .q      (reg2hw.hcrhportstatus[1].pps.q ),
 
     // to register interface (read)
-    .qs     (hcrhportstatus_1_pps_qs)
+    .qs     (hcrhportstatus_1_pps_1_qs)
   );
 
 
-  //   F[lsda]: 9:9
+  // F[lsda_1]: 9:9
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_hcrhportstatus_1_lsda (
+  ) u_hcrhportstatus_1_lsda_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (hcrhportstatus_1_lsda_we),
-    .wd     (hcrhportstatus_1_lsda_wd),
+    .we     (hcrhportstatus_1_lsda_1_we),
+    .wd     (hcrhportstatus_1_lsda_1_wd),
 
     // from internal hardware
-    .de     (hw2reg.hcrhportstatus_1.lsda.de),
-    .d      (hw2reg.hcrhportstatus_1.lsda.d ),
+    .de     (hw2reg.hcrhportstatus[1].lsda.de),
+    .d      (hw2reg.hcrhportstatus[1].lsda.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.hcrhportstatus_1.lsda.q ),
+    .q      (reg2hw.hcrhportstatus[1].lsda.q ),
 
     // to register interface (read)
-    .qs     (hcrhportstatus_1_lsda_qs)
+    .qs     (hcrhportstatus_1_lsda_1_qs)
   );
 
 
-  //   F[reservedmid]: 15:10
+  // F[reservedmid_1]: 15:10
   prim_subreg #(
     .DW      (6),
     .SWACCESS("RO"),
     .RESVAL  (6'h0)
-  ) u_hcrhportstatus_1_reservedmid (
+  ) u_hcrhportstatus_1_reservedmid_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -2530,154 +2898,154 @@ module newusb_reg_top #(
     .wd     ('0  ),
 
     // from internal hardware
-    .de     (hw2reg.hcrhportstatus_1.reservedmid.de),
-    .d      (hw2reg.hcrhportstatus_1.reservedmid.d ),
+    .de     (hw2reg.hcrhportstatus[1].reservedmid.de),
+    .d      (hw2reg.hcrhportstatus[1].reservedmid.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.hcrhportstatus_1.reservedmid.q ),
+    .q      (reg2hw.hcrhportstatus[1].reservedmid.q ),
 
     // to register interface (read)
-    .qs     (hcrhportstatus_1_reservedmid_qs)
+    .qs     (hcrhportstatus_1_reservedmid_1_qs)
   );
 
 
-  //   F[csc]: 16:16
+  // F[csc_1]: 16:16
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_hcrhportstatus_1_csc (
+  ) u_hcrhportstatus_1_csc_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (hcrhportstatus_1_csc_we),
-    .wd     (hcrhportstatus_1_csc_wd),
+    .we     (hcrhportstatus_1_csc_1_we),
+    .wd     (hcrhportstatus_1_csc_1_wd),
 
     // from internal hardware
-    .de     (hw2reg.hcrhportstatus_1.csc.de),
-    .d      (hw2reg.hcrhportstatus_1.csc.d ),
+    .de     (hw2reg.hcrhportstatus[1].csc.de),
+    .d      (hw2reg.hcrhportstatus[1].csc.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.hcrhportstatus_1.csc.q ),
+    .q      (reg2hw.hcrhportstatus[1].csc.q ),
 
     // to register interface (read)
-    .qs     (hcrhportstatus_1_csc_qs)
+    .qs     (hcrhportstatus_1_csc_1_qs)
   );
 
 
-  //   F[pesc]: 17:17
+  // F[pesc_1]: 17:17
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_hcrhportstatus_1_pesc (
+  ) u_hcrhportstatus_1_pesc_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (hcrhportstatus_1_pesc_we),
-    .wd     (hcrhportstatus_1_pesc_wd),
+    .we     (hcrhportstatus_1_pesc_1_we),
+    .wd     (hcrhportstatus_1_pesc_1_wd),
 
     // from internal hardware
-    .de     (hw2reg.hcrhportstatus_1.pesc.de),
-    .d      (hw2reg.hcrhportstatus_1.pesc.d ),
+    .de     (hw2reg.hcrhportstatus[1].pesc.de),
+    .d      (hw2reg.hcrhportstatus[1].pesc.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.hcrhportstatus_1.pesc.q ),
+    .q      (reg2hw.hcrhportstatus[1].pesc.q ),
 
     // to register interface (read)
-    .qs     (hcrhportstatus_1_pesc_qs)
+    .qs     (hcrhportstatus_1_pesc_1_qs)
   );
 
 
-  //   F[pssc]: 18:18
+  // F[pssc_1]: 18:18
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_hcrhportstatus_1_pssc (
+  ) u_hcrhportstatus_1_pssc_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (hcrhportstatus_1_pssc_we),
-    .wd     (hcrhportstatus_1_pssc_wd),
+    .we     (hcrhportstatus_1_pssc_1_we),
+    .wd     (hcrhportstatus_1_pssc_1_wd),
 
     // from internal hardware
-    .de     (hw2reg.hcrhportstatus_1.pssc.de),
-    .d      (hw2reg.hcrhportstatus_1.pssc.d ),
+    .de     (hw2reg.hcrhportstatus[1].pssc.de),
+    .d      (hw2reg.hcrhportstatus[1].pssc.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.hcrhportstatus_1.pssc.q ),
+    .q      (reg2hw.hcrhportstatus[1].pssc.q ),
 
     // to register interface (read)
-    .qs     (hcrhportstatus_1_pssc_qs)
+    .qs     (hcrhportstatus_1_pssc_1_qs)
   );
 
 
-  //   F[ocic]: 19:19
+  // F[ocic_1]: 19:19
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_hcrhportstatus_1_ocic (
+  ) u_hcrhportstatus_1_ocic_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (hcrhportstatus_1_ocic_we),
-    .wd     (hcrhportstatus_1_ocic_wd),
+    .we     (hcrhportstatus_1_ocic_1_we),
+    .wd     (hcrhportstatus_1_ocic_1_wd),
 
     // from internal hardware
-    .de     (hw2reg.hcrhportstatus_1.ocic.de),
-    .d      (hw2reg.hcrhportstatus_1.ocic.d ),
+    .de     (hw2reg.hcrhportstatus[1].ocic.de),
+    .d      (hw2reg.hcrhportstatus[1].ocic.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.hcrhportstatus_1.ocic.q ),
+    .q      (reg2hw.hcrhportstatus[1].ocic.q ),
 
     // to register interface (read)
-    .qs     (hcrhportstatus_1_ocic_qs)
+    .qs     (hcrhportstatus_1_ocic_1_qs)
   );
 
 
-  //   F[prsc]: 20:20
+  // F[prsc_1]: 20:20
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_hcrhportstatus_1_prsc (
+  ) u_hcrhportstatus_1_prsc_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (hcrhportstatus_1_prsc_we),
-    .wd     (hcrhportstatus_1_prsc_wd),
+    .we     (hcrhportstatus_1_prsc_1_we),
+    .wd     (hcrhportstatus_1_prsc_1_wd),
 
     // from internal hardware
-    .de     (hw2reg.hcrhportstatus_1.prsc.de),
-    .d      (hw2reg.hcrhportstatus_1.prsc.d ),
+    .de     (hw2reg.hcrhportstatus[1].prsc.de),
+    .d      (hw2reg.hcrhportstatus[1].prsc.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.hcrhportstatus_1.prsc.q ),
+    .q      (reg2hw.hcrhportstatus[1].prsc.q ),
 
     // to register interface (read)
-    .qs     (hcrhportstatus_1_prsc_qs)
+    .qs     (hcrhportstatus_1_prsc_1_qs)
   );
 
 
-  //   F[reservedupper]: 31:21
+  // F[reservedupper_1]: 31:21
   prim_subreg #(
     .DW      (11),
     .SWACCESS("RO"),
     .RESVAL  (11'h0)
-  ) u_hcrhportstatus_1_reservedupper (
+  ) u_hcrhportstatus_1_reservedupper_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -2685,405 +3053,17 @@ module newusb_reg_top #(
     .wd     ('0  ),
 
     // from internal hardware
-    .de     (hw2reg.hcrhportstatus_1.reservedupper.de),
-    .d      (hw2reg.hcrhportstatus_1.reservedupper.d ),
+    .de     (hw2reg.hcrhportstatus[1].reservedupper.de),
+    .d      (hw2reg.hcrhportstatus[1].reservedupper.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.hcrhportstatus_1.reservedupper.q ),
+    .q      (reg2hw.hcrhportstatus[1].reservedupper.q ),
 
     // to register interface (read)
-    .qs     (hcrhportstatus_1_reservedupper_qs)
+    .qs     (hcrhportstatus_1_reservedupper_1_qs)
   );
 
-
-  // R[hcrhportstatus_2]: V(False)
-
-  //   F[ccs]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_hcrhportstatus_2_ccs (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (hcrhportstatus_2_ccs_we),
-    .wd     (hcrhportstatus_2_ccs_wd),
-
-    // from internal hardware
-    .de     (hw2reg.hcrhportstatus_2.ccs.de),
-    .d      (hw2reg.hcrhportstatus_2.ccs.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcrhportstatus_2.ccs.q ),
-
-    // to register interface (read)
-    .qs     (hcrhportstatus_2_ccs_qs)
-  );
-
-
-  //   F[pes]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_hcrhportstatus_2_pes (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (hcrhportstatus_2_pes_we),
-    .wd     (hcrhportstatus_2_pes_wd),
-
-    // from internal hardware
-    .de     (hw2reg.hcrhportstatus_2.pes.de),
-    .d      (hw2reg.hcrhportstatus_2.pes.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcrhportstatus_2.pes.q ),
-
-    // to register interface (read)
-    .qs     (hcrhportstatus_2_pes_qs)
-  );
-
-
-  //   F[pss]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_hcrhportstatus_2_pss (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (hcrhportstatus_2_pss_we),
-    .wd     (hcrhportstatus_2_pss_wd),
-
-    // from internal hardware
-    .de     (hw2reg.hcrhportstatus_2.pss.de),
-    .d      (hw2reg.hcrhportstatus_2.pss.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcrhportstatus_2.pss.q ),
-
-    // to register interface (read)
-    .qs     (hcrhportstatus_2_pss_qs)
-  );
-
-
-  //   F[poci]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_hcrhportstatus_2_poci (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (hcrhportstatus_2_poci_we),
-    .wd     (hcrhportstatus_2_poci_wd),
-
-    // from internal hardware
-    .de     (hw2reg.hcrhportstatus_2.poci.de),
-    .d      (hw2reg.hcrhportstatus_2.poci.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcrhportstatus_2.poci.q ),
-
-    // to register interface (read)
-    .qs     (hcrhportstatus_2_poci_qs)
-  );
-
-
-  //   F[prs]: 4:4
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_hcrhportstatus_2_prs (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (hcrhportstatus_2_prs_we),
-    .wd     (hcrhportstatus_2_prs_wd),
-
-    // from internal hardware
-    .de     (hw2reg.hcrhportstatus_2.prs.de),
-    .d      (hw2reg.hcrhportstatus_2.prs.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcrhportstatus_2.prs.q ),
-
-    // to register interface (read)
-    .qs     (hcrhportstatus_2_prs_qs)
-  );
-
-
-  //   F[reservedlower]: 7:5
-  prim_subreg #(
-    .DW      (3),
-    .SWACCESS("RO"),
-    .RESVAL  (3'h0)
-  ) u_hcrhportstatus_2_reservedlower (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (hw2reg.hcrhportstatus_2.reservedlower.de),
-    .d      (hw2reg.hcrhportstatus_2.reservedlower.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcrhportstatus_2.reservedlower.q ),
-
-    // to register interface (read)
-    .qs     (hcrhportstatus_2_reservedlower_qs)
-  );
-
-
-  //   F[pps]: 8:8
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_hcrhportstatus_2_pps (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (hcrhportstatus_2_pps_we),
-    .wd     (hcrhportstatus_2_pps_wd),
-
-    // from internal hardware
-    .de     (hw2reg.hcrhportstatus_2.pps.de),
-    .d      (hw2reg.hcrhportstatus_2.pps.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcrhportstatus_2.pps.q ),
-
-    // to register interface (read)
-    .qs     (hcrhportstatus_2_pps_qs)
-  );
-
-
-  //   F[lsda]: 9:9
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_hcrhportstatus_2_lsda (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (hcrhportstatus_2_lsda_we),
-    .wd     (hcrhportstatus_2_lsda_wd),
-
-    // from internal hardware
-    .de     (hw2reg.hcrhportstatus_2.lsda.de),
-    .d      (hw2reg.hcrhportstatus_2.lsda.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcrhportstatus_2.lsda.q ),
-
-    // to register interface (read)
-    .qs     (hcrhportstatus_2_lsda_qs)
-  );
-
-
-  //   F[reservedmid]: 15:10
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RO"),
-    .RESVAL  (6'h0)
-  ) u_hcrhportstatus_2_reservedmid (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (hw2reg.hcrhportstatus_2.reservedmid.de),
-    .d      (hw2reg.hcrhportstatus_2.reservedmid.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcrhportstatus_2.reservedmid.q ),
-
-    // to register interface (read)
-    .qs     (hcrhportstatus_2_reservedmid_qs)
-  );
-
-
-  //   F[csc]: 16:16
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_hcrhportstatus_2_csc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (hcrhportstatus_2_csc_we),
-    .wd     (hcrhportstatus_2_csc_wd),
-
-    // from internal hardware
-    .de     (hw2reg.hcrhportstatus_2.csc.de),
-    .d      (hw2reg.hcrhportstatus_2.csc.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcrhportstatus_2.csc.q ),
-
-    // to register interface (read)
-    .qs     (hcrhportstatus_2_csc_qs)
-  );
-
-
-  //   F[pesc]: 17:17
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_hcrhportstatus_2_pesc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (hcrhportstatus_2_pesc_we),
-    .wd     (hcrhportstatus_2_pesc_wd),
-
-    // from internal hardware
-    .de     (hw2reg.hcrhportstatus_2.pesc.de),
-    .d      (hw2reg.hcrhportstatus_2.pesc.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcrhportstatus_2.pesc.q ),
-
-    // to register interface (read)
-    .qs     (hcrhportstatus_2_pesc_qs)
-  );
-
-
-  //   F[pssc]: 18:18
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_hcrhportstatus_2_pssc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (hcrhportstatus_2_pssc_we),
-    .wd     (hcrhportstatus_2_pssc_wd),
-
-    // from internal hardware
-    .de     (hw2reg.hcrhportstatus_2.pssc.de),
-    .d      (hw2reg.hcrhportstatus_2.pssc.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcrhportstatus_2.pssc.q ),
-
-    // to register interface (read)
-    .qs     (hcrhportstatus_2_pssc_qs)
-  );
-
-
-  //   F[ocic]: 19:19
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_hcrhportstatus_2_ocic (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (hcrhportstatus_2_ocic_we),
-    .wd     (hcrhportstatus_2_ocic_wd),
-
-    // from internal hardware
-    .de     (hw2reg.hcrhportstatus_2.ocic.de),
-    .d      (hw2reg.hcrhportstatus_2.ocic.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcrhportstatus_2.ocic.q ),
-
-    // to register interface (read)
-    .qs     (hcrhportstatus_2_ocic_qs)
-  );
-
-
-  //   F[prsc]: 20:20
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_hcrhportstatus_2_prsc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (hcrhportstatus_2_prsc_we),
-    .wd     (hcrhportstatus_2_prsc_wd),
-
-    // from internal hardware
-    .de     (hw2reg.hcrhportstatus_2.prsc.de),
-    .d      (hw2reg.hcrhportstatus_2.prsc.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcrhportstatus_2.prsc.q ),
-
-    // to register interface (read)
-    .qs     (hcrhportstatus_2_prsc_qs)
-  );
-
-
-  //   F[reservedupper]: 31:21
-  prim_subreg #(
-    .DW      (11),
-    .SWACCESS("RO"),
-    .RESVAL  (11'h0)
-  ) u_hcrhportstatus_2_reservedupper (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (hw2reg.hcrhportstatus_2.reservedupper.de),
-    .d      (hw2reg.hcrhportstatus_2.reservedupper.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcrhportstatus_2.reservedupper.q ),
-
-    // to register interface (read)
-    .qs     (hcrhportstatus_2_reservedupper_qs)
-  );
 
 
 
@@ -3112,8 +3092,8 @@ module newusb_reg_top #(
     addr_hit[18] = (reg_addr == NEWUSB_HCRHDESCRIPTORA_OFFSET);
     addr_hit[19] = (reg_addr == NEWUSB_HCRHDESCRIPTORB_OFFSET);
     addr_hit[20] = (reg_addr == NEWUSB_HCRHSTATUS_OFFSET);
-    addr_hit[21] = (reg_addr == NEWUSB_HCRHPORTSTATUS_1_OFFSET);
-    addr_hit[22] = (reg_addr == NEWUSB_HCRHPORTSTATUS_2_OFFSET);
+    addr_hit[21] = (reg_addr == NEWUSB_HCRHPORTSTATUS_0_OFFSET);
+    addr_hit[22] = (reg_addr == NEWUSB_HCRHPORTSTATUS_1_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -3181,8 +3161,6 @@ module newusb_reg_top #(
   assign hccontrol_rwe_we = addr_hit[1] & reg_we & !reg_error;
   assign hccontrol_rwe_wd = reg_wdata[10];
   assign hccontrol_rwe_re = addr_hit[1] & reg_re & !reg_error;
-
-  assign hccontrol_reserved_re = addr_hit[1] & reg_re & !reg_error;
 
   assign hccommandstatus_hcr_we = addr_hit[2] & reg_we & !reg_error;
   assign hccommandstatus_hcr_wd = reg_wdata[0];
@@ -3401,85 +3379,84 @@ module newusb_reg_top #(
   assign hcrhstatus_crwe_we = addr_hit[20] & reg_we & !reg_error;
   assign hcrhstatus_crwe_wd = reg_wdata[31];
 
-  assign hcrhportstatus_1_ccs_we = addr_hit[21] & reg_we & !reg_error;
-  assign hcrhportstatus_1_ccs_wd = reg_wdata[0];
+  assign hcrhportstatus_0_ccs_0_we = addr_hit[21] & reg_we & !reg_error;
+  assign hcrhportstatus_0_ccs_0_wd = reg_wdata[0];
 
-  assign hcrhportstatus_1_pes_we = addr_hit[21] & reg_we & !reg_error;
-  assign hcrhportstatus_1_pes_wd = reg_wdata[1];
+  assign hcrhportstatus_0_pes_0_we = addr_hit[21] & reg_we & !reg_error;
+  assign hcrhportstatus_0_pes_0_wd = reg_wdata[1];
 
-  assign hcrhportstatus_1_pss_we = addr_hit[21] & reg_we & !reg_error;
-  assign hcrhportstatus_1_pss_wd = reg_wdata[2];
+  assign hcrhportstatus_0_pss_0_we = addr_hit[21] & reg_we & !reg_error;
+  assign hcrhportstatus_0_pss_0_wd = reg_wdata[2];
 
-  assign hcrhportstatus_1_poci_we = addr_hit[21] & reg_we & !reg_error;
-  assign hcrhportstatus_1_poci_wd = reg_wdata[3];
+  assign hcrhportstatus_0_poci_0_we = addr_hit[21] & reg_we & !reg_error;
+  assign hcrhportstatus_0_poci_0_wd = reg_wdata[3];
 
-  assign hcrhportstatus_1_prs_we = addr_hit[21] & reg_we & !reg_error;
-  assign hcrhportstatus_1_prs_wd = reg_wdata[4];
+  assign hcrhportstatus_0_prs_0_we = addr_hit[21] & reg_we & !reg_error;
+  assign hcrhportstatus_0_prs_0_wd = reg_wdata[4];
 
-  assign hcrhportstatus_1_pps_we = addr_hit[21] & reg_we & !reg_error;
-  assign hcrhportstatus_1_pps_wd = reg_wdata[8];
+  assign hcrhportstatus_0_pps_0_we = addr_hit[21] & reg_we & !reg_error;
+  assign hcrhportstatus_0_pps_0_wd = reg_wdata[8];
 
-  assign hcrhportstatus_1_lsda_we = addr_hit[21] & reg_we & !reg_error;
-  assign hcrhportstatus_1_lsda_wd = reg_wdata[9];
+  assign hcrhportstatus_0_lsda_0_we = addr_hit[21] & reg_we & !reg_error;
+  assign hcrhportstatus_0_lsda_0_wd = reg_wdata[9];
 
-  assign hcrhportstatus_1_csc_we = addr_hit[21] & reg_we & !reg_error;
-  assign hcrhportstatus_1_csc_wd = reg_wdata[16];
+  assign hcrhportstatus_0_csc_0_we = addr_hit[21] & reg_we & !reg_error;
+  assign hcrhportstatus_0_csc_0_wd = reg_wdata[16];
 
-  assign hcrhportstatus_1_pesc_we = addr_hit[21] & reg_we & !reg_error;
-  assign hcrhportstatus_1_pesc_wd = reg_wdata[17];
+  assign hcrhportstatus_0_pesc_0_we = addr_hit[21] & reg_we & !reg_error;
+  assign hcrhportstatus_0_pesc_0_wd = reg_wdata[17];
 
-  assign hcrhportstatus_1_pssc_we = addr_hit[21] & reg_we & !reg_error;
-  assign hcrhportstatus_1_pssc_wd = reg_wdata[18];
+  assign hcrhportstatus_0_pssc_0_we = addr_hit[21] & reg_we & !reg_error;
+  assign hcrhportstatus_0_pssc_0_wd = reg_wdata[18];
 
-  assign hcrhportstatus_1_ocic_we = addr_hit[21] & reg_we & !reg_error;
-  assign hcrhportstatus_1_ocic_wd = reg_wdata[19];
+  assign hcrhportstatus_0_ocic_0_we = addr_hit[21] & reg_we & !reg_error;
+  assign hcrhportstatus_0_ocic_0_wd = reg_wdata[19];
 
-  assign hcrhportstatus_1_prsc_we = addr_hit[21] & reg_we & !reg_error;
-  assign hcrhportstatus_1_prsc_wd = reg_wdata[20];
+  assign hcrhportstatus_0_prsc_0_we = addr_hit[21] & reg_we & !reg_error;
+  assign hcrhportstatus_0_prsc_0_wd = reg_wdata[20];
 
-  assign hcrhportstatus_2_ccs_we = addr_hit[22] & reg_we & !reg_error;
-  assign hcrhportstatus_2_ccs_wd = reg_wdata[0];
+  assign hcrhportstatus_1_ccs_1_we = addr_hit[22] & reg_we & !reg_error;
+  assign hcrhportstatus_1_ccs_1_wd = reg_wdata[0];
 
-  assign hcrhportstatus_2_pes_we = addr_hit[22] & reg_we & !reg_error;
-  assign hcrhportstatus_2_pes_wd = reg_wdata[1];
+  assign hcrhportstatus_1_pes_1_we = addr_hit[22] & reg_we & !reg_error;
+  assign hcrhportstatus_1_pes_1_wd = reg_wdata[1];
 
-  assign hcrhportstatus_2_pss_we = addr_hit[22] & reg_we & !reg_error;
-  assign hcrhportstatus_2_pss_wd = reg_wdata[2];
+  assign hcrhportstatus_1_pss_1_we = addr_hit[22] & reg_we & !reg_error;
+  assign hcrhportstatus_1_pss_1_wd = reg_wdata[2];
 
-  assign hcrhportstatus_2_poci_we = addr_hit[22] & reg_we & !reg_error;
-  assign hcrhportstatus_2_poci_wd = reg_wdata[3];
+  assign hcrhportstatus_1_poci_1_we = addr_hit[22] & reg_we & !reg_error;
+  assign hcrhportstatus_1_poci_1_wd = reg_wdata[3];
 
-  assign hcrhportstatus_2_prs_we = addr_hit[22] & reg_we & !reg_error;
-  assign hcrhportstatus_2_prs_wd = reg_wdata[4];
+  assign hcrhportstatus_1_prs_1_we = addr_hit[22] & reg_we & !reg_error;
+  assign hcrhportstatus_1_prs_1_wd = reg_wdata[4];
 
-  assign hcrhportstatus_2_pps_we = addr_hit[22] & reg_we & !reg_error;
-  assign hcrhportstatus_2_pps_wd = reg_wdata[8];
+  assign hcrhportstatus_1_pps_1_we = addr_hit[22] & reg_we & !reg_error;
+  assign hcrhportstatus_1_pps_1_wd = reg_wdata[8];
 
-  assign hcrhportstatus_2_lsda_we = addr_hit[22] & reg_we & !reg_error;
-  assign hcrhportstatus_2_lsda_wd = reg_wdata[9];
+  assign hcrhportstatus_1_lsda_1_we = addr_hit[22] & reg_we & !reg_error;
+  assign hcrhportstatus_1_lsda_1_wd = reg_wdata[9];
 
-  assign hcrhportstatus_2_csc_we = addr_hit[22] & reg_we & !reg_error;
-  assign hcrhportstatus_2_csc_wd = reg_wdata[16];
+  assign hcrhportstatus_1_csc_1_we = addr_hit[22] & reg_we & !reg_error;
+  assign hcrhportstatus_1_csc_1_wd = reg_wdata[16];
 
-  assign hcrhportstatus_2_pesc_we = addr_hit[22] & reg_we & !reg_error;
-  assign hcrhportstatus_2_pesc_wd = reg_wdata[17];
+  assign hcrhportstatus_1_pesc_1_we = addr_hit[22] & reg_we & !reg_error;
+  assign hcrhportstatus_1_pesc_1_wd = reg_wdata[17];
 
-  assign hcrhportstatus_2_pssc_we = addr_hit[22] & reg_we & !reg_error;
-  assign hcrhportstatus_2_pssc_wd = reg_wdata[18];
+  assign hcrhportstatus_1_pssc_1_we = addr_hit[22] & reg_we & !reg_error;
+  assign hcrhportstatus_1_pssc_1_wd = reg_wdata[18];
 
-  assign hcrhportstatus_2_ocic_we = addr_hit[22] & reg_we & !reg_error;
-  assign hcrhportstatus_2_ocic_wd = reg_wdata[19];
+  assign hcrhportstatus_1_ocic_1_we = addr_hit[22] & reg_we & !reg_error;
+  assign hcrhportstatus_1_ocic_1_wd = reg_wdata[19];
 
-  assign hcrhportstatus_2_prsc_we = addr_hit[22] & reg_we & !reg_error;
-  assign hcrhportstatus_2_prsc_wd = reg_wdata[20];
+  assign hcrhportstatus_1_prsc_1_we = addr_hit[22] & reg_we & !reg_error;
+  assign hcrhportstatus_1_prsc_1_wd = reg_wdata[20];
 
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[7:0] = hcrevision_rev_qs;
-        reg_rdata_next[31:8] = hcrevision_reserved_qs;
+        reg_rdata_next[7:0] = hcrevision_qs;
       end
 
       addr_hit[1]: begin
@@ -3492,7 +3469,6 @@ module newusb_reg_top #(
         reg_rdata_next[8] = hccontrol_ir_qs;
         reg_rdata_next[9] = hccontrol_rwc_qs;
         reg_rdata_next[10] = hccontrol_rwe_qs;
-        reg_rdata_next[31:11] = hccontrol_reserved_qs;
       end
 
       addr_hit[2]: begin
@@ -3635,39 +3611,39 @@ module newusb_reg_top #(
       end
 
       addr_hit[21]: begin
-        reg_rdata_next[0] = hcrhportstatus_1_ccs_qs;
-        reg_rdata_next[1] = hcrhportstatus_1_pes_qs;
-        reg_rdata_next[2] = hcrhportstatus_1_pss_qs;
-        reg_rdata_next[3] = hcrhportstatus_1_poci_qs;
-        reg_rdata_next[4] = hcrhportstatus_1_prs_qs;
-        reg_rdata_next[7:5] = hcrhportstatus_1_reservedlower_qs;
-        reg_rdata_next[8] = hcrhportstatus_1_pps_qs;
-        reg_rdata_next[9] = hcrhportstatus_1_lsda_qs;
-        reg_rdata_next[15:10] = hcrhportstatus_1_reservedmid_qs;
-        reg_rdata_next[16] = hcrhportstatus_1_csc_qs;
-        reg_rdata_next[17] = hcrhportstatus_1_pesc_qs;
-        reg_rdata_next[18] = hcrhportstatus_1_pssc_qs;
-        reg_rdata_next[19] = hcrhportstatus_1_ocic_qs;
-        reg_rdata_next[20] = hcrhportstatus_1_prsc_qs;
-        reg_rdata_next[31:21] = hcrhportstatus_1_reservedupper_qs;
+        reg_rdata_next[0] = hcrhportstatus_0_ccs_0_qs;
+        reg_rdata_next[1] = hcrhportstatus_0_pes_0_qs;
+        reg_rdata_next[2] = hcrhportstatus_0_pss_0_qs;
+        reg_rdata_next[3] = hcrhportstatus_0_poci_0_qs;
+        reg_rdata_next[4] = hcrhportstatus_0_prs_0_qs;
+        reg_rdata_next[7:5] = hcrhportstatus_0_reservedlower_0_qs;
+        reg_rdata_next[8] = hcrhportstatus_0_pps_0_qs;
+        reg_rdata_next[9] = hcrhportstatus_0_lsda_0_qs;
+        reg_rdata_next[15:10] = hcrhportstatus_0_reservedmid_0_qs;
+        reg_rdata_next[16] = hcrhportstatus_0_csc_0_qs;
+        reg_rdata_next[17] = hcrhportstatus_0_pesc_0_qs;
+        reg_rdata_next[18] = hcrhportstatus_0_pssc_0_qs;
+        reg_rdata_next[19] = hcrhportstatus_0_ocic_0_qs;
+        reg_rdata_next[20] = hcrhportstatus_0_prsc_0_qs;
+        reg_rdata_next[31:21] = hcrhportstatus_0_reservedupper_0_qs;
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[0] = hcrhportstatus_2_ccs_qs;
-        reg_rdata_next[1] = hcrhportstatus_2_pes_qs;
-        reg_rdata_next[2] = hcrhportstatus_2_pss_qs;
-        reg_rdata_next[3] = hcrhportstatus_2_poci_qs;
-        reg_rdata_next[4] = hcrhportstatus_2_prs_qs;
-        reg_rdata_next[7:5] = hcrhportstatus_2_reservedlower_qs;
-        reg_rdata_next[8] = hcrhportstatus_2_pps_qs;
-        reg_rdata_next[9] = hcrhportstatus_2_lsda_qs;
-        reg_rdata_next[15:10] = hcrhportstatus_2_reservedmid_qs;
-        reg_rdata_next[16] = hcrhportstatus_2_csc_qs;
-        reg_rdata_next[17] = hcrhportstatus_2_pesc_qs;
-        reg_rdata_next[18] = hcrhportstatus_2_pssc_qs;
-        reg_rdata_next[19] = hcrhportstatus_2_ocic_qs;
-        reg_rdata_next[20] = hcrhportstatus_2_prsc_qs;
-        reg_rdata_next[31:21] = hcrhportstatus_2_reservedupper_qs;
+        reg_rdata_next[0] = hcrhportstatus_1_ccs_1_qs;
+        reg_rdata_next[1] = hcrhportstatus_1_pes_1_qs;
+        reg_rdata_next[2] = hcrhportstatus_1_pss_1_qs;
+        reg_rdata_next[3] = hcrhportstatus_1_poci_1_qs;
+        reg_rdata_next[4] = hcrhportstatus_1_prs_1_qs;
+        reg_rdata_next[7:5] = hcrhportstatus_1_reservedlower_1_qs;
+        reg_rdata_next[8] = hcrhportstatus_1_pps_1_qs;
+        reg_rdata_next[9] = hcrhportstatus_1_lsda_1_qs;
+        reg_rdata_next[15:10] = hcrhportstatus_1_reservedmid_1_qs;
+        reg_rdata_next[16] = hcrhportstatus_1_csc_1_qs;
+        reg_rdata_next[17] = hcrhportstatus_1_pesc_1_qs;
+        reg_rdata_next[18] = hcrhportstatus_1_pssc_1_qs;
+        reg_rdata_next[19] = hcrhportstatus_1_ocic_1_qs;
+        reg_rdata_next[20] = hcrhportstatus_1_prsc_1_qs;
+        reg_rdata_next[31:21] = hcrhportstatus_1_reservedupper_1_qs;
       end
 
       default: begin

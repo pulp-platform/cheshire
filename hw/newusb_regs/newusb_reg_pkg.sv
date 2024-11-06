@@ -371,55 +371,7 @@ package newusb_reg_pkg;
     struct packed {
       logic [10:0] q;
     } reservedupper;
-  } newusb_reg2hw_hcrhportstatus_1_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        q;
-    } ccs;
-    struct packed {
-      logic        q;
-    } pes;
-    struct packed {
-      logic        q;
-    } pss;
-    struct packed {
-      logic        q;
-    } poci;
-    struct packed {
-      logic        q;
-    } prs;
-    struct packed {
-      logic [2:0]  q;
-    } reservedlower;
-    struct packed {
-      logic        q;
-    } pps;
-    struct packed {
-      logic        q;
-    } lsda;
-    struct packed {
-      logic [5:0]  q;
-    } reservedmid;
-    struct packed {
-      logic        q;
-    } csc;
-    struct packed {
-      logic        q;
-    } pesc;
-    struct packed {
-      logic        q;
-    } pssc;
-    struct packed {
-      logic        q;
-    } ocic;
-    struct packed {
-      logic        q;
-    } prsc;
-    struct packed {
-      logic [10:0] q;
-    } reservedupper;
-  } newusb_reg2hw_hcrhportstatus_2_reg_t;
+  } newusb_reg2hw_hcrhportstatus_mreg_t;
 
   typedef struct packed {
     struct packed {
@@ -449,9 +401,6 @@ package newusb_reg_pkg;
     struct packed {
       logic        d;
     } rwe;
-    struct packed {
-      logic [20:0] d;
-    } reserved;
   } newusb_hw2reg_hccontrol_reg_t;
 
   typedef struct packed {
@@ -861,70 +810,7 @@ package newusb_reg_pkg;
       logic [10:0] d;
       logic        de;
     } reservedupper;
-  } newusb_hw2reg_hcrhportstatus_1_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        d;
-      logic        de;
-    } ccs;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pes;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pss;
-    struct packed {
-      logic        d;
-      logic        de;
-    } poci;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prs;
-    struct packed {
-      logic [2:0]  d;
-      logic        de;
-    } reservedlower;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pps;
-    struct packed {
-      logic        d;
-      logic        de;
-    } lsda;
-    struct packed {
-      logic [5:0]  d;
-      logic        de;
-    } reservedmid;
-    struct packed {
-      logic        d;
-      logic        de;
-    } csc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pesc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pssc;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ocic;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prsc;
-    struct packed {
-      logic [10:0] d;
-      logic        de;
-    } reservedupper;
-  } newusb_hw2reg_hcrhportstatus_2_reg_t;
+  } newusb_hw2reg_hcrhportstatus_mreg_t;
 
   // Register -> HW type
   typedef struct packed {
@@ -948,13 +834,12 @@ package newusb_reg_pkg;
     newusb_reg2hw_hcrhdescriptora_reg_t hcrhdescriptora; // [159:128]
     newusb_reg2hw_hcrhdescriptorb_reg_t hcrhdescriptorb; // [127:96]
     newusb_reg2hw_hcrhstatus_reg_t hcrhstatus; // [95:64]
-    newusb_reg2hw_hcrhportstatus_1_reg_t hcrhportstatus_1; // [63:32]
-    newusb_reg2hw_hcrhportstatus_2_reg_t hcrhportstatus_2; // [31:0]
+    newusb_reg2hw_hcrhportstatus_mreg_t [1:0] hcrhportstatus; // [63:0]
   } newusb_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    newusb_hw2reg_hccontrol_reg_t hccontrol; // [776:745]
+    newusb_hw2reg_hccontrol_reg_t hccontrol; // [755:745]
     newusb_hw2reg_hccommandstatus_reg_t hccommandstatus; // [744:713]
     newusb_hw2reg_hcinterruptstatus_reg_t hcinterruptstatus; // [712:681]
     newusb_hw2reg_hcinterruptenable_reg_t hcinterruptenable; // [680:649]
@@ -974,8 +859,7 @@ package newusb_reg_pkg;
     newusb_hw2reg_hcrhdescriptora_reg_t hcrhdescriptora; // [207:168]
     newusb_hw2reg_hcrhdescriptorb_reg_t hcrhdescriptorb; // [167:134]
     newusb_hw2reg_hcrhstatus_reg_t hcrhstatus; // [133:94]
-    newusb_hw2reg_hcrhportstatus_1_reg_t hcrhportstatus_1; // [93:47]
-    newusb_hw2reg_hcrhportstatus_2_reg_t hcrhportstatus_2; // [46:0]
+    newusb_hw2reg_hcrhportstatus_mreg_t [1:0] hcrhportstatus; // [93:0]
   } newusb_hw2reg_t;
 
   // Register offsets
@@ -1000,11 +884,11 @@ package newusb_reg_pkg;
   parameter logic [BlockAw-1:0] NEWUSB_HCRHDESCRIPTORA_OFFSET = 7'h 48;
   parameter logic [BlockAw-1:0] NEWUSB_HCRHDESCRIPTORB_OFFSET = 7'h 4c;
   parameter logic [BlockAw-1:0] NEWUSB_HCRHSTATUS_OFFSET = 7'h 50;
-  parameter logic [BlockAw-1:0] NEWUSB_HCRHPORTSTATUS_1_OFFSET = 7'h 54;
-  parameter logic [BlockAw-1:0] NEWUSB_HCRHPORTSTATUS_2_OFFSET = 7'h 58;
+  parameter logic [BlockAw-1:0] NEWUSB_HCRHPORTSTATUS_0_OFFSET = 7'h 54;
+  parameter logic [BlockAw-1:0] NEWUSB_HCRHPORTSTATUS_1_OFFSET = 7'h 58;
 
   // Reset values for hwext registers and their fields
-  parameter logic [31:0] NEWUSB_HCCONTROL_RESVAL = 32'h 0;
+  parameter logic [10:0] NEWUSB_HCCONTROL_RESVAL = 11'h 0;
   parameter logic [1:0] NEWUSB_HCCONTROL_CBSR_RESVAL = 2'h 0;
   parameter logic [0:0] NEWUSB_HCCONTROL_PLE_RESVAL = 1'h 0;
   parameter logic [0:0] NEWUSB_HCCONTROL_IE_RESVAL = 1'h 0;
@@ -1014,7 +898,6 @@ package newusb_reg_pkg;
   parameter logic [0:0] NEWUSB_HCCONTROL_IR_RESVAL = 1'h 0;
   parameter logic [0:0] NEWUSB_HCCONTROL_RWC_RESVAL = 1'h 0;
   parameter logic [0:0] NEWUSB_HCCONTROL_RWE_RESVAL = 1'h 0;
-  parameter logic [20:0] NEWUSB_HCCONTROL_RESERVED_RESVAL = 21'h 0;
   parameter logic [31:0] NEWUSB_HCCOMMANDSTATUS_RESVAL = 32'h 0;
   parameter logic [0:0] NEWUSB_HCCOMMANDSTATUS_HCR_RESVAL = 1'h 0;
   parameter logic [0:0] NEWUSB_HCCOMMANDSTATUS_CLF_RESVAL = 1'h 0;
@@ -1083,14 +966,14 @@ package newusb_reg_pkg;
     NEWUSB_HCRHDESCRIPTORA,
     NEWUSB_HCRHDESCRIPTORB,
     NEWUSB_HCRHSTATUS,
-    NEWUSB_HCRHPORTSTATUS_1,
-    NEWUSB_HCRHPORTSTATUS_2
+    NEWUSB_HCRHPORTSTATUS_0,
+    NEWUSB_HCRHPORTSTATUS_1
   } newusb_id_e;
 
   // Register width information to check illegal writes
   parameter logic [3:0] NEWUSB_PERMIT [23] = '{
-    4'b 1111, // index[ 0] NEWUSB_HCREVISION
-    4'b 1111, // index[ 1] NEWUSB_HCCONTROL
+    4'b 0001, // index[ 0] NEWUSB_HCREVISION
+    4'b 0011, // index[ 1] NEWUSB_HCCONTROL
     4'b 1111, // index[ 2] NEWUSB_HCCOMMANDSTATUS
     4'b 1111, // index[ 3] NEWUSB_HCINTERRUPTSTATUS
     4'b 1111, // index[ 4] NEWUSB_HCINTERRUPTENABLE
@@ -1110,8 +993,8 @@ package newusb_reg_pkg;
     4'b 1111, // index[18] NEWUSB_HCRHDESCRIPTORA
     4'b 1111, // index[19] NEWUSB_HCRHDESCRIPTORB
     4'b 1111, // index[20] NEWUSB_HCRHSTATUS
-    4'b 1111, // index[21] NEWUSB_HCRHPORTSTATUS_1
-    4'b 1111  // index[22] NEWUSB_HCRHPORTSTATUS_2
+    4'b 1111, // index[21] NEWUSB_HCRHPORTSTATUS_0
+    4'b 1111  // index[22] NEWUSB_HCRHPORTSTATUS_1
   };
 
 endpackage

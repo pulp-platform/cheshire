@@ -5,6 +5,7 @@
 //
 // Fabian Hauser <fhauser@student.ethz.ch>
 //
+/// Parameter values are taken from new_usb_ohci_pkg.
 /// Always make changes in the template never in the newusb_regs.hjson.
 
 {
@@ -866,7 +867,7 @@
         { bits:     "7:0"
           name:     "NDP"
           desc:     "NumberDownstreamPorts"
-          resval:   "2"
+          resval:   "NumPhyPorts"
         }
       ]
     }
@@ -952,7 +953,7 @@
 
     { multireg: { name:     "HcRhPortStatus"
                   desc:     "HC Port Status and Control Register"
-                  count:    "2"
+                  count:    "NumPhyPorts"
                   cname:    "HcRhPortStatus_"
                   swaccess: "ro"
                   hwaccess: "hrw"

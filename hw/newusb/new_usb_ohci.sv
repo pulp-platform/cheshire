@@ -4,26 +4,39 @@
 
 // Fabian Hauser <fhauser@student.ethz.ch>
 
-/// Main module for the direct SystemVerilog New USB OHCI, configured for AXI4 buses.
+/// Main module for the direct SystemVerilog NewUSB OHCI, configured for AXI4 buses.
 /// The config port is adapted to 32b Regbus, the DMA port to parametric AXI4.
 /// The IOs are bundled into PULP structs and arrays to simplify connection.
 
 
 // Changes inside this package need to be confirmed with a make hw-all, 
-// because the package values need to influence the configuration inside newusb_regs.hjson.
+// because the package values need to update the configuration inside newusb_regs.hjson.
+// Always delete the previous newusb_regs.hjson first, if you do changes here.
 package new_usb_ohci_pkg;
-  //Supports between 1-15 ports
-  localparam int unsigned NumPhyPorts = 2; //Todo: parametrize registers and everything else, currently only 2
-  // Todo: Overcurrent protection global/individual
-  //       0: off
-  //       1: global
-  //       2: individual
-  // Todo: Power switching protection global/individual
-  //       0: off
-  //       1: global
-  //       2: individual
-  // Todo: Interrupt routing
-  // Todo: Fifodepth, usbdmalength, etc.
+  
+  typdef enum int unsigned {
+    OFF = 0,
+    GLOBAL = 1,
+    INDIVIDUAL = 2
+  } state_activate;
+
+  typdef enum int unsigned {
+    DISABLE = 0,
+    ENABLE = 1
+  } state_permit;
+
+  //OHCI supports between 1-15 ports
+  localparam int unsigned   NumPhyPorts      = 2;
+  localparam state_activate OverProtect      = OFF; // no overcurrent protection implemented yet
+  localparam state_activate PowerSwitching   = OFF; // no power switching implemented yet
+  localparam state_permit   InterruptRouting = DISABLE; // no system management interrupt SMI implemented yet
+  localparam state_permit   RemoteWakeup     = DISABLE; // no remote wakeup implemented yet
+  localparam state_permit   OwnershipChange  = DISABLE; // no ownership change implemented yet
+  localparam int unsigned   FifodepthPort    = 1024; //test value
+  localparam int unsigned   FifodepthDma     = 1024; //test value
+  localparam int unsigned   Dmalength        = 1024; //test value
+  
+  // Todo: Maybe Crc16 input Byte size parameter with selectable parallel/pipelined processing, lookup table?
 
 endpackage
 
@@ -34,10 +47,6 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
   parameter int unsigned AxiDataWidth  = 0,
   parameter int unsigned AxiIdWidth    = 0,
   parameter int unsigned AxiUserWidth  = 0,
-  /// The current controller can only address a 32b address space.
-  /// This parameter can statically add a domain and mask for the lower bits.
-  parameter logic [AxiAddrWidth-1:0]  AxiAddrDomain = '0,
-  parameter logic [AxiAddrWidth-1:0]  AxiAddrMask   = 'hFFFF_FFFF,
   /// Default User and ID presented on DMA manager AR, AW, W channels.
   /// In most systems, these can or should be left at '0.
   parameter logic [AxiIdWidth-1:0]    AxiId    = '0,
@@ -74,7 +83,7 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
 newusb_reg_top #(
   .reg_req_t  ( reg_req_t ),
   .reg_rsp_t  ( reg_rsp_t )
-) i_regs (
+) i_newusb_regs (
   .clk_i  ( soc_clk_i ),
   .rst_ni ( soc_rst_ni ),
   .reg_req_i ( ctrl_req_i ), //SW HCD
@@ -83,6 +92,33 @@ newusb_reg_top #(
   .hw2reg    ( '0         ), //HW HC
   .devmode_i (  1'b1      )
 );
+
+/*
+dma_core_wrap #(
+      .AxiAddrWidth       ( Cfg.AddrWidth           ),
+      .AxiDataWidth       ( Cfg.AxiDataWidth        ),
+      .AxiIdWidth         ( Cfg.AxiMstIdWidth       ),
+      .AxiUserWidth       ( Cfg.AxiUserWidth        ),
+      .AxiSlvIdWidth      ( AxiSlvIdWidth           ),
+      .NumAxInFlight      ( Cfg.DmaNumAxInFlight    ),
+      .MemSysDepth        ( Cfg.DmaMemSysDepth      ),
+      .JobFifoDepth       ( Cfg.DmaJobFifoDepth     ),
+      .RAWCouplingAvail   ( Cfg.DmaRAWCouplingAvail ),
+      .IsTwoD             ( Cfg.DmaConfEnableTwoD   ),
+      .axi_mst_req_t      ( axi_mst_req_t           ),
+      .axi_mst_rsp_t      ( axi_mst_rsp_t           ),
+      .axi_slv_req_t      ( axi_slv_req_t           ),
+      .axi_slv_rsp_t      ( axi_slv_rsp_t           )
+) i_dma_newusb (
+      .clk_i,
+      .rst_ni,
+      .testmode_i     ( test_mode_i ),
+      .axi_mst_req_o  ( axi_dma_req           ),
+      .axi_mst_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
+      .axi_slv_req_i  ( dma_cut_req ),
+      .axi_slv_rsp_o  ( dma_cut_rsp )
+);
+*/
 
 assign dma_req_o = '0;
 // IRQ tied-off
