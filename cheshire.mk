@@ -90,6 +90,7 @@ $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson:
 
 $(CHS_ROOT)/hw/newusb_regs/newusb_reg_pkg.sv $(CHS_ROOT)/hw/newusb_regs/newusb_reg_top.sv: $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
 	$(REGTOOL) -r $< --outdir $(dir $@)
+	rm $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
 
 # CLINT
 CLINTCORES ?= 1
