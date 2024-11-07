@@ -32,10 +32,18 @@
 
     { name:     "HcControl"
       desc:     "HC Control Operating Mode Register"
-      swaccess: "ro"
-      hwaccess: "hwo"
+      swaccess: "rw"
+      hwaccess: "hrw"
       hwext:    "true"
+      hwqe:     "true"
       fields: [
+        //{ bits:   "31:11"
+        //  name:   "Reserved"
+        //  desc:   "Reserved"
+        //  swaccess: "rw"
+        //  hwaccess: "hrw"
+        //  resval: "0"
+        //}
         { bits:     "10"
           name:     "RWE"
           desc:     "RemoteWakeupEnable"
@@ -48,6 +56,7 @@
           ]
         }
         //This field needs to disable/enable writes via a parameter
+        //The hardware reset value is anyway zero but if HC does not support RWC it should be permanent 0
         { bits:     "9"
           name:     "RWC"
           desc:     "RemoteWakeupConnected"

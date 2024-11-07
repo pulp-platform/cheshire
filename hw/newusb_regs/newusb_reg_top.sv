@@ -436,7 +436,7 @@ module newusb_reg_top #(
     .wd     (hccontrol_cbsr_wd),
     .d      (hw2reg.hccontrol.cbsr.d),
     .qre    (),
-    .qe     (),
+    .qe     (reg2hw.hccontrol.cbsr.qe),
     .q      (reg2hw.hccontrol.cbsr.q ),
     .qs     (hccontrol_cbsr_qs)
   );
@@ -451,7 +451,7 @@ module newusb_reg_top #(
     .wd     (hccontrol_ple_wd),
     .d      (hw2reg.hccontrol.ple.d),
     .qre    (),
-    .qe     (),
+    .qe     (reg2hw.hccontrol.ple.qe),
     .q      (reg2hw.hccontrol.ple.q ),
     .qs     (hccontrol_ple_qs)
   );
@@ -466,7 +466,7 @@ module newusb_reg_top #(
     .wd     (hccontrol_ie_wd),
     .d      (hw2reg.hccontrol.ie.d),
     .qre    (),
-    .qe     (),
+    .qe     (reg2hw.hccontrol.ie.qe),
     .q      (reg2hw.hccontrol.ie.q ),
     .qs     (hccontrol_ie_qs)
   );
@@ -481,7 +481,7 @@ module newusb_reg_top #(
     .wd     (hccontrol_cle_wd),
     .d      (hw2reg.hccontrol.cle.d),
     .qre    (),
-    .qe     (),
+    .qe     (reg2hw.hccontrol.cle.qe),
     .q      (reg2hw.hccontrol.cle.q ),
     .qs     (hccontrol_cle_qs)
   );
@@ -496,7 +496,7 @@ module newusb_reg_top #(
     .wd     (hccontrol_ble_wd),
     .d      (hw2reg.hccontrol.ble.d),
     .qre    (),
-    .qe     (),
+    .qe     (reg2hw.hccontrol.ble.qe),
     .q      (reg2hw.hccontrol.ble.q ),
     .qs     (hccontrol_ble_qs)
   );
@@ -511,7 +511,7 @@ module newusb_reg_top #(
     .wd     (hccontrol_hcfs_wd),
     .d      (hw2reg.hccontrol.hcfs.d),
     .qre    (),
-    .qe     (),
+    .qe     (reg2hw.hccontrol.hcfs.qe),
     .q      (reg2hw.hccontrol.hcfs.q ),
     .qs     (hccontrol_hcfs_qs)
   );
@@ -526,7 +526,7 @@ module newusb_reg_top #(
     .wd     (hccontrol_ir_wd),
     .d      (hw2reg.hccontrol.ir.d),
     .qre    (),
-    .qe     (),
+    .qe     (reg2hw.hccontrol.ir.qe),
     .q      (reg2hw.hccontrol.ir.q ),
     .qs     (hccontrol_ir_qs)
   );
@@ -541,7 +541,7 @@ module newusb_reg_top #(
     .wd     (hccontrol_rwc_wd),
     .d      (hw2reg.hccontrol.rwc.d),
     .qre    (),
-    .qe     (),
+    .qe     (reg2hw.hccontrol.rwc.qe),
     .q      (reg2hw.hccontrol.rwc.q ),
     .qs     (hccontrol_rwc_qs)
   );
@@ -556,7 +556,7 @@ module newusb_reg_top #(
     .wd     (hccontrol_rwe_wd),
     .d      (hw2reg.hccontrol.rwe.d),
     .qre    (),
-    .qe     (),
+    .qe     (reg2hw.hccontrol.rwe.qe),
     .q      (reg2hw.hccontrol.rwe.q ),
     .qs     (hccontrol_rwe_qs)
   );

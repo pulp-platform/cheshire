@@ -16,30 +16,39 @@ package newusb_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [1:0]  q;
+      logic        qe;
     } cbsr;
     struct packed {
       logic        q;
+      logic        qe;
     } ple;
     struct packed {
       logic        q;
+      logic        qe;
     } ie;
     struct packed {
       logic        q;
+      logic        qe;
     } cle;
     struct packed {
       logic        q;
+      logic        qe;
     } ble;
     struct packed {
       logic [1:0]  q;
+      logic        qe;
     } hcfs;
     struct packed {
       logic        q;
+      logic        qe;
     } ir;
     struct packed {
       logic        q;
+      logic        qe;
     } rwc;
     struct packed {
       logic        q;
+      logic        qe;
     } rwe;
   } newusb_reg2hw_hccontrol_reg_t;
 
@@ -814,7 +823,7 @@ package newusb_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    newusb_reg2hw_hccontrol_reg_t hccontrol; // [584:574]
+    newusb_reg2hw_hccontrol_reg_t hccontrol; // [593:574]
     newusb_reg2hw_hccommandstatus_reg_t hccommandstatus; // [573:570]
     newusb_reg2hw_hcinterruptstatus_reg_t hcinterruptstatus; // [569:562]
     newusb_reg2hw_hcinterruptenable_reg_t hcinterruptenable; // [561:553]
