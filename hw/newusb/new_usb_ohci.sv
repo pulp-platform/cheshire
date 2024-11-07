@@ -14,13 +14,13 @@
 // Always delete the previous newusb_regs.hjson first, if you do changes here.
 package new_usb_ohci_pkg;
   
-  typdef enum int unsigned {
+  typedef enum int unsigned {
     OFF = 0,
     GLOBAL = 1,
     INDIVIDUAL = 2
   } state_activate;
 
-  typdef enum int unsigned {
+  typedef enum int unsigned {
     DISABLE = 0,
     ENABLE = 1
   } state_permit;
@@ -93,32 +93,6 @@ newusb_reg_top #(
   .devmode_i (  1'b1      )
 );
 
-/*
-dma_core_wrap #(
-      .AxiAddrWidth       ( Cfg.AddrWidth           ),
-      .AxiDataWidth       ( Cfg.AxiDataWidth        ),
-      .AxiIdWidth         ( Cfg.AxiMstIdWidth       ),
-      .AxiUserWidth       ( Cfg.AxiUserWidth        ),
-      .AxiSlvIdWidth      ( AxiSlvIdWidth           ),
-      .NumAxInFlight      ( Cfg.DmaNumAxInFlight    ),
-      .MemSysDepth        ( Cfg.DmaMemSysDepth      ),
-      .JobFifoDepth       ( Cfg.DmaJobFifoDepth     ),
-      .RAWCouplingAvail   ( Cfg.DmaRAWCouplingAvail ),
-      .IsTwoD             ( Cfg.DmaConfEnableTwoD   ),
-      .axi_mst_req_t      ( axi_mst_req_t           ),
-      .axi_mst_rsp_t      ( axi_mst_rsp_t           ),
-      .axi_slv_req_t      ( axi_slv_req_t           ),
-      .axi_slv_rsp_t      ( axi_slv_rsp_t           )
-) i_dma_newusb (
-      .clk_i,
-      .rst_ni,
-      .testmode_i     ( test_mode_i ),
-      .axi_mst_req_o  ( axi_dma_req           ),
-      .axi_mst_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
-      .axi_slv_req_i  ( dma_cut_req ),
-      .axi_slv_rsp_o  ( dma_cut_rsp )
-);
-*/
 
 assign dma_req_o = '0;
 // IRQ tied-off
@@ -128,5 +102,5 @@ assign phy_dm_o    = '0;
 assign phy_dm_oe_o = '0;
 assign phy_dp_o    = '0;
 assign phy_dp_oe_o = '0;
-  
+
 endmodule
