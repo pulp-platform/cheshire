@@ -85,16 +85,17 @@ include $(CHS_ROOT)/sw/sw.mk
 $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv: $(CHS_ROOT)/hw/regs/cheshire_regs.hjson
 	$(REGTOOL) -r $< --outdir $(dir $@)
 
-# NewUSB registers insert param
+# NewUSB registers
+newusb_regs_all: $(CHS_ROOT)/hw/newusb_regs/newusb_reg_pkg.sv $(CHS_ROOT)/hw/newusb_regs/newusb_reg_top.sv | newusb_regs_clean
+
 $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson:
 	python $(CHS_ROOT)/hw/newusb_regs/newusb_insert_param.py
 
-# NewUSB registers
-$(CHS_ROOT)/hw/newusb_regs/newusb_reg_pkg.sv: $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
+$(CHS_ROOT)/hw/newusb_regs/newusb_reg_pkg.sv $(CHS_ROOT)/hw/newusb_regs/newusb_reg_top.sv: $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
 	$(REGTOOL) -r $< --outdir $(dir $@)
 
-$(CHS_ROOT)/hw/newusb_regs/newusb_reg_top.sv: $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
-	$(REGTOOL) -r $< --outdir $(dir $@) && rm -f $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
+newusb_regs_clean:
+	rm -f $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
 
 # CLINT
 CLINTCORES ?= 1
@@ -128,9 +129,8 @@ $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 include $(IDMA_ROOT)/idma.mk
 
 CHS_HW_ALL += $(IDMA_FULL_RTL)
-CHS_HW_ALL += $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
+CHS_HW_ALL += newusb_regs_all
 CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv
-CHS_HW_ALL += $(CHS_ROOT)/hw/newusb_regs/newusb_reg_pkg.sv $(CHS_ROOT)/hw/newusb_regs/newusb_reg_top.sv
 CHS_HW_ALL += $(CLINTROOT)/.generated
 CHS_HW_ALL += $(OTPROOT)/.generated
 CHS_HW_ALL += $(AXIRTROOT)/.generated
