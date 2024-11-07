@@ -90,7 +90,10 @@ $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson:
 	python $(CHS_ROOT)/hw/newusb_regs/newusb_insert_param.py
 
 # NewUSB registers
-$(CHS_ROOT)/hw/newusb_regs/newusb_reg_pkg.sv $(CHS_ROOT)/hw/newusb_regs/newusb_reg_top.sv: $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
+$(CHS_ROOT)/hw/newusb_regs/newusb_reg_pkg.sv: $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
+	$(REGTOOL) -r $< --outdir $(dir $@)
+
+$(CHS_ROOT)/hw/newusb_regs/newusb_reg_top.sv: $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
 	$(REGTOOL) -r $< --outdir $(dir $@) && rm -f $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
 
 # CLINT
