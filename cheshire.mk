@@ -5,6 +5,7 @@
 # Nicole Narr <narrn@student.ethz.ch>
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
+# Fabian Hauser <fhauser@student.ethz.ch>
 
 BENDER ?= bender
 
@@ -84,10 +85,11 @@ include $(CHS_ROOT)/sw/sw.mk
 $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv: $(CHS_ROOT)/hw/regs/cheshire_regs.hjson
 	$(REGTOOL) -r $< --outdir $(dir $@)
 
-# NewUSB registers
+# NewUSB registers insert param
 $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson:
 	python $(CHS_ROOT)/hw/newusb_regs/newusb_insert_param.py
 
+# NewUSB registers
 $(CHS_ROOT)/hw/newusb_regs/newusb_reg_pkg.sv $(CHS_ROOT)/hw/newusb_regs/newusb_reg_top.sv: $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
 	$(REGTOOL) -r $< --outdir $(dir $@)
 	rm -f $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
@@ -124,6 +126,7 @@ $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 include $(IDMA_ROOT)/idma.mk
 
 CHS_HW_ALL += $(IDMA_FULL_RTL)
+CHS_HW_ALL += $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
 CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv
 CHS_HW_ALL += $(CHS_ROOT)/hw/newusb_regs/newusb_reg_pkg.sv $(CHS_ROOT)/hw/newusb_regs/newusb_reg_top.sv
 CHS_HW_ALL += $(CLINTROOT)/.generated
