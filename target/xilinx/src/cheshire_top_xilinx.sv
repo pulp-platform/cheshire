@@ -428,10 +428,17 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   // Hyperbus //
   //////////////
 
+//  axi_llc_req_t axi_llc_mst_req;
+//  axi_llc_rsp_t axi_llc_mst_rsp;
   reg_req_t reg_ext_slv_req;
   reg_rsp_t reg_ext_slv_rsp;
 
 `ifdef USE_HYPERBUS
+  // Parameters
+  localparam int unsigned HypNumPhys      = 2;  // War vorher auf 2
+  localparam int unsigned HypNumChips     = 2;
+  localparam int unsigned HypRstChipBytes = 8*1024;   // S27KS0641 is 64 Mib (Mebibit)
+  
   // Signals
   logic [1:0]      hyper_reset_no;
   logic [1:0][1:0] hyper_cs_no;
@@ -453,9 +460,9 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
 
   // Hyperbus
   hyperbus #(
-    .NumChips         ( 2 ),
-    .NumPhys          ( 2 ),
-    .IsClockODelayed  ( 0 ),
+    .NumChips         ( HypNumPhys ),
+    .NumPhys          ( HypNumChips ),
+    .IsClockODelayed  ( 0 ),    // Urspruenglich auf 0 gewesen
     .AxiAddrWidth     ( FPGACfg.AddrWidth    ),
     .AxiDataWidth     ( FPGACfg.AxiDataWidth ),
     .AxiIdWidth       ( $bits(axi_llc_id_t)      ),
@@ -473,7 +480,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .reg_rsp_t        ( reg_rsp_t ),
     .axi_rule_t       ( hyper_addr_rule_t ),
     .RstChipBase      ( 32'(FPGACfg.LlcOutRegionStart) ),
-    .RstChipSpace     ( 32'(8*1024) )
+    .RstChipSpace     ( 32'(HypRstChipBytes) )   // durch Parameter
   ) i_hyperbus (
     // WARNING: Keeping system and PHY synchronous works only with careful constraints.
     // DO NOT copy-paste this to other projects without consideration; you were warned.
@@ -530,6 +537,11 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   (* PULLDOWN = "YES" *) IOBUF iobuf_dq15_i ( .T(~hyper_dq_oe_o[1]), .I(hyper_dq_o[1][5]), .O(hyper_dq_i[1][5]), .IO(FMC_hyper1_dqio5) );
   (* PULLDOWN = "YES" *) IOBUF iobuf_dq16_i ( .T(~hyper_dq_oe_o[1]), .I(hyper_dq_o[1][6]), .O(hyper_dq_i[1][6]), .IO(FMC_hyper1_dqio6) );
   (* PULLDOWN = "YES" *) IOBUF iobuf_dq17_i ( .T(~hyper_dq_oe_o[1]), .I(hyper_dq_o[1][7]), .O(hyper_dq_i[1][7]), .IO(FMC_hyper1_dqio7) );
+  
+`else
+    `ifndef USE_DDR
+        assign axi_llc_mst_rsp  =  '0;
+    `endif
 `endif
 
   //////////////////
@@ -615,22 +627,51 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   );
 
 
-// Debug
- (* dont_touch = "yes" *) (* mark_debug = "true" *) logic soc_clk;
- (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [1:0] boot_mode;
+//// Debug
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic soc_clk;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [1:0] boot_mode;
  
- (* dont_touch = "yes" *) (* mark_debug = "true" *) logic reg_ext_slv_req;
- (* dont_touch = "yes" *) (* mark_debug = "true" *) logic reg_ext_slv_rsp;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic reg_ext_slv_req;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic reg_ext_slv_rsp;
  
- (* dont_touch = "yes" *) (* mark_debug = "true" *) logic axi_llc_mst_req;
- (* dont_touch = "yes" *) (* mark_debug = "true" *) logic axi_llc_mst_rsp;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic axi_llc_mst_req;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic axi_llc_mst_rsp;
  
- (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [7:0] hyper_ck_o;
- (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [7:0] hyper_rwds_o;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [7:0] hyper_ck_o;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [7:0] hyper_rwds_o;
  
- (* dont_touch = "yes" *) (* mark_debug = "true" *) logic axi_req_o;
- (* dont_touch = "yes" *) (* mark_debug = "true" *) logic axi_resp_i;
- (* dont_touch = "yes" *) (* mark_debug = "true" *) logic pc_commit;
- (* dont_touch = "yes" *) (* mark_debug = "true" *) logic csr_regfile_i;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic axi_req_o;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic axi_resp_i;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic pc_commit;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic csr_regfile_i;
  
+ // Debug reg for soc_clk
+ wire debug_clk;
+ 
+ debug_clk_reg i_debug_clk_reg (
+    .soc_clk ( soc_clk ),
+//    .reset   ( rst_n ),
+    .debug_clk  ( debug_clk ) 
+  );
+ 
+endmodule
+
+(* DONT_TOUCH = "true" *)
+module debug_clk_reg (
+    input wire soc_clk,
+    input wire reset,
+    output reg debug_clk = 1'b0
+);
+
+  (* keep = "true" *) reg debug_clk;
+
+  always_ff @(posedge soc_clk) begin
+  
+    debug_clk <= ~debug_clk;
+//    if (reset) begin
+//      debug_clk <= 1'b0;
+//    end else begin
+//    end
+  end
+
 endmodule
