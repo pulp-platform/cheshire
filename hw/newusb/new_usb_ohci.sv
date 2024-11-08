@@ -29,7 +29,7 @@ package new_usb_ohci_pkg;
   localparam int unsigned   NumPhyPorts      = 2;
   localparam state_activate OverProtect      = OFF; // no overcurrent protection implemented yet
   localparam state_activate PowerSwitching   = OFF; // no power switching implemented yet
-  localparam state_permit   InterruptRouting = DISABLE; // no system management interrupt SMI implemented yet
+  localparam state_permit   InterruptRouting = DISABLE; // no system management interrupt (SMI) implemented yet
   localparam state_permit   RemoteWakeup     = DISABLE; // no remote wakeup implemented yet
   localparam state_permit   OwnershipChange  = DISABLE; // no ownership change implemented yet
   localparam int unsigned   FifodepthPort    = 1024; //test value
@@ -80,6 +80,9 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
   output logic [NumPhyPorts-1:0] phy_dp_oe_o
 );
 
+newusb_reg_pkg::newusb_hw2reg_t newusb_hw2reg;
+newusb_reg_pkg::newusb_reg2hw_t newusb_reg2hw;
+
 newusb_reg_top #(
   .reg_req_t  ( reg_req_t ),
   .reg_rsp_t  ( reg_rsp_t )
@@ -88,9 +91,9 @@ newusb_reg_top #(
   .rst_ni ( soc_rst_ni ),
   .reg_req_i ( ctrl_req_i ), //SW HCD
   .reg_rsp_o ( ctrl_rsp_o ), //SW HCD
-  .reg2hw    ( /* NC */   ), //HW HC
-  .hw2reg    ( '0         ), //HW HC
-  .devmode_i (  1'b1      )
+  .reg2hw    ( newusb_reg2hw ), //HW HC to Reg
+  .hw2reg    ( newusb_hw2reg ), //HW Reg to HC
+  .devmode_i ( 1'b1       )
 );
 
 

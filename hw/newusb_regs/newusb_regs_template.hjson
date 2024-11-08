@@ -55,11 +55,9 @@
             { value: "1", name: "enabled",    desc: "Remote wake-up enabled"   }
           ]
         }
-        //This field needs to disable/enable writes via a parameter
-        //The hardware reset value is anyway zero but if HC does not support RWC it should be permanent 0
         { bits:     "9"
           name:     "RWC"
-          desc:     "RemoteWakeupConnected"
+          desc:     "RemoteWakeupConnected. Tied to zero. RemoteWakeup is in HC currently not implemented"
           swaccess: "rw"
           hwaccess: "hrw"
           resval:   "0"
