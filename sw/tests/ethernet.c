@@ -83,7 +83,6 @@ int main(void) {
   while(!(*reg32(ETH_BASE, IDMA_REQ_READY_OFFSET)));
   // Validate Request to DMA
   *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
-  *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x0;
   // DMA completes data moving
   while (!(*reg32(ETH_BASE, IDMA_RSP_VALID_OFFSET)));
 
@@ -102,7 +101,6 @@ int main(void) {
 
   while(!(*reg32(ETH_BASE, IDMA_REQ_READY_OFFSET)));
   *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
-  *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x0;
 
   // wait until DMA moves all data
   while (!(*reg32(ETH_BASE, IDMA_RSP_VALID_OFFSET)));
