@@ -114,7 +114,7 @@ int main(void) {
     volatile uint64_t data_read = *rx_addr;
 
     if (data_read != data_to_write[i]) {
-      printf("Error at index %d: expected 0x%lx, got 0x%lx\n", i, data_to_write[i], data_read);
+      //printf("Error at index %d: expected 0x%lx, got 0x%lx\n", i, data_to_write[i], data_read);
       error++;
     }
   }

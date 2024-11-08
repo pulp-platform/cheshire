@@ -621,7 +621,7 @@ package cheshire_pkg;
     // LLC: 128 KiB, up to 2 GiB DRAM
     LlcNotBypass      : 1,
     LlcSetAssoc       : 8,
-    LlcNumLines       : 256,
+    LlcNumLines       : 128, // from 256
     LlcNumBlocks      : 8,
     LlcMaxReadTxns    : 16,
     LlcMaxWriteTxns   : 16,

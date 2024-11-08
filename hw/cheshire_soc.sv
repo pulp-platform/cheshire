@@ -1302,7 +1302,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   ////////////////
   if (Cfg.Ethernet) begin : gen_ethernet
     eth_idma_wrap#(
-      .DataWidth           ( Cfg.AxiDataWidth  ),    
+      .DataWidth           ( Cfg.AxiDataWidth  ),
       .AddrWidth           ( Cfg.AddrWidth     ),
       .UserWidth           ( Cfg.AxiUserWidth  ),
       .AxiIdWidth          ( Cfg.AxiMstIdWidth ),
@@ -1311,14 +1311,14 @@ module cheshire_soc import cheshire_pkg::*; #(
       .TFLenWidth          ( 32'd20            ),
       .MemSysDepth         ( 32'd0             ),
       .TxFifoLogDepth      ( 32'd5             ),
-      .RxFifoLogDepth      ( 32'd5             ),
+      .RxFifoLogDepth      ( 32'd10            ),
       .axi_req_t           ( axi_mst_req_t     ),
       .axi_rsp_t           ( axi_mst_rsp_t     ),
       .reg_req_t           ( reg_req_t         ),
       .reg_rsp_t           ( reg_rsp_t         )
     ) i_tx_eth_idma_wrap (
       .clk_i,
-      .rst_ni, 
+      .rst_ni,
       .eth_clk125_i        ( eth_clk125_i ),
       .eth_clk125q_i       ( eth_clk125q_i),
       .eth_clk200_i        ( eth_clk200_i ),
@@ -1328,13 +1328,13 @@ module cheshire_soc import cheshire_pkg::*; #(
       .phy_tx_clk_o        ( eth_txck_o   ),
       .phy_txd_o           ( eth_txd_o    ),
       .phy_tx_ctl_o        ( eth_txctl_o  ),
-      .phy_resetn_o        ( eth_rstn_o   ),  
+      .phy_resetn_o        ( eth_rstn_o   ),
       .phy_intn_i          ( 1'b1         ),
       .phy_pme_i           ( 1'b1         ),
       .phy_mdio_i          ( eth_mdio_i   ),
       .phy_mdio_o          ( eth_mdio_o   ),
       .phy_mdio_oe         ( eth_mdio_oe  ),
-      .phy_mdc_o           ( eth_mdc_o    ), 
+      .phy_mdc_o           ( eth_mdc_o    ),
       .testmode_i          ( testmode_i   ),
       .axi_req_o           ( axi_in_req[AxiIn.eth]        ),
       .axi_rsp_i           ( axi_in_rsp[AxiIn.eth]        ),
