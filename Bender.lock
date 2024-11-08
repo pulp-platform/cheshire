@@ -162,7 +162,7 @@ packages:
     - register_interface
     - tech_cells_generic
   pulp-ethernet:
-    revision: 97ad4987ce2bc3846413fc90c0ac293ef1d66bf8
+    revision: e6e4c8eb7a1dc739492818e45b7ef8196e345b0c
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp-ethernet.git
