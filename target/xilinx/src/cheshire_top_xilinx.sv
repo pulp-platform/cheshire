@@ -650,7 +650,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
  
  debug_clk_reg i_debug_clk_reg (
     .soc_clk ( soc_clk ),
-//    .reset   ( rst_n ),
+//    .reset_n   ( rst_n ),
     .debug_clk  ( debug_clk ) 
   );
  
@@ -659,7 +659,7 @@ endmodule
 (* DONT_TOUCH = "true" *)
 module debug_clk_reg (
     input wire soc_clk,
-    input wire reset,
+    input wire reset_n,
     output reg debug_clk = 1'b0
 );
 
@@ -668,7 +668,7 @@ module debug_clk_reg (
   always_ff @(posedge soc_clk) begin
   
     debug_clk <= ~debug_clk;
-//    if (reset) begin
+//    if (reset_n) begin
 //      debug_clk <= 1'b0;
 //    end else begin
 //    end

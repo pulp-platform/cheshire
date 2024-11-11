@@ -31,7 +31,7 @@ dependencies:
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            rev: 5a25f5a71074f1ebb6de7b5280f2b16924bcc666 }
   unbent:                   { git: "https://github.com/pulp-platform/unbent.git",                 rev: e9c9d5cfb635f2d4668c816ce9235798cfecb297 }
   dram_rtl_sim:             { git: "https://github.com/pulp-platform/dram_rtl_sim.git",           rev: 2cac4a9e12a60537567276b539ab6c919c87b5dc }
-  hyperbus:                 { git: "https://github.com/pulp-platform/hyperbus.git",               rev: d5b0064a0579f1a559f003f94721055d497af51d	}
+  hyperbus:                 { git: "https://github.com/pulp-platform/hyperbus.git",               rev: bd5688dd1d3ed24e0a6bf2296009d525230c93a0	}
 
 export_include_dirs:
   - hw/include
