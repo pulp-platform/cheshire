@@ -42,10 +42,8 @@ target/sim/vsim/work/
 target/xilinx/build 
 target/xilinx/out
 target/xilinx/scripts/add_sources.*
-
-!target/xilinx/build/genesys2.cheshire/cheshire.runs/impl_1/cheshire_top_xilinx.bit	# Don't work, both files must be added manually
-!target/xilinx/build/genesys2.cheshire/cheshire.runs/impl_1/cheshire_top_xilinx.ltx
-
 vivado*
+compile.*
 .Xil
 *.zip
+target/xilinx/src/ila_v6_2_12_ila_core.edn
