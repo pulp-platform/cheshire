@@ -240,36 +240,24 @@ module newusb_reg_top #(
   logic hcinterruptdisable_mie_we;
   logic hcinterruptdisable_mie_re;
   logic [7:0] hchcaa_zero_qs;
-  logic [7:0] hchcaa_zero_wd;
-  logic hchcaa_zero_we;
-  logic hchcaa_zero_re;
   logic [23:0] hchcaa_hcca_qs;
   logic [23:0] hchcaa_hcca_wd;
   logic hchcaa_hcca_we;
-  logic hchcaa_hcca_re;
   logic [3:0] hcperiodcurrented_zero_qs;
   logic [27:0] hcperiodcurrented_pced_qs;
   logic [3:0] hccontrolheaded_zero_qs;
-  logic [3:0] hccontrolheaded_zero_wd;
-  logic hccontrolheaded_zero_we;
   logic [27:0] hccontrolheaded_ched_qs;
   logic [27:0] hccontrolheaded_ched_wd;
   logic hccontrolheaded_ched_we;
   logic [3:0] hccontrolcurrented_zero_qs;
-  logic [3:0] hccontrolcurrented_zero_wd;
-  logic hccontrolcurrented_zero_we;
   logic [27:0] hccontrolcurrented_cced_qs;
   logic [27:0] hccontrolcurrented_cced_wd;
   logic hccontrolcurrented_cced_we;
   logic [3:0] hcbulkheaded_zero_qs;
-  logic [3:0] hcbulkheaded_zero_wd;
-  logic hcbulkheaded_zero_we;
   logic [27:0] hcbulkheaded_bhed_qs;
   logic [27:0] hcbulkheaded_bhed_wd;
   logic hcbulkheaded_bhed_we;
   logic [3:0] hcbulkcurrented_zero_qs;
-  logic [3:0] hcbulkcurrented_zero_wd;
-  logic hcbulkcurrented_zero_we;
   logic [27:0] hcbulkcurrented_bced_qs;
   logic [27:0] hcbulkcurrented_bced_wd;
   logic hcbulkcurrented_bced_we;
@@ -1125,34 +1113,35 @@ module newusb_reg_top #(
   );
 
 
-  // R[hchcaa]: V(True)
+  // R[hchcaa]: V(False)
 
   //   F[zero]: 7:0
-  prim_subreg_ext #(
-    .DW    (8)
-  ) u_hchcaa_zero (
-    .re     (hchcaa_zero_re),
-    .we     (hchcaa_zero_we),
-    .wd     (hchcaa_zero_wd),
-    .d      (hw2reg.hchcaa.zero.d),
-    .qre    (),
-    .qe     (),
-    .q      (reg2hw.hchcaa.zero.q ),
-    .qs     (hchcaa_zero_qs)
-  );
+  // constant-only read
+  assign hchcaa_zero_qs = 8'h0;
 
 
   //   F[hcca]: 31:8
-  prim_subreg_ext #(
-    .DW    (24)
+  prim_subreg #(
+    .DW      (24),
+    .SWACCESS("RW"),
+    .RESVAL  (24'h0)
   ) u_hchcaa_hcca (
-    .re     (hchcaa_hcca_re),
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
     .we     (hchcaa_hcca_we),
     .wd     (hchcaa_hcca_wd),
-    .d      (hw2reg.hchcaa.hcca.d),
-    .qre    (),
+
+    // from internal hardware
+    .de     (hw2reg.hchcaa.hcca.de),
+    .d      (hw2reg.hchcaa.hcca.d ),
+
+    // to internal hardware
     .qe     (),
     .q      (reg2hw.hchcaa.hcca.q ),
+
+    // to register interface (read)
     .qs     (hchcaa_hcca_qs)
   );
 
@@ -1160,28 +1149,8 @@ module newusb_reg_top #(
   // R[hcperiodcurrented]: V(False)
 
   //   F[zero]: 3:0
-  prim_subreg #(
-    .DW      (4),
-    .SWACCESS("RO"),
-    .RESVAL  (4'h0)
-  ) u_hcperiodcurrented_zero (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (hw2reg.hcperiodcurrented.zero.de),
-    .d      (hw2reg.hcperiodcurrented.zero.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcperiodcurrented.zero.q ),
-
-    // to register interface (read)
-    .qs     (hcperiodcurrented_zero_qs)
-  );
+  // constant-only read
+  assign hcperiodcurrented_zero_qs = 4'h0;
 
 
   //   F[pced]: 31:4
@@ -1212,29 +1181,8 @@ module newusb_reg_top #(
   // R[hccontrolheaded]: V(False)
 
   //   F[zero]: 3:0
-  prim_subreg #(
-    .DW      (4),
-    .SWACCESS("RW"),
-    .RESVAL  (4'h0)
-  ) u_hccontrolheaded_zero (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (hccontrolheaded_zero_we),
-    .wd     (hccontrolheaded_zero_wd),
-
-    // from internal hardware
-    .de     (hw2reg.hccontrolheaded.zero.de),
-    .d      (hw2reg.hccontrolheaded.zero.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hccontrolheaded.zero.q ),
-
-    // to register interface (read)
-    .qs     (hccontrolheaded_zero_qs)
-  );
+  // constant-only read
+  assign hccontrolheaded_zero_qs = 4'h0;
 
 
   //   F[ched]: 31:4
@@ -1266,29 +1214,8 @@ module newusb_reg_top #(
   // R[hccontrolcurrented]: V(False)
 
   //   F[zero]: 3:0
-  prim_subreg #(
-    .DW      (4),
-    .SWACCESS("RW"),
-    .RESVAL  (4'h0)
-  ) u_hccontrolcurrented_zero (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (hccontrolcurrented_zero_we),
-    .wd     (hccontrolcurrented_zero_wd),
-
-    // from internal hardware
-    .de     (hw2reg.hccontrolcurrented.zero.de),
-    .d      (hw2reg.hccontrolcurrented.zero.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hccontrolcurrented.zero.q ),
-
-    // to register interface (read)
-    .qs     (hccontrolcurrented_zero_qs)
-  );
+  // constant-only read
+  assign hccontrolcurrented_zero_qs = 4'h0;
 
 
   //   F[cced]: 31:4
@@ -1320,29 +1247,8 @@ module newusb_reg_top #(
   // R[hcbulkheaded]: V(False)
 
   //   F[zero]: 3:0
-  prim_subreg #(
-    .DW      (4),
-    .SWACCESS("RW"),
-    .RESVAL  (4'h0)
-  ) u_hcbulkheaded_zero (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (hcbulkheaded_zero_we),
-    .wd     (hcbulkheaded_zero_wd),
-
-    // from internal hardware
-    .de     (hw2reg.hcbulkheaded.zero.de),
-    .d      (hw2reg.hcbulkheaded.zero.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcbulkheaded.zero.q ),
-
-    // to register interface (read)
-    .qs     (hcbulkheaded_zero_qs)
-  );
+  // constant-only read
+  assign hcbulkheaded_zero_qs = 4'h0;
 
 
   //   F[bhed]: 31:4
@@ -1374,29 +1280,8 @@ module newusb_reg_top #(
   // R[hcbulkcurrented]: V(False)
 
   //   F[zero]: 3:0
-  prim_subreg #(
-    .DW      (4),
-    .SWACCESS("RW"),
-    .RESVAL  (4'h0)
-  ) u_hcbulkcurrented_zero (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (hcbulkcurrented_zero_we),
-    .wd     (hcbulkcurrented_zero_wd),
-
-    // from internal hardware
-    .de     (hw2reg.hcbulkcurrented.zero.de),
-    .d      (hw2reg.hcbulkcurrented.zero.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcbulkcurrented.zero.q ),
-
-    // to register interface (read)
-    .qs     (hcbulkcurrented_zero_qs)
-  );
+  // constant-only read
+  assign hcbulkcurrented_zero_qs = 4'h0;
 
 
   //   F[bced]: 31:4
@@ -1428,28 +1313,8 @@ module newusb_reg_top #(
   // R[hcdonehead]: V(False)
 
   //   F[zero]: 3:0
-  prim_subreg #(
-    .DW      (4),
-    .SWACCESS("RO"),
-    .RESVAL  (4'h0)
-  ) u_hcdonehead_zero (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (hw2reg.hcdonehead.zero.de),
-    .d      (hw2reg.hcdonehead.zero.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.hcdonehead.zero.q ),
-
-    // to register interface (read)
-    .qs     (hcdonehead_zero_qs)
-  );
+  // constant-only read
+  assign hcdonehead_zero_qs = 4'h0;
 
 
   //   F[dh]: 31:4
@@ -3296,34 +3161,17 @@ module newusb_reg_top #(
   assign hcinterruptdisable_mie_wd = reg_wdata[31];
   assign hcinterruptdisable_mie_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign hchcaa_zero_we = addr_hit[6] & reg_we & !reg_error;
-  assign hchcaa_zero_wd = reg_wdata[7:0];
-  assign hchcaa_zero_re = addr_hit[6] & reg_re & !reg_error;
-
   assign hchcaa_hcca_we = addr_hit[6] & reg_we & !reg_error;
   assign hchcaa_hcca_wd = reg_wdata[31:8];
-  assign hchcaa_hcca_re = addr_hit[6] & reg_re & !reg_error;
-
-  assign hccontrolheaded_zero_we = addr_hit[8] & reg_we & !reg_error;
-  assign hccontrolheaded_zero_wd = reg_wdata[3:0];
 
   assign hccontrolheaded_ched_we = addr_hit[8] & reg_we & !reg_error;
   assign hccontrolheaded_ched_wd = reg_wdata[31:4];
 
-  assign hccontrolcurrented_zero_we = addr_hit[9] & reg_we & !reg_error;
-  assign hccontrolcurrented_zero_wd = reg_wdata[3:0];
-
   assign hccontrolcurrented_cced_we = addr_hit[9] & reg_we & !reg_error;
   assign hccontrolcurrented_cced_wd = reg_wdata[31:4];
 
-  assign hcbulkheaded_zero_we = addr_hit[10] & reg_we & !reg_error;
-  assign hcbulkheaded_zero_wd = reg_wdata[3:0];
-
   assign hcbulkheaded_bhed_we = addr_hit[10] & reg_we & !reg_error;
   assign hcbulkheaded_bhed_wd = reg_wdata[31:4];
-
-  assign hcbulkcurrented_zero_we = addr_hit[11] & reg_we & !reg_error;
-  assign hcbulkcurrented_zero_wd = reg_wdata[3:0];
 
   assign hcbulkcurrented_bced_we = addr_hit[11] & reg_we & !reg_error;
   assign hcbulkcurrented_bced_wd = reg_wdata[31:4];

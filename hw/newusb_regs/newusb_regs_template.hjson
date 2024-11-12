@@ -545,9 +545,6 @@
 
     { name:     "HcHCAA"
       desc:     "HC HCAA Address Register"
-      swaccess: "ro"
-      hwaccess: "hwo"
-      hwext:    "true"
       fields: [
         { bits:     "31:8"
           name:     "HCCA"
@@ -559,8 +556,8 @@
         { bits:     "7:0"
           name:     "Zero"
           desc:     "Zero"
-          swaccess: "rw"
-          hwaccess: "hrw"
+          swaccess: "ro"
+          hwaccess: "none"
           resval:   "0"
         }
       ]
@@ -568,17 +565,19 @@
 
     { name:     "HcPeriodCurrentED"
       desc:     "HC Current Periodic Register"
-      swaccess: "ro"
-      hwaccess: "hrw"
       fields: [
         { bits:     "31:4"
           name:     "PCED"
           desc:     "PeriodCurrentED"
+          swaccess: "ro"
+          hwaccess: "hrw"
           resval:   "0"
         }
         { bits:     "3:0"
           name:     "Zero"
           desc:     "Zero"
+          swaccess: "ro"
+          hwaccess: "none"
           resval:   "0"
         }
       ]
@@ -586,8 +585,6 @@
 
     { name:     "HcControlHeadED"
       desc:     "HC Head Control Register"
-      swaccess: "ro"
-      hwaccess: "hrw"
       fields: [
         { bits:     "31:4"
           name:     "CHED"
@@ -599,8 +596,8 @@
         { bits:     "3:0"
           name:     "Zero"
           desc:     "Zero"
-          swaccess: "rw"
-          hwaccess: "hrw"
+          swaccess: "ro"
+          hwaccess: "none"
           resval:   "0"
         }
       ]
@@ -608,8 +605,6 @@
 
     { name:     "HcControlCurrentED"
       desc:     "HC Current Control Register"
-      swaccess: "ro"
-      hwaccess: "hrw"
       fields: [
         { bits:     "31:4"
           name:     "CCED"
@@ -621,8 +616,8 @@
         { bits:     "3:0"
           name:     "Zero"
           desc:     "Zero"
-          swaccess: "rw"
-          hwaccess: "hrw"
+          swaccess: "ro"
+          hwaccess: "none"
           resval:   "0"
         }
       ]
@@ -630,8 +625,6 @@
 
     { name:     "HcBulkHeadED"
       desc:     "HC Head Bulk Register"
-      swaccess: "ro"
-      hwaccess: "hrw"
       fields: [
         { bits:     "31:4"
           name:     "BHED"
@@ -643,8 +636,8 @@
         { bits:     "3:0"
           name:     "Zero"
           desc:     "Zero"
-          swaccess: "rw"
-          hwaccess: "hrw"
+          swaccess: "ro"
+          hwaccess: "none"
           resval:   "0"
         }
       ]
@@ -652,8 +645,6 @@
 
     { name:     "HcBulkCurrentED"
       desc:     "HC Current Bulk Register"
-      swaccess: "ro"
-      hwaccess: "hrw"
       fields: [
         { bits:     "31:4"
           name:     "BCED"
@@ -665,8 +656,8 @@
         { bits:     "3:0"
           name:     "Zero"
           desc:     "Zero"
-          swaccess: "rw"
-          hwaccess: "hrw"
+          swaccess: "ro"
+          hwaccess: "none"
           resval:   "0"
         }
       ]
@@ -675,17 +666,19 @@
 
     { name:     "HcDoneHead"
       desc:     "HC Head Done Register"
-      swaccess: "ro"
-      hwaccess: "hrw"
       fields: [
         { bits:     "31:4"
           name:     "DH"
           desc:     "DoneHead"
+          swaccess: "ro"
+          hwaccess: "hrw"
           resval:   "0"
         }
         { bits:     "3:0"
           name:     "Zero"
           desc:     "Zero"
+          swaccess: "ro"
+          hwaccess: "none"
           resval:   "0"
         }
       ]

@@ -156,17 +156,11 @@ package newusb_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-    } zero;
-    struct packed {
       logic [23:0] q;
     } hcca;
   } newusb_reg2hw_hchcaa_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [3:0]  q;
-    } zero;
     struct packed {
       logic [27:0] q;
     } pced;
@@ -174,17 +168,11 @@ package newusb_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [3:0]  q;
-    } zero;
-    struct packed {
       logic [27:0] q;
     } ched;
   } newusb_reg2hw_hccontrolheaded_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [3:0]  q;
-    } zero;
     struct packed {
       logic [27:0] q;
     } cced;
@@ -192,26 +180,17 @@ package newusb_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [3:0]  q;
-    } zero;
-    struct packed {
       logic [27:0] q;
     } bhed;
   } newusb_reg2hw_hcbulkheaded_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [3:0]  q;
-    } zero;
-    struct packed {
       logic [27:0] q;
     } bced;
   } newusb_reg2hw_hcbulkcurrented_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [3:0]  q;
-    } zero;
     struct packed {
       logic [27:0] q;
     } dh;
@@ -537,18 +516,12 @@ package newusb_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  d;
-    } zero;
-    struct packed {
       logic [23:0] d;
+      logic        de;
     } hcca;
   } newusb_hw2reg_hchcaa_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [3:0]  d;
-      logic        de;
-    } zero;
     struct packed {
       logic [27:0] d;
       logic        de;
@@ -557,20 +530,12 @@ package newusb_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [3:0]  d;
-      logic        de;
-    } zero;
-    struct packed {
       logic [27:0] d;
       logic        de;
     } ched;
   } newusb_hw2reg_hccontrolheaded_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [3:0]  d;
-      logic        de;
-    } zero;
     struct packed {
       logic [27:0] d;
       logic        de;
@@ -579,10 +544,6 @@ package newusb_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [3:0]  d;
-      logic        de;
-    } zero;
-    struct packed {
       logic [27:0] d;
       logic        de;
     } bhed;
@@ -590,20 +551,12 @@ package newusb_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [3:0]  d;
-      logic        de;
-    } zero;
-    struct packed {
       logic [27:0] d;
       logic        de;
     } bced;
   } newusb_hw2reg_hcbulkcurrented_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [3:0]  d;
-      logic        de;
-    } zero;
     struct packed {
       logic [27:0] d;
       logic        de;
@@ -823,18 +776,18 @@ package newusb_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    newusb_reg2hw_hccontrol_reg_t hccontrol; // [593:574]
-    newusb_reg2hw_hccommandstatus_reg_t hccommandstatus; // [573:570]
-    newusb_reg2hw_hcinterruptstatus_reg_t hcinterruptstatus; // [569:562]
-    newusb_reg2hw_hcinterruptenable_reg_t hcinterruptenable; // [561:553]
-    newusb_reg2hw_hcinterruptdisable_reg_t hcinterruptdisable; // [552:544]
-    newusb_reg2hw_hchcaa_reg_t hchcaa; // [543:512]
-    newusb_reg2hw_hcperiodcurrented_reg_t hcperiodcurrented; // [511:480]
-    newusb_reg2hw_hccontrolheaded_reg_t hccontrolheaded; // [479:448]
-    newusb_reg2hw_hccontrolcurrented_reg_t hccontrolcurrented; // [447:416]
-    newusb_reg2hw_hcbulkheaded_reg_t hcbulkheaded; // [415:384]
-    newusb_reg2hw_hcbulkcurrented_reg_t hcbulkcurrented; // [383:352]
-    newusb_reg2hw_hcdonehead_reg_t hcdonehead; // [351:320]
+    newusb_reg2hw_hccontrol_reg_t hccontrol; // [561:542]
+    newusb_reg2hw_hccommandstatus_reg_t hccommandstatus; // [541:538]
+    newusb_reg2hw_hcinterruptstatus_reg_t hcinterruptstatus; // [537:530]
+    newusb_reg2hw_hcinterruptenable_reg_t hcinterruptenable; // [529:521]
+    newusb_reg2hw_hcinterruptdisable_reg_t hcinterruptdisable; // [520:512]
+    newusb_reg2hw_hchcaa_reg_t hchcaa; // [511:488]
+    newusb_reg2hw_hcperiodcurrented_reg_t hcperiodcurrented; // [487:460]
+    newusb_reg2hw_hccontrolheaded_reg_t hccontrolheaded; // [459:432]
+    newusb_reg2hw_hccontrolcurrented_reg_t hccontrolcurrented; // [431:404]
+    newusb_reg2hw_hcbulkheaded_reg_t hcbulkheaded; // [403:376]
+    newusb_reg2hw_hcbulkcurrented_reg_t hcbulkcurrented; // [375:348]
+    newusb_reg2hw_hcdonehead_reg_t hcdonehead; // [347:320]
     newusb_reg2hw_hcfminterval_reg_t hcfminterval; // [319:288]
     newusb_reg2hw_hcfmremaining_reg_t hcfmremaining; // [287:256]
     newusb_reg2hw_hcfmnumber_reg_t hcfmnumber; // [255:224]
@@ -848,18 +801,18 @@ package newusb_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    newusb_hw2reg_hccontrol_reg_t hccontrol; // [755:745]
-    newusb_hw2reg_hccommandstatus_reg_t hccommandstatus; // [744:713]
-    newusb_hw2reg_hcinterruptstatus_reg_t hcinterruptstatus; // [712:681]
-    newusb_hw2reg_hcinterruptenable_reg_t hcinterruptenable; // [680:649]
-    newusb_hw2reg_hcinterruptdisable_reg_t hcinterruptdisable; // [648:617]
-    newusb_hw2reg_hchcaa_reg_t hchcaa; // [616:585]
-    newusb_hw2reg_hcperiodcurrented_reg_t hcperiodcurrented; // [584:551]
-    newusb_hw2reg_hccontrolheaded_reg_t hccontrolheaded; // [550:517]
-    newusb_hw2reg_hccontrolcurrented_reg_t hccontrolcurrented; // [516:483]
-    newusb_hw2reg_hcbulkheaded_reg_t hcbulkheaded; // [482:449]
-    newusb_hw2reg_hcbulkcurrented_reg_t hcbulkcurrented; // [448:415]
-    newusb_hw2reg_hcdonehead_reg_t hcdonehead; // [414:381]
+    newusb_hw2reg_hccontrol_reg_t hccontrol; // [718:708]
+    newusb_hw2reg_hccommandstatus_reg_t hccommandstatus; // [707:676]
+    newusb_hw2reg_hcinterruptstatus_reg_t hcinterruptstatus; // [675:644]
+    newusb_hw2reg_hcinterruptenable_reg_t hcinterruptenable; // [643:612]
+    newusb_hw2reg_hcinterruptdisable_reg_t hcinterruptdisable; // [611:580]
+    newusb_hw2reg_hchcaa_reg_t hchcaa; // [579:555]
+    newusb_hw2reg_hcperiodcurrented_reg_t hcperiodcurrented; // [554:526]
+    newusb_hw2reg_hccontrolheaded_reg_t hccontrolheaded; // [525:497]
+    newusb_hw2reg_hccontrolcurrented_reg_t hccontrolcurrented; // [496:468]
+    newusb_hw2reg_hcbulkheaded_reg_t hcbulkheaded; // [467:439]
+    newusb_hw2reg_hcbulkcurrented_reg_t hcbulkcurrented; // [438:410]
+    newusb_hw2reg_hcdonehead_reg_t hcdonehead; // [409:381]
     newusb_hw2reg_hcfminterval_reg_t hcfminterval; // [380:345]
     newusb_hw2reg_hcfmremaining_reg_t hcfmremaining; // [344:310]
     newusb_hw2reg_hcfmnumber_reg_t hcfmnumber; // [309:276]
@@ -948,9 +901,6 @@ package newusb_reg_pkg;
   parameter logic [22:0] NEWUSB_HCINTERRUPTDISABLE_RESERVED_RESVAL = 23'h 0;
   parameter logic [0:0] NEWUSB_HCINTERRUPTDISABLE_OC_RESVAL = 1'h 0;
   parameter logic [0:0] NEWUSB_HCINTERRUPTDISABLE_MIE_RESVAL = 1'h 0;
-  parameter logic [31:0] NEWUSB_HCHCAA_RESVAL = 32'h 0;
-  parameter logic [7:0] NEWUSB_HCHCAA_ZERO_RESVAL = 8'h 0;
-  parameter logic [23:0] NEWUSB_HCHCAA_HCCA_RESVAL = 24'h 0;
 
   // Register index
   typedef enum int {
