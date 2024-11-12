@@ -86,16 +86,13 @@ $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv:
 	$(REGTOOL) -r $< --outdir $(dir $@)
 
 # NewUSB registers
-newusb_regs_all: $(CHS_ROOT)/hw/newusb_regs/newusb_reg_pkg.sv $(CHS_ROOT)/hw/newusb_regs/newusb_reg_top.sv | newusb_regs_clean
+newusb_regs_all: $(CHS_ROOT)/hw/newusb_regs/newusb_reg_pkg.sv $(CHS_ROOT)/hw/newusb_regs/newusb_reg_top.sv
 
-$(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson:
+$(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson: $(CHS_ROOT)/hw/newusb_regs/newusb_regs_template.hjson
 	python $(CHS_ROOT)/hw/newusb_regs/newusb_insert_param.py
 
 $(CHS_ROOT)/hw/newusb_regs/newusb_reg_pkg.sv $(CHS_ROOT)/hw/newusb_regs/newusb_reg_top.sv: $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
 	$(REGTOOL) -r $< --outdir $(dir $@)
-
-newusb_regs_clean:
-	rm -f $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
 
 # CLINT
 CLINTCORES ?= 1
