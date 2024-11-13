@@ -154,6 +154,62 @@ $(CHS_SW_DIR)/boot/linux.%.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CHS_SW_DIR)
 	dd if=$(word 3,$^) of=$@ bs=512 seek=2048 conv=notrunc
 	dd if=$(word 4,$^) of=$@ bs=512 seek=8192 conv=notrunc
 
+################
+# Litmus tests #
+################
+LITMUS_NCORES     ?= 1
+LITMUS_DIR        := $(CHS_SW_DIR)/deps/litmus-tests
+LITMUS_BIN_DIR    := $(LITMUS_DIR)/binaries
+LITMUS_WORK_DIR   := $(CHS_ROOT)/work-litmus
+LITMUS_SIMLOG_DIR := $(LITMUS_WORK_DIR)/simlogs
+LITMUS_TEST_LIST  := $(LITMUS_WORK_DIR)/litmus-tests.list
+LITMUS_RESULTS    := $(LITMUS_WORK_DIR)/compare.log
+
+ifeq ($(shell test -f $(LITMUS_TEST_LIST) || echo 1),)
+LITMUS_TESTS_ELF := $(shell xargs printf '\n%s' < $(LITMUS_TEST_LIST))
+LITMUS_TESTS := $(addprefix $(LITMUS_SIMLOG_DIR)/, $(LITMUS_TESTS_ELF:.elf=.log))
+endif
+
+chs-build-litmus-tests:
+	cd $(LITMUS_DIR)/frontend; ./make.sh
+	cd $(LITMUS_DIR)/binaries; ./make-riscv.sh ../tests/ cheshire $(LITMUS_NCORES)
+
+$(LITMUS_WORK_DIR):
+	mkdir -p $(LITMUS_WORK_DIR)
+
+$(LITMUS_SIMLOG_DIR):
+	mkdir -p $(LITMUS_SIMLOG_DIR)
+
+$(LITMUS_TEST_LIST): $(LITMUS_WORK_DIR) $(LITMUS_SIMLOG_DIR)
+	@echo Generating $@ ...
+	@LITMUS_ROOT=$(LITMUS_DIR) LITMUS_WORK=$(LITMUS_WORK_DIR) ./util/litmus create_list
+
+$(LITMUS_SIMLOG_DIR)/%.log: $(LITMUS_BIN_DIR)/%.elf
+	@echo "Running test $(notdir $<) (Log file: $@)"
+	@cd target/sim/vsim && ${QUESTA} vsim -c -do "set PRELMODE 1; set BOOTMODE 0; set BINARY $<; source start.cheshire_soc.tcl; run -all" > $@
+	@echo "Finished test $<"
+
+.PHONY: chs-run-litmus-tests
+chs-run-litmus-tests: $(LITMUS_TEST_LIST) $(LITMUS_TESTS)
+	@echo "Finished running litmus tests"
+
+.PHONY: chs-check-litmus-tests
+chs-check-litmus-tests:
+	@export LITMUS_ROOT=$(LITMUS_DIR)
+	@export LITMUS_WORK=$(LITMUS_WORK_DIR)
+	@echo "Parsing UART output from simulation logs.."
+	@./util/litmus parse_uart
+	@echo "Patching UART logs.."
+	@./util/litmus patch_uart
+	@echo "Concatenating logs in a single file.."
+	@./util/litmus combine_logs
+	@echo "Comparing logs with reference model.."
+	@./util/litmus check > $(LITMUS_RESULTS)
+	@echo "Done! Check '$(LITMUS_RESULTS)' file"
+
+chs-clean-litmus-tests:
+	rm -rf $(LITMUS_WORK_DIR)
+
 #########
 # Tests #
 #########

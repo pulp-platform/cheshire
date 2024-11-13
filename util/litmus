@@ -1,0 +1,116 @@
+#!/bin/bash
+
+########################################################
+## Post-processing of Litmus tests simulation output. ##
+## Call any of the defined utility functions.         ##
+########################################################
+
+USAGE="USAGE: $0 <command>\nFor a list of commands available, run: $0 --help\n"
+COMMANDS="show_vars create_list parse_uart patch_uart combine_logs check cleanup_simlogs"
+
+CWD=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+CHS_ROOT=$(cd ${CWD}/..; pwd)
+
+## Set helper variables to default values if not specified
+set_vars () {
+	[ -z ${LITMUS_ROOT} ]    && LITMUS_ROOT=${CHS_ROOT}/sw/tests/riscv-litmus-tests
+	[ -z ${LITMUS_WORK} ]    && LITMUS_WORK=${CHS_ROOT}/work-litmus
+	[ -z ${LITMUS_LIST} ]    && LITMUS_LIST=${LITMUS_WORK}/litmus-tests.list
+	[ -z ${LITMUS_SIMLOGS} ] && LITMUS_SIMLOGS=${LITMUS_WORK}/simlogs
+	[ -z ${LITMUS_UART} ]    && LITMUS_UART=${LITMUS_WORK}/uart
+	[ -z ${LITMUS_LOGS} ]    && LITMUS_LOGS=${LITMUS_WORK}/logs
+	[ -z ${LITMUS_LOG} ]     && LITMUS_LOG=${LITMUS_WORK}/litmus.log
+}
+
+## Print all helper variables (for debug purposes)
+litmus_show_vars () {
+	echo "CHS_ROOT       = ${CHS_ROOT}"
+	echo "LITMUS_WORK    = ${LITMUS_WORK}"
+	echo "LITMUS_SIMLOGS = ${LITMUS_SIMLOGS}"
+	echo "LITMUS_UART    = ${LITMUS_UART}"
+	echo "LITMUS_LOGS    = ${LITMUS_LOGS}"
+}
+
+## Write all names of litmus tests binaries in `${LITMUS_LIST}` file
+litmus_create_list () {
+	[ -f ${LITMUS_LIST} ] && rm ${LITMUS_LIST}
+	touch ${LITMUS_LIST}
+	for f in $(find ${LITMUS_ROOT}/binaries/ -name "*.elf"); do
+		# f=$(echo $f | sed 's/\[/\\\[/g') # add backslashes before brackets
+		f=$(basename $f) 
+		echo $f >> ${LITMUS_LIST}
+	done
+}
+
+## Extract UART log from simulation transcripts
+litmus_parse_uart () {
+	mkdir -p ${LITMUS_UART}
+	for file in $(ls ${LITMUS_SIMLOGS}/*.elf.log); do
+		# Extract test name from file path
+		IFS='/' read -ra filename <<< "${file}"
+		filename=${filename[-1]} # remove basename
+		testname=${filename::-4} # remove ".log" at the end
+		sed -n 's/^# \[UART\] \(.*\)/\1/p' < ${file} > ${LITMUS_UART}/${filename}.uart.log
+	done
+}
+
+## Patch the UART output with header and trailer
+litmus_patch_uart () {
+	mkdir -p ${LITMUS_LOGS}
+	for file in $(ls ${LITMUS_UART}/*.uart.log); do
+		# Extract test name from file path
+		IFS='/' read -ra filename <<< "${file}"
+		filename=${filename[-1]} # remove basename
+		testname=${filename::-9} # remove ".uart.log" at the end
+		outfile="${LITMUS_LOGS}/${testname}.litmus.log"
+		echo "Test $(basename ${testname} .elf.log) Allowed" > ${outfile}
+		echo "Histogram" >> ${outfile}
+		cat ${file} >> ${outfile}
+		echo "" >> ${outfile}
+	done
+}
+
+## Combine all log files in `${LITMUS_LOGS}` directory within a single log file
+litmus_combine_logs () {
+	[ -f ${LITMUS_LOG} ] && rm ${LITMUS_LOG}
+	for file in $(ls ${LITMUS_LOGS}/*); do
+		cat ${file} >> ${LITMUS_LOG}
+	done
+}
+
+## Compare the Litmus tests logs with the reference model
+litmus_check () {
+	cd ${LITMUS_ROOT} && MCMP7=/home/nwistoff/.opam/centos/bin/mcompare7 LITMUS_LOG=${LITMUS_LOG} ./ci/compare_model.sh
+}
+
+## Clean up incomplete simulation log files in `${LITMUS_WORK}` directory.
+## This can be useful in case some simulations failed (e.g. due to insufficient disk space).
+litmus_cleanup_simlogs () {
+	for file in $(ls ${LITMUS_WORK}/*.elf.log); do	
+		grep -e \$finish ${file} > /tmp/null
+		[ $? == 0 ] || rm ${file}
+	done
+}
+
+######################
+## Parse parameters ##
+######################
+
+if [ $# -lt 1 ]; then
+	printf "${USAGE}"
+	exit 1
+fi
+
+case $1 in
+	-h | --help)
+		printf "Commands available:\n"
+		for cmd in ${COMMANDS}; do echo "- ${cmd}"; done
+		;;
+	*)
+		CMD="litmus_$1"
+		;;
+esac
+
+## Run specified command
+set_vars
+eval ${CMD}
