@@ -8,8 +8,8 @@
 // Yann Picod <ypicod@ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-`include "cheshire/typedef.svh"
 `include "phy_definitions.svh"
+`include "cheshire/typedef.svh"
 
 // TODO: Expose more IO: unused SPI CS, Serial Link, etc.
 
@@ -76,6 +76,9 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
 `ifdef USE_DDR3
   `DDR3_INTF
 `endif
+`ifdef USE_HYPERBUS
+  `HYPERBUS_INTF
+`endif
 
   output logic  uart_tx_o,
   input  logic  uart_rx_i,
@@ -97,6 +100,16 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     ret.Usb = 1;
   `else
     ret.Usb = 0;
+  `endif
+  `ifdef USE_HYPERBUS
+    ret.LlcNotBypass    = 1;
+    ret.Dma             = 0;
+    ret.Vga             = 0;
+    ret.RegExtNumSlv          = 1;
+    ret.RegExtNumRules        = 1;
+    ret.RegExtRegionIdx   [0] = 0;
+    ret.RegExtRegionStart [0] = 'h4000_0000;
+    ret.RegExtRegionEnd   [0] = 'h4010_0000;
   `endif
     return ret;
   endfunction
@@ -411,6 +424,126 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   );
 `endif
 
+  //////////////
+  // Hyperbus //
+  //////////////
+
+//  axi_llc_req_t axi_llc_mst_req;
+//  axi_llc_rsp_t axi_llc_mst_rsp;
+  reg_req_t reg_ext_slv_req;
+  reg_rsp_t reg_ext_slv_rsp;
+
+`ifdef USE_HYPERBUS
+  // Parameters
+  localparam int unsigned HypNumPhys      = 2;  // War vorher auf 2
+  localparam int unsigned HypNumChips     = 2;
+  localparam int unsigned HypRstChipBytes = 8*1024;   // S27KS0641 is 64 Mib (Mebibit)
+  
+  // Signals
+  logic [1:0]      hyper_reset_no;
+  logic [1:0][1:0] hyper_cs_no;
+  logic [1:0]      hyper_ck_o;
+  logic [1:0]      hyper_ck_no;
+  logic [1:0]      hyper_rwds_o;
+  logic [1:0]      hyper_rwds_i;
+  logic [1:0]      hyper_rwds_oe_o;
+  logic [1:0][7:0] hyper_dq_o;
+  logic [1:0][7:0] hyper_dq_i;
+  logic [1:0]      hyper_dq_oe_o;
+
+  // Hyperbus address rules
+  typedef struct packed {
+    int unsigned idx;
+    logic [FPGACfg.AddrWidth-1:0] start_addr;
+    logic [FPGACfg.AddrWidth-1:0] end_addr;
+  } hyper_addr_rule_t;
+
+  // Hyperbus
+  hyperbus #(
+    .NumChips         ( HypNumPhys ),
+    .NumPhys          ( HypNumChips ),
+    .IsClockODelayed  ( 0 ),    // Urspruenglich auf 0 gewesen
+    .AxiAddrWidth     ( FPGACfg.AddrWidth    ),
+    .AxiDataWidth     ( FPGACfg.AxiDataWidth ),
+    .AxiIdWidth       ( $bits(axi_llc_id_t)      ),
+    .AxiUserWidth     ( FPGACfg.AxiUserWidth ),
+    .axi_req_t        ( axi_llc_req_t     ),
+    .axi_rsp_t        ( axi_llc_rsp_t     ),
+    .axi_w_chan_t     ( axi_llc_w_chan_t  ),
+    .axi_b_chan_t     ( axi_llc_b_chan_t  ),
+    .axi_ar_chan_t    ( axi_llc_ar_chan_t ),
+    .axi_r_chan_t     ( axi_llc_r_chan_t  ),
+    .axi_aw_chan_t    ( axi_llc_aw_chan_t ),
+    .RegAddrWidth     ( FPGACfg.AddrWidth ),
+    .RegDataWidth     ( 32 ),
+    .reg_req_t        ( reg_req_t ),
+    .reg_rsp_t        ( reg_rsp_t ),
+    .axi_rule_t       ( hyper_addr_rule_t ),
+    .RstChipBase      ( 32'(FPGACfg.LlcOutRegionStart) ),
+    .RstChipSpace     ( 32'(HypRstChipBytes) )   // durch Parameter
+  ) i_hyperbus (
+    // WARNING: Keeping system and PHY synchronous works only with careful constraints.
+    // DO NOT copy-paste this to other projects without consideration; you were warned.
+    .clk_phy_i        ( soc_clk      ),
+    .rst_phy_ni       ( rst_n        ),
+    .clk_sys_i        ( soc_clk      ),
+    .rst_sys_ni       ( rst_n        ),
+    .test_mode_i,
+    .axi_req_i        ( axi_llc_mst_req ),
+    .axi_rsp_o        ( axi_llc_mst_rsp ),
+    .reg_req_i        ( reg_ext_slv_req ),
+    .reg_rsp_o        ( reg_ext_slv_rsp ),
+    .hyper_cs_no,
+    .hyper_ck_o,
+    .hyper_ck_no,
+    .hyper_rwds_o,
+    .hyper_rwds_i,
+    .hyper_rwds_oe_o,
+    .hyper_dq_i,
+    .hyper_dq_o,
+    .hyper_dq_oe_o,
+    .hyper_reset_no
+  );
+
+  // Pads
+  // PHY0
+  (* PULLDOWN = "YES" *) IOBUF iobuf_csn00_i ( .T(1'b0), .I(hyper_cs_no[0][0]), .O(), .IO(FMC_hyper0_csn0) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_csn01_i ( .T(1'b0), .I(hyper_cs_no[0][1]), .O(), .IO(FMC_hyper0_csn1) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_ck0_i ( .T(1'b0), .I(hyper_ck_o[0]), .O(), .IO(FMC_hyper0_ck) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_ckn0_i ( .T(1'b0), .I(hyper_ck_no[0]), .O(), .IO(FMC_hyper0_ckn) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_rwds0_i ( .T(~hyper_rwds_oe_o[0]), .I(hyper_rwds_o[0]), .O(hyper_rwds_i[0]), .IO(FMC_hyper0_rwds) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_rst0_i ( .T(1'b0), .I(hyper_reset_no[0]), .O(), .IO(FMC_hyper0_reset) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_dq00_i ( .T(~hyper_dq_oe_o[0]), .I(hyper_dq_o[0][0]), .O(hyper_dq_i[0][0]), .IO(FMC_hyper0_dqio0) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_dq01_i ( .T(~hyper_dq_oe_o[0]), .I(hyper_dq_o[0][1]), .O(hyper_dq_i[0][1]), .IO(FMC_hyper0_dqio1) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_dq02_i ( .T(~hyper_dq_oe_o[0]), .I(hyper_dq_o[0][2]), .O(hyper_dq_i[0][2]), .IO(FMC_hyper0_dqio2) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_dq03_i ( .T(~hyper_dq_oe_o[0]), .I(hyper_dq_o[0][3]), .O(hyper_dq_i[0][3]), .IO(FMC_hyper0_dqio3) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_dq04_i ( .T(~hyper_dq_oe_o[0]), .I(hyper_dq_o[0][4]), .O(hyper_dq_i[0][4]), .IO(FMC_hyper0_dqio4) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_dq05_i ( .T(~hyper_dq_oe_o[0]), .I(hyper_dq_o[0][5]), .O(hyper_dq_i[0][5]), .IO(FMC_hyper0_dqio5) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_dq06_i ( .T(~hyper_dq_oe_o[0]), .I(hyper_dq_o[0][6]), .O(hyper_dq_i[0][6]), .IO(FMC_hyper0_dqio6) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_dq07_i ( .T(~hyper_dq_oe_o[0]), .I(hyper_dq_o[0][7]), .O(hyper_dq_i[0][7]), .IO(FMC_hyper0_dqio7) );
+
+  // PHY1
+  (* PULLDOWN = "YES" *) IOBUF iobuf_csn10_i ( .T(1'b0), .I(hyper_cs_no[1][0]), .O(), .IO(FMC_hyper1_csn0) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_csn11_i ( .T(1'b0), .I(hyper_cs_no[1][1]), .O(), .IO(FMC_hyper1_csn1) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_ck1_i ( .T(1'b0), .I(hyper_ck_o[1]), .O(), .IO(FMC_hyper1_ck) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_ckn1_i ( .T(1'b0), .I(hyper_ck_no[1]), .O(), .IO(FMC_hyper1_ckn) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_rwds1_i ( .T(~hyper_rwds_oe_o[1]), .I(hyper_rwds_o[1]), .O(hyper_rwds_i[1]), .IO(FMC_hyper1_rwds) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_rst1_i ( .T(1'b0), .I(hyper_reset_no[1]), .O(), .IO(FMC_hyper1_reset) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_dq10_i ( .T(~hyper_dq_oe_o[1]), .I(hyper_dq_o[1][0]), .O(hyper_dq_i[1][0]), .IO(FMC_hyper1_dqio0) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_dq11_i ( .T(~hyper_dq_oe_o[1]), .I(hyper_dq_o[1][1]), .O(hyper_dq_i[1][1]), .IO(FMC_hyper1_dqio1) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_dq12_i ( .T(~hyper_dq_oe_o[1]), .I(hyper_dq_o[1][2]), .O(hyper_dq_i[1][2]), .IO(FMC_hyper1_dqio2) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_dq13_i ( .T(~hyper_dq_oe_o[1]), .I(hyper_dq_o[1][3]), .O(hyper_dq_i[1][3]), .IO(FMC_hyper1_dqio3) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_dq14_i ( .T(~hyper_dq_oe_o[1]), .I(hyper_dq_o[1][4]), .O(hyper_dq_i[1][4]), .IO(FMC_hyper1_dqio4) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_dq15_i ( .T(~hyper_dq_oe_o[1]), .I(hyper_dq_o[1][5]), .O(hyper_dq_i[1][5]), .IO(FMC_hyper1_dqio5) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_dq16_i ( .T(~hyper_dq_oe_o[1]), .I(hyper_dq_o[1][6]), .O(hyper_dq_i[1][6]), .IO(FMC_hyper1_dqio6) );
+  (* PULLDOWN = "YES" *) IOBUF iobuf_dq17_i ( .T(~hyper_dq_oe_o[1]), .I(hyper_dq_o[1][7]), .O(hyper_dq_i[1][7]), .IO(FMC_hyper1_dqio7) );
+  
+`else
+    `ifndef USE_DDR
+        assign axi_llc_mst_rsp  =  '0;
+    `endif
+`endif
+
   //////////////////
   // Cheshire SoC //
   //////////////////
@@ -438,8 +571,8 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .axi_ext_mst_rsp_o  ( ),
     .axi_ext_slv_req_o  ( ),
     .axi_ext_slv_rsp_i  ( '0 ),
-    .reg_ext_slv_req_o  ( ),
-    .reg_ext_slv_rsp_i  ( '0 ),
+    .reg_ext_slv_req_o  ( reg_ext_slv_req ),
+    .reg_ext_slv_rsp_i  ( reg_ext_slv_rsp ),
     .intr_ext_i         ( '0 ),
     .intr_ext_o         ( ),
     .xeip_ext_o         ( ),
@@ -492,5 +625,53 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .usb_dp_o,
     .usb_dp_oe_o
   );
+
+
+//// Debug
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic soc_clk;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [1:0] boot_mode;
+ 
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic reg_ext_slv_req;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic reg_ext_slv_rsp;
+ 
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic axi_llc_mst_req;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic axi_llc_mst_rsp;
+ 
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [7:0] hyper_ck_o;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [7:0] hyper_rwds_o;
+ 
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic axi_req_o;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic axi_resp_i;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic pc_commit;
+// (* dont_touch = "yes" *) (* mark_debug = "true" *) logic csr_regfile_i;
+ 
+ // Debug reg for soc_clk
+ wire debug_clk;
+ 
+ debug_clk_reg i_debug_clk_reg (
+    .soc_clk ( soc_clk ),
+//    .reset_n   ( rst_n ),
+    .debug_clk  ( debug_clk ) 
+  );
+ 
+endmodule
+
+(* DONT_TOUCH = "true" *)
+module debug_clk_reg (
+    input wire soc_clk,
+    input wire reset_n,
+    output reg debug_clk = 1'b0
+);
+
+  (* keep = "true" *) reg debug_clk;
+
+  always_ff @(posedge soc_clk) begin
+  
+    debug_clk <= ~debug_clk;
+//    if (reset_n) begin
+//      debug_clk <= 1'b0;
+//    end else begin
+//    end
+  end
 
 endmodule
