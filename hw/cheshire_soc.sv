@@ -1422,22 +1422,22 @@ module cheshire_soc import cheshire_pkg::*; #(
       axi_in_req[AxiIn.dma].ar.user = Cfg.AxiUserDefault;
     end
 
-    dma_core_wrap #(
-      .AxiAddrWidth       ( Cfg.AddrWidth           ),
-      .AxiDataWidth       ( Cfg.AxiDataWidth        ),
-      .AxiIdWidth         ( Cfg.AxiMstIdWidth       ),
-      .AxiUserWidth       ( Cfg.AxiUserWidth        ),
-      .AxiSlvIdWidth      ( AxiSlvIdWidth           ),
-      .NumAxInFlight      ( Cfg.DmaNumAxInFlight    ),
-      .MemSysDepth        ( Cfg.DmaMemSysDepth      ),
-      .JobFifoDepth       ( Cfg.DmaJobFifoDepth     ),
-      .RAWCouplingAvail   ( Cfg.DmaRAWCouplingAvail ),
-      .IsTwoD             ( Cfg.DmaConfEnableTwoD   ),
-      .axi_mst_req_t      ( axi_mst_req_t           ),
-      .axi_mst_rsp_t      ( axi_mst_rsp_t           ),
-      .axi_slv_req_t      ( axi_slv_req_t           ),
-      .axi_slv_rsp_t      ( axi_slv_rsp_t           )
-    ) i_dma (
+    cheshire_idma_wrap #(
+      .AxiAddrWidth     ( Cfg.AddrWidth     ),
+      .AxiDataWidth     ( Cfg.AxiDataWidth  ),
+      .AxiIdWidth       ( Cfg.AxiMstIdWidth ),
+      .AxiUserWidth     ( Cfg.AxiUserWidth  ),
+      .AxiSlvIdWidth    ( AxiSlvIdWidth     ),
+      .NumAxInFlight    ( Cfg.DmaNumAxInFlight    ),
+      .MemSysDepth      ( Cfg.DmaMemSysDepth      ),
+      .JobFifoDepth     ( Cfg.DmaJobFifoDepth     ),
+      .RAWCouplingAvail ( Cfg.DmaRAWCouplingAvail ),
+      .IsTwoD           ( Cfg.DmaConfEnableTwoD   ),
+      .axi_mst_req_t    ( axi_mst_req_t ),
+      .axi_mst_rsp_t    ( axi_mst_rsp_t ),
+      .axi_slv_req_t    ( axi_slv_req_t ),
+      .axi_slv_rsp_t    ( axi_slv_rsp_t )
+    ) i_idma (
       .clk_i,
       .rst_ni,
       .testmode_i     ( test_mode_i ),
