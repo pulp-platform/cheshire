@@ -8,3 +8,4 @@ mkdocs
 mkdocs-material
 markdown-grid-tables
 tclint
+flatdict
