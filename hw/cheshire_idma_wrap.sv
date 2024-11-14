@@ -2,18 +2,12 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 //
-// Author: Thomas Benz    <tbenz@iis.ee.ethz.ch>
-// Author: Andreas Kuster <kustera@ethz.ch>
-// Author: Paul Scheffler <paulsc@iis.ee.ethz.ch>
-// Author: Chaoqun Liang  <chaoqun.liang@unibo.it>
+// Thomas Benz <tbenz@iis.ee.ethz.ch>
+// Andreas Kuster <kustera@ethz.ch>
+// Paul Scheffler <paulsc@iis.ee.ethz.ch>
+// Chaoqun Liang <chaoqun.liang@unibo.it>
 
-// Description: DMA core wrapper for the CVA6 integration
-
-`include "axi/assign.svh"
-`include "axi/typedef.svh"
-`include "idma/typedef.svh"
-`include "register_interface/typedef.svh"
-
+/// DMA core wrapper for the integration into Cheshire.
 module cheshire_idma_wrap #(
   parameter int unsigned AxiAddrWidth     = 0,
   parameter int unsigned AxiDataWidth     = 0,
@@ -38,6 +32,11 @@ module cheshire_idma_wrap #(
   input  axi_slv_req_t  axi_slv_req_i,
   output axi_slv_rsp_t  axi_slv_rsp_o
 );
+
+  `include "axi/assign.svh"
+  `include "axi/typedef.svh"
+  `include "idma/typedef.svh"
+  `include "register_interface/typedef.svh"
 
   localparam int unsigned IdCounterWidth  = 32;
   localparam int unsigned NumDim          = 2;
