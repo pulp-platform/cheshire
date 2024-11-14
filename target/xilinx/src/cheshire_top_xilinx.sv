@@ -102,7 +102,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     ret.Usb = 0;
   `endif
   `ifdef USE_HYPERBUS
-    ret.LlcNotBypass    = 0;
+    ret.LlcNotBypass    = 1;
     ret.Dma             = 0;
     ret.Vga             = 0;
     ret.RegExtNumSlv          = 1;
