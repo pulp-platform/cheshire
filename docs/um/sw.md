@@ -22,7 +22,11 @@ To build a baremetal program (here `sw/tests/helloworld.c`) executing from the S
 make sw/tests/helloworld.spm.elf
 ```
 
-To create the same program executing from DRAM, `sw/tests/helloworld.spm.dram` can instead be built from the same source. Depending on their assumptions and behavior, not all programs may be built to execute from both locations.
+To create the same program executing from DRAM, `sw/tests/helloworld.dram.elf` can instead be built from the same source.
+
+Not all BMPs may be designed to be linked in multiple ways like `helloworld` above is. Linking is controlled by the linker scripts in `sw/link`. By convention, BMP main source files with a suffix are intended to only be linked with the corresponding script; for example, `sw/tests/dma_2d.spm.c` should only be linked against SPM using `sw/link/spm.ld`.
+
+When building BMPs, the toolchain will strip any suffixes corresponding to existing linker scripts. When running `make sw-all`, tests in `sw/tests` will be built only for their intended linking targets. Tests without suffixes, like `helloworld`, are assumed to be agnostic and will be built for all linking targets.
 
 ## Boot Flow
 
