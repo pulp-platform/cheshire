@@ -27,14 +27,12 @@ SECTIONS {
   } > spm AT>extrom
 
   /* BSS is not loaded, but initialized by CRT0 */
-  . = ALIGN(32);
-  __bss_start = .;
-  .bss : {
+  .bss : ALIGN(16) {
+    __bss_start = .;
     *(.bss)
     *(.bss.*)
     *(.sbss)
     *(.sbss.*)
+    __bss_end = .;
   } > spm
-  . = ALIGN(32);
-  __bss_end = .;
 }

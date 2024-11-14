@@ -28,16 +28,14 @@ SECTIONS {
     *(.sdata.*)
   } > dram
 
-  . = ALIGN(32);
-  __bss_start = .;
-  .bss : {
+  .bss : ALIGN(16) {
+    __bss_start = .;
     *(.bss)
     *(.bss.*)
     *(.sbss)
     *(.sbss.*)
+    __bss_end = .;
   } > dram
-  . = ALIGN(32);
-  __bss_end = .;
 
   .bulk : ALIGN(16) {
     *(.bulk)
