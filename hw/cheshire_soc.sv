@@ -691,11 +691,13 @@ module cheshire_soc import cheshire_pkg::*; #(
         .irq_ready_i    ( clic_irq_ready ),
         .irq_id_o       ( clic_irq_id    ),
         .irq_level_o    ( clic_irq_level ),
-        .irq_shv_o      ( clic_irq_shv   ),
+        .irq_shv_o      ( ),
         .irq_priv_o     ( clic_irq_priv  ),
         .irq_kill_req_o ( clic_irq_kill_req ),
         .irq_kill_ack_i ( clic_irq_kill_ack )
       );
+
+      assign clic_irq_shv      = '0;
 
     end else begin : gen_no_clic
 
