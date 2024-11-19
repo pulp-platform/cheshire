@@ -3,60 +3,113 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Thomas Benz <tbenz@iis.ee.ethz.ch>
+// Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 //
-// Validate the budget functionality of AXI RT
+// Validate the budget functionality of AXI-REALM
 
 #include "axirt.h"
 #include "dif/dma.h"
-#include "regs/axi_rt.h"
 #include "params.h"
+#include "regs/axi_rt.h"
+#include "regs/cheshire.h"
 #include "util.h"
+#include "printf.h"
 
 // transfer
-#define SIZE_BYTES 256
-#define SRC_STRIDE 0
-#define DST_STRIDE 0
-#define NUM_REPS 8
-#define SRC_ADDR 0x0000000010000000
-#define DST_ADDR 0x0000000080000000
+#define SIZE_BEAT_BYTES 8
+#define DMA_NUM_BEATS 128
+#define DMA_NUM_REPS 1
+#define DMA_SIZE_BYTES (SIZE_BEAT_BYTES * DMA_NUM_BEATS)
+#define DMA_TOTAL_SIZE_BYTES (DMA_SIZE_BYTES * DMA_NUM_REPS)
+#define DMA_SRC_STRIDE 0
+#define DMA_DST_STRIDE 0
+#define DMA_SRC_ADDRESS 0x10008000
+#define DMA_DST_ADDRESS 0x80008000
 
-#define TOTAL_SIZE (SIZE_BYTES * NUM_REPS)
+// AXI-REALM
+#define CVA6_ALLOCATED_BUDGET 0x10000000
+#define CVA6_ALLOCATED_PERIOD 0x10000000
+#define DMA_ALLOCATED_BUDGET 0x10000000
+#define DMA_ALLOCATED_PERIOD 0x10000000
+#define FRAGMENTATION_SIZE_BEATS 0 // Max fragmentation applied to bursts
 
 int main(void) {
 
-    // enable and configure axi rt with fragmentation of 8 beats
+    uint32_t cheshire_num_harts = *reg32(&__base_regs, CHESHIRE_NUM_INT_HARTS_REG_OFFSET);
+
+    volatile uint64_t *dma_src = (volatile uint64_t *)(DMA_SRC_ADDRESS);
+    volatile uint64_t *dma_dst = (volatile uint64_t *)(DMA_DST_ADDRESS);
+
+    uint64_t golden[DMA_NUM_BEATS]; // Declare non-volatile array for golden values
+
+    // enable and configure axi rt
     __axirt_claim(1, 1);
-    __axirt_set_len_limit_group(7, 0);
+    __axirt_set_len_limit_group(FRAGMENTATION_SIZE_BEATS, 0);
+    __axirt_set_len_limit_group(FRAGMENTATION_SIZE_BEATS, 1);
+    fence();
 
-    // configure CVA6
-    __axirt_set_region(0, 0xffffffff, 0, 0);
-    __axirt_set_region(0x100000000, 0xffffffffffffffff, 1, 0);
-    __axirt_set_budget(0x10000000, 0, 0);
-    __axirt_set_budget(0x10000000, 1, 0);
-    __axirt_set_period(0x10000000, 0, 0);
-    __axirt_set_period(0x10000000, 1, 0);
+    // configure RT unit for all the CVA6 cores
+    uint32_t chs_core0_id = get_chs_mngr_id_from_hw_feature(CHS_MNGR_CORE0);
+    for (uint32_t id = chs_core0_id; id < cheshire_num_harts; id++) {
+        __axirt_set_region(0, 0xffffffff, 0, id);
+        __axirt_set_region(0x100000000, 0xffffffffffffffff, 1, id);
+        __axirt_set_budget(CVA6_ALLOCATED_BUDGET, 0, id);
+        __axirt_set_budget(CVA6_ALLOCATED_BUDGET, 1, id);
+        __axirt_set_period(CVA6_ALLOCATED_PERIOD, 0, id);
+        __axirt_set_period(CVA6_ALLOCATED_PERIOD, 1, id);
+        fence();
+    }
 
-    // configure DMA
-    __axirt_set_region(0, 0xffffffff, 0, 2);
-    __axirt_set_region(0x100000000, 0xffffffffffffffff, 1, 2);
-    __axirt_set_budget(0x10000000, 0, 2);
-    __axirt_set_budget(0x10000000, 1, 2);
-    __axirt_set_period(0x10000000, 0, 2);
-    __axirt_set_period(0x10000000, 1, 2);
+    // configure RT unit for the DMA
+    uint32_t chs_dma_id = get_chs_mngr_id_from_hw_feature(CHS_MNGR_DMA);
+    // Immediately return an error if DMA is not present in cheshire
+    CHECK_ASSERT(HW_IMPL_ERR, (chs_dma_id != HW_IMPL_ERR));
 
-    // enable RT unit for DMA and CVA6
-    __axirt_enable(0x5);
+    __axirt_set_region(0, 0xffffffff, 0, chs_dma_id);
+    __axirt_set_region(0x100000000, 0xffffffffffffffff, 1, chs_dma_id);
+    __axirt_set_budget(DMA_ALLOCATED_BUDGET, 0, chs_dma_id);
+    __axirt_set_budget(DMA_ALLOCATED_BUDGET, 1, chs_dma_id);
+    __axirt_set_period(DMA_ALLOCATED_PERIOD, 0, chs_dma_id);
+    __axirt_set_period(DMA_ALLOCATED_PERIOD, 1, chs_dma_id);
+    fence();
 
-    // launch DMA transfer
-    sys_dma_2d_blk_memcpy(DST_ADDR, SRC_ADDR, SIZE_BYTES, DST_STRIDE, SRC_STRIDE, NUM_REPS);
+    // enable RT unit for all the cores
+    __axirt_enable(BIT_MASK(cheshire_num_harts));
 
-    // read budget registers and compare
-    volatile uint32_t read_budget = *reg32(&__base_axirt, AXI_RT_READ_BUDGET_LEFT_2_REG_OFFSET);
-    volatile uint32_t write_budget = *reg32(&__base_axirt, AXI_RT_WRITE_BUDGET_LEFT_2_REG_OFFSET);
+    // enable RT unit for the DMA
+    __axirt_enable(BIT(chs_dma_id));
+    fence();
 
-    // check
-    volatile uint8_t difference = (TOTAL_SIZE - read_budget) + (TOTAL_SIZE - write_budget);
-    volatile uint8_t mismatch = read_budget != write_budget;
+    // initialize src region and golden values
+    for (int i = 0; i < DMA_NUM_BEATS; i++) {
+        golden[i] = 0xcafedeadbaadf00dULL + i; // Compute golden values
+        dma_src[i] = golden[i];                // Initialize source memory
+        fence();
+    }
 
-    return mismatch | (difference << 1);
+    // launch blocking DMA transfer
+    sys_dma_2d_blk_memcpy((uint64_t *)dma_dst, (uint64_t *)dma_src, DMA_SIZE_BYTES, DMA_DST_STRIDE,
+                          DMA_SRC_STRIDE, DMA_NUM_REPS);
+
+    // Check DMA transfers against gold.
+    for (volatile int i = 0; i < DMA_NUM_BEATS; i++) {
+        CHECK_ASSERT(20, dma_dst[i] == golden[i]);
+    }
+
+    // read budget registers for dma and compare
+    volatile uint32_t dma_read_budget_left =
+        *reg32(&__base_axirt, AXI_RT_READ_BUDGET_LEFT_4_REG_OFFSET);
+    volatile uint32_t dma_write_budget_left =
+        *reg32(&__base_axirt, AXI_RT_WRITE_BUDGET_LEFT_4_REG_OFFSET);
+
+    // check budget: return 0 if (initial budget - final budget) matches the
+    // number of transferred bytes, otherwise return 1
+    volatile uint8_t dma_r_difference =
+        (DMA_ALLOCATED_BUDGET - dma_read_budget_left) != DMA_TOTAL_SIZE_BYTES;
+    volatile uint8_t dma_w_difference =
+        (DMA_ALLOCATED_BUDGET - dma_write_budget_left) != DMA_TOTAL_SIZE_BYTES;
+    // w and r are symmetric on the dma: left budgets should be equal
+    volatile uint8_t dma_rw_mismatch = dma_read_budget_left != dma_write_budget_left;
+
+    return (dma_rw_mismatch | dma_r_difference | dma_w_difference);
 }
