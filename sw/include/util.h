@@ -88,53 +88,8 @@ static inline void *gprw(void *gp) {
 #define BIT(n) (1UL << (n))
 #define BIT_MASK(n) (BIT(n) - 1)
 
-// Check if an hardware feature is present from software
-static inline uint32_t hw_feature_present(uint32_t bit) {
+// Check if a hardware feature is present from software
+static inline uint32_t chs_hw_feature_present(uint32_t bit) {
     uint32_t features_bitmap = *reg32(&__base_regs, CHESHIRE_HW_FEATURES_REG_OFFSET);
-    return (features_bitmap & (1 << bit)) != 0;
-}
-
-// Helpers to handle Cheshire AXI managers attached to the system crossbar.
-
-// Cheshire managers. We label only core0 as the other cores - if any - are
-// contiguous after it by default.
-enum chs_mngrs {
-    CHS_MNGR_CORE0 = 0,
-    CHS_MNGR_DEBUG,
-    CHS_MNGR_DMA,
-    CHS_MNGR_SERIAL_LINK,
-    CHS_MNGR_VGA,
-    CHS_MNGR_USB
-};
-
-// Get Cheshire manager ID based on the hardware feature. If an hardware feature
-// is not implemented, returns `IMPL_ERR`.
-static inline uint32_t get_chs_mngr_id_from_hw_feature(enum chs_mngrs feature) {
-    uint32_t num_harts = *reg32(&__base_regs, CHESHIRE_NUM_INT_HARTS_REG_OFFSET);
-    uint32_t current_id = num_harts;
-
-    // Determine ID based on the input feature
-    switch (feature) {
-    case CHS_MNGR_CORE0:
-        return 0; // Core 0 ID is always 0
-        break;
-    case CHS_MNGR_DEBUG:
-        return num_harts; // Debug ID is always after cores
-        break;
-    case CHS_MNGR_DMA:
-        return hw_feature_present(CHESHIRE_HW_FEATURES_DMA_BIT) ? ++current_id : HW_IMPL_ERR;
-        break;
-    case CHS_MNGR_SERIAL_LINK:
-        return hw_feature_present(CHESHIRE_HW_FEATURES_SERIAL_LINK_BIT) ? ++current_id
-                                                                        : HW_IMPL_ERR;
-        break;
-    case CHS_MNGR_VGA:
-        return hw_feature_present(CHESHIRE_HW_FEATURES_VGA_BIT) ? ++current_id : HW_IMPL_ERR;
-        break;
-    case CHS_MNGR_USB:
-        return hw_feature_present(CHESHIRE_HW_FEATURES_USB_BIT) ? ++current_id : HW_IMPL_ERR;
-        break;
-    default:
-        return HW_IMPL_ERR; // Unknown feature
-    }
+    return (features_bitmap & BIT(bit)) != 0;
 }

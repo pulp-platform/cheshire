@@ -51,7 +51,3 @@ static const uint64_t __BOOT_DTB_TYPE_GUID[2] = {0x42DE2AEFBA442F61UL, 0x9DCB3A5
 
 // GUID of firmware partition we boot into
 static const uint64_t __BOOT_FW_TYPE_GUID[2] = {0x4B0D3F5B99EC86DAUL, 0x59F8A5CFBAC44B8FUL};
-
-// Error code if an HW feature is not implemented but the programmer tries to
-// access it
-static const uint32_t HW_IMPL_ERR = 0x0CA7BEEF;

@@ -4,7 +4,7 @@
 //
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 //
-// Validate the isolation functionality of AXI-REALM
+// Validate the isolation functionality of AXI-REALM.
 
 #include "axirt.h"
 #include "dif/dma.h"
@@ -13,7 +13,7 @@
 #include "regs/cheshire.h"
 #include "util.h"
 
-// transfer
+// Transfer
 #define SIZE_BEAT_BYTES 8
 #define DMA_NUM_BEATS 32
 #define DMA_NUM_REPS 8
@@ -24,7 +24,8 @@
 #define DMA_SRC_ADDRESS 0x10008000
 #define DMA_DST_ADDRESS 0x80008000
 
-// AXI-REALM
+// AXI-REALM (IDs assume default config; adapt as needed)
+#define CVA6_BASE_MGR_ID 0
 #define CVA6_ALLOCATED_BUDGET 0x10000000
 #define CVA6_ALLOCATED_PERIOD 0x10000000
 #define DMA_ALLOCATED_BUDGET \
@@ -34,23 +35,25 @@
 #define DMA_ALLOCATED_PERIOD 0x10000000
 #define FRAGMENTATION_SIZE_BEATS 0 // Max fragmentation applied to bursts
 
+
 int main(void) {
+
+    // Immediately return an error if DMA is not present in cheshire
+    CHECK_ASSERT(-1, !chs_hw_feature_present(CHESHIRE_HW_FEATURES_DMA_BIT));
 
     uint32_t cheshire_num_harts = *reg32(&__base_regs, CHESHIRE_NUM_INT_HARTS_REG_OFFSET);
 
     volatile uint64_t *dma_src = (volatile uint64_t *)(DMA_SRC_ADDRESS);
     volatile uint64_t *dma_dst = (volatile uint64_t *)(DMA_DST_ADDRESS);
 
-    // enable and configure axi rt
+    // Enable and configure axi rt
     __axirt_claim(1, 1);
     __axirt_set_len_limit_group(FRAGMENTATION_SIZE_BEATS, 0);
     __axirt_set_len_limit_group(FRAGMENTATION_SIZE_BEATS, 1);
     fence();
 
-    // configure RT unit for all the CVA6 cores. At least one RV64 core is
-    // always present, so no need to check if the feature is there or not.
-    uint32_t chs_core0_id = get_chs_mngr_id_from_hw_feature(CHS_MNGR_CORE0);
-    for (uint32_t id = chs_core0_id; id < cheshire_num_harts; id++) {
+    // Configure RT unit for all the CVA6 cores (adapt ID if needed).
+    for (uint32_t id = CVA6_BASE_MGR_ID; id < cheshire_num_harts; id++) {
         __axirt_set_region(0, 0xffffffff, 0, id);
         __axirt_set_region(0x100000000, 0xffffffffffffffff, 1, id);
         __axirt_set_budget(CVA6_ALLOCATED_BUDGET, 0, id);
@@ -60,10 +63,8 @@ int main(void) {
         fence();
     }
 
-    // configure RT unit for the DMA
-    uint32_t chs_dma_id = get_chs_mngr_id_from_hw_feature(CHS_MNGR_DMA);
-    // immediately return an error if DMA is not present in cheshire
-    CHECK_ASSERT(HW_IMPL_ERR, (chs_dma_id != HW_IMPL_ERR));
+    // Configure RT unit for the DMA
+    uint32_t chs_dma_id = CVA6_BASE_MGR_ID + cheshire_num_harts + 1;
 
     __axirt_set_region(0, 0xffffffff, 0, chs_dma_id);
     __axirt_set_region(0x100000000, 0xffffffffffffffff, 1, chs_dma_id);
@@ -73,27 +74,27 @@ int main(void) {
     __axirt_set_period(DMA_ALLOCATED_PERIOD, 1, chs_dma_id);
     fence();
 
-    // enable RT unit for all the cores
+    // Enable RT unit for all the cores
     __axirt_enable(BIT_MASK(cheshire_num_harts));
 
-    // enable RT unit for the DMA
+    // Enable RT unit for the DMA
     __axirt_enable(BIT(chs_dma_id));
     fence();
 
-    // initialize src region and golden values
+    // Initialize src region and golden values
     for (int i = 0; i < DMA_NUM_BEATS; i++) {
         dma_src[i] = 0xcafedeadbaadf00dULL + i;
         fence();
     }
 
-    // launch blocking DMA transfer
+    // Launch blocking DMA transfer
     sys_dma_2d_blk_memcpy((uint64_t *)dma_dst, (uint64_t *)dma_src, DMA_SIZE_BYTES, DMA_DST_STRIDE,
                           DMA_SRC_STRIDE, DMA_NUM_REPS);
 
-    // poll isolate to check if AXI-REALM isolates the dma when the budget is
+    // Poll isolate to check if AXI-REALM isolates the dma when the budget is
     // exceeded. Should return 1 if dma is isolated.
     uint8_t isolate_status = __axirt_poll_isolate(chs_dma_id);
 
-    // return 0 if manager was correctly isolated
+    // Return 0 if manager was correctly isolated
     return !isolate_status;
 }
