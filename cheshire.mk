@@ -22,13 +22,13 @@ CHS_REG_DIR   := $(shell $(BENDER) path register_interface)
 CHS_SLINK_DIR := $(shell $(BENDER) path serial_link)
 CHS_LLC_DIR   := $(shell $(BENDER) path axi_llc)
 
-# Define paths used in dependencies
-OTPROOT           := $(shell $(BENDER) path opentitan_peripherals)
-CLINTROOT         := $(shell $(BENDER) path clint)
-AXIRTROOT         := $(shell $(BENDER) path axi_rt)
-AXI_VGA_ROOT      := $(shell $(BENDER) path axi_vga)
-IDMA_ROOT         := $(shell $(BENDER) path idma)
-DRAM_RTL_SIM_ROOT := $(shell $(BENDER) path dram_rtl_sim)
+# Define paths used in dependencies; export these to sub-makes.
+export OTPROOT           := $(shell $(BENDER) path opentitan_peripherals)
+export CLINTROOT         := $(shell $(BENDER) path clint)
+export AXIRTROOT         := $(shell $(BENDER) path axi_rt)
+export AXI_VGA_ROOT      := $(shell $(BENDER) path axi_vga)
+export IDMA_ROOT         := $(shell $(BENDER) path idma)
+export DRAM_RTL_SIM_ROOT := $(shell $(BENDER) path dram_rtl_sim)
 
 REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
 
@@ -80,6 +80,8 @@ include $(CHS_ROOT)/sw/sw.mk
 # Generate HW #
 ###############
 
+CHS_SMAKE = $(MAKE) -e BENDER='$(BENDER)' REGTOOL='$(REGTOOL)'
+
 # SoC registers
 $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv: $(CHS_ROOT)/hw/regs/cheshire_regs.hjson
 	$(REGTOOL) -r $< --outdir $(dir $@)
@@ -88,29 +90,29 @@ $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv:
 CLINTCORES ?= 1
 include $(CLINTROOT)/clint.mk
 $(CLINTROOT)/.generated:
-	flock -x $@ $(MAKE) clint && touch $@
+	flock -x $@ $(CHS_SMAKE) CLINTCORES=$(CLINTCORES) clint && touch $@
 
 # OpenTitan peripherals
 include $(OTPROOT)/otp.mk
 $(OTPROOT)/.generated: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
-	flock -x $@ sh -c "cp $< $(dir $@)/src/rv_plic/; $(MAKE) -j1 otp" && touch $@
+	flock -x $@ sh -c "cp $< $(dir $@)/src/rv_plic/; $(CHS_SMAKE) -j1 otp" && touch $@
 
 # AXI RT
 AXIRT_NUM_MGRS ?= 6
 AXIRT_NUM_SUBS ?= 2
 include $(AXIRTROOT)/axirt.mk
 $(AXIRTROOT)/.generated:
-	flock -x $@ $(MAKE) axirt_regs && touch $@
+	flock -x $@ $(CHS_SMAKE) AXIRT_NUM_MGRS=$(AXIRT_NUM_MGRS) AXIRT_NUM_SUBS=$(AXIRT_NUM_SUBS) axirt_regs && touch $@
 
 # AXI VGA
 include $(AXI_VGA_ROOT)/axi_vga.mk
 $(AXI_VGA_ROOT)/.generated:
-	flock -x $@ $(MAKE) axi_vga && touch $@
+	flock -x $@ $(CHS_SMAKE) axi_vga && touch $@
 
 # Custom serial link
 $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
-	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs BENDER="$(BENDER)" && touch $@
+	flock -x $@ $(CHS_SMAKE) -C $(CHS_SLINK_DIR) update-regs && touch $@
 
 # iDMA
 include $(IDMA_ROOT)/idma.mk
