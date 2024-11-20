@@ -35,7 +35,6 @@
 #define DMA_ALLOCATED_PERIOD 0x10000000
 #define FRAGMENTATION_SIZE_BEATS 0 // Max fragmentation applied to bursts
 
-
 int main(void) {
 
     // Immediately return an error if DMA is not present in cheshire
