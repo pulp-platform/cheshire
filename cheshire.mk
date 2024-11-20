@@ -90,29 +90,29 @@ $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv:
 CLINTCORES ?= 1
 include $(CLINTROOT)/clint.mk
 $(CLINTROOT)/.generated:
-	flock -x $@ $(CHS_SMAKE) CLINTCORES=$(CLINTCORES) clint && touch $@
+	flock -x $@.lock $(CHS_SMAKE) CLINTCORES=$(CLINTCORES) clint && touch $@
 
 # OpenTitan peripherals
 include $(OTPROOT)/otp.mk
 $(OTPROOT)/.generated: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
-	flock -x $@ sh -c "cp $< $(dir $@)/src/rv_plic/; $(CHS_SMAKE) -j1 otp" && touch $@
+	flock -x $@.lock sh -c "cp $< $(dir $@)/src/rv_plic/; $(CHS_SMAKE) -j1 otp" && touch $@
 
 # AXI RT
 AXIRT_NUM_MGRS ?= 6
 AXIRT_NUM_SUBS ?= 2
 include $(AXIRTROOT)/axirt.mk
 $(AXIRTROOT)/.generated:
-	flock -x $@ $(CHS_SMAKE) AXIRT_NUM_MGRS=$(AXIRT_NUM_MGRS) AXIRT_NUM_SUBS=$(AXIRT_NUM_SUBS) axirt_regs && touch $@
+	flock -x $@.lock $(CHS_SMAKE) AXIRT_NUM_MGRS=$(AXIRT_NUM_MGRS) AXIRT_NUM_SUBS=$(AXIRT_NUM_SUBS) axirt_regs && touch $@
 
 # AXI VGA
 include $(AXI_VGA_ROOT)/axi_vga.mk
 $(AXI_VGA_ROOT)/.generated:
-	flock -x $@ $(CHS_SMAKE) axi_vga && touch $@
+	flock -x $@.lock $(CHS_SMAKE) axi_vga && touch $@
 
 # Custom serial link
 $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
-	flock -x $@ $(CHS_SMAKE) -C $(CHS_SLINK_DIR) update-regs && touch $@
+	flock -x $@.lock $(CHS_SMAKE) -C $(CHS_SLINK_DIR) update-regs && touch $@
 
 # iDMA
 include $(IDMA_ROOT)/idma.mk
