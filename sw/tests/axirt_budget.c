@@ -89,7 +89,7 @@ int main(void) {
     }
 
     // Launch blocking DMA transfer
-    sys_dma_2d_blk_memcpy((uintptr_t)dma_dst, (uintptr_t)dma_src, DMA_SIZE_BYTES, DMA_DST_STRIDE,
+    sys_dma_2d_blk_memcpy((uintptr_t)(void*)dma_dst, (uintptr_t)(void*)dma_src, DMA_SIZE_BYTES, DMA_DST_STRIDE,
                           DMA_SRC_STRIDE, DMA_NUM_REPS);
 
     // Check DMA transfers against gold.
