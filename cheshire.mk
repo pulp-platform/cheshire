@@ -100,7 +100,7 @@ AXIRT_NUM_MGRS ?= 6
 AXIRT_NUM_SUBS ?= 2
 include $(AXIRTROOT)/axirt.mk
 $(AXIRTROOT)/.generated:
-	flock -x $@ $(MAKE) axirt_regs && touch $@
+	flock -x $@ $(MAKE) -B axirt_regs && touch $@
 
 # AXI VGA
 include $(AXI_VGA_ROOT)/axi_vga.mk
