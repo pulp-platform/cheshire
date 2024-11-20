@@ -7,5 +7,5 @@ yapf
 mkdocs
 mkdocs-material
 markdown-grid-tables
-tclint
+tclint==0.4.2
 flatdict
