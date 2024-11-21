@@ -13,7 +13,7 @@ package:
 
 dependencies:
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.1  }
-  axi:                      { git: "https://github.com/pulp-platform/axi.git",                    rev: ac4a0245   } # zx/axi_burst_unwrap
+  axi:                      { git: "https://github.com/pulp-platform/axi.git",                    rev: 080aa99a   } # zx/axi_burst_unwrap
   axi_llc:                  { git: "https://github.com/Aquaticfuller/axi_llc.git",                rev: edae8021   }
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.8.1  }
   axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: 0.0.0-alpha.4 }
@@ -33,7 +33,7 @@ dependencies:
   # soc910:                   { git: "git@iis-git.ee.ethz.ch:nwistoff/soc910.git",                  rev: 7c218d05   }
   # register_interface:       { path: vendor/pulp_register_interface                                                  }
   # soc910:                   { path: soc910/hw/system                                                              }
-  pulp_c910:                { git: "git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git",               rev: 4d6d64f4   } # zx/axi_burst_unwrap
+  pulp_c910:                { git: "git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git",               rev: 04b6c930   } # zx/axi_burst_unwrap
 
 export_include_dirs:
   - hw/include
