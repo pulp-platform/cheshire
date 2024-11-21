@@ -36,7 +36,6 @@ package new_usb_ohci_pkg;
     ISOTD = 2'b10
   } store_type;
   
-
   // OHCI supports between 1-15 ports
   localparam int unsigned   NumPhyPorts      = 2;
   localparam state_activate OverProtect      = OFF; // no overcurrent protection implemented yet
@@ -44,8 +43,9 @@ package new_usb_ohci_pkg;
   localparam state_permit   InterruptRouting = DISABLE; // no system management interrupt (SMI) implemented yet
   localparam state_permit   RemoteWakeup     = DISABLE; // no remote wakeup implemented yet
   localparam state_permit   OwnershipChange  = DISABLE; // no ownership change implemented yet
-  localparam int unsigned   FifodepthPort    = 1024; // test value
-  localparam int unsigned   Dmalength        = 128; // test value
+  localparam int unsigned   FifoDepthPort    = 1024; // test value
+  localparam int unsigned   DmaLength        = 128; // test value
+  localparam int unsigned   DmaDataWidth     = 32; // 32|64|128 causes 4|2|1 stages in the dmaoutputqueueED 
   
   // Todo: Maybe Crc16 input Byte size parameter with selectable parallel/pipelined processing, lookup table?
 
@@ -118,7 +118,6 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
 
   // listservice
   logic   start; // start if USB goes to operational
-  logic   frame_request;
   logic   nextis_valid;
   logic   nextis_ed;
   channel nextis_type;
@@ -167,13 +166,11 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
   );
 
   new_usb_unpackdescriptors i_new_usb_unpackdescriptors (
-     .cbsr_i(reg2hw.hccontrol.cbsr.q),
-  )
-  module new_usb_unpackdescriptors import new_usb_ohci_pkg::*;(
     /// control
     .clk_i,
     .rst_ni,
     .counter_is_threshold_o,
+    .cbsr_i(reg2hw.hccontrol.cbsr.q),
 
     .nextis_valid_o // needs to be one clock cycle
     .nextis_ed_o, // 0 if empty ed rerequest or td

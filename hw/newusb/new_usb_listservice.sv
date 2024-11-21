@@ -4,25 +4,19 @@
 //
 // Fabian Hauser <fhauser@student.ethz.ch>
 //
-/// Services the lists of the four channel types and feeds the DMA with the it.
+/// Services the lists of the four channel types and feeds the DMA with it.
+/// One ED address comes into the module, one ED address goes out of the module. No register latency.
 
-// One ED comes into the module, one goes out of the module. No register latency.
-
-// Todo: implement device write back or do on different module
-// add missing td
-// when first TD of ED is initiated ED is served. Maybe increase counter after td and not ed.
 // rewrite with listfilled
 // scheduling overrun SOC
-// init x axi
+// dma init x axi
 // HCAA 
 
   
 // Todo: implement interrupt done, back to nonperiodic
 // if interrupt done do periodic_frame 0
 
-module new_usb_listservice import new_usb_ohci_pkg::*; #(
-  //parameters
-) (
+module new_usb_listservice import new_usb_ohci_pkg::*; (
 
   input logic clk_i,
   input logic rst_ni,
@@ -67,12 +61,6 @@ module new_usb_listservice import new_usb_ohci_pkg::*; #(
   output logic          dmawriteorread_o, // write high, read low
   output channel        current_type_o,
   output logic          current_ed_o,
-  
-  output logic          activebulkhead,
-  output logic          activecontrolhead,
-  input  logic          activebulkheadprocessed,
-  input  logic          activecontrolheadprocessed,
-  input  logic          activeaddress, // First ED address coming from head
 
 );
 
