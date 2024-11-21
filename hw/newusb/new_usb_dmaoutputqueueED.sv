@@ -38,7 +38,10 @@ package new_usb_dmaoutputqueueED_pkg;
 
 endpackage
 
-module new_usb_dmaoutputqueueED import new_usb_dmaoutputqueueED_pkg::*; (
+module new_usb_dmaoutputqueueED import new_usb_dmaoutputqueueED_pkg::*; #(
+    parameter int unsigned AxiDataWidth = 0,
+    parameter int unsigned DmaOutputQueueStages = 0
+)(
     /// control
     input  logic clk_i,
     input  logic rst_ni,
@@ -58,6 +61,7 @@ module new_usb_dmaoutputqueueED import new_usb_dmaoutputqueueED_pkg::*; (
     output endpoint_descriptor secondin,
     output endpoint_descriptor firstin
 );
+    
     endpoint_descriptor stash;
     endpoint_descriptor secondinmux;
 

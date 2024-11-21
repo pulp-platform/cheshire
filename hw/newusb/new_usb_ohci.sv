@@ -37,15 +37,14 @@ package new_usb_ohci_pkg;
   } store_type;
   
   // OHCI supports between 1-15 ports
-  localparam int unsigned   NumPhyPorts      = 2;
-  localparam state_activate OverProtect      = OFF; // no overcurrent protection implemented yet
-  localparam state_activate PowerSwitching   = OFF; // no power switching implemented yet
-  localparam state_permit   InterruptRouting = DISABLE; // no system management interrupt (SMI) implemented yet
-  localparam state_permit   RemoteWakeup     = DISABLE; // no remote wakeup implemented yet
-  localparam state_permit   OwnershipChange  = DISABLE; // no ownership change implemented yet
-  localparam int unsigned   FifoDepthPort    = 1024; // test value
-  localparam int unsigned   DmaLength        = 128; // test value
-  localparam int unsigned   DmaDataWidth     = 32; // 32|64|128 causes 4|2|1 stages in the dmaoutputqueueED 
+  localparam int unsigned   NumPhyPorts          = 2;
+  localparam state_activate OverProtect          = OFF; // no overcurrent protection implemented yet
+  localparam state_activate PowerSwitching       = OFF; // no power switching implemented yet
+  localparam state_permit   InterruptRouting     = DISABLE; // no system management interrupt (SMI) implemented yet
+  localparam state_permit   RemoteWakeup         = DISABLE; // no remote wakeup implemented yet
+  localparam state_permit   OwnershipChange      = DISABLE; // no ownership change implemented yet
+  localparam int unsigned   FifoDepthPort        = 1024; // test value
+  localparam int unsigned   DmaLength            = 128; // test value
   
   // Todo: Maybe Crc16 input Byte size parameter with selectable parallel/pipelined processing, lookup table?
 
@@ -55,7 +54,7 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
   /// DMA manager port parameters
   parameter int unsigned AxiMaxReads   = 0,
   parameter int unsigned AxiAddrWidth  = 0,
-  parameter int unsigned AxiDataWidth  = 0,
+  parameter int unsigned AxiDataWidth  = 0, // 32|64|128 causes 4|2|1 stages in the dmaoutputqueueED
   parameter int unsigned AxiIdWidth    = 0,
   parameter int unsigned AxiUserWidth  = 0,
   /// Default User and ID presented on DMA manager AR, AW, W channels.
@@ -165,7 +164,9 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
 
   );
 
-  new_usb_unpackdescriptors i_new_usb_unpackdescriptors (
+  new_usb_unpackdescriptors #(
+    .AxiDataWidth(AxiDataWidth)
+    ) i_new_usb_unpackdescriptors (
     /// control
     .clk_i,
     .rst_ni,

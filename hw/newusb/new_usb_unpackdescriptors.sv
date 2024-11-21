@@ -16,7 +16,9 @@
 // Todo: only one package flying
 // Todo: TD management in ED, overwrite HeadP if servedTD, halted or toggle Carry?
 
-module new_usb_unpackdescriptors import new_usb_ohci_pkg::*;(
+module new_usb_unpackdescriptors import new_usb_ohci_pkg::*; #(
+    parameter int unsigned AxiDataWidth = 0
+)(
     /// control
     input logic clk_i,
     input logic rst_ni,
@@ -35,7 +37,7 @@ module new_usb_unpackdescriptors import new_usb_ohci_pkg::*;(
     /// new currentED, updated after processed accessed it
     output logic [27:0] newcurrentED_o,
     output logic        newcurrentED_valid_o,
-    /// dma data
+    /// id type
     input  logic [1:0]  id_valid_i,
     input  logic [2:0]  id_type_i,
     /// dma data
@@ -48,6 +50,9 @@ module new_usb_unpackdescriptors import new_usb_ohci_pkg::*;(
     /// head state
     input  logic sent_head_i
 );
+    
+    localparam int unsigned DmaOutputQueueStages = 128/AxiDataWidth; // dmaoutputqueueED stages
+    
     // nextis
     assign nextis_ed_o = (id_type[2] && empty_secondin) || !id_type[2]; 
     assign nextis_valid_o = !flying; 
