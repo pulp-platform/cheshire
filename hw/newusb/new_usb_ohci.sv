@@ -1,17 +1,15 @@
 // Copyright 2024 ETH Zurich and University of Bologna.
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
-
+//
 // Fabian Hauser <fhauser@student.ethz.ch>
-
+//
 /// Main module for the direct SystemVerilog NewUSB OHCI, configured for AXI4 buses.
 /// The config port is adapted to 32b Regbus, the DMA port to parametric AXI4.
 /// The IOs are bundled into PULP structs and arrays to simplify connection.
 
-
 // Changes inside this package need to be confirmed with a make hw-all, 
 // because the package values need to update the configuration inside newusb_regs.hjson.
-// Always delete the previous newusb_regs.hjson first, if you do changes here.
 package new_usb_ohci_pkg;
   
   typedef enum int unsigned {
@@ -25,16 +23,29 @@ package new_usb_ohci_pkg;
     ENABLE = 1
   } state_permit;
 
-  //OHCI supports between 1-15 ports
+  typedef enum logic [1:0] {
+    BULK = 2'b00,
+    CONTROL = 2'b01,
+    ISOCHRONOUS = 2'b10,
+    INTERRUPT = 2'11
+  } channel;
+
+  typedef enum logic [1:0] {
+    ED = 2'b00,
+    GENTD = 2'b01,
+    ISOTD = 2'b10
+  } store_type;
+  
+
+  // OHCI supports between 1-15 ports
   localparam int unsigned   NumPhyPorts      = 2;
   localparam state_activate OverProtect      = OFF; // no overcurrent protection implemented yet
   localparam state_activate PowerSwitching   = OFF; // no power switching implemented yet
   localparam state_permit   InterruptRouting = DISABLE; // no system management interrupt (SMI) implemented yet
   localparam state_permit   RemoteWakeup     = DISABLE; // no remote wakeup implemented yet
   localparam state_permit   OwnershipChange  = DISABLE; // no ownership change implemented yet
-  localparam int unsigned   FifodepthPort    = 1024; //test value
-  localparam int unsigned   FifodepthDma     = 1024; //test value
-  localparam int unsigned   Dmalength        = 1024; //test value
+  localparam int unsigned   FifodepthPort    = 1024; // test value
+  localparam int unsigned   Dmalength        = 128; // test value
   
   // Todo: Maybe Crc16 input Byte size parameter with selectable parallel/pipelined processing, lookup table?
 
@@ -80,30 +91,127 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
   output logic [NumPhyPorts-1:0] phy_dp_oe_o
 );
 
-newusb_reg_pkg::newusb_hw2reg_t newusb_hw2reg;
-newusb_reg_pkg::newusb_reg2hw_t newusb_reg2hw;
+  newusb_reg_pkg::newusb_hw2reg_t newusb_hw2reg;
+  newusb_reg_pkg::newusb_reg2hw_t newusb_reg2hw;
+  
+  newusb_reg_top #(
+    .reg_req_t  ( reg_req_t ),
+    .reg_rsp_t  ( reg_rsp_t )
+  ) i_newusb_regs (
+    .clk_i  ( soc_clk_i ),
+    .rst_ni ( soc_rst_ni ),
+    .reg_req_i ( ctrl_req_i ), // SW HCD
+    .reg_rsp_o ( ctrl_rsp_o ), // SW HCD
+    .reg2hw    ( newusb_reg2hw ), // HW HC to Reg
+    .hw2reg    ( newusb_hw2reg ), // HW Reg to HC
+    .devmode_i ( 1'b1       )
+  );
+  
+  // frame periodic/nonperiodic and its transition pulses
+  logic frame_periodic; // 0 if nonperiodic 1 if periodic
+  logic frame_periodic_prev;
+  logic context_switch_np2p;
+  logic context_switch_p2np;
+  `FF(frame_periodic_prev, frame_periodic, 1'b0)
+  assign context_switch_np2p = frame_periodic && ~frame_periodic_prev; // one cycle high nonperiodic to periodic
+  assign context_switch_n2np = ~frame_periodic && frame_periodic_prev; // one cyble high periodic to nonperiodic
 
-newusb_reg_top #(
-  .reg_req_t  ( reg_req_t ),
-  .reg_rsp_t  ( reg_rsp_t )
-) i_newusb_regs (
-  .clk_i  ( soc_clk_i ),
-  .rst_ni ( soc_rst_ni ),
-  .reg_req_i ( ctrl_req_i ), //SW HCD
-  .reg_rsp_o ( ctrl_rsp_o ), //SW HCD
-  .reg2hw    ( newusb_reg2hw ), //HW HC to Reg
-  .hw2reg    ( newusb_hw2reg ), //HW Reg to HC
-  .devmode_i ( 1'b1       )
+  // listservice
+  logic   start; // start if USB goes to operational
+  logic   frame_request;
+  logic   nextis_valid;
+  logic   nextis_ed;
+  channel nextis_type;
+  logic [27:0] nextis_address;
+  
+  new_usb_listservice i_listservice (
+  
+    .clk_i(soc_clk_i),
+    .rst_i(soc_rst_ni),
+    
+    .start(start),
+    .frame_periodic(frame_periodic),
+  
+    .nextis_valid(nextis_valid),
+    .nextis_ed(nextis_ed),
+    .nextis_type(nextis_type),
+    .nextis_address(nextis_address),
+  
+    .controlbulkratio_q(reg2hw.hccontrol.cbsr.q),
+  
+    .periodcurrent_ed_de(newusb_hw2reg.hcperiodcurrented.pced.de),
+    .periodcurrent_ed_d(newusb_hw2reg.hcperiodcurrented.pced.d),
+    .periodcurrent_ed_q(newusb_reg2hw.hcperiodcurrented.pced.q),
+  
+    .controlcurrent_ed_de(newusb_hw2reg.hccontrolcurrented.cced.de),
+    .controlcurrent_ed_d(newusb_hw2reg.hccontrolcurrented.cced.d),
+    .controlcurrent_ed_q(newusb_reg2hw.hccontrolcurrented.cced.q),
+  
+    .bulkcurrent_ed_de(newusb_hw2reg.hcbulkcurrented.bced.de),
+    .bulkcurrent_ed_d(newusb_hw2reg.hcbulkcurrented.bced.d),
+    .bulkcurrent_ed_q(newusb_reg2hw.hcbulkcurrented.bced.q),
+  
+    .hcbulkhead_ed_de(newusb_hw2reg.hcbulkheaded.bhed.de),
+    .hcbulkhead_ed_d(newusb_hw2reg.hcbulkheaded.bhed.d) ,
+    .hcbulkhead_ed_q(newusb_reg2hw.hcbulkheaded.bhed.q),
+  
+    .controlhead_ed_de(newusb_hw2reg.hccontrolheaded.ched.de),
+    .controlhead_ed_d(newusb_hw2reg.hccontrolheaded.ched.d) ,
+    .controlhead_ed_q(newusb_reg2hw.hccontrolheaded.ched.q),
+  
+    .nextreadwriteaddress(),
+    .validdmaaccess(),
+    .current_type(),
+    .sent_head()
+
+  );
+
+  new_usb_unpackdescriptors i_new_usb_unpackdescriptors (
+     .cbsr_i(reg2hw.hccontrol.cbsr.q),
+  )
+  module new_usb_unpackdescriptors import new_usb_ohci_pkg::*;(
+    /// control
+    .clk_i,
+    .rst_ni,
+    .counter_is_threshold_o,
+
+    .nextis_valid_o // needs to be one clock cycle
+    .nextis_ed_o, // 0 if empty ed rerequest or td
+    .nextis_type_o,
+    .nextis_address_o,
+    .nextis_ready_i,
+
+    .processed,
+    .processed_ed_store_o, // store request
+    .processed_store_type_o, // isochronousTD, generalTD, ED 
+
+    .newcurrentED_o,
+    .newcurrentED_valid_o,
+    
+    .id_valid_i,
+    .id_type_i,
+    
+    .dma_data_i,
+    .dma_valid_i,
+    .dma_ready_o,
+   
+    .context_switch_np2p_i,
+    .context_switch_p2np_i,
+
+    .sent_head_i
 );
+  
 
 
-assign dma_req_o = '0;
-// IRQ tied-off
-assign intr_o = '0;
+  // Todo: insert DMA
 
-assign phy_dm_o    = '0;
-assign phy_dm_oe_o = '0;
-assign phy_dp_o    = '0;
-assign phy_dp_oe_o = '0;
+  assign dma_req_o = '0;
+  // IRQ tied-off
+  assign intr_o = '0;
+  
+  assign phy_dm_o    = '0;
+  assign phy_dm_oe_o = '0;
+  assign phy_dp_o    = '0;
+  assign phy_dp_oe_o = '0;
 
 endmodule

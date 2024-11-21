@@ -504,9 +504,6 @@ package newusb_reg_pkg;
       logic        d;
     } rhcs;
     struct packed {
-      logic [22:0] d;
-    } reserved;
-    struct packed {
       logic        d;
     } oc;
     struct packed {
@@ -801,11 +798,11 @@ package newusb_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    newusb_hw2reg_hccontrol_reg_t hccontrol; // [718:708]
-    newusb_hw2reg_hccommandstatus_reg_t hccommandstatus; // [707:676]
-    newusb_hw2reg_hcinterruptstatus_reg_t hcinterruptstatus; // [675:644]
-    newusb_hw2reg_hcinterruptenable_reg_t hcinterruptenable; // [643:612]
-    newusb_hw2reg_hcinterruptdisable_reg_t hcinterruptdisable; // [611:580]
+    newusb_hw2reg_hccontrol_reg_t hccontrol; // [695:685]
+    newusb_hw2reg_hccommandstatus_reg_t hccommandstatus; // [684:653]
+    newusb_hw2reg_hcinterruptstatus_reg_t hcinterruptstatus; // [652:621]
+    newusb_hw2reg_hcinterruptenable_reg_t hcinterruptenable; // [620:589]
+    newusb_hw2reg_hcinterruptdisable_reg_t hcinterruptdisable; // [588:580]
     newusb_hw2reg_hchcaa_reg_t hchcaa; // [579:555]
     newusb_hw2reg_hcperiodcurrented_reg_t hcperiodcurrented; // [554:526]
     newusb_hw2reg_hccontrolheaded_reg_t hccontrolheaded; // [525:497]
@@ -898,7 +895,6 @@ package newusb_reg_pkg;
   parameter logic [0:0] NEWUSB_HCINTERRUPTDISABLE_UE_RESVAL = 1'h 0;
   parameter logic [0:0] NEWUSB_HCINTERRUPTDISABLE_FNO_RESVAL = 1'h 0;
   parameter logic [0:0] NEWUSB_HCINTERRUPTDISABLE_RHCS_RESVAL = 1'h 0;
-  parameter logic [22:0] NEWUSB_HCINTERRUPTDISABLE_RESERVED_RESVAL = 23'h 0;
   parameter logic [0:0] NEWUSB_HCINTERRUPTDISABLE_OC_RESVAL = 1'h 0;
   parameter logic [0:0] NEWUSB_HCINTERRUPTDISABLE_MIE_RESVAL = 1'h 0;
 

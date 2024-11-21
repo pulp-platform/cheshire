@@ -229,8 +229,6 @@ module newusb_reg_top #(
   logic hcinterruptdisable_rhcs_wd;
   logic hcinterruptdisable_rhcs_we;
   logic hcinterruptdisable_rhcs_re;
-  logic [22:0] hcinterruptdisable_reserved_qs;
-  logic hcinterruptdisable_reserved_re;
   logic hcinterruptdisable_oc_qs;
   logic hcinterruptdisable_oc_wd;
   logic hcinterruptdisable_oc_we;
@@ -1065,21 +1063,6 @@ module newusb_reg_top #(
     .qe     (),
     .q      (reg2hw.hcinterruptdisable.rhcs.q ),
     .qs     (hcinterruptdisable_rhcs_qs)
-  );
-
-
-  //   F[reserved]: 29:7
-  prim_subreg_ext #(
-    .DW    (23)
-  ) u_hcinterruptdisable_reserved (
-    .re     (hcinterruptdisable_reserved_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.hcinterruptdisable.reserved.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (hcinterruptdisable_reserved_qs)
   );
 
 
@@ -3151,8 +3134,6 @@ module newusb_reg_top #(
   assign hcinterruptdisable_rhcs_wd = reg_wdata[6];
   assign hcinterruptdisable_rhcs_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign hcinterruptdisable_reserved_re = addr_hit[5] & reg_re & !reg_error;
-
   assign hcinterruptdisable_oc_we = addr_hit[5] & reg_we & !reg_error;
   assign hcinterruptdisable_oc_wd = reg_wdata[30];
   assign hcinterruptdisable_oc_re = addr_hit[5] & reg_re & !reg_error;
@@ -3363,7 +3344,6 @@ module newusb_reg_top #(
         reg_rdata_next[4] = hcinterruptdisable_ue_qs;
         reg_rdata_next[5] = hcinterruptdisable_fno_qs;
         reg_rdata_next[6] = hcinterruptdisable_rhcs_qs;
-        reg_rdata_next[29:7] = hcinterruptdisable_reserved_qs;
         reg_rdata_next[30] = hcinterruptdisable_oc_qs;
         reg_rdata_next[31] = hcinterruptdisable_mie_qs;
       end
