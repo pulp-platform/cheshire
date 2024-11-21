@@ -217,6 +217,18 @@ CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 
+# for netlist simulation
+$(CHS_ROOT)/target/stimuli/vsim/compile.cheshire_soc.tcl: Bender.yml ./target/sim/src/riscv-isa-sim/install/lib/libriscv.so $(dpi-library)/ariane_dpi.so
+	echo "$(VLOG_ARGS)"
+	$(BENDER) script vsim -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 -t c910 -t gate --vlog-arg="$(VLOG_ARGS) $(questa-define)" > $@
+	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
+
+CHS_NETLISTSIM_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
+CHS_NETLISTSIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
+CHS_NETLISTSIM_ALL += $(CHS_ROOT)/target/stimuli/vsim/compile.cheshire_soc.tcl
+
+
+
 #############
 # Emulation #
 #############
@@ -234,9 +246,9 @@ CHS_LINUX_IMG  += $(CHS_SW_DIR)/boot/linux-${BOARD}.gpt.bin
 # Phonies (KEEP AT END OF FILE) #
 #################################
 
-.PHONY: chs-all chs-nonfree-init chs-clean-deps chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-xilinx-all
+.PHONY: chs-all chs-nonfree-init chs-clean-deps chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-xilinx-all chs-netlistsim-all
 
-CHS_ALL += $(CHS_SW_ALL) $(CHS_HW_ALL) $(CHS_SIM_ALL)
+CHS_ALL += $(CHS_SW_ALL) $(CHS_HW_ALL) $(CHS_SIM_ALL) $(CHS_NETLISTSIM_ALL)
 
 chs-all:         $(CHS_ALL)
 chs-sw-all:      $(CHS_SW_ALL)
@@ -245,3 +257,4 @@ chs-bootrom-all: $(CHS_BOOTROM_ALL)
 chs-sim-all:     $(CHS_SIM_ALL)
 chs-xilinx-all:  $(CHS_XILINX_ALL)
 chs-linux-img:   $(CHS_LINUX_IMG)
+chs-netlistsim-all:     $(CHS_NETLISTSIM_ALL)

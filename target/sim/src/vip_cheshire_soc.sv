@@ -140,8 +140,10 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   axi_ext_llc_rsp_t axi_llc_mst_rsp_tmp;
   always_comb begin
     axi_llc_mst_rsp = axi_llc_mst_rsp_tmp;
-    if(axi_llc_mst_rsp_tmp.r.data === 'x) begin
-      axi_llc_mst_rsp.r.data = '0;
+    for (int i = 0; i < $bits(axi_llc_mst_rsp_tmp.r.data); i++) begin
+      if (axi_llc_mst_rsp_tmp.r.data[i] === 1'bx) begin
+          axi_llc_mst_rsp.r.data[i] = 1'b0; // Change X to 0
+      end
     end
   end
 
@@ -367,6 +369,14 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     exit_code >>= 1;
     if (exit_code) $error("[JTAG] FAILED: return code %0d", exit_code);
     else $display("[JTAG] SUCCESS");
+  endtask
+
+
+  // Enter debug mode
+  task automatic jtag_haltreq;
+    $display("[JTAG] Start to send halt req");
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, default: '0});
+    $display("[JTAG] Halt req sent");
   endtask
 
   ////////////

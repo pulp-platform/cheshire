@@ -602,6 +602,11 @@ module cheshire_soc
 
     axi_slv_req_t axi_llc_remap_req;
     axi_slv_rsp_t axi_llc_remap_rsp;
+`ifndef SYNTHESIS
+    // When the llc works as a spm, there can be X in part of the axi burst 
+    // because uninitialized data, just a simluation work around here
+    axi_slv_rsp_t axi_llc_remap_rsp_tmp;
+`endif
 
     // Remap both cached and uncached accesses to single base.
     // This is necessary for routing in the LLC-internal interconnect.
@@ -634,7 +639,11 @@ module cheshire_soc
       .rst_ni,
       .test_i              ( test_mode_i ),
       .slv_req_i           ( axi_llc_remap_req ),
+`ifndef SYNTHESIS
+      .slv_resp_o          ( axi_llc_remap_rsp_tmp ),
+`else
       .slv_resp_o          ( axi_llc_remap_rsp ),
+`endif
       .mst_req_o           ( axi_llc_mst_req_o ),
       .mst_resp_i          ( axi_llc_mst_rsp_i ),
       .conf_req_i          ( reg_out_req[RegOut.llc] ),
@@ -644,6 +653,17 @@ module cheshire_soc
       .spm_start_addr_i    ( addr_t'(AmSpm) ),
       .axi_llc_events_o    ( /* TODO: connect me to regs? */ )
     );
+
+`ifndef SYNTHESIS
+    always_comb begin
+      axi_llc_remap_rsp = axi_llc_remap_rsp_tmp;
+      for (int i = 0; i < $bits(axi_llc_remap_rsp_tmp.r.data); i++) begin
+        if (axi_llc_remap_rsp_tmp.r.data[i] === 1'bx) begin
+            axi_llc_remap_rsp.r.data[i] = 1'b0; // Change X to 0
+        end
+      end
+    end
+`endif
 
   end else if (Cfg.LlcOutConnect) begin : gen_llc_bypass
 
@@ -812,6 +832,7 @@ module cheshire_soc
         .axi_rsp_i        ( c910_out_rsp_s1     )
       );
 
+`ifndef TARGET_GATE
       axi_burst_unwrap #(
         .MaxReadTxns  ( 32'd8     ),
         .MaxWriteTxns ( 32'd8     ),
@@ -829,6 +850,10 @@ module cheshire_soc
         .mst_req_o  ( c910_out_req_s2 ),
         .mst_resp_i ( c910_out_rsp_s2 )
       );
+`else
+    assign c910_out_req_s2 = c910_out_req_s1;
+    assign c910_out_rsp_s1 = c910_out_rsp_s2;
+`endif
 
       axi_burst_undec #(
       // the whole burst length in bit
@@ -842,16 +867,16 @@ module cheshire_soc
       // AXI request & response structs
         .axi_req_t     ( axi_c910_req_t     ),
         .axi_resp_t    ( axi_c910_rsp_t     )
-    ) i_c910_axi_burst_undec (
-        .clk_i,  // Clock
-        .rst_ni,  // Asynchronous reset active low
-        // slave port
-        .slv_req_i    (c910_out_req_s2 ),
-        .slv_resp_o   (c910_out_rsp_s2 ),
-        // master port
-        .mst_req_o    (c910_out_req_s3),
-        .mst_resp_i   (c910_out_rsp_s3)
-    );
+      ) i_c910_axi_burst_undec (
+          .clk_i,  // Clock
+          .rst_ni,  // Asynchronous reset active low
+          // slave port
+          .slv_req_i    (c910_out_req_s2 ),
+          .slv_resp_o   (c910_out_rsp_s2 ),
+          // master port
+          .mst_req_o    (c910_out_req_s3),
+          .mst_resp_i   (c910_out_rsp_s3)
+      );
 
       // axi fifo to close timing
       axi_cut #(
