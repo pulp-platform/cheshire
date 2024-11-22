@@ -107,6 +107,7 @@ module new_usb_unpackdescriptors import new_usb_ohci_pkg::*; #(
     assign dma_valid_td    = dma_valid_i && !ed && !dma_flush;
 
     // dma flush, early flush to prevent stage loading, save power and increase speed
+    // Todo: replace with register chain
     logic dma_flush;
     logic dma_flush_en;
     logic flush_level0;

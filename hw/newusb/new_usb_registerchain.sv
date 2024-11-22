@@ -24,5 +24,4 @@ module new_usb_registerchain #(
       else       `FFL(register[Width+i-1:i], register[i-1:i-Width], en, '0)
     end
   endgenerate
-
 endmodule

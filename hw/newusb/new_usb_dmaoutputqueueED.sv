@@ -102,12 +102,14 @@ module new_usb_dmaoutputqueueED import new_usb_dmaoutputqueueED_pkg::*; #(
     assign en = dma_handshake && ~dma_handshake_prev;
 
     // secondin registers
+    // Todo: replace with register chain
     `FFL(dword0, dma_data_i, en, 32b'0) // Dword0
     `FFL(dword1, dword0,   en, 32b'0) // Dword1
     `FFL(dword2, dword1,   en, 32b'0) // Dword2
     `FFL(dword3, dword2,   en, 32b'0) // Dword3
 
     // secondin fill propagation
+    // Todo: replace with register chain
     logic propagate_level0;
     logic propagate_level1;
     logic propagate_level2;
@@ -136,7 +138,7 @@ module new_usb_dmaoutputqueueED import new_usb_dmaoutputqueueED_pkg::*; #(
     // stash and secondin muxed into firstin
     assign secondinmux = non_empty_context_switch_p2np ? stash : secondin;
 
-    // The nextED address needs to be updated in firstin in case secondinED has no TD and the next ED is loaded instead.
+    // The nextED address needs to be updated in firstin in case secondinED has no TD and secondin's nextED is loaded instead.
     assign firstin_nextED_overwrite = pop_i || empty_secondin_o;
     `FFL(firstin.status.MPS,     secondinmux.status.MPS,     pop_i, '0) // firstin register
     `FFL(firstin.status.F,       secondinmux.status.F,       pop_i, '0) // firstin register

@@ -123,45 +123,40 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
   logic [27:0] nextis_address;
   
   new_usb_listservice i_listservice (
-  
+    /// control
     .clk_i(soc_clk_i),
-    .rst_i(soc_rst_ni),
-    
-    .start(start),
-    .frame_periodic(frame_periodic),
-  
-    .nextis_valid(nextis_valid),
-    .nextis_ed(nextis_ed),
-    .nextis_type(nextis_type),
-    .nextis_address(nextis_address),
-  
+    .rst_ni(soc_rst_ni),
+    .start_i(start),
+    .frame_periodic_i(frame_periodic),
+    .counter_is_threshold_i(counter_is_threshold),
+    /// next ED or TD and one of the four channel types
+    .nextis_valid_i(nextis_valid),
+    .nextis_ed_i(nextis_ed),
+    .nextis_type_i(nextis_type),
+    .nextis_address_i(nextis_address),
+    .nextis_ready_o(nextis_ready),
+    /// registers
     .controlbulkratio_q(reg2hw.hccontrol.cbsr.q),
-  
-    .periodcurrent_ed_de(newusb_hw2reg.hcperiodcurrented.pced.de),
-    .periodcurrent_ed_d(newusb_hw2reg.hcperiodcurrented.pced.d),
-    .periodcurrent_ed_q(newusb_reg2hw.hcperiodcurrented.pced.q),
-  
-    .controlcurrent_ed_de(newusb_hw2reg.hccontrolcurrented.cced.de),
-    .controlcurrent_ed_d(newusb_hw2reg.hccontrolcurrented.cced.d),
-    .controlcurrent_ed_q(newusb_reg2hw.hccontrolcurrented.cced.q),
-  
-    .bulkcurrent_ed_de(newusb_hw2reg.hcbulkcurrented.bced.de),
-    .bulkcurrent_ed_d(newusb_hw2reg.hcbulkcurrented.bced.d),
-    .bulkcurrent_ed_q(newusb_reg2hw.hcbulkcurrented.bced.q),
-  
-    .hcbulkhead_ed_de(newusb_hw2reg.hcbulkheaded.bhed.de),
-    .hcbulkhead_ed_d(newusb_hw2reg.hcbulkheaded.bhed.d) ,
-    .hcbulkhead_ed_q(newusb_reg2hw.hcbulkheaded.bhed.q),
-  
-    .controlhead_ed_de(newusb_hw2reg.hccontrolheaded.ched.de),
-    .controlhead_ed_d(newusb_hw2reg.hccontrolheaded.ched.d) ,
-    .controlhead_ed_q(newusb_reg2hw.hccontrolheaded.ched.q),
-  
-    .nextreadwriteaddress(),
-    .validdmaaccess(),
-    .current_type(),
-    .sent_head()
-
+    .periodcurrent_ed_de_o(newusb_hw2reg.hcperiodcurrented.pced.de),
+    .periodcurrent_ed_d_o(newusb_hw2reg.hcperiodcurrented.pced.d),
+    .periodcurrent_ed_q_i(newusb_reg2hw.hcperiodcurrented.pced.q),
+    .controlcurrent_ed_de_o(newusb_hw2reg.hccontrolcurrented.cced.de),
+    .controlcurrent_ed_d_o(newusb_hw2reg.hccontrolcurrented.cced.d),
+    .controlcurrent_ed_q_i(newusb_reg2hw.hccontrolcurrented.cced.q),
+    .bulkcurrent_ed_de_o(newusb_hw2reg.hcbulkcurrented.bced.de),
+    .bulkcurrent_ed_d_o(newusb_hw2reg.hcbulkcurrented.bced.d),
+    .bulkcurrent_ed_q_i(newusb_reg2hw.hcbulkcurrented.bced.q),
+    .hcbulkhead_ed_de_o(newusb_hw2reg.hcbulkheaded.bhed.de),
+    .hcbulkhead_ed_d_o(newusb_hw2reg.hcbulkheaded.bhed.d) ,
+    .hcbulkhead_ed_q_i(newusb_reg2hw.hcbulkheaded.bhed.q),
+    .controlhead_ed_de_o(newusb_hw2reg.hccontrolheaded.ched.de),
+    .controlhead_ed_d_o(newusb_hw2reg.hccontrolheaded.ched.d) ,
+    .controlhead_ed_q_i(newusb_reg2hw.hccontrolheaded.ched.q),
+    /// send
+    .nextreadwriteaddress_o(),
+    .validdmaaccess_o(),
+    .current_type_o(),
+    .sent_head_o()
   );
 
   new_usb_unpackdescriptors #(

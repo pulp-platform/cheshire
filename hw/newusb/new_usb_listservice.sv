@@ -17,48 +17,47 @@
 // if interrupt done do periodic_frame 0
 
 module new_usb_listservice import new_usb_ohci_pkg::*; (
-
+  
+  /// control
   input logic clk_i,
   input logic rst_ni,
+  input  logic          start_i, // start list service
+  input  logic          frame_periodic_i, // frame is currently in periodic or nonperiodic zone
+  input  logic          counter_is_threshold_i, // nonperiodic counter full, switch to bulk
 
-  input  logic          frame_periodic, // frame is currently in periodic or nonperiodic zone
-  input  logic          frame_request,  // frame requests new data
-
-  //next ED or TD and one of the four channel types
+  /// next ED or TD and one of the four channel types
   input  logic          nextis_valid_i // needs to be one clock cycle
   input  logic          nextis_ed_i,
   input  channel        nextis_type_i,
   input  logic   [27:0] nextis_address_i,
   output logic          nextis_ready_o, // listservice is ready for nextis
-  
-  input  logic          counter_is_threshold_i, // nonperiodic counter full, switch to bulk
 
-  output logic          controlbulkratio_qe,
+  /// registers
   input  logic   [ 1:0] controlbulkratio_q,
   
-  output logic          periodcurrent_ed_de,
-  output logic   [27:0] periodcurrent_ed_d,
-  input  logic   [27:0] periodcurrent_ed_q,
+  output logic          periodcurrent_ed_de_o,
+  output logic   [27:0] periodcurrent_ed_d_o,
+  input  logic   [27:0] periodcurrent_ed_q_i,
   
-  output logic          controlcurrent_ed_de,
-  output logic   [27:0] controlcurrent_ed_d,
-  input  logic   [27:0] controlcurrent_ed_q,
+  output logic          controlcurrent_ed_de_o,
+  output logic   [27:0] controlcurrent_ed_d_o,
+  input  logic   [27:0] controlcurrent_ed_q_i,
   
-  output logic          bulkcurrent_ed_de,
-  output logic   [27:0] bulkcurrent_ed_d,
-  input  logic   [27:0] bulkcurrent_ed_q,
+  output logic          bulkcurrent_ed_de_o,
+  output logic   [27:0] bulkcurrent_ed_d_o,
+  input  logic   [27:0] bulkcurrent_ed_q_i,
   
-  output logic          hcbulkhead_ed_de,
-  output logic   [27:0] hcbulkhead_ed_d,
-  input  logic   [27:0] hcbulkhead_ed_q,
+  output logic          hcbulkhead_ed_de_o,
+  output logic   [27:0] hcbulkhead_ed_d_o,
+  input  logic   [27:0] hcbulkhead_ed_q_i,
   
-  output logic          controlhead_ed_de,
-  output logic   [27:0] controlhead_ed_d,
-  input  logic   [27:0] controlhead_ed_q,
+  output logic          controlhead_ed_de_o,
+  output logic   [27:0] controlhead_ed_d_o,
+  input  logic   [27:0] controlhead_ed_q_i,
   
+  /// send
   output logic   [27:0] nextreadwriteaddress_o,
   output logic          validdmaaccess_o,
-  output logic          dmawriteorread_o, // write high, read low
   output channel        current_type_o,
   output logic          current_ed_o,
 
