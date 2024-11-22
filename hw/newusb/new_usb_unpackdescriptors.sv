@@ -118,15 +118,14 @@ import new_usb_ohci_pkg::*; import new_usb_dmaoutputqueueED_pkg::*; #(
     logic rst_n_flush;
     logic rst_n_dma_flush;
     assign dma_flush_en    = doublehead_invalid; // Todo: add other flush reasons
-    assign rst_n_flush     = dma_flush && rst_ni; // equivalent to !(!dma_flush || rst_i )
-    assign rst_n_dma_flush = !flush_level3; // equivalent to !(flush_level3)
+    assign rst_n_flush     = dma_flush && rst_ni; // equivalent to !(!dma_flush || rst_i)
+    assign rst_n_dma_flush = flush_level3 && rst_ni; // equivalent to !(!flush_level3 || rst_i)
     `FFL(flush_level0, 1'b1,         flush_en,     1b'0, clk_i, rst_n_flush) // flushlevel0
     `FFL(flush_level1, flush_level0, flush_en,     1b'0, clk_i, rst_n_flush) // flushlevel1
     `FFL(flush_level2, flush_level1, flush_en,     1b'0, clk_i, rst_n_flush) // flushlevel2
     `FFL(flush_level3, flush_level2, flush_en,     1b'0, clk_i, rst_n_flush) // flushlevel3
     `FFL(dma_flush,    1'b1,         dma_flush_en, 1b'0, clk_i, rst_n_dma_flush) // dma_flush
 
-    // note: could maybe used as one with twin inside outputqueueED
     // create flush enable, one pulse for one handshake
     logic  flush_en;
     logic  dma_flush_handshake;
@@ -135,14 +134,14 @@ import new_usb_ohci_pkg::*; import new_usb_dmaoutputqueueED_pkg::*; #(
     `FF(dma_flush_handshake_prev, dma_flush_handshake, 1'b0)
     assign flush_en = dma_flush_handshake && ~dma_flush_handshake_prev;
 
-    // generate pop one cycle delayed to served_td
+    // generate pop 3 cycles delayed to served_td
     logic pop_handshake;
     logic pop_handshake_prev;
     assign pop_handshake = pop_ready && served_td && nextis_ready_i;
     `FF(pop_handshake_prev, pop_handshake, 1'b0)
-    assign pop_very_early = pop_handshake && ~pop_handshake_prev;
-    `FF(pop_early, pop_very_early, 1'b0)
-    `FF(pop, pop_early, 1'b0)
+    assign pop_very_early = pop_handshake && ~pop_handshake_prev; // pop_very_early one delayed
+    `FF(pop_early, pop_very_early, 1'b0) // pop_early two delayed
+    `FF(pop, pop_early, 1'b0) // pop three delayed
 
     // dma output queue endpoint descriptor
     logic pop;

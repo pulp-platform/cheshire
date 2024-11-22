@@ -116,13 +116,21 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
   assign context_switch_n2np = ~frame_periodic && frame_periodic_prev; // one cyble high periodic to nonperiodic
 
   // listservice
-  logic        start; // start if USB goes to operational
-  logic        counter_is_threshold;
-  logic        nextis_valid;
-  logic        nextis_ed;
-  channel      nextis_type;
-  logic [27:0] nextis_address;
-  logic        nextis_ready;
+  logic               start; // start if USB goes to operational
+  logic               counter_is_threshold;
+  logic               nextis_valid;
+  logic               nextis_ed;
+  channel             nextis_type;
+  logic [27:0]        nextis_address;
+  logic               nextis_ready;
+  endpoint_descriptor processed;
+  logic               processed_ed_store;
+  store_type          processed_store_type;
+  logic [27:0]        newcurrentED_o,
+  logic               newcurrentED_valid_o,
+  logic               id_valid;
+  logic [2:0]         id_type;
+  logic               sent_head;
 
   new_usb_listservice i_listservice (
     /// control
@@ -137,6 +145,16 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
     .nextis_type_i(nextis_type),
     .nextis_address_i(nextis_address),
     .nextis_ready_o(nextis_ready),
+    /// processed
+    .processed,
+    .processed_ed_store_i(processed_ed_store), // store request
+    .processed_store_type_i(processed_store_type), // isochronousTD, generalTD, ED 
+    /// newcurrentED
+    .newcurrentED_i(newcurrentED),
+    .newcurrentED_valid_i(newcurrentED_valid),
+    /// ID
+    .id_valid_o(id_valid),
+    .id_type_o(id_type),
     /// registers
     .controlbulkratio_q(reg2hw.hccontrol.cbsr.q),
     .periodcurrent_ed_de_o(newusb_hw2reg.hcperiodcurrented.pced.de),
@@ -158,42 +176,42 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
     .nextreadwriteaddress_o(),
     .validdmaaccess_o(),
     .current_type_o(),
-    .sent_head_o()
+    .sent_head_o(sent_head)
   );
 
   new_usb_unpackdescriptors #(
     .AxiDataWidth(AxiDataWidth)
     ) i_new_usb_unpackdescriptors (
     /// control
-    .clk_i,
-    .rst_ni,
+    .clk_i(soc_clk_i),
+    .rst_ni(soc_rst_ni),
     .counter_is_threshold_o(counter_is_threshold),
     .cbsr_i(reg2hw.hccontrol.cbsr.q),
     /// nextis
-    .nextis_valid_o // needs to be one clock cycle
-    .nextis_ed_o, // 0 if empty ed rerequest or td
-    .nextis_type_o,
-    .nextis_address_o,
-    .nextis_ready_i,
+    .nextis_valid_o(nextis_valid) // needs to be one clock cycle
+    .nextis_ed_o(nextis_ed), // 0 if empty ed rerequest or td
+    .nextis_type_o(nextis_type),
+    .nextis_address_o(nextis_address),
+    .nextis_ready_i(nextis_ready),
     /// processed
     .processed,
-    .processed_ed_store_o, // store request
-    .processed_store_type_o, // isochronousTD, generalTD, ED 
+    .processed_ed_store_o(processed_ed_store), // store request
+    .processed_store_type_o(processed_store_type), // isochronousTD, generalTD, ED 
     /// newcurrentED
-    .newcurrentED_o,
-    .newcurrentED_valid_o,
+    .newcurrentED_o(newcurrentED),
+    .newcurrentED_valid_o(newcurrentED_valid),
     /// ID
-    .id_valid_i,
-    .id_type_i,
+    .id_valid_i(id_valid),
+    .id_type_i(id_type),
     /// DMA
-    .dma_data_i,
-    .dma_valid_i,
-    .dma_ready_o,
+    .dma_data_i(),
+    .dma_valid_i(),
+    .dma_ready_o(),
     /// periodic
     .context_switch_np2p_i,
     .context_switch_p2np_i,
     /// head state
-    .sent_head_i
+    .sent_head_i(sent_head)
 );
   
 
