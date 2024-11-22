@@ -169,30 +169,30 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
     .rst_ni,
     .counter_is_threshold_o(counter_is_threshold),
     .cbsr_i(reg2hw.hccontrol.cbsr.q),
-
+    /// nextis
     .nextis_valid_o // needs to be one clock cycle
     .nextis_ed_o, // 0 if empty ed rerequest or td
     .nextis_type_o,
     .nextis_address_o,
     .nextis_ready_i,
-
+    /// processed
     .processed,
     .processed_ed_store_o, // store request
     .processed_store_type_o, // isochronousTD, generalTD, ED 
-
+    /// newcurrentED
     .newcurrentED_o,
     .newcurrentED_valid_o,
-    
+    /// ID
     .id_valid_i,
     .id_type_i,
-    
+    /// DMA
     .dma_data_i,
     .dma_valid_i,
     .dma_ready_o,
-   
+    /// periodic
     .context_switch_np2p_i,
     .context_switch_p2np_i,
-
+    /// head state
     .sent_head_i
 );
   

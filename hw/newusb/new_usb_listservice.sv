@@ -19,8 +19,8 @@
 module new_usb_listservice import new_usb_ohci_pkg::*; (
   
   /// control
-  input logic clk_i,
-  input logic rst_ni,
+  input  logic          clk_i,
+  input  logic          rst_ni,
   input  logic          start_i, // start list service
   input  logic          frame_periodic_i, // frame is currently in periodic or nonperiodic zone
   input  logic          counter_is_threshold_i, // nonperiodic counter full, switch to bulk

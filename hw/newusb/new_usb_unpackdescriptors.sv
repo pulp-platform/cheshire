@@ -16,24 +16,25 @@
 // Todo: only one package flying
 // Todo: TD management in ED, overwrite HeadP if servedTD, halted or toggle Carry?
 
-module new_usb_unpackdescriptors import new_usb_ohci_pkg::*; #(
+module new_usb_unpackdescriptors 
+import new_usb_ohci_pkg::*; import new_usb_dmaoutputqueueED_pkg::*; #(
     parameter int unsigned AxiDataWidth = 0
 )(
     /// control
-    input logic clk_i,
-    input logic rst_ni,
+    input  logic clk_i,
+    input  logic rst_ni,
     input  logic [1:0] cbsr_i,
     output logic counter_is_threshold_o,
     /// next address element
-    output logic          nextis_valid_o // needs to be one clock cycle
-    output logic          nextis_ed_o, // 0 if empty ed rerequest or td
-    output channel        nextis_type_o,
-    output logic [27:0]   nextis_address_o,
-    input  logic          nextis_ready_i,
+    output logic        nextis_valid_o // needs to be one clock cycle
+    output logic        nextis_ed_o, // 0 if empty ed rerequest or td
+    output channel      nextis_type_o,
+    output logic [27:0] nextis_address_o,
+    input  logic        nextis_ready_i,
     /// Processed ED with data to write back, get address from currentED
-    output new_usb_dmaoutputqueueED_pkg::endpoint_descriptor processed,
-    output logic                                             processed_ed_store_o, // store request
-    output store_type                                        processed_store_type_o, // isochronousTD, generalTD, ED 
+    output endpoint_descriptor processed,
+    output logic               processed_ed_store_o, // store request
+    output store_type          processed_store_type_o, // isochronousTD, generalTD, ED 
     /// new currentED, updated after processed accessed it
     output logic [27:0] newcurrentED_o,
     output logic        newcurrentED_valid_o,
