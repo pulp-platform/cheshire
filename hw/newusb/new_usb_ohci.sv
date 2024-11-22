@@ -116,12 +116,14 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
   assign context_switch_n2np = ~frame_periodic && frame_periodic_prev; // one cyble high periodic to nonperiodic
 
   // listservice
-  logic   start; // start if USB goes to operational
-  logic   nextis_valid;
-  logic   nextis_ed;
-  channel nextis_type;
+  logic        start; // start if USB goes to operational
+  logic        counter_is_threshold;
+  logic        nextis_valid;
+  logic        nextis_ed;
+  channel      nextis_type;
   logic [27:0] nextis_address;
-  
+  logic        nextis_ready;
+
   new_usb_listservice i_listservice (
     /// control
     .clk_i(soc_clk_i),
@@ -165,7 +167,7 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
     /// control
     .clk_i,
     .rst_ni,
-    .counter_is_threshold_o,
+    .counter_is_threshold_o(counter_is_threshold),
     .cbsr_i(reg2hw.hccontrol.cbsr.q),
 
     .nextis_valid_o // needs to be one clock cycle
