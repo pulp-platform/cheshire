@@ -435,7 +435,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
 
 `ifdef USE_HYPERBUS
   // Parameters
-  localparam int unsigned HypNumPhys      = 2;  // War vorher auf 2
+  localparam int unsigned HypNumPhys      = 2;
   localparam int unsigned HypNumChips     = 2;
   localparam int unsigned HypRstChipBytes = 8*1024;   // S27KS0641 is 64 Mib (Mebibit)
   
@@ -462,7 +462,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   hyperbus #(
     .NumChips         ( HypNumPhys ),
     .NumPhys          ( HypNumChips ),
-    .IsClockODelayed  ( 0 ),    // Urspruenglich auf 0 gewesen
+    .IsClockODelayed  ( 0 ),
     .AxiAddrWidth     ( FPGACfg.AddrWidth    ),
     .AxiDataWidth     ( FPGACfg.AxiDataWidth ),
     .AxiIdWidth       ( $bits(axi_llc_id_t)      ),
@@ -480,7 +480,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .reg_rsp_t        ( reg_rsp_t ),
     .axi_rule_t       ( hyper_addr_rule_t ),
     .RstChipBase      ( 32'(FPGACfg.LlcOutRegionStart) ),
-    .RstChipSpace     ( 32'(HypRstChipBytes) )   // durch Parameter
+    .RstChipSpace     ( 32'(HypRstChipBytes) )
   ) i_hyperbus (
     // WARNING: Keeping system and PHY synchronous works only with careful constraints.
     // DO NOT copy-paste this to other projects without consideration; you were warned.
