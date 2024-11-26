@@ -14,31 +14,7 @@
 // Todo: status bits functionality
 // Todo: stashing for bulk control?
 
-package new_usb_dmaoutputqueueED_pkg;
-
-  typedef struct packed {
-    struct packed {
-      logic [10:0]  MPS; // 26:16
-      logic         F; // 15
-      logic         K; // 14
-      logic         S; // 13
-      logic [12:11] D; // 12:11
-      logic [10:7]  EN; // 10:7
-      logic [6:0]   FA; // 6:0
-    } status;
-    struct packed {
-      logic [27:0]  address; // 31:4
-      logic         C; // 1
-      logic         H; // 0
-    } headTD;
-    struct packed {
-      logic [27:0]  address; // 31:4
-    } nextED;
-  } endpoint_descriptor;
-
-endpackage
-
-module new_usb_dmaoutputqueueED import new_usb_dmaoutputqueueED_pkg::*; #(
+module new_usb_dmaoutputqueueED import new_usb_ohci_pkg::*; #(
     parameter int unsigned AxiDataWidth = 0,
     parameter int unsigned DmaOutputQueueStages = 0
 )(

@@ -8,7 +8,7 @@
 /// and sends the next linked addresses back to listservice. 
 /// The address field inside the secondinED in the two-stage queue is sent to listservice. 
 /// The address of the first ED gets written into the respective current ED register as
-/// soon it starts being processed.
+/// soon it has been processed, two cycles before pop.
 /// The module takes firstinED in the queue and sends its first TD address to listservice.
 /// After processing the TD, it proceds to the next ED.
 
@@ -74,7 +74,7 @@ import new_usb_ohci_pkg::*; import new_usb_dmaoutputqueueED_pkg::*; #(
 
     /// Exit sequence: served_td -> processed -> newcurrentED -> pop
     // processed
-    assign processed.headTD.address = nextTD;
+    assign processed.headTD.address = nextTD; //nextTD from servedTD
     assign processed_store_type_o = ED; // Todo:derive from ID stack firstin
     assign processed_ed_store_o = pop_very_early;
     // Todo: halt

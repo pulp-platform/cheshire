@@ -6,25 +6,9 @@
 //
 /// Output queue of the DMA for general transfer descriptors 4x32 bit buffering for isochronous 8x32 
 /// Todo: implement ISOCHRONOUS
-/// Todo: implement listservicing
+/// Todo: implement listservicing TDs
 
-package new_usb_dmaoutputqueueTD_pkg;
-
-  typedef struct packed {
-    struct packed {
-      logic [27:0]  address;
-    } nextTD;
-  } gen_transfer_descriptor;
-
-  typedef struct packed {
-    struct packed {
-      logic [27:0]  address;
-    } nextTD;
-  } iso_transfer_descriptor;
-
-endpackage
-
-module new_usb_dmaoutputqueueTD import new_usb_dmaoutputqueueTD_pkg::*; (
+module new_usb_dmaoutputqueueTD import new_usb_ohci_pkg::*; (
     /// control
     input  logic clk_i,
     input  logic rst_ni,

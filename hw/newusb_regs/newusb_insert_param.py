@@ -59,7 +59,7 @@ def extract_localparams(filename):
 
     return localparams
 
-localparams = extract_localparams("hw/newusb/new_usb_ohci.sv")
+localparams = extract_localparams("hw/newusb/new_usb_ohci_pkg.sv")
 localparams_without_macros = replace_macros(localparams)
 
 '''

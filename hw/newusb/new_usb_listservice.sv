@@ -12,9 +12,6 @@
 // dma init x axi
 // HCAA 
 
-  
-// Todo: implement interrupt done, back to nonperiodic
-// if interrupt done do periodic_frame 0
 
 module new_usb_listservice import new_usb_ohci_pkg::*; (
   

@@ -8,48 +8,6 @@
 /// The config port is adapted to 32b Regbus, the DMA port to parametric AXI4.
 /// The IOs are bundled into PULP structs and arrays to simplify connection.
 
-// Changes inside this package need to be confirmed with a make hw-all, 
-// because the package values need to update the configuration inside newusb_regs.hjson.
-package new_usb_ohci_pkg;
-  
-  typedef enum int unsigned {
-    OFF = 0,
-    GLOBAL = 1,
-    INDIVIDUAL = 2
-  } state_activate;
-
-  typedef enum int unsigned {
-    DISABLE = 0,
-    ENABLE = 1
-  } state_permit;
-
-  typedef enum logic [1:0] {
-    BULK = 2'b00,
-    CONTROL = 2'b01,
-    ISOCHRONOUS = 2'b10,
-    INTERRUPT = 2'11
-  } channel;
-
-  typedef enum logic [1:0] {
-    ED = 2'b00,
-    GENTD = 2'b01,
-    ISOTD = 2'b10
-  } store_type;
-  
-  // OHCI supports between 1-15 ports
-  localparam int unsigned   NumPhyPorts          = 2;
-  localparam state_activate OverProtect          = OFF; // no overcurrent protection implemented yet
-  localparam state_activate PowerSwitching       = OFF; // no power switching implemented yet
-  localparam state_permit   InterruptRouting     = DISABLE; // no system management interrupt (SMI) implemented yet
-  localparam state_permit   RemoteWakeup         = DISABLE; // no remote wakeup implemented yet
-  localparam state_permit   OwnershipChange      = DISABLE; // no ownership change implemented yet
-  localparam int unsigned   FifoDepthPort        = 1024; // test value
-  localparam int unsigned   DmaLength            = 128; // test value
-  
-  // Todo: Maybe Crc16 input Byte size parameter with selectable parallel/pipelined processing, lookup table?
-
-endpackage
-
 module new_usb_ohci import new_usb_ohci_pkg::*; #(
   /// DMA manager port parameters
   parameter int unsigned AxiMaxReads   = 0,
