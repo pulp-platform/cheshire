@@ -7,5 +7,6 @@ Fabian Hauser <fhauser@student.ethz.ch>
 Address memory map for the testbench. One Address bit per byte in memory.
 END is the first address not allocated and hence will be invalid when called.
 
+@0x0000A000 0000000A 0000000B 0000000C 0000000D
 @0x0000ABCD 00000001 00000002 00000003 00000004
 END @0x0000ABF0

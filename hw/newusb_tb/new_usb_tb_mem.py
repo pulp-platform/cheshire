@@ -88,6 +88,6 @@ def process_file(input_file, output_file):
         print(f"Unexpected error: {e}")
 
 # Example usage:
-process_file('new_usb_tb_addr_mem.txt', 'file2.mem')
+process_file('new_usb_tb_addr_mem.txt', 'new_usb_tb_mem.mem')
 
 

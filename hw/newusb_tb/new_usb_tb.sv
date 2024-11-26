@@ -17,6 +17,10 @@ module new_usb_tb import new_usb_ohci_pkg::*; #(
   // input  logic soc_rst_ni,
 );
 
+initial begin
+  $readmemh("new_usb_tb_mem.mem", i_axi_sim_mem.mem);
+end
+
 new_usb_ohci #(
   /// DMA manager port parameters
   .AxiMaxReads(),
@@ -63,5 +67,7 @@ axi_sim_mem #(
 
 );
   
+//Todo:regbusdriver
+
 
 endmodule
