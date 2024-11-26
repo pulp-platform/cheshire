@@ -88,7 +88,7 @@ $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv:
 # NewUSB registers
 newusb_regs_all: $(CHS_ROOT)/hw/newusb_regs/newusb_reg_pkg.sv $(CHS_ROOT)/hw/newusb_regs/newusb_reg_top.sv
 
-$(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson: $(CHS_ROOT)/hw/newusb_regs/newusb_regs_template.hjson
+$(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson: $(CHS_ROOT)/hw/newusb_regs/newusb_regs_template.hjson $(CHS_ROOT)/hw/newusb/new_usb_ohci_pkg.sv
 	python $(CHS_ROOT)/hw/newusb_regs/newusb_insert_param.py
 
 $(CHS_ROOT)/hw/newusb_regs/newusb_reg_pkg.sv $(CHS_ROOT)/hw/newusb_regs/newusb_reg_top.sv: $(CHS_ROOT)/hw/newusb_regs/newusb_regs.hjson
