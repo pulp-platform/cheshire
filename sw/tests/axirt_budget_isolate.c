@@ -38,7 +38,7 @@
 int main(void) {
 
     // Immediately return an error if DMA is not present in cheshire
-    CHECK_ASSERT(-1, !chs_hw_feature_present(CHESHIRE_HW_FEATURES_DMA_BIT));
+    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_HW_FEATURES_DMA_BIT));
 
     uint32_t cheshire_num_harts = *reg32(&__base_regs, CHESHIRE_NUM_INT_HARTS_REG_OFFSET);
 
