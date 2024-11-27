@@ -296,6 +296,7 @@ package cheshire_pkg;
     aw_bt [2**MaxCoresWidth-1:0] cores;
     aw_bt dbg;
     aw_bt dma;
+    aw_bt dma_ptw;
     aw_bt slink;
     aw_bt vga;
     aw_bt usb;
@@ -309,6 +310,7 @@ package cheshire_pkg;
     for (int j = 0; j < cfg.NumCores; j++) begin ret.cores[i] = i; i++; end
     ret.dbg = i;
     if (cfg.Dma)        begin i++; ret.dma   = i; end
+    if (cfg.Dma)        begin i++; ret.dma_ptw = i; end
     if (cfg.SerialLink) begin i++; ret.slink = i; end
     if (cfg.Vga)        begin i++; ret.vga   = i; end
     if (cfg.Usb)        begin i++; ret.usb   = i; end

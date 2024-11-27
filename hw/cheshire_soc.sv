@@ -1414,12 +1414,20 @@ module cheshire_soc import cheshire_pkg::*; #(
     );
 
     axi_mst_req_t axi_dma_req;
+    axi_mst_req_t axi_ptw_req;
 
     always_comb begin
       axi_in_req[AxiIn.dma]         = axi_dma_req;
       axi_in_req[AxiIn.dma].aw.user = Cfg.AxiUserDefault;
       axi_in_req[AxiIn.dma].w.user  = Cfg.AxiUserDefault;
       axi_in_req[AxiIn.dma].ar.user = Cfg.AxiUserDefault;
+    end
+
+    always_comb begin
+      axi_in_req[AxiIn.dma_ptw]         = axi_ptw_req;
+      axi_in_req[AxiIn.dma_ptw].aw.user = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dma_ptw].w.user  = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dma_ptw].ar.user = Cfg.AxiUserDefault;
     end
 
     cheshire_idma_wrap #(
@@ -1443,6 +1451,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .testmode_i     ( test_mode_i ),
       .axi_mst_req_o  ( axi_dma_req           ),
       .axi_mst_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
+      .axi_ptw_req_o  ( axi_ptw_req           ),
+      .axi_ptw_rsp_i  ( axi_in_rsp[AxiIn.dma_ptw] ),
       .axi_slv_req_i  ( dma_cut_req ),
       .axi_slv_rsp_o  ( dma_cut_rsp )
     );
