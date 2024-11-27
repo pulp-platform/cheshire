@@ -127,6 +127,13 @@ module cheshire_idma_wrap #(
   axi_mst_req_t axi_read_req, axi_write_req;
   axi_mst_rsp_t axi_read_rsp, axi_write_rsp;
 
+  // sMMU Signal
+  logic         smmu_f_bare;
+  logic         smmu_f_exe;
+  logic         smmu_f_user;
+  logic         smmu_f_update_tlb;
+  logic [63:0]  smmu_pt_root_adr;
+
   axi_to_reg #(
     .ADDR_WIDTH ( AxiAddrWidth  ),
     .DATA_WIDTH ( AxiDataWidth  ),
@@ -149,25 +156,30 @@ module cheshire_idma_wrap #(
   if (!IsTwoD) begin : gen_1d
 
     idma_reg64_1d #(
-      .NumRegs        ( 32'd1 ),
-      .NumStreams     ( 32'd1 ),
-      .IdCounterWidth ( IdCounterWidth ),
-      .reg_req_t      ( dma_regs_req_t ),
-      .reg_rsp_t      ( dma_regs_rsp_t ),
-      .dma_req_t      ( idma_req_t )
+      .NumRegs            ( 32'd1 ),
+      .NumStreams         ( 32'd1 ),
+      .IdCounterWidth     ( IdCounterWidth ),
+      .reg_req_t          ( dma_regs_req_t ),
+      .reg_rsp_t          ( dma_regs_rsp_t ),
+      .dma_req_t          ( idma_req_t )
     ) i_dma_frontend_1d (
       .clk_i,
       .rst_ni,
-      .dma_ctrl_req_i ( dma_reg_req ),
-      .dma_ctrl_rsp_o ( dma_reg_rsp ),
-      .dma_req_o      ( burst_req_d ),
-      .req_valid_o    ( burst_req_valid_d  ),
-      .req_ready_i    ( burst_req_ready_d  ),
-      .next_id_i      ( next_id ),
-      .stream_idx_o   ( ),
-      .done_id_i      ( done_id ),
-      .busy_i         ( idma_busy ),
-      .midend_busy_i  ( 1'b0 )
+      .dma_ctrl_req_i     ( dma_reg_req ),
+      .dma_ctrl_rsp_o     ( dma_reg_rsp ),
+      .dma_req_o          ( burst_req_d ),
+      .req_valid_o        ( burst_req_valid_d  ),
+      .req_ready_i        ( burst_req_ready_d  ),
+      .next_id_i          ( next_id ),
+      .stream_idx_o       ( ),
+      .smmu_f_bare        ( smmu_f_bare ),
+      .smmu_f_exe         ( smmu_f_exe ),
+      .smmu_f_user        ( smmu_f_user ),
+      .smmu_f_update_tlb  ( smmu_f_update_tlb ),
+      .smmu_pt_root_adr   ( smmu_pt_root_adr ),
+      .done_id_i          ( done_id ),
+      .busy_i             ( idma_busy ),
+      .midend_busy_i      ( 1'b0 )
     );
 
     stream_fifo_optimal_wrap #(
@@ -295,15 +307,7 @@ module cheshire_idma_wrap #(
     - How can i be 100% sure that the size of the src/dst adresses and length matches?
     - What should we do with the idma_rsp? No analysis is done in the sMMU!
     - Aufpassen mit den Längen wie viel datan man z.b. lopieren kann! Ich habe von Param:0 vector erstellt, thomas von Param-1:0
-    - Error handler ein kleines Problem jetzt --> StreamMMU erkennt nur eigene fehler (Hat einen Externen Fehler Eingang, welcher einfach ein Handshake ist)
-      - Grund: SMMU so unabhänig wie möglich von der AussenWelt!
-        - Lsg 1: Den Fehler einfach zusätzlich mit einem Fall Through Register an den input der idma Frontend weitergeben - Dann stimmt zwar die genaue position des fehlers nicht mehr ab sch***egal
-                  Wir müssen ja nur die Response Fifoisieren falls ein Fehler endeckt wird, sonst egal
-        - Lsg 2: Brute Force Lösung mit einem simplen Logic Block - Sobald dass ein Fehler endeckt wird, wird dieser Eingang auf 1 gesetzt
-          Dann muss jedoch noch eine Flush Logic Implmentiert werden!
-        - Lsg 3: Ignore den Fehler einfach --> Braucht das Frontend diesen wirklich ?!?
-    - Wie machen wir das mit dem Typedef nochmas???
-
+    - Error handler: First Error will be piped through with a fall-through-register. Otherwise the latest DMA Response will be feed trought
   */
 
   /* Local Parameter */
@@ -371,10 +375,10 @@ module cheshire_idma_wrap #(
     src: burst_req.src_addr,
     dst: burst_req.dst_addr,
     length: burst_req.length,
-    f_exe: 1'b0,
-    f_user: 1'b0,
-    f_bare: 1'b0,
-    f_update_tlb: 1'b0,
+    f_exe: smmu_f_exe,
+    f_user: smmu_f_user,
+    f_bare: smmu_f_bare,
+    f_update_tlb: smmu_f_update_tlb,
     add_infos: burst_req.opt
   };
 
@@ -473,7 +477,7 @@ module cheshire_idma_wrap #(
     .ret_ready_i                            (idma_multi_page_resp_ready),
     .axi_resp_i                             ( axi_ptw_rsp_i ),
     .axi_req_o                              ( axi_ptw_req_o ),
-    .pt_src_i                               (44'h8_0000),
+    .pt_src_i                               (smmu_pt_root_adr[sMMU_PAWidth-1:sMMU_PageSize]), // Only slice the ppn from the pt root register (discard all bits above PASize & below page table)
     .fe_error_o                             (),
     .fe_error_valid_o                       (),
     .fe_error_ready_i                       (1'b0),
