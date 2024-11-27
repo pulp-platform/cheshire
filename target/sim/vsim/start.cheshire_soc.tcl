@@ -24,7 +24,7 @@ if { ![info exists CXX_PATH] } {
 # Set voptargs only if not already set to make overridable.
 # Default on fast simulation flags.
 if { ![info exists VOPTARGS] } {
-    set VOPTARGS "-O5 +acc=p+tb_cheshire_soc. +noacc=p+cheshire_soc. +acc=r+stream_xbar"
+    set VOPTARGS "+acc"
 }
 
 set flags "-permissive -suppress 3009 -suppress 8386 -error 7 -cpppath ${CXX_PATH} "
