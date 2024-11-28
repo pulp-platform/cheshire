@@ -17,6 +17,14 @@
 #include "util.h"
 
 int main(void) {
+    // Immediately return an error if AXI_REALM, DMA, or UART are not present
+    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_HW_FEATURES_AXIRT_BIT));
+    CHECK_ASSERT(-2, chs_hw_feature_present(CHESHIRE_HW_FEATURES_DMA_BIT));
+    CHECK_ASSERT(-3, chs_hw_feature_present(CHESHIRE_HW_FEATURES_UART_BIT));
+
+    // This test requires at least two subordinate regions
+    CHECK_ASSERT(-4, AXI_RT_PARAM_NUM_SUB >= 2);
+
     char str[] = "Hello AXI-RT!\r\n";
     uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
     uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
