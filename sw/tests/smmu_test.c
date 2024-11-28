@@ -50,7 +50,7 @@ int main(void) {
     sys_dma_memcpy((uintptr_t)(void *)dst, (uintptr_t)(void *)src, sizeof(src_cached));
 
     // Write Destination Adress
-    uart_write_str(&__base_uart, dst, sizeof(dst));
+    uart_write_str(&__base_uart, dst, sizeof(dst_cached));
     uart_write_flush(&__base_uart);
 
     // Write the end Message

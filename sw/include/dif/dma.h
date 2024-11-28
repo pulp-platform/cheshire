@@ -137,12 +137,12 @@
     } \
 \
     inline void NAME##_dma_smmu_config(uint64_t exe, uint64_t bare, uint64_t update_tlb, uint64_t user){ \
-        *(NAME##_dma_smmu_conf_ptr()) = ((update_tlb & 1) << 3) + ((bare & 1) << 2) + ((user & 1) << 1) + (exe & 1); \
+        *(NAME##_dma_smmu_conf_ptr()) = ((update_tlb & 1) << IDMA_REG64_2D_SMMU_F_UPDATE_TLB_BIT) | ((bare & 1) << IDMA_REG64_2D_SMMU_F_BARE_BIT) | ((user & 1) << IDMA_REG64_2D_SMMU_F_USER_BIT) | ((exe & 1) << IDMA_REG64_2D_SMMU_F_EXE_BIT); \
     } \
 \
     inline void NAME##_dma_smmu_set_pt_root(uint64_t root_adr){ \
-        *(NAME##_dma_smmu_pt_root_high_ptr()) = (uint32_t) ((root_adr >> 32) & 0x00000000FFFFFFFF); \
-        *(NAME##_dma_smmu_pt_root_low_ptr()) = (uint32_t) (root_adr & 0x00000000FFFFFFFF); \
+        *(NAME##_dma_smmu_pt_root_high_ptr()) = (uint64_t) ((root_adr >> 32) & 0x00000000FFFFFFFF); \
+        *(NAME##_dma_smmu_pt_root_low_ptr()) = (uint64_t) (root_adr & 0x00000000FFFFFFFF); \
     } \
 \
     inline uint64_t NAME##_dma_get_status(void) { \

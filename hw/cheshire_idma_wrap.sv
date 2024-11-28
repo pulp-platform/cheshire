@@ -343,7 +343,7 @@ module cheshire_idma_wrap #(
   localparam int unsigned sMMU_FillPolicyTLB = 1; //
   localparam int unsigned sMMU_ReplacementPolicyTLB = 1;
 
-  `SMMU_TYPEDEF_GEN_SV57(va_t, pa_t, pte_t)
+  `SMMU_TYPEDEF_GEN_SV48(va_t, pa_t, pte_t)
   `SMMU_TYPEDEF_GEN_DEFAULT(va_t, pa_t, options_t, sMMU_StreamIDSize, sMMU_MaxByteTransferWidth, sMMU_MaxPageTransferWidth, sMMU_PageSize)
 
   /* Variable */
