@@ -29,11 +29,11 @@ int main(void) {
     uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
     uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
 
-    // enable and configure axi rt
+    // Enable and configure AXI REALM
     __axirt_claim(1, 1);
     __axirt_set_len_limit_group(2, 0);
 
-    // configure CVA6
+    // Configure CVA6 core 0
     __axirt_set_region(0, 0xffffffff, 0, 0);
     __axirt_set_region(0x100000000, 0xffffffffffffffff, 1, 0);
     __axirt_set_budget(8, 0, 0);
@@ -41,19 +41,20 @@ int main(void) {
     __axirt_set_period(100, 0, 0);
     __axirt_set_period(100, 1, 0);
 
-    // configure DMA
-    __axirt_set_region(0, 0xffffffff, 0, 2);
-    __axirt_set_region(0x100000000, 0xffffffffffffffff, 1, 2);
-    __axirt_set_budget(0x10000000, 0, 2);
-    __axirt_set_budget(0x10000000, 1, 2);
-    __axirt_set_period(0x10000000, 0, 2);
-    __axirt_set_period(0x10000000, 1, 2);
+    // Configure DMA
+    int chs_dma_id = *reg32(&__base_regs, CHESHIRE_NUM_INT_HARTS_REG_OFFSET) + 1;
+    __axirt_set_region(0, 0xffffffff, 0, chs_dma_id);
+    __axirt_set_region(0x100000000, 0xffffffffffffffff, 1, chs_dma_id);
+    __axirt_set_budget(0x10000000, 0, chs_dma_id);
+    __axirt_set_budget(0x10000000, 1, chs_dma_id);
+    __axirt_set_period(0x10000000, 0, chs_dma_id);
+    __axirt_set_period(0x10000000, 1, chs_dma_id);
 
-    // enable RT unit for DMA and CVA6
+    // Enable RT unit for DMA and CVA6 core 0
     __axirt_enable(0x5);
 
-    // configure uart and write msg
-    uart_init(&__base_uart, reset_freq, 115200);
+    // Configure UART and write message
+    uart_init(&__base_uart, reset_freq, __BOOT_BAUDRATE);
     uart_write_str(&__base_uart, str, sizeof(str));
     uart_write_flush(&__base_uart);
     return 0;
