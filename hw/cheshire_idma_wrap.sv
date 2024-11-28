@@ -233,6 +233,11 @@ module cheshire_idma_wrap #(
       .req_ready_i    ( idma_nd_req_ready_d ),
       .next_id_i      ( next_id ),
       .stream_idx_o   (         ),
+      .smmu_f_bare        ( smmu_f_bare ),
+      .smmu_f_exe         ( smmu_f_exe ),
+      .smmu_f_user        ( smmu_f_user ),
+      .smmu_f_update_tlb  ( smmu_f_update_tlb ),
+      .smmu_pt_root_adr   ( smmu_pt_root_adr ),
       .done_id_i      ( done_id ),
       .busy_i         ( busy    ),
       .midend_busy_i  ( me_busy )
