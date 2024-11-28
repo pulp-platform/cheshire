@@ -51,8 +51,8 @@
                                          uint64_t dst_stride, uint64_t src_stride, \
                                          uint64_t num_reps); \
 \
-    extern volatile void NAME##_dma_smmu_config(uint64_t exe, uint64_t bare, uint64_t update_tlb, uint64_t user); \
-    extern volatile void NAME##_dma_smmu_set_pt_root(uint64_t root_adr); \
+    extern void NAME##_dma_smmu_config(uint64_t exe, uint64_t bare, uint64_t update_tlb, uint64_t user); \
+    extern void NAME##_dma_smmu_set_pt_root(uint64_t root_adr); \
 \
     inline volatile uint64_t *NAME##_dma_src_ptr(void) { \
         return (volatile uint64_t *)DMA_SRC_ADDR(BASE_ADDR); \

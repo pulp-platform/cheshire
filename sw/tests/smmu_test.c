@@ -18,17 +18,21 @@ int main(void) {
     char str[] = "Start the sMMU test!\r\n";
     char end_str[] = "Finished Setting Up the sMMU\r\n";
 
-    volatile char src_cached[] = "Simple DMA Test 1";   // Diese Adressen liegen im gecachten bereich
-    volatile char dst_cached[] = "Unsucessfull Test";
+    volatile char src_cached[] = "Simple DMA Test 1\r\n";   // Diese Adressen liegen im gecachten bereich
+    volatile char dst_cached[] = "Unsucessfull Test\r\n";
 
     // Get pointer to uncached SPM source and destination
     volatile char *src = src_cached + 0x04000000;
     volatile char *dst = dst_cached + 0x04000000;
 
     // Copy from cached to uncached source to ensure it is DMA-accessible
-    for (unsigned i = 0; i < sizeof(src_cached); ++i) src[i] = src_cached[i];
-    for (unsigned i = 0; i < sizeof(dst_cached); ++i) src[i] = dst_cached[i];
-
+    for (unsigned i = 0; i < sizeof(src_cached); ++i){
+        src[i] = src_cached[i];
+    }
+    for (unsigned i = 0; i < sizeof(dst_cached); ++i){
+        dst[i] = dst_cached[i];
+    }
+    
     // Setup the USART Frequency
     uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
     uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
