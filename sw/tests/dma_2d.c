@@ -11,6 +11,9 @@
 #include "dif/dma.h"
 
 int main(void) {
+    // Immediately return an error if DMA is not present
+    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_HW_FEATURES_DMA_BIT));
+
     volatile char src_cached[] = "This is a DMA test";
     volatile char gold[] = "This ishis is is is as is a DMA test!";
 

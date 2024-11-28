@@ -84,8 +84,8 @@ jobs:
         python-version: 3.9
         cache: pip
     -
-      name: Install tclint
-      run: pip install tclint
+      name: Install Python requirements
+      run: pip install -r requirements.txt
     -
       name: Run Tcllint
       run: tclint .  --style-spaces-in-braces --style-line-length 100

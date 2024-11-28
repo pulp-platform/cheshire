@@ -5,10 +5,13 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
+// Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
 #pragma once
 
 #include <stdint.h>
+#include "regs/cheshire.h"
+#include "params.h"
 
 static inline volatile uint8_t *reg8(void *base, int offs) {
     return (volatile uint8_t *)(base + offs);
@@ -75,8 +78,18 @@ static inline void *gprw(void *gp) {
         if (__ccret) return __ccret; \
     }
 
-// If a condition; if it is untrue, ummediately return an error code.
+// If a condition; if it is untrue, immediately return an error code.
 #define CHECK_ASSERT(ret, cond) \
     if (!(cond)) return (ret);
 
 #define MIN(a, b) (((a) <= (b)) ? (a) : (b))
+
+// Bit manipulation
+#define BIT(n) (1UL << (n))
+#define BIT_MASK(n) (BIT(n) - 1)
+
+// Check if a hardware feature is present from software
+static inline uint32_t chs_hw_feature_present(uint32_t bit) {
+    uint32_t features_bitmap = *reg32(&__base_regs, CHESHIRE_HW_FEATURES_REG_OFFSET);
+    return (features_bitmap & BIT(bit)) != 0;
+}

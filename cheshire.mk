@@ -61,7 +61,7 @@ chs-clean-deps:
 ######################
 
 CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-CHS_NONFREE_COMMIT ?= f731b17
+CHS_NONFREE_COMMIT ?= 1f4092e
 
 CHS_PHONY += chs-nonfree-init
 chs-nonfree-init:
@@ -96,11 +96,11 @@ $(OTPROOT)/.generated: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
 	flock -x $@ sh -c "cp $< $(dir $@)/src/rv_plic/; $(MAKE) -j1 otp" && touch $@
 
 # AXI RT
-AXIRT_NUM_MGRS ?= 8
+AXIRT_NUM_MGRS ?= 6
 AXIRT_NUM_SUBS ?= 2
 include $(AXIRTROOT)/axirt.mk
 $(AXIRTROOT)/.generated:
-	flock -x $@ $(MAKE) axirt_regs && touch $@
+	flock -x $@ $(MAKE) -B axirt_regs && touch $@
 
 # AXI VGA
 include $(AXI_VGA_ROOT)/axi_vga.mk

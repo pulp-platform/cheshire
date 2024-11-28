@@ -6,7 +6,7 @@
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-CHS_ROOT ?= $(shell pwd)
+CHS_ROOT := $(shell realpath .)
 BENDER	 ?= bender -d $(CHS_ROOT)
 
 all:
