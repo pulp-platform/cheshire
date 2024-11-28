@@ -27,6 +27,7 @@ The `SELCFG` environment variable selects the Cheshire configuration used in sim
 | -------- | ----------------------------------------- |
 | 0        | Default configuration from `cheshire_pkg` |
 | 1        | AXI-RT-enabled configuration              |
+| 2        | CLIC-enabled configuration                |
 
 The `USE_DRAMSYS` environment variable controls whether simulations are linked against and use DRAMSys for DRAM simulation. Note that before starting a simulation using DRAMSys, it must be built with `make chs-dramsys-all` first.
 
