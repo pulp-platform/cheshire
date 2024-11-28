@@ -93,7 +93,7 @@ int main(void) {
                           DMA_DST_STRIDE, DMA_SRC_STRIDE, DMA_NUM_REPS);
 
     // Check DMA transfers against gold.
-    for (volatile int i = 0; i < DMA_NUM_BEATS; i++) {
+    for (int i = 0; i < DMA_NUM_BEATS; i++) {
         CHECK_ASSERT(20, dma_dst[i] == golden[i]);
     }
 
