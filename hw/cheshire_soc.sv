@@ -1369,50 +1369,6 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   if (Cfg.Dma) begin : gen_dma
 
-    axi_slv_req_t dma_amo_req, dma_cut_req;
-    axi_slv_rsp_t dma_amo_rsp, dma_cut_rsp;
-
-    axi_riscv_atomics_structs #(
-      .AxiAddrWidth     ( Cfg.AddrWidth    ),
-      .AxiDataWidth     ( Cfg.AxiDataWidth ),
-      .AxiIdWidth       ( AxiSlvIdWidth    ),
-      .AxiUserWidth     ( Cfg.AxiUserWidth ),
-      .AxiMaxReadTxns   ( Cfg.DmaConfMaxReadTxns  ),
-      .AxiMaxWriteTxns  ( Cfg.DmaConfMaxWriteTxns ),
-      .AxiUserAsId      ( 1 ),
-      .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
-      .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-      .RiscvWordWidth   ( 64 ),
-      .NAxiCuts         ( Cfg.DmaConfAmoNumCuts ),
-      .axi_req_t        ( axi_slv_req_t ),
-      .axi_rsp_t        ( axi_slv_rsp_t )
-    ) i_dma_conf_atomics (
-      .clk_i,
-      .rst_ni,
-      .axi_slv_req_i ( axi_out_req[AxiOut.dma] ),
-      .axi_slv_rsp_o ( axi_out_rsp[AxiOut.dma] ),
-      .axi_mst_req_o ( dma_amo_req ),
-      .axi_mst_rsp_i ( dma_amo_rsp )
-    );
-
-    axi_cut #(
-      .Bypass     ( ~Cfg.DmaConfAmoPostCut ),
-      .aw_chan_t  ( axi_slv_aw_chan_t ),
-      .w_chan_t   ( axi_slv_w_chan_t  ),
-      .b_chan_t   ( axi_slv_b_chan_t  ),
-      .ar_chan_t  ( axi_slv_ar_chan_t ),
-      .r_chan_t   ( axi_slv_r_chan_t  ),
-      .axi_req_t  ( axi_slv_req_t ),
-      .axi_resp_t ( axi_slv_rsp_t )
-    ) i_dma_conf_atomics_cut (
-      .clk_i,
-      .rst_ni,
-      .slv_req_i  ( dma_amo_req ),
-      .slv_resp_o ( dma_amo_rsp ),
-      .mst_req_o  ( dma_cut_req ),
-      .mst_resp_i ( dma_cut_rsp )
-    );
-
     axi_mst_req_t axi_dma_req;
 
     always_comb begin
@@ -1435,16 +1391,16 @@ module cheshire_soc import cheshire_pkg::*; #(
       .IsTwoD           ( Cfg.DmaConfEnableTwoD   ),
       .axi_mst_req_t    ( axi_mst_req_t ),
       .axi_mst_rsp_t    ( axi_mst_rsp_t ),
-      .axi_slv_req_t    ( axi_slv_req_t ),
-      .axi_slv_rsp_t    ( axi_slv_rsp_t )
+      .reg_req_t        ( reg_req_t     ),
+      .reg_rsp_t        ( reg_rsp_t     )
     ) i_idma (
       .clk_i,
       .rst_ni,
       .testmode_i     ( test_mode_i ),
       .axi_mst_req_o  ( axi_dma_req           ),
       .axi_mst_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
-      .axi_slv_req_i  ( dma_cut_req ),
-      .axi_slv_rsp_o  ( dma_cut_rsp )
+      .reg_req_i      ( reg_out_req[RegOut.dma] ),
+      .reg_rsp_o      ( reg_out_rsp[RegOut.dma] )
     );
 
     if (Cfg.BusErr) begin : gen_dma_bus_err

@@ -21,16 +21,16 @@ module cheshire_idma_wrap #(
   parameter bit          IsTwoD           = 0,
   parameter type         axi_mst_req_t    = logic,
   parameter type         axi_mst_rsp_t    = logic,
-  parameter type         axi_slv_req_t    = logic,
-  parameter type         axi_slv_rsp_t    = logic
+  parameter type         reg_req_t        = logic,
+  parameter type         reg_rsp_t        = logic
 ) (
   input  logic          clk_i,
   input  logic          rst_ni,
   input  logic          testmode_i,
   output axi_mst_req_t  axi_mst_req_o,
   input  axi_mst_rsp_t  axi_mst_rsp_i,
-  input  axi_slv_req_t  axi_slv_req_i,
-  output axi_slv_rsp_t  axi_slv_rsp_o
+  input  reg_req_t      reg_req_i,
+  output reg_rsp_t      reg_rsp_o
 );
 
   `include "axi/assign.svh"
@@ -63,8 +63,6 @@ module cheshire_idma_wrap #(
   `IDMA_TYPEDEF_FULL_RSP_T(idma_rsp_t, addr_t)
   `IDMA_TYPEDEF_FULL_ND_REQ_T(idma_nd_req_t, idma_req_t, tf_len_t, tf_len_t)
 
-  `REG_BUS_TYPEDEF_ALL(dma_regs, addr_t, data_t, strb_t)
-
   typedef struct packed {
     axi_ar_chan_t ar_chan;
   } axi_read_meta_channel_t;
@@ -80,9 +78,6 @@ module cheshire_idma_wrap #(
   typedef struct packed {
     axi_write_meta_channel_t axi;
   } write_meta_channel_t;
-
-  dma_regs_req_t dma_reg_req;
-  dma_regs_rsp_t dma_reg_rsp;
 
   // 1D FE signals
   idma_req_t    burst_req_d;
@@ -122,39 +117,20 @@ module cheshire_idma_wrap #(
   axi_mst_req_t axi_read_req, axi_write_req;
   axi_mst_rsp_t axi_read_rsp, axi_write_rsp;
 
-  axi_to_reg #(
-    .ADDR_WIDTH ( AxiAddrWidth  ),
-    .DATA_WIDTH ( AxiDataWidth  ),
-    .ID_WIDTH   ( AxiSlvIdWidth ),
-    .USER_WIDTH ( AxiUserWidth  ),
-    .axi_req_t  ( axi_slv_req_t ),
-    .axi_rsp_t  ( axi_slv_rsp_t ),
-    .reg_req_t  ( dma_regs_req_t ),
-    .reg_rsp_t  ( dma_regs_rsp_t )
-  ) i_axi_translate (
-    .clk_i,
-    .rst_ni,
-    .testmode_i,
-    .axi_req_i  ( axi_slv_req_i ),
-    .axi_rsp_o  ( axi_slv_rsp_o ),
-    .reg_req_o  ( dma_reg_req ),
-    .reg_rsp_i  ( dma_reg_rsp )
-   );
-
   if (!IsTwoD) begin : gen_1d
 
     idma_reg64_1d #(
       .NumRegs        ( 32'd1 ),
       .NumStreams     ( 32'd1 ),
       .IdCounterWidth ( IdCounterWidth ),
-      .reg_req_t      ( dma_regs_req_t ),
-      .reg_rsp_t      ( dma_regs_rsp_t ),
+      .reg_req_t      ( reg_req_t  ),
+      .reg_rsp_t      ( reg_rsp_t  ),
       .dma_req_t      ( idma_req_t )
     ) i_dma_frontend_1d (
       .clk_i,
       .rst_ni,
-      .dma_ctrl_req_i ( dma_reg_req ),
-      .dma_ctrl_rsp_o ( dma_reg_rsp ),
+      .dma_ctrl_req_i ( reg_req_i   ),
+      .dma_ctrl_rsp_o ( reg_rsp_o   ),
       .dma_req_o      ( burst_req_d ),
       .req_valid_o    ( be_valid_d  ),
       .req_ready_i    ( be_ready_d  ),
@@ -203,14 +179,14 @@ module cheshire_idma_wrap #(
       .NumRegs        ( 1 ),
       .NumStreams     ( 1 ),
       .IdCounterWidth ( IdCounterWidth ),
-      .reg_req_t      ( dma_regs_req_t ),
-      .reg_rsp_t      ( dma_regs_rsp_t ),
+      .reg_req_t      ( reg_req_t      ),
+      .reg_rsp_t      ( reg_rsp_t      ),
       .dma_req_t      ( idma_nd_req_t  )
     ) idma_frontend_2d (
       .clk_i,
       .rst_ni,
-      .dma_ctrl_req_i ( dma_reg_req   ),
-      .dma_ctrl_rsp_o ( dma_reg_rsp   ),
+      .dma_ctrl_req_i ( reg_req_i     ),
+      .dma_ctrl_rsp_o ( reg_rsp_o     ),
       .dma_req_o      ( idma_nd_req_d ),
       .req_valid_o    ( idma_nd_req_valid_d ),
       .req_ready_i    ( idma_nd_req_ready_d ),
