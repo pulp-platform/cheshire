@@ -48,7 +48,6 @@ target/sim/vcs/ucli.key
 target/sim/vcs/work*
 target/sim/vcs/vc_hdrs.h
 
-
 # Xilinx generated files
 target/xilinx/build
 target/xilinx/out

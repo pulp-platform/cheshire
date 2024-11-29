@@ -7,8 +7,7 @@
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 BENDER ?= bender
-
-VLOGAN_BIN ?= vlogan
+VLOGAN ?= vlogan
 
 # Caution: Questasim requires this to point to the *actual* compiler install path
 CXX_PATH := $(shell which $(CXX))
@@ -153,7 +152,7 @@ $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: $(CHS_ROOT)/Bender.yml
 	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11" -cpppath "$(CXX_PATH)"' >> $@
 
 $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh: $(CHS_ROOT)/Bender.yml
-	$(BENDER) script vcs -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 -t rtl --vlog-arg="$(VLOGAN_ARGS)" --vlogan-bin="$(VLOGAN_BIN)" > $@
+	$(BENDER) script vcs -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 -t rtl --vlog-arg="$(VLOGAN_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
 	chmod +x $@
 
 .PRECIOUS: $(CHS_ROOT)/target/sim/models
