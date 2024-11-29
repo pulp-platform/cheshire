@@ -47,7 +47,8 @@ int main(void) {
     sys_dma_smmu_set_pt_root(0x123456789ABCDEF0);
 
     // Start den Memory Transfer
-    sys_dma_memcpy((uintptr_t)(void *)dst, (uintptr_t)(void *)src, sizeof(src_cached));
+    // sys_dma_memcpy((uintptr_t)(void *)dst, (uintptr_t)(void *)src, sizeof(src_cached));
+    sys_dma_blk_memcpy((uintptr_t)(void *)dst, (uintptr_t)(void *)src, sizeof(src_cached));
 
     // Write Destination Adress
     uart_write_str(&__base_uart, dst, sizeof(dst_cached));

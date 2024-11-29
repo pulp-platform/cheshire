@@ -131,7 +131,7 @@ packages:
     dependencies:
     - common_cells
   idma:
-    revision: 864e6af3155c99ea616121645546df40d872b718
+    revision: f6ae9bef433cfce19a25e340518b8da5bd9bcbef
     version: null
     source:
       Git: https://github.com/pulp-platform/iDMA.git

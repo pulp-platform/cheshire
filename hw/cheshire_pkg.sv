@@ -333,7 +333,6 @@ package cheshire_pkg;
     aw_bt reg_demux;
     aw_bt llc;
     aw_bt spm;
-    aw_bt dma;
     aw_bt slink;
     aw_bt ext_base;
     aw_bt num_out;
@@ -359,7 +358,6 @@ package cheshire_pkg;
       r++; ret.map[r] = '{i, AmSpm, AmSpm + SizeSpm};
       r++; ret.map[r] = '{i, AmSpm + 'h0400_0000, AmSpm + 'h0400_0000 + SizeSpm};
     end
-    if (cfg.Dma)          begin i++; r++; ret.dma = i; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
     if (cfg.SerialLink)   begin i++; r++; ret.slink = i;
         ret.map[r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
     // External port indices start after internal ones
@@ -396,6 +394,7 @@ package cheshire_pkg;
     aw_bt slink;
     aw_bt vga;
     aw_bt usb;
+    aw_bt dma;
     aw_bt axirt;
     aw_bt irq_router;
     aw_bt [2**MaxCoresWidth-1:0] bus_err;
@@ -421,6 +420,7 @@ package cheshire_pkg;
     if (cfg.SerialLink)   begin i++; ret.slink      = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
     if (cfg.Vga)          begin i++; ret.vga        = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
     if (cfg.Usb)          begin i++; ret.usb        = i; r++; ret.map[r] = '{i, 'h0300_8000, 'h0300_9000}; end
+    if (cfg.Dma)          begin i++; ret.dma        = i; r++; ret.map[r] = '{i, 'h0300_b000, 'h0300_c000}; end
     if (cfg.IrqRouter)    begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
     if (cfg.AxiRt)        begin i++; ret.axirt      = i; r++; ret.map[r] = '{i, 'h020c_0000, 'h0210_0000}; end
     if (cfg.Clic) for (int j = 0; j < cfg.NumCores; j++) begin
@@ -659,7 +659,7 @@ package cheshire_pkg;
     DmaConfMaxWriteTxns : 4,
     DmaConfAmoNumCuts   : 1,
     DmaConfAmoPostCut   : 1,
-    DmaConfEnableTwoD   : 1,
+    DmaConfEnableTwoD   : 0,
     DmaNumAxInFlight    : 16,
     DmaMemSysDepth      : 8,
     DmaJobFifoDepth     : 2,
