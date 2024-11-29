@@ -37,6 +37,7 @@ target/sim/vsim/modelsim.ini
 target/sim/vsim/transcript
 target/sim/vsim/vsim.wlf
 target/sim/vsim/work/
+target/sim/vsim/work_newusb/
 
 # Xilinx generated files
 target/xilinx/build
