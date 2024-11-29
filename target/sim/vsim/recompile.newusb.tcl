@@ -3,10 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Fabian Hauser <fhauser@student.ethz.ch>
+#
+# Recompile only newusb (way faster)
 
-set TESTBENCH new_usb_tb
-
-eval "vsim -c ${TESTBENCH} -t 1ps"
-
-set StdArithNoWarnings 1
-set NumericStdNoWarnings 1
+vlog  -work work -sv ../../../hw/newusb_tb/new_usb_tb.sv
