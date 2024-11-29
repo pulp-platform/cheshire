@@ -57,6 +57,7 @@ sources:
       - target/sim/src/tb_cheshire_pkg.sv
       - target/sim/src/fixture_cheshire_soc.sv
       - target/sim/src/tb_cheshire_soc.sv
+      - hw/newusb_tb/new_usb_tb.sv
 
   - target: all(fpga, xilinx)
     files:
