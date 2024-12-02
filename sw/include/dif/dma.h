@@ -30,7 +30,7 @@
     extern volatile uint64_t *NAME##_dma_src_ptr(void); \
     extern volatile uint64_t *NAME##_dma_dst_ptr(void); \
     extern volatile uint64_t *NAME##_dma_num_bytes_ptr(void); \
-    extern volatile uint64_t *NAME##_dma_conf_ptr(void); \
+    extern volatile uint32_t *NAME##_dma_conf_ptr(void); \
     extern volatile uint64_t *NAME##_dma_status_ptr(void); \
     extern volatile uint64_t *NAME##_dma_nextid_ptr(void); \
     extern volatile uint64_t *NAME##_dma_done_ptr(void); \
@@ -38,9 +38,9 @@
     extern volatile uint64_t *NAME##_dma_dst_stride_ptr(void); \
     extern volatile uint64_t *NAME##_dma_num_reps_ptr(void); \
 \
-    extern volatile uint64_t *NAME##_dma_smmu_conf_ptr(void); \
-    extern volatile uint64_t *NAME##_dma_smmu_pt_root_high_ptr(void); \
-    extern volatile uint64_t *NAME##_dma_smmu_pt_root_low_ptr(void); \
+    extern volatile uint32_t *NAME##_dma_smmu_conf_ptr(void); \
+    extern volatile uint32_t *NAME##_dma_smmu_pt_root_high_ptr(void); \
+    extern volatile uint32_t *NAME##_dma_smmu_pt_root_low_ptr(void); \
 \
     extern uint64_t NAME##_dma_memcpy(uint64_t dst, uint64_t src, uint64_t size); \
     extern void NAME##_dma_blk_memcpy(uint64_t dst, uint64_t src, uint64_t size); \
@@ -63,8 +63,8 @@
     inline volatile uint64_t *NAME##_dma_num_bytes_ptr(void) { \
         return (volatile uint64_t *)DMA_NUMBYTES_ADDR(BASE_ADDR); \
     } \
-    inline volatile uint64_t *NAME##_dma_conf_ptr(void) { \
-        return (volatile uint64_t *)DMA_CONF_ADDR(BASE_ADDR); \
+    inline volatile uint32_t *NAME##_dma_conf_ptr(void) { \
+        return (volatile uint32_t *)DMA_CONF_ADDR(BASE_ADDR); \
     } \
     inline volatile uint64_t *NAME##_dma_status_ptr(void) { \
         return (volatile uint64_t *)DMA_STATUS_ADDR(BASE_ADDR); \
@@ -84,14 +84,14 @@
     inline volatile uint64_t *NAME##_dma_num_reps_ptr(void) { \
         return (volatile uint64_t *)DMA_NUM_REPS_ADDR(BASE_ADDR); \
     } \
-    inline volatile uint64_t *NAME##_dma_smmu_conf_ptr(void) { \
-        return (volatile uint64_t *)DMA_SMMU_CONF_ADDR(BASE_ADDR); \
+    inline volatile uint32_t *NAME##_dma_smmu_conf_ptr(void) { \
+        return (volatile uint32_t *)DMA_SMMU_CONF_ADDR(BASE_ADDR); \
     } \
-    inline volatile uint64_t *NAME##_dma_smmu_pt_root_high_ptr(void){ \
-        return (volatile uint64_t *)DMA_SMMU_PT_ROOT_HIGH(BASE_ADDR); \
+    inline volatile uint32_t *NAME##_dma_smmu_pt_root_high_ptr(void){ \
+        return (volatile uint32_t *)DMA_SMMU_PT_ROOT_HIGH(BASE_ADDR); \
     } \
-    inline volatile uint64_t *NAME##_dma_smmu_pt_root_low_ptr(void){ \
-        return (volatile uint64_t *)DMA_SMMU_PT_ROOT_LOW(BASE_ADDR); \
+    inline volatile uint32_t *NAME##_dma_smmu_pt_root_low_ptr(void){ \
+        return (volatile uint32_t *)DMA_SMMU_PT_ROOT_LOW(BASE_ADDR); \
     } \
 \
     inline uint64_t NAME##_dma_memcpy(uint64_t dst, uint64_t src, uint64_t size) { \
@@ -99,8 +99,8 @@
         *(NAME##_dma_dst_ptr()) = (uint64_t)dst; \
         *(NAME##_dma_num_bytes_ptr()) = size; \
         *(NAME##_dma_num_reps_ptr()) = 0; \
-        *(NAME##_dma_conf_ptr()) = (DMA_CONF_DECOUPLE_AW << IDMA_REG64_2D_CONF_DECOUPLE_AW_BIT) | \
-                                   (DMA_CONF_DECOUPLE_RW << IDMA_REG64_2D_CONF_DECOUPLE_AW_BIT); \
+        *(NAME##_dma_conf_ptr()) = (uint32_t) ((DMA_CONF_DECOUPLE_AW << IDMA_REG64_2D_CONF_DECOUPLE_AW_BIT) | \
+                                   (DMA_CONF_DECOUPLE_RW << IDMA_REG64_2D_CONF_DECOUPLE_AW_BIT)); \
         return *(NAME##_dma_nextid_ptr()); \
     } \
 \
@@ -117,9 +117,9 @@
         *(NAME##_dma_src_ptr()) = (uint64_t)src; \
         *(NAME##_dma_dst_ptr()) = (uint64_t)dst; \
         *(NAME##_dma_num_bytes_ptr()) = size; \
-        *(NAME##_dma_conf_ptr()) = (DMA_CONF_DECOUPLE_AW << IDMA_REG64_2D_CONF_DECOUPLE_AW_BIT) | \
+        *(NAME##_dma_conf_ptr()) = (uint32_t) ((DMA_CONF_DECOUPLE_AW << IDMA_REG64_2D_CONF_DECOUPLE_AW_BIT) | \
                                    (DMA_CONF_DECOUPLE_RW << IDMA_REG64_2D_CONF_DECOUPLE_AW_BIT) | \
-                                   (1 << IDMA_REG64_2D_CONF_ENABLE_ND_BIT); \
+                                   (1 << IDMA_REG64_2D_CONF_ENABLE_ND_BIT)); \
         *(NAME##_dma_src_stride_ptr()) = src_stride; \
         *(NAME##_dma_dst_stride_ptr()) = dst_stride; \
         *(NAME##_dma_num_reps_ptr()) = num_reps; \
@@ -137,12 +137,12 @@
     } \
 \
     inline void NAME##_dma_smmu_config(uint64_t exe, uint64_t bare, uint64_t update_tlb, uint64_t user){ \
-        *(NAME##_dma_smmu_conf_ptr()) = ((update_tlb & 1) << IDMA_REG64_2D_SMMU_F_UPDATE_TLB_BIT) | ((bare & 1) << IDMA_REG64_2D_SMMU_F_BARE_BIT) | ((user & 1) << IDMA_REG64_2D_SMMU_F_USER_BIT) | ((exe & 1) << IDMA_REG64_2D_SMMU_F_EXE_BIT); \
+        *(NAME##_dma_smmu_conf_ptr()) = (uint32_t) (((update_tlb & 1) << IDMA_REG64_2D_SMMU_F_UPDATE_TLB_BIT) | ((bare & 1) << IDMA_REG64_2D_SMMU_F_BARE_BIT) | ((user & 1) << IDMA_REG64_2D_SMMU_F_USER_BIT) | ((exe & 1) << IDMA_REG64_2D_SMMU_F_EXE_BIT)); \
     } \
 \
     inline void NAME##_dma_smmu_set_pt_root(uint64_t root_adr){ \
-        *(NAME##_dma_smmu_pt_root_high_ptr()) = (uint64_t) ((root_adr >> 32) & 0x00000000FFFFFFFF); \
-        *(NAME##_dma_smmu_pt_root_low_ptr()) = (uint64_t) (root_adr & 0x00000000FFFFFFFF); \
+        *(NAME##_dma_smmu_pt_root_high_ptr()) = (uint32_t) ((root_adr >> 32) & 0x00000000FFFFFFFF); \
+        *(NAME##_dma_smmu_pt_root_low_ptr()) = (uint32_t) (root_adr & 0x00000000FFFFFFFF); \
     } \
 \
     inline uint64_t NAME##_dma_get_status(void) { \

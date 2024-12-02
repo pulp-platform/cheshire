@@ -1407,6 +1407,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .testmode_i     ( test_mode_i ),
       .axi_mst_req_o  ( axi_dma_req           ),
       .axi_mst_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
+      .axi_ptw_req_o  ( axi_ptw_req ),
+      .axi_ptw_rsp_i  ( axi_in_rsp[AxiIn.dma_ptw] ),
       .reg_req_i      ( reg_out_req[RegOut.dma] ),
       .reg_rsp_o      ( reg_out_rsp[RegOut.dma] )
     );
