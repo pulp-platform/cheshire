@@ -11,7 +11,7 @@
 module new_usb_ohci import new_usb_ohci_pkg::*; #(
   /// DMA manager port parameters
   parameter int unsigned AxiMaxReads   = 0,
-  parameter int unsigned AxiAddrWidth  = 0,
+  parameter int unsigned AxiAddrWidth  = 0, // Todo: Ohci only laid out for 32 bit addresses think about 64 bit exensions
   parameter int unsigned AxiDataWidth  = 0, // 32|64|128 causes 4|2|1 stages in the dmaoutputqueueED
   parameter int unsigned AxiIdWidth    = 0,
   parameter int unsigned AxiUserWidth  = 0,

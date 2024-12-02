@@ -6,7 +6,7 @@
 //
 /// nonperiodic scheduling counter
 
-module new_usb_nonperiodiccounter(
+module new_usb_nonperiodiccounter (
   
   input  logic clk_i,
   input  logic rst_ni,

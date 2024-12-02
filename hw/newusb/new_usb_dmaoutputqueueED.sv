@@ -25,6 +25,7 @@ module new_usb_dmaoutputqueueED import new_usb_ohci_pkg::*; #(
     input  logic pop_ready_o,
     input  logic context_switch_np2p_i, // nonperiodic to periodic
     input  logic context_switch_p2np_i, // periodic to nonperiodic
+    input  logic context_switch_i,
     output logic empty_secondin_o, // request new ED
     output logic firstin_valid_o,
     output logic secondin_valid_o,
@@ -66,8 +67,6 @@ module new_usb_dmaoutputqueueED import new_usb_ohci_pkg::*; #(
     assign secondin_loaded_o = propagate_level3;
     logic  non_empty_context_switch_np2p;
     assign non_empty_context_switch_np2p = secondin_valid_o && context_switch_np2p_i;
-    logic  context_switch;
-    assign context_switch = context_switch_np2p_i || context_switch_p2np_i;
 
     // create enable, one pulse for one handshake
     logic  en;
@@ -91,21 +90,21 @@ module new_usb_dmaoutputqueueED import new_usb_ohci_pkg::*; #(
     logic propagate_level2;
     logic propagate_level3;
     logic rst_n_propagate;
-    assign rst_n_propagate = !pop_i && rst_ni && !empty_secondin_o && !context_switch; // equivalent to !(pop || rst_i || empty_secondin || context_switch)
+    assign rst_n_propagate = !pop_i && rst_ni && !empty_secondin_o && !context_switch_i; // equivalent to !(pop || rst_i || empty_secondin || context_switch_i)
     `FFL(propagate_level0, 1'b1,             en, 1b'0, clk_i, rst_n_propagate) // Propagatelevel0
     `FFL(propagate_level1, propagate_level0, en, 1b'0, clk_i, rst_n_propagate) // Propagatelevel1
     `FFL(propagate_level2, propagate_level1, en, 1b'0, clk_i, rst_n_propagate) // Propagatelevel2
     `FFL(propagate_level3, propagate_level2, en, 1b'0, clk_i, rst_n_propagate) // Propagatelevel3
     assign dma_ready = !propagate_level3;
 
-    // context switch stash
+    // context switch stash (only np EDs are stashed)
     logic active_stash;
     logic rst_n_stash;
     logic non_empty_context_switch_p2np;
     assign non_empty_context_switch_p2np = active_stash && context_switch_p2np_i;
     assign rst_n_stash = !context_switch_p2np_i && rst_ni; // equivalent to !(context_switch_p2np_i || rst_i )
-    `FF(active_stash, non_empty_context_switch_np2p, 1b'0, clk_i, rst_n_stash)
-    `FFL(stash, secondin, non_empty_context_switch_np2p, '0) // stash secondin at context switch if valid
+    `FFL(active_stash, 1'b1, non_empty_context_switch_np2p, 1b'0, clk_i, rst_n_stash)
+    `FFL(stash, secondin, non_empty_context_switch_np2p, '0) // stash secondin at np2p context switch if valid secondin
     
     // create valid firstin ready for TD processing
     assign pop_ready_o = secondin_valid_o || non_empty_context_switch_p2np;

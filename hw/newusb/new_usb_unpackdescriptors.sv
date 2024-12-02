@@ -16,8 +16,7 @@
 // Todo: only one package flying
 // Todo: TD management in ED, overwrite HeadP if servedTD, halted or toggle Carry?
 
-module new_usb_unpackdescriptors 
-import new_usb_ohci_pkg::*; import new_usb_dmaoutputqueueED_pkg::*; #(
+module new_usb_unpackdescriptors import new_usb_ohci_pkg::* #(
     parameter int unsigned AxiDataWidth = 0
 )(
     /// control
@@ -54,6 +53,9 @@ import new_usb_ohci_pkg::*; import new_usb_dmaoutputqueueED_pkg::*; #(
     
     localparam int unsigned DmaOutputQueueStages = 128/AxiDataWidth; // dmaoutputqueueED stages
     
+    // active package flying to listservice
+    logic flying_package;
+
     // nextis
     assign nextis_ed_o = (id_type[2] && empty_secondin) || !id_type[2]; 
     assign nextis_valid_o = !flying; 
@@ -107,7 +109,7 @@ import new_usb_ohci_pkg::*; import new_usb_dmaoutputqueueED_pkg::*; #(
     assign dma_valid_ed    = dma_valid_i && ed && !dma_flush;
     assign dma_valid_td    = dma_valid_i && !ed && !dma_flush;
 
-    // dma flush, early flush to prevent stage loading, save power and increase speed
+    // dma flush, early flush to prevent faulty stage loading, save power and increase speed
     // Todo: replace with register chain
     logic dma_flush;
     logic dma_flush_en;
@@ -117,7 +119,7 @@ import new_usb_ohci_pkg::*; import new_usb_dmaoutputqueueED_pkg::*; #(
     logic flush_level3;
     logic rst_n_flush;
     logic rst_n_dma_flush;
-    assign dma_flush_en    = doublehead_invalid; // Todo: add other flush reasons
+    assign dma_flush_en    = doublehead_invalid || context_flush; // Todo: add other flush reasons
     assign rst_n_flush     = dma_flush && rst_ni; // equivalent to !(!dma_flush || rst_i)
     assign rst_n_dma_flush = flush_level3 && rst_ni; // equivalent to !(!flush_level3 || rst_i)
     `FFL(flush_level0, 1'b1,         flush_en,     1b'0, clk_i, rst_n_flush) // flushlevel0
@@ -127,17 +129,29 @@ import new_usb_ohci_pkg::*; import new_usb_dmaoutputqueueED_pkg::*; #(
     `FFL(dma_flush,    1'b1,         dma_flush_en, 1b'0, clk_i, rst_n_dma_flush) // dma_flush
 
     // create flush enable, one pulse for one handshake
-    logic  flush_en;
-    logic  dma_flush_handshake;
-    logic  dma_flush_handshake_prev;
+    logic flush_en;
+    logic dma_flush_handshake;
+    logic dma_flush_handshake_prev;
     assign dma_flush_handshake = dma_flush && dma_valid_i;
     `FF(dma_flush_handshake_prev, dma_flush_handshake, 1'b0)
     assign flush_en = dma_flush_handshake && ~dma_flush_handshake_prev;
 
+    // validity doublehead check
+    logic loaded_head;
+    logic doublehead_invalid;
+    assign loaded_head = sent_head_i && secondin_loaded;
+    assign doublehead_invalid = loaded_head && ((headED + 1) != secondin.nextED.address); // only upper 28 bits, so +1 instead of +128 
+
+    // context switch with flying package to flush
+    logic context_flush;
+    logic context_switch;
+    assign context_switch = context_switch_n2np || context_switch_p2np;
+    assign context_flush = flying_package && context_switch;
+
     // generate pop 3 cycles delayed to served_td
     logic pop_handshake;
     logic pop_handshake_prev;
-    assign pop_handshake = pop_ready && served_td && nextis_ready_i;
+    assign pop_handshake = pop_ready && served_td && nextis_ready_i; // Todo: Can context_switch mid TD cause a destashing event?
     `FF(pop_handshake_prev, pop_handshake, 1'b0)
     assign pop_very_early = pop_handshake && ~pop_handshake_prev; // pop_very_early one delayed
     `FF(pop_early, pop_very_early, 1'b0) // pop_early two delayed
@@ -152,9 +166,8 @@ import new_usb_ohci_pkg::*; import new_usb_dmaoutputqueueED_pkg::*; #(
     logic secondin_loaded;
     logic dma_valid_ed;
     logic dma_ready_ed;
-
-    new_usb_dmaoutputqueueED_pkg::endpoint_descriptor firstin;
-    new_usb_dmaoutputqueueED_pkg::endpoint_descriptor secondin;
+    endpoint_descriptor firstin;
+    endpoint_descriptor secondin;
 
     // Todo: context switch with active stash get address from firstin.nextED.address and generally when secondin not valid/empty
     new_usb_dmaoutputqueueED i_dmaoutputqueueED (
@@ -165,6 +178,7 @@ import new_usb_ohci_pkg::*; import new_usb_dmaoutputqueueED_pkg::*; #(
         .pop_ready_o(pop_ready), // stash or secondin ready for loading into firstin
         .context_switch_np2p_i, // nonperiodic to periodic
         .context_switch_p2np_i, // periodic to nonperiodic
+        .context_switch_i(context_switch),
         .empty_secondin_o(empty_secondin), // request new ED with secondin.nextED.address
         .firstin_valid_o(firstin_valid),
         .secondin_valid_o(secondin_valid), // only valid if TDs inside secondinED
@@ -177,12 +191,6 @@ import new_usb_ohci_pkg::*; import new_usb_dmaoutputqueueED_pkg::*; #(
         .secondin,
         .firstin
     );
-
-    // validity doublehead check
-    logic loaded_head;
-    logic doublehead_invalid;
-    assign loaded_head = (currentED == headED) && secondin_loaded;
-    assign doublehead_invalid = loaded_head && ((headED + 128) != secondin.nextED.address);
 
     // dma output queue transfer descriptor
     logic [27:0] nextTD;
