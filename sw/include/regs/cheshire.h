@@ -124,6 +124,27 @@ extern "C" {
 #define CHESHIRE_VGA_PARAMS_BLUE_WIDTH_FIELD \
   ((bitfield_field32_t) { .mask = CHESHIRE_VGA_PARAMS_BLUE_WIDTH_MASK, .index = CHESHIRE_VGA_PARAMS_BLUE_WIDTH_OFFSET })
 
+// STUB - Exception enable
+#define CHESHIRE_STUB_EX_EN_REG_OFFSET 0x5c
+
+// STUB - How many requests we answer before throwing an exception
+#define CHESHIRE_STUB_NO_EX_LAT_REG_OFFSET 0x60
+
+// STUB - Fixed latency from mmu-request to mmu-response
+#define CHESHIRE_STUB_REQ_RSP_LAT_REG_OFFSET 0x64
+
+// Ara, STUB - Enable virtual memory requests
+#define CHESHIRE_ARA_VIRT_MEM_EN_REG_OFFSET 0x68
+
+// Debug scratch register
+#define CHESHIRE_RVV_DEBUG_REG_REG_OFFSET 0x6c
+
+// CVA6 MMU request generator - Enable
+#define CHESHIRE_MMU_REQ_GEN_EN_REG_OFFSET 0x70
+
+// CVA6 MMU request generator - Ans to new req latency
+#define CHESHIRE_MMU_REQ_GEN_LAT_REG_OFFSET 0x74
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

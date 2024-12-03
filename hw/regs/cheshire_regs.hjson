@@ -132,5 +132,68 @@
       ]
     }
 
+    { name:     "stub_ex_en"
+      desc:     "STUB - Exception enable"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0", name: "stub_ex_en", desc: "STUB - Exception enable - Every request to the STUB will throw an exception" }
+      ]
+    }
+
+    { name:     "stub_no_ex_lat"
+      desc:     "STUB - How many requests we answer before throwing an exception"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0", name: "stub_no_ex_lat", desc: "STUB - How many requests we answer before throwing an exception" }
+      ]
+    }
+
+    { name:     "stub_req_rsp_lat"
+      desc:     "STUB - Fixed latency from mmu-request to mmu-response"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0", name: "stub_req_rsp_lat", desc: "STUB - Fixed latency from mmu-request to mmu-response" }
+      ]
+    }
+
+    { name:     "ara_virt_mem_en"
+      desc:     "Ara, STUB - Enable virtual memory requests"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0", name: "ara_virt_mem_en", desc: "Ara, STUB - Enable virtual memory requests" }
+      ]
+    }
+
+    { name:     "rvv_debug_reg"
+      desc:     "Debug scratch register"
+      swaccess: "rw"
+      hwaccess: "none"
+      fields: [
+        { bits: "31:0", name: "rvv_debug_reg", desc: "Debug scratch register" }
+      ]
+    }
+
+    { name:     "mmu_req_gen_en"
+      desc:     "CVA6 MMU request generator - Enable"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0", name: "mmu_req_gen_en", desc: "CVA6 MMU request generator - Enable" }
+      ]
+    }
+
+    { name:     "mmu_req_gen_lat"
+      desc:     "CVA6 MMU request generator - Ans to new req latency"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0", name: "mmu_req_gen_lat", desc: "CVA6 MMU request generator - Ans to new req latency" }
+      ]
+    }
+
   ]
 }
