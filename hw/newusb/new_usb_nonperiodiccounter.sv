@@ -19,6 +19,8 @@ module new_usb_nonperiodiccounter (
 
 );
   
+  `include "common_cells/registers.svh"
+
   logic [1:0] count;
   logic restart_counter;
 

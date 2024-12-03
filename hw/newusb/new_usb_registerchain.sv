@@ -9,19 +9,23 @@
 module new_usb_registerchain #(
   parameter int unsigned Width  = 0,
   parameter int unsigned Stages = 0,
-  parameter int unsigned Total  = Width*Stages
+  parameter int unsigned Total  = Width*Stages // don't overwrite
 )(
   input  logic clk_i,
-  input  logic rst_ni,
-  input  logic en,
+  input  logic rst_ni, // asynchronous, active low
+  input  logic clear_i, // synchronous, active high
+  input  logic en_i,
   input  logic [Width-1:0] data_i,
-  output logic [Total-1:0] register
+  output logic [Total-1:0] register_o
 );
+
+`include "common_cells/registers.svh"
+
   generate
     genvar i;
     for (i = 0; i < Total; i = i + Width) begin
-      if(i == 0) `FFL(register[Width-1:0],   data_i,                en, '0)
-      else       `FFL(register[Width+i-1:i], register[i-1:i-Width], en, '0)
+      if(i == 0) `FFLARNC(register[Width-1:0],   data_i,                clear, en, '0, clk_i, rst_ni)
+      else       `FFLARNC(register[Width+i-1:i], register[i-1:i-Width], clear, en, '0, clk_i, rst_ni)
     end
   endgenerate
 endmodule

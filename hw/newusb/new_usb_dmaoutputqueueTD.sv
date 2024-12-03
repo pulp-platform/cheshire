@@ -4,7 +4,8 @@
 //
 // Fabian Hauser <fhauser@student.ethz.ch>
 //
-/// Output queue of the DMA for general transfer descriptors 4x32 bit buffering for isochronous 8x32 
+/// Output queue of the DMA for general transfer descriptors Stages*AxiDataWidth=128 bit buffering for isochronous 2*Stages*AxiDataWidth=256
+///
 /// Todo: implement ISOCHRONOUS
 /// Todo: implement listservicing TDs
 
@@ -18,11 +19,15 @@ module new_usb_dmaoutputqueueTD import new_usb_ohci_pkg::*; (
     output logic        dma_ready_o,
     /// external TD access
     output logic [27:0] nextTD_address_o,
-    output logic        served_td_o
+    output logic        served_td_o, // a service attempt was made
+    output logic        aborted_td_o // the service was aborted before or after the attempt
 );
+    `include "common_cells/registers.svh"
+    
     gen_transfer_descriptor general;
     assign nextTD_address_o = general.nextTD;
     assign served_td_o = propagate_level3;
+    assign aborted_td_o = 0'b0; // Todo: The system needs to pre-emptively abort a TD if its data is not fitting inside the periodic, nonperiodic window 
 
     logic [31:0] dword0;
     logic [31:0] dword1;

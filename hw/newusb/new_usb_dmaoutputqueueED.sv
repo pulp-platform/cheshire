@@ -6,13 +6,6 @@
 //
 /// Two-stage output queue of the DMA for endpoint descriptors
 /// Additional stash register for nonperiodic/periodic context switches
-/// Checks validity at secondin because at head we do 
-/// double length reads from the DMA like in an array which is not HCD spec but predicted.
-
-// Todo: validity check secondin
-// Todo: register hccurrent flow check
-// Todo: status bits functionality
-// Todo: stashing for bulk control?
 
 module new_usb_dmaoutputqueueED import new_usb_ohci_pkg::*; #(
     parameter int unsigned AxiDataWidth = 0,
@@ -38,7 +31,8 @@ module new_usb_dmaoutputqueueED import new_usb_ohci_pkg::*; #(
     output endpoint_descriptor secondin,
     output endpoint_descriptor firstin
 );
-    
+    `include "common_cells/registers.svh"
+
     endpoint_descriptor stash;
     endpoint_descriptor secondinmux;
 

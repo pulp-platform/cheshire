@@ -8,6 +8,8 @@
 /// The config port is adapted to 32b Regbus, the DMA port to parametric AXI4.
 /// The IOs are bundled into PULP structs and arrays to simplify connection.
 
+// Todo: Clean up resets (every submodule).
+
 module new_usb_ohci import new_usb_ohci_pkg::*; #(
   /// DMA manager port parameters
   parameter int unsigned AxiMaxReads   = 0,
@@ -47,6 +49,9 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
   output logic [NumPhyPorts-1:0] phy_dp_o,
   output logic [NumPhyPorts-1:0] phy_dp_oe_o
 );
+
+  `include "axi/typedef.svh"
+  `include "common_cells/registers.svh"
 
   newusb_reg_pkg::newusb_hw2reg_t newusb_hw2reg;
   newusb_reg_pkg::newusb_reg2hw_t newusb_reg2hw;
@@ -175,6 +180,7 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
 
 
   // Todo: insert DMA
+  
 
   assign dma_req_o = '0;
   // IRQ tied-off

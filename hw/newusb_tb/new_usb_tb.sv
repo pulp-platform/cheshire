@@ -33,7 +33,8 @@ module new_usb_tb #(
   // input  logic soc_rst_ni,
 );
 
-
+`include "axi/typedef.svh"
+`include "common_cells/registers.svh"
 
 logic [AxiAddrWidth-1:0] address;
 logic [31:0] dword [3:0];
@@ -84,15 +85,84 @@ initial begin
     $finish;
 end
 
+    //axi_lite_to_axi #(
+    //    .AxiDataWidth ( DataWidth      ),
+    //    .req_lite_t   ( axi_lite_req_t ),
+    //    .resp_lite_t  ( axi_lite_rsp_t ),
+    //    .axi_req_t    ( axi_req_t      ),
+    //    .axi_resp_t   ( axi_rsp_t      )
+    //) i_axil_to_axi_read (
+    //    .slv_req_lite_i  ( axi_lite_read_req ),
+    //    .slv_resp_lite_o ( axi_lite_read_rsp ),
+    //    .slv_aw_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
+    //    .slv_ar_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
+    //    .mst_req_o       ( axi_lite_axi_read_req ),
+    //    .mst_resp_i      ( axi_lite_axi_read_rsp )
+    //);
+//
+    //axi_lite_to_axi #(
+    //    .AxiDataWidth ( DataWidth      ),
+    //    .req_lite_t   ( axi_lite_req_t ),
+    //    .resp_lite_t  ( axi_lite_rsp_t ),
+    //    .axi_req_t    ( axi_req_t      ),
+    //    .axi_resp_t   ( axi_rsp_t      )
+    //) i_axil_to_axi_write (
+    //    .slv_req_lite_i  ( axi_lite_write_req ),
+    //    .slv_resp_lite_o ( axi_lite_write_rsp ),
+    //    .slv_aw_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
+    //    .slv_ar_cache_i  ( axi_pkg::CACHE_MODIFIABLE ),
+    //    .mst_req_o       ( axi_lite_axi_write_req ),
+    //    .mst_resp_i      ( axi_lite_axi_write_rsp )
+    //);
+//
+    //// Read Write Join
+    //axi_rw_join #(
+    //    .axi_req_t        ( axi_req_t ),
+    //    .axi_resp_t       ( axi_rsp_t )
+    //) i_axil_axi_rw_join (
+    //    .clk_i            ( clk               ),
+    //    .rst_ni           ( rst_n             ),
+    //    .slv_read_req_i   ( axil_axi_read_req  ),
+    //    .slv_read_resp_o  ( axil_axi_read_rsp  ),
+    //    .slv_write_req_i  ( axil_axi_write_req ),
+    //    .slv_write_resp_o ( axil_axi_write_rsp ),
+    //    .mst_req_o        ( axil_axi_req       ),
+    //    .mst_resp_i       ( axil_axi_rsp       )
+    //);
+//
+    //axi_sim_mem #(
+    //    .AddrWidth         ( AddrWidth    ),
+    //    .DataWidth         ( DataWidth    ),
+    //    .IdWidth           ( AxiIdWidth   ),
+    //    .UserWidth         ( UserWidth    ),
+    //    .axi_req_t         ( axi_req_t    ),
+    //    .axi_rsp_t         ( axi_rsp_t    ),
+    //    .WarnUninitialized ( 1'b0         ),
+    //    .ClearErrOnAccess  ( 1'b1         ),
+    //    .ApplDelay         ( TA           ),
+    //    .AcqDelay          ( TT           )
+    //) i_axil_axi_sim_mem (
+    //    .clk_i              ( clk                 ),
+    //    .rst_ni             ( rst_n               ),
+    //    .axi_req_i          ( axil_axi_req        ),
+    //    .axi_rsp_o          ( axil_axi_rsp        ),
+    //    .mon_r_last_o       ( /* NOT CONNECTED */ ),
+    //    .mon_r_beat_count_o ( /* NOT CONNECTED */ ),
+    //    .mon_r_user_o       ( /* NOT CONNECTED */ ),
+    //    .mon_r_id_o         ( /* NOT CONNECTED */ ),
+    //    .mon_r_data_o       ( /* NOT CONNECTED */ ),
+    //    .mon_r_addr_o       ( /* NOT CONNECTED */ ),
+    //    .mon_r_valid_o      ( /* NOT CONNECTED */ ),
+    //    .mon_w_last_o       ( /* NOT CONNECTED */ ),
+    //    .mon_w_beat_count_o ( /* NOT CONNECTED */ ),
+    //    .mon_w_user_o       ( /* NOT CONNECTED */ ),
+    //    .mon_w_id_o         ( /* NOT CONNECTED */ ),
+    //    .mon_w_data_o       ( /* NOT CONNECTED */ ),
+    //    .mon_w_addr_o       ( /* NOT CONNECTED */ ),
+    //    .mon_w_valid_o      ( /* NOT CONNECTED */ )
+    //);
 
-// axi_sim_mem #(
-//   
-// ) i_axi_sim_mem (
-// 
-// );
-// 
-// 
-// //Todo:regbusdriver
+// // Todo:regbusdriver
 // 
 // 
 // new_usb_ohci #(

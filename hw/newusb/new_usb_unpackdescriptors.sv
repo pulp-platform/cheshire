@@ -51,6 +51,8 @@ module new_usb_unpackdescriptors import new_usb_ohci_pkg::* #(
     input  logic sent_head_i
 );
     
+    `include "common_cells/registers.svh"
+
     localparam int unsigned DmaOutputQueueStages = 128/AxiDataWidth; // dmaoutputqueueED stages
     
     // active package flying to listservice
@@ -109,7 +111,7 @@ module new_usb_unpackdescriptors import new_usb_ohci_pkg::* #(
     assign dma_valid_ed    = dma_valid_i && ed && !dma_flush;
     assign dma_valid_td    = dma_valid_i && !ed && !dma_flush;
 
-    // dma flush, early flush to prevent faulty stage loading, save power and increase speed
+    // dma flush is an early flush to prevent faulty stage loading, save power and increase speed
     // Todo: replace with register chain
     logic dma_flush;
     logic dma_flush_en;
@@ -137,6 +139,8 @@ module new_usb_unpackdescriptors import new_usb_ohci_pkg::* #(
     assign flush_en = dma_flush_handshake && ~dma_flush_handshake_prev;
 
     // validity doublehead check
+    // Checks validity at secondin because at head we do 
+    // double length reads from the DMA like in an array which is not HCD spec but predicted.
     logic loaded_head;
     logic doublehead_invalid;
     assign loaded_head = sent_head_i && secondin_loaded;
@@ -151,7 +155,7 @@ module new_usb_unpackdescriptors import new_usb_ohci_pkg::* #(
     // generate pop 3 cycles delayed to served_td
     logic pop_handshake;
     logic pop_handshake_prev;
-    assign pop_handshake = pop_ready && served_td && nextis_ready_i; // Todo: Can context_switch mid TD cause a destashing event?
+    assign pop_handshake = pop_ready && (served_td || aborted_td) && nextis_ready_i;
     `FF(pop_handshake_prev, pop_handshake, 1'b0)
     assign pop_very_early = pop_handshake && ~pop_handshake_prev; // pop_very_early one delayed
     `FF(pop_early, pop_very_early, 1'b0) // pop_early two delayed
@@ -194,6 +198,9 @@ module new_usb_unpackdescriptors import new_usb_ohci_pkg::* #(
 
     // dma output queue transfer descriptor
     logic [27:0] nextTD;
+    logic        aborted_td;
+    logic        retire_td;
+    assign retire_td = served_td && !aborted_td;
     new_usb_dmaoutputqueueTD i_dmaoutputqueueTD (
         /// control
         .clk_i,
@@ -204,7 +211,8 @@ module new_usb_unpackdescriptors import new_usb_ohci_pkg::* #(
         .dma_ready_o(dma_ready_td),
         /// external TD access
         .nextTD_address_o(nextTD),
-        .served_td_o(served_td)
+        .served_td_o(served_td),
+        .aborted_td_o(aborted_td)
     );
 
 endmodule

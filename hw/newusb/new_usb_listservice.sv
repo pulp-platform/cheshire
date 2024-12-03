@@ -60,6 +60,8 @@ module new_usb_listservice import new_usb_ohci_pkg::*; (
 
 );
 
+  `include "common_cells/registers.svh"
+
   // listservice is not ready for nextis as long as we have an active head
   assign nextis_ready_d = !(activebulkhead || activecontrolhead);
   `FF(nextis_ready_o, nextis_ready_d, 1'b0) // one cycle delay to avoid concurrencies
