@@ -42,6 +42,8 @@ sources:
   - hw/bootrom/cheshire_bootrom.sv
   - hw/regs/cheshire_reg_pkg.sv
   - hw/regs/cheshire_reg_top.sv
+  - hw/mmu_req_gen.sv
+  - hw/mmu_stub.sv
   - hw/cheshire_pkg.sv
   - hw/cheshire_soc.sv
 

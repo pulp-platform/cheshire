@@ -557,8 +557,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   // TODO: Implement X interface support
 
   // Accelerator ports
-  acc_pkg::cva6_to_acc_t acc_req;
-  acc_pkg::acc_to_cva6_t acc_resp;
+  acc_pkg::cva6_to_acc_t acc_req_cva6, acc_req_ara;
+  acc_pkg::acc_to_cva6_t acc_resp_cva6, acc_resp_ara;
 
   // CVA6-Ara memory consistency
   logic                     acc_cons_en;
@@ -567,13 +567,13 @@ module cheshire_soc import cheshire_pkg::*; #(
   logic                     inval_ready;
 
   // Pack invalidation interface into acc interface
-  acc_pkg::acc_to_cva6_t acc_resp_pack;
+  acc_pkg::acc_to_cva6_t acc_resp_pack_cva6;
   always_comb begin : pack_inval
-    acc_resp_pack                      = acc_resp;
-    acc_resp_pack.acc_resp.inval_valid = inval_valid;
-    acc_resp_pack.acc_resp.inval_addr  = inval_addr;
-    inval_ready                        = acc_req.acc_req.inval_ready;
-    acc_cons_en                        = acc_req.acc_req.acc_cons_en;
+    acc_resp_pack_cva6                      = acc_resp_cva6;
+    acc_resp_pack_cva6.acc_resp.inval_valid = inval_valid;
+    acc_resp_pack_cva6.acc_resp.inval_addr  = inval_addr;
+    inval_ready                             = acc_req_cva6.acc_req.inval_ready;
+    acc_cons_en                             = acc_req_cva6.acc_req.acc_cons_en;
   end
 
   `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
@@ -648,8 +648,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clic_kill_req_i  ( clic_irq_kill_req ),
       .clic_kill_ack_o  ( clic_irq_kill_ack ),
       .rvfi_probes_o    ( ),
-      .cvxif_req_o      ( acc_req       ),
-      .cvxif_resp_i     ( acc_resp_pack ),
+      .cvxif_req_o      ( acc_req_cva6 ),
+      .cvxif_resp_i     ( acc_resp_pack_cva6 ),
       .noc_req_o        ( core_out_req ),
       .noc_resp_i       ( core_out_rsp )
     );
@@ -786,6 +786,21 @@ module cheshire_soc import cheshire_pkg::*; #(
       axi_mst_req_t axi_ara_narrow_req;
       axi_mst_rsp_t axi_ara_narrow_resp;
 
+      // SoC-level regfile helpers for STUB, MMU_REQ_GEN, and Ara
+      (* dont_touch = "yes" *) (* mark_debug = "true" *) logic soc_csr_virt_mem_en;
+      (* dont_touch = "yes" *) (* mark_debug = "true" *) logic soc_csr_ex_en;
+      logic [31:0] soc_csr_no_ex_lat;
+      logic [31:0] soc_csr_req_rsp_lat;
+      (* dont_touch = "yes" *) (* mark_debug = "true" *) logic        soc_csr_mmu_req_en;
+      (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [5:0]  soc_csr_mmu_req_lat;
+
+      assign soc_csr_virt_mem_en = reg_reg2hw.ara_virt_mem_en[0];
+      assign soc_csr_ex_en       = reg_reg2hw.stub_ex_en[0];
+      assign soc_csr_no_ex_lat   = reg_reg2hw.stub_no_ex_lat;
+      assign soc_csr_req_rsp_lat = reg_reg2hw.stub_req_rsp_lat;
+      assign soc_csr_mmu_req_en  = reg_reg2hw.mmu_req_gen_en[0];
+      assign soc_csr_mmu_req_lat = reg_reg2hw.mmu_req_gen_lat[5:0];
+
       ara #(
         .NrLanes      ( Cfg.AraNrLanes         ),
         .VLEN         ( Cfg.AraVLEN            ),
@@ -804,11 +819,84 @@ module cheshire_soc import cheshire_pkg::*; #(
         .scan_enable_i   ( 1'b0              ),
         .scan_data_i     ( 1'b0              ),
         .scan_data_o     ( /* Unused */      ),
-        .acc_req_i       ( acc_req           ),
-        .acc_resp_o      ( acc_resp          ),
+        .acc_req_i       ( acc_req_ara       ),
+        .acc_resp_o      ( acc_resp_ara      ),
         .axi_req_o       ( axi_ara_wide_req  ),
         .axi_resp_i      ( axi_ara_wide_resp )
       );
+
+    // MMU ports
+    ariane_pkg::exception_t mmu_misaligned_ex_acc_cva6, dbg_mmu_stub_misaligned_ex, dbg_mmu_req_gen_misaligned_ex;
+    logic                   mmu_req_acc_cva6, dbg_mmu_stub_req, dbg_mmu_req_gen_req;
+    logic [riscv::VLEN-1:0] mmu_vaddr_acc_cva6, dbg_mmu_stub_vaddr, dbg_mmu_req_gen_vaddr;
+    logic                   mmu_is_store_acc_cva6, dbg_mmu_stub_is_store, dbg_mmu_req_gen_is_store;
+    logic                   mmu_dtlb_hit_cva6_acc, dbg_mmu_stub_dtlb_hit, dbg_mmu_req_gen_dtlb_hit;
+    logic [riscv::PPNW-1:0] mmu_dtlb_ppn_cva6_acc, dbg_mmu_stub_dtlb_ppn, dbg_mmu_req_gen_dtlb_ppn;
+    logic                   mmu_valid_cva6_acc, dbg_mmu_stub_valid, dbg_mmu_req_gen_valid;
+    logic [riscv::PLEN-1:0] mmu_paddr_cva6_acc, dbg_mmu_stub_paddr, dbg_mmu_req_gen_paddr;
+    ariane_pkg::exception_t mmu_exception_cva6_acc, dbg_mmu_stub_exception, dbg_mmu_req_gen_exception;
+
+// DEBUG: MMU stub
+`define MMU_DEBUG
+`ifdef MMU_DEBUG
+    $info("MMU STUB enabled.");
+    $info("MMU REQ GEN ENABLED.");
+
+    assign acc_req_ara.acc_req    = acc_req_cva6.acc_req;
+    assign acc_resp_cva6.acc_resp = acc_resp_ara.acc_resp;
+
+    assign acc_req_ara.acc_mmu_en                         = soc_csr_virt_mem_en;
+    assign acc_req_ara.acc_mmu_resp.acc_mmu_dtlb_hit      = dbg_mmu_stub_dtlb_hit;
+    assign acc_req_ara.acc_mmu_resp.acc_mmu_dtlb_ppn      = dbg_mmu_stub_dtlb_ppn;
+    assign acc_req_ara.acc_mmu_resp.acc_mmu_valid         = dbg_mmu_stub_valid;
+    assign acc_req_ara.acc_mmu_resp.acc_mmu_paddr         = dbg_mmu_stub_paddr;
+    assign acc_req_ara.acc_mmu_resp.acc_mmu_exception     = dbg_mmu_stub_exception;
+
+    assign dbg_mmu_stub_misaligned_ex = acc_resp_ara.acc_mmu_req.acc_mmu_misaligned_ex;
+    assign dbg_mmu_stub_req           = acc_resp_ara.acc_mmu_req.acc_mmu_req;
+    assign dbg_mmu_stub_vaddr         = acc_resp_ara.acc_mmu_req.acc_mmu_vaddr;
+    assign dbg_mmu_stub_is_store      = acc_resp_ara.acc_mmu_req.acc_mmu_is_store;
+
+    assign acc_resp_cva6.acc_mmu_req.acc_mmu_misaligned_ex  = dbg_mmu_req_gen_misaligned_ex;
+    assign acc_resp_cva6.acc_mmu_req.acc_mmu_req            = dbg_mmu_req_gen_req;
+    assign acc_resp_cva6.acc_mmu_req.acc_mmu_vaddr          = dbg_mmu_req_gen_vaddr;
+    assign acc_resp_cva6.acc_mmu_req.acc_mmu_is_store       = dbg_mmu_req_gen_is_store;
+
+    assign dbg_mmu_req_gen_valid = acc_req_cva6.acc_mmu_resp.acc_mmu_valid;
+
+    mmu_stub i_mmu_stub (
+      .ex_en_i                ( soc_csr_ex_en               ),
+      .no_ex_lat_i            ( soc_csr_no_ex_lat           ),
+      .req_rsp_lat_i          ( soc_csr_req_rsp_lat         ),
+      .clk_i                  ( clk_i                       ),
+      .rst_ni                 ( rst_ni                      ),
+      .en_ld_st_translation_i ( soc_csr_virt_mem_en         ),
+      .misaligned_ex_i        ( dbg_mmu_stub_misaligned_ex  ),
+      .req_i                  ( dbg_mmu_stub_req            ),
+      .vaddr_i                ( dbg_mmu_stub_vaddr          ),
+      .is_store_i             ( dbg_mmu_stub_is_store       ),
+      .dtlb_hit_o             ( dbg_mmu_stub_dtlb_hit       ),
+      .dtlb_ppn_o             ( dbg_mmu_stub_dtlb_ppn       ),
+      .valid_o                ( dbg_mmu_stub_valid          ),
+      .paddr_o                ( dbg_mmu_stub_paddr          ),
+      .exception_o            ( dbg_mmu_stub_exception      )
+    );
+
+    mmu_req_gen i_mmu_req_gen (
+      .clk_i                  (clk_i                        ),
+      .rst_ni                 (rst_ni                       ),
+      .mmu_req_en_i           (soc_csr_mmu_req_en           ),
+      .mmu_req_lat_i          (soc_csr_mmu_req_lat          ),
+      .acc_mmu_misaligned_ex_o(dbg_mmu_req_gen_misaligned_ex),
+      .acc_mmu_req_o          (dbg_mmu_req_gen_req          ),
+      .acc_mmu_vaddr_o        (dbg_mmu_req_gen_vaddr        ),
+      .acc_mmu_is_store_o     (dbg_mmu_req_gen_is_store     ),
+      .acc_mmu_valid_i        (dbg_mmu_req_gen_valid        )
+    );
+`else
+  assign acc_req_ara   = acc_req_cva6;
+  assign acc_resp_cva6 = acc_req_ara;
+`endif
 
       // Issue invalidations to CVA6 L1D$
       axi_inval_filter #(
@@ -1106,6 +1194,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   /////////////////////
 
   cheshire_reg_pkg::cheshire_hw2reg_t reg_hw2reg;
+  cheshire_reg_pkg::cheshire_reg2hw_t reg_reg2hw;
 
   assign reg_hw2reg = '{
     boot_mode     : boot_mode_i,
@@ -1144,6 +1233,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .rst_ni,
     .reg_req_i  ( reg_out_req[RegOut.regs] ),
     .reg_rsp_o  ( reg_out_rsp[RegOut.regs] ),
+    .reg2hw     ( reg_reg2hw ),
     .hw2reg     ( reg_hw2reg ),
     .devmode_i  ( 1'b1 )
   );
