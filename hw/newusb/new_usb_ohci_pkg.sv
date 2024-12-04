@@ -24,7 +24,7 @@ package new_usb_ohci_pkg;
     BULK = 2'b00,
     CONTROL = 2'b01,
     ISOCHRONOUS = 2'b10,
-    INTERRUPT = 2'11
+    INTERRUPT = 2'b11
   } channel;
 
   typedef enum logic [1:0] {
