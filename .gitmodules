@@ -6,3 +6,6 @@
 	path = sw/deps/cva6-sdk
 	url = https://github.com/pulp-platform/cva6-sdk.git
 	ignore = dirty
+[submodule "sw/deps/litmus-tests"]
+	path = sw/deps/litmus-tests
+	url = https://github.com/pulp-platform/CHERI-Litmus.git
