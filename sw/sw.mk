@@ -28,7 +28,7 @@ CHS_SW_CCFLAGS ?= $(CHS_SW_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-b
 CHS_SW_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_SW_LD_DIR)
 CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
 
-CHS_SW_ALL += $(CHS_SW_LIBS) $(CHS_SW_GEN_HDRS) $(CHS_SW_TESTS)
+CHS_SW_ALL += $(CHS_SW_LIBS) $(CHS_SW_GEN_HDRS) $(CHS_SW_TESTS) $(CHS_SW_BENCHMARK)
 
 .PRECIOUS: %.elf %.dtb
 
@@ -166,3 +166,16 @@ CHS_SW_TEST_SPM_ROMH   	= $(CHS_SW_TEST_SRCS_S:.S=.rom.memh)  $(CHS_SW_TEST_SRCS
 CHS_SW_TEST_SPM_GPTH   	= $(CHS_SW_TEST_SRCS_S:.S=.gpt.memh)  $(CHS_SW_TEST_SRCS_C:.c=.gpt.memh)
 
 CHS_SW_TESTS = $(CHS_SW_TEST_DRAM_DUMP) $(CHS_SW_TEST_SPM_DUMP) $(CHS_SW_TEST_SPM_ROMH) $(CHS_SW_TEST_SPM_GPTH)
+
+##############
+# Benchmarks #
+##############
+
+CHS_SW_BENCHMARK_SRCS_S  		= $(wildcard $(CHS_SW_DIR)/benchmark/*.S)
+CHS_SW_BENCHMARK_SRCS_C     	= $(wildcard $(CHS_SW_DIR)/benchmark/*.c)
+CHS_SW_BENCHMARK_DRAM_DUMP  	= $(CHS_SW_BENCHMARK_SRCS_S:.S=.dram.dump) $(CHS_SW_BENCHMARK_SRCS_C:.c=.dram.dump)
+CHS_SW_BENCHMARK_SPM_DUMP   	= $(CHS_SW_BENCHMARK_SRCS_S:.S=.spm.dump)  $(CHS_SW_BENCHMARK_SRCS_C:.c=.spm.dump)
+CHS_SW_BENCHMARK_SPM_ROMH   	= $(CHS_SW_BENCHMARK_SRCS_S:.S=.rom.memh)  $(CHS_SW_BENCHMARK_SRCS_C:.c=.rom.memh)
+CHS_SW_BENCHMARK_SPM_GPTH   	= $(CHS_SW_BENCHMARK_SRCS_S:.S=.gpt.memh)  $(CHS_SW_BENCHMARK_SRCS_C:.c=.gpt.memh)
+
+CHS_SW_BENCHMARK = $(CHS_SW_BENCHMARK_DRAM_DUMP) $(CHS_SW_BENCHMARK_SPM_DUMP) $(CHS_SW_BENCHMARK_SPM_ROMH) $(CHS_SW_BENCHMARK_SPM_GPTH)
