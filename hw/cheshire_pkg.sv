@@ -493,8 +493,8 @@ package cheshire_pkg;
     ret.AxiIdWidth            = Cva6IdWidth;
     ret.AxiUserWidth          = cfg.AxiUserWidth;
     ret.DmBaseAddress         = AmDbg;
-    ret.HaltAddress           = AmDbg + 'h800;
-    ret.ExceptionAddress      = AmDbg + 'h808;
+    ret.HaltAddress           = 'h800; // Relative to AmDbg
+    ret.ExceptionAddress      = 'h810; // Relative to AmDbg
     ret.NrNonIdempotentRules  = 2;   // Periphs, ExtNonCI;
     ret.NonIdempotentAddrBase = {64'h0000_0000, NoCieBase};
     ret.NOCType               = config_pkg::NOC_TYPE_AXI4_ATOP;
