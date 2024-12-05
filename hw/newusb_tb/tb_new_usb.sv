@@ -11,7 +11,7 @@
 
 `timescale 1ps/1ps
 
-module new_usb_tb #(
+module tb_new_usb #(
   /// DMA manager port parameters
   parameter int unsigned AxiMaxReads   = 0,
   parameter int unsigned AxiAddrWidth  = 32,
@@ -44,7 +44,7 @@ string line;
 
 initial begin
     
-    file = $fopen("../../../hw/newusb_tb/new_usb_tb.mem", "r");
+    file = $fopen("../../../hw/newusb_tb/tb_new_usb.mem", "r");
     if (file == 0) begin
       $display("Failed to open file.");
       $finish;

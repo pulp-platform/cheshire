@@ -4,7 +4,7 @@
 #
 # Fabian Hauser <fhauser@student.ethz.ch>
 
-set TESTBENCH new_usb_tb
+set TESTBENCH tb_new_usb
 
 eval "vsim -c ${TESTBENCH} -t 1ps"
 

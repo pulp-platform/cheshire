@@ -6,4 +6,4 @@
 #
 # Recompile only newusb (way faster)
 
-vlog  -work work -sv ../../../hw/newusb_tb/new_usb_tb.sv
+vlog  -work work -sv ../../../hw/newusb_tb/tb_new_usb.sv

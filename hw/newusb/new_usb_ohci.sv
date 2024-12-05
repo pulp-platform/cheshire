@@ -53,6 +53,12 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
   `include "axi/typedef.svh"
   `include "common_cells/registers.svh"
 
+  logic clk_i;
+  logic rst_ni;
+  assign clk_i = soc_clk_i;
+  assign rst_ni = soc_rst_ni;
+
+
   newusb_reg_pkg::newusb_hw2reg_t newusb_hw2reg;
   newusb_reg_pkg::newusb_reg2hw_t newusb_reg2hw;
   
@@ -89,8 +95,8 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
   endpoint_descriptor processed;
   logic               processed_ed_store;
   store_type          processed_store_type;
-  logic [27:0]        newcurrentED_o,
-  logic               newcurrentED_valid_o,
+  logic [27:0]        newcurrentED_o;
+  logic               newcurrentED_valid_o;
   logic               id_valid;
   logic [2:0]         id_type;
   logic               sent_head;
@@ -151,7 +157,7 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
     .counter_is_threshold_o(counter_is_threshold),
     .cbsr_i(reg2hw.hccontrol.cbsr.q),
     /// nextis
-    .nextis_valid_o(nextis_valid) // needs to be one clock cycle
+    .nextis_valid_o(nextis_valid), // needs to be one clock cycle
     .nextis_ed_o(nextis_ed), // 0 if empty ed rerequest or td
     .nextis_type_o(nextis_type),
     .nextis_address_o(nextis_address),
@@ -171,8 +177,8 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
     .dma_valid_i(),
     .dma_ready_o(),
     /// periodic
-    .context_switch_np2p_i,
-    .context_switch_p2np_i,
+    .context_switch_np2p_i(context_switch_np2p),
+    .context_switch_p2np_i(context_switch_p2np),
     /// head state
     .sent_head_i(sent_head)
 );
