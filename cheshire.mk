@@ -17,6 +17,7 @@ VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
 
 # Common Bender flags for Cheshire RTL
 CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t cv64a6_imafdchsclic_sv39_wb
+NUM_CORES            ?= 1
 
 # Define used paths (prefixed to avoid name conflicts)
 CHS_ROOT      ?= $(shell $(BENDER) path cheshire)
@@ -87,12 +88,15 @@ $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv:
 	$(REGTOOL) -r $< --outdir $(dir $@)
 
 # CLINT
-CLINTCORES ?= 1
+CLINTCORES ?= $(NUM_CORES)
 include $(CLINTROOT)/clint.mk
 $(CLINTROOT)/.generated:
 	flock -x $@ $(MAKE) clint && touch $@
 
 # OpenTitan peripherals
+$(CHS_ROOT)/hw/rv_plic.cfg.hjson: $(CHS_ROOT)/util/gen_pliccfg.py
+	$(CHS_ROOT)/util/gen_pliccfg.py --num-cores $(NUM_CORES) > $@
+
 include $(OTPROOT)/otp.mk
 $(OTPROOT)/.generated: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
 	flock -x $@ sh -c "cp $< $(dir $@)/src/rv_plic/; $(MAKE) -j1 otp" && touch $@
