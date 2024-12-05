@@ -273,40 +273,40 @@ extern "C" {
 #define IDMA_REG64_2D_DONE_ID_15_REG_OFFSET 0xcc
 
 // Low destination address
-#define IDMA_REG64_2D_DST_ADDR_LOW_REG_OFFSET 0xe0
+#define IDMA_REG64_2D_DST_ADDR_LOW_REG_OFFSET 0xd0
 
 // High destination address
-#define IDMA_REG64_2D_DST_ADDR_HIGH_REG_OFFSET 0xe4
+#define IDMA_REG64_2D_DST_ADDR_HIGH_REG_OFFSET 0xd4
 
 // Low source address
-#define IDMA_REG64_2D_SRC_ADDR_LOW_REG_OFFSET 0xe8
+#define IDMA_REG64_2D_SRC_ADDR_LOW_REG_OFFSET 0xd8
 
 // High source address
-#define IDMA_REG64_2D_SRC_ADDR_HIGH_REG_OFFSET 0xec
+#define IDMA_REG64_2D_SRC_ADDR_HIGH_REG_OFFSET 0xdc
 
 // Low transfer length in byte
-#define IDMA_REG64_2D_LENGTH_LOW_REG_OFFSET 0xf0
+#define IDMA_REG64_2D_LENGTH_LOW_REG_OFFSET 0xe0
 
 // High transfer length in byte
-#define IDMA_REG64_2D_LENGTH_HIGH_REG_OFFSET 0xf4
+#define IDMA_REG64_2D_LENGTH_HIGH_REG_OFFSET 0xe4
 
 // Low destination stride dimension 2
-#define IDMA_REG64_2D_DST_STRIDE_2_LOW_REG_OFFSET 0xf8
+#define IDMA_REG64_2D_DST_STRIDE_2_LOW_REG_OFFSET 0xe8
 
 // High destination stride dimension 2
-#define IDMA_REG64_2D_DST_STRIDE_2_HIGH_REG_OFFSET 0xfc
+#define IDMA_REG64_2D_DST_STRIDE_2_HIGH_REG_OFFSET 0xec
 
 // Low source stride dimension 2
-#define IDMA_REG64_2D_SRC_STRIDE_2_LOW_REG_OFFSET 0x100
+#define IDMA_REG64_2D_SRC_STRIDE_2_LOW_REG_OFFSET 0xf0
 
 // High source stride dimension 2
-#define IDMA_REG64_2D_SRC_STRIDE_2_HIGH_REG_OFFSET 0x104
+#define IDMA_REG64_2D_SRC_STRIDE_2_HIGH_REG_OFFSET 0xf4
 
 // Low number of repetitions dimension 2
-#define IDMA_REG64_2D_REPS_2_LOW_REG_OFFSET 0x108
+#define IDMA_REG64_2D_REPS_2_LOW_REG_OFFSET 0xf8
 
 // High number of repetitions dimension 2
-#define IDMA_REG64_2D_REPS_2_HIGH_REG_OFFSET 0x10c
+#define IDMA_REG64_2D_REPS_2_HIGH_REG_OFFSET 0xfc
 
 #ifdef __cplusplus
 }  // extern "C"
