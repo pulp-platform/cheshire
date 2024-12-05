@@ -521,8 +521,8 @@ package cheshire_pkg;
       EnableAccelerator     : 0,
       RVS                   : 1,
       RVU                   : 1,
-      HaltAddress           : AmDbg + 'h800,
-      ExceptionAddress      : AmDbg + 'h808,
+      HaltAddress           : 'h800, // Relative to AmDbg
+      ExceptionAddress      : 'h810, // Relative to AmDbg
       RASDepth              : cfg.Cva6RASDepth,
       BTBEntries            : cfg.Cva6BTBEntries,
       BHTEntries            : cfg.Cva6BHTEntries,
