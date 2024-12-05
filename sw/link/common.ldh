@@ -29,6 +29,10 @@ SECTIONS {
   __global_pointer$ = ADDR(.misc) + SIZEOF(.misc) / 2;
   __stack_pointer$  = 0;
 
+  /* Stack size */
+  /* Use a default stack size of 4KiB */
+  __stack_size$  = 0x1000;
+
   /* Further addresses */
   __base_dma      = 0x01000000;
   __base_bootrom  = 0x02000000;
