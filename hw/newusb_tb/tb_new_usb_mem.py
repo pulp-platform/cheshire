@@ -4,10 +4,7 @@
 # 
 # Fabian Hauser <fhauser@student.ethz.ch>
 # 
-# Create testbench memory new_usb_tb_mem.mem for axi_sim_mem to load out of
-# a given address memory file new_usb_tb_addr_mem.txt
-
-import re
+# Create ED and TD lists for testbench memory new_usb_tb.mem
 
 import re
 

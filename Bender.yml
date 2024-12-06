@@ -59,6 +59,12 @@ sources:
       - target/sim/src/fixture_cheshire_soc.sv
       - target/sim/src/tb_cheshire_soc.sv
       - hw/newusb_tb/tb_new_usb.sv
+      - hw/newusb_tb/tb_new_usb_dmaoutputqueueED.sv
+      - hw/newusb_tb/tb_new_usb_dmaoutputqueueTD.sv
+      - hw/newusb_tb/tb_new_usb_listservice.sv
+      - hw/newusb_tb/tb_new_usb_nonperiodiccounter.sv
+      - hw/newusb_tb/tb_new_usb_registerchain.sv
+      - hw/newusb_tb/tb_new_usb_unpackdescriptors.sv
 
   - target: all(fpga, xilinx)
     files:

@@ -7,3 +7,9 @@
 # Recompile only newusb (way faster)
 
 vlog  -work work -sv ../../../hw/newusb_tb/tb_new_usb.sv
+vlog  -work work -sv ../../../hw/newusb_tb/tb_new_usb_dmaoutputqueueED.sv
+vlog  -work work -sv ../../../hw/newusb_tb/tb_new_usb_dmaoutputqueueTD.sv
+vlog  -work work -sv ../../../hw/newusb_tb/tb_new_usb_listservice.sv
+vlog  -work work -sv ../../../hw/newusb_tb/tb_new_usb_nonperiodiccounter.sv
+vlog  -work work -sv ../../../hw/newusb_tb/tb_new_usb_registerchain.sv
+vlog  -work work -sv ../../../hw/newusb_tb/tb_new_usb_unpackdescriptors.sv
