@@ -6,7 +6,7 @@
 
 set TESTBENCH tb_new_usb_listservice
 
-eval "vsim -c ${TESTBENCH} -t 1ps"
+eval vsim -c ${TESTBENCH} -t 1ps -vopt -voptargs="+acc"
 
 set StdArithNoWarnings 1
 set NumericStdNoWarnings 1

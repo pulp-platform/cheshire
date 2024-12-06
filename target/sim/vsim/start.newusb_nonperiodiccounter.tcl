@@ -6,7 +6,11 @@
 
 set TESTBENCH tb_new_usb_nonperiodiccounter
 
-eval "vsim -c ${TESTBENCH} -t 1ps"
-
 set StdArithNoWarnings 1
 set NumericStdNoWarnings 1
+
+eval vsim -c ${TESTBENCH} -t 1ps -vopt -voptargs="+acc"
+add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/clk_i
+add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/rst_ni
+
+run 1us

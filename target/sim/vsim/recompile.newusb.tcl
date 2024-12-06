@@ -6,10 +6,14 @@
 #
 # Recompile only newusb (way faster)
 
-vlog  -work work -sv ../../../hw/newusb_tb/tb_new_usb.sv
-vlog  -work work -sv ../../../hw/newusb_tb/tb_new_usb_dmaoutputqueueED.sv
-vlog  -work work -sv ../../../hw/newusb_tb/tb_new_usb_dmaoutputqueueTD.sv
-vlog  -work work -sv ../../../hw/newusb_tb/tb_new_usb_listservice.sv
-vlog  -work work -sv ../../../hw/newusb_tb/tb_new_usb_nonperiodiccounter.sv
-vlog  -work work -sv ../../../hw/newusb_tb/tb_new_usb_registerchain.sv
-vlog  -work work -sv ../../../hw/newusb_tb/tb_new_usb_unpackdescriptors.sv
+# includes
+set common_cells [glob ../../../.bender/git/checkouts/common_cells-*]
+set axi          [glob ../../../.bender/git/checkouts/axi-*]
+set deps +incdir+${common_cells}/include+${axi}/include
+echo $deps
+
+# testbenches and sources
+set tb [glob ../../../hw/newusb_tb/tb_new_usb*sv]
+set hw [glob ../../../hw/newusb/new_usb*sv]
+
+eval vlog -work work ${deps} -sv $tb

@@ -16,15 +16,22 @@ module tb_new_usb_nonperiodiccounter #(
   // input  logic soc_rst_ni,
 );
 
-`include "axi/typedef.svh"
 `include "common_cells/registers.svh"
 
+logic clk_i;
+logic rst_ni;
+
 initial begin
-    
-    
-    #1000;
-    $finish;
+    clk_i = 0;
+    forever #100 clk_i = ~clk_i;
 end
 
+initial begin
+    rst_ni = 1;
+    #1000 
+    rst_ni = 0;
+    #20
+    rst_ni = 1;
+end
 
 endmodule
