@@ -12,5 +12,7 @@ set NumericStdNoWarnings 1
 eval vsim -c ${TESTBENCH} -t 1ps -vopt -voptargs="+acc"
 add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/clk_i
 add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/rst_ni
+add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/overflow
+add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/threshold
 
 run 1us

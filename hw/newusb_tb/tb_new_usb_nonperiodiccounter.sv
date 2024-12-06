@@ -34,4 +34,17 @@ initial begin
     rst_ni = 1;
 end
 
+logic overflow;
+logic threshold;
+
+new_usb_nonperiodiccounter i_nonperiodiccounter (
+  .clk_i,
+  .rst_ni,
+  .served_bulk_td_i(1'b0), // successfully served bulk transfer descriptor
+  .served_control_td_i(1'b1), // successfully served control transfer descriptor
+  .cbsr_i(2'b11),
+  .counter_overflown_o(overflow), // enough control EDs served
+  .counter_is_threshold_o(threshold) // signals last control ED to send for listservice
+);
+
 endmodule

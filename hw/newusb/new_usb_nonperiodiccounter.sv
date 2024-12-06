@@ -23,6 +23,7 @@ module new_usb_nonperiodiccounter (
 
   logic [1:0] count;
   logic restart_counter;
+  logic en_i;
 
   counter #(.WIDTH(2), .STICKY_OVERFLOW(1'b1)) i_counter (
     .clk_i,
@@ -36,7 +37,7 @@ module new_usb_nonperiodiccounter (
     .overflow_o(counter_overflown_o)
   );
   
-  assign counter_is_threshold_i = (count == 2'b00);
+  assign counter_is_threshold_o = (count == 2'b00);
 
   // create enable, one pulse for one count
   logic served_control_td_prev;
@@ -47,7 +48,7 @@ module new_usb_nonperiodiccounter (
   logic served_bulk_td_prev;
   logic reloadcbsr;
   `FF(served_bulk_td_prev, served_bulk_td_i, 1'b0)
-  restart_counter = served_bulk_td_i && ~served_bulk_td_prev;
-  assign reload_cbsr = (restart_counter || !rst_ni);
+  assign restart_counter = served_bulk_td_i && ~served_bulk_td_prev;
+  assign reload_cbsr = (restart_counter || ~rst_ni);
 
 endmodule
