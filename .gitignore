@@ -48,3 +48,4 @@ compile.*
 .vscode
 *.zip
 target/xilinx/src/ila_v6_2_12_ila_core.edn
+oseda

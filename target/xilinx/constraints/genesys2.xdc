@@ -63,16 +63,23 @@ create_generated_clock  [get_nets i_hyperbus/i_phy/phy_wrap.phy_unroll[1].i_phy/
 
 ## I/O constraints
 set output_ports {FMC_hyper*_dq* FMC_hyper*_rwds}
-set_output_delay [expr $period_hyperbus/2 ] -clock clk_phy_90 [get_ports $output_ports] -max
-set_output_delay [expr $period_hyperbus/-2] -clock clk_phy_90 [get_ports $output_ports] -min -add_delay
-set_output_delay [expr $period_hyperbus/2 ] -clock clk_phy_90 [get_ports $output_ports] -max -clock_fall -add_delay
-set_output_delay [expr $period_hyperbus/-2] -clock clk_phy_90 [get_ports $output_ports] -min -clock_fall -add_delay
+set_output_delay [expr $period_hyperbus/4 ] -clock clk_phy_90 [get_ports $output_ports] -max
+set_output_delay [expr $period_hyperbus/-4] -clock clk_phy_90 [get_ports $output_ports] -min -add_delay
+set_output_delay [expr $period_hyperbus/4 ] -clock clk_phy_90 [get_ports $output_ports] -max -clock_fall -add_delay
+set_output_delay [expr $period_hyperbus/-4] -clock clk_phy_90 [get_ports $output_ports] -min -clock_fall -add_delay
 
 set input_ports {FMC_hyper*_dq* FMC_hyper*_rwds}
-set_input_delay -max [expr $period_hyperbus/2] -clock clk_phy [get_ports $input_ports]
-set_input_delay -min [expr $period_hyperbus/2] -clock clk_phy [get_ports $input_ports] -add_delay
-set_input_delay -max [expr $period_hyperbus/2] -clock clk_phy [get_ports $input_ports] -add_delay -clock_fall
-set_input_delay -min [expr $period_hyperbus/2] -clock clk_phy [get_ports $input_ports] -add_delay -clock_fall
+set_input_delay -max [expr $period_hyperbus/4] -clock clk_phy [get_ports $input_ports]
+set_input_delay -min [expr $period_hyperbus/4] -clock clk_phy [get_ports $input_ports] -add_delay
+set_input_delay -max [expr $period_hyperbus/4] -clock clk_phy [get_ports $input_ports] -add_delay -clock_fall
+set_input_delay -min [expr $period_hyperbus/4] -clock clk_phy [get_ports $input_ports] -add_delay -clock_fall
+
+set_output_delay [expr $period_hyperbus/8 ] -clock clk_phy_90 [get_ports FMC_hyper*_reset] -max
+set_output_delay [expr $period_hyperbus/-8] -clock clk_phy_90 [get_ports FMC_hyper*_reset] -min -add_delay
+
+set_output_delay -clock clk_phy_90 [expr $period_hyperbus/8] [get_ports FMC_hyper*_csn*] -max
+set_output_delay -clock clk_phy_90 [expr $period_hyperbus/-8] [get_ports FMC_hyper*_csn*] -min -add_delay 
+
 
 # Deactivate clk fall for no ddr reg
 set_max_delay -from {FMC_hyper*_rwds} -to {i_hyperbus/i_phy/phy_wrap.phy_unroll*.i_phy/i_trx/rwds_sample_o_reg/D} [expr 0.8*$period_hyperbus ]
@@ -122,6 +129,26 @@ set sys_rst_pin i_rstgen/i_rstgen_bypass/i_tc_clk_mux2_rst_no/i_BUFGMUX/O
 
 set_max_delay -reset -through [get_pins $sys_rst_pin] [expr 0.8*20]
 set_false_path -hold -through [get_pins $sys_rst_pin]
+
+## PMOD (zum debuggen)
+#set_property -dict { PACKAGE_PIN U27   IOSTANDARD LVCMOS33 } [get_ports { deb_pmod_ax_chip_sel_idx[0] }]; #IO_L13P_T2_MRCC_14 Sch=ja_p[1]
+#set_property -dict { PACKAGE_PIN U28   IOSTANDARD LVCMOS33 } [get_ports { deb_pmod_ax_chip_sel_idx[1] }]; #IO_L13N_T2_MRCC_14 Sch=ja_n[1]
+#set_property -dict { PACKAGE_PIN T26   IOSTANDARD LVCMOS33 } [get_ports { deb_pmod_trans_cs_o[0] }]; #IO_L12P_T1_MRCC_14 Sch=ja_p[2]
+#set_property -dict { PACKAGE_PIN T27   IOSTANDARD LVCMOS33 } [get_ports { deb_pmod_trans_cs_o[1] }]; #IO_L12N_T1_MRCC_14 Sch=ja_n[2]
+##set_property -dict { PACKAGE_PIN T22   IOSTANDARD LVCMOS33 } [get_ports { ja[4] }]; #IO_L5P_T0_D06_14 Sch=ja_p[3]
+##set_property -dict { PACKAGE_PIN T23   IOSTANDARD LVCMOS33 } [get_ports { ja[5] }]; #IO_L5N_T0_D07_14 Sch=ja_n[3]
+##set_property -dict { PACKAGE_PIN T20   IOSTANDARD LVCMOS33 } [get_ports { ja[6] }]; #IO_L4P_T0_D04_14 Sch=ja_p[4]
+##set_property -dict { PACKAGE_PIN T21   IOSTANDARD LVCMOS33 } [get_ports { ja[7] }]; #IO_L4N_T0_D05_14 Sch=ja_n[4]
+
+## PMOD Header JB
+#set_property -dict { PACKAGE_PIN V29   IOSTANDARD LVCMOS33 } [get_ports { deb_pmod_cs_q[0][0] }]; #IO_L17P_T2_A14_D30_14 Sch=jb_p[1]
+#set_property -dict { PACKAGE_PIN V30   IOSTANDARD LVCMOS33 } [get_ports { deb_pmod_cs_q[0][1] }]; #IO_L17N_T2_A13_D29_14 Sch=jb_n[1]
+#set_property -dict { PACKAGE_PIN V25   IOSTANDARD LVCMOS33 } [get_ports { deb_pmod_cs_q[1][0] }]; #IO_L18P_T2_A12_D28_14 Sch=jb_p[2]
+#set_property -dict { PACKAGE_PIN W26   IOSTANDARD LVCMOS33 } [get_ports { deb_pmod_cs_q[1][1]] }]; #IO_L18N_T2_A11_D27_14 Sch=jb_n[2]
+#set_property -dict { PACKAGE_PIN T25   IOSTANDARD LVCMOS33 } [get_ports { hyper_cs_no[0][0] }]; #IO_L14P_T2_SRCC_14 Sch=jb_p[3]
+#set_property -dict { PACKAGE_PIN U25   IOSTANDARD LVCMOS33 } [get_ports { hyper_cs_no[0][1] }]; #IO_L14N_T2_SRCC_14 Sch=jb_n[3]
+#set_property -dict { PACKAGE_PIN U22   IOSTANDARD LVCMOS33 } [get_ports { hyper_cs_no[1][0] }]; #IO_L21P_T3_DQS_14 Sch=jb_p[4]
+#set_property -dict { PACKAGE_PIN U23   IOSTANDARD LVCMOS33 } [get_ports { hyper_cs_no[1][1] }]; #IO_L21N_T3_DQS_A06_D22_14 Sch=jb_n[4]
 
 ############
 # Switches #
