@@ -15,23 +15,29 @@
 #include "util.h"
 
 #include "sup_virt_adr.h"
+#include "random_adr.h"
 
 /* 
-This Benchmark copies 1MB in a linear access
+This Benchmark copies 1MB in a random access
+
+We initalize two 16MB Array (src & dst). From this list we copy 256 4kB Pages.
+The indx of the pages choosen will be generated offline and inserted into a seperate array.
+This allows a cross-platform comparsion
 
 Initalized:
-(0x281800000 - 0x2810FFFFF)
-(0x282000000 - 0x2820FFFFF)
+(0x281000000 - 0x281FFFFFF)
+(0x282000000 - 0x282FFFFFF)
 
 Copied:
-(0x281800000 - 0x2810FFFFF) to (0x282000000 - 0x2820FFFFF)
+Random
 
 Configuration:
 - idma config as 1D!
 
 Remark:
 - In this Benchmark the copy is page aligned
-
+- DMA Transfer are blocking
+- The array rand_src / rand_dst contains 256 adresses between 0x281000000 & 0x281FFF000 ( See extra h - file)
 */
 
 // Define the Root Acess of the Page Table
@@ -54,39 +60,61 @@ int main(void) {
     uint64_t start_cycle = 0;
     uint64_t end_cycle = 0;
 
+    char debug[] = "Here\r\n";
+
     // Initialize an error
-    int error;
+    int error = 0;
 
     // Could be generated with the random methode - be advised of overlapping spaces!
+    // TODO Update here!
     transfer_t tf;
     tf.pa_src = (void *) 0x0000000081000000;
     tf.pa_dst = (void *) 0x0000000082000000;
     tf.va_src = tf.pa_src + 0x200000000;
     tf.va_dst = tf.pa_dst + 0x200000000;
-    tf.len = 1048576;
+    tf.len = 16777216;
+
+    uart_write_str(&__base_uart, debug, sizeof(debug));
+    uart_write_flush(&__base_uart);
 
     // Generate the Page Table for these adresses
     reserve_array(tf.va_src, &nxt_free_page, tf.len, PAGE_TABLE_ROOT_ADRESSE);
     reserve_array(tf.va_dst, &nxt_free_page, tf.len, PAGE_TABLE_ROOT_ADRESSE);
 
+    uart_write_str(&__base_uart, debug, sizeof(debug));
+    uart_write_flush(&__base_uart);
+
     // (Optional: Populate with data)
     generate_data(tf.pa_src, 0, tf.len);
     generate_data(tf.pa_dst, 1, tf.len);
 
+    uart_write_str(&__base_uart, debug, sizeof(debug));
+    uart_write_flush(&__base_uart);
+
     // Setup the sMMU Config
-    sys_dma_smmu_config(0,1,1,0);
+    sys_dma_smmu_config(0,0,1,0);
     sys_dma_smmu_set_pt_root(PAGE_TABLE_ROOT_ADRESSE);
+
+    uart_write_str(&__base_uart, debug, sizeof(debug));
+    uart_write_flush(&__base_uart);
 
     // to flush the cache to DRAM
     fence(); 
 
     // DMA Copy here
     start_cycle = get_mcycle();
-    sys_dma_blk_memcpy((uintptr_t)(void *) tf.pa_dst, (uintptr_t)(void *) tf.pa_src, tf.len);
+    for(int i = 0; i < 2;i ++){   // 256
+        sys_dma_blk_memcpy((uintptr_t)(void *) rand_src[i], (uintptr_t)(void *) rand_dst[i], 4096);
+    }
     end_cycle = get_mcycle();
 
+    uart_write_str(&__base_uart, debug, sizeof(debug));
+    uart_write_flush(&__base_uart);
+
     // Verify Data Copy
-    error = verify_data(tf.pa_src, tf.pa_dst, tf.len);
+    for(int i = 0; i < 2;i ++){   // 256
+        error = error | verify_data((void *) (rand_src[i] - 0x0000000200000000), (void *) (rand_dst[i] - 0x0000000200000000), 4096);
+    }
 
     // Write the cycle count
     convert_hex_to_string((end_cycle - start_cycle), &buf[13], 16);
