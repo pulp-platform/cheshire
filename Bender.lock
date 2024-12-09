@@ -196,7 +196,7 @@ packages:
     - common_cells
     - register_interface
   smmu:
-    revision: b82cbdf709cba670a82947fbb8b974b6bf714eb1
+    revision: ab2cc4e40d7a56cf57965e6f8c109f28e74de8f7
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:bslk/vmdma/streammmu.git
