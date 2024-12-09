@@ -8,7 +8,7 @@
 
 #define MACLO_OFFSET                 0x0
 #define MACHI_OFFSET                 0x4
-#define IRQ_OFFSET                   0x18
+#define ETH_IDMA_RSR_OFFSET          0x18
 #define IDMA_SRC_ADDR_OFFSET         0x1c
 #define IDMA_DST_ADDR_OFFSET         0x20
 #define IDMA_LENGTH_OFFSET           0x24
@@ -18,7 +18,6 @@
 #define IDMA_REQ_READY_OFFSET        0x48
 #define IDMA_RSP_READY_OFFSET        0x4c
 #define IDMA_RSP_VALID_OFFSET        0x50
-#define IDMA_RX_EN_OFFSET            0x54
 #define ETH_MDIO_OFFSET              0x8
 
 #define PLIC_BASE                    0x04000000
@@ -91,8 +90,10 @@ int main(void) {
   *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00800207;
   // rx irq
   while (!((*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19) ));
-  // dma length ready, dma can be configured now
-  while (!(*reg32(ETH_BASE,IDMA_RX_EN_OFFSET)));
+
+  uint32_t *rx_length;
+  rx_length = 0x0300c024;
+  printf("rx length value: 0x%08X\n", *rx_length);
 
   *reg32(ETH_BASE, IDMA_SRC_ADDR_OFFSET)  = 0x0;
   *reg32(ETH_BASE, IDMA_DST_ADDR_OFFSET)  = RX_BASE;
@@ -104,6 +105,8 @@ int main(void) {
 
   // wait until DMA moves all data
   while (!(*reg32(ETH_BASE, IDMA_RSP_VALID_OFFSET)));
+
+  *reg32(ETH_BASE, ETH_IDMA_RSR_OFFSET)  = 0x2;
 
   volatile uint32_t error = 0;
 
