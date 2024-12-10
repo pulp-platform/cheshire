@@ -26,6 +26,7 @@ module new_usb_nonperiodiccounter (
   logic en;
   logic served_control_td_prev;
   logic served_bulk_td_prev;
+  logic reload_cbsr_early;
   logic reload_cbsr;
 
   counter #(.WIDTH(2), .STICKY_OVERFLOW(1'b1)) i_counter (
@@ -49,7 +50,8 @@ module new_usb_nonperiodiccounter (
   // create reload, one pulse for one reload
   `FF(served_bulk_td_prev, served_bulk_td_i, 1'b0)
   assign restart_counter = served_bulk_td_i && ~served_bulk_td_prev;
-  `FFLARNC(reload_cbsr, 1'b0, 1'b1, restart_counter, 1'b1, clk_i, rst_ni) // permanent high enable
+  `FFLARNC(reload_cbsr_early, 1'b0, 1'b1, restart_counter, 1'b1, clk_i, rst_ni) // permanent high enable
   //`FFLARNC(__q, __d,  __load, __clear, __reset_value, __clk, __arst_n)
+  `FF(reload_cbsr, reload_cbsr_early, 1'b0)
 
 endmodule
