@@ -5,10 +5,15 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
+// Enrico Zelioli <ezelioli@iis.ee.ethz.ch>
 
-// TODO: Avoid hardcoding in addresses and offsets
+#include <regs/cheshire.h>
+#include <regs/axi_llc.h>
 
-#include "smp.h"
+// The hart that non-SMP tests should run on
+#ifndef NONSMP_HART
+#define NONSMP_HART 0
+#endif
 
 .section .text._start
 
@@ -47,7 +52,11 @@ _start:
     li x31, 0
 
     // Pause SMP harts
-    smp_pause(t0, t1)
+    li   t1, 0x8
+    csrw mie, t1
+    li   t0, NONSMP_HART
+    csrr t1, mhartid
+    bne  t0, t1, _wait_for_ipi
 
     // Init stack and global pointer with safe, linked values
     la sp, __stack_pointer$
@@ -57,56 +66,101 @@ _start:
     .option pop
 
     // If LLC present: Wait for end of BIST, then extend stack and set to all SPM
-    la t0, __base_regs
-    lw t0, 80(t0)   // regs.HW_FEATURES
-    andi t0, t0, 2  // regs.HW_FEATURES.llc
+    la   t0, __base_regs
+    lw   t0, CHESHIRE_HW_FEATURES_REG_OFFSET(t0)
+    andi t0, t0, 2  // HW_FEATURES.llc
     beqz t0, _prom_check_run
-    la t0, __base_llc
+    la   t0, __base_llc
 _wait_llc_bist:
-    lw t1, 72(t0)   // llc.BIST_STATUS_DONE_BIT
+    lw   t1, AXI_LLC_BIST_STATUS_REG_OFFSET(t0) // Check BIST status done bit
     beqz t1, _wait_llc_bist
-    li t1, -1
-    sw t1, 0(t0)    // llc.CFG_SPM_LOW
-    sw t1, 4(t0)    // llc.CFG_SPM_HIGH
-    li t1, 1
-    sw t1, 16(t0)   // llc.CFG_COMMIT
+    li   t1, -1
+    sw   t1, AXI_LLC_CFG_SPM_LOW_REG_OFFSET(t0)
+    sw   t1, AXI_LLC_CFG_SPM_HIGH_REG_OFFSET(t0)
+    li   t1, 1
+    sw   t1, AXI_LLC_COMMIT_CFG_REG_OFFSET(t0)
     // Correct stack to start at end of SPM
-    la t0, __base_regs
-    la sp, __base_spm
-    lw t0, 84(t0)   // regs.LLC_SIZE
-    add sp, sp, t0
+    la   t0, __base_regs
+    la   sp, __base_spm
+    lw   t0, CHESHIRE_LLC_SIZE_REG_OFFSET(t0)
+    add  sp, sp, t0
     addi sp, sp, -8
 
 // Enter Platform ROM if present.
 _prom_check_run:
     // Note that we have internal access to SPM here *if and only if* there is an LLC.
     la t0, __base_regs
-    lw t0, 72(t0)   // regs.PLATFORM_ROM
+    lw t0, CHESHIRE_PLATFORM_ROM_REG_OFFSET(t0)
     beqz t0, _boot
     jalr t0
 
+// Move to next stage of booting
+// 1. Write the address of next stage boot loader in Cheshire's scratch registers
+// 2. Resume execution of all other harts
 .global boot_next_stage
 boot_next_stage:
-    // Non-SMP hart: Write boot address into global scratch registers
-    la t0, __base_regs
-    sw a0, 16(t0)   // regs.SCRATCH[4]
+
+    // Non-SMP hart: write boot address into global scratch registers
+    la   t0, __base_regs
+    sw   a0, CHESHIRE_SCRATCH_4_REG_OFFSET(t0)
     srli a0, a0, 32
-    sw a0, 20(t0)   // regs.SCRATCH[5]
+    sw   a0, CHESHIRE_SCRATCH_5_REG_OFFSET(t0)
     fence
-    // Resume SMP harts
-    smp_resume(t0, t1, t2)
+
+    // Resume SMP harts: set CLINT IPI registers
+    // NOTE: this will cause CLINT to send IPIs to all cores, therefore also the
+    // non-smp hart will receive one. The following instructions make sure that
+    // all harts will wait until the IPI is received (WFI with global ie disabled),
+    // then clear the IPI in the CLINT and wait until all other harts are done with it.
+    la   t0, __base_clint
+    la   t2, __base_regs
+    lw   t2, CHESHIRE_NUM_INT_HARTS_REG_OFFSET(t2)
+    slli t2, t2, 2
+    add  t2, t0, t2  // t2 = CLINT_BASE + (n_harts * 4)
+1:
+    li   t1, 1
+    sw   t1, 0(t0)
+    addi t0, t0, 4
+    blt  t0, t2, 1b
+
+// Stall hart until IPI is raised
+_wait_for_ipi:
+
+    // Wait until this hart receives IPI
+    wfi
+    csrr t1, mip
+    andi t1, t1, 0x8
+    beqz t1, _wait_for_ipi
+
+    // Clear CLINT IPI register for this hart
+    la   t0, __base_clint
+    csrr t1, mhartid
+    slli t1, t1, 2
+    add  t1, t1, t0
+    sw   zero, 0(t1)   // *(CLINT_BASE + hart_id * 4) = 0
+
+    la   t2, __base_regs
+    lw   t2, CHESHIRE_NUM_INT_HARTS_REG_OFFSET(t2)
+    slli t2, t2, 2
+    add  t2, t0, t2    // t2 = CLINT_BASE + (n_harts * 4)
+
+    // Wait until *all* CLINT IPI registers are cleared
+1:
+    lw   t1, 0(t0)
+    bnez t1, 1b
+    addi t0, t0, 4
+    blt  t0, t2, 1b
+
+    // Jump to next stage
     // Load boot address from global scratch registers
-    la t0, __base_regs
-    lwu t1, 20(t0)  // regs.SCRATCH[5]
+    la   t0, __base_regs
+    lwu  t1, CHESHIRE_SCRATCH_5_REG_OFFSET(t0)
     slli t1, t1, 32
-    lwu t0, 16(t0)  // regs.SCRATCH[4]
-    or t0, t0, t1
-    // Store hartid to a0
-    csrr a0, mhartid
-    // Jump to boot address
-    jalr ra, 0(t0)
-    // We should never get here
-    ret
+    lwu  t0, CHESHIRE_SCRATCH_4_REG_OFFSET(t0)
+    or   t0, t0, t1
+    csrr a0, mhartid  // Store hartid to a0
+    jalr ra, 0(t0)    // Jump to boot address
+    ret               // We should never get here
 
 // Reset regs, full fence, then jump to main
 _boot:
@@ -120,9 +174,10 @@ _boot:
 .global _exit
 _exit:
     // Save the return value to scratch register 2 and wait forever
+    // Set bit 0 to signal that the execution is done.
     slli a0, a0, 1
     ori  a0, a0, 1
     la t0, __base_regs
-    sw a0, 8(t0)     // regs.SCRATCH[2]
+    sw a0, CHESHIRE_SCRATCH_2_REG_OFFSET(t0)
 1:  wfi
     j 1b

@@ -14,6 +14,7 @@
 #include "gpt.h"
 #include "dif/uart.h"
 #include "printf.h"
+#include "smp.h"
 
 // Type for firmware payload
 typedef int (*payload_t)(uint64_t, uint64_t, uint64_t);
@@ -51,40 +52,48 @@ static inline void load_part_or_spin(void *priv, const uint64_t *pguid, void *co
 }
 
 int main(void) {
-    // Get system parameters
-    uint32_t bootmode = *reg32(&__base_regs, CHESHIRE_BOOT_MODE_REG_OFFSET);
-    uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
-    uint64_t core_freq = clint_get_core_freq(rtc_freq, 2500);
-    rgp = (void *)(uintptr_t)*reg32(&__base_regs, CHESHIRE_SCRATCH_3_REG_OFFSET);
-    uint32_t read = *reg32(&__base_regs, CHESHIRE_SCRATCH_0_REG_OFFSET);
-    void *priv = (void *)(uintptr_t)*reg32(&__base_regs, CHESHIRE_SCRATCH_1_REG_OFFSET);
 
-    // Initialize UART
-    uart_init(&__base_uart, core_freq, __BOOT_BAUDRATE);
+    uint64_t hart_id = get_mhartid();
 
-    // Print boot-critical cat, and also parameters
-    printf(" /\\___/\\       Boot mode:       %d\r\n"
-           "( o   o )      Real-time clock: %d Hz\r\n"
-           "(  =^=  )      System clock:    %d Hz\r\n"
-           "(        )     Read global ptr: 0x%08x\r\n"
-           "(    P    )    Read pointer:    0x%08x\r\n"
-           "(  U # L   )   Read argument:   0x%08x\r\n"
-           "(    P      )\r\n"
-           "(           ))))))))))\r\n\r\n",
-           bootmode, rtc_freq, core_freq, rgp, read, priv);
+    if (hart_id == 0) {
+        // Get system parameters
+        uint32_t bootmode = *reg32(&__base_regs, CHESHIRE_BOOT_MODE_REG_OFFSET);
+        uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
+        uint64_t core_freq = clint_get_core_freq(rtc_freq, 2500);
+        rgp = (void *)(uintptr_t)*reg32(&__base_regs, CHESHIRE_SCRATCH_3_REG_OFFSET);
+        uint32_t read = *reg32(&__base_regs, CHESHIRE_SCRATCH_0_REG_OFFSET);
+        void *priv = (void *)(uintptr_t)*reg32(&__base_regs, CHESHIRE_SCRATCH_1_REG_OFFSET);
 
-    // If this is a GPT disk boot, load payload and device tree
-    if (read & 1) {
-        rread = (gpt_read_t)(void *)(uintptr_t)(read & ~1);
-        load_part_or_spin(priv, __BOOT_DTB_TYPE_GUID, __BOOT_ZSL_DTB, "device tree", 64);
-        load_part_or_spin(priv, __BOOT_FW_TYPE_GUID, __BOOT_ZSL_FW, "firmware", 8192);
+        // Initialize UART
+        uart_init(&__base_uart, core_freq, __BOOT_BAUDRATE);
+
+        // Print boot-critical cat, and also parameters
+        printf(" /\\___/\\       Boot mode:       %d\r\n"
+               "( o   o )      Real-time clock: %d Hz\r\n"
+               "(  =^=  )      System clock:    %d Hz\r\n"
+               "(        )     Read global ptr: 0x%08x\r\n"
+               "(    P    )    Read pointer:    0x%08x\r\n"
+               "(  U # L   )   Read argument:   0x%08x\r\n"
+               "(    P      )\r\n"
+               "(           ))))))))))\r\n\r\n",
+               bootmode, rtc_freq, core_freq, rgp, read, priv);
+
+        // If this is a GPT disk boot, load payload and device tree
+        if (read & 1) {
+            rread = (gpt_read_t)(void *)(uintptr_t)(read & ~1);
+            load_part_or_spin(priv, __BOOT_DTB_TYPE_GUID, __BOOT_ZSL_DTB, "device tree", 64);
+            load_part_or_spin(priv, __BOOT_FW_TYPE_GUID, __BOOT_ZSL_FW, "firmware", 8192);
+        }
+
+        // Launch payload
+        printf("[ZSL] Launch firmware at %lx with device tree at %lx\r\n", __BOOT_ZSL_FW,
+               __BOOT_ZSL_DTB);
+        smp_resume();
     }
 
-    // Launch payload
     payload_t fw = __BOOT_ZSL_FW;
-    printf("[ZSL] Launch firmware at %lx with device tree at %lx\r\n", fw, __BOOT_ZSL_DTB);
     fencei();
-    return fw(0, (uintptr_t)__BOOT_ZSL_DTB, 0);
+    return fw(hart_id, (uintptr_t)__BOOT_ZSL_DTB, 0);
 }
 
 // On trap, report relevant CSRs and spin
