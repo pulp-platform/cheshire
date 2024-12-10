@@ -23,13 +23,16 @@ module new_usb_nonperiodiccounter (
 
   logic [1:0] count;
   logic restart_counter;
-  logic en_i;
+  logic en;
+  logic served_control_td_prev;
+  logic served_bulk_td_prev;
+  logic reload_cbsr;
 
   counter #(.WIDTH(2), .STICKY_OVERFLOW(1'b1)) i_counter (
     .clk_i,
     .rst_ni,
     .clear_i(1'b0),
-    .en_i,
+    .en_i(en),
     .load_i(reload_cbsr), // only load CBSR as max value during restart_counter or reset
     .down_i(1'b1),
     .d_i(cbsr_i),
@@ -37,18 +40,16 @@ module new_usb_nonperiodiccounter (
     .overflow_o(counter_overflown_o)
   );
   
-  assign counter_is_threshold_o = (count == 2'b00);
+  assign counter_is_threshold_o = (count == 2'b00); // Gets high mistakenly for one cycle (counter resets to 0) at reset or clear, no problem because it's only used one cycle later
 
   // create enable, one pulse for one count
-  logic served_control_td_prev;
   `FF(served_control_td_prev, served_control_td_i, 1'b0)
-  assign en_i = served_control_td_i && ~served_control_td_prev;
+  assign en = served_control_td_i && ~served_control_td_prev;
 
   // create reload, one pulse for one reload
-  logic served_bulk_td_prev;
-  logic reloadcbsr;
   `FF(served_bulk_td_prev, served_bulk_td_i, 1'b0)
   assign restart_counter = served_bulk_td_i && ~served_bulk_td_prev;
-  assign reload_cbsr = (restart_counter || ~rst_ni);
+  `FFLARNC(reload_cbsr, 1'b0, 1'b1, restart_counter, 1'b1, clk_i, rst_ni) // permanent high enable
+  //`FFLARNC(__q, __d,  __load, __clear, __reset_value, __clk, __arst_n)
 
 endmodule

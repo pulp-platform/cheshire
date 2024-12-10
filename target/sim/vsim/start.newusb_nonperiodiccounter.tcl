@@ -14,5 +14,15 @@ add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/clk_i
 add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/rst_ni
 add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/overflow
 add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/threshold
+add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/i_nonperiodiccounter/count
+add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/i_nonperiodiccounter/reload_cbsr
+add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/i_nonperiodiccounter/cbsr_i
+add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/i_nonperiodiccounter/i_counter/en_i
+add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/i_nonperiodiccounter/served_control_td_i
+add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/i_nonperiodiccounter/served_control_td_prev
+add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/i_nonperiodiccounter/restart_counter
+add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/i_nonperiodiccounter/served_bulk_td_i
+add wave -position insertpoint sim:/tb_new_usb_nonperiodiccounter/i_nonperiodiccounter/served_bulk_td_prev
+
 
 run 1us
