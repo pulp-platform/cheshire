@@ -38,6 +38,7 @@ localparam int unsigned en_high = 0; //@posedge already creates a one cycle dela
 logic clk_i;
 logic rst_ni;
 logic en;
+logic clear;
 logic [Width-1:0] data;
 logic [Width*Stages-1:0] register;
 
@@ -62,6 +63,7 @@ initial begin
     @(posedge clk_i);
     #input_delay;
     en = 0;
+    clear = 0;
     data = 32'hABBAABBA;
     @(posedge clk_i);
     #input_delay;
@@ -112,6 +114,7 @@ initial begin
     #input_delay;
     #en_high;
     en = 0;
+    clear = 1;
 end
 
 new_usb_registerchain #(
@@ -120,7 +123,7 @@ new_usb_registerchain #(
 ) i_registerchain (
   .clk_i,
   .rst_ni, // asynchronous, active low
-  .clear_i(1'b0), // synchronous, active high
+  .clear_i(clear), // synchronous, active high
   .en_i(en),
   .data_i(data),
   .register_o(register)
