@@ -16,4 +16,4 @@ echo $deps
 set tb [glob ../../../hw/newusb_tb/tb_new_usb*sv]
 set hw [glob ../../../hw/newusb/new_usb*sv]
 
-eval vlog -work work ${deps} -sv $tb ../../../hw/newusb/new_usb_nonperiodiccounter.sv
+eval vlog -work work ${deps} -sv $tb ../../../hw/newusb/new_usb_registerchain.sv

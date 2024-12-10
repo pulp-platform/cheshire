@@ -24,8 +24,8 @@ module new_usb_registerchain #(
   generate
     genvar i;
     for (i = 0; i < Total; i = i + Width) begin
-      if(i == 0) `FFLARNC(register[Width-1:0],   data_i,                en, clear, '0, clk_i, rst_ni)
-      else       `FFLARNC(register[Width+i-1:i], register[i-1:i-Width], en, clear, '0, clk_i, rst_ni) 
+      if(i == 0) `FFLARNC(register_o[Width-1:0],   data_i,                  en_i, clear_i, '0, clk_i, rst_ni)
+      else       `FFLARNC(register_o[Width+i-1:i], register_o[i-1:i-Width], en_i, clear_i, '0, clk_i, rst_ni) 
                  //`FFLARNC(__q, __d,  __load, __clear, __reset_value, __clk, __arst_n)
     end
   endgenerate

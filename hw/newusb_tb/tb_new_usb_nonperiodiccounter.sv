@@ -17,6 +17,7 @@ module tb_new_usb_nonperiodiccounter #(
 );
 
 `include "common_cells/registers.svh"
+
 localparam int unsigned period = 2000; // 500 MHz
 localparam int unsigned halfperiod = period/2;
 localparam int unsigned input_delay = 100;
