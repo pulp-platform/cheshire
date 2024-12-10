@@ -70,12 +70,18 @@ module new_usb_dmaoutputqueueED import new_usb_ohci_pkg::*; #(
     `FF(dma_handshake_prev, dma_handshake, 1'b0)
     assign en = dma_handshake && ~dma_handshake_prev;
 
-    // secondin registers
-    // Todo: replace with register chain
-    `FFL(dword0, dma_data_i, en, 32b'0) // Dword0
-    `FFL(dword1, dword0,   en, 32b'0) // Dword1
-    `FFL(dword2, dword1,   en, 32b'0) // Dword2
-    `FFL(dword3, dword2,   en, 32b'0) // Dword3
+    // secondin registers    
+    new_usb_registerchain #(
+      .Width(AxiDataWidth),
+      .Stages(DmaOutputQueueStages)
+    ) i_registerchain_secondin (
+      .clk_i,
+      .rst_ni, // asynchronous, active low
+      .clear_i(1'b0), // never cleared only its propagation validity bit (avoids timing issues, saves power)
+      .en_i(en),
+      .data_i(dma_data_i),
+      .register_o({dword0, dword1, dword2, dword3})
+    );
 
     // secondin fill propagation
     // Todo: replace with register chain

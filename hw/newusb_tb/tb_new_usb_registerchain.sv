@@ -40,7 +40,11 @@ logic rst_ni;
 logic en;
 logic clear;
 logic [Width-1:0] data;
-logic [Width*Stages-1:0] register;
+// logic [Width*Stages-1:0] register;
+logic [Width-1:0] dword0;
+logic [Width-1:0] dword1;
+logic [Width-1:0] dword2;
+logic [Width-1:0] dword3;
 
 initial begin
   clk_i = 1;
@@ -126,7 +130,7 @@ new_usb_registerchain #(
   .clear_i(clear), // synchronous, active high
   .en_i(en),
   .data_i(data),
-  .register_o(register)
+  .register_o({dword0, dword1, dword2, dword3})
 );
 
 endmodule
