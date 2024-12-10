@@ -659,7 +659,7 @@ package cheshire_pkg;
     DmaConfMaxWriteTxns : 4,
     DmaConfAmoNumCuts   : 1,
     DmaConfAmoPostCut   : 1,
-    DmaConfEnableTwoD   : 0,
+    DmaConfEnableTwoD   : 1,
     DmaNumAxInFlight    : 16,
     DmaMemSysDepth      : 8,
     DmaJobFifoDepth     : 2,
