@@ -40,7 +40,7 @@ module tb_new_usb #(
   logic [31:0] dword [3:0];
   reg [7:0] mem [logic [AxiAddrWidth-1:0]];
   integer file, status, i, j;
-  string line;
+  string line, rest;
   
   initial begin
       
@@ -60,9 +60,13 @@ module tb_new_usb #(
               continue;
           end
           // Try to parse the address and data
-          status = $sscanf(line, "@%h %h %h %h %h", address, dword[0], dword[1], dword[2], dword[3]);
-          
-          if (status == 5) begin  // Successfully read 5 values
+          status = $sscanf(line, "@%h %h %h %h %h%s", address, dword[0], dword[1], dword[2], dword[3], rest);
+
+          if (status == 5) begin  // Successfully read exactly 5 values
+              if ((address & 4'hF) != 0) begin
+                  $display("Not 16 Byte aligned address in line: %s", line);
+                  $stop;
+              end
               for (i = 0; i < 4; i++) begin
                   mem[address + i * 4 + 0] = dword[i][7:0];    // LSB to lowest address
                   mem[address + i * 4 + 1] = dword[i][15:8];   
@@ -70,11 +74,10 @@ module tb_new_usb #(
                   mem[address + i * 4 + 3] = dword[i][31:24];  // MSB to highest address
                   $display("Written into mem: @%h %h", address + i*4, dword[i]);
               end
-          end 
+          end
           else begin
               $display("Invalid data format in line: %s", line);
           end
-  
           if ($feof(file)) begin
               break;
           end
@@ -82,7 +85,6 @@ module tb_new_usb #(
   
       $fclose(file);
       #1000;
-      $finish;
   end
   
       //axi_lite_to_axi #(

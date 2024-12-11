@@ -6,7 +6,7 @@
 // 
 /// Address memory map for the testbench. The system has byte-addressable memory.
 /// All descriptors are 16-byte aligned, except isochronous TDs are 32-byte aligned.
-/// All values are in hexadecimal and will be stored LsB first. 
+/// All values are in hexadecimal and will be stored LsB first by the testbench. 
 /// Isochrounous TDs need to be loaded in two separate lines.
 /// Use the python script to generate connected EDs and TDs linked lists
 /// and insert them down below.
@@ -14,5 +14,5 @@
 /// Format:   @Address dword0 dword1 dword2 dword3
 /// Size:     (Address AxiAddrWidth) (dword 32bit)
 
-@0000A000 0000000A 0000000B 0000000C 0000000D
-@0000ABCD 00000001 00000002 00000003 00000004
+@0000A000 0000000D 0000000C 0000000B 0000000A
+@0000ABC0 00000004 00000003 00000002 00000001
