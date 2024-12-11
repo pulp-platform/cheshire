@@ -56,9 +56,9 @@ module new_usb_dmaoutputqueueED import new_usb_ohci_pkg::*; #(
     // control logic
     assign dword1 [31:4]  = tailp; // tailpointerTD only used for empty check
     assign noTD = (tailp == secondin.headTD.address); // we have no TDs or it's not loaded yet
-    assign empty_secondin_o = noTD && propagate_level3; // no TDs
-    assign secondin_valid_o = !noTD && propagate_level3; // loaded and nonempty secondin
-    assign secondin_loaded_o = propagate_level3;
+    assign empty_secondin_o = noTD && propagate_valid; // no TDs
+    assign secondin_valid_o = !noTD && propagate_valid; // loaded and nonempty secondin
+    assign secondin_loaded_o = propagate_valid;
     logic  non_empty_context_switch_np2p;
     assign non_empty_context_switch_np2p = secondin_valid_o && context_switch_np2p_i;
 
@@ -84,18 +84,25 @@ module new_usb_dmaoutputqueueED import new_usb_ohci_pkg::*; #(
     );
 
     // secondin fill propagation
-    // Todo: replace with register chain
-    logic propagate_level0;
-    logic propagate_level1;
-    logic propagate_level2;
-    logic propagate_level3;
-    logic rst_n_propagate;
-    assign rst_n_propagate = !pop_i && rst_ni && !empty_secondin_o && !context_switch_i; // equivalent to !(pop || rst_i || empty_secondin || context_switch_i)
-    `FFL(propagate_level0, 1'b1,             en, 1b'0, clk_i, rst_n_propagate) // Propagatelevel0
-    `FFL(propagate_level1, propagate_level0, en, 1b'0, clk_i, rst_n_propagate) // Propagatelevel1
-    `FFL(propagate_level2, propagate_level1, en, 1b'0, clk_i, rst_n_propagate) // Propagatelevel2
-    `FFL(propagate_level3, propagate_level2, en, 1b'0, clk_i, rst_n_propagate) // Propagatelevel3
-    assign dma_ready = !propagate_level3;
+    logic propagate_valid;
+    logic clear_propagate;
+    logic [Stages-1:0] propagate;
+    assign propagate_valid = propagate[Stages-1];
+    assign clear_propagate = pop_i || empty_secondin_o || context_switch_i;
+    assign dma_ready = !propagate_valid;
+
+    new_usb_registerchain #(
+      .Width(1),
+      .Stages(DmaOutputQueueStages)
+    ) i_registerchain_secondin_propagate (
+      .clk_i,
+      .rst_ni, // asynchronous, active low
+      .clear_i(clear_propagate), // synchronous, active high
+      .en_i(en),
+      .data_i(1'b1), // propagation of ones
+      .register_o(propagate)
+    );
+
 
     // context switch stash (only np EDs are stashed)
     logic active_stash;
