@@ -1312,7 +1312,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .TFLenWidth          ( 32'd20            ),
       .MemSysDepth         ( 32'd0             ),
       .TxFifoLogDepth      ( 32'd5             ),
-      .RxFifoLogDepth      ( 32'd10            ),
+      .RxFifoLogDepth      ( 32'd8             ),
       .axi_req_t           ( axi_mst_req_t     ),
       .axi_rsp_t           ( axi_mst_rsp_t     ),
       .reg_req_t           ( reg_req_t         ),

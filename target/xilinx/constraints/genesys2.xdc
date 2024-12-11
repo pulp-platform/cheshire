@@ -21,6 +21,10 @@ set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets sys_clk]
 set SOC_TCK 20.0
 set soc_clk [get_clocks -of_objects [get_pins i_clkwiz/clk_50]]
 
+set_clock_groups -asynchronous \
+    -group [get_clocks clk_50_clkwiz] \
+    -group [get_clocks clk_pll_i]
+
 ############
 # Switches #
 ############
@@ -156,7 +160,7 @@ set_property -dict {PACKAGE_PIN D27 IOSTANDARD LVCMOS18} [get_ports { eth_rst_n 
 #############################################
 # Modified for 125MHz receive clock
 create_clock -period 8.000 -name eth_rxck [get_ports eth_rxck]
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets eth_rxck_IBUF] 
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets eth_rxck_IBUF]
 
 set_clock_groups -asynchronous -group [get_clocks eth_rxck -include_generated_clocks]
 set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins i_clkwiz/clk_125]]
