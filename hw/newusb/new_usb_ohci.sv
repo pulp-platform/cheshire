@@ -181,7 +181,7 @@ module new_usb_ohci import new_usb_ohci_pkg::*; #(
     .context_switch_p2np_i(context_switch_p2np),
     /// head state
     .sent_head_i(sent_head)
-);
+  );
   
 
 
