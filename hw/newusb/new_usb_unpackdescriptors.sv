@@ -108,15 +108,21 @@ module new_usb_unpackdescriptors import new_usb_ohci_pkg::* #(
 
     // dma data path selector (ed | td | flush)
     assign dma_ready_o     = dma_ready_ed || dma_ready_td || dma_flush;
-    assign dma_valid_ed    = dma_valid_i && ed && !dma_flush;
-    assign dma_valid_td    = dma_valid_i && !ed && !dma_flush;
+    assign dma_valid_ed    = dma_valid_i && ed && dma_flush_inv;
+    assign dma_valid_td    = dma_valid_i && !ed && dma_flush_inv;
 
     // dma flush is an early flush to prevent faulty stage loading into the queues, save power and increase speed
     logic [Stages-1:0] flush;
     logic flushed;
     logic dma_flush;
+    logic dma_flush_inv;
     logic dma_flush_en;
-    assign dma_flush_en = doublehead_invalid || context_flush; // Todo: add other flush reasons
+    logic double_flush_early; // 256 bit transaction need to be flushed as two 128 transactions
+    logic double_flush;
+    `FF(double_flush, double_flush_early, 1'b0)
+    assign dma_flush_inv = !dma_flush;
+    assign double_flush = (flushed == 1) && (transaction_complete != 1); // flushed but dma is still sending data
+    assign dma_flush_en = doublehead_invalid || context_flush || double_flush; // Todo: add other flush reasons
     assign flushed = flush[Stages-1];
     `FFLARNC(dma_flush, 1'b1, dma_flush_en, flushed, 1b'0, clk_i, rst_ni)
     new_usb_registerchain #(
@@ -125,7 +131,7 @@ module new_usb_unpackdescriptors import new_usb_ohci_pkg::* #(
     ) i_registerchain_flush (
       .clk_i,
       .rst_ni, // asynchronous, active low
-      .clear_i(!dma_flush), // synchronous, active high
+      .clear_i(dma_flush_inv), // synchronous, active high
       .en_i(flush_en),
       .data_i(1'b1), // propagation of ones
       .register_o(flush)
