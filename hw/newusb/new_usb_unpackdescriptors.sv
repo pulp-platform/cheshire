@@ -117,11 +117,11 @@ module new_usb_unpackdescriptors import new_usb_ohci_pkg::* #(
     logic dma_flush;
     logic dma_flush_inv;
     logic dma_flush_en;
-    logic double_flush_early; // 256 bit transaction need to be flushed as two 128 transactions
-    logic double_flush;
-    `FF(double_flush, double_flush_early, 1'b0)
+    logic double_flush_early;
+    logic double_flush; // 256 bit transaction need to be flushed as two 128 transactions
+    `FF(double_flush, double_flush_early, 1'b0) // Maybe this register is not necessary, depends on transaction complete
     assign dma_flush_inv = !dma_flush;
-    assign double_flush = (flushed == 1) && (transaction_complete != 1); // flushed but dma is still sending data
+    assign double_flush_early = (flushed == 1) && (transaction_complete != 1); // Todo: add transaction_complete from dma
     assign dma_flush_en = doublehead_invalid || context_flush || double_flush; // Todo: add other flush reasons
     assign flushed = flush[Stages-1];
     `FFLARNC(dma_flush, 1'b1, dma_flush_en, flushed, 1b'0, clk_i, rst_ni)
