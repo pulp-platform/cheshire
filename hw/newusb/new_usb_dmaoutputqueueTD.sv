@@ -14,19 +14,20 @@ module new_usb_dmaoutputqueueTD import new_usb_ohci_pkg::*; (
     input  logic clk_i,
     input  logic rst_ni,
     /// data input
-    input  logic [31:0] dma_data_i,
-    input  logic        dma_valid_i,
-    output logic        dma_ready_o,
+    input  logic [AxiDataWidth-1:0] dma_data_i,
+    input  logic                    dma_valid_i,
+    output logic                    dma_ready_o,
     /// external TD access
     output logic [27:0] nextTD_address_o,
     output logic        served_td_o, // a service attempt was made
     output logic        aborted_td_o // the service was aborted before or after the attempt
+    
 );
     `include "common_cells/registers.svh"
     
     gen_transfer_descriptor general;
     assign nextTD_address_o = general.nextTD;
-    assign served_td_o = propagate_level3;
+    assign served_td_o = propagate_valid; // As soon as propagated => served_td // Todo: Actually implement the serving.
     assign aborted_td_o = 0'b0; // Todo: The system needs to pre-emptively abort a TD if its data is not fitting inside the periodic, nonperiodic window 
 
     logic [31:0] dword0;
@@ -45,22 +46,36 @@ module new_usb_dmaoutputqueueTD import new_usb_ohci_pkg::*; (
     assign en = dma_handshake && ~dma_handshake_prev;
 
     // registers
-    `FFL(dword0, dma_data, en, 32b'0) // Dword0
-    `FFL(dword1, dword0,   en, 32b'0) // Dword1
-    `FFL(dword2, dword1,   en, 32b'0) // Dword2
-    `FFL(dword3, dword2,   en, 32b'0) // Dword3
+    new_usb_registerchain #(
+      .Width(AxiDataWidth),
+      .Stages(DmaOutputQueueStages)
+    ) i_registerchain_td (
+      .clk_i,
+      .rst_ni, // asynchronous, active low
+      .clear_i(1'b0), // never cleared only its propagation validity bit (avoids timing issues, saves power)
+      .en_i(en),
+      .data_i(dma_data_i),
+      .register_o({dword0, dword1, dword2, dword3})
+    );
 
     // fill propagation
-    logic propagate_level0;
-    logic propagate_level1;
-    logic propagate_level2;
-    logic propagate_level3;
-    logic rst_n_propagate;
-    assign rst_n_propagate = rst_ni;
-    `FFL(propagate_level0, 1'b1,             en, 1b'0, clk_i, rst_n_propagate) // Propagatelevel0
-    `FFL(propagate_level1, propagate_level0, en, 1b'0, clk_i, rst_n_propagate) // Propagatelevel1
-    `FFL(propagate_level2, propagate_level1, en, 1b'0, clk_i, rst_n_propagate) // Propagatelevel2
-    `FFL(propagate_level3, propagate_level2, en, 1b'0, clk_i, rst_n_propagate) // Propagatelevel3
-    assign dma_ready = !propagate_level3;
+    logic propagate_valid;
+    logic clear_propagate;
+    logic [Stages-1:0] propagate;
+    assign propagate_valid = propagate[Stages-1];
+    assign clear_propagate = pop_i;
+    assign dma_ready = !propagate_valid;
+    // Todo: Maybe replace with just transfer_done through loading without register chain
+    new_usb_registerchain #(
+      .Width(1),
+      .Stages(DmaOutputQueueStages)
+    ) i_registerchain_td_propagate (
+      .clk_i,
+      .rst_ni, // asynchronous, active low
+      .clear_i(clear_propagate), // synchronous, active high
+      .en_i(en),
+      .data_i(1'b1), // propagation of ones
+      .register_o(propagate)
+    );
 
 endmodule

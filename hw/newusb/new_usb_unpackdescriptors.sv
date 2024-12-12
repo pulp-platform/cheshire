@@ -47,8 +47,9 @@ module new_usb_unpackdescriptors import new_usb_ohci_pkg::* #(
     /// periodic, nonperiodic transitions
     input  logic context_switch_np2p_i,
     input  logic context_switch_p2np_i,
-    /// head state
-    input  logic sent_head_i
+    /// receive
+    input  logic sent_head_i,
+    input  logic transfer_done_i
 );
     
     `include "common_cells/registers.svh"
@@ -112,6 +113,7 @@ module new_usb_unpackdescriptors import new_usb_ohci_pkg::* #(
     assign dma_valid_td    = dma_valid_i && !ed && dma_flush_inv;
 
     // dma flush is an early flush to prevent faulty stage loading into the queues, save power and increase speed
+    // Todo: Maybe replace with just transfer_done through loading without register chain
     logic [Stages-1:0] flush;
     logic flushed;
     logic dma_flush;
@@ -121,7 +123,7 @@ module new_usb_unpackdescriptors import new_usb_ohci_pkg::* #(
     logic double_flush; // 256 bit transaction need to be flushed as two 128 transactions
     `FF(double_flush, double_flush_early, 1'b0) // Maybe this register is not necessary, depends on transaction complete
     assign dma_flush_inv = !dma_flush;
-    assign double_flush_early = (flushed == 1) && (transaction_complete != 1); // Todo: add transaction_complete from dma
+    assign double_flush_early = (flushed == 1) && (transfer_done_i != 1);
     assign dma_flush_en = doublehead_invalid || context_flush || double_flush; // Todo: add other flush reasons
     assign flushed = flush[Stages-1];
     `FFLARNC(dma_flush, 1'b1, dma_flush_en, flushed, 1b'0, clk_i, rst_ni)

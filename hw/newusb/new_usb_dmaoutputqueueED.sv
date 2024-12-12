@@ -24,9 +24,9 @@ module new_usb_dmaoutputqueueED import new_usb_ohci_pkg::*; #(
     output logic secondin_valid_o,
     output logic secondin_loaded_o,
     /// data input
-    input  logic [31:0] dma_data_i,
-    input  logic        dma_valid_i,
-    output logic        dma_ready_o,
+    input  logic [AxiDataWidth-1:0] dma_data_i,
+    input  logic                    dma_valid_i,
+    output logic                    dma_ready_o,
     /// external ED access
     output endpoint_descriptor secondin,
     output endpoint_descriptor firstin
@@ -90,7 +90,7 @@ module new_usb_dmaoutputqueueED import new_usb_ohci_pkg::*; #(
     assign propagate_valid = propagate[Stages-1];
     assign clear_propagate = pop_i || empty_secondin_o || context_switch_i;
     assign dma_ready = !propagate_valid;
-
+    // Todo: Maybe replace with just transfer_done through loading without register chain
     new_usb_registerchain #(
       .Width(1),
       .Stages(DmaOutputQueueStages)
