@@ -111,24 +111,25 @@ module new_usb_unpackdescriptors import new_usb_ohci_pkg::* #(
     assign dma_valid_ed    = dma_valid_i && ed && !dma_flush;
     assign dma_valid_td    = dma_valid_i && !ed && !dma_flush;
 
-    // dma flush is an early flush to prevent faulty stage loading, save power and increase speed
-    // Todo: replace with register chain
+    // dma flush is an early flush to prevent faulty stage loading into the queues, save power and increase speed
+    logic [Stages-1:0] flush;
+    logic flushed;
     logic dma_flush;
     logic dma_flush_en;
-    logic flush_level0;
-    logic flush_level1;
-    logic flush_level2;
-    logic flush_level3;
-    logic rst_n_flush;
-    logic rst_n_dma_flush;
-    assign dma_flush_en    = doublehead_invalid || context_flush; // Todo: add other flush reasons
-    assign rst_n_flush     = dma_flush && rst_ni; // equivalent to !(!dma_flush || rst_i)
-    assign rst_n_dma_flush = flush_level3 && rst_ni; // equivalent to !(!flush_level3 || rst_i)
-    `FFL(flush_level0, 1'b1,         flush_en,     1b'0, clk_i, rst_n_flush) // flushlevel0
-    `FFL(flush_level1, flush_level0, flush_en,     1b'0, clk_i, rst_n_flush) // flushlevel1
-    `FFL(flush_level2, flush_level1, flush_en,     1b'0, clk_i, rst_n_flush) // flushlevel2
-    `FFL(flush_level3, flush_level2, flush_en,     1b'0, clk_i, rst_n_flush) // flushlevel3
-    `FFL(dma_flush,    1'b1,         dma_flush_en, 1b'0, clk_i, rst_n_dma_flush) // dma_flush
+    assign dma_flush_en = doublehead_invalid || context_flush; // Todo: add other flush reasons
+    assign flushed = flush[Stages-1];
+    `FFLARNC(dma_flush, 1'b1, dma_flush_en, flushed, 1b'0, clk_i, rst_ni)
+    new_usb_registerchain #(
+      .Width(1),
+      .Stages(DmaOutputQueueStages)
+    ) i_registerchain_flush (
+      .clk_i,
+      .rst_ni, // asynchronous, active low
+      .clear_i(!dma_flush), // synchronous, active high
+      .en_i(flush_en),
+      .data_i(1'b1), // propagation of ones
+      .register_o(flush)
+    );
 
     // create flush enable, one pulse for one handshake
     logic flush_en;

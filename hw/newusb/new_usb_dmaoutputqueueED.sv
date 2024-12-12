@@ -103,14 +103,12 @@ module new_usb_dmaoutputqueueED import new_usb_ohci_pkg::*; #(
       .register_o(propagate)
     );
 
-
     // context switch stash (only np EDs are stashed)
     logic active_stash;
     logic rst_n_stash;
     logic non_empty_context_switch_p2np;
     assign non_empty_context_switch_p2np = active_stash && context_switch_p2np_i;
-    assign rst_n_stash = !context_switch_p2np_i && rst_ni; // equivalent to !(context_switch_p2np_i || rst_i )
-    `FFL(active_stash, 1'b1, non_empty_context_switch_np2p, 1b'0, clk_i, rst_n_stash)
+    `FFLARNC(active_stash, 1'b1, non_empty_context_switch_np2p, context_switch_p2np_i, 1b'0, clk_i, rst_ni)
     `FFL(stash, secondin, non_empty_context_switch_np2p, '0) // stash secondin at np2p context switch if valid secondin
     
     // create valid firstin ready for TD processing
