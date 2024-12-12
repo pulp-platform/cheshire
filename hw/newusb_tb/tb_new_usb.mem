@@ -11,7 +11,7 @@
 /// Use the python script to generate connected EDs and TDs linked lists
 /// and insert them down below.
 ///
-/// Format:   @Address dword0 dword1 dword2 dword3
+/// Format:   @Address dword3 dword2 dword1 dword0
 /// Size:     (Address AxiAddrWidth) (dword 32bit)
 
 @0000A000 0000000D 0000000C 0000000B 0000000A

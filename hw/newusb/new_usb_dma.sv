@@ -17,8 +17,6 @@ module new_usb_dma #(
     parameter int unsigned AxiIdWidth       = 32'd1,
     /// Width of a transfer: max transfer size is `2**TFLenWidth` bytes
     parameter int unsigned TFLenWidth       = 32'd8, // or 7?
-    /// AXI config
-    parameter obi_pkg::obi_cfg_t ObiCfg     = obi_pkg::ObiDefaultConfig,
     /// AXI A channel type
     parameter type axi_a_chan_t       = logic,
     /// AXI request struct type.
