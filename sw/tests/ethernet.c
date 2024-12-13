@@ -91,6 +91,11 @@ int main(void) {
   // rx irq
   while (!((*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19) ));
 
+
+  uint32_t *rsr;
+  rsr = 0x0300c018;
+  printf("rsr value: 0x%08X\n", *rsr);
+
   uint32_t *rx_length;
   rx_length = 0x0300c024;
   printf("rx length value: 0x%08X\n", *rx_length);

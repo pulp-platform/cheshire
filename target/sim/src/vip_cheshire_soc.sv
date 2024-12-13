@@ -18,7 +18,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter type          axi_ext_mst_req_t = logic,
   parameter type          axi_ext_mst_rsp_t = logic,
   // Timing
-  parameter time          ClkPeriodSys      = 5ns,
+  parameter time          ClkPeriodSys      = 20ns,
   parameter time          ClkPeriodJtag     = 20ns,
   parameter time          ClkPeriodRtc      = 30518ns,
   parameter time          ClkPeriodEth      = 8ns,
@@ -762,9 +762,11 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       end
       @(posedge clk);
     end
+    repeat (300) @(posedge clk);
 
     reg_drv_rx.send_write( 'h0300c018, 32'h2, 'hf, reg_error ); // to clear rx_complete, thus to clear rx_irq once all data is processed.
     @(posedge clk)
+
 
     // Tx test starts here: external back to core
     reg_drv_rx.send_write( 'h0300c000, 32'h89000123, 'hf, reg_error); //lower 32bits of MAC address
