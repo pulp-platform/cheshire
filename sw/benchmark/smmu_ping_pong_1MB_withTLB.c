@@ -57,8 +57,14 @@ int main(void) {
 
     // Var to benchmark the system
     char buf[] = "Cycle Num: 0x0000000000000000\r\n";
+    char buf_succ[] = "Copy Succ\r\n";
+    char buf_fail[] = "Copy Fail\r\n";
     uint64_t start_cycle = 0;
     uint64_t end_cycle = 0;
+
+    // Var for Params
+    uint64_t updateTLB = 1;
+    uint64_t bareAdr = 0;
 
     // Initialize an error
     int error = 0;
@@ -91,7 +97,7 @@ int main(void) {
     generate_data(tf_pp.pa_dst, 3, tf_pp.len);
 
     // Setup the sMMU Config
-    sys_dma_smmu_config(0,0,1,0);
+    sys_dma_smmu_config(0,bareAdr,updateTLB,0);
     sys_dma_smmu_set_pt_root(PAGE_TABLE_ROOT_ADRESSE);
 
     // to flush the cache to DRAM
@@ -170,6 +176,22 @@ int main(void) {
     // Write the cycle count
     convert_hex_to_string((end_cycle - start_cycle), &buf[13], 16);
     uart_write_str(&__base_uart, buf, sizeof(buf));
+    uart_write_flush(&__base_uart);
+
+    if(error == 0){
+        uart_write_str(&__base_uart, buf_succ, sizeof(buf_succ));
+        uart_write_flush(&__base_uart);
+    } else {
+        uart_write_str(&__base_uart, buf_fail, sizeof(buf_fail));
+        uart_write_flush(&__base_uart);
+    }
+
+    // Print Debug Data
+    char buf_data[] = "Reg: 0x0000000000000000, Ptr High: 0x0000000000000000, Ptr Low: 0x0000000000000000\r\n";
+    convert_hex_to_string((uint64_t) (*(sys_dma_smmu_conf_ptr())), &buf_data[7], 16);
+    convert_hex_to_string((uint64_t) (*(sys_dma_smmu_pt_root_high_ptr())), &buf_data[37], 16);
+    convert_hex_to_string((uint64_t) (*(sys_dma_smmu_pt_root_low_ptr())), &buf_data[66], 16);
+    uart_write_str(&__base_uart, buf_data, sizeof(buf_data));
     uart_write_flush(&__base_uart);
 
     return error;
