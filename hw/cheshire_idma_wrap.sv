@@ -311,9 +311,9 @@ module cheshire_idma_wrap #(
   // System Buffer Parameter
   localparam int unsigned sMMU_ReorderBufferSize = 9;
   localparam int unsigned sMMU_StreamIDSize = cf_math_pkg::idx_width(sMMU_ReorderBufferSize);
-  localparam int unsigned sMMU_OverallStreamsSMMU = (10*sMMU_ReorderBufferSize);    // How many different streams can be concurrently in the forward !and! backward path of the sMMU?
+  localparam int unsigned sMMU_OverallStreamsSMMU = 24;    // How many different streams can be concurrently in the forward !and! backward path of the sMMU?
   localparam int unsigned sMMU_DispatchBuffer = sMMU_ReorderBufferSize;   // How many different streams can be concurrently in the forward path of the sMMU? Worst Case: One fragment per Stream
-  localparam int unsigned sMMU_TLBNumberEntries = 5;
+  localparam int unsigned sMMU_TLBNumberEntries = 4;
 
   // System Policies Parameter
   localparam int unsigned sMMU_FillPolicyTLB = 1; //
