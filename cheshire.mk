@@ -63,11 +63,7 @@ chs-clean-deps:
 ######################
 
 CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-<<<<<<< HEAD
-CHS_NONFREE_COMMIT ?= f731b17
-=======
 CHS_NONFREE_COMMIT ?= 1deb6804931b6ded1ec282b0766d0501ff8ce734
->>>>>>> 9c32519 (Add SMP tests to Gitlab CI)
 
 CHS_PHONY += chs-nonfree-init
 chs-nonfree-init:
