@@ -15,7 +15,7 @@ QUESTA   ?= questa-2023.4
 VLOG_ARGS ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
 
 # Common Bender flags for Cheshire RTL
-CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t cv64a6_imafdcsclic_sv39
+CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t cv64a6_imafdch_sv39_wb
 NUM_CORES            ?= 1
 
 # Define used paths (prefixed to avoid name conflicts)
