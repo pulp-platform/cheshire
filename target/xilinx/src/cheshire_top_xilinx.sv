@@ -173,7 +173,11 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   assign vio_boot_mode_sel  = '0;
 `endif
 
+`ifdef USE_RESET
+  assign sys_rst = sys_reset | vio_reset;
+`elsif USE_RESETN
   assign sys_rst = ~sys_resetn | vio_reset;
+`endif
   assign boot_mode = vio_boot_mode_sel ? vio_boot_mode : boot_mode_i;
 
   //////////////////
