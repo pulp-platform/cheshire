@@ -70,6 +70,17 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   output logic [4:0]  vga_blue_o,
 `endif
 
+`ifdef USE_QSPI
+`ifndef USE_STARTUPE3
+`ifndef USE_STARTUPE2
+  // If a STARTUPE2 is present, this is wired there.
+  output wire        qspi_sck_o,
+`endif
+  output wire        qspi_csb_o,
+  inout  wire  [3:0] qspi_sd_io,
+`endif
+`endif
+
 `ifdef USE_DDR4
   `DDR4_INTF
 `endif
@@ -320,7 +331,66 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .USRDONETS  ( 1'b1 )
   );
 `else
-  // TODO: off-chip QSPI interface
+`ifdef USE_STARTUPE2
+  // define output SPI clock locally here in this case
+  wire spih_sck_o;
+  (*keep="TRUE"*)
+  STARTUPE2 #(
+    .PROG_USR("FALSE"),
+    .SIM_CCLK_FREQ(0.0)
+    ) i_startupe2 (
+    .CFGCLK     ( ),
+    .CFGMCLK    ( ),
+    .EOS        ( ),
+    .PREQ       ( ),
+    .CLK        ( 1'b0 ),
+    .GSR        ( 1'b0 ),
+    .GTS        ( 1'b0 ),
+    .KEYCLEARB  ( 1'b0 ),
+    .PACK       ( 1'b0 ),
+    .USRCCLKO   ( spih_sck_o ),
+    .USRCCLKTS  ( 1'b0 ),
+    .USRDONEO   ( 1'b0 ),
+    .USRDONETS  ( 1'b0 )
+  );
+`endif
+  IOBUF #(
+    .DRIVE        ( 12        ),
+    .IBUF_LOW_PWR ( "FALSE"   ),
+    .IOSTANDARD   ( "DEFAULT" ),
+    .SLEW         ( "FAST"    )
+  ) i_scl_iobuf (
+    .O  (  ),
+    .IO ( spih_sck_o  ),
+    .I  ( spi_sck_soc ),
+    .T  ( ~spi_sck_en )
+  );
+
+  IOBUF #(
+    .DRIVE        ( 12        ),
+    .IBUF_LOW_PWR ( "FALSE"   ),
+    .IOSTANDARD   ( "DEFAULT" ),
+    .SLEW         ( "FAST"    )
+  ) i_scl_iobuf (
+    .O  (  ),
+    .IO ( spih_csb_o ),
+    .I  ( spi_cs_soc [1] ),
+    .T  ( ~spi_cs_en [1] )
+  );
+
+  for (genvar i = 0; i < 4; ++i) : gen_qspi_iobufs
+    IOBUF #(
+      .DRIVE        ( 12        ),
+      .IBUF_LOW_PWR ( "FALSE"   ),
+      .IOSTANDARD   ( "DEFAULT" ),
+      .SLEW         ( "FAST"    )
+    ) i_scl_iobuf (
+      .O  ( spi_sd_soc_in  [i] ),
+      .IO ( spih_sd_io     [i] ),
+      .I  ( spi_sd_soc_out [i] ),
+      .T  ( ~spi_sd_en     [i] )
+    );
+  end
 `endif
 `endif
 
