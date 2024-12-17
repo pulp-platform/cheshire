@@ -77,11 +77,15 @@ set_output_delay -max -clock $soc_clk [expr { $SOC_TCK * 0.35 }] [get_ports vga*
 # SPIM #
 ########
 
-set_input_delay -min -clock $soc_clk [expr { 0.10 * $SOC_TCK }] [get_ports {sd_d_* sd_cd_i}]
-set_input_delay -max -clock $soc_clk [expr { 0.35 * $SOC_TCK }] [get_ports {sd_d_* sd_cd_i}]
+set_input_delay -min -clock $soc_clk [expr { 0.10 * $SOC_TCK }] [ \
+    get_ports {sd_d_* sd_cd_i spih_sd_*}]
+set_input_delay -max -clock $soc_clk [expr { 0.35 * $SOC_TCK }] [ \
+    get_ports {sd_d_* sd_cd_i spih_sd_*}]
 # TODO: fix this by raising it back up...
-set_output_delay -min -clock $soc_clk [expr { 0.020 * $SOC_TCK }] [get_ports {sd_d_* sd_*_o}]
-set_output_delay -max -clock $soc_clk [expr { 0.063 * $SOC_TCK }] [get_ports {sd_d_* sd_*_o}]
+set_output_delay -min -clock $soc_clk [expr { 0.020 * $SOC_TCK }] [ \
+    get_ports {sd_d_* sd_*_o spih_sd_* spih_csb_o}]
+set_output_delay -max -clock $soc_clk [expr { 0.063 * $SOC_TCK }] [ \
+    get_ports {sd_d_* sd_*_o spih_sd_* spih_csb_o}]
 
 #######
 # I2C #
@@ -149,6 +153,13 @@ set_property -dict { PACKAGE_PIN P29   IOSTANDARD LVCMOS33 } [get_ports { sd_d_i
 set_property -dict { PACKAGE_PIN T30   IOSTANDARD LVCMOS33 } [get_ports { sd_d_io[3] }]; #IO_L9N_T1_DQS_D13_14 Sch=sd_dat[3]
 set_property -dict { PACKAGE_PIN AE24  IOSTANDARD LVCMOS33 } [get_ports { sd_reset_o }]; #IO_L12N_T1_MRCC_12 Sch=sd_reset
 set_property -dict { PACKAGE_PIN R28   IOSTANDARD LVCMOS33 } [get_ports { sd_sclk_o }]; #IO_L11P_T1_SRCC_14 Sch=sd_sclk
+
+# QSPI
+set_property -dict { PACKAGE_PIN U19   IOSTANDARD LVCMOS33 } [get_ports { spih_csb_o }]; #IO_L6P_T0_FCS_B_14 Sch=qspi_csn
+set_property -dict { PACKAGE_PIN P24   IOSTANDARD LVCMOS33 } [get_ports { spih_sd_io[0] }]; #IO_L1P_T0_D00_MOSI_14 Sch=qspi_d[0]
+set_property -dict { PACKAGE_PIN R25   IOSTANDARD LVCMOS33 } [get_ports { spih_sd_io[1] }]; #IO_L1N_T0_D01_DIN_14 Sch=qspi_d[1]
+set_property -dict { PACKAGE_PIN R20   IOSTANDARD LVCMOS33 } [get_ports { spih_sd_io[2] }]; #IO_L2P_T0_D02_14 Sch=qspi_d[2]
+set_property -dict { PACKAGE_PIN R21   IOSTANDARD LVCMOS33 } [get_ports { spih_sd_io[3] }]; #IO_L2N_T0_D03_14 Sch=qspi_d[3]
 
 # VGA Connector
 set_property -dict { PACKAGE_PIN AH20  IOSTANDARD LVCMOS33 } [get_ports { vga_blue_o[0] }]; #IO_L22N_T3_12 Sch=vga_b[3]
