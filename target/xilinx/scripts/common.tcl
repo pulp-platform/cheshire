@@ -8,6 +8,7 @@
 set bpart(genesys2) "digilentinc.com:genesys2:part0:1.1"
 set fpart(genesys2) "xc7k325tffg900-2"
 set hwdev(genesys2) "xc7k325t_0"
+set cfgmp(genesys2) "s25fl256sxxxxxx0-spi-x1_x2_x4"
 
 # vcu128 board params
 set bpart(vcu128) "xilinx.com:vcu128:part0:1.0"
