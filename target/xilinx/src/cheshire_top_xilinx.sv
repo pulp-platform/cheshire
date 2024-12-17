@@ -93,6 +93,9 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     cheshire_cfg_t ret  = DefaultCfg;
     ret.RtcFreq         = 1000000;
     ret.SerialLink      = 0;
+    ret.Vga             = 0;
+    ret.I2c             = 0;
+    ret.NumCores        = 2;
   `ifdef USE_USB
     ret.Usb = 1;
   `else
