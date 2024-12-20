@@ -80,7 +80,7 @@ $(foreach board,$(CHS_XILINX_BOARDS),chs-xilinx-$(1)-$(board)): chs-xilinx-$(1)-
 	[ -e $(subst %,$$*,$(2)) ] || $$(MAKE) $(subst %,$$*,$(2))
 	@rm -f $$(CHS_XILINX_DIR)/build/$$(*)*.$(1).log $$(CHS_XILINX_DIR)/build/$$(*)*.$(1).jou
 	cd $$| && $$(VIVADO) -mode batch -log ../$$(*).$(1).log -jou ../$$(*).$(1).jou -source $$< \
-		-tclargs $$(CHS_XILINX_HWS_URL) $$(or $$(CHS_XILINX_HWS_PATH_$$*),*) $$* $(subst %,$$*,$(2)) 0
+		-tclargs $$(CHS_XILINX_HWS_URL) $$(or $$(CHS_XILINX_HWS_PATH_$$*),{*}) $$* $(subst %,$$*,$(2)) 0
 endef
 
 # Program bitstream onto board
