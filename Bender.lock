@@ -1,16 +1,18 @@
 packages:
   ace:
-    revision: ea2fc9ced5be964b47cfcbcd6eb6518771a9e85d
+    revision: 3275b1238da3f4c592fb6685e84e63e0445eb315
     version: null
     source:
-      Git: https://github.com/pulp-platform/ace.git
+      Git: https://github.com/ricted98/ace.git
     dependencies:
     - axi
+    - axi_riscv_atomics
+    - common_cells
   apb:
     revision: 77ddf073f194d44b9119949d2421be59789e69ae
     version: 0.2.4
     source:
-      Git: https://github.com/pulp-platform/apb
+      Git: https://github.com/pulp-platform/apb.git
     dependencies:
     - common_cells
   apb_uart:
@@ -22,8 +24,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: 587355b77b8ce94dcd600efbd5d5bd118ff913a7
-    version: 0.39.4
+    revision: 39f5f2d51c5e524f6fc5cf8b6e901f7dcc5622d7
+    version: 0.39.6
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -68,8 +70,8 @@ packages:
     dependencies:
     - common_cells
   axi_vga:
-    revision: 3718b9930f94a9eaad8ee50b4bccc71df0403084
-    version: 0.1.3
+    revision: 4d3e70d4f47bb74edc1ab68d99ffc02382e0fb9e
+    version: 0.1.4
     source:
       Git: https://github.com/pulp-platform/axi_vga.git
     dependencies:
@@ -93,21 +95,21 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: c27bce39ebb2e6bae52f60960814a2afca7bd4cb
-    version: 1.37.0
+    revision: f36828f3fd76fa6c79f80cb495829cf967bcf20c
+    version: null
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
     - common_verification
     - tech_cells_generic
   common_verification:
-    revision: 9c07fa860593b2caabd9b5681740c25fac04b878
-    version: 0.2.3
+    revision: fa2630f61666f61d9d78451c4d8b4d1ea403944e
+    version: 0.2.4
     source:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 125c68eeb1a64c20db652be15491c19e03730b70
+    revision: 7650ca592cb0f39270460cbbfad269fab5b5dc85
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -119,7 +121,7 @@ packages:
     - redundancy_cells
     - tech_cells_generic
   fpnew:
-    revision: f231041c610f270ffc03cbdac38739ddb6426572
+    revision: a8e0cba6dd50f357ece73c2c955d96efc3c6c315
     version: null
     source:
       Git: https://github.com/pulp-platform/cvfpu.git
@@ -137,7 +139,7 @@ packages:
     revision: c12caf59bb482fe44b27361f6924ad346b2d22fe
     version: 0.6.3
     source:
-      Git: https://github.com/pulp-platform/iDMA.git
+      Git: https://github.com/pulp-platform/idma.git
     dependencies:
     - axi
     - axi_stream
@@ -182,8 +184,8 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: ae616e5a1ec2b41e72d200e5ab09c65e94aebd3d
-    version: 0.4.4
+    revision: 5daa85d164cf6b54ad061ea1e4c6f3624556e467
+    version: 0.4.5
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:
@@ -192,8 +194,8 @@ packages:
     - common_cells
     - common_verification
   riscv-dbg:
-    revision: 358f90110220adf7a083f8b65d157e836d706236
-    version: 0.8.1
+    revision: 138d74bcaa90c70180c12215db3776813d2a95f2
+    version: 0.8.0
     source:
       Git: https://github.com/pulp-platform/riscv-dbg.git
     dependencies:
@@ -209,8 +211,8 @@ packages:
     - common_cells
     - register_interface
   serial_link:
-    revision: 5a25f5a71074f1ebb6de7b5280f2b16924bcc666
-    version: 1.1.1
+    revision: c55df03a1da06b00e567cf968b1b1a5f40c9f802
+    version: 1.1.2
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:
