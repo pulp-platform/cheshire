@@ -123,6 +123,8 @@ module cheshire_top_xilinx
     LlcOutConnect     : 1,
     LlcOutRegionStart : 'h8000_0000,
     LlcOutRegionEnd   : 'h1_0000_0000,
+    LlcBypassRegionStart : 'h2_8000_0000,
+    LlcBypassRegionEnd   : 'h3_0000_0000,
     LlcUserMsb        : 0,
     LlcUserLsb        : 0,
     // LLC partitioning
