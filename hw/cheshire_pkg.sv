@@ -162,6 +162,8 @@ package cheshire_pkg;
     bit     LlcOutConnect;
     doub_bt LlcOutRegionStart;
     doub_bt LlcOutRegionEnd;
+    doub_bt LlcBypassRegionStart;
+    doub_bt LlcBypassRegionEnd;
     dw_bt   LlcUserMsb;
     dw_bt   LlcUserLsb;
     // Parameters for VGA
@@ -348,6 +350,8 @@ package cheshire_pkg;
     // own Xbar output with the specified region iff it is connected.
     if (cfg.LlcOutConnect) begin i++; r++; ret.llc = i;
         ret.map[r] = '{i, cfg.LlcOutRegionStart, cfg.LlcOutRegionEnd}; end
+    if (cfg.LlcOutConnect) begin r++;
+        ret.map[r] = '{i, cfg.LlcBypassRegionStart, cfg.LlcBypassRegionEnd}; end
     // We can only internally map the SPM region if an LLC exists.
     // Otherwise, we assume external ports map and back the SPM region.
     // We map both the cached and uncached regions.
@@ -589,6 +593,8 @@ package cheshire_pkg;
     LlcOutConnect     : 1,
     LlcOutRegionStart : 'h8000_0000,
     LlcOutRegionEnd   : 'h1_0000_0000,
+    LlcBypassRegionStart : 'h2_8000_0000,
+    LlcBypassRegionEnd   : 'h3_0000_0000,
     LlcUserMsb        : 0,
     LlcUserLsb        : 0,
     // LLC Partitioning
