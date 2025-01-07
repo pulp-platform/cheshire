@@ -72,7 +72,9 @@ proc open_target {xilinx_root argc argv suffix} {
     open_hw_manager
     connect_hw_server -url $url
     # Open HW target, set JTAG frequency
-    set hw_tgt [get_hw_targets ${url}/${path}]
+    set hw_tgts [get_hw_targets ${url}/${path}]
+    # From all matching targets, choose last (most specific) one
+    set hw_tgt [lindex ${hw_tgts} [expr { [llength ${hw_tgts}] - 1 }]]
     open_hw_target $hw_tgt
     set_property PARAM.FREQUENCY 15000000 $hw_tgt
     # Get hardware device
