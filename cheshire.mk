@@ -7,11 +7,13 @@
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 BENDER ?= bender
+VLOGAN ?= vlogan
 
 # Caution: Questasim requires this to point to the *actual* compiler install path
 CXX_PATH := $(shell which $(CXX))
 
-VLOG_ARGS ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
+VLOG_ARGS   ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
+VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
 
 # Common Bender flags for Cheshire RTL
 CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t cv64a6_imafdcsclic_sv39
@@ -61,7 +63,7 @@ chs-clean-deps:
 ######################
 
 CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-CHS_NONFREE_COMMIT ?= 99e58ec
+CHS_NONFREE_COMMIT ?= 99aa8d9
 
 CHS_PHONY += chs-nonfree-init
 chs-nonfree-init:
@@ -149,6 +151,10 @@ $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: $(CHS_ROOT)/Bender.yml
 	$(BENDER) script vsim -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11" -cpppath "$(CXX_PATH)"' >> $@
 
+$(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh: $(CHS_ROOT)/Bender.yml
+	$(BENDER) script vcs -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOGAN_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
+	chmod +x $@
+
 .PRECIOUS: $(CHS_ROOT)/target/sim/models
 $(CHS_ROOT)/target/sim/models:
 	mkdir -p $@
@@ -167,6 +173,7 @@ $(CHS_ROOT)/target/sim/models/24FC1025.v: $(CHS_ROOT)/Bender.yml | $(CHS_ROOT)/t
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
+CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh
 
 ###########
 # DRAMSys #

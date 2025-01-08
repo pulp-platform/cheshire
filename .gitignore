@@ -38,6 +38,16 @@ target/sim/vsim/transcript
 target/sim/vsim/vsim.wlf
 target/sim/vsim/work/
 
+# VCS generated files
+target/sim/vcs/compile.*.sh
+target/sim/vcs/*.log
+target/sim/vcs/AN.DB
+target/sim/vcs/simv*
+target/sim/vcs/csrc
+target/sim/vcs/ucli.key
+target/sim/vcs/work*
+target/sim/vcs/vc_hdrs.h
+
 # Xilinx generated files
 target/xilinx/build
 target/xilinx/out
