@@ -492,6 +492,7 @@ package cheshire_pkg;
     ret.AxiDataWidth          = cfg.AxiDataWidth;
     ret.AxiIdWidth            = Cva6IdWidth;
     ret.AxiUserWidth          = cfg.AxiUserWidth;
+    ret.CvxifEn               = 0;
     ret.DmBaseAddress         = AmDbg;
     ret.HaltAddress           = 'h800; // Relative to AmDbg
     ret.ExceptionAddress      = 'h810; // Relative to AmDbg
