@@ -130,7 +130,7 @@ The second command only ensures correctness of the partition layout; it moves th
 
 Insert your SD card and reset into boot mode 1. You should see a `Hello World!` UART output.
 
-### Boot from onboard flash (`vcu128` only)
+### Boot from onboard flash
 
 Build a GPT disk image for your desired binary as explained above, then flash it to your board's flash. For `helloworld`:
 
@@ -179,4 +179,5 @@ Flash your image to an SD card or SPI flash as described in the preceding sectio
 (    P      )
 (           ))))))))))
 ```
+
 You should then boot through OpenSBI, U-Boot, and Linux until you are dropped into a shell.
