@@ -10,7 +10,6 @@
 #include "i2c_regs.h"
 #include "util.h"
 #include "params.h"
-
 #include "dif/clint.h"
 
 int i2c_24fc1025_init(dif_i2c_t *i2c, uint64_t core_freq) {
@@ -74,7 +73,8 @@ static inline int __i2c_24fc1025_access_chunk(dif_i2c_t *i2c, void *buf, uint64_
         CHECK_CALL(dif_i2c_host_set_enabled(i2c, kDifToggleEnabled))
         // If our length exceeded half the FIFO, invoke another half transfer
         if (len > half_fill)
-            CHECK_CALL(__i2c_24fc1025_access_chunk(i2c, buf + len, addr + len, len - half_fill, 1))
+            CHECK_CALL(__i2c_24fc1025_access_chunk(i2c, (uint8_t *)buf + len, addr + len,
+                                                   len - half_fill, 1))
     } else {
         // Request read of len bytes
         uint64_t ctrl_rdata = ctrl_waddr | 0x1;
@@ -86,7 +86,7 @@ static inline int __i2c_24fc1025_access_chunk(dif_i2c_t *i2c, void *buf, uint64_
         do CHECK_CALL(dif_i2c_get_fifo_levels(i2c, &lfmt, &lrx, &ltx, &lacq))
         while (lrx < len);
         // Transfer chunk to memory destination
-        for (uint64_t b = 0; b < len; b++) CHECK_CALL(dif_i2c_read_byte(i2c, buf + b))
+        for (uint64_t b = 0; b < len; b++) CHECK_CALL(dif_i2c_read_byte(i2c, (uint8_t *)buf + b))
     }
     // Nothing went wrong
     return 0;
@@ -108,7 +108,8 @@ static inline int __i2c_24fc1025_access(void *priv, void *buf, uint64_t addr, ui
     // Copy start-aligned chunks
     for (; offs < len; offs += I2C_PARAM_FIFO_DEPTH) {
         uint64_t chunk_len = MIN(I2C_PARAM_FIFO_DEPTH, len - offs);
-        CHECK_CALL(__i2c_24fc1025_access_chunk(i2c, buf + offs, addr + offs, chunk_len, write))
+        CHECK_CALL(
+            __i2c_24fc1025_access_chunk(i2c, (uint8_t *)buf + offs, addr + offs, chunk_len, write))
     }
     // Nothing went wrong
     return 0;

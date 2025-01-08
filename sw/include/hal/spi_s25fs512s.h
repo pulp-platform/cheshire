@@ -24,5 +24,5 @@ int spi_s25fs512s_init(spi_s25fs512s_t *handle, uint64_t core_freq);
 
 int spi_s25fs512s_single_read(void *priv, void *buf, uint64_t addr, uint64_t len);
 
-// Flashing is done as whole 512B pages
-int spi_s25fs512s_single_flash(void *priv, void *buf, uint64_t page, uint64_t num_pages);
+// Flashing is done as whole 256KiB sectors
+int spi_s25fs512s_single_flash(void *priv, void *buf, uint64_t sector, uint64_t num_sectors);

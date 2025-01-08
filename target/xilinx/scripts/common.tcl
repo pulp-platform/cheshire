@@ -8,6 +8,7 @@
 set bpart(genesys2) "digilentinc.com:genesys2:part0:1.1"
 set fpart(genesys2) "xc7k325tffg900-2"
 set hwdev(genesys2) "xc7k325t_0"
+set cfgmp(genesys2) "s25fl256sxxxxxx0-spi-x1_x2_x4"
 
 # vcu128 board params
 set bpart(vcu128) "xilinx.com:vcu128:part0:1.0"
@@ -71,7 +72,9 @@ proc open_target {xilinx_root argc argv suffix} {
     open_hw_manager
     connect_hw_server -url $url
     # Open HW target, set JTAG frequency
-    set hw_tgt [get_hw_targets ${url}/${path}]
+    set hw_tgts [get_hw_targets ${url}/${path}]
+    # From all matching targets, choose last (most specific) one
+    set hw_tgt [lindex ${hw_tgts} [expr { [llength ${hw_tgts}] - 1 }]]
     open_hw_target $hw_tgt
     set_property PARAM.FREQUENCY 15000000 $hw_tgt
     # Get hardware device

@@ -70,6 +70,17 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   output logic [4:0]  vga_blue_o,
 `endif
 
+`ifdef USE_QSPI
+`ifndef USE_STARTUPE3
+`ifndef USE_STARTUPE2
+  // If a STARTUPE2 is present, this is wired there.
+  output wire        spih_sck_o,
+`endif
+  output wire        spih_csb_o,
+  inout  wire  [3:0] spih_sd_io,
+`endif
+`endif
+
 `ifdef USE_DDR4
   `DDR4_INTF
 `endif
@@ -248,6 +259,12 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   logic [1:0] spi_cs_soc;
   logic [3:0] spi_sd_soc_out;
   logic [3:0] spi_sd_soc_in;
+  // Multiplex between SPI SD mode and QSPI proper
+  logic [3:0] spi_sd_sd_in, spi_sd_spih_in;
+
+  // Choose SoC input based on chip select
+  assign spi_sd_soc_in =
+    ({4{~spi_cs_soc[0]}} & spi_sd_sd_in) | ({4{~spi_cs_soc[1]}} & spi_sd_spih_in);
 
   logic spi_sck_en;
   logic [1:0] spi_cs_en;
@@ -263,13 +280,13 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   // MOSI - SD CMD signal
   assign sd_cmd_o         = spi_sd_en[0]  ? spi_sd_soc_out[0] : 1'b1;
   // MISO - SD DAT0 signal
-  assign spi_sd_soc_in[1] = sd_d_io[0];
+  assign spi_sd_sd_in[1]  = sd_d_io[0];
   // SD DAT1 and DAT2 signal tie-off - Not used for SPI mode
   assign sd_d_io[2:1]     = 2'b11;
   // Bind input side of SoC low for output signals
-  assign spi_sd_soc_in[0] = 1'b0;
-  assign spi_sd_soc_in[2] = 1'b0;
-  assign spi_sd_soc_in[3] = 1'b0;
+  assign spi_sd_sd_in[0]  = 1'b0;
+  assign spi_sd_sd_in[2]  = 1'b0;
+  assign spi_sd_sd_in[3]  = 1'b0;
 `endif
 
   ////////////
@@ -288,7 +305,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   assign qspi_clk      = spi_sck_soc;
   assign qspi_cs_b     = spi_cs_soc;
   assign qspi_dqo      = spi_sd_soc_out;
-  assign spi_sd_soc_in = qspi_dqi;
+  assign spi_sd_spih_in = qspi_dqi;
 
   // Tristate enables
   assign qspi_clk_ts  = ~spi_sck_en;
@@ -320,7 +337,65 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .USRDONETS  ( 1'b1 )
   );
 `else
-  // TODO: off-chip QSPI interface
+`ifdef USE_STARTUPE2
+  (*keep="TRUE"*)
+  STARTUPE2 #(
+    .PROG_USR("FALSE"),
+    .SIM_CCLK_FREQ(0.0)
+    ) i_startupe2 (
+    .CFGCLK     ( ),
+    .CFGMCLK    ( ),
+    .EOS        ( ),
+    .PREQ       ( ),
+    .CLK        ( 1'b0 ),
+    .GSR        ( 1'b0 ),
+    .GTS        ( 1'b0 ),
+    .KEYCLEARB  ( 1'b0 ),
+    .PACK       ( 1'b0 ),
+    .USRCCLKO   ( spi_sck_soc ),
+    .USRCCLKTS  ( 1'b0 ),
+    .USRDONEO   ( 1'b0 ),
+    .USRDONETS  ( 1'b0 )
+  );
+`else
+  IOBUF #(
+    .DRIVE        ( 12        ),
+    .IBUF_LOW_PWR ( "FALSE"   ),
+    .IOSTANDARD   ( "DEFAULT" ),
+    .SLEW         ( "FAST"    )
+  ) i_spih_sck_iobuf (
+    .O  (  ),
+    .IO ( spih_sck_o  ),
+    .I  ( spi_sck_soc ),
+    .T  ( ~spi_sck_en )
+  );
+`endif
+
+  IOBUF #(
+    .DRIVE        ( 12        ),
+    .IBUF_LOW_PWR ( "FALSE"   ),
+    .IOSTANDARD   ( "DEFAULT" ),
+    .SLEW         ( "FAST"    )
+  ) i_spih_csb_iobuf (
+    .O  (  ),
+    .IO ( spih_csb_o ),
+    .I  ( spi_cs_soc [1] ),
+    .T  ( ~spi_cs_en [1] )
+  );
+
+  for (genvar i = 0; i < 4; ++i) begin : gen_qspi_iobufs
+    IOBUF #(
+      .DRIVE        ( 12        ),
+      .IBUF_LOW_PWR ( "FALSE"   ),
+      .IOSTANDARD   ( "DEFAULT" ),
+      .SLEW         ( "FAST"    )
+    ) i_spih_sd_iobuf (
+      .O  ( spi_sd_spih_in [i] ),
+      .IO ( spih_sd_io     [i] ),
+      .I  ( spi_sd_soc_out [i] ),
+      .T  ( ~spi_sd_en     [i] )
+    );
+  end
 `endif
 `endif
 
