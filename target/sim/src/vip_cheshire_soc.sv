@@ -342,13 +342,12 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       // Write binary entry point in DM registers and set it as DPC
       jtag_write(dm::Data1, entry[63:32]);
       jtag_write(dm::Data0, entry[31:0]);
-      jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
+      jtag_write(dm::Command, 32'h0033_07b1, 1, 1);
       // Resume all harts
       jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, hartsello: i, default: '0});
       do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
       while (~status.allresumeack);
       jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 0, dmactive: 1, hartsello: i, default: '0});
-      jtag_write(dm::Command, 32'h0, 0, 1);
       $display("[JTAG] Resumed hart %d from 0x%h", i, entry);
     end
   endtask
