@@ -66,12 +66,6 @@ chs-nonfree-init:
 
 -include $(CHS_ROOT)/nonfree/nonfree.mk
 
-############
-# Build SW #
-############
-
-include $(CHS_ROOT)/sw/sw.mk
-
 ###############
 # Generate HW #
 ###############
@@ -130,6 +124,12 @@ CHS_HW_ALL += $(AXI_VGA_ROOT)/.generated
 CHS_HW_ALL += $(CHS_SLINK_DIR)/.generated
 CHS_HW_ALL += $(CHS_LLC_DIR)/.generated
 CHS_HW_ALL += $(CHS_TAGGER_DIR)/.generated
+
+############
+# Build SW #
+############
+
+include $(CHS_ROOT)/sw/sw.mk
 
 #####################
 # Generate Boot ROM #

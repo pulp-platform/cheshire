@@ -81,6 +81,15 @@ $(CHS_SW_DIR)/lib/libcheshire.a: $(CHS_SW_LIB_SRCS_O)
 # Header generation #
 #####################
 
+# Generate up to date hjson headers
+CHS_SW_GEN_HDRS += $(CLINTROOT)/.generated
+CHS_SW_GEN_HDRS += $(OTPROOT)/.generated
+CHS_SW_GEN_HDRS += $(AXIRTROOT)/.generated
+CHS_SW_GEN_HDRS += $(AXI_VGA_ROOT)/.generated
+CHS_SW_GEN_HDRS += $(CHS_SLINK_DIR)/.generated
+CHS_SW_GEN_HDRS += $(CHS_LLC_DIR)/.generated
+CHS_SW_GEN_HDRS += $(CHS_TAGGER_DIR)/.generated
+
 define chs_sw_gen_hdr_rule
 .PRECIOUS: $$(CHS_SW_DIR)/include/regs/$(1).h
 CHS_SW_GEN_HDRS += $$(CHS_SW_DIR)/include/regs/$(1).h
@@ -97,9 +106,6 @@ $(eval $(call chs_sw_gen_hdr_rule,idma,$(IDMA_ROOT)/target/rtl/idma_reg64_2d.hjs
 $(eval $(call chs_sw_gen_hdr_rule,axi_llc,$(CHS_LLC_DIR)/data/axi_llc_regs.hjson))
 $(eval $(call chs_sw_gen_hdr_rule,cheshire,$(CHS_ROOT)/hw/regs/cheshire_regs.hjson))
 $(eval $(call chs_sw_gen_hdr_rule,axi_rt,$(AXIRTROOT)/src/regs/axi_rt.hjson $(AXIRTROOT)/.generated))
-
-# Generate headers for OT peripherals in the bendered repo itself
-CHS_SW_GEN_HDRS += $(OTPROOT)/.generated
 
 ###############
 # Compilation #
