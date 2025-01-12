@@ -112,6 +112,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   `include "common_cells/registers.svh"
   `include "common_cells/assertions.svh"
   `include "cheshire/typedef.svh"
+  `include "ara/intf_typedef.svh"
 
   // Declare interface types internally
   `CHESHIRE_TYPEDEF_ALL(, Cfg)
@@ -554,31 +555,10 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  Cores  //
   /////////////
 
-  // TODO: Implement X interface support
-
-  // Accelerator ports
-  acc_pkg::cva6_to_acc_t acc_req;
-  acc_pkg::acc_to_cva6_t acc_resp;
-
-  // CVA6-Ara memory consistency
-  logic                     acc_cons_en;
-  logic [Cfg.AddrWidth-1:0] inval_addr;
-  logic                     inval_valid;
-  logic                     inval_ready;
-
-  // Pack invalidation interface into acc interface
-  acc_pkg::acc_to_cva6_t acc_resp_pack;
-  always_comb begin : pack_inval
-    acc_resp_pack                      = acc_resp;
-    acc_resp_pack.acc_resp.inval_valid = inval_valid;
-    acc_resp_pack.acc_resp.inval_addr  = inval_addr;
-    inval_ready                        = acc_req.acc_req.inval_ready;
-    acc_cons_en                        = acc_req.acc_req.acc_cons_en;
-  end
-
   `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
 
-  localparam config_pkg::cva6_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
+  localparam config_pkg::cva6_user_cfg_t Cva6UsrCfg = gen_cva6_cfg(Cfg);
+  localparam config_pkg::cva6_cfg_t Cva6Cfg = build_config_pkg::build_config(Cva6UsrCfg);
 
   // Boot from boot ROM only if available, otherwise from platform ROM
   localparam logic [63:0] BootAddr = 64'(Cfg.Bootrom ? AmBrom : Cfg.PlatformRom);
@@ -607,6 +587,39 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   assign intr.intn.bus_err.cores = core_bus_err_intr_comb;
 
+  // TODO: Implement X interface support
+  // Define the exception type
+  `CVA6_TYPEDEF_EXCEPTION(exception_t, Cva6Cfg);
+  // Standard interface
+  `CVA6_INTF_TYPEDEF_ACC_REQ(accelerator_req_t, Cva6Cfg, fpnew_pkg::roundmode_e);
+  `CVA6_INTF_TYPEDEF_ACC_RESP(accelerator_resp_t, Cva6Cfg, exception_t);
+  // MMU interface
+  `CVA6_INTF_TYPEDEF_MMU_REQ(acc_mmu_req_t, Cva6Cfg);
+  `CVA6_INTF_TYPEDEF_MMU_RESP(acc_mmu_resp_t, Cva6Cfg, exception_t);
+  // Accelerator - CVA6's top-level interface
+  `CVA6_INTF_TYPEDEF_CVA6_TO_ACC(cva6_to_acc_t, accelerator_req_t, acc_mmu_resp_t);
+  `CVA6_INTF_TYPEDEF_ACC_TO_CVA6(acc_to_cva6_t, accelerator_resp_t, acc_mmu_req_t);
+
+  // Accelerator ports
+  cva6_to_acc_t acc_req;
+  acc_to_cva6_t acc_resp;
+
+  // CVA6-Ara memory consistency
+  logic                     acc_cons_en;
+  logic [Cfg.AddrWidth-1:0] inval_addr;
+  logic                     inval_valid;
+  logic                     inval_ready;
+
+  // Pack invalidation interface into acc interface
+  acc_to_cva6_t acc_resp_pack;
+  always_comb begin : pack_inval
+    acc_resp_pack                      = acc_resp;
+    acc_resp_pack.acc_resp.inval_valid = inval_valid;
+    acc_resp_pack.acc_resp.inval_addr  = inval_addr;
+    inval_ready                        = acc_req.acc_req.inval_ready;
+    acc_cons_en                        = acc_req.acc_req.acc_cons_en;
+  end
+
   for (genvar i = 0; i < NumIntHarts; i++) begin : gen_cva6_cores
     axi_cva6_req_t core_out_req, core_ur_req;
     axi_cva6_rsp_t core_out_rsp, core_ur_rsp;
@@ -620,16 +633,20 @@ module cheshire_soc import cheshire_pkg::*; #(
     riscv::priv_lvl_t  clic_irq_priv;
 
     cva6 #(
-      .CVA6Cfg        ( Cva6Cfg ),
-      .axi_ar_chan_t  ( axi_cva6_ar_chan_t ),
-      .axi_aw_chan_t  ( axi_cva6_aw_chan_t ),
-      .axi_w_chan_t   ( axi_cva6_w_chan_t  ),
-      .b_chan_t       ( axi_cva6_b_chan_t  ),
-      .r_chan_t       ( axi_cva6_r_chan_t  ),
-      .cvxif_req_t    ( acc_pkg::cva6_to_acc_t ),
-      .cvxif_resp_t   ( acc_pkg::acc_to_cva6_t ),
-      .noc_req_t      ( axi_cva6_req_t ),
-      .noc_resp_t     ( axi_cva6_rsp_t )
+      .CVA6Cfg            ( Cva6Cfg ),
+      .axi_ar_chan_t      ( axi_cva6_ar_chan_t ),
+      .axi_aw_chan_t      ( axi_cva6_aw_chan_t ),
+      .axi_w_chan_t       ( axi_cva6_w_chan_t  ),
+      .b_chan_t           ( axi_cva6_b_chan_t  ),
+      .r_chan_t           ( axi_cva6_r_chan_t  ),
+      .cvxif_req_t        ( cva6_to_acc_t ),
+      .cvxif_resp_t       ( acc_to_cva6_t ),
+      .noc_req_t          ( axi_cva6_req_t ),
+      .noc_resp_t         ( axi_cva6_rsp_t ),
+      .accelerator_req_t  ( accelerator_req_t ),
+      .accelerator_resp_t ( accelerator_resp_t ),
+      .acc_mmu_req_t      ( acc_mmu_req_t ),
+      .acc_mmu_resp_t     ( acc_mmu_resp_t )
     ) i_core_cva6 (
       .clk_i,
       .rst_ni,
@@ -639,14 +656,14 @@ module cheshire_soc import cheshire_pkg::*; #(
       .ipi_i            ( msip[i] ),
       .time_irq_i       ( mtip[i] ),
       .debug_req_i      ( dbg_int_req[i] ),
-      .clic_irq_valid_i ( clic_irq_valid ),
-      .clic_irq_id_i    ( clic_irq_id    ),
-      .clic_irq_level_i ( clic_irq_level ),
-      .clic_irq_priv_i  ( clic_irq_priv  ),
-      .clic_irq_shv_i   ( clic_irq_shv   ),
-      .clic_irq_ready_o ( clic_irq_ready ),
-      .clic_kill_req_i  ( clic_irq_kill_req ),
-      .clic_kill_ack_o  ( clic_irq_kill_ack ),
+//      .clic_irq_valid_i ( clic_irq_valid ),
+//      .clic_irq_id_i    ( clic_irq_id    ),
+//      .clic_irq_level_i ( clic_irq_level ),
+//      .clic_irq_priv_i  ( clic_irq_priv  ),
+//      .clic_irq_shv_i   ( clic_irq_shv   ),
+//      .clic_irq_ready_o ( clic_irq_ready ),
+//      .clic_kill_req_i  ( clic_irq_kill_req ),
+//      .clic_kill_ack_o  ( clic_irq_kill_ack ),
       .rvfi_probes_o    ( ),
       .cvxif_req_o      ( acc_req       ),
       .cvxif_resp_i     ( acc_resp_pack ),
@@ -789,6 +806,15 @@ module cheshire_soc import cheshire_pkg::*; #(
       ara #(
         .NrLanes      ( Cfg.AraNrLanes         ),
         .VLEN         ( Cfg.AraVLEN            ),
+        .OSSupport    ( 1'b1                   ),
+        .CVA6Cfg      ( Cva6Cfg                ),
+        .exception_t  ( exception_t            ),
+        .accelerator_req_t (accelerator_req_t ),
+        .accelerator_resp_t(accelerator_resp_t),
+        .acc_mmu_req_t     (acc_mmu_req_t     ),
+        .acc_mmu_resp_t    (acc_mmu_resp_t    ),
+        .cva6_to_acc_t     (cva6_to_acc_t     ),
+        .acc_to_cva6_t     (acc_to_cva6_t     ),
         .AxiDataWidth ( AraDataWideWidth       ),
         .AxiAddrWidth ( Cfg.AddrWidth          ),
         .axi_ar_t     ( axi_ara_wide_ar_chan_t ),
@@ -814,7 +840,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       axi_inval_filter #(
         .MaxTxns    ( 4                               ),
         .AddrWidth  ( Cfg.AddrWidth                   ),
-        .L1LineWidth( ariane_pkg::DCACHE_LINE_WIDTH/8 ),
+        .L1LineWidth( Cva6Cfg.DCACHE_LINE_WIDTH/8     ),
         .aw_chan_t  ( axi_ara_wide_aw_chan_t          ),
         .req_t      ( axi_ara_wide_req_t              ),
         .resp_t     ( axi_ara_wide_resp_t             )
