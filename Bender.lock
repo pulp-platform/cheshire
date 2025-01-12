@@ -15,7 +15,7 @@ packages:
     - apb
     - register_interface
   ara:
-    revision: 71967bb485601c4ca95fa748c7be689aae1496d9
+    revision: 4171b3a118820d97cc246bafbacd224c05be577f
     version: null
     source:
       Git: https://github.com/pulp-platform/ara.git
@@ -103,7 +103,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 3c6c02b297fd5a005a769b87607902d6443f807f
+    revision: e9a3e28bc4cae147710ec4806329a70323ec0ab2
     version: null
     source:
       Git: https://github.com/mp-17/cva6.git
