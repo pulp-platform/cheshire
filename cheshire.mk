@@ -11,6 +11,7 @@ VLOGAN ?= vlogan
 
 # Caution: Questasim requires this to point to the *actual* compiler install path
 CXX_PATH := $(shell which $(CXX))
+QUESTA   ?= questa-2023.4
 
 VLOG_ARGS   ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
 VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
@@ -63,7 +64,7 @@ chs-clean-deps:
 ######################
 
 CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-CHS_NONFREE_COMMIT ?= 99aa8d9
+CHS_NONFREE_COMMIT ?= a111e47
 
 CHS_PHONY += chs-nonfree-init
 chs-nonfree-init:
@@ -82,17 +83,26 @@ include $(CHS_ROOT)/sw/sw.mk
 # Generate HW #
 ###############
 
+# `CHS_NUM_IRQ_HARTS` and `CHS_NUM_PLIC_SRCS` are used to generate register files.
+# They must match the corresponding SystemVerilog parameters.
+CHS_NUM_IRQ_HARTS  ?= 1
+CHS_NUM_PLIC_SRCS  ?= 58
+CHS_NUM_PLIC_PRIOW ?= 7
+
 # SoC registers
 $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv: $(CHS_ROOT)/hw/regs/cheshire_regs.hjson
 	$(REGTOOL) -r $< --outdir $(dir $@)
 
 # CLINT
-CLINTCORES ?= 1
+CLINTCORES ?= $(CHS_NUM_IRQ_HARTS)
 include $(CLINTROOT)/clint.mk
 $(CLINTROOT)/.generated:
 	flock -x $@ $(MAKE) clint && touch $@
 
 # OpenTitan peripherals
+$(CHS_ROOT)/hw/rv_plic.cfg.hjson: $(CHS_ROOT)/util/gen_pliccfg.py
+	$< $(CHS_NUM_IRQ_HARTS) $(CHS_NUM_PLIC_SRCS) $(CHS_NUM_PLIC_PRIOW) > $@
+
 include $(OTPROOT)/otp.mk
 $(OTPROOT)/.generated: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
 	flock -x $@ sh -c "cp $< $(dir $@)/src/rv_plic/; $(MAKE) -j1 otp" && touch $@
@@ -174,6 +184,67 @@ CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh
+
+################
+# Litmus tests #
+################
+
+LITMUS_NCORES     ?= 2
+LITMUS_DIR        := $(CHS_SW_DIR)/deps/litmus-tests
+LITMUS_BIN_DIR    := $(LITMUS_DIR)/binaries
+LITMUS_WORK_DIR   := $(CHS_ROOT)/work-litmus
+LITMUS_SIMLOG_DIR := $(LITMUS_WORK_DIR)/simlogs
+LITMUS_TEST_LIST  := $(LITMUS_WORK_DIR)/litmus-tests.list
+LITMUS_RESULTS    := $(LITMUS_WORK_DIR)/compare.log
+
+$(LITMUS_DIR)/.git:
+	cd $(CHS_ROOT) && git submodule update --init --recursive $(LITMUS_DIR)
+
+.PHONY: chs-build-litmus-tests
+chs-build-litmus-tests: $(LITMUS_DIR)/.git
+	cd $(LITMUS_DIR)/frontend; ./make.sh
+	cd $(LITMUS_DIR)/binaries; ./make-riscv.sh ../tests/ cheshire $(LITMUS_NCORES)
+
+$(LITMUS_WORK_DIR):
+	mkdir -p $(LITMUS_WORK_DIR)
+
+$(LITMUS_SIMLOG_DIR):
+	mkdir -p $(LITMUS_SIMLOG_DIR)
+
+$(LITMUS_TEST_LIST): $(LITMUS_WORK_DIR) $(LITMUS_SIMLOG_DIR)
+	@echo Generating $@ ...
+	@LITMUS_ROOT=$(LITMUS_DIR) LITMUS_WORK=$(LITMUS_WORK_DIR) $(CHS_ROOT)/util/litmus create_list
+
+$(LITMUS_SIMLOG_DIR)/%.log: $(LITMUS_BIN_DIR)/%.elf $(CHS_SIM_ALL)
+	@echo "Running test $(notdir $<) (Log file: $@)"
+	@cd target/sim/vsim && $(QUESTA) vsim -c -do "set PRELMODE 1; set BOOTMODE 0; set BINARY $<; source start.cheshire_soc.tcl; run -all" > $@ 2>&1
+	@echo "Finished test $<"
+
+.PHONY: chs-run-litmus-tests
+chs-run-litmus-tests: $(LITMUS_TEST_LIST)
+	$(eval LITMUS_TESTS_ELF = $(shell xargs printf '\n%s' < $(LITMUS_TEST_LIST)))
+	@echo Running $(words $(LITMUS_TESTS_ELF)) tests
+	@$(MAKE) $(addprefix $(LITMUS_SIMLOG_DIR)/, $(LITMUS_TESTS_ELF:.elf=.log))
+	@echo "Finished running litmus tests"
+
+.PHONY: chs-check-litmus-tests
+chs-check-litmus-tests:
+	$(eval export LITMUS_ROOT=$(LITMUS_DIR))
+	$(eval export LITMUS_WORK=$(LITMUS_WORK_DIR))
+	@echo "Parsing UART output from simulation logs.."
+	@$(CHS_ROOT)/util/litmus parse_uart
+	@echo "Patching UART logs.."
+	@$(CHS_ROOT)/util/litmus patch_uart
+	@echo "Concatenating logs in a single file.."
+	@$(CHS_ROOT)/util/litmus combine_logs
+	@echo "Comparing logs with reference model.."
+	@$(CHS_ROOT)/util/litmus check > $(LITMUS_RESULTS)
+	@echo "Done! Check '$(LITMUS_RESULTS)' file"
+
+.PHONY: chs-clean-litmus-tests
+chs-clean-litmus-tests:
+	rm -rf $(LITMUS_WORK_DIR)
+	cd $(LITMUS_DIR)/binaries; rm *.elf *.dump
 
 ###########
 # DRAMSys #
