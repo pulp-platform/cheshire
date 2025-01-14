@@ -92,73 +92,6 @@ _prom_check_run:
     beqz t0, _boot
     jalr t0
 
-// Move to next stage of boot
-// 1. Write the address of next stage boot loader in Cheshire's scratch registers
-// 2. Resume execution of all other harts
-.global boot_next_stage
-boot_next_stage:
-    // Non-SMP hart: write boot address into global scratch registers
-    la   t0, __base_regs
-    sw   a0, CHESHIRE_SCRATCH_4_REG_OFFSET(t0)
-    srli a0, a0, 32
-    sw   a0, CHESHIRE_SCRATCH_5_REG_OFFSET(t0)
-    fence
-
-    // Resume SMP harts: set CLINT IPI registers
-    // NOTE: this will cause CLINT to send IPIs to all cores, therefore also the
-    // non-smp hart will receive one. The following instructions make sure that
-    // all harts will wait until the IPI is received (WFI with global ie disabled),
-    // then clear the IPI in the CLINT and wait until all other harts are done with it.
-    la   t0, __base_clint
-    la   t2, __base_regs
-    lw   t2, CHESHIRE_NUM_INT_HARTS_REG_OFFSET(t2)
-    slli t2, t2, 2
-    add  t2, t0, t2  // t2 = CLINT_BASE + (n_harts * 4)
-1:
-    li   t1, 1
-    sw   t1, 0(t0)
-    addi t0, t0, 4
-    blt  t0, t2, 1b
-
-// Stall hart until IPI is raised
-_wait_for_ipi:
-
-    // Wait until this hart receives IPI
-    wfi
-    csrr t1, mip
-    andi t1, t1, 0x8
-    beqz t1, _wait_for_ipi
-
-    // Clear CLINT IPI register for this hart
-    la   t0, __base_clint
-    csrr t1, mhartid
-    slli t1, t1, 2
-    add  t1, t1, t0
-    sw   zero, 0(t1)   // *(CLINT_BASE + hart_id * 4) = 0
-
-    la   t2, __base_regs
-    lw   t2, CHESHIRE_NUM_INT_HARTS_REG_OFFSET(t2)
-    slli t2, t2, 2
-    add  t2, t0, t2    // t2 = CLINT_BASE + (n_harts * 4)
-
-    // Wait until *all* CLINT IPI registers are cleared
-1:
-    lw   t1, 0(t0)
-    bnez t1, 1b
-    addi t0, t0, 4
-    blt  t0, t2, 1b
-
-    // Jump to next stage
-    // Load boot address from global scratch registers
-    la   t0, __base_regs
-    lwu  t1, CHESHIRE_SCRATCH_5_REG_OFFSET(t0)
-    slli t1, t1, 32
-    lwu  t0, CHESHIRE_SCRATCH_4_REG_OFFSET(t0)
-    or   t0, t0, t1
-    csrr a0, mhartid  // Store hartid to a0
-    jalr ra, 0(t0)    // Jump to boot address
-    ret               // We should never get here
-
 // Reset regs, full fence, then jump to main
 _boot:
     li t0, 0
@@ -179,3 +112,63 @@ _exit:
     ebreak
 1:  wfi
     j 1b
+
+// Move to next stage of boot
+// 1. Write the address of next stage boot loader in Cheshire's scratch registers
+// 2. Resume execution of all other harts
+.global boot_next_stage
+boot_next_stage:
+    // Non-SMP hart: write boot address into global scratch registers
+    la   t0, __base_regs
+    sw   a0, CHESHIRE_SCRATCH_4_REG_OFFSET(t0)
+    srli a0, a0, 32
+    sw   a0, CHESHIRE_SCRATCH_5_REG_OFFSET(t0)
+    fence
+    // Resume SMP harts: set CLINT IPI registers
+    // NOTE: this will cause CLINT to send IPIs to all cores, therefore also the
+    // non-smp hart will receive one. The following instructions make sure that
+    // all harts will wait until the IPI is received (WFI with global ie disabled),
+    // then clear the IPI in the CLINT and wait until all other harts are done with it.
+    la   t0, __base_clint
+    la   t2, __base_regs
+    lw   t2, CHESHIRE_NUM_INT_HARTS_REG_OFFSET(t2)
+    slli t2, t2, 2
+    add  t2, t0, t2  // t2 = CLINT_BASE + (n_harts * 4)
+1:  li   t1, 1
+    sw   t1, 0(t0)
+    addi t0, t0, 4
+    blt  t0, t2, 1b
+
+// Stall hart until IPI is raised
+_wait_for_ipi:
+    // Wait until this hart receives IPI
+    wfi
+    csrr t1, mip
+    andi t1, t1, 0x8
+    beqz t1, _wait_for_ipi
+    // Clear CLINT IPI register for this hart
+    la   t0, __base_clint
+    csrr t1, mhartid
+    slli t1, t1, 2
+    add  t1, t1, t0
+    sw   zero, 0(t1)   // *(CLINT_BASE + hart_id * 4) = 0
+    la   t2, __base_regs
+    lw   t2, CHESHIRE_NUM_INT_HARTS_REG_OFFSET(t2)
+    slli t2, t2, 2
+    add  t2, t0, t2    // t2 = CLINT_BASE + (n_harts * 4)
+    // Wait until *all* CLINT IPI registers are cleared
+1:  lw   t1, 0(t0)
+    bnez t1, 1b
+    addi t0, t0, 4
+    blt  t0, t2, 1b
+
+    // Jump to next stage
+    // Load boot address from global scratch registers
+    la   t0, __base_regs
+    lwu  t1, CHESHIRE_SCRATCH_5_REG_OFFSET(t0)
+    slli t1, t1, 32
+    lwu  t0, CHESHIRE_SCRATCH_4_REG_OFFSET(t0)
+    or   t0, t0, t1
+    csrr a0, mhartid  // Store hartid to a0
+    jalr ra, 0(t0)    // Jump to boot address
+    ret               // We should never get here
