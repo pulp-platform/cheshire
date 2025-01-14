@@ -10,10 +10,8 @@
 #include <regs/cheshire.h>
 #include <regs/axi_llc.h>
 
-// The hart that non-SMP tests should run on
-#ifndef NONSMP_HART
+// The hart that the boot ROM should run on
 #define NONSMP_HART 0
-#endif
 
 .section .text._start
 
@@ -68,7 +66,7 @@ _start:
     // If LLC present: Wait for end of BIST, then extend stack and set to all SPM
     la   t0, __base_regs
     lw   t0, CHESHIRE_HW_FEATURES_REG_OFFSET(t0)
-    andi t0, t0, 2  // HW_FEATURES.llc
+    andi t0, t0, (1 << CHESHIRE_HW_FEATURES_LLC_BIT)
     beqz t0, _prom_check_run
     la   t0, __base_llc
 _wait_llc_bist:
@@ -94,12 +92,11 @@ _prom_check_run:
     beqz t0, _boot
     jalr t0
 
-// Move to next stage of booting
+// Move to next stage of boot
 // 1. Write the address of next stage boot loader in Cheshire's scratch registers
 // 2. Resume execution of all other harts
 .global boot_next_stage
 boot_next_stage:
-
     // Non-SMP hart: write boot address into global scratch registers
     la   t0, __base_regs
     sw   a0, CHESHIRE_SCRATCH_4_REG_OFFSET(t0)
