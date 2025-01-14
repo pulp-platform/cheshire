@@ -1714,19 +1714,25 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   end
 
-  //////////////////
-  //  Assertions  //
-  //////////////////
+  ///////////////////////////////
+  //  Elaboration-Time Checks  //
+  ///////////////////////////////
 
-  // TODO: check that CVA6 and Cheshire config agree
+  // Check that CLINT core count is equal to `NumIrqHarts`
+  if (clint_reg_pkg::NumCores != NumIrqHarts)
+    $fatal(1, "CLIC core count (%d) does not match `NumIrqHarts` (%d)",
+      clint_reg_pkg::NumCores, NumIrqHarts);
+
+  // Check that PLIC target count is equal to `2*NumIrqHarts` (two privilege levels)
+  if (rv_plic_reg_pkg::NumTarget != 2 * NumIrqHarts)
+    $fatal(1, "PLIC target count (%d) does not match `2*NumIrqHarts` (%d)",
+      clint_reg_pkg::NumTarget, 2 * NumIrqHarts);
+
   // TODO: check that all interconnect params agree
   // TODO: check that params with min/max values are within legal range
-  // TODO: check that CLINT and PLIC target counts are both `NumIntHarts + Cfg.NumExtHarts`
-  // TODO: check that (for now) `NumIntHarts == 1`
   // TODO: check that available user bits suffice to identify all masters
   // TODO: check that atomics user domain is nonzero
   // TODO: check that `ext` (IO) and internal types agree
-  // TODO: many other things I most likely forgot
   // TODO: check that LLC only exists if its output is connected (the reverse is allowed)
 
 endmodule
