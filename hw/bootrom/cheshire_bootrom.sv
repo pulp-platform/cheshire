@@ -29,7 +29,7 @@ module cheshire_bootrom #(
     always_comb begin
         data_o = '0;
         unique case (word)
-        000: data_o = 32'h42014081 /* 0x0000 */;
+            000: data_o = 32'h42014081 /* 0x0000 */;
             001: data_o = 32'h43014281 /* 0x0004 */;
             002: data_o = 32'h44014381 /* 0x0008 */;
             003: data_o = 32'h45014481 /* 0x000c */;
