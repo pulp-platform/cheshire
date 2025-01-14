@@ -23,17 +23,24 @@ import argparse
 # Parse arguments.
 parser = argparse.ArgumentParser(description="Generate rv_plic.cfg.hjson")
 parser.add_argument(
-    "--num-cores",
-    "-n",
-    dest="num_cores",
-    default=1,
+    "num_cores",
     type=int,
-    help=
-    "Number of cores attached to the PLIC. The number of PLIC targets is set accordingly (2 * num-cores)"
+    help="Number of attached cores."
+)
+parser.add_argument(
+    "num_srcs",
+    type=int,
+    help="Bit width of interrupt priority."
+)
+parser.add_argument(
+    "prio_width",
+    type=int,
+    help="Bit width of interrupt priority."
 )
 args = parser.parse_args()
 
-num_targets = args.num_cores * 2
+# We need *two targets* per hart: M and S modes
+num_targets = 2 * args.num_cores
 
 # Emit the code.
 print("""
@@ -48,14 +55,15 @@ print("""
 {{
     instance_name: \"rv_plic\",
     param_values: {{
-        src: 58,
-        target: {targets},  // We need *two targets* per hart: M and S modes
-        prio: 7,
-        nonstd_regs: 0  // Do *not* include these: MSIPs are not used and we use a 64 MiB address space
+        src: {num_srcs},
+        target: {num_targets},
+        prio: {prio_width},
+        nonstd_regs: 0
     }},
 }}
-
-""".strip().format(
-    script=os.path.basename(__file__),
-    targets=num_targets
+    """.strip().format(
+        script=os.path.basename(__file__),
+        num_srcs=args.num_srcs,
+        num_targets=num_targets,
+        prio_width=args.prio_width
 ))
