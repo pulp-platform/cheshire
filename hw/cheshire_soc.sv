@@ -1726,7 +1726,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Check that PLIC target count is equal to `2*NumIrqHarts` (two privilege levels)
   if (rv_plic_reg_pkg::NumTarget != 2 * NumIrqHarts)
     $fatal(1, "PLIC target count (%d) does not match `2*NumIrqHarts` (%d)",
-      clint_reg_pkg::NumTarget, 2 * NumIrqHarts);
+      rv_plic_reg_pkg::NumTarget, 2 * NumIrqHarts);
 
   // TODO: check that all interconnect params agree
   // TODO: check that params with min/max values are within legal range

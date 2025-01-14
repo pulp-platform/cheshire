@@ -18,7 +18,6 @@ VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
 
 # Common Bender flags for Cheshire RTL
 CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t cv64a6_imafdcsclic_sv39
-NUM_CORES            ?= 1
 
 # Define used paths (prefixed to avoid name conflicts)
 CHS_ROOT      ?= $(shell $(BENDER) path cheshire)
@@ -65,7 +64,7 @@ chs-clean-deps:
 ######################
 
 CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-CHS_NONFREE_COMMIT ?= 1deb6804931b6ded1ec282b0766d0501ff8ce734
+CHS_NONFREE_COMMIT ?= a111e47
 
 CHS_PHONY += chs-nonfree-init
 chs-nonfree-init:
@@ -84,19 +83,25 @@ include $(CHS_ROOT)/sw/sw.mk
 # Generate HW #
 ###############
 
+# `CHS_NUM_IRQ_HARTS` and `CHS_NUM_PLIC_SRCS` are used to generate register files.
+# They must match the corresponding SystemVerilog parameters.
+CHS_NUM_IRQ_HARTS  ?= 1
+CHS_NUM_PLIC_SRCS  ?= 58
+CHS_NUM_PLIC_PRIOW ?= 7
+
 # SoC registers
 $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv: $(CHS_ROOT)/hw/regs/cheshire_regs.hjson
 	$(REGTOOL) -r $< --outdir $(dir $@)
 
 # CLINT
-CLINTCORES ?= $(NUM_CORES)
+CLINTCORES ?= $(CHS_NUM_IRQ_HARTS)
 include $(CLINTROOT)/clint.mk
 $(CLINTROOT)/.generated:
 	flock -x $@ $(MAKE) clint && touch $@
 
 # OpenTitan peripherals
 $(CHS_ROOT)/hw/rv_plic.cfg.hjson: $(CHS_ROOT)/util/gen_pliccfg.py
-	$(CHS_ROOT)/util/gen_pliccfg.py --num-cores $(NUM_CORES) > $@
+	$< $(CHS_NUM_IRQ_HARTS) $(CHS_NUM_PLIC_SRCS) $(CHS_NUM_PLIC_PRIOW) > $@
 
 include $(OTPROOT)/otp.mk
 $(OTPROOT)/.generated: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
@@ -183,6 +188,7 @@ CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh
 ################
 # Litmus tests #
 ################
+
 LITMUS_NCORES     ?= 2
 LITMUS_DIR        := $(CHS_SW_DIR)/deps/litmus-tests
 LITMUS_BIN_DIR    := $(LITMUS_DIR)/binaries
