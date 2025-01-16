@@ -63,22 +63,19 @@ create_generated_clock  [get_nets i_hyperbus/i_phy/phy_wrap.phy_unroll[1].i_phy/
 
 ## I/O constraints
 set output_ports {FMC_hyper*_dq* FMC_hyper*_rwds}
-set_output_delay [expr $period_hyperbus/4 ] -clock clk_phy_90 [get_ports $output_ports] -max
-set_output_delay [expr $period_hyperbus/-4] -clock clk_phy_90 [get_ports $output_ports] -min -add_delay
-set_output_delay [expr $period_hyperbus/4 ] -clock clk_phy_90 [get_ports $output_ports] -max -clock_fall -add_delay
-set_output_delay [expr $period_hyperbus/-4] -clock clk_phy_90 [get_ports $output_ports] -min -clock_fall -add_delay
+set_output_delay [expr $period_hyperbus/8 ] -clock clk_phy_90 [get_ports $output_ports] -max
+set_output_delay [expr $period_hyperbus/-8] -clock clk_phy_90 [get_ports $output_ports] -min -add_delay
+set_output_delay [expr $period_hyperbus/8 ] -clock clk_phy_90 [get_ports $output_ports] -max -clock_fall -add_delay
+set_output_delay [expr $period_hyperbus/-8] -clock clk_phy_90 [get_ports $output_ports] -min -clock_fall -add_delay
 
 set input_ports {FMC_hyper*_dq* FMC_hyper*_rwds}
-set_input_delay -max [expr $period_hyperbus/4] -clock clk_phy [get_ports $input_ports]
-set_input_delay -min [expr $period_hyperbus/4] -clock clk_phy [get_ports $input_ports] -add_delay
-set_input_delay -max [expr $period_hyperbus/4] -clock clk_phy [get_ports $input_ports] -add_delay -clock_fall
-set_input_delay -min [expr $period_hyperbus/4] -clock clk_phy [get_ports $input_ports] -add_delay -clock_fall
+set_input_delay -max [expr $period_hyperbus/8] -clock clk_phy [get_ports $input_ports]
+set_input_delay -min [expr $period_hyperbus/8] -clock clk_phy [get_ports $input_ports] -add_delay
+set_input_delay -max [expr $period_hyperbus/8] -clock clk_phy [get_ports $input_ports] -add_delay -clock_fall
+set_input_delay -min [expr $period_hyperbus/8] -clock clk_phy [get_ports $input_ports] -add_delay -clock_fall
 
-set_output_delay [expr $period_hyperbus/8 ] -clock clk_phy_90 [get_ports FMC_hyper*_reset] -max
-set_output_delay [expr $period_hyperbus/-8] -clock clk_phy_90 [get_ports FMC_hyper*_reset] -min -add_delay
-
-set_output_delay -clock clk_phy_90 [expr $period_hyperbus/8] [get_ports FMC_hyper*_csn*] -max
-set_output_delay -clock clk_phy_90 [expr $period_hyperbus/-8] [get_ports FMC_hyper*_csn*] -min -add_delay 
+set_output_delay [expr $period_hyperbus/8 ] -clock clk_phy_90 [get_ports {FMC_hyper*_csn* FMC_hyper*_reset}] -max
+set_output_delay [expr $period_hyperbus/-8] -clock clk_phy_90 [get_ports {FMC_hyper*_csn* FMC_hyper*_reset}] -min -add_delay
 
 
 # Deactivate clk fall for no ddr reg
