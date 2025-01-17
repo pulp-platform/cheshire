@@ -509,6 +509,10 @@ package cheshire_pkg;
     ret.DebugEn               = 1;
     ret.RVSCLIC               = cfg.Clic;
     ret.CLICNumInterruptSrc   = NumCoreIrqs + NumIntIntrs + cfg.NumExtClicIntrs;
+    // Cache configs
+    ret.DcacheByteSize        = 64 * 1024;
+    ret.DcacheSetAssoc        = 2;
+    ret.DcacheLineWidth       = 128;
     // TODO: Should some things be removed from the main config?
     // TODO: Should other things be added to the main config?
     // TODO: Tune missing parameters of interest (esp. cache and interconnect) properly
