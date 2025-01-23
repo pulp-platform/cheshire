@@ -196,6 +196,11 @@ package cheshire_pkg;
     aw_bt   AxiRtNumAddrRegions;
     bit     AxiRtCutPaths;
     bit     AxiRtEnableChecks;
+    // Parameters for CLIC
+    bit     ClicVsclic;
+    bit     ClicVsprio;
+    byte_bt ClicNumVsctxts;
+    aw_bt   ClicPrioWidth;
   } cheshire_cfg_t;
 
   //////////////////
@@ -508,6 +513,7 @@ package cheshire_pkg;
     ret.CachedRegionLength    = {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength};
     ret.DebugEn               = 1;
     ret.RVSCLIC               = cfg.Clic;
+    ret.RVVCLIC               = cfg.ClicVsclic;
     ret.CLICNumInterruptSrc   = NumCoreIrqs + NumIntIntrs + cfg.NumExtClicIntrs;
     // TODO: Should some things be removed from the main config?
     // TODO: Should other things be added to the main config?
@@ -579,7 +585,7 @@ package cheshire_pkg;
     Vga               : 1,
     Usb               : 1,
     AxiRt             : 0,
-    Clic              : 0,
+    Clic              : 1,
     IrqRouter         : 0,
     BusErr            : 1,
     // Debug
@@ -639,6 +645,11 @@ package cheshire_pkg;
     AxiRtWBufferDepth   : 16,
     AxiRtNumAddrRegions : 2,
     AxiRtCutPaths       : 1,
+    // CLIC
+    ClicVsclic        : 1,
+    ClicVsprio        : 1,
+    ClicNumVsctxts    : 64,
+    ClicPrioWidth     : 1,
     // All non-set values should be zero
     default: '0
   };
