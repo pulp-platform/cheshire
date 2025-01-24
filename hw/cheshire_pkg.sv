@@ -648,7 +648,7 @@ package cheshire_pkg;
     // CLIC
     ClicVsclic        : 1,
     ClicVsprio        : 1,
-    ClicNumVsctxts    : 64,
+    ClicNumVsctxts    : 4,
     ClicPrioWidth     : 1,
     // All non-set values should be zero
     default: '0
