@@ -494,7 +494,7 @@ package cheshire_pkg;
       CvxifEn               : 0,
       ZiCondExtEn           : 1,
       RVSCLIC               : cfg.Clic,
-      RVVCLIC               : 0,
+      RVVCLIC               : 1,
       RVF                   : 1,
       RVD                   : 1,
       FpPresent             : 1,
@@ -596,7 +596,7 @@ package cheshire_pkg;
     SerialLink        : 1,
     Vga               : 1,
     AxiRt             : 0,
-    Clic              : 0,
+    Clic              : 1,
     IrqRouter         : 0,
     BusErr            : 1,
     // Debug

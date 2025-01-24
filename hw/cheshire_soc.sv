@@ -676,9 +676,9 @@ module cheshire_soc import cheshire_pkg::*; #(
         .reg_rsp_t   ( reg_rsp_t ),
         .SSCLIC      ( 1 ),
         .USCLIC      ( 0 ),
-        .VSCLIC      ( 0 ),
-        .N_VSCTXTS   ( 0 ),
-        .VSPRIO      ( 0 ),
+        .VSCLIC      ( 1 ),
+        .N_VSCTXTS   ( 64 ),
+        .VSPRIO      ( 1 ),
         .VsprioWidth ( 1 )
       ) i_clic (
         .clk_i,
