@@ -19,7 +19,8 @@ void smp_resume(void) {
 }
 
 // Shared variable for barrier synchronization
-static volatile uint64_t _barrier_target = 0;
+static volatile uint64_t _barrier_target_0 = 0;
+static volatile uint64_t _barrier_target_1 = 0;
 
 static void barrier_wait(volatile uint64_t *barrier, uint64_t incr, uint64_t reach) {
     asm volatile("amoadd.d x6, %1, (%0)             \n"
@@ -36,13 +37,16 @@ static void barrier_wait(volatile uint64_t *barrier, uint64_t incr, uint64_t rea
 }
 
 void smp_barrier_init() {
-    _barrier_target = 0;
+    _barrier_target_0 = 0;
+    _barrier_target_1 = 0;
 }
 
 void smp_barrier_up(uint64_t n_processes) {
-    barrier_wait(&_barrier_target, 1, n_processes);
+    barrier_wait(&_barrier_target_0, 1, n_processes);
+    barrier_wait(&_barrier_target_1, 1, n_processes);
 }
 
 void smp_barrier_down() {
-    barrier_wait(&_barrier_target, -1, 0);
+    barrier_wait(&_barrier_target_0, -1, 0);
+    barrier_wait(&_barrier_target_1, -1, 0);
 }
