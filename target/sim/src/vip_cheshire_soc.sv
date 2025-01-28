@@ -944,7 +944,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   // Wait for termination signal and get return code
   task automatic slink_wait_for_eoc(output word_bt exit_code);
-    slink_poll_bit0(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, exit_code, 800);
+    slink_poll_bit0(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, exit_code, 800000);
     exit_code >>= 1;
     if (exit_code) $error("[SLINK] FAILED: return code %0d", exit_code);
     else $display("[SLINK] SUCCESS");
