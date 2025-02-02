@@ -142,11 +142,14 @@ int generate_page_table_brunch(void * virt_adr, void *  phys_adr, uint64_t * ptr
     // Set the nr of levels according the adress schema we use
     #if defined(RV57)
         nr_level = 5;
-    #elif defined(RV48)
+    #endif
+    #if defined(RV48)
         nr_level = 4;
-    #elif defined(RV48)
+    #endif
+    #if defined(RV39)
         nr_level = 3;
-    #elif defined(RV48)
+    #endif
+    #if defined(RV32)
         nr_level = 2;
     #endif
 

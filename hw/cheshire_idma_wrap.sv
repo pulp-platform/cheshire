@@ -279,37 +279,36 @@ module cheshire_idma_wrap #(
 
   end
 
-  // Insert here the sMMU !
+
+  /*************/
+  /*   sMMU    */
+  /*************/
 
 
-  // TODO:
-  /*
-  Questions:
-    - How can i be 100% sure that the size of the src/dst adresses and length matches?
-    - What should we do with the idma_rsp? No analysis is done in the sMMU!
-    - Aufpassen mit den Längen wie viel datan man z.b. lopieren kann! Ich habe von Param:0 vector erstellt, thomas von Param-1:0
-    - Error handler: First Error will be piped through with a fall-through-register. Otherwise the latest DMA Response will be feed trought
-  */
+  /* Note */
+  // Error handler from Backend is rather crude
+  // First Error will be piped through with a fall-through-register. Otherwise the latest DMA Response will be feed trought
 
   /* Local Parameter */
-
-
-
   // RV-Depending Parameter
+  // RV39
+  // localparam int unsigned sMMU_VAWidth = 39;
+  // localparam int unsigned sMMU_NRLevel = 3;
+
+  // RV48
   localparam int unsigned sMMU_VAWidth = AxiAddrWidth;
   localparam int unsigned sMMU_NRLevel = 4;
+
   localparam int unsigned sMMU_PAWidth = 56;
   localparam int unsigned sMMU_PTEByteSizeLog2 = 3; // --> RV32 = 2 (4 byte) else = 3 (8 byte)
-  // !!!! Remember to change the Value in the Package too !!!!
 
   // Input Request Design Parameter
   localparam int unsigned sMMU_MaxByteTransferWidth = TfLenWidth;
   localparam int unsigned sMMU_PageSize = 12;
   localparam int unsigned sMMU_MaxPageTransferWidth = sMMU_MaxByteTransferWidth - sMMU_PageSize;
-  // !!!! Remember to change the Value in the Package too !!!!
 
   // System Buffer Parameter
-  localparam int unsigned sMMU_ReorderBufferSize = 9;
+  localparam int unsigned sMMU_ReorderBufferSize = 8;
   localparam int unsigned sMMU_StreamIDSize = cf_math_pkg::idx_width(sMMU_ReorderBufferSize);
   localparam int unsigned sMMU_OverallStreamsSMMU = 24;    // How many different streams can be concurrently in the forward !and! backward path of the sMMU?
   localparam int unsigned sMMU_DispatchBuffer = sMMU_ReorderBufferSize;   // How many different streams can be concurrently in the forward path of the sMMU? Worst Case: One fragment per Stream
@@ -319,6 +318,9 @@ module cheshire_idma_wrap #(
   localparam int unsigned sMMU_FillPolicyTLB = 1; //
   localparam int unsigned sMMU_ReplacementPolicyTLB = 1;
 
+  // SUPPORT SV39
+  //`SMMU_TYPEDEF_GEN_SV39(va_t, pa_t, pte_t)
+  // SUPPORT SV48
   `SMMU_TYPEDEF_GEN_SV48(va_t, pa_t, pte_t)
   `SMMU_TYPEDEF_GEN_DEFAULT(va_t, pa_t, options_t, sMMU_StreamIDSize, sMMU_MaxByteTransferWidth, sMMU_MaxPageTransferWidth, sMMU_PageSize)
 
@@ -352,6 +354,7 @@ module cheshire_idma_wrap #(
   idma_rsp_t idma_resp_register_d, idma_resp_register_q;
 
   // Assign the Connection between the Frontend and the sMMU
+  // SUPPORT SV48
   assign smmu_multi_page_req = '{
     src: burst_req.src_addr,
     dst: burst_req.dst_addr,
@@ -362,6 +365,20 @@ module cheshire_idma_wrap #(
     f_update_tlb: smmu_f_update_tlb,
     add_infos: burst_req.opt
   };
+
+  // SUPPORT SV39
+  /*
+  assign smmu_multi_page_req = '{
+    src: burst_req.src_addr[38:0],
+    dst: burst_req.dst_addr[38:0],
+    length: burst_req.length,
+    f_exe: smmu_f_exe,
+    f_user: smmu_f_user,
+    f_bare: smmu_f_bare,
+    f_update_tlb: smmu_f_update_tlb,
+    add_infos: burst_req.opt
+  };
+  */
 
   assign smmu_multi_page_req_valid = burst_req_valid;
   assign burst_req_ready = smmu_multi_page_req_ready;
@@ -407,6 +424,37 @@ module cheshire_idma_wrap #(
   // Register all required signals
   `FF(idma_resp_register_q, idma_resp_register_d, '0, clk_i, rst_ni)
 
+/*
+// Debug Option to generate the results shown in the report / presentation
+  int smmu_input_request;
+  int smmu_axi_request;
+  int smmu_return;
+
+  // Plot Input / Output of sMMU
+  initial begin : logDataOutgoing
+        smmu_input_request = 0;
+        smmu_axi_request = 0;
+        smmu_return = 0;
+
+        while(1) begin
+            @(posedge clk_i);
+            if((smmu_multi_page_req_valid == 1'b1) && (smmu_multi_page_req_ready == 1'b1)) begin
+                smmu_input_request = smmu_input_request + 1;
+                $display($time, " In Request %0d", smmu_input_request);
+            end
+            if((axi_ptw_rsp_i.ar_ready == 1'b1) && (axi_ptw_req_o.ar_valid == 1'b1)) begin
+                smmu_axi_request = smmu_axi_request + 1;
+                $display($time, " Out Request %0d", smmu_axi_request);
+            end
+            if((idma_multi_page_resp_valid == 1'b1) && (idma_multi_page_resp_ready == 1'b1)) begin
+                smmu_return = smmu_return + 1;
+                $display($time, " Return Request %0d", smmu_return);
+            end
+        end
+    end
+  */
+
+    
   // Instanciate the streamMMU
   sMMU #(
     .SizeDispatchBuffer                     (sMMU_DispatchBuffer),
