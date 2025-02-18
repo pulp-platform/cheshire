@@ -16,7 +16,17 @@ VLOG_ARGS   ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
 VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
 
 # Common Bender flags for Cheshire RTL
-CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t cv64a6_imafdchsclic_sv39_wb
+CHS_CVA6_CONFIG      ?= cv64a6_imafdchsclic_sv39_wb
+CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t $(CHS_CVA6_CONFIG)
+
+# Infer XLEN from CVA6 target
+# Check if CHS_CVA6_CONFIG starts with cv32 or cv64
+ifneq ($(findstring cv32, $(CHS_CVA6_CONFIG)),)
+    CHS_SW_XLEN := 32
+endif
+ifneq ($(findstring cv64, $(CHS_CVA6_CONFIG)),)
+    CHS_SW_XLEN := 64
+endif
 
 # Define used paths (prefixed to avoid name conflicts)
 CHS_ROOT      ?= $(shell $(BENDER) path cheshire)

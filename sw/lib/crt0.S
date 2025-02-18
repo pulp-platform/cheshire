@@ -8,6 +8,25 @@
 
 .section .text._start
 
+
+#if __riscv_xlen == 64
+# define LREG ld
+# define SREG sd
+# define REGBYTES 8
+#elif __riscv_xlen == 32
+# define LREG lw
+# define SREG sw
+# define REGBYTES 4
+#endif
+
+#if __riscv_flen == 64
+#define FCVT fcvt.d.l
+#define FMV fmv.d
+#elif __riscv_flen == 32
+#define FCVT fcvt.s.w
+#define FMV fmv.s
+#endif
+
 // Minimal CRT0
 .global _start
 .align 4
@@ -35,10 +54,10 @@ _start:
 1:  .option pop
 
     // Store existing stack, global, return pointers on new stack
-    addi sp, sp, -24
-    sd t1, 0(sp)
-    sd gp, 8(sp)
-    sd ra, 16(sp)
+    addi sp, sp, -(3*REGBYTES)
+    SREG t1, 0*REGBYTES(sp)
+    SREG gp, 1*REGBYTES(sp)
+    SREG ra, 2*REGBYTES(sp)
 
     // Set trap vector
     la t0, _trap_handler_wrap
@@ -54,10 +73,10 @@ _zero_bss_loop:
     addi t4, t2, -32
     blez t2, _fp_init           // t2 <= 0? => No bss to zero
     blt t4, x0, _zero_bss_rem   // t4 <  0? => Less than 4 words left
-    sd a0, 0(t0)
-    sd a0, 8(t0)
-    sd a0, 16(t0)
-    sd a0, 24(t0)
+    SREG a0, 0*REGBYTES(t0)
+    SREG a0, 1*REGBYTES(t0)
+    SREG a0, 2*REGBYTES(t0)
+    SREG a0, 3*REGBYTES(t0)
     addi t2, t2, -32
     addi t0, t0, 32
     bgt t2, x0, _zero_bss_loop  // Still more to go
@@ -70,47 +89,51 @@ _zero_bss_rem:
     bgt t2, x0, _zero_bss_rem
 
 _fp_init:
+
+    #if defined(__riscv_flen) && __riscv_flen > 0
     // Set FS state to "Initial", enabling FP instructions
     li t1, 1
     slli t1, t1, 13
     csrs mstatus, t1
 
     // Clear all 32 double FP registers
-    fcvt.d.l f0, x0
-    fmv.d f1, f0
-    fmv.d f2, f0
-    fmv.d f3, f0
-    fmv.d f4, f0
-    fmv.d f5, f0
-    fmv.d f6, f0
-    fmv.d f7, f0
-    fmv.d f8, f0
-    fmv.d f9, f0
-    fmv.d f10, f0
-    fmv.d f11, f0
-    fmv.d f12, f0
-    fmv.d f13, f0
-    fmv.d f14, f0
-    fmv.d f15, f0
-    fmv.d f16, f0
-    fmv.d f17, f0
-    fmv.d f18, f0
-    fmv.d f19, f0
-    fmv.d f20, f0
-    fmv.d f21, f0
-    fmv.d f22, f0
-    fmv.d f23, f0
-    fmv.d f24, f0
-    fmv.d f25, f0
-    fmv.d f26, f0
-    fmv.d f27, f0
-    fmv.d f28, f0
-    fmv.d f29, f0
-    fmv.d f30, f0
-    fmv.d f31, f0
+    FCVT f0, x0
+    FMV f1, f0
+    FMV f2, f0
+    FMV f3, f0
+    FMV f4, f0
+    FMV f5, f0
+    FMV f6, f0
+    FMV f7, f0
+    FMV f8, f0
+    FMV f9, f0
+    FMV f10, f0
+    FMV f11, f0
+    FMV f12, f0
+    FMV f13, f0
+    FMV f14, f0
+    FMV f15, f0
+    FMV f16, f0
+    FMV f17, f0
+    FMV f18, f0
+    FMV f19, f0
+    FMV f20, f0
+    FMV f21, f0
+    FMV f22, f0
+    FMV f23, f0
+    FMV f24, f0
+    FMV f25, f0
+    FMV f26, f0
+    FMV f27, f0
+    FMV f28, f0
+    FMV f29, f0
+    FMV f30, f0
+    FMV f31, f0
 
     // Set FS state to "Clean"
     csrrc x0, mstatus, t1
+
+    #endif
 
     // Full fence, then jump to main
     fence
@@ -121,9 +144,10 @@ _fp_init:
 .align 4
 _exit:
     // Restore the original context registers (sp last)
-    ld ra, 16(sp)
-    ld gp, 8(sp)
-    ld sp, 0(sp)
+    LREG ra, 2*REGBYTES(sp)
+    LREG gp, 1*REGBYTES(sp)
+    LREG sp, 0*REGBYTES(sp)
+    addi sp, sp, (3*REGBYTES)
     // Save the return value to scratch register 2 and wait forever.
     slli t0, a0, 1
     ori  t0, t0, 1
@@ -136,43 +160,43 @@ _exit:
 // registers and perform a proper machine-mode exception return.
 .align 4
 _trap_handler_wrap:
-    addi sp, sp, -128
-    sd ra, 120(sp)
-    sd t0, 112(sp)
-    sd t1, 104(sp)
-    sd t2, 96(sp)
-    sd a0, 88(sp)
-    sd a1, 80(sp)
-    sd a2, 72(sp)
-    sd a3, 64(sp)
-    sd a4, 56(sp)
-    sd a5, 48(sp)
-    sd a6, 40(sp)
-    sd a7, 32(sp)
-    sd t3, 24(sp)
-    sd t4, 16(sp)
-    sd t5, 8(sp)
-    sd t6, 0(sp)
+    addi sp, sp, -(16*REGBYTES)
+    SREG ra, 15*REGBYTES(sp)
+    SREG t0, 14*REGBYTES(sp)
+    SREG t1, 13*REGBYTES(sp)
+    SREG t2, 12*REGBYTES(sp)
+    SREG a0, 11*REGBYTES(sp)
+    SREG a1, 10*REGBYTES(sp)
+    SREG a2, 9*REGBYTES(sp)
+    SREG a3, 8*REGBYTES(sp)
+    SREG a4, 7*REGBYTES(sp)
+    SREG a5, 6*REGBYTES(sp)
+    SREG a6, 5*REGBYTES(sp)
+    SREG a7, 4*REGBYTES(sp)
+    SREG t3, 3*REGBYTES(sp)
+    SREG t4, 2*REGBYTES(sp)
+    SREG t5, 1*REGBYTES(sp)
+    SREG t6, 0*REGBYTES(sp)
 
     jal trap_vector
 
-    ld ra, 120(sp)
-    ld t0, 112(sp)
-    ld t1, 104(sp)
-    ld t2, 96(sp)
-    ld a0, 88(sp)
-    ld a1, 80(sp)
-    ld a2, 72(sp)
-    ld a3, 64(sp)
-    ld a4, 56(sp)
-    ld a5, 48(sp)
-    ld a6, 40(sp)
-    ld a7, 32(sp)
-    ld t3, 24(sp)
-    ld t4, 16(sp)
-    ld t5, 8(sp)
-    ld t6, 0(sp)
-    addi sp, sp, 128
+    LREG ra, 15*REGBYTES(sp)
+    LREG t0, 14*REGBYTES(sp)
+    LREG t1, 13*REGBYTES(sp)
+    LREG t2, 12*REGBYTES(sp)
+    LREG a0, 11*REGBYTES(sp)
+    LREG a1, 10*REGBYTES(sp)
+    LREG a2, 9*REGBYTES(sp)
+    LREG a3, 8*REGBYTES(sp)
+    LREG a4, 7*REGBYTES(sp)
+    LREG a5, 6*REGBYTES(sp)
+    LREG a6, 5*REGBYTES(sp)
+    LREG a7, 4*REGBYTES(sp)
+    LREG t3, 3*REGBYTES(sp)
+    LREG t4, 2*REGBYTES(sp)
+    LREG t5, 1*REGBYTES(sp)
+    LREG t6, 0*REGBYTES(sp)
+    addi sp, sp, (16*REGBYTES)
     mret
 
 .global trap_vector

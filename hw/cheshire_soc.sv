@@ -611,8 +611,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     ) i_core_cva6 (
       .clk_i,
       .rst_ni,
-      .boot_addr_i      ( BootAddr ),
-      .hart_id_i        ( 64'(i) ),
+      .boot_addr_i      ( BootAddr[Cva6Cfg.XLEN-1:0] ),
+      .hart_id_i        ( Cva6Cfg.XLEN'(i) ),
       .irq_i            ( xeip[i] ),
       .ipi_i            ( msip[i] ),
       .time_irq_i       ( mtip[i] ),
