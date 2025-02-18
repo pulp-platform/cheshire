@@ -374,7 +374,16 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     // Repoint execution
     jtag_write(dm::Data1, entry[63:32]);
     jtag_write(dm::Data0, entry[31:0]);
-    jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
+    jtag_write(dm::Command, {
+      8'h0, // cmdtype
+      1'h0, // reserved
+      cva6_config_pkg::CVA6ConfigXlen == 32 ? 3'h2 : 3'h3, // aarsize
+      1'h0, // aarpostincrement
+      1'h0, // postexec
+      1'h1, // transfer
+      1'h1, // write
+      16'h07b1 // regno
+    }, 0, 1);
     // Resume hart 0
     jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
     $display("[JTAG] Resumed hart 0 from 0x%h", entry);
