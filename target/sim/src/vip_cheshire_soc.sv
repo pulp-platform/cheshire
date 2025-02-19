@@ -799,6 +799,33 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     input axi_pkg::size_t size,
     ref axi_data_t        beats [$]
   );
+    int size_bytes = (1 << size);
+    addr_t addr_incr = addr;
+    int i = 0;
+    int beats_left_in_page, remaining_beats, beats_to_send;
+    if (beats.size() == 0)
+      $fatal(1, "[SLINK] Zero-length write requested!");
+
+    while (i < beats.size()) begin
+      axi_data_t beats_split [$];
+      beats_left_in_page = (4096 - (addr_incr % 4096)) / size_bytes;
+      remaining_beats = beats.size() - i;
+      beats_to_send = (remaining_beats > beats_left_in_page) ? beats_left_in_page : remaining_beats;
+      for (int j = 0; j < beats_to_send; j++) begin
+        beats_split.push_back(beats[i+j]);
+      end
+      slink_write_burst(addr_incr, size, beats_split);
+      addr_incr += size_bytes * beats_to_send;
+      i += beats_to_send;
+    end
+    if (SlinkAxiDebug) $display("[SLINK] - Done");
+  endtask
+
+  task automatic slink_write_burst(
+    input addr_t          addr,
+    input axi_pkg::size_t size,
+    ref axi_data_t        beats [$]
+  );
     slink_axi_driver_t::ax_beat_t ax = new();
     slink_axi_driver_t::w_beat_t w = new();
     slink_axi_driver_t::b_beat_t b;
@@ -829,7 +856,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     slink_axi_driver.recv_b(b);
     if (b.b_resp != axi_pkg::RESP_OKAY)
       $error("[SLINK] - Write error response: %d!", b.b_resp);
-    if (SlinkAxiDebug) $display("[SLINK] - Done");
   endtask
 
   task automatic slink_read_beats(
