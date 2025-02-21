@@ -832,7 +832,7 @@ module cheshire_soc
         .axi_rsp_i        ( c910_out_rsp_s1     )
       );
 
-`ifndef TARGET_GATE
+// `ifndef TARGET_GATE
       axi_burst_unwrap #(
         .MaxReadTxns  ( 32'd8     ),
         .MaxWriteTxns ( 32'd8     ),
@@ -850,10 +850,10 @@ module cheshire_soc
         .mst_req_o  ( c910_out_req_s2 ),
         .mst_resp_i ( c910_out_rsp_s2 )
       );
-`else
-    assign c910_out_req_s2 = c910_out_req_s1;
-    assign c910_out_rsp_s1 = c910_out_rsp_s2;
-`endif
+// `else
+//     assign c910_out_req_s2 = c910_out_req_s1;
+//     assign c910_out_rsp_s1 = c910_out_rsp_s2;
+// `endif
 
       axi_burst_undec #(
       // the whole burst length in bit

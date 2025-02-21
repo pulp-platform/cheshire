@@ -33,16 +33,10 @@ dependencies:
   # soc910:                   { git: "git@iis-git.ee.ethz.ch:nwistoff/soc910.git",                  rev: 7c218d05   }
   # register_interface:       { path: vendor/pulp_register_interface                                                  }
   # soc910:                   { path: soc910/hw/system                                                              }
-  pulp_c910:                { git: "git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git",               rev: 04b6c930   } # zx/axi_burst_unwrap
+  pulp_c910:                { git: "git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git",               rev: fcf8ede7   } # dev_zx_cheshire_c910
 
 export_include_dirs:
   - hw/include
-
-# vendor_package:
-#   - name: register_interface
-#     target_dir: vendor/pulp_register_interface
-#     upstream: { git: "https://github.com/pulp-platform/register_interface.git", rev: "d7693be4aef1fc7e7eb2b00b41c42e87d959866c" }
-#     patch_dir: "vendor/patches/pulp_register_interface"
 
 sources:
   - hw/bootrom/cheshire_bootrom.sv

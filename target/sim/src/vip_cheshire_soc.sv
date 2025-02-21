@@ -17,7 +17,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter type          axi_ext_mst_req_t = logic,
   parameter type          axi_ext_mst_rsp_t = logic,
   // Timing
-  parameter time          ClkPeriodSys      = 20ns, //5ns,
+  parameter time          ClkPeriodSys      = 5ns,
   parameter time          ClkPeriodJtag     = 20ns,
   parameter time          ClkPeriodRtc      = 30518ns,
   parameter int unsigned  RstCycles         = 5,
@@ -347,6 +347,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       $display("[JTAG] Wait for LLC configuration");
       jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
     end
+    $display("[JTAG] Done LLC configuration");
     // Halt hart 0
     jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, default: '0});
     do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
@@ -463,13 +464,16 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     wait_for_reset();
     forever begin
       uart_read_byte(bite);
-      // $display("[UART] byte: %s", bite);
       if (uart_boot_ena) begin
         uart_boot_byte  = bite;
         uart_boot_ena = 0;
       end else if (bite == "\n") begin
-        $display("[UART] %s", {>>8{uart_read_buf}});
-        uart_read_buf.delete();
+        if (uart_read_buf.size() > 0) begin
+          $display("[UART] %s", {>>8{uart_read_buf}});
+          uart_read_buf.delete();
+        end else begin
+          $display("[UART]");
+        end
       end else if (bite == UartDebugEoc) begin
         uart_boot_eoc = 1;
       end else begin
