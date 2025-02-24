@@ -30,9 +30,9 @@ if {[info exists BINARY]}   { append pargs "+BINARY=${BINARY} " }
 if {[info exists BINARY2]}   { append pargs "+BINARY2=${BINARY2} " }
 if {[info exists BINARY3]}   { append pargs "+BINARY3=${BINARY3} " }
 if {[info exists IMAGE]}    { append pargs "+IMAGE=${IMAGE} " }
-# +PRELOAD=/scratch/zexifu/c910_sw/cheshire_3/sw/deps/cva6-sdk/install64/spike_fw_payload.elf
+# +PRELOAD=/scratch/zexifu/c910_sw/cheshire_3/sw/deps/c910-sdk/cva6-sdk/install64/spike_fw_payload.elf
 # +PRELOAD=/scratch/zexifu/c910_pulp/merge_with_cyril/cheshire_with_c910/hw/riscv-tests/isa/rv64ua-p-amoor_d_aqrl
-set questa-cmd "+PRELOAD=/scratch/zexifu/c910_sw/cheshire_3/sw/deps/cva6-sdk/install64/spike_fw_payload.elf \
+set questa-cmd "+PRELOAD=/scratch/zexifu/c910_sw/cheshire_3/sw/deps/c910-sdk/cva6-sdk/install64/spike_fw_payload.elf \
                 -gblso ../src/riscv-isa-sim/install/lib/libriscv.so \
                 -gblso /usr/pack/riscv-1.0-kgf/riscv64-gcc-11.2.0/lib/libfesvr.so \
                 -sv_lib ../../../work-dpi/ariane_dpi"
