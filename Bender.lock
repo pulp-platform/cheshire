@@ -15,10 +15,10 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: null
+    revision: 080aa99a2b4017d8a85c7249c7f19cd91de1d3f2
     version: null
     source:
-      Path: working_dir/axi
+      Git: https://github.com/pulp-platform/axi.git
     dependencies:
     - common_cells
     - common_verification
@@ -86,10 +86,10 @@ packages:
     - common_verification
     - tech_cells_generic
   common_verification:
-    revision: null
-    version: null
+    revision: fb1885f48ea46164a10568aeff51884389f67ae3
+    version: 0.2.5
     source:
-      Path: working_dir/common_verification
+      Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
     revision: a34c7aa3fa0e02f0fc3578558df71b2992ad0bb1
@@ -145,10 +145,10 @@ packages:
     - register_interface
     - tech_cells_generic
   pulp_c910:
-    revision: null
+    revision: fcf8ede78c4c4276cc898278fa39523e00d756a1
     version: null
     source:
-      Path: working_dir/pulp_c910
+      Git: git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git
     dependencies:
     - apb
     - apb_uart
@@ -165,10 +165,10 @@ packages:
     - common_cells
     - common_verification
   riscv-dbg:
-    revision: null
+    revision: f69f6342f69fff28655e1394ec889c0360bcca8b
     version: null
     source:
-      Path: working_dir/riscv-dbg
+      Git: https://github.com/pulp-platform/riscv-dbg.git
     dependencies:
     - common_cells
     - tech_cells_generic

@@ -7,7 +7,7 @@
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
 CHS_XIL_DIR  ?= $(CHS_ROOT)/target/xilinx
-VIVADO       ?= vitis-2020.2 vivado
+VIVADO       := vitis-2020.2 vivado
 
 PROJECT       ?= cheshire
 ip-dir        := $(CHS_XIL_DIR)/xilinx
@@ -18,7 +18,16 @@ ifeq ($(BOARD),vcu128)
 	XILINX_PART  ?= xcvu37p-fsvh2892-2L-e
 	XILINX_BOARD ?= xilinx.com:vcu128:part0:1.0
 	XILINX_PORT  ?= 3232
-	FPGA_PATH    ?= xilinx_tcf/Xilinx/091847100638A
+
+	# # vcu128-02
+	# FPGA_PATH    ?= xilinx_tcf/Xilinx/091847100638A
+
+	# # vcu128-03
+	# FPGA_PATH    ?= xilinx_tcf/Xilinx/12309159258A
+
+	# vcu128-04
+	FPGA_PATH    ?= xilinx_tcf/Xilinx/682246154360A
+
 	XILINX_HOST  ?= bordcomputer
 	ips-names    := xlnx_mig_ddr4 xlnx_clk_wiz xlnx_vio
 	ifeq ($(INT_JTAG),1)

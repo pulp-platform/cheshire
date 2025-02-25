@@ -233,10 +233,7 @@ CHS_NETLISTSIM_ALL += $(CHS_ROOT)/target/stimuli/vsim/compile.cheshire_soc.tcl
 # Emulation #
 #############
 
-# CHS_XIL_DIR := $(CHS_ROOT)/target/xilinx
-# CHS_XIL_DIR := $(CHS_ROOT)/target/xilinx_211223
-# CHS_XIL_DIR := $(CHS_ROOT)/target/xilinx_060124
-CHS_XIL_DIR := $(CHS_ROOT)/target/xilinx_090124
+CHS_XIL_DIR := $(CHS_ROOT)/target/xilinx
 include $(CHS_XIL_DIR)/xilinx.mk
 include $(CHS_XIL_DIR)/sim/sim.mk
 CHS_XILINX_ALL += $(CHS_XIL_DIR)/scripts/add_sources.tcl
@@ -248,7 +245,7 @@ CHS_LINUX_IMG  += $(CHS_SW_DIR)/boot/linux-${BOARD}.gpt.bin
 
 .PHONY: chs-all chs-nonfree-init chs-clean-deps chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-xilinx-all chs-netlistsim-all
 
-CHS_ALL += $(CHS_SW_ALL) $(CHS_HW_ALL) $(CHS_SIM_ALL) $(CHS_NETLISTSIM_ALL)
+CHS_ALL += $(CHS_SW_ALL) $(CHS_HW_ALL) $(CHS_SIM_ALL) # $(CHS_NETLISTSIM_ALL)
 
 chs-all:         $(CHS_ALL)
 chs-sw-all:      $(CHS_SW_ALL)
