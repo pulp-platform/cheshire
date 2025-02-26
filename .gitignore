@@ -53,3 +53,6 @@ target/xilinx/build
 target/xilinx/out
 target/xilinx/scripts/add_sources.*
 vivado*
+
+# Bender/Yosys generated files
+target/yosys/out

@@ -1,0 +1,113 @@
+/************************************************************************
+Copyright (c) 2025 ETH Zurich and University of Bologna.
+Licensed under the Apache License, Version 2.0, see LICENSE for details.
+SPDX-License-Identifier: Apache-2.0
+
+Minimal cell library with area in NAND gate-equivalent.
+Area derived using transistor count of textbook implementations.
+Areas increased slightly so large gates have a slight area advantage.
+
+Authors:
+- Thomas Benz     <tbenz@iis.ee.ethz.ch>
+- Philippe Sauter <phsauter@iis.ee.ethz.ch>
+ 
+************************************************************************/
+
+library(synthetic) {
+  cell(buf) {
+    area: 1.01;
+    pin(a_i) { direction: input; }
+    pin(y_o) { direction: output;
+               function: "a_i"; }
+  }
+  cell(not) {
+    area: 0.51;
+    pin(a_i) { direction: input; }
+    pin(y_o) { direction: output;
+               function: "a_i'"; }
+  }
+  cell(nand) {
+    area: 1.01;
+    pin(a_i) { direction: input; }
+    pin(b_i) { direction: input; }
+    pin(y_o) { direction: output;
+               function: "(a_i*b_i)'"; }
+  }
+  cell(nor) {
+    area: 1.01;
+    pin(a_i) { direction: input; }
+    pin(b_i) { direction: input; }
+    pin(y_o) { direction: output;
+               function: "(a_i+b_i)'"; }
+  }
+  cell(and) {
+    area: 1.51;
+    pin(a_i) { direction: input; }
+    pin(b_i) { direction: input; }
+    pin(y_o) { direction: output;
+               function: "(a_i*b_i)"; }
+  }
+  cell(or) {
+    area: 1.51;
+    pin(a_i) { direction: input; }
+    pin(b_i) { direction: input; }
+    pin(y_o) { direction: output;
+               function: "(a_i+b_i)"; }
+  }
+  cell(xor) {
+    area: 2.51;
+    pin(a_i) { direction: input; }
+    pin(b_i) { direction: input; }
+    pin(y_o) { direction: output;
+               function: "(a_i^b_i)"; }
+  }
+  cell(xnor) {
+    area: 2.51;
+    pin(a_i) { direction: input; }
+    pin(b_i) { direction: input; }
+    pin(y_o) { direction: output;
+               function: "(a_i^b_i)'"; }
+  }
+  cell(mux) {
+    area: 3.01;
+    pin(a_i) { direction: input; }
+    pin(b_i) { direction: input; }
+    pin(s_i) { direction: input; }
+    pin(y_o) { direction: output;
+               function: "(a_i*(s_i'))+(b_i*s_i)"; }
+  }
+  cell(tiehi) {
+    area: 0.01;
+    pin(y_o) { direction: output;
+               function: "1"; }
+  }
+  cell(tielow) {
+    area: 0.01;
+    pin(y_o) { direction: output;
+               function: "0"; }
+  }
+  cell(dffsr) {
+    area: 6.5;
+    ff(IQ, IQN) { clocked_on: clk_i;
+                  next_state: d_i;
+                  preset: s_i;
+                  clear: r_i; }
+    pin(clk_i)  { direction: input;
+                   clock: true; }
+    pin(d_i)    { direction: input; }
+    pin(q_o)    { direction: output;
+                   function: "IQ"; }
+    pin(s_i)    { direction: input; }
+    pin(r_i)    { direction: input; }
+  }
+  cell(latch) {
+    area: 3;
+    latch(IQ, IQN) { enable: clk_i;
+                     data_in: d_i; }
+    pin(clk_i)     { direction: input;
+                     clock: true; }
+    pin(d_i)       { direction: input; }
+    pin(q_o)       { direction: output;
+                     function: "IQ"; }
+  }
+}

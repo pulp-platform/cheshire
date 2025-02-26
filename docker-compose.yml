@@ -1,0 +1,21 @@
+# Copyright (c) 2024 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Authors:
+# - Philippe Sauter <phsauter@iis.ee.ethz.ch>
+
+services:
+  oseda:
+    image: hpretl/iic-osic-tools:2025.01
+    environment:
+      - UID=${UID}
+      - GID=${GID}
+    user: "${UID}:${GID}"
+    volumes:
+      - ./:/fosic/designs/cheshire
+    stdin_open: true
+    tty: true
+    working_dir: /fosic/designs/cheshire
+    entrypoint: /dockerstartup/scripts/ui_startup.sh
+    command: --skip bash
