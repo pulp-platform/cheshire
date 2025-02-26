@@ -26,27 +26,33 @@ site/
 *.dtb
 sw/deps/.patched
 
-# Test models
+# Simulation
 target/sim/models
 target/sim/dramsys
+target/sim**/*.log
+target/sim**/*.dasm
 
 # VSIM generated files
 target/sim/vsim/compile.*.tcl
-target/sim/vsim/*.log
 target/sim/vsim/modelsim.ini
 target/sim/vsim/transcript
 target/sim/vsim/vsim.wlf
+target/sim/vsim/*.vstf
 target/sim/vsim/work/
 
 # VCS generated files
 target/sim/vcs/compile.*.sh
-target/sim/vcs/*.log
 target/sim/vcs/AN.DB
 target/sim/vcs/simv*
 target/sim/vcs/csrc
 target/sim/vcs/ucli.key
 target/sim/vcs/work*
 target/sim/vcs/vc_hdrs.h
+
+# Verilator generated files
+target/sim/verilator/*.flist
+target/sim/verilator/obj_dir
+target/sim/verilator/V*
 
 # Xilinx generated files
 target/xilinx/build
