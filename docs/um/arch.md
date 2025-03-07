@@ -265,11 +265,17 @@ The [iDMA Engine](https://github.com/pulp-platform/iDMA) enables high-throughput
 | `DmaConfMax(Read|Write)Txns` | `dw_bt`      | Max. number of outstanding requests to DMA config |
 | `DmaConfAmoNumCuts`          | `aw_bt`      | Number of timing cuts inside config AMO filter    |
 | `DmaConfAmoPostCut`          | `bit`        | Whether to insert a cut after config AMO filter   |
-| `DmaConfEnableTwoD`          | `bit`        | Whether the 2D hardware extension is present      |
+| `DmaConfFrontendDesc64`      | `bit`        | Whether the `desc64` frontend is available        |
+| `DmaConfFrontendReg64`       | `bit`        | Whether the `reg64` frontend is available         |
+| `DmaConfFrontendReg64TwoD`   | `bit`        | Whether `reg64` fe should come with 2D support    |
 | `DmaNumAxInFlight`           | `dw_bt`      | Number of outstanding transfers the DMA launches  |
 | `DmaMemSysDepth`             | `dw_bt`      | The *approximate* depth of the memory system      |
 | `DmaJobFifoDepth`            | `aw_bt`      | The depth of the job FIFO                         |
 | `DmaRAWCouplingAvail`        | `bit`        | Whether the R-AW coupling feature is available    |
+
+TODO: bit     DmaConfFrontendDesc64;
+    bit     DmaConfFrontendReg64;
+    bit     DmaConfFrontendReg64TwoD;
 
 ### I2C, SPI, GPIOs
 
