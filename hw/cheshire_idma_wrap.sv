@@ -34,8 +34,8 @@ module cheshire_idma_wrap #(
   input  logic          clk_i,
   input  logic          rst_ni,
   input  logic          testmode_i,
-  output axi_mst_req_t  axi_mst_fe_desc64_req_o,
-  input  axi_mst_rsp_t  axi_mst_fe_desc64_rsp_i,
+  output axi_mst_req_t  axi_mst_fe_req_o,
+  input  axi_mst_rsp_t  axi_mst_fe_rsp_i,
   output axi_mst_req_t  axi_mst_be_req_o,
   input  axi_mst_rsp_t  axi_mst_be_rsp_i,
   input  axi_slv_req_t [FrontendCfg.num-1:0] axi_slv_req_i,
@@ -96,13 +96,6 @@ module cheshire_idma_wrap #(
 
   typedef bit [ 5:0] aw_bt;
 
-  localparam int unsigned FrontendIdxWidth  = (FrontendCfg.num > 32'd1) ? unsigned'($clog2(FrontendCfg.num)) : 32'd1;
-
-  // 1D FE signals
-  idma_req_t    burst_req_d;
-  logic         be_valid_d;
-  logic         be_ready_d;
-
   // interface between frontend and backend  
   idma_req_t [FrontendCfg.num-1:0] idma_req_fe;
   logic [FrontendCfg.num-1:0] idma_req_fe_valid;
@@ -118,12 +111,6 @@ module cheshire_idma_wrap #(
   logic        idma_rsp_valid;
   logic        idma_rsp_ready;
 
-
-  // ID signals
-  logic              issue_id;
-  logic              retire_id;
-  logic [IdCounterWidth-1:0] done_id, next_id;
-
   // Status signals
   idma_pkg::idma_busy_t busy;
   logic me_busy;
@@ -131,8 +118,6 @@ module cheshire_idma_wrap #(
   // Internal AXI channels
   axi_mst_req_t axi_read_req, axi_write_req;
   axi_mst_rsp_t axi_read_rsp, axi_write_rsp;
-
-  logic [FrontendIdxWidth-1:0]  idma_fe_idx_d, idma_fe_idx_q;
 
   if (FrontendCfg.ConfFrontendDesc64) begin: gen_dma_fe_desc64
     localparam int unsigned DmaInputFifoDepth = 8;
@@ -147,13 +132,13 @@ module cheshire_idma_wrap #(
     reg_req_t idma_reg_req;
     reg_rsp_t  idma_reg_rsp;
 
-    idma_req_t idma_req;
-    logic idma_req_valid;
-    logic idma_req_ready;
+    idma_req_t idma_desc64_req;
+    logic idma_desc64_req_valid;
+    logic idma_desc64_req_ready;
 
-    idma_rsp_t idma_rsp;
-    logic idma_rsp_valid;
-    logic idma_rsp_ready;
+    idma_rsp_t idma_desc64_rsp;
+    logic idma_desc64_rsp_valid;
+    logic idma_desc64_rsp_ready;
 
     axi_to_axi_lite #(
       .AxiAddrWidth   ( AxiAddrWidth    ),
@@ -216,45 +201,51 @@ module cheshire_idma_wrap #(
       .clk_i,
       .rst_ni,
       // axi interface for fetching descriptors
-      .master_req_o     ( axi_mst_fe_desc64_req_o ),
-      .master_rsp_i     ( axi_mst_fe_desc64_rsp_i ),
+      .master_req_o     ( axi_mst_fe_req_o ),
+      .master_rsp_i     ( axi_mst_fe_rsp_i ),
       .axi_ar_id_i      ( 2'b0 ),
       .axi_aw_id_i      ( 2'b0 ),
       // register interface for launching transfers
       .slave_req_i      ( idma_reg_req   ), 
       .slave_rsp_o      ( idma_reg_rsp   ),
       // backend interface
-      .idma_req_o       ( idma_req       ),
-      .idma_req_valid_o ( idma_req_valid ),
-      .idma_req_ready_i ( idma_req_ready ),
-      .idma_rsp_i       ( idma_rsp       ),
-      .idma_rsp_valid_i ( idma_rsp_valid ),
-      .idma_rsp_ready_o ( idma_rsp_ready ),
+      .idma_req_o       ( idma_desc64_req       ),
+      .idma_req_valid_o ( idma_desc64_req_valid ),
+      .idma_req_ready_i ( idma_desc64_req_ready ),
+      .idma_rsp_i       ( idma_desc64_rsp       ),
+      .idma_rsp_valid_i ( idma_desc64_rsp_valid ),
+      .idma_rsp_ready_o ( idma_desc64_rsp_ready ),
       .idma_busy_i      ( |busy ),
       // interrupt interface for completed transfers
       .irq_o            ( irq_o )
     );
 
-    assign idma_req_fe[FrontendCfg.desc64] = idma_req;
-    assign idma_req_fe_valid[FrontendCfg.desc64] = idma_req_valid;
-    assign idma_req_ready = idma_req_fe_ready[FrontendCfg.desc64];
+    always_comb begin
+      idma_req_fe[FrontendCfg.desc64] = idma_desc64_req;
+      idma_req_fe_valid[FrontendCfg.desc64] = idma_desc64_req_valid;
+      idma_desc64_req_ready = idma_req_fe_ready[FrontendCfg.desc64];
 
-    assign idma_rsp = idma_rsp_fe[FrontendCfg.desc64];
-    assign idma_rsp_valid = idma_rsp_fe_valid[FrontendCfg.desc64];
-    assign idma_rsp_fe_ready[FrontendCfg.desc64] = idma_rsp_ready;
+      idma_desc64_rsp = idma_rsp_fe[FrontendCfg.desc64];
+      idma_desc64_rsp_valid = idma_rsp_fe_valid[FrontendCfg.desc64];
+      idma_rsp_fe_ready[FrontendCfg.desc64] = idma_desc64_rsp_ready;
+    end
   end
 
   if (FrontendCfg.ConfFrontendReg64) begin: gen_dma_fe_reg64
     dma_regs_req_t dma_reg_req;
     dma_regs_rsp_t dma_reg_rsp;
 
-    idma_req_t idma_req;
-    logic idma_req_valid;
-    logic idma_req_ready;
+    idma_req_t idma_reg64_req;
+    logic idma_reg64_req_valid;
+    logic idma_reg64_req_ready;
 
-    idma_rsp_t idma_rsp;
-    logic idma_rsp_valid;
-    logic idma_rsp_ready;
+    idma_rsp_t idma_reg64_rsp;
+    logic idma_reg64_rsp_valid;
+    logic idma_reg64_rsp_ready;
+
+    logic issue_id;
+    logic retire_id;
+    logic [IdCounterWidth-1:0] done_id, next_id;
 
     axi_to_reg #(
       .ADDR_WIDTH ( AxiAddrWidth  ),
@@ -276,6 +267,10 @@ module cheshire_idma_wrap #(
     );
 
     if (!FrontendCfg.ConfFrontendReg64TwoD) begin : gen_dma_fe_reg64_1d
+      idma_req_t    burst_req_d;
+      logic         be_valid_d;
+      logic         be_ready_d;
+
       idma_reg64_1d #(
         .NumRegs        ( 32'd1 ),
         .NumStreams     ( 32'd1 ),
@@ -311,14 +306,14 @@ module cheshire_idma_wrap #(
         .data_i     ( burst_req_d ),
         .valid_i    ( be_valid_d  ),
         .ready_o    ( be_ready_d  ),
-        .data_o     ( idma_req      ),
-        .valid_o    ( idma_req_valid),
-        .ready_i    ( idma_req_ready)
+        .data_o     ( idma_reg64_req      ),
+        .valid_o    ( idma_reg64_req_valid),
+        .ready_i    ( idma_reg64_req_ready)
       );
 
-      assign retire_id = idma_rsp_valid & idma_rsp_ready;
+      assign retire_id = idma_reg64_rsp_valid & idma_reg64_rsp_ready;
       assign issue_id  = be_valid_d & be_ready_d;
-      assign idma_rsp_fe_ready[FrontendCfg.reg64] = 1'b1;
+      assign idma_reg64_rsp_ready = 1'b1;
 
       idma_transfer_id_gen #(
         .IdWidth ( IdCounterWidth )
@@ -332,6 +327,7 @@ module cheshire_idma_wrap #(
       );
 
     end else begin : gen_dma_fe_reg64_2d
+      
       // ND FE signals
       idma_nd_req_t idma_nd_req_d;
       logic         idma_nd_req_valid_d;
@@ -400,12 +396,12 @@ module cheshire_idma_wrap #(
         .nd_rsp_o           ( ),
         .nd_rsp_valid_o     ( idma_nd_rsp_valid ),
         .nd_rsp_ready_i     ( idma_nd_rsp_ready ),
-        .burst_req_o        ( idma_req          ),
-        .burst_req_valid_o  ( idma_req_valid    ),
-        .burst_req_ready_i  ( idma_req_ready    ),
-        .burst_rsp_i        ( idma_rsp          ),
-        .burst_rsp_valid_i  ( idma_rsp_valid    ),
-        .burst_rsp_ready_o  ( idma_rsp_ready    ),
+        .burst_req_o        ( idma_reg64_req          ),
+        .burst_req_valid_o  ( idma_reg64_req_valid    ),
+        .burst_req_ready_i  ( idma_reg64_req_ready    ),
+        .burst_rsp_i        ( idma_reg64_rsp          ),
+        .burst_rsp_valid_i  ( idma_reg64_rsp_valid    ),
+        .burst_rsp_ready_o  ( idma_reg64_rsp_ready    ),
         .busy_o             ( me_busy )
       );
 
@@ -425,54 +421,37 @@ module cheshire_idma_wrap #(
       );
     end
 
-    assign idma_req_fe[FrontendCfg.reg64] = idma_req;
-    assign idma_req_fe_valid[FrontendCfg.reg64] = idma_req_valid;
-    assign idma_req_ready = idma_req_fe_ready[FrontendCfg.reg64];
+    always_comb begin
+      idma_req_fe[FrontendCfg.reg64] = idma_reg64_req;
+      idma_req_fe_valid[FrontendCfg.reg64] = idma_reg64_req_valid;
+      idma_reg64_req_ready = idma_req_fe_ready[FrontendCfg.reg64];
 
-    assign idma_rsp = idma_rsp_fe[FrontendCfg.reg64];
-    assign idma_rsp_valid = idma_rsp_fe_valid[FrontendCfg.reg64];
-    assign idma_rsp_fe_ready[FrontendCfg.reg64] = idma_rsp_ready;
-  end
-
-  /// Arbitrates requests from (multiple) frontend(s) to backend
-  rr_arb_tree #(
-    .NumIn     ( FrontendCfg.num ),
-    .DataType  ( idma_req_t ),
-    .ExtPrio   ( 0          ),
-    .AxiVldRdy ( 1          ),
-    .LockIn    ( 1          )
-  ) i_rr_arb_tree (
-    .clk_i,
-    .rst_ni,
-    .flush_i ( 1'b0             ),
-    .rr_i    ( '0               ),
-    .req_i   ( idma_req_fe_valid),
-    .gnt_o   ( idma_req_fe_ready),
-    .data_i  ( idma_req_fe      ),
-    .gnt_i   ( idma_req_ready   ),
-    .req_o   ( idma_req_valid   ),
-    .data_o  ( idma_req         ),
-    .idx_o   ( idma_fe_idx_d    )
-  );
-
-  always_comb begin
-    idma_rsp_fe = '{default: '0};
-    idma_rsp_fe_valid = '{default: '0};
-    idma_rsp_fe[idma_fe_idx_q] = idma_rsp;
-    idma_rsp_fe_valid[idma_fe_idx_q] = idma_rsp_valid;
-    idma_rsp_ready = idma_rsp_fe_ready[idma_fe_idx_q];
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin : idma_fe_idx_reg
-    if (!rst_ni) begin
-      idma_fe_idx_q <= '0;
-    end else begin
-      idma_fe_idx_q <= '0;
-      if (idma_req_valid) begin
-        idma_fe_idx_q <= idma_fe_idx_d;
-      end
+      idma_reg64_rsp = idma_rsp_fe[FrontendCfg.reg64];
+      idma_reg64_rsp_valid = idma_rsp_fe_valid[FrontendCfg.reg64];
+      idma_rsp_fe_ready[FrontendCfg.reg64] = idma_reg64_rsp_ready;
     end
   end
+
+  cheshire_idma_fe_arb #(
+    .NumFrontends         ( FrontendCfg.num ),
+    .idma_req_t           ( idma_req_t      ),
+    .idma_rsp_t           ( idma_rsp_t      )
+  ) i_idma_fe_arb (
+    .clk_i,
+    .rst_ni,
+    .idma_req_fe_i        ( idma_req_fe       ),
+    .idma_req_fe_valid_i  ( idma_req_fe_valid ),
+    .idma_req_fe_ready_o  ( idma_req_fe_ready ),
+    .idma_rsp_fe_o        ( idma_rsp_fe       ),
+    .idma_rsp_fe_valid_o  ( idma_rsp_fe_valid ),
+    .idma_rsp_fe_ready_i  ( idma_rsp_fe_ready ),
+    .idma_req_be_o        ( idma_req          ),
+    .idma_req_be_valid_o  ( idma_req_valid    ),
+    .idma_req_be_ready_i  ( idma_req_ready    ),
+    .idma_rsp_be_i        ( idma_rsp          ),
+    .idma_rsp_be_valid_i  ( idma_rsp_valid    ),
+    .idma_rsp_be_ready_o  ( idma_rsp_ready    )
+  );
 
   idma_backend_rw_axi #(
     .CombinedShifter      ( 1'b0 ),
@@ -531,5 +510,137 @@ module cheshire_idma_wrap #(
    .mst_req_o         ( axi_mst_be_req_o ),
    .mst_resp_i        ( axi_mst_be_rsp_i )
   );
+
+endmodule
+
+/// Module to arbitrate requests from (multiple) iDMA frontend(s) to single iDMA backend
+/// 
+/// Initially (`req_ongoing_q` is 0) the arbiter uses the `rr_arb_tree` arbiter module to selected a valid frontend request.
+/// However, once a request from a frontend is selected (`req_ongoing_q` is 1), the arbiter is unfair by means of
+/// forwarding consecutive requests only from the selected frontend as long as the frontend
+/// keeps sending new requests before the iDMA backend responses to the latest request.
+module cheshire_idma_fe_arb #(
+  parameter int unsigned  NumFrontends  = 0,
+  parameter type          idma_req_t    = logic,
+  parameter type          idma_rsp_t    = logic
+) (
+  input  logic          clk_i,
+  input  logic          rst_ni,
+
+  /// Request(s) coming from iDMA frontend(s)
+  input  idma_req_t [NumFrontends-1:0] idma_req_fe_i,
+  input  logic [NumFrontends-1:0] idma_req_fe_valid_i,
+  output logic [NumFrontends-1:0] idma_req_fe_ready_o,
+
+  /// Response(s) going to iDMA frontend(s)
+  output idma_rsp_t [NumFrontends-1:0] idma_rsp_fe_o,
+  output logic [NumFrontends-1:0] idma_rsp_fe_valid_o,
+  input  logic [NumFrontends-1:0] idma_rsp_fe_ready_i,
+  
+  /// Request coming from selected frontend and going to iDMA backend
+  output idma_req_t idma_req_be_o,
+  output logic idma_req_be_valid_o,
+  input  logic idma_req_be_ready_i,
+
+  /// Response coming from iDMA backend and going to selected frontend
+  input  idma_rsp_t idma_rsp_be_i,
+  input  logic idma_rsp_be_valid_i,
+  output logic idma_rsp_be_ready_o
+);
+
+  `include "common_cells/registers.svh"
+
+  localparam int unsigned FrontendIdxWidth  = (NumFrontends > 32'd1) ? unsigned'($clog2(NumFrontends)) : 32'd1;
+
+  logic [NumFrontends-1:0] idma_req_fe_valid, idma_req_fe_ready;
+  logic idma_req_be_valid;
+  logic idma_rsp_be_ready;
+
+  logic [FrontendIdxWidth-1:0] idma_fe_idx, idma_fe_idx_q;
+  logic [5:0] ongoing_req_cnt_d, ongoing_req_cnt_q;
+
+  bit   is_new_idma_req;
+  bit   is_new_idma_rsp;
+
+  /// Arbitrates requests from (multiple) frontend(s) to backend
+  rr_arb_tree #(
+    .NumIn     ( NumFrontends ),
+    .DataType  ( idma_req_t ),
+    .ExtPrio   ( 0          ),
+    .AxiVldRdy ( 1          ),
+    .LockIn    ( 1          )
+  ) i_rr_arb_tree (
+    .clk_i,
+    .rst_ni,
+    .flush_i ( 1'b0               ),
+    .rr_i    ( '0                 ),
+    .req_i   ( idma_req_fe_valid  ),
+    .gnt_o   ( idma_req_fe_ready  ),
+    .data_i  ( idma_req_fe_i      ),
+    .gnt_i   ( idma_req_be_ready_i),
+    .req_o   ( idma_req_be_valid  ),
+    .data_o  ( idma_req_be_o      ),
+    .idx_o   ( idma_fe_idx        )
+  );
+
+  assign idma_req_be_valid_o = idma_req_be_valid;
+  assign idma_rsp_be_ready_o = idma_rsp_be_ready;
+
+  assign is_new_idma_req = idma_req_be_valid && idma_req_be_ready_i;
+  assign is_new_idma_rsp = idma_rsp_be_valid_i && idma_rsp_be_ready;
+
+  /// Filtering incoming requests from frontends according to current state
+  always_comb begin    
+    idma_req_fe_valid = '0;
+    idma_req_fe_ready_o = '0;
+    if (ongoing_req_cnt_q > 0) begin
+      /// limit new requests to currently selected frontend
+      idma_req_fe_valid[idma_fe_idx_q] = idma_req_fe_valid_i[idma_fe_idx_q];
+      idma_req_fe_ready_o[idma_fe_idx_q] = idma_req_fe_ready[idma_fe_idx_q];
+    end else begin
+      /// allow arbiter to select request from any frontend
+      idma_req_fe_valid = idma_req_fe_valid_i;
+      idma_req_fe_ready_o = idma_req_fe_ready;
+    end
+  end
+
+  /// Configures response path according to current state
+  always_comb begin
+    idma_rsp_fe_o = '0;
+    idma_rsp_fe_valid_o = '0;
+    idma_rsp_be_ready = '0;
+
+    if (ongoing_req_cnt_q > 0) begin
+      // set response path to fixed frontend
+      idma_rsp_fe_o[idma_fe_idx_q] = idma_rsp_be_i;
+      idma_rsp_fe_valid_o[idma_fe_idx_q] = idma_rsp_be_valid_i;
+      idma_rsp_be_ready = idma_rsp_fe_ready_i[idma_fe_idx_q];
+    end else begin
+      /// set response path to index received from arbiter
+      idma_rsp_fe_o[idma_fe_idx] = idma_rsp_be_i;
+      idma_rsp_fe_valid_o[idma_fe_idx] = idma_rsp_be_valid_i;
+      idma_rsp_be_ready = idma_rsp_fe_ready_i[idma_fe_idx];
+    end
+  end
+
+  /// Logic to track ongoing request(s)
+  always_comb begin
+    ongoing_req_cnt_d = ongoing_req_cnt_q;
+
+    if (ongoing_req_cnt_q > 0) begin
+      if (is_new_idma_req && ~is_new_idma_rsp) begin
+        ongoing_req_cnt_d = ongoing_req_cnt_q + 1;
+      end else if (~is_new_idma_req && is_new_idma_rsp) begin
+        ongoing_req_cnt_d = ongoing_req_cnt_q - 1;
+      end    
+    end else begin
+      if (is_new_idma_req) begin
+        ongoing_req_cnt_d = ongoing_req_cnt_q + 1;
+      end
+    end
+  end
+
+  `FF(ongoing_req_cnt_q, ongoing_req_cnt_d, '0, clk_i, rst_ni)
+  `FFL(idma_fe_idx_q, idma_fe_idx, ongoing_req_cnt_q == 0, '0, clk_i, rst_ni)
 
 endmodule

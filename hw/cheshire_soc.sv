@@ -1372,6 +1372,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     axi_mst_req_t axi_dma_req;
     axi_slv_req_t [DmaFrontendCfg.num-1:0] dma_amo_req, dma_cut_req;
     axi_slv_rsp_t [DmaFrontendCfg.num-1:0] dma_amo_rsp, dma_cut_rsp;
+    axi_mst_req_t axi_mst_fe_req;
+    axi_mst_rsp_t axi_mst_fe_rsp;
 
     if (Cfg.DmaConfFrontendDesc64) begin : gen_dma_fe_desc64_axi
       axi_riscv_atomics_structs #(
@@ -1414,6 +1416,9 @@ module cheshire_soc import cheshire_pkg::*; #(
         .mst_req_o  ( dma_cut_req[DmaFrontendCfg.desc64] ),
         .mst_resp_i ( dma_cut_rsp[DmaFrontendCfg.desc64] )
       );
+
+      assign axi_in_req[AxiIn.dma_fe_desc64] = axi_mst_fe_req;
+      assign axi_mst_fe_rsp = axi_in_rsp[AxiIn.dma_fe_desc64];
     end
 
     if (Cfg.DmaConfFrontendReg64) begin : gen_dma_fe_reg64_axi
@@ -1490,8 +1495,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clk_i,
       .rst_ni,
       .testmode_i       ( test_mode_i               ),
-      .axi_mst_fe_desc64_req_o ( axi_in_req[AxiIn.dma_fe_desc64]  ),
-      .axi_mst_fe_desc64_rsp_i ( axi_in_rsp[AxiIn.dma_fe_desc64]  ),
+      .axi_mst_fe_req_o ( axi_mst_fe_req ),
+      .axi_mst_fe_rsp_i ( axi_mst_fe_rsp ),
       .axi_mst_be_req_o ( axi_dma_req               ),
       .axi_mst_be_rsp_i ( axi_in_rsp[AxiIn.dma_be]  ),
       .axi_slv_req_i    ( dma_cut_req               ),
