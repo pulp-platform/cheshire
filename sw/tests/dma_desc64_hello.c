@@ -5,17 +5,17 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 //
-// Simple payload to test bootmodes
+// Simple payload to test iDMA with desc64 frontend
 
 #include "regs/cheshire.h"
 #include "dif/clint.h"
 #include "dif/uart.h"
 #include "params.h"
 #include "util.h"
-#include "regs/idma.h"
-#include "dif/dma.h"
+#include "regs/idma_desc64.h"
+#include "dif/idma_desc64.h"
 
-//#define DEBUG
+#define DEBUG
 #include "debug.h"
 
 struct descriptor descriptors[10] __attribute__((section(".descriptors")));
@@ -93,7 +93,7 @@ int main(void) {
 
 
 
-    uint64_t src = 0xBABABABABABABABA;
+    uint64_t src = 0xC0FFEEC0DEABBADE;
     uint64_t dst = 0;
 
     struct descriptor desc;
