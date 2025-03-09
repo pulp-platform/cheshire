@@ -1368,60 +1368,9 @@ module cheshire_soc import cheshire_pkg::*; #(
   ///////////
 
   if (Cfg.Dma) begin : gen_dma
-
-    localparam int unsigned TFLenWidth = 32;
-    typedef logic [TFLenWidth-1:0]  tf_len_t;
-
-    localparam int unsigned DmaInputFifoDepth = 8;
-    localparam int unsigned DmaPendingFifoDepth = 8;
-    localparam int unsigned DmaNSpeculation = 4;
-    localparam int unsigned DmaBufferDepth = 3;
-    localparam int unsigned DmaBackendDepth = Cfg.DmaNumAxInFlight + DmaBufferDepth;
-
-    `include "idma/typedef.svh"
-    `IDMA_TYPEDEF_FULL_REQ_T(idma_req_t, cva6_id_t, addr_t, tf_len_t)
-    `IDMA_TYPEDEF_FULL_RSP_T(idma_rsp_t, addr_t)
-
-    `include "axi/typedef.svh"
-    `AXI_LITE_TYPEDEF_ALL(axi_lite, addr_t, axi_data_t, axi_strb_t)
-    
-    typedef struct packed {
-      axi_mst_ar_chan_t ar_chan;
-    } axi_read_meta_channel_t;
-
-    typedef struct packed {
-      axi_read_meta_channel_t axi;
-    } read_meta_channel_t;
-
-    typedef struct packed {
-      axi_mst_aw_chan_t aw_chan;
-    } axi_write_meta_channel_t;
-
-    typedef struct packed {
-      axi_write_meta_channel_t axi;
-    } write_meta_channel_t;  
-
-    // interface between frontend and backend  
-    idma_req_t   idma_req;
-    logic        idma_req_valid;
-    logic        idma_req_ready;
-    idma_rsp_t   idma_rsp;
-    logic        idma_rsp_valid;
-    logic        idma_rsp_ready;
-    
-    idma_pkg::idma_busy_t idma_busy;
-
-    // connections between backend and axi_rw_join
-    axi_mst_req_t idma_read_req, idma_write_req;
-    axi_mst_rsp_t idma_read_rsp, idma_write_rsp;
-
-    // connections between axi and frontend registers
     axi_slv_req_t dma_amo_req, dma_cut_req;
     axi_slv_rsp_t dma_amo_rsp, dma_cut_rsp;
-    axi_lite_req_t idma_axi_lite_req;
-    axi_lite_resp_t idma_axi_lite_rsp;
-    reg_req_t idma_reg_req;
-    reg_rsp_t  idma_reg_rsp;
+    axi_mst_req_t axi_dma_req;
 
     axi_riscv_atomics_structs #(
       .AxiAddrWidth     ( Cfg.AddrWidth    ),
@@ -1464,147 +1413,39 @@ module cheshire_soc import cheshire_pkg::*; #(
       .mst_resp_i ( dma_cut_rsp )
     );
 
-    axi_to_axi_lite #(
-      .AxiAddrWidth   ( Cfg.AddrWidth     ),
-      .AxiDataWidth   ( Cfg.AxiDataWidth  ),
-      .AxiIdWidth     ( Cfg.AxiMstIdWidth ),
-      .AxiUserWidth   ( Cfg.AxiUserWidth  ),
-      .AxiMaxWriteTxns( Cfg.DmaConfMaxWriteTxns),
-      .AxiMaxReadTxns ( Cfg.DmaConfMaxReadTxns),
-      .FullBW         ( 0    ),
-      .FallThrough    ( 1'b1 ),
-      .full_req_t     ( axi_slv_req_t     ),
-      .full_resp_t    ( axi_slv_rsp_t     ),
-      .lite_req_t     ( axi_lite_req_t    ),
-      .lite_resp_t    ( axi_lite_resp_t   )
-    ) i_dma_axi_to_axi_lite (
+    always_comb begin
+      axi_in_req[AxiIn.dma_fe]         = axi_dma_req;
+      axi_in_req[AxiIn.dma_fe].aw.user = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dma_fe].w.user  = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dma_fe].ar.user = Cfg.AxiUserDefault;
+    end
+
+    dma_core_wrap #(
+      .AxiAddrWidth       ( Cfg.AddrWidth               ),
+      .AxiDataWidth       ( Cfg.AxiDataWidth            ),
+      .AxiIdWidth         ( Cfg.AxiMstIdWidth           ),
+      .AxiUserWidth       ( Cfg.AxiUserWidth            ),
+      .AxiSlvIdWidth      ( AxiSlvIdWidth               ),
+      .NumAxInFlight      ( Cfg.DmaNumAxInFlight        ),
+      .MemSysDepth        ( Cfg.DmaMemSysDepth          ),
+      .JobFifoDepth       ( Cfg.DmaJobFifoDepth         ),
+      .RAWCouplingAvail   ( Cfg.DmaRAWCouplingAvail     ),
+      .FrontendDesc64     ( Cfg.DmaConfFrontendDesc64   ),
+      .FrontendReg64      ( Cfg.DmaConfFrontendReg64    ),
+      .FrontendReg64TwoD  ( Cfg.DmaConfFrontendReg64TwoD),
+      .axi_mst_req_t      ( axi_mst_req_t               ),
+      .axi_mst_rsp_t      ( axi_mst_rsp_t               ),
+      .axi_slv_req_t      ( axi_slv_req_t               ),
+      .axi_slv_rsp_t      ( axi_slv_rsp_t               )
+    ) i_dma (
       .clk_i,
       .rst_ni,
-      .test_i         ( test_mode_i       ),
-      .slv_req_i      ( dma_cut_req       ),
-      .slv_resp_o     ( dma_cut_rsp       ),
-      .mst_req_o      ( idma_axi_lite_req ),
-      .mst_resp_i     ( idma_axi_lite_rsp )
+      .testmode_i     ( test_mode_i               ),
+      .axi_mst_req_o  ( axi_dma_req               ),
+      .axi_mst_rsp_i  ( axi_in_rsp[AxiIn.dma_fe]  ),
+      .axi_slv_req_i  ( dma_cut_req               ),
+      .axi_slv_rsp_o  ( dma_cut_rsp               )
     );
-
-    axi_lite_to_reg #(
-      .ADDR_WIDTH     ( Cfg.AddrWidth     ),
-      .DATA_WIDTH     ( Cfg.AxiDataWidth  ),
-      .BUFFER_DEPTH   ( 2                 ),
-      .DECOUPLE_W     ( 1                 ),
-      .axi_lite_req_t ( axi_lite_req_t    ),
-      .axi_lite_rsp_t ( axi_lite_resp_t   ),
-      .reg_req_t      ( reg_req_t         ),
-      .reg_rsp_t      ( reg_rsp_t         )
-    ) i_dma_axi_lite_to_reg (
-      .clk_i,
-      .rst_ni,
-      .axi_lite_req_i ( idma_axi_lite_req ),
-      .axi_lite_rsp_o ( idma_axi_lite_rsp ),
-      .reg_req_o      ( idma_reg_req      ),
-      .reg_rsp_i      ( idma_reg_rsp      )
-    );
-
-    idma_desc64_top #(
-      .AddrWidth         ( 64                ),
-      .DataWidth         ( Cfg.AxiDataWidth  ),
-      .AxiIdWidth        ( Cfg.AxiMstIdWidth ),
-      .idma_req_t        ( idma_req_t        ),
-      .idma_rsp_t        ( idma_rsp_t        ),
-      .reg_rsp_t         ( reg_rsp_t         ),
-      .reg_req_t         ( reg_req_t         ),
-      .axi_rsp_t         ( axi_mst_rsp_t     ),
-      .axi_req_t         ( axi_mst_req_t     ),
-      .axi_ar_chan_t     ( axi_mst_ar_chan_t ),
-      .axi_r_chan_t      ( axi_mst_r_chan_t  ),
-      .InputFifoDepth    ( DmaInputFifoDepth ),
-      .PendingFifoDepth  ( DmaPendingFifoDepth ),
-      .BackendDepth      ( DmaBackendDepth   ),
-      .NSpeculation      ( DmaNSpeculation   )
-    ) i_dma_fe (
-      .clk_i,
-      .rst_ni,
-      // axi interface for fetching descriptors
-      .master_req_o     ( axi_in_req[AxiIn.dma_fe] ),
-      .master_rsp_i     ( axi_in_rsp[AxiIn.dma_fe] ),
-      .axi_ar_id_i      ( 2'b0 ),
-      .axi_aw_id_i      ( 2'b0 ),
-      // register interface for launching transfers
-      .slave_req_i      ( idma_reg_req   ), 
-      .slave_rsp_o      ( idma_reg_rsp   ),
-      // backend interface
-      .idma_req_o       ( idma_req       ),
-      .idma_req_valid_o ( idma_req_valid ),
-      .idma_req_ready_i ( idma_req_ready ),
-      .idma_rsp_i       ( idma_rsp       ),
-      .idma_rsp_valid_i ( idma_rsp_valid ),
-      .idma_rsp_ready_o ( idma_rsp_ready ),
-      .idma_busy_i      ( |idma_busy ),
-      // interrupt interface for completed transfers
-      .irq_o            ( intr.intn.dma  )
-    );
-
-    idma_backend_rw_axi #(
-      .DataWidth            (Cfg.AxiDataWidth),
-      .AddrWidth            (64),
-      .UserWidth            (Cfg.AxiUserWidth),
-      .AxiIdWidth           (Cfg.AxiMstIdWidth),
-      .NumAxInFlight        (Cfg.DmaNumAxInFlight),
-      .BufferDepth          (DmaBufferDepth),
-      .TFLenWidth           (TFLenWidth),
-      .MemSysDepth          (Cfg.DmaMemSysDepth),
-      .CombinedShifter      (0),
-      .MaskInvalidData      (1),
-      .RAWCouplingAvail     (Cfg.DmaRAWCouplingAvail),
-      .HardwareLegalizer    (1),
-      .RejectZeroTransfers  (1),
-      .ErrorCap             (idma_pkg::NO_ERROR_HANDLING),
-      .PrintFifoInfo        (0),
-      .idma_req_t           (idma_req_t),
-      .idma_rsp_t           (idma_rsp_t),
-      .idma_eh_req_t        (idma_pkg::idma_eh_req_t),
-      .idma_busy_t          (idma_pkg::idma_busy_t),
-      .axi_req_t            (axi_mst_req_t),
-      .axi_rsp_t            (axi_mst_rsp_t),
-      .read_meta_channel_t  (read_meta_channel_t),
-      .write_meta_channel_t (write_meta_channel_t)
-    ) i_dma_be (
-      .clk_i,
-      .rst_ni,
-      .testmode_i       ( test_mode_i    ),
-      // front end interface
-      .idma_req_i       ( idma_req       ),
-      .req_valid_i      ( idma_req_valid ),
-      .req_ready_o      ( idma_req_ready ),
-      .idma_rsp_o       ( idma_rsp       ),
-      .rsp_valid_o      ( idma_rsp_valid ),
-      .rsp_ready_i      ( idma_rsp_ready ),
-      .busy_o           ( idma_busy      ),
-      // error handler interface
-      .idma_eh_req_i    (                ),
-      .eh_req_valid_i   (                ),
-      .eh_req_ready_o   (                ),
-      // axi interface
-      .axi_read_req_o   ( idma_read_req  ),
-      .axi_read_rsp_i   ( idma_read_rsp  ),
-      .axi_write_req_o  ( idma_write_req ),
-      .axi_write_rsp_i  ( idma_write_rsp )
-    );
-
-    axi_rw_join #(
-      .axi_req_t        ( axi_mst_req_t  ),
-      .axi_resp_t       ( axi_mst_rsp_t  )
-    ) i_dma_rw_join (
-      .clk_i,
-      .rst_ni,
-      .slv_read_req_i   ( idma_read_req  ),
-      .slv_read_resp_o  ( idma_read_rsp  ),
-      .slv_write_req_i  ( idma_write_req ),
-      .slv_write_resp_o ( idma_write_rsp ),
-      .mst_req_o        ( axi_in_req[AxiIn.dma_be] ),
-      .mst_resp_i       ( axi_in_rsp[AxiIn.dma_be] )
-    );
-
   end
 
   ///////////////////
