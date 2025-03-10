@@ -401,8 +401,6 @@ package cheshire_pkg;
     aw_bt spi_host;
     aw_bt gpio;
     aw_bt slink;
-    aw_bt dma_fe_desc64;
-    aw_bt dma_fe_reg64;
     aw_bt vga;
     aw_bt usb;
     aw_bt axirt;
@@ -428,8 +426,6 @@ package cheshire_pkg;
     if (cfg.SpiHost)      begin i++; ret.spi_host   = i; r++; ret.map[r] = '{i, 'h0300_4000, 'h0300_5000}; end
     if (cfg.Gpio)         begin i++; ret.gpio       = i; r++; ret.map[r] = '{i, 'h0300_5000, 'h0300_6000}; end
     if (cfg.SerialLink)   begin i++; ret.slink      = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
-    if (cfg.Dma & cfg.DmaConfFrontendDesc64)  begin i++; ret.dma_fe_desc64  = i; r++; ret.map[r] = '{i, 'h0300_a000, 'h0300_b000}; end
-    if (cfg.Dma & cfg.DmaConfFrontendReg64)   begin i++; ret.dma_fe_reg64   = i; r++; ret.map[r] = '{i, 'h0300_b000, 'h0300_c000}; end
     if (cfg.Vga)          begin i++; ret.vga        = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
     if (cfg.Usb)          begin i++; ret.usb        = i; r++; ret.map[r] = '{i, 'h0300_8000, 'h0300_9000}; end
     if (cfg.IrqRouter)    begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
