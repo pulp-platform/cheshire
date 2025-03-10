@@ -279,10 +279,6 @@ The [iDMA Engine](https://github.com/pulp-platform/iDMA) enables high-throughput
 | `DmaJobFifoDepth`            | `aw_bt`      | The depth of the job FIFO                         |
 | `DmaRAWCouplingAvail`        | `bit`        | Whether the R-AW coupling feature is available    |
 
-TODO: bit     DmaConfFrontendDesc64;
-    bit     DmaConfFrontendReg64;
-    bit     DmaConfFrontendReg64TwoD;
-
 ### I2C, SPI, GPIOs
 
 The I2C host, SPI host, and GPIO interface are IPs provided by [OpenTitan](https://github.com/lowRISC/opentitan) and adapted for use in PULP systems. They remain compatible with and use OpenTitan's device interface functions (DIFs) with minor patches. For more information on these peripherals, please consult the [OpenTitan IP Block Documentation](https://opentitan.org/book/hw/ip/index.html). These peripherals expose the following parameters:
