@@ -1503,6 +1503,37 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_slv_rsp_o    ( dma_cut_rsp               ),
       .irq_o            ( intr.intn.dma             )
     );
+
+
+    if (Cfg.BusErr) begin : gen_dma_bus_err
+      axi_err_unit_wrap #(
+        .AddrWidth          ( Cfg.AddrWidth     ),
+        .IdWidth            ( Cfg.AxiMstIdWidth ),
+        .UserErrBits        ( Cfg.AxiUserErrBits ),
+        .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
+        .NumOutstanding     ( Cfg.DmaNumAxInFlight+Cfg.DmaJobFifoDepth ),
+        .NumStoredErrors    ( 4 ),
+        .DropOldest         ( 1'b0 ),
+        .axi_req_t          ( axi_mst_req_t ),
+        .axi_rsp_t          ( axi_mst_rsp_t ),
+        .reg_req_t          ( reg_req_t ),
+        .reg_rsp_t          ( reg_rsp_t )
+      ) i_dma_bus_err (
+        .clk_i,
+        .rst_ni,
+        .testmode_i ( test_mode_i ),
+        .axi_req_i  ( axi_in_req[AxiIn.dma_be] ),
+        .axi_rsp_i  ( axi_in_rsp[AxiIn.dma_be] ),
+        .err_irq_o  ( intr.intn.bus_err.dma ),
+        .reg_req_i  ( reg_out_req[RegOut.bus_err[RegBusErrDma]] ),
+        .reg_rsp_o  ( reg_out_rsp[RegOut.bus_err[RegBusErrDma]] )
+      );
+    end
+
+  end
+
+  if (!(Cfg.Dma && Cfg.BusErr)) begin : gen_dma_bus_err_tie
+    assign intr.intn.bus_err.dma = '0;
   end
 
   ///////////////////
