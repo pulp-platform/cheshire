@@ -458,7 +458,7 @@ package cheshire_pkg;
     bit ConfFrontendDesc64;
     bit ConfFrontendReg64;
     bit ConfFrontendReg64TwoD;
-    
+
     /// Indices
     aw_bt desc64;
     aw_bt reg64;
@@ -470,11 +470,11 @@ package cheshire_pkg;
     int unsigned i = 0;
     if (cfg.DmaConfFrontendDesc64)    begin ret.desc64 = i++; ret.ConfFrontendDesc64 = 1; end
     if (cfg.DmaConfFrontendReg64)     begin ret.reg64 = i++; ret.ConfFrontendReg64 = 1; end
-    
+
     ret.num = i;
-    
+
     if (cfg.DmaConfFrontendReg64TwoD) begin ret.ConfFrontendReg64TwoD = 1; end
-    
+
     return ret;
   endfunction
 

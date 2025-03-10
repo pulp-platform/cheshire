@@ -75,7 +75,7 @@ module cheshire_idma_wrap #(
   `IDMA_TYPEDEF_FULL_ND_REQ_T(idma_nd_req_t, idma_req_t, tf_len_t, tf_len_t)
 
   `REG_BUS_TYPEDEF_ALL(dma_regs, addr_t, data_t, strb_t)
-  
+
   `AXI_LITE_TYPEDEF_ALL(axi_lite, addr_t, data_t, strb_t)
 
   typedef struct packed {
@@ -96,7 +96,7 @@ module cheshire_idma_wrap #(
 
   typedef bit [ 5:0] aw_bt;
 
-  // interface between frontend and backend  
+  // interface between frontend and backend
   idma_req_t [FrontendCfg.num-1:0] idma_req_fe;
   logic [FrontendCfg.num-1:0] idma_req_fe_valid;
   logic [FrontendCfg.num-1:0] idma_req_fe_ready;
@@ -206,7 +206,7 @@ module cheshire_idma_wrap #(
       .axi_ar_id_i      ( 2'b0 ),
       .axi_aw_id_i      ( 2'b0 ),
       // register interface for launching transfers
-      .slave_req_i      ( idma_reg_req   ), 
+      .slave_req_i      ( idma_reg_req   ),
       .slave_rsp_o      ( idma_reg_rsp   ),
       // backend interface
       .idma_req_o       ( idma_desc64_req       ),
@@ -327,7 +327,7 @@ module cheshire_idma_wrap #(
       );
 
     end else begin : gen_dma_fe_reg64_2d
-      
+
       // ND FE signals
       idma_nd_req_t idma_nd_req_d;
       logic         idma_nd_req_valid_d;
@@ -514,7 +514,7 @@ module cheshire_idma_wrap #(
 endmodule
 
 /// Module to arbitrate requests from (multiple) iDMA frontend(s) to single iDMA backend
-/// 
+///
 /// Initially (`req_ongoing_q` is 0) the arbiter uses the `rr_arb_tree` arbiter module to selected a valid frontend request.
 /// However, once a request from a frontend is selected (`req_ongoing_q` is 1), the arbiter is unfair by means of
 /// forwarding consecutive requests only from the selected frontend as long as the frontend
@@ -536,7 +536,7 @@ module cheshire_idma_fe_arb #(
   output idma_rsp_t [NumFrontends-1:0] idma_rsp_fe_o,
   output logic [NumFrontends-1:0] idma_rsp_fe_valid_o,
   input  logic [NumFrontends-1:0] idma_rsp_fe_ready_i,
-  
+
   /// Request coming from selected frontend and going to iDMA backend
   output idma_req_t idma_req_be_o,
   output logic idma_req_be_valid_o,
@@ -550,7 +550,9 @@ module cheshire_idma_fe_arb #(
 
   `include "common_cells/registers.svh"
 
-  localparam int unsigned FrontendIdxWidth  = (NumFrontends > 32'd1) ? unsigned'($clog2(NumFrontends)) : 32'd1;
+  localparam int unsigned FrontendIdxWidth = (NumFrontends > 32'd1)
+                                              ? unsigned'($clog2(NumFrontends))
+                                              : 32'd1;
 
   logic [NumFrontends-1:0] idma_req_fe_valid, idma_req_fe_ready;
   logic idma_req_be_valid;
@@ -590,7 +592,7 @@ module cheshire_idma_fe_arb #(
   assign is_new_idma_rsp = idma_rsp_be_valid_i && idma_rsp_be_ready;
 
   /// Filtering incoming requests from frontends according to current state
-  always_comb begin    
+  always_comb begin
     idma_req_fe_valid = '0;
     idma_req_fe_ready_o = '0;
     if (ongoing_req_cnt_q > 0) begin
@@ -632,7 +634,7 @@ module cheshire_idma_fe_arb #(
         ongoing_req_cnt_d = ongoing_req_cnt_q + 1;
       end else if (~is_new_idma_req && is_new_idma_rsp) begin
         ongoing_req_cnt_d = ongoing_req_cnt_q - 1;
-      end    
+      end
     end else begin
       if (is_new_idma_req) begin
         ongoing_req_cnt_d = ongoing_req_cnt_q + 1;
