@@ -39,6 +39,22 @@ switch $board {
             PROGRAM.CHECKSUM {0} \
             ] $hw_cfgmem
     }
+    vcu118 {
+        set mcs ${project_root}/image.mcs
+        write_cfgmem -force -format mcs -size 256 -interface SPIx4 \
+            -loaddata "up $offs $file" -checksum -file $mcs
+        set_property -dict [list \
+            PROGRAM.ADDRESS_RANGE {use_file} \
+            PROGRAM.FILES [list $mcs] \
+            PROGRAM.PRM_FILE {} \
+            PROGRAM.UNUSED_PIN_TERMINATION {pull-none} \
+            PROGRAM.BLANK_CHECK {0} \
+            PROGRAM.ERASE {1} \
+            PROGRAM.CFG_PROGRAM {1} \
+            PROGRAM.VERIFY {1} \
+            PROGRAM.CHECKSUM {0} \
+            ] $hw_cfgmem
+    }
     default { nocfgexit flash_spi $board }
 }
 
