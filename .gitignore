@@ -35,13 +35,3 @@ target/sim/vsim/modelsim.ini
 target/sim/vsim/transcript
 target/sim/vsim/vsim.wlf
 target/sim/vsim/work/
-*.do
-
-.vscode
-
-target/xilinx/cheshire.srcs/
-target/xilinx/probes.ltx
-work-dpi/
-*.img
-xilinx_*
-vsim_*
