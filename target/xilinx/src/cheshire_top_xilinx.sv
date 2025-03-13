@@ -86,7 +86,12 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
 `endif
 
 `ifdef USE_DDR4
-  `DDR4_INTF
+  `ifdef TARGET_VCU118
+    `VCU118_DDR4_INTF
+  `endif
+  `ifdef TARGET_VCU128
+    `VCU128_DDR4_INTF
+  `endif
 `endif
 `ifdef USE_DDR3
   `DDR3_INTF
@@ -332,7 +337,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   assign qspi_cs_b_ts = ~spi_cs_en;
   assign qspi_dqo_ts  = ~spi_sd_en;
 
-  // On VCU128/ZCU102, SPI ports are not directly available
+  // On VCU128/VCU118/ZCU102, SPI ports are not directly available
 `ifdef USE_STARTUPE3
   STARTUPE3 #(
     .PROG_USR("FALSE"),
