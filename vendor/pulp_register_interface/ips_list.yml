@@ -1,6 +1,0 @@
-axi/axi:
-  commit: v0.39.1
-  domain: [cluster, soc]
-common_cells:
-  commit: v1.21.0
-  domain: [cluster, soc]
