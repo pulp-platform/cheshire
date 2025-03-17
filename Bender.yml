@@ -30,9 +30,6 @@ dependencies:
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              rev: f69f6342   } # zx/cheshire_c910
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.0  }
   unbent:                   { git: "https://github.com/pulp-platform/unbent.git",                 version: 0.1.5  }
-  # soc910:                   { git: "git@iis-git.ee.ethz.ch:nwistoff/soc910.git",                  rev: 7c218d05   }
-  # register_interface:       { path: vendor/pulp_register_interface                                                  }
-  # soc910:                   { path: soc910/hw/system                                                              }
   pulp_c910:                { git: "git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git",               rev: fcf8ede7   } # dev_zx_cheshire_c910
 
 export_include_dirs:
@@ -40,15 +37,12 @@ export_include_dirs:
 
 sources:
   - hw/bootrom/cheshire_bootrom.sv
-  # - hw/bootrom/cheshire_bootrom_for_test.sv
   - hw/regs/cheshire_reg_pkg.sv
   - hw/regs/cheshire_reg_top.sv
-  - hw/cva6_pkg.sv
-  # - hw/c910_pkg.sv
   - hw/cheshire_pkg.sv
   - hw/cheshire_soc.sv
 
-  - target: any(simulation, test, gate)
+  - target: any(simulation, test)
     files:
       - target/sim/models/s25fs512s.v
       - target/sim/models/24FC1025.v

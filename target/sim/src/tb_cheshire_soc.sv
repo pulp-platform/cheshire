@@ -13,8 +13,6 @@ module tb_cheshire_soc #(
   fixture_cheshire_soc #(.SelectedCfg(SelectedCfg)) fix();
 
   string      preload_elf;
-  string      preload_elf2;
-  string      preload_elf3;
   string      boot_hex;
   logic [1:0] boot_mode;
   logic [1:0] preload_mode;
@@ -25,8 +23,6 @@ module tb_cheshire_soc #(
     if (!$value$plusargs("BOOTMODE=%d", boot_mode))     boot_mode     = 0;
     if (!$value$plusargs("PRELMODE=%d", preload_mode))  preload_mode  = 0;
     if (!$value$plusargs("BINARY=%s",   preload_elf))   preload_elf   = "";
-    if (!$value$plusargs("BINARY2=%s",   preload_elf2))   preload_elf2   = "";
-    if (!$value$plusargs("BINARY3=%s",   preload_elf3))   preload_elf3   = "";
     if (!$value$plusargs("IMAGE=%s",    boot_hex))      boot_hex      = "";
 
     // Set boot mode and preload boot image if there is one
@@ -51,7 +47,7 @@ module tb_cheshire_soc #(
         end 2: begin  // UART
           fix.vip.uart_debug_elf_run_and_wait(preload_elf, exit_code);
         end 3 : begin // MEM for simulation debug
-          fix.vip.memory_elf_run(preload_elf, preload_elf2, preload_elf3);
+          fix.vip.memory_elf_run(preload_elf);
           fix.vip.slink_wait_for_eoc(exit_code);
         end default: begin
           $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);
@@ -67,8 +63,6 @@ module tb_cheshire_soc #(
 
     // Wait for the UART to finish reading the current byte
     wait (fix.vip.uart_reading_byte == 0);
-
-    $display("%h", exit_code);
 
     $finish;
   end

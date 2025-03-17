@@ -94,9 +94,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   // Preload function called by testbench
   task automatic memory_preload(string image);
-    // // We overlay the entire memory with an alternating pattern
-    // for (int k = 0; k < $size(i_dram_sim_mem.mem); ++k)
-    //   i_dram_sim_mem.mem[k] = 'h9a;
     // We load an image into chip 0 only if it exists
     if (image != "") begin
       $readmemh(image, i_dram_sim_mem.mem);
@@ -105,7 +102,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   endtask
 
   // Run a binary
-  task automatic memory_elf_run(input string binary, input string binary2, input string binary3);
+  task automatic memory_elf_run(input string binary);
     doub_bt entry;
     entry = DutCfg.LlcOutRegionStart;
     // Preload
@@ -114,20 +111,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       i_dram_sim_mem.mem[k] = 'h9a;
 
     memory_preload(binary);
-    // $stop();
-    memory_preload(binary2);
-    // $stop();
-    memory_preload(binary3);
-    // $stop();
-    for(longint unsigned i = 'h80000000; i < 'h80000000+8; i++) begin
-      $display("%h, 0x%h", i, i_dram_sim_mem.mem[i]);
-    end
-    for(longint unsigned i = 'h80200000; i < 'h80200000+8; i++) begin
-      $display("%h, 0x%h", i, i_dram_sim_mem.mem[i]);
-    end
-    for(longint unsigned i = 'h80800000; i < 'h80800000+8; i++) begin
-      $display("%h, 0x%h", i, i_dram_sim_mem.mem[i]);
-    end
+
     // Write entry point
     slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_1_OFFSET, entry[63:32]);
     slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_0_OFFSET, entry[32:0]);
@@ -347,7 +331,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       $display("[JTAG] Wait for LLC configuration");
       jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
     end
-    $display("[JTAG] Done LLC configuration");
     // Halt hart 0
     jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, default: '0});
     do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
@@ -370,14 +353,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     exit_code >>= 1;
     if (exit_code) $error("[JTAG] FAILED: return code %0d", exit_code);
     else $display("[JTAG] SUCCESS");
-  endtask
-
-
-  // Enter debug mode
-  task automatic jtag_haltreq;
-    $display("[JTAG] Start to send halt req");
-    jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, default: '0});
-    $display("[JTAG] Halt req sent");
   endtask
 
   ////////////
@@ -591,9 +566,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     // We load an image into chip 0 only if it exists
     if (image != "")
       $readmemh(image, gen_i2c_eeproms[0].i_i2c_eeprom.MemoryBlock);
-    for(longint unsigned i = 'h0; i < 'h0+8; i++) begin
-      $display("i_i2c_eeprom %h, 0x%h", i, gen_i2c_eeproms[0].i_i2c_eeprom.MemoryBlock[i]);
-    end
   endtask
 
   ////////////////
@@ -620,9 +592,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     // We load an image into chip 0 only if it exists
     if (image != "")
       $readmemh(image, i_spi_norflash.Mem);
-    for(longint unsigned i = 'h0; i < 'h0+8; i++) begin
-      $display("i_spi_norflash %h, 0x%h", i, i_spi_norflash.Mem[i]);
-    end
   endtask
 
   ///////////////////
@@ -872,7 +841,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
         #(ClkPeriodSys * idle_cycles);
         slink_read_beats(addr, 2, 0, beats);
         data = beats[0] >> addr[AxiStrbBits-1:0];
-        if (SlinkAxiDebug) $display("%h", data);
     end while (~data[0]);
   endtask
 
