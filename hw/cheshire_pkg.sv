@@ -632,14 +632,9 @@ package cheshire_pkg;
     cheshire_cfg_t ret  = DefaultCfg;
     ret.Core            = C910;
     ret.AddrWidth       = soc910_pkg::AxiAddrWidth;
-    // ret.AxiDataWidth    = soc910_pkg::AxiDataWidth;
     ret.AxiMaxMstTrans  = soc910_pkg::AxiMaxMstTrans;
     ret.AxiMstIdWidth   = soc910_pkg::AxiIdWidthMaster;
     ret.AxiUserWidth    = soc910_pkg::AxiUserWidth;
-    // ret.BusErr          = 0;
-  // `ifdef TARGET_COSIM
-  //   ret.LlcNotBypass    = 0; // for spike co-sim
-  // `endif
     return ret;
   endfunction
 `endif

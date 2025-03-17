@@ -140,8 +140,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   // Interrupt requests to all interruptible harts
   cheshire_xeip_t [NumIrqHarts-1:0] xeip;
-  logic           [NumIrqHarts-1:0] mtip;
-  logic           [NumIrqHarts-1:0] msip;
+  logic           [NumIrqHarts-1:0] mtip, msip;
 
   // Interrupt 0 is hardwired to zero by convention.
   // Other internal interrupts are synchronous (for now) and need not be synced;
@@ -1269,8 +1268,6 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  CLINT  //
   /////////////
 
-  // if (Cfg.Core == CVA6) begin : gen_cva6_clint
-
   clint #(
     .reg_req_t  ( reg_req_t ),
     .reg_rsp_t  ( reg_rsp_t )
@@ -1284,8 +1281,6 @@ module cheshire_soc import cheshire_pkg::*; #(
     .timer_irq_o  ( mtip[0] ),
     .ipi_o        ( msip[0] )
   );
-
-  // end
 
   //////////////
   //  AXI RT  //

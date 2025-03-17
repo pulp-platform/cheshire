@@ -190,11 +190,9 @@ module cheshire_top_xilinx
 `ifdef TARGET_C910
     ret.Core            = C910;
     ret.AddrWidth       = soc910_pkg::AxiAddrWidth;
-    // ret.AxiDataWidth    = soc910_pkg::AxiDataWidth;
     ret.AxiMaxMstTrans  = soc910_pkg::AxiMaxMstTrans;
     ret.AxiMstIdWidth   = soc910_pkg::AxiIdWidthMaster;
     ret.AxiUserWidth    = soc910_pkg::AxiUserWidth;
-    // ret.BusErr          = 0;
 `endif
     return ret;
   endfunction
