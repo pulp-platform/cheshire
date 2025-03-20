@@ -52,6 +52,7 @@ module cheshire_idma_wrap #(
   localparam int unsigned NumDim          = 2;
   localparam int unsigned RepWidth        = 32;
   localparam int unsigned TfLenWidth      = 32;
+  localparam int unsigned RegDataWidth    = 32;
 
   typedef logic [AxiDataWidth-1:0]     data_t;
   typedef logic [AxiDataWidth/8-1:0]   strb_t;
@@ -247,19 +248,19 @@ module cheshire_idma_wrap #(
     logic retire_id;
     logic [IdCounterWidth-1:0] done_id, next_id;
 
-    axi_to_reg #(
-      .ADDR_WIDTH ( AxiAddrWidth  ),
-      .DATA_WIDTH ( AxiDataWidth  ),
-      .ID_WIDTH   ( AxiSlvIdWidth ),
-      .USER_WIDTH ( AxiUserWidth  ),
-      .axi_req_t  ( axi_slv_req_t ),
-      .axi_rsp_t  ( axi_slv_rsp_t ),
-      .reg_req_t  ( dma_regs_req_t),
-      .reg_rsp_t  ( dma_regs_rsp_t)
+    axi_to_reg_v2 #(
+      .AxiAddrWidth ( AxiAddrWidth   ),
+      .AxiDataWidth ( AxiDataWidth   ),
+      .AxiIdWidth   ( AxiSlvIdWidth  ),
+      .AxiUserWidth ( AxiUserWidth   ),
+      .RegDataWidth ( RegDataWidth   ),
+      .axi_req_t    ( axi_slv_req_t  ),
+      .axi_rsp_t    ( axi_slv_rsp_t  ),
+      .reg_req_t    ( dma_regs_req_t ),
+      .reg_rsp_t    ( dma_regs_rsp_t )
     ) i_axi_translate (
       .clk_i,
       .rst_ni,
-      .testmode_i,
       .axi_req_i  ( axi_slv_req_i[FrontendCfg.reg64] ),
       .axi_rsp_o  ( axi_slv_rsp_o[FrontendCfg.reg64] ),
       .reg_req_o  ( dma_reg_req ),
