@@ -15,7 +15,7 @@
 #include "printf.h"
 
 #define USE_SPM 0
-#define DATA_POINTS 2048
+#define DATA_POINTS 20000
 
 #if USE_SPM
 #define SHARED_SECTION __attribute__((section(".spm")))
@@ -23,16 +23,8 @@
 #define SHARED_SECTION __attribute__((section(".data")))
 #endif
 
-typedef unsigned char u8_t;
-typedef unsigned int u32_t;
-typedef unsigned long u64_t;
-
-_Static_assert(sizeof(u8_t) == 1, "8-bit");
-_Static_assert(sizeof(u32_t) == 4, "32-bit");
-_Static_assert(sizeof(u64_t) == 8, "64-bit");
-
-static inline unsigned int rdcycle() {
-    unsigned int rv;
+static inline uint32_t rdcycle() {
+    uint32_t rv;
     asm volatile ("rdcycle %0": "=r" (rv) ::);
     return rv;
 }
@@ -55,7 +47,7 @@ static inline void ifence(void) { asm volatile("fence.i" ::: "memory"); }
 #define LLC_BLOCK_NUM_BYTES 8
 
 typedef struct {
-    u8_t inner[LLC_LINE_NUM_BLOCKS * LLC_BLOCK_NUM_BYTES];
+    uint8_t inner[LLC_LINE_NUM_BLOCKS * LLC_BLOCK_NUM_BYTES];
 } line_t;
 _Static_assert(sizeof(line_t) == 64, "sizeof line is 64bytes");
 
@@ -63,27 +55,27 @@ line_t data[LLC_NUM_WAYS][LLC_WAY_NUM_LINES]; /* SHARED_SECTION; */
 _Static_assert(sizeof(data) == 128 * 1024, "sizeof cache is 128KiB");
 
 struct result {
-    u32_t cycle_count;
-    u32_t secret;
+    uint32_t cycle_count;
+    uint32_t secret;
 };
 
 /* The fact this is in the LLC doesn't matter because we flush the cache before
    the spy round, and we write after. */
 struct result results[DATA_POINTS];
-u32_t current_secret;
+uint32_t current_secret;
 
 volatile void *llc_cfg = (void *)0x03001000;
 
-u32_t random(void) {
-    static u32_t state = 0xACE1ACE1;
+uint32_t random(void) {
+    static uint32_t state = 0xACE1ACE1;
 
     /* LFSR with taps are 31, 21, 1, 0*/
-    u32_t bit0 = (state >> 0) & 1;
-    u32_t bit1 = (state >> 1) & 1;
-    u32_t bit2 = (state >> 21) & 1;
-    u32_t bit3 = (state >> 31) & 1;
+    uint32_t bit0 = (state >> 0) & 1;
+    uint32_t bit1 = (state >> 1) & 1;
+    uint32_t bit2 = (state >> 21) & 1;
+    uint32_t bit3 = (state >> 31) & 1;
 
-    u32_t feedback = bit3 ^ bit2 ^ bit1 ^ bit0;
+    uint32_t feedback = bit3 ^ bit2 ^ bit1 ^ bit0;
 
     state = ((state << 1) | feedback) & 0xFFFFFFFF;
 
@@ -91,8 +83,8 @@ u32_t random(void) {
 }
 
 void evict_llc(void) {
-    *(unsigned int *)(llc_cfg + AXI_LLC_CFG_FLUSH_LOW_REG_OFFSET) = 0xff;
-    *(unsigned int *)(llc_cfg + AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
+    *(uint32_t *)(llc_cfg + AXI_LLC_CFG_FLUSH_LOW_REG_OFFSET) = 0xff;
+    *(uint32_t *)(llc_cfg + AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
 }
 
 void domain_switch(void) {
@@ -106,12 +98,12 @@ void domain_switch(void) {
 void trojan(void) {
     evict_llc();
 
-    u32_t secret = random() % LLC_WAY_NUM_LINES;
+    uint32_t secret = random() % LLC_WAY_NUM_LINES;
 
-    for (u32_t line = 0; line < secret; line++)  {
-        for (u32_t way = 0; way < LLC_NUM_WAYS; way++) {
-            line_t *v = &data[way][line];
-            volatile u32_t rv;
+    for (uint32_t line = 0; line < secret; line++)  {
+        for (uint32_t way = 0; way < LLC_NUM_WAYS; way++) {
+            void *v = &data[way][line];
+            volatile uint32_t rv;
             asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v):);
         }
     }
@@ -119,18 +111,18 @@ void trojan(void) {
     current_secret = secret;
 }
 
-void spy(u32_t round) {
-    u32_t before = rdcycle();
-    for (u32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
-        for (u32_t way = 0; way < LLC_NUM_WAYS; way++) {
-            line_t *v = &data[way][line];
-            volatile u32_t rv;
+void spy(uint32_t round) {
+    uint32_t before = rdcycle();
+    for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
+        for (uint32_t way = 0; way < LLC_NUM_WAYS; way++) {
+            void *v = &data[way][line];
+            volatile uint32_t rv;
             asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v):);
         }
     }
-    u32_t after = rdcycle();
+    uint32_t after = rdcycle();
 
-    u32_t delta = after - before;
+    uint32_t delta = after - before;
 
     results[round].cycle_count = delta;
     results[round].secret = current_secret;
@@ -152,11 +144,11 @@ int main(void) {
 
     /* Turn on the LLC. Leave one way (16KiB) as SPM. */
 #if USE_SPM
-    *(u32_t *)(llc_cfg + AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0x1;
+    *(uint32_t *)(llc_cfg + AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0x1;
 #else
-    *(u32_t *)(llc_cfg + AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0x0;
+    *(uint32_t *)(llc_cfg + AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0x0;
 #endif
-    *(u32_t *)(llc_cfg + AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
+    *(uint32_t *)(llc_cfg + AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
 
     evict_llc();
     sfence();
@@ -169,17 +161,17 @@ int main(void) {
     }
 
     {
-        u32_t set_asso = *(u32_t *)(llc_cfg + AXI_LLC_SET_ASSO_LOW_REG_OFFSET);
+        uint32_t set_asso = *(uint32_t *)(llc_cfg + AXI_LLC_SET_ASSO_LOW_REG_OFFSET);
         if (set_asso != LLC_NUM_WAYS) {
             printf("set associativity does not match; %d\r\n", set_asso);
             return 1;
         }
-        u32_t num_lines = *(u32_t *)(llc_cfg + AXI_LLC_NUM_LINES_LOW_REG_OFFSET);
+        uint32_t num_lines = *(uint32_t *)(llc_cfg + AXI_LLC_NUM_LINES_LOW_REG_OFFSET);
         if (num_lines != LLC_WAY_NUM_LINES) {
             printf("num lines does not match; %d\r\n", num_lines);
             return 1;
         }
-        u32_t num_blocks = *(u32_t *)(llc_cfg + AXI_LLC_NUM_BLOCKS_LOW_REG_OFFSET);
+        uint32_t num_blocks = *(uint32_t *)(llc_cfg + AXI_LLC_NUM_BLOCKS_LOW_REG_OFFSET);
         if (num_blocks != LLC_LINE_NUM_BLOCKS) {
             printf("num blocks does not match; %d\r\n", num_blocks);
             return 1;
@@ -188,7 +180,7 @@ int main(void) {
 
     evict_llc();
 
-    for (u32_t round = 0; round < DATA_POINTS; round++) {
+    for (uint32_t round = 0; round < DATA_POINTS; round++) {
         if (round % 1000 == 0) {
             printf("1000 points done\r\n");
         }
@@ -201,7 +193,7 @@ int main(void) {
 
     printf("Done... printing results\r\n");
 
-    for (u32_t i = 0; i < DATA_POINTS; i++) {
+    for (uint32_t i = 0; i < DATA_POINTS; i++) {
         printf("%u %u\r\n", results[i].secret, results[i].cycle_count);
     }
 
