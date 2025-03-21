@@ -13,15 +13,11 @@
 #include "params.h"
 #include "util.h"
 #include "printf.h"
+#include <stdint.h>
 
-#define USE_SPM 0
-#define DATA_POINTS 20000
+#define DATA_POINTS 2048
 
-#if USE_SPM
-#define SHARED_SECTION __attribute__((section(".spm")))
-#else
-#define SHARED_SECTION __attribute__((section(".data")))
-#endif
+#define SECTION(name) __attribute__((__section__(name)))
 
 static inline uint32_t rdcycle() {
     uint32_t rv;
@@ -34,11 +30,7 @@ static inline void sfence(void) { asm volatile("sfence.vma" ::: "memory"); }
 static inline void ifence(void) { asm volatile("fence.i" ::: "memory"); }
 
 /* set associativity */
-#if USE_SPM
-#define LLC_NUM_WAYS 7
-#else
 #define LLC_NUM_WAYS 8
-#endif
 /* size of 1 way */
 #define LLC_WAY_NUM_LINES 256
 /* size of one cache line in blocks */
@@ -51,8 +43,12 @@ typedef struct {
 } line_t;
 _Static_assert(sizeof(line_t) == 64, "sizeof line is 64bytes");
 
-line_t data[LLC_NUM_WAYS][LLC_WAY_NUM_LINES]; /* SHARED_SECTION; */
-_Static_assert(sizeof(data) == 128 * 1024, "sizeof cache is 128KiB");
+#define SHARED_DATA_NUMBER_WAYS 1
+
+line_t data[SHARED_DATA_NUMBER_WAYS][LLC_WAY_NUM_LINES] SECTION(".shared_data");
+_Static_assert(sizeof(data) * LLC_NUM_WAYS / SHARED_DATA_NUMBER_WAYS  == 128 * 1024, "full sizeof cache is 128KiB");
+
+_Static_assert(sizeof(data) == 16 * 1024, "sizeof the data for fitting in SPM is one way");
 
 struct result {
     uint32_t cycle_count;
@@ -91,7 +87,7 @@ void domain_switch(void) {
     fencet();
 
     // This should remove the channel.
-    evict_llc();
+    // evict_llc();
 }
 
 
@@ -101,7 +97,7 @@ void trojan(void) {
     uint32_t secret = random() % LLC_WAY_NUM_LINES;
 
     for (uint32_t line = 0; line < secret; line++)  {
-        for (uint32_t way = 0; way < LLC_NUM_WAYS; way++) {
+        for (uint32_t way = 0; way < SHARED_DATA_NUMBER_WAYS; way++) {
             void *v = &data[way][line];
             volatile uint32_t rv;
             asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v):);
@@ -114,7 +110,7 @@ void trojan(void) {
 void spy(uint32_t round) {
     uint32_t before = rdcycle();
     for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
-        for (uint32_t way = 0; way < LLC_NUM_WAYS; way++) {
+        for (uint32_t way = 0; way < SHARED_DATA_NUMBER_WAYS; way++) {
             void *v = &data[way][line];
             volatile uint32_t rv;
             asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v):);
@@ -137,17 +133,20 @@ int main(void) {
     uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
     uart_init(&__base_uart, reset_freq, __BOOT_BAUDRATE);
     uart_write_str(&__base_uart, str, sizeof(str) - 1);
-    uart_write_flush(&__base_uart);
 
     printf("text: %p, shared data: %p\r\n", &main, &data);
 
+    if ((uintptr_t)&data == 0x0000000010000000) {
+        printf("data in SPM... leaving all as SPM\r\n");
+        *(uint32_t *)(llc_cfg + AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111111;
+    } else if ((uintptr_t)&data == 0x0000000080000000) {
+        printf("data in DRAM... making one way cache\r\n");
+        *(uint32_t *)(llc_cfg + AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111110;
+    } else {
+        printf("data unknown location 0x%p, 0x%p, 0x%p\r\n", &data, &__base_spm, &__base_dram);
+        return 1;
+    }
 
-    /* Turn on the LLC. Leave one way (16KiB) as SPM. */
-#if USE_SPM
-    *(uint32_t *)(llc_cfg + AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0x1;
-#else
-    *(uint32_t *)(llc_cfg + AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0x0;
-#endif
     *(uint32_t *)(llc_cfg + AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
 
     evict_llc();
