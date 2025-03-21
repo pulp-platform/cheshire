@@ -91,7 +91,7 @@ void domain_switch(void) {
     fencet();
 
     // This should remove the channel.
-    // evict_llc();
+    evict_llc();
 }
 
 
