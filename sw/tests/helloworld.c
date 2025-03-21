@@ -48,7 +48,7 @@ _Static_assert(sizeof(line_t) * LLC_NUM_WAYS * LLC_WAY_NUM_LINES == 128 * 1024, 
 #define SHARED_DATA_NUMBER_WAYS 1
 // 93 (0x5d) doesn't work, 94 (0x5e) does.
 // 94 => 0x1780 sizeof(data), 93 => 0x1740 sizeof(data)
-#define SHARED_DATA_NUMBER_LINES 93
+#define SHARED_DATA_NUMBER_LINES 94
 
 _Static_assert(SHARED_DATA_NUMBER_WAYS <= LLC_NUM_WAYS, "less than number");
 _Static_assert(SHARED_DATA_NUMBER_LINES <= LLC_WAY_NUM_LINES, "less than number");
@@ -150,6 +150,8 @@ int main(void) {
     } else if ((uintptr_t)&data == 0x0000000080000000) {
         printf("data in DRAM... making one way cache\r\n");
         *(uint32_t *)(llc_cfg + AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111110;
+        // turn the cache off entirely for testing
+        // *(uint32_t *)(llc_cfg + AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111111;
     } else {
         printf("data unknown location 0x%p, 0x%p, 0x%p\r\n", &data, &__base_spm, &__base_dram);
         return 1;
