@@ -46,7 +46,9 @@ _Static_assert(sizeof(line_t) == 64, "sizeof line is 64bytes");
 _Static_assert(sizeof(line_t) * LLC_NUM_WAYS * LLC_WAY_NUM_LINES == 128 * 1024, "full sizeof cache is 128KiB");
 
 #define SHARED_DATA_NUMBER_WAYS 1
-#define SHARED_DATA_NUMBER_LINES 256
+// 93 (0x5d) doesn't work, 94 (0x5e) does.
+// 94 => 0x1780 sizeof(data), 93 => 0x1740 sizeof(data)
+#define SHARED_DATA_NUMBER_LINES 93
 
 _Static_assert(SHARED_DATA_NUMBER_WAYS <= LLC_NUM_WAYS, "less than number");
 _Static_assert(SHARED_DATA_NUMBER_LINES <= LLC_WAY_NUM_LINES, "less than number");
