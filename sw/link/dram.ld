@@ -9,13 +9,20 @@
 INCLUDE common.ldh
 
 SECTIONS {
-  __stack_pointer$  = ORIGIN(dram) + LENGTH(dram) - 8;
+  /* change this between > spm and > dram */
+  .shared_data : ALIGN(16) {
+    *(.shared_data)
+  } > dram
 
   .text : {
+    /* ignore first way so we can map it as LLC cache instead.
+       this is unnecessary if shared_data is in spm, but for easier */
+    . = . + 16K;
+
     *(.text._start)
     *(.text)
     *(.text.*)
-  } > dram
+  } > spm
 
   .misc : ALIGN(16) {
     *(.rodata)
@@ -26,7 +33,7 @@ SECTIONS {
     *(.srodata.*)
     *(.sdata)
     *(.sdata.*)
-  } > dram
+  } > spm
 
   .bss : ALIGN(16) {
     __bss_start = .;
@@ -35,15 +42,10 @@ SECTIONS {
     *(.sbss)
     *(.sbss.*)
     __bss_end = .;
-  } > dram
+  } > spm
 
   .bulk : ALIGN(16) {
     *(.bulk)
     *(.bulk.*)
-  } > dram
-
-  .spm : ALIGN(16) {
-    *(.spm)
-    *(.spm.*)
   } > spm
 }
