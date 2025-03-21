@@ -12,7 +12,7 @@ SECTIONS {
   /* change this between > spm and > dram */
   .shared_data : ALIGN(16) {
     *(.shared_data)
-  } > dram
+  } > spm
 
   .text : {
     /* ignore first way so we can map it as LLC cache instead.
@@ -48,4 +48,9 @@ SECTIONS {
     *(.bulk)
     *(.bulk.*)
   } > spm
+
+  .results : ALIGN(16) {
+    *(.results)
+    *(.bulk.*)
+  } > dram
 }

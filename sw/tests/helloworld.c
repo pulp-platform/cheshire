@@ -15,7 +15,7 @@
 #include "printf.h"
 #include <stdint.h>
 
-#define DATA_POINTS 2048
+#define DATA_POINTS 50 * 1024
 
 #define SECTION(name) __attribute__((__section__(name)))
 
@@ -56,8 +56,9 @@ struct result {
 };
 
 /* The fact this is in the LLC doesn't matter because we flush the cache before
-   the spy round, and we write after. */
-struct result results[DATA_POINTS];
+   the spy round, and we write after.
+*/
+struct result results[DATA_POINTS] SECTION(".results");
 uint32_t current_secret;
 
 volatile void *llc_cfg = (void *)0x03001000;
