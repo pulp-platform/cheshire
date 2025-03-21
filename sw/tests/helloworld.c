@@ -43,12 +43,17 @@ typedef struct {
 } line_t;
 _Static_assert(sizeof(line_t) == 64, "sizeof line is 64bytes");
 
+_Static_assert(sizeof(line_t) * LLC_NUM_WAYS * LLC_WAY_NUM_LINES == 128 * 1024, "full sizeof cache is 128KiB");
+
 #define SHARED_DATA_NUMBER_WAYS 1
+#define SHARED_DATA_NUMBER_LINES 256
 
-line_t data[SHARED_DATA_NUMBER_WAYS][LLC_WAY_NUM_LINES] SECTION(".shared_data");
-_Static_assert(sizeof(data) * LLC_NUM_WAYS / SHARED_DATA_NUMBER_WAYS  == 128 * 1024, "full sizeof cache is 128KiB");
+_Static_assert(SHARED_DATA_NUMBER_WAYS <= LLC_NUM_WAYS, "less than number");
+_Static_assert(SHARED_DATA_NUMBER_LINES <= LLC_WAY_NUM_LINES, "less than number");
 
-_Static_assert(sizeof(data) == 16 * 1024, "sizeof the data for fitting in SPM is one way");
+line_t data[SHARED_DATA_NUMBER_WAYS][SHARED_DATA_NUMBER_LINES] SECTION(".shared_data");
+
+_Static_assert(sizeof(data) <= 16 * 1024, "sizeof the data for fitting in SPM is less than one way");
 
 struct result {
     uint32_t cycle_count;
@@ -95,7 +100,7 @@ void domain_switch(void) {
 void trojan(void) {
     evict_llc();
 
-    uint32_t secret = random() % LLC_WAY_NUM_LINES;
+    uint32_t secret = random() % SHARED_DATA_NUMBER_LINES;
 
     for (uint32_t line = 0; line < secret; line++)  {
         for (uint32_t way = 0; way < SHARED_DATA_NUMBER_WAYS; way++) {
@@ -110,7 +115,7 @@ void trojan(void) {
 
 void spy(uint32_t round) {
     uint32_t before = rdcycle();
-    for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
+    for (uint32_t line = 0; line < SHARED_DATA_NUMBER_LINES; line++)  {
         for (uint32_t way = 0; way < SHARED_DATA_NUMBER_WAYS; way++) {
             void *v = &data[way][line];
             volatile uint32_t rv;
