@@ -41,4 +41,9 @@ SECTIONS {
     *(.bulk)
     *(.bulk.*)
   } > dram
+
+  .spm : ALIGN(16) {
+    *(.spm)
+    *(.spm.*)
+  } > spm
 }
