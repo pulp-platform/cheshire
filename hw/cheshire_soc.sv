@@ -125,7 +125,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   localparam int unsigned IntrRtdExtBase  = IntrRtdCoreBase + NumIntHarts;
 
   // CCU cfg
-  localparam ccu_pkg::ccu_cfg_t CcuCfg = '{
+  localparam ccu_pkg::ccu_user_cfg_t CcuUserCfg = '{
     NoSlvPorts         : NumIntHarts,
     NoSlvPerGroup      : NumIntHarts,
     DcacheLineWidth    : ariane_pkg::DCACHE_LINE_WIDTH,
@@ -133,10 +133,21 @@ module cheshire_soc import cheshire_pkg::*; #(
     AxiAddrWidth       : Cfg.AddrWidth,
     AxiUserWidth       : Cfg.AxiUserWidth,
     AxiDataWidth       : Cfg.AxiDataWidth,
-    AmoHotfix          : 1
+    AmoHotfix          : 1,
+    CmAddrBase         : $clog2(ariane_pkg::DCACHE_LINE_WIDTH >> 3),
+    CmAddrWidth        : 12,
+    CutSnoopReq        : 0,
+    CutSnoopResp       : 0,
+    CutSlvAx           : 0,
+    CutSlvReq          : 0,
+    CutSlvResp         : 0,
+    CutMstAx           : 0,
+    CutMstReq          : 0,
+    CutMstResp         : 0
   };
 
-  localparam int unsigned CCUIdWidth      = ccu_pkg::CcuAxiMstIdWidth(CcuCfg);
+  localparam ccu_pkg::ccu_cfg_t CcuCfg = ccu_pkg::ccu_build_cfg(CcuUserCfg);
+  localparam int unsigned CCUIdWidth   = CcuCfg.AxiMstIdWidth;
 
   // This routable type is as wide or wider than all targets.
   // It must be truncated before target connection.
