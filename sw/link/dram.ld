@@ -52,6 +52,5 @@ SECTIONS {
 
   .results : ALIGN(16) {
     *(.results)
-    *(.bulk.*)
-  } > dram
+  } > spm
 }
