@@ -15,7 +15,7 @@
 #include "printf.h"
 #include <stdint.h>
 
-#define DATA_POINTS 50 * 1024
+#define DATA_POINTS 128
 
 #define SECTION(name) __attribute__((__section__(name)))
 
@@ -46,9 +46,7 @@ _Static_assert(sizeof(line_t) == 64, "sizeof line is 64bytes");
 _Static_assert(sizeof(line_t) * LLC_NUM_WAYS * LLC_WAY_NUM_LINES == 128 * 1024, "full sizeof cache is 128KiB");
 
 #define SHARED_DATA_NUMBER_WAYS 1
-// 93 (0x5d) doesn't work, 94 (0x5e) does.
-// 94 => 0x1780 sizeof(data), 93 => 0x1740 sizeof(data)
-#define SHARED_DATA_NUMBER_LINES 94
+#define SHARED_DATA_NUMBER_LINES 72
 
 _Static_assert(SHARED_DATA_NUMBER_WAYS <= LLC_NUM_WAYS, "less than number");
 _Static_assert(SHARED_DATA_NUMBER_LINES <= LLC_WAY_NUM_LINES, "less than number");
