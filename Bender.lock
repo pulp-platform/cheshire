@@ -15,7 +15,7 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: 080aa99a2b4017d8a85c7249c7f19cd91de1d3f2
+    revision: f14349315fe1bc5f0ac93156baaab9d9d3bd06d0
     version: null
     source:
       Git: https://github.com/pulp-platform/axi.git
@@ -145,7 +145,7 @@ packages:
     - register_interface
     - tech_cells_generic
   pulp_c910:
-    revision: fcf8ede78c4c4276cc898278fa39523e00d756a1
+    revision: 6bb42307c39ac65d3d64be8e7f94ff1332c7ce20
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git
