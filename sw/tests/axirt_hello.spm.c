@@ -55,7 +55,7 @@ int main(void) {
 
     // Configure UART and write message
     uart_init(&__base_uart, reset_freq, __BOOT_BAUDRATE);
-    uart_write_str(&__base_uart, str, sizeof(str));
+    uart_write_str(&__base_uart, str, sizeof(str) - 1);
     uart_write_flush(&__base_uart);
     return 0;
 }
