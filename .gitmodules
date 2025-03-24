@@ -2,7 +2,7 @@
 	path = sw/deps/printf
 	url = https://github.com/mpaland/printf
 	ignore = dirty
-[submodule "sw/deps/c910-sdk"]
-	path = sw/deps/c910-sdk
-	url = git@iis-git.ee.ethz.ch:zexifu/c910-sdk.git
-	branch = master
+[submodule "sw/deps/cva6-sdk"]
+	path = sw/deps/cva6-sdk
+	url = https://github.com/pulp-platform/cva6-sdk.git
+	branch = zx/cheshire_c910
