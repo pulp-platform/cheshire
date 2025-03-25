@@ -69,7 +69,7 @@ packages:
     - common_cells
     - register_interface
   clic:
-    revision: dc39260acdb80fc247251445ee67e4cebbce8c5c
+    revision: c6f09ba78940e05fdc950a1250c1e63faaebb8fe
     version: null
     source:
       Git: https://github.com/pulp-platform/clic.git
@@ -99,7 +99,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 264b5b2fe6a3c56da4b278037cc5372ed69da150
+    revision: b82712a41bb93973d214efe515928081e9978cc4
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
