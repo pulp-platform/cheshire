@@ -137,7 +137,7 @@ $(foreach link,$(patsubst $(CHS_SW_LD_DIR)/%.ld,%,$(wildcard $(CHS_SW_LD_DIR)/*.
 	$(CHS_SW_OBJCOPY) -I binary -O verilog $< $@
 
 # Images from CVA6 SDK (built externally)
-CHS_CVA6_SDK_IMGS ?= $(addprefix $(CHS_SW_DIR)/deps/c910-sdk/cva6-sdk/install64/,fw_payload.bin uImage)
+CHS_CVA6_SDK_IMGS ?= $(addprefix $(CHS_SW_DIR)/deps/cva6-sdk/install64/,fw_payload.bin uImage)
 
 # linux-%.gpt.bin do not provide meaningfull error
 $(CHS_CVA6_SDK_IMGS):
