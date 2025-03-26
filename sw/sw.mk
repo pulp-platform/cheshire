@@ -167,7 +167,7 @@ $(CHS_SW_DIR)/boot/linux.%.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CHS_SW_DIR)
 
 # This program can be used to flash bootable disks using preloaded images.
 # `util/flash_disk.sh` utilizes it to flash disk images preloaded over JTAG.
-CHS_SW_TOOLS += sw/boot/flash.spm.elf
+CHS_SW_TOOLS += $(CHS_SW_DIR)/boot/flash.spm.elf
 
 #########
 # Tests #
