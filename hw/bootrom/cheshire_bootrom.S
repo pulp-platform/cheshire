@@ -85,6 +85,26 @@ _prom_check_run:
     beqz t0, _boot
     jalr t0
 
+// Reset regs, full fence, then jump to main
+_boot:
+    li t0, 0
+    li t1, 0
+    fence
+    fence.i
+    call main
+
+// If main returns, we end up here
+.global _exit
+_exit:
+    // Save the return value to scratch register 2, try `ebreak`, then wait forever
+    slli a0, a0, 1
+    ori  a0, a0, 1
+    la t0, __base_regs
+    sw a0, 8(t0)     // regs.SCRATCH[2]
+    ebreak
+1:  wfi
+    j 1b
+
 .global boot_next_stage
 boot_next_stage:
     // Non-SMP hart: Write boot address into global scratch registers
@@ -107,23 +127,3 @@ boot_next_stage:
     jalr ra, 0(t0)
     // We should never get here
     ret
-
-// Reset regs, full fence, then jump to main
-_boot:
-    li t0, 0
-    li t1, 0
-    fence
-    fence.i
-    call main
-
-// If main returns, we end up here
-.global _exit
-_exit:
-    // Save the return value to scratch register 2, try `ebreak`, then wait forever
-    slli a0, a0, 1
-    ori  a0, a0, 1
-    la t0, __base_regs
-    sw a0, 8(t0)     // regs.SCRATCH[2]
-    ebreak
-1:  wfi
-    j 1b
