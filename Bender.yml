@@ -30,7 +30,8 @@ dependencies:
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              rev: f69f6342   } # zx/cheshire_c910
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.0  }
   unbent:                   { git: "https://github.com/pulp-platform/unbent.git",                 version: 0.1.5  }
-  pulp_c910:                { git: "git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git",               rev: 695b59ae   } # dev_zx_cheshire_c910
+  # pulp_c910:                { git: "git@iis-git.ee.ethz.ch:nwistoff/pulp_c910.git",               rev: 695b59ae   } # dev_zx_cheshire_c910
+  pulp_c910:                { git: "https://github.com/Aquaticfuller/c910.git",               rev: 695b59ae   } # dev_zx_cheshire_c910
 
 export_include_dirs:
   - hw/include
