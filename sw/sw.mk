@@ -14,7 +14,7 @@ CHS_SW_AR      := riscv64-none-elf-ar
 CHS_SW_CC      := riscv64-none-elf-gcc
 CHS_SW_OBJCOPY := riscv64-none-elf-objcopy
 CHS_SW_OBJDUMP := riscv64-none-elf-objdump
-CHS_SW_LTOPLUG := $(shell find $(shell dirname $(CHS_SW_GCC_BINROOT))/libexec/gcc/riscv64-none-elf/**/liblto_plugin.so)
+# CHS_SW_LTOPLUG := $(shell find $(shell dirname $(CHS_SW_GCC_BINROOT))/libexec/gcc/riscv64-none-elf/**/liblto_plugin.so)
 
 CHS_SW_DIR       ?= $(CHS_ROOT)/sw
 CHS_SW_LD_DIR    ?= $(CHS_SW_DIR)/link
@@ -23,10 +23,10 @@ CHS_SW_DTB_TGUID := BA442F61-2AEF-42DE-9233-E4D75D3ACB9D
 CHS_SW_FW_TGUID  := 99EC86DA-3F5B-4B0D-8F4B-C4BACFA5F859
 CHS_SW_DISK_SIZE ?= 16M
 
-CHS_SW_FLAGS   ?= -DOT_PLATFORM_RV32 -march=rv64gc_zifencei -mabi=lp64d -mstrict-align -O2 -Wall -Wextra -static -ffunction-sections -fdata-sections -frandom-seed=cheshire -fuse-linker-plugin -flto -Wl,-flto
+CHS_SW_FLAGS   ?= -DOT_PLATFORM_RV32 -march=rv64gc_zifencei -mabi=lp64d -mstrict-align -O2 -Wall -Wextra -static -ffunction-sections -fdata-sections -frandom-seed=cheshire
 CHS_SW_CCFLAGS ?= $(CHS_SW_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
 CHS_SW_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_SW_LD_DIR)
-CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
+CHS_SW_ARFLAGS ?= # --plugin=$(CHS_SW_LTOPLUG)
 
 CHS_SW_ALL += $(CHS_SW_LIBS) $(CHS_SW_GEN_HDRS) $(CHS_SW_TESTS) $(CHS_SW_TOOLS)
 

@@ -1,5 +1,5 @@
 target extended-remote localhost:3333
 monitor reset halt
-load sw/tests/helloworld.dram.elf
-add-symbol-file sw/tests/helloworld.dram.elf
+load sw/tests/timing_channel.spm_code_shared_data.elf
+add-symbol-file sw/tests/timing_channel.spm_code_shared_data.elf
 c
