@@ -1,0 +1,5 @@
+target extended-remote localhost:3333
+monitor reset halt
+load sw/tests/cache_flush.spm_code_shared_data.elf
+add-symbol-file sw/tests/cache_flush.spm_code_shared_data.elf
+c
