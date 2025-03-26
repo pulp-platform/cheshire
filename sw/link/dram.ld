@@ -53,4 +53,8 @@ SECTIONS {
   .results : ALIGN(16) {
     *(.results)
   } > spm
+
+  .dram : ALIGN(16K) {
+    *(.dram)
+  } > dram
 }
