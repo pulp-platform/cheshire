@@ -127,6 +127,8 @@ _exit:
     ori  t0, t0, 1
     la t1, __base_regs
     sw t0, 8(t1)     // regs.SCRATCH[2]
+    // Ebreak for basilisk
+    ebreak
     // Hand over to whatever called us, passing return
     ret
 
