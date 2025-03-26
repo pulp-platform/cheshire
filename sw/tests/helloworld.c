@@ -15,7 +15,7 @@
 #include "printf.h"
 #include <stdint.h>
 
-#define DATA_POINTS 128
+#define DATA_POINTS 1024
 
 #define SECTION(name) __attribute__((__section__(name)))
 
@@ -46,11 +46,15 @@ _Static_assert(sizeof(line_t) == 64, "sizeof line is 64bytes");
 _Static_assert(sizeof(line_t) * LLC_NUM_WAYS * LLC_WAY_NUM_LINES == 128 * 1024, "full sizeof cache is 128KiB");
 
 #define SHARED_DATA_NUMBER_WAYS 1
-#define SHARED_DATA_NUMBER_LINES 72
+#define SHARED_DATA_NUMBER_LINES 256
 
 _Static_assert(SHARED_DATA_NUMBER_WAYS <= LLC_NUM_WAYS, "less than number");
 _Static_assert(SHARED_DATA_NUMBER_LINES <= LLC_WAY_NUM_LINES, "less than number");
+/* if number lines != all lines then number ways == 1. */
+_Static_assert(!(SHARED_DATA_NUMBER_LINES != LLC_NUM_WAYS) || SHARED_DATA_NUMBER_WAYS == 1,
+               "number lines != all ==> number ways = 1");
 
+// check which direction.
 line_t data[SHARED_DATA_NUMBER_WAYS][SHARED_DATA_NUMBER_LINES] SECTION(".shared_data");
 
 _Static_assert(sizeof(data) <= 16 * 1024, "sizeof the data for fitting in SPM is less than one way");
@@ -84,9 +88,24 @@ uint32_t random(void) {
     return state;
 }
 
+#define MANUAL_EVICT 1
+#if MANUAL_EVICT
+line_t manual_evict_data[LLC_NUM_WAYS][LLC_WAY_NUM_LINES] SECTION(".dram");
+#endif
+
 void evict_llc(void) {
+#if !MANUAL_EVICT
     *(uint32_t *)(llc_cfg + AXI_LLC_CFG_FLUSH_LOW_REG_OFFSET) = 0xff;
     *(uint32_t *)(llc_cfg + AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
+#else
+for (uint32_t line = 0; line < LLC_NUM_WAYS; line++)  {
+    for (uint32_t way = 0; way < LLC_WAY_NUM_LINES; way++) {
+        void *v = &manual_evict_data[way][line];
+        volatile uint32_t rv;
+        asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v):);
+    }
+}
+#endif
 }
 
 void domain_switch(void) {
