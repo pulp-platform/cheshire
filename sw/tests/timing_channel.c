@@ -55,7 +55,7 @@ _Static_assert(!(SHARED_DATA_NUMBER_LINES != LLC_NUM_WAYS) || SHARED_DATA_NUMBER
                "number lines != all ==> number ways = 1");
 
 // check which direction.
-line_t data[SHARED_DATA_NUMBER_WAYS][SHARED_DATA_NUMBER_LINES] SECTION(".shared_data");
+volatile line_t data[SHARED_DATA_NUMBER_WAYS][SHARED_DATA_NUMBER_LINES] SECTION(".shared_data");
 
 _Static_assert(sizeof(data) <= 16 * 1024, "sizeof the data for fitting in SPM is less than one way");
 
@@ -90,7 +90,7 @@ uint32_t random(void) {
 
 #define MANUAL_EVICT 1
 #if MANUAL_EVICT
-line_t manual_evict_data[LLC_NUM_WAYS][LLC_WAY_NUM_LINES] SECTION(".dram");
+volatile line_t manual_evict_data[LLC_NUM_WAYS][LLC_WAY_NUM_LINES] SECTION(".dram");
 #endif
 
 void evict_llc(void) {
@@ -100,9 +100,9 @@ void evict_llc(void) {
 #else
 for (uint32_t line = 0; line < LLC_NUM_WAYS; line++)  {
     for (uint32_t way = 0; way < LLC_WAY_NUM_LINES; way++) {
-        void *v = &manual_evict_data[way][line];
+        volatile void *v = &manual_evict_data[way][line];
         volatile uint32_t rv;
-        asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v):);
+        asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
     }
 }
 #endif
@@ -123,9 +123,9 @@ void trojan(void) {
 
     for (uint32_t line = 0; line < secret; line++)  {
         for (uint32_t way = 0; way < SHARED_DATA_NUMBER_WAYS; way++) {
-            void *v = &data[way][line];
+            volatile void *v = &data[way][line];
             volatile uint32_t rv;
-            asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v):);
+            asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
         }
     }
 
@@ -136,9 +136,9 @@ void spy(uint32_t round) {
     uint32_t before = rdcycle();
     for (uint32_t line = 0; line < SHARED_DATA_NUMBER_LINES; line++)  {
         for (uint32_t way = 0; way < SHARED_DATA_NUMBER_WAYS; way++) {
-            void *v = &data[way][line];
+            volatile void *v = &data[way][line];
             volatile uint32_t rv;
-            asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v):);
+            asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
         }
     }
     uint32_t after = rdcycle();
