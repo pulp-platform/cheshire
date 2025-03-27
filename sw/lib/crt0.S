@@ -10,6 +10,7 @@
 
 // Minimal CRT0
 .global _start
+.align 4
 _start:
     // Globally disable Machine and Supervisor interrupts
     csrrc x0, mstatus, 10
@@ -117,6 +118,7 @@ _fp_init:
 
 // If main returns, we end up here
 .global _exit
+.align 4
 _exit:
     // Restore the original context registers (sp last)
     ld ra, 16(sp)
@@ -175,5 +177,6 @@ _trap_handler_wrap:
 
 .global trap_vector
 .weak trap_vector
+.align 4
 trap_vector:
     j trap_vector

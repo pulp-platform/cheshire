@@ -14,6 +14,7 @@
 
 // Minimal bootrom loader
 .global _start
+.align 4
 _start:
     // Reset all integer GPRs; we do *not* assume FP in the boot ROM.
     li x1, 0
@@ -95,6 +96,7 @@ _boot:
 
 // If main returns, we end up here
 .global _exit
+.align 4
 _exit:
     // Save the return value to scratch register 2, try `ebreak`, then wait forever
     slli a0, a0, 1
@@ -106,6 +108,7 @@ _exit:
     j 1b
 
 .global boot_next_stage
+.align 4
 boot_next_stage:
     // Non-SMP hart: Write boot address into global scratch registers
     la t0, __base_regs
