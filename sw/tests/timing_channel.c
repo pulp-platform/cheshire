@@ -64,10 +64,11 @@ volatile line_t data[SHARED_DATA_NUMBER_WAYS][SHARED_DATA_NUMBER_LINES] SECTION(
 #else
 /* these aren't really ways or lines*/
 #define SHARED_DATA_NUMBER_WAYS 1
-#define SHARED_DATA_NUMBER_LINES 32
+#define SHARED_DATA_NUMBER_LINES 128
 
-typedef struct { uint8_t inner[48]; } weird_line_t;
+typedef struct { uint64_t inner[1]; } weird_line_t;
 
+/* asid pool is an array of pointers, BIT(7)=128 sized */
 volatile weird_line_t data[SHARED_DATA_NUMBER_WAYS][SHARED_DATA_NUMBER_LINES] SECTION(".shared_data");
 
 #endif
