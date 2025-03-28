@@ -47,6 +47,9 @@ _Static_assert(sizeof(line_t) == 64, "sizeof line is 64bytes");
 
 _Static_assert(sizeof(line_t) * LLC_MAX_NUM_WAYS * LLC_WAY_NUM_LINES == 128 * 1024, "full sizeof cache is 128KiB");
 
+#define SHARED_DATA_LINE_ALIGNED 0
+
+#if SHARED_DATA_LINE_ALIGNED
 #define SHARED_DATA_NUMBER_WAYS LLC_ACTIVE_NUM_WAYS
 #define SHARED_DATA_NUMBER_LINES 32
 
@@ -56,8 +59,18 @@ _Static_assert(SHARED_DATA_NUMBER_LINES <= LLC_WAY_NUM_LINES, "less than number"
 _Static_assert(!(SHARED_DATA_NUMBER_LINES != LLC_MAX_NUM_WAYS) || SHARED_DATA_NUMBER_WAYS == 1,
                "number lines != all ==> number ways = 1");
 
-// check which direction.
 volatile line_t data[SHARED_DATA_NUMBER_WAYS][SHARED_DATA_NUMBER_LINES] SECTION(".shared_data");
+
+#else
+/* these aren't really ways or lines*/
+#define SHARED_DATA_NUMBER_WAYS 1
+#define SHARED_DATA_NUMBER_LINES 32
+
+typedef struct { uint8_t inner[48]; } weird_line_t;
+
+volatile weird_line_t data[SHARED_DATA_NUMBER_WAYS][SHARED_DATA_NUMBER_LINES] SECTION(".shared_data");
+
+#endif
 
 _Static_assert(sizeof(data) <= 16 * 1024, "sizeof the data for fitting in SPM is less than one way");
 
