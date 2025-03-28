@@ -19,10 +19,11 @@ VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
 CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t cv64a6_flamingo
 
 # Define used paths (prefixed to avoid name conflicts)
-CHS_ROOT      ?= $(shell $(BENDER) path cheshire)
-CHS_REG_DIR   := $(shell $(BENDER) path register_interface)
-CHS_SLINK_DIR := $(shell $(BENDER) path serial_link)
-CHS_LLC_DIR   := $(shell $(BENDER) path axi_llc)
+CHS_ROOT       ?= $(shell $(BENDER) path cheshire)
+CHS_REG_DIR    := $(shell $(BENDER) path register_interface)
+CHS_SLINK_DIR  := $(shell $(BENDER) path serial_link)
+CHS_LLC_DIR    := $(shell $(BENDER) path axi_llc)
+CHS_TAGGER_DIR := $(shell $(BENDER) path tagger)
 
 # Define paths used in dependencies
 OTPROOT           := $(shell $(BENDER) path opentitan_peripherals)
@@ -117,6 +118,19 @@ $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 # iDMA
 include $(IDMA_ROOT)/idma.mk
 
+# LLC partitioning configuration
+CHS_LLC_PARTITION     ?= 1
+CHS_LLC_MAXPARTITIONS ?= 16
+
+$(CHS_LLC_DIR)/.generated:
+	$(MAKE) -C $(CHS_LLC_DIR) REGWIDTH=64 CACHENUMLINES=256 MAXPARTITION=$(CHS_LLC_MAXPARTITIONS) CACHE_PARTITION=$(CHS_LLC_PARTITION) regs
+	@touch $@
+
+# Tagger configuration
+$(CHS_TAGGER_DIR)/.generated:
+	$(MAKE) -C $(CHS_TAGGER_DIR) REGWIDTH=32 MAXPARTITION=$(CHS_LLC_MAXPARTITIONS) PATID_LEN=5 regs
+	@touch $@
+
 CHS_HW_ALL += $(IDMA_FULL_RTL)
 CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv
 CHS_HW_ALL += $(CLINTROOT)/.generated
@@ -124,6 +138,8 @@ CHS_HW_ALL += $(OTPROOT)/.generated
 CHS_HW_ALL += $(AXIRTROOT)/.generated
 CHS_HW_ALL += $(AXI_VGA_ROOT)/.generated
 CHS_HW_ALL += $(CHS_SLINK_DIR)/.generated
+CHS_HW_ALL += $(CHS_LLC_DIR)/.generated
+CHS_HW_ALL += $(CHS_TAGGER_DIR)/.generated
 
 #####################
 # Generate Boot ROM #

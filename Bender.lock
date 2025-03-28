@@ -24,8 +24,8 @@ packages:
     - common_verification
     - tech_cells_generic
   axi_llc:
-    revision: 559bcbd09a5a884dbe31e2d72fd95d024e357f39
-    version: 0.2.1
+    revision: 3b772f8106d03dbe6f8b84ae1c52b8dee9ac56bf 
+    version: null
     source:
       Git: https://github.com/pulp-platform/axi_llc.git
     dependencies:
@@ -195,6 +195,17 @@ packages:
     - axi
     - common_cells
     - register_interface
+  tagger:
+    revision: b288376b65b6bbd5feea196bb3c220f783d96e29
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/transaction-tagger.git
+    dependencies:
+    - axi
+    - common_cells
+    - common_verification
+    - register_interface
+    - tech_cells_generic
   tech_cells_generic:
     revision: 7968dd6e6180df2c644636bc6d2908a49f2190cf
     version: 0.2.13
