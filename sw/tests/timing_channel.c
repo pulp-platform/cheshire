@@ -97,6 +97,7 @@ volatile line_t manual_evict_data[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] SECTIO
 
 void evict_llc(void) {
 #if !MANUAL_EVICT
+    /* This appears to be broken. */
     *(uint32_t *)(llc_cfg + AXI_LLC_CFG_FLUSH_LOW_REG_OFFSET) = 0xff;
     *(uint32_t *)(llc_cfg + AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
 #else
