@@ -87,7 +87,7 @@ int main(void) {
     // Wait for writes, then launch blocking DMA transfer
     fence();
     sys_dma_2d_blk_memcpy((uintptr_t)(void *)dma_dst, (uintptr_t)(void *)dma_src, sizeof(golden), 0,
-                          0, 1);
+                          0, 1, DMA_CONF_DECOUPLE_ALL);
 
     // Check DMA transfers against gold.
     for (int i = 0; i < DMA_NUM_BEATS; i++) CHECK_ASSERT(20 + i, dma_dst[i] == golden[i]);
