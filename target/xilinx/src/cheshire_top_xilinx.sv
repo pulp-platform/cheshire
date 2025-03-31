@@ -7,6 +7,7 @@
 // Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 // Yann Picod <ypicod@ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
+// Mojtaba Rostami <m.rostami1989@gmail.com>
 
 `include "cheshire/typedef.svh"
 `include "phy_definitions.svh"
@@ -52,7 +53,9 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   input  logic        sd_cd_i,
   output logic        sd_cmd_o,
   inout  wire  [3:0]  sd_d_io,
+`ifndef TARGET_VCU118
   output logic        sd_reset_o,
+`endif
   output logic        sd_sclk_o,
 `endif
 
@@ -271,8 +274,10 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   logic [3:0] spi_sd_en;
 
 `ifdef USE_SD
+`ifndef TARGET_VCU118
   // Assert reset low => Apply power to the SD Card
   assign sd_reset_o       = 1'b0;
+`endif 
   // SCK  - SD CLK signal
   assign sd_sclk_o        = spi_sck_en    ? spi_sck_soc       : 1'b1;
   // CS   - SD DAT3 signal
