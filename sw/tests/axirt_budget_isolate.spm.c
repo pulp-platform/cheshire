@@ -83,7 +83,7 @@ int main(void) {
     // Wait for writes, then launch blocking DMA transfer
     fence();
     sys_dma_2d_blk_memcpy((uintptr_t)(void *)dma_dst, (uintptr_t)(void *)dma_src,
-                          sizeof(dma_src_cached), 0, 0, DMA_NUM_REPS);
+                          sizeof(dma_src_cached), 0, 0, DMA_NUM_REPS, DMA_CONF_DECOUPLE_ALL);
 
     // Poll isolate to check if AXI-REALM isolates the dma when the budget is
     // exceeded. Should return 1 if dma is isolated.
