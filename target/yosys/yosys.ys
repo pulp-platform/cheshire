@@ -1,0 +1,51 @@
+# Copyright (c) 2025 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Authors:
+# - Philippe Sauter <phsauter@iis.ee.ethz.ch>
+
+plugin -i slang.so
+read_liberty -lib synthetic.lib
+read_slang --top cheshire_synth_wrapper -f out/cheshire.f --allow-use-before-declare \
+           --ignore-unknown-modules --compat-mode --compat=vcs --keep-hierarchy
+
+# keep the interesting hierarchy, flatten the rest
+keep_hierarchy cheshire_soc$*
+keep_hierarchy cva6$*
+keep_hierarchy axi_llc_reg_wrap$*
+keep_hierarchy sync$*
+keep_hierarchy clic$*
+keep_hierarchy dm_top$*
+keep_hierarchy dmi_jtag$*
+keep_hierarchy cheshire_reg_top$*
+keep_hierarchy irq_router$*
+keep_hierarchy rv_plic$*
+keep_hierarchy clint$*
+keep_hierarchy axi_rt_unit_top$*
+keep_hierarchy cheshire_bootrom$*
+keep_hierarchy reg_uart_wrap$*
+keep_hierarchy i2c$*
+keep_hierarchy spi_host$*
+keep_hierarchy gpio$*
+keep_hierarchy cheshire_idma_wrap$*
+keep_hierarchy serial_link$*
+keep_hierarchy axi_vga$*
+keep_hierarchy spinal_usb_ohci$*
+
+flatten -noscopeinfo
+hierarchy -top cheshire_synth_wrapper
+
+proc
+write_verilog -norename -noexpr out/elaborated.v
+tee -o out/elaborated.rpt stat
+
+synth -noabc
+rename -wire -suffix _reg t:*DFF*
+dfflibmap -liberty synthetic.lib
+abc -liberty synthetic.lib
+hilomap -singleton -hicell tiehi y_o -locell tielo y_o
+tee -o out/area.rpt stat -liberty synthetic.lib
+tee -o out/area.json stat -liberty synthetic.lib -json
+write_verilog -norename -noexpr out/synthetic_netlist.v
+write_verilog -norename out/synthetic_netlist_expr.v
