@@ -176,4 +176,5 @@ _trap_handler_wrap:
 .global trap_vector
 .weak trap_vector
 trap_vector:
+    wfi
     j trap_vector
