@@ -84,14 +84,32 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   //  DPI  //
   ///////////
 
+  // Chunk section reads as Verilator does not support unbound arrays as DPI arguments.
+  localparam int unsigned ElfReadChunk = 4096;
+
   import "DPI-C" function byte read_elf(input string filename);
   import "DPI-C" function byte get_entry(output longint entry);
   import "DPI-C" function byte get_section(output longint address, output longint len);
-  import "DPI-C" context function byte read_section(input longint address, inout byte buffer[], input longint len);
+  import "DPI-C" function byte read_section_chunk(input longint address,
+      input longint offset, inout byte buffer [ElfReadChunk], input longint len);
+
+  // Wrapper task for full section reads
+  function automatic read_section(input longint address, ref byte buffer[], input longint len);
+    for (longint i = 0; i < len ; i += ElfReadChunk) begin
+      byte chunk [ElfReadChunk];
+      int unsigned chunk_len = (ElfReadChunk < len - i) ? ElfReadChunk : (len - i);
+      byte ret = read_section_chunk(address, i, chunk, chunk_len);
+      if (ret) return ret;
+      // TODO: is there really no faster way to copy data?
+      for (longint k = 0; k < chunk_len; k++) buffer[i+k] = chunk[k];
+    end
+  endfunction
 
   ////////////
   //  DRAM  //
   ////////////
+
+`ifndef VERILATOR
 
   if (UseDramSys) begin : gen_dramsys
     dram_sim_engine #(
@@ -155,6 +173,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     );
   end
 
+`endif
+
   ///////////////////////////////
   //  SoC Clock, Reset, Modes  //
   ///////////////////////////////
@@ -209,26 +229,20 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .rst_no ( )
   );
 
-  // Define test bus and driver
-  JTAG_DV jtag(jtag_tck);
-
-  typedef jtag_test::riscv_dbg #(
+  riscv_dbg_simple #(
     .IrLength ( 5 ),
     .TA       ( ClkPeriodJtag * TAppl ),
     .TT       ( ClkPeriodJtag * TTest )
-  ) riscv_dbg_t;
-
-  riscv_dbg_t::jtag_driver_t  jtag_dv   = new (jtag);
-  riscv_dbg_t                 jtag_dbg  = new (jtag_dv);
-
-  // Connect DUT to test bus
-  assign jtag_trst_n  = jtag.trst_n;
-  assign jtag_tms     = jtag.tms;
-  assign jtag_tdi     = jtag.tdi;
-  assign jtag.tdo     = jtag_tdo;
+  ) jtag_dbg (
+    .jtag_tck_i   ( jtag_tck ),
+    .jtag_trst_no ( jtag_trst_n ),
+    .jtag_tms_o   ( jtag_tms ),
+    .jtag_tdi_o   ( jtag_tdi ),
+    .jtag_tdo_i   ( jtag_tdo )
+  );
 
   initial begin
-    wait (!rst_n);
+    #(ClkPeriodSys/2);
     jtag_dbg.reset_master();
   end
 
@@ -405,6 +419,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   logic   uart_boot_ena;
   logic   uart_boot_eoc;
   logic   uart_reading_byte;
+  string  uart_buffer = "";
 
   initial begin
     uart_rx           = 1;
@@ -465,11 +480,9 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   endtask
 
   // Continually read characters and print lines
-  // TODO: we should be able to support CR properly, but buffers are hard to deal with...
   initial begin
-    static byte_bt uart_read_buf [$];
     byte_bt bite;
-    string line;
+    static int unsigned pos = 0;
     wait_for_reset();
     forever begin
       uart_read_byte(bite);
@@ -477,20 +490,31 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
         uart_boot_byte  = bite;
         uart_boot_ena = 0;
       end else if (bite == "\n") begin
-        if (uart_read_buf.size() > 0) begin
-          line = {>>8{uart_read_buf}};
-          $display("[UART] %s", line);
-          uart_read_buf.delete();
-        end else begin
-          $display("[UART]");
-        end
+        $display("[UART] %s", uart_buffer);
+        // Respect offset of newline without CR
+        uart_buffer = pos ? {(pos){" "}} : "";
+      end else if (bite == "\x0d") begin
+        pos = 0;
       end else if (bite == UartDebugEoc) begin
         uart_boot_eoc = 1;
       end else begin
-        uart_read_buf.push_back(bite);
+        if (pos < uart_buffer.len()) uart_buffer.putc(pos, bite);
+        else uart_buffer = {uart_buffer, string'(bite)};
+        pos++;
       end
     end
   end
+
+  // Wait for pending UART receives and flush line buffer
+  task automatic uart_flush();
+    // Wait for inflight reads
+    wait (fix.vip.uart_reading_byte == 0);
+    // Advance time to allow printing initial to handle a final newline
+    #(ClkPeriodSys);
+    // If there is any line data left, print it
+    if (uart_buffer.len())
+      $display("[UFIN] %s", uart_buffer);
+  endtask
 
   // A length of zero indcates a write (write lengths are inferred from their queue)
   task automatic uart_debug_rw(doub_bt addr, doub_bt len_or_w, ref byte_bt data [$]);
@@ -576,6 +600,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   //  I2C  //
   ///////////
 
+`ifndef VERILATOR
   // Write-protect only chip 0
   bit [3:0] i2c_wp = 4'b0001;
 
@@ -602,11 +627,13 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     if (image != "")
       $readmemh(image, gen_i2c_eeproms[0].i_i2c_eeprom.MemoryBlock);
   endtask
+`endif
 
   ////////////////
   //  SPI Host  //
   ////////////////
 
+`ifndef VERILATOR
   // We connect one chip at CS1, where we can boot from this flash.
   s25fs512s #(
     .UserPreload ( 0 )
@@ -628,11 +655,13 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     if (image != "")
       $readmemh(image, i_spi_norflash.Mem);
   endtask
+`endif
 
   ///////////////////
   //  Serial Link  //
   ///////////////////
 
+`ifndef VERILATOR
   axi_mst_req_t slink_axi_mst_req, slink_axi_slv_req;
   axi_mst_rsp_t slink_axi_mst_rsp, slink_axi_slv_rsp;
 
@@ -949,6 +978,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     if (exit_code) $error("[SLINK] FAILED: return code %0d", exit_code);
     else $display("[SLINK] SUCCESS");
   endtask
+`endif
 
 endmodule
 
