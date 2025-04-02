@@ -109,6 +109,8 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   `else
     ret.Usb = 0;
   `endif
+    ret.NumCores = 2;
+    ret.BusErr = 0;
     return ret;
   endfunction
 
