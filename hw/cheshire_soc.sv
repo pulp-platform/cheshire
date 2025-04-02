@@ -688,7 +688,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .VSCLIC      ( Cfg.ClicVsclic ),
         .N_VSCTXTS   ( Cfg.ClicNumVsctxts ),
         .VSPRIO      ( Cfg.ClicVsprio ),
-        .VsprioWidth ( Cfg.ClicPrioWidth )
+        .VSPRIO_W    ( Cfg.ClicPrioWidth )
       ) i_clic (
         .clk_i,
         .rst_ni,
