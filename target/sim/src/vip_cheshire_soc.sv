@@ -894,7 +894,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       if (read_section(sec_addr, bf, sec_len)) $fatal(1, "[SLINK] Failed to read ELF section!");
       // Write section as fixed-size bursts
       bus_offset = sec_addr[AxiStrbBits-1:0];
-      for (longint i = 0; i <= sec_len ; i += SlinkBurstBytes) begin
+      for (longint i = 0; i < sec_len ; i += SlinkBurstBytes) begin
         axi_data_t beats [$];
         if (i != 0)
           $display("[SLINK] - %0d/%0d bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
