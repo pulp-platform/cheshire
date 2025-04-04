@@ -183,7 +183,9 @@ package cheshire_pkg;
     dw_bt   DmaConfMaxWriteTxns;
     aw_bt   DmaConfAmoNumCuts;
     bit     DmaConfAmoPostCut;
-    bit     DmaConfEnableTwoD;
+    bit     DmaConfFrontendDesc64;
+    bit     DmaConfFrontendReg64;
+    bit     DmaConfFrontendReg64TwoD;
     dw_bt   DmaNumAxInFlight;
     dw_bt   DmaMemSysDepth;
     aw_bt   DmaJobFifoDepth;
@@ -218,6 +220,7 @@ package cheshire_pkg;
   typedef struct packed {
     cheshire_bus_err_intr_t bus_err;
     logic [31:0] gpio;
+    logic dma;
     logic usb;
     logic spih_spi_event;
     logic spih_error;
@@ -295,7 +298,9 @@ package cheshire_pkg;
   typedef struct packed {
     aw_bt [2**MaxCoresWidth-1:0] cores;
     aw_bt dbg;
-    aw_bt dma;
+    aw_bt dma_fe_desc64;
+    aw_bt dma_fe_reg64;
+    aw_bt dma_be;
     aw_bt slink;
     aw_bt vga;
     aw_bt usb;
@@ -308,7 +313,9 @@ package cheshire_pkg;
     int unsigned i = 0;
     for (int j = 0; j < cfg.NumCores; j++) begin ret.cores[i] = i; i++; end
     ret.dbg = i;
-    if (cfg.Dma)        begin i++; ret.dma   = i; end
+    if (cfg.Dma & cfg.DmaConfFrontendDesc64)  begin i++; ret.dma_fe_desc64 = i; end
+    if (cfg.Dma & cfg.DmaConfFrontendReg64)   begin i++; ret.dma_fe_reg64 = i; end
+    if (cfg.Dma)        begin i++; ret.dma_be = i; end
     if (cfg.SerialLink) begin i++; ret.slink = i; end
     if (cfg.Vga)        begin i++; ret.vga   = i; end
     if (cfg.Usb)        begin i++; ret.usb   = i; end
@@ -331,7 +338,8 @@ package cheshire_pkg;
     aw_bt reg_demux;
     aw_bt llc;
     aw_bt spm;
-    aw_bt dma;
+    aw_bt dma_fe_desc64;
+    aw_bt dma_fe_reg64;
     aw_bt slink;
     aw_bt ext_base;
     aw_bt num_out;
@@ -357,7 +365,8 @@ package cheshire_pkg;
       r++; ret.map[r] = '{i, AmSpm, AmSpm + SizeSpm};
       r++; ret.map[r] = '{i, AmSpm + 'h0400_0000, AmSpm + 'h0400_0000 + SizeSpm};
     end
-    if (cfg.Dma)          begin i++; r++; ret.dma = i; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
+    if (cfg.Dma & cfg.DmaConfFrontendDesc64)  begin i++; r++; ret.dma_fe_desc64 = i; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
+    if (cfg.Dma & cfg.DmaConfFrontendReg64)   begin i++; r++; ret.dma_fe_reg64 = i; ret.map[r] = '{i, 'h0100_1000, 'h0100_2000}; end
     if (cfg.SerialLink)   begin i++; r++; ret.slink = i;
         ret.map[r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
     // External port indices start after internal ones
@@ -437,6 +446,35 @@ package cheshire_pkg;
           cfg.RegExtRegionStart[k], cfg.RegExtRegionEnd[k]};
       r++;
       end
+    return ret;
+  endfunction
+
+  ///////////
+  //  DMA  //
+  ///////////
+
+  typedef struct packed {
+    /// Configures iDMA FE
+    bit ConfFrontendDesc64;
+    bit ConfFrontendReg64;
+    bit ConfFrontendReg64TwoD;
+
+    /// Indices
+    aw_bt desc64;
+    aw_bt reg64;
+    int unsigned num;
+  } idma_fe_cfg_t;
+
+  function automatic idma_fe_cfg_t gen_idma_fe_cfg(cheshire_cfg_t cfg);
+    idma_fe_cfg_t ret = '{default: '0};
+    int unsigned i = 0;
+    if (cfg.DmaConfFrontendDesc64)    begin ret.desc64 = i++; ret.ConfFrontendDesc64 = 1; end
+    if (cfg.DmaConfFrontendReg64)     begin ret.reg64 = i++; ret.ConfFrontendReg64 = 1; end
+
+    ret.num = i;
+
+    if (cfg.DmaConfFrontendReg64TwoD) begin ret.ConfFrontendReg64TwoD = 1; end
+
     return ret;
   endfunction
 
@@ -653,15 +691,17 @@ package cheshire_pkg;
     UsbAddrMask       : 'hFFFF_FFFF,
     UsbAddrDomain     : 'h0000_0000,
     // DMA config
-    DmaConfMaxReadTxns  : 4,
-    DmaConfMaxWriteTxns : 4,
-    DmaConfAmoNumCuts   : 1,
-    DmaConfAmoPostCut   : 1,
-    DmaConfEnableTwoD   : 1,
-    DmaNumAxInFlight    : 16,
-    DmaMemSysDepth      : 8,
-    DmaJobFifoDepth     : 2,
-    DmaRAWCouplingAvail : 1,
+    DmaConfMaxReadTxns      : 4,
+    DmaConfMaxWriteTxns     : 4,
+    DmaConfAmoNumCuts       : 1,
+    DmaConfAmoPostCut       : 1,
+    DmaConfFrontendDesc64   : 1,
+    DmaConfFrontendReg64    : 1,
+    DmaConfFrontendReg64TwoD: 1,
+    DmaNumAxInFlight        : 16,
+    DmaMemSysDepth          : 8,
+    DmaJobFifoDepth         : 2,
+    DmaRAWCouplingAvail     : 1,
     // GPIOs
     GpioInputSyncs    : 1,
     // AXI RT

@@ -6,7 +6,7 @@
 // Thomas Benz <tbenz@iis.ee.ethz.ch>
 
 #include <stdint.h>
-#include "regs/idma.h"
+#include "regs/idma_reg64_2d.h"
 #include "params.h"
 
 #define DMA_SRC_ADDR(BASE) (void *)((uint8_t *)BASE + IDMA_REG64_2D_SRC_ADDR_LOW_REG_OFFSET)
@@ -122,6 +122,6 @@
         return *(NAME##_dma_status_ptr()); \
     }
 
-X(sys, &__base_dma)
+X(sys, &__base_dma_reg64)
 
 #undef X

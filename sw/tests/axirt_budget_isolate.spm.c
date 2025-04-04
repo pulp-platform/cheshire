@@ -7,7 +7,7 @@
 // Validate the isolation functionality of AXI-REALM.
 
 #include "axirt.h"
-#include "dif/dma.h"
+#include "dif/idma_reg64_2d.h"
 #include "params.h"
 #include "regs/axi_rt.h"
 #include "regs/cheshire.h"

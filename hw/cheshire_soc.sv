@@ -1366,86 +1366,144 @@ module cheshire_soc import cheshire_pkg::*; #(
   ///////////
   //  DMA  //
   ///////////
+  localparam idma_fe_cfg_t DmaFrontendCfg = gen_idma_fe_cfg(Cfg);
 
   if (Cfg.Dma) begin : gen_dma
-
-    axi_slv_req_t dma_amo_req, dma_cut_req;
-    axi_slv_rsp_t dma_amo_rsp, dma_cut_rsp;
-
-    axi_riscv_atomics_structs #(
-      .AxiAddrWidth     ( Cfg.AddrWidth    ),
-      .AxiDataWidth     ( Cfg.AxiDataWidth ),
-      .AxiIdWidth       ( AxiSlvIdWidth    ),
-      .AxiUserWidth     ( Cfg.AxiUserWidth ),
-      .AxiMaxReadTxns   ( Cfg.DmaConfMaxReadTxns  ),
-      .AxiMaxWriteTxns  ( Cfg.DmaConfMaxWriteTxns ),
-      .AxiUserAsId      ( 1 ),
-      .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
-      .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-      .RiscvWordWidth   ( 64 ),
-      .NAxiCuts         ( Cfg.DmaConfAmoNumCuts ),
-      .axi_req_t        ( axi_slv_req_t ),
-      .axi_rsp_t        ( axi_slv_rsp_t )
-    ) i_dma_conf_atomics (
-      .clk_i,
-      .rst_ni,
-      .axi_slv_req_i ( axi_out_req[AxiOut.dma] ),
-      .axi_slv_rsp_o ( axi_out_rsp[AxiOut.dma] ),
-      .axi_mst_req_o ( dma_amo_req ),
-      .axi_mst_rsp_i ( dma_amo_rsp )
-    );
-
-    axi_cut #(
-      .Bypass     ( ~Cfg.DmaConfAmoPostCut ),
-      .aw_chan_t  ( axi_slv_aw_chan_t ),
-      .w_chan_t   ( axi_slv_w_chan_t  ),
-      .b_chan_t   ( axi_slv_b_chan_t  ),
-      .ar_chan_t  ( axi_slv_ar_chan_t ),
-      .r_chan_t   ( axi_slv_r_chan_t  ),
-      .axi_req_t  ( axi_slv_req_t ),
-      .axi_resp_t ( axi_slv_rsp_t )
-    ) i_dma_conf_atomics_cut (
-      .clk_i,
-      .rst_ni,
-      .slv_req_i  ( dma_amo_req ),
-      .slv_resp_o ( dma_amo_rsp ),
-      .mst_req_o  ( dma_cut_req ),
-      .mst_resp_i ( dma_cut_rsp )
-    );
-
     axi_mst_req_t axi_dma_req;
+    axi_slv_req_t [DmaFrontendCfg.num-1:0] dma_amo_req, dma_cut_req;
+    axi_slv_rsp_t [DmaFrontendCfg.num-1:0] dma_amo_rsp, dma_cut_rsp;
+    axi_mst_req_t axi_mst_fe_req;
+    axi_mst_rsp_t axi_mst_fe_rsp;
+
+    if (Cfg.DmaConfFrontendDesc64) begin : gen_dma_fe_desc64_axi
+      axi_riscv_atomics_structs #(
+        .AxiAddrWidth     ( Cfg.AddrWidth    ),
+        .AxiDataWidth     ( Cfg.AxiDataWidth ),
+        .AxiIdWidth       ( AxiSlvIdWidth    ),
+        .AxiUserWidth     ( Cfg.AxiUserWidth ),
+        .AxiMaxReadTxns   ( Cfg.DmaConfMaxReadTxns  ),
+        .AxiMaxWriteTxns  ( Cfg.DmaConfMaxWriteTxns ),
+        .AxiUserAsId      ( 1 ),
+        .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
+        .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
+        .RiscvWordWidth   ( 64 ),
+        .NAxiCuts         ( Cfg.DmaConfAmoNumCuts ),
+        .axi_req_t        ( axi_slv_req_t ),
+        .axi_rsp_t        ( axi_slv_rsp_t )
+      ) i_dma_conf_atomics (
+        .clk_i,
+        .rst_ni,
+        .axi_slv_req_i ( axi_out_req[AxiOut.dma_fe_desc64] ),
+        .axi_slv_rsp_o ( axi_out_rsp[AxiOut.dma_fe_desc64] ),
+        .axi_mst_req_o ( dma_amo_req[DmaFrontendCfg.desc64] ),
+        .axi_mst_rsp_i ( dma_amo_rsp[DmaFrontendCfg.desc64] )
+      );
+
+      axi_cut #(
+        .Bypass     ( ~Cfg.DmaConfAmoPostCut ),
+        .aw_chan_t  ( axi_slv_aw_chan_t ),
+        .w_chan_t   ( axi_slv_w_chan_t  ),
+        .b_chan_t   ( axi_slv_b_chan_t  ),
+        .ar_chan_t  ( axi_slv_ar_chan_t ),
+        .r_chan_t   ( axi_slv_r_chan_t  ),
+        .axi_req_t  ( axi_slv_req_t ),
+        .axi_resp_t ( axi_slv_rsp_t )
+      ) i_dma_conf_atomics_cut (
+        .clk_i,
+        .rst_ni,
+        .slv_req_i  ( dma_amo_req[DmaFrontendCfg.desc64] ),
+        .slv_resp_o ( dma_amo_rsp[DmaFrontendCfg.desc64] ),
+        .mst_req_o  ( dma_cut_req[DmaFrontendCfg.desc64] ),
+        .mst_resp_i ( dma_cut_rsp[DmaFrontendCfg.desc64] )
+      );
+
+      assign axi_in_req[AxiIn.dma_fe_desc64] = axi_mst_fe_req;
+      assign axi_mst_fe_rsp = axi_in_rsp[AxiIn.dma_fe_desc64];
+    end
+
+    if (Cfg.DmaConfFrontendReg64) begin : gen_dma_fe_reg64_axi
+      axi_riscv_atomics_structs #(
+        .AxiAddrWidth     ( Cfg.AddrWidth    ),
+        .AxiDataWidth     ( Cfg.AxiDataWidth ),
+        .AxiIdWidth       ( AxiSlvIdWidth    ),
+        .AxiUserWidth     ( Cfg.AxiUserWidth ),
+        .AxiMaxReadTxns   ( Cfg.DmaConfMaxReadTxns  ),
+        .AxiMaxWriteTxns  ( Cfg.DmaConfMaxWriteTxns ),
+        .AxiUserAsId      ( 1 ),
+        .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
+        .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
+        .RiscvWordWidth   ( 64 ),
+        .NAxiCuts         ( Cfg.DmaConfAmoNumCuts ),
+        .axi_req_t        ( axi_slv_req_t ),
+        .axi_rsp_t        ( axi_slv_rsp_t )
+      ) i_dma_conf_atomics (
+        .clk_i,
+        .rst_ni,
+        .axi_slv_req_i ( axi_out_req[AxiOut.dma_fe_reg64] ),
+        .axi_slv_rsp_o ( axi_out_rsp[AxiOut.dma_fe_reg64] ),
+        .axi_mst_req_o ( dma_amo_req[DmaFrontendCfg.reg64] ),
+        .axi_mst_rsp_i ( dma_amo_rsp[DmaFrontendCfg.reg64] )
+      );
+
+      axi_cut #(
+        .Bypass     ( ~Cfg.DmaConfAmoPostCut ),
+        .aw_chan_t  ( axi_slv_aw_chan_t ),
+        .w_chan_t   ( axi_slv_w_chan_t  ),
+        .b_chan_t   ( axi_slv_b_chan_t  ),
+        .ar_chan_t  ( axi_slv_ar_chan_t ),
+        .r_chan_t   ( axi_slv_r_chan_t  ),
+        .axi_req_t  ( axi_slv_req_t ),
+        .axi_resp_t ( axi_slv_rsp_t )
+      ) i_dma_conf_atomics_cut (
+        .clk_i,
+        .rst_ni,
+        .slv_req_i  ( dma_amo_req[DmaFrontendCfg.reg64] ),
+        .slv_resp_o ( dma_amo_rsp[DmaFrontendCfg.reg64] ),
+        .mst_req_o  ( dma_cut_req[DmaFrontendCfg.reg64] ),
+        .mst_resp_i ( dma_cut_rsp[DmaFrontendCfg.reg64] )
+      );
+    end
 
     always_comb begin
-      axi_in_req[AxiIn.dma]         = axi_dma_req;
-      axi_in_req[AxiIn.dma].aw.user = Cfg.AxiUserDefault;
-      axi_in_req[AxiIn.dma].w.user  = Cfg.AxiUserDefault;
-      axi_in_req[AxiIn.dma].ar.user = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dma_be]         = axi_dma_req;
+      axi_in_req[AxiIn.dma_be].aw.user = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dma_be].w.user  = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.dma_be].ar.user = Cfg.AxiUserDefault;
     end
 
     cheshire_idma_wrap #(
-      .AxiAddrWidth     ( Cfg.AddrWidth     ),
-      .AxiDataWidth     ( Cfg.AxiDataWidth  ),
-      .AxiIdWidth       ( Cfg.AxiMstIdWidth ),
-      .AxiUserWidth     ( Cfg.AxiUserWidth  ),
-      .AxiSlvIdWidth    ( AxiSlvIdWidth     ),
-      .NumAxInFlight    ( Cfg.DmaNumAxInFlight    ),
-      .MemSysDepth      ( Cfg.DmaMemSysDepth      ),
-      .JobFifoDepth     ( Cfg.DmaJobFifoDepth     ),
-      .RAWCouplingAvail ( Cfg.DmaRAWCouplingAvail ),
-      .IsTwoD           ( Cfg.DmaConfEnableTwoD   ),
-      .axi_mst_req_t    ( axi_mst_req_t ),
-      .axi_mst_rsp_t    ( axi_mst_rsp_t ),
-      .axi_slv_req_t    ( axi_slv_req_t ),
-      .axi_slv_rsp_t    ( axi_slv_rsp_t )
-    ) i_idma (
+      .AxiAddrWidth       ( Cfg.AddrWidth               ),
+      .AxiDataWidth       ( Cfg.AxiDataWidth            ),
+      .AxiIdWidth         ( Cfg.AxiMstIdWidth           ),
+      .AxiUserWidth       ( Cfg.AxiUserWidth            ),
+      .AxiSlvIdWidth      ( AxiSlvIdWidth               ),
+      .AxiMaxReadTxns     ( Cfg.DmaConfMaxReadTxns      ),
+      .AxiMaxWriteTxns    ( Cfg.DmaConfMaxWriteTxns     ),
+      .NumAxInFlight      ( Cfg.DmaNumAxInFlight        ),
+      .MemSysDepth        ( Cfg.DmaMemSysDepth          ),
+      .JobFifoDepth       ( Cfg.DmaJobFifoDepth         ),
+      .RAWCouplingAvail   ( Cfg.DmaRAWCouplingAvail     ),
+      .FrontendCfg        ( DmaFrontendCfg              ),
+      .axi_mst_req_t      ( axi_mst_req_t               ),
+      .axi_mst_rsp_t      ( axi_mst_rsp_t               ),
+      .axi_slv_req_t      ( axi_slv_req_t               ),
+      .axi_slv_rsp_t      ( axi_slv_rsp_t               ),
+      .reg_req_t          ( reg_req_t                   ),
+      .reg_rsp_t          ( reg_rsp_t                   ),
+      .idma_fe_cfg_t      ( idma_fe_cfg_t               )
+    ) i_dma (
       .clk_i,
       .rst_ni,
-      .testmode_i     ( test_mode_i ),
-      .axi_mst_req_o  ( axi_dma_req           ),
-      .axi_mst_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
-      .axi_slv_req_i  ( dma_cut_req ),
-      .axi_slv_rsp_o  ( dma_cut_rsp )
+      .testmode_i       ( test_mode_i               ),
+      .axi_mst_fe_req_o ( axi_mst_fe_req ),
+      .axi_mst_fe_rsp_i ( axi_mst_fe_rsp ),
+      .axi_mst_be_req_o ( axi_dma_req               ),
+      .axi_mst_be_rsp_i ( axi_in_rsp[AxiIn.dma_be]  ),
+      .axi_slv_req_i    ( dma_cut_req               ),
+      .axi_slv_rsp_o    ( dma_cut_rsp               ),
+      .irq_o            ( intr.intn.dma             )
     );
+
 
     if (Cfg.BusErr) begin : gen_dma_bus_err
       axi_err_unit_wrap #(
@@ -1464,8 +1522,8 @@ module cheshire_soc import cheshire_pkg::*; #(
         .clk_i,
         .rst_ni,
         .testmode_i ( test_mode_i ),
-        .axi_req_i  ( axi_in_req[AxiIn.dma] ),
-        .axi_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
+        .axi_req_i  ( axi_in_req[AxiIn.dma_be] ),
+        .axi_rsp_i  ( axi_in_rsp[AxiIn.dma_be] ),
         .err_irq_o  ( intr.intn.bus_err.dma ),
         .reg_req_i  ( reg_out_req[RegOut.bus_err[RegBusErrDma]] ),
         .reg_rsp_o  ( reg_out_rsp[RegOut.bus_err[RegBusErrDma]] )

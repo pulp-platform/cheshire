@@ -114,6 +114,16 @@
       riscv,ndev = <51>;
       reg = <0x0 0x4000000 0x0 0x4000000>;
     };
+    idma: dma-controller@01000000  {
+      model = "eth,idma-desc";
+      compatible = "eth,idma-desc";
+      reg = <0x0 0x01000000 0x0 0x1000>;
+      interrupt-parent = <&PLIC0>;
+      interrupts = <20>;
+      eth,input-slots = <1>;
+      eth,pending-slots = <1>;
+    };
+
   };
 
 };

@@ -8,7 +8,7 @@
 
 #include "util.h"
 #include "dif/clint.h"
-#include "dif/dma.h"
+#include "dif/idma_reg64_2d.h"
 
 int main(void) {
     // Immediately return an error if DMA is not present

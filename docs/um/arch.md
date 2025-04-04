@@ -13,7 +13,7 @@ Cheshire is highly configurable; available features and resources depend on its 
     - A boot ROM enabling boot from SD cards, SPI flash, or I2C EEPROM
     - A VGA display controller with built-in DMA
     - A fully-digital chip-to-chip or die-to-die serial link
-    - A high-throughput system DMA
+    - A high-throughput system DMA with configurable frontend
 
 - **Interconnect**:
     - A last level cache (LLC) configurable as a scratchpad memory (SPM) per-way
@@ -34,7 +34,9 @@ Cheshire's internal memory map is *static*. While device instantiation and layou
 +====================+===================+===============+======+=======+
 | 256K periphs @ AXI | Debug ROM         | `0x0000_0000` | 256K | E     |
 +--------------------+-------------------+---------------+------+-------+
-| 4K periphs @ AXI   | AXI DMA (Cfg)     | `0x0100_0000` | 4K   |       |
+| 4K periphs @ AXI   | iDMA (`desc64`)   | `0x0100_0000` | 4K   |       |
+|                    +-------------------+---------------+------+-------+
+|                    | iDMA (`reg64`)    | `0x0100_1000` | 4K   |       |
 +--------------------+-------------------+---------------+------+-------+
 | 256K periphs @ Reg | Boot ROM          | `0x0200_0000` | 256K | E     |
 |                    +-------------------+---------------+------+-------+
@@ -265,7 +267,9 @@ The [iDMA Engine](https://github.com/pulp-platform/iDMA) enables high-throughput
 | `DmaConfMax(Read|Write)Txns` | `dw_bt`      | Max. number of outstanding requests to DMA config |
 | `DmaConfAmoNumCuts`          | `aw_bt`      | Number of timing cuts inside config AMO filter    |
 | `DmaConfAmoPostCut`          | `bit`        | Whether to insert a cut after config AMO filter   |
-| `DmaConfEnableTwoD`          | `bit`        | Whether the 2D hardware extension is present      |
+| `DmaConfFrontendDesc64`      | `bit`        | Whether the `desc64` frontend is available        |
+| `DmaConfFrontendReg64`       | `bit`        | Whether the `reg64` frontend is available         |
+| `DmaConfFrontendReg64TwoD`   | `bit`        | Whether `reg64` fe should come with 2D support    |
 | `DmaNumAxInFlight`           | `dw_bt`      | Number of outstanding transfers the DMA launches  |
 | `DmaMemSysDepth`             | `dw_bt`      | The *approximate* depth of the memory system      |
 | `DmaJobFifoDepth`            | `aw_bt`      | The depth of the job FIFO                         |
