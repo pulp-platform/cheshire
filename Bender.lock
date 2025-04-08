@@ -69,7 +69,7 @@ packages:
     - common_cells
     - register_interface
   clic:
-    revision: b47c6c40fd3d1d5c9712d600c9e78e7f75fdeb4f
+    revision: 72472df17362734e4d2ac2bcb8c80a452fba9808 
     version: null
     source:
       Git: https://github.com/pulp-platform/clic.git
