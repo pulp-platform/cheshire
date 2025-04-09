@@ -43,7 +43,8 @@
     slli reg3, reg3, 2; \
     add reg3, reg1, reg3; \
     3:; \
-    lw reg2, 0(reg1); \
+    csrr reg2, mip; \
+    andi reg2, reg2, 0x4; \
     bnez reg2, 3b; \
     addi reg1, reg1, 4; \
     blt reg1, reg3, 3b
