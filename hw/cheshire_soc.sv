@@ -108,6 +108,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   output logic [UsbNumPorts-1:0] usb_dp_o,
   output logic [UsbNumPorts-1:0] usb_dp_oe_o,
   input  impl_in_t [2*Cfg.Cva6IcacheSetAssoc+2*Cfg.Cva6DcacheSetAssoc:0] cva6_sram_impl_i,
+  input  impl_in_t [2*Cfg.LlcSetAssoc-1:0] llc_sram_impl_i
 );
 
   `include "axi/typedef.svh"
@@ -559,11 +560,13 @@ module cheshire_soc import cheshire_pkg::*; #(
       .mst_resp_t       ( axi_ext_llc_rsp_t     ),
       .reg_req_t        ( reg_req_t             ),
       .reg_resp_t       ( reg_rsp_t             ),
-      .rule_full_t      ( addr_rule_t           )
+      .rule_full_t      ( addr_rule_t           ),
+      .impl_in_t        ( impl_in_t             )
     ) i_llc (
       .clk_i,
       .rst_ni,
       .test_i              ( test_mode_i ),
+      .sram_impl_i         ( llc_sram_impl_i ),
       .slv_req_i           ( tagger_req ),
       .slv_resp_o          ( tagger_rsp ),
       .mst_req_o           ( axi_llc_mst_req_o ),
