@@ -9,15 +9,15 @@
 
 #include <regs/cheshire.h>
 #include <regs/axi_llc.h>
-
-// The hart that the boot ROM should run on
-#define NONSMP_HART 0
-
 .section .text._start
 
 // Minimal bootrom loader
 .global _start
 _start:
+    // Globally disable Machine and Supervisor interrupts (MIE, SIE = 0).
+    // Note that this will *not* stop WFI from resuming on enabled interrupts.
+    csrrc zero, mstatus, 10
+
     // Reset all integer GPRs; we do *not* assume FP in the boot ROM.
     li x1, 0
     li x4, 0
@@ -49,12 +49,12 @@ _start:
     li x30, 0
     li x31, 0
 
-    // Pause SMP harts
+    // Pause SMP harts: enable only MSIE, disable all other interrupt sources
     li   t1, 0x8
     csrw mie, t1
-    li   t0, NONSMP_HART
+    li   t0, 0
     csrr t1, mhartid
-    bne  t0, t1, _wait_for_ipi
+    bne  t0, t1, _smp_wait
 
     // Init stack and global pointer with safe, linked values
     la sp, __stack_pointer$
@@ -65,12 +65,12 @@ _start:
 
     // If LLC present: Wait for end of BIST, then extend stack and set to all SPM
     la   t0, __base_regs
-    lw   t0, CHESHIRE_HW_FEATURES_REG_OFFSET(t0)
+    lwu  t0, CHESHIRE_HW_FEATURES_REG_OFFSET(t0)
     andi t0, t0, (1 << CHESHIRE_HW_FEATURES_LLC_BIT)
     beqz t0, _prom_check_run
     la   t0, __base_llc
 _wait_llc_bist:
-    lw   t1, AXI_LLC_BIST_STATUS_REG_OFFSET(t0) // Check BIST status done bit
+    lwu  t1, AXI_LLC_BIST_STATUS_REG_OFFSET(t0) // Check BIST status done bit
     beqz t1, _wait_llc_bist
     li   t1, -1
     sw   t1, AXI_LLC_CFG_SPM_LOW_REG_OFFSET(t0)
@@ -80,84 +80,19 @@ _wait_llc_bist:
     // Correct stack to start at end of SPM
     la   t0, __base_regs
     la   sp, __base_spm
-    lw   t0, CHESHIRE_LLC_SIZE_REG_OFFSET(t0)
+    lwu  t0, CHESHIRE_LLC_SIZE_REG_OFFSET(t0)
     add  sp, sp, t0
     addi sp, sp, -8
 
-// Enter Platform ROM if present.
+// Enter Platform ROM if present. Falls through to `_boot`.
 _prom_check_run:
     // Note that we have internal access to SPM here *if and only if* there is an LLC.
-    la t0, __base_regs
-    lw t0, CHESHIRE_PLATFORM_ROM_REG_OFFSET(t0)
-    beqz t0, _boot
-    jalr t0
-
-// Move to next stage of boot
-// 1. Write the address of next stage boot loader in Cheshire's scratch registers
-// 2. Resume execution of all other harts
-.global boot_next_stage
-boot_next_stage:
-    // Non-SMP hart: write boot address into global scratch registers
-    la   t0, __base_regs
-    sw   a0, CHESHIRE_SCRATCH_4_REG_OFFSET(t0)
-    srli a0, a0, 32
-    sw   a0, CHESHIRE_SCRATCH_5_REG_OFFSET(t0)
-    fence
-
-    // Resume SMP harts: set CLINT IPI registers
-    // NOTE: this will cause CLINT to send IPIs to all cores, therefore also the
-    // non-smp hart will receive one. The following instructions make sure that
-    // all harts will wait until the IPI is received (WFI with global ie disabled),
-    // then clear the IPI in the CLINT and wait until all other harts are done with it.
-    la   t0, __base_clint
-    la   t2, __base_regs
-    lw   t2, CHESHIRE_NUM_INT_HARTS_REG_OFFSET(t2)
-    slli t2, t2, 2
-    add  t2, t0, t2  // t2 = CLINT_BASE + (n_harts * 4)
-1:
-    li   t1, 1
-    sw   t1, 0(t0)
-    addi t0, t0, 4
-    blt  t0, t2, 1b
-
-// Stall hart until IPI is raised
-_wait_for_ipi:
-
-    // Wait until this hart receives IPI
-    wfi
-    csrr t1, mip
-    andi t1, t1, 0x8
-    beqz t1, _wait_for_ipi
-
-    // Clear CLINT IPI register for this hart
-    la   t0, __base_clint
-    csrr t1, mhartid
-    slli t1, t1, 2
-    add  t1, t1, t0
-    sw   zero, 0(t1)   // *(CLINT_BASE + hart_id * 4) = 0
-
-    la   t2, __base_regs
-    lw   t2, CHESHIRE_NUM_INT_HARTS_REG_OFFSET(t2)
-    slli t2, t2, 2
-    add  t2, t0, t2    // t2 = CLINT_BASE + (n_harts * 4)
-
-    // Wait until *all* CLINT IPI registers are cleared
-1:
-    lw   t1, 0(t0)
-    bnez t1, 1b
-    addi t0, t0, 4
-    blt  t0, t2, 1b
-
-    // Jump to next stage
-    // Load boot address from global scratch registers
-    la   t0, __base_regs
-    lwu  t1, CHESHIRE_SCRATCH_5_REG_OFFSET(t0)
-    slli t1, t1, 32
-    lwu  t0, CHESHIRE_SCRATCH_4_REG_OFFSET(t0)
-    or   t0, t0, t1
-    csrr a0, mhartid  // Store hartid to a0
-    jalr ra, 0(t0)    // Jump to boot address
-    ret               // We should never get here
+    li   t0, 0
+    li   t1, 0
+    la   ra, __base_regs
+    lwu  ra, CHESHIRE_PLATFORM_ROM_REG_OFFSET(ra)
+    beqz ra, _boot
+    jalr ra, 0(ra)
 
 // Reset regs, full fence, then jump to main
 _boot:
@@ -179,3 +114,36 @@ _exit:
     ebreak
 1:  wfi
     j 1b
+
+// Nonzero harts wait for and handle wakeup here
+_smp_wait:
+    // Set mtvec, sleep, and check MSIP; repeat unless MSIP is set (M IPI is pending).
+    la   t0, 1f
+    csrw t0, mtvec
+    wfi
+1:  csrr t0, mip
+    andi t0, t0, 0x8
+    beqz t0, _smp_wait
+    // Clear CLINT M IPI register for this hart
+    la   t0, __base_clint
+    csrr ra, mhartid
+    slli t1, ra, 2
+    add  t1, t1, t0
+    sw   zero, 0(t1) // *(CLINT_BASE + hart_id * 4) = 0
+    // Check SMP enable (scratch[6][0]).
+    // If this is not set, go back to sleep, as we are not meant to resume.
+    la   t0, __base_regs
+    lwu  t0, CHESHIRE_SCRATCH_6_REG_OFFSET(t0)
+    andi t0, t0, 1
+    beqz t0, _smp_wait
+    // Jump to scratch[5:4]. Synchronization, if any, should be done there.
+    la   t1, __base_regs
+    lwu  t0, CHESHIRE_SCRATCH_4_REG_OFFSET(t1)
+    lwu  t1, CHESHIRE_SCRATCH_5_REG_OFFSET(t1)
+    slli t1, t1, 32
+    ori  ra, t1, t0
+    li   t0, 0
+    li   t1, 1
+    jalr ra, 0(ra)
+    // Should we return, go back to `_start` to be parked again.
+    j _start
