@@ -280,11 +280,11 @@ package cheshire_pkg;
   localparam doub_bt AmSlink  = 'h0300_6000;
   localparam doub_bt AmBusErr = 'h0300_9000;
   localparam doub_bt AmSpm    = 'h1000_0000;  // Cached region at bottom, uncached on top
+  localparam doub_bt AmSpmUnc = 'h1400_0000;
   localparam doub_bt AmClic   = 'h0800_0000;
 
   // Static masks
-  localparam doub_bt AmSpmBaseUncached = 'h1400_0000;
-  localparam doub_bt AmSpmRegionMask   = 'h03FF_FFFF;
+  localparam doub_bt AmSpmRegionMask = 'h03FF_FFFF;
 
   // Reg bus error unit indices
   localparam int unsigned RegBusErrVga        = 0;
@@ -355,7 +355,7 @@ package cheshire_pkg;
     if (cfg.LlcNotBypass) begin
       ret.spm = i;
       r++; ret.map[r] = '{i, AmSpm, AmSpm + SizeSpm};
-      r++; ret.map[r] = '{i, AmSpm + 'h0400_0000, AmSpm + 'h0400_0000 + SizeSpm};
+      r++; ret.map[r] = '{i, AmSpmUnc, AmSpmUnc + SizeSpm};
     end
     if (cfg.Dma)          begin i++; r++; ret.dma = i; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
     if (cfg.SerialLink)   begin i++; r++; ret.slink = i;
@@ -537,9 +537,9 @@ package cheshire_pkg;
       NrNonIdempotentRules  : 2,   // Periphs, ExtNonCIE
       NonIdempotentAddrBase : {64'h0000_0000, NoCieBase},
       NonIdempotentLength   : {64'h1000_0000, 64'h6000_0000 - cfg.Cva6ExtCieLength},
-      NrExecuteRegionRules  : 5,   // Debug, Bootrom, AllSPM, LLCOut, ExtCIE
-      ExecuteRegionAddrBase : {AmDbg, AmBrom, AmSpm, cfg.LlcOutRegionStart, CieBase},
-      ExecuteRegionLength   : {64'h40000, 64'h40000, 2*SizeSpm, SizeLlcOut, cfg.Cva6ExtCieLength},
+      NrExecuteRegionRules  : 6,   // Debug, Bootrom, SPM, SPM Uncached, LLCOut, ExtCIE
+      ExecuteRegionAddrBase : {AmDbg,     AmBrom,    AmSpm,   AmSpmUnc, cfg.LlcOutRegionStart, CieBase},
+      ExecuteRegionLength   : {64'h40000, 64'h40000, SizeSpm, SizeSpm,  SizeLlcOut,            cfg.Cva6ExtCieLength},
       NrCachedRegionRules   : 3,   // CachedSPM, LLCOut, ExtCIE
       CachedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart,  CieBase},
       CachedRegionLength    : {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength},
