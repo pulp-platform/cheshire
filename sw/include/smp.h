@@ -8,18 +8,15 @@
 #pragma once
 
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "util.h"
-#include "regs/cheshire.h"
-#include "params.h"
+// Abstract type for shared atomic semaphore backed by an uncached platform register.
+typedef volatile uint32_t* smp_sema_t;
 
-/*
- * Resume execution in all harts.
- * Send an IPI to all harts except for hart 0.
- */
-void smp_resume(void);
+// Initialize an uncached atomic semaphore to 0 and return. Check for NULL.
+smp_sema_t smp_sema_init(int sid);
 
-void smp_barrier_init();
-void smp_barrier_up(uint64_t n_processes);
-void smp_barrier_down();
+// Wait for uncached atomic semaphore to reach a given value.
+void smp_sema_wait(smp_sema_t sema, int value, uint64_t spin_period);
+
+// Shared barrier for all SMP cores. Uses a special reserved semaphore.
+void smp_barrier(uint64_t spin_period);
