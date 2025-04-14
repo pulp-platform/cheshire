@@ -36,7 +36,7 @@ int boot_passive(uint64_t core_freq) {
 int boot_spi_sdcard(uint64_t core_freq, uint64_t rtc_freq) {
     // Initialize device handle
     spi_sdcard_t device = {
-        .spi_freq = 24 * 1000 * 1000, // 24MHz (maximum is 25MHz)
+        .spi_freq = MIN(24 * 1000 * 1000, core_freq / 2), // Up to half core freq or 24MHz (<25MHz)
         .csid = 0,
         .csid_dummy = SPI_HOST_PARAM_NUM_C_S - 1 // Last physical CS is designated dummy
     };
