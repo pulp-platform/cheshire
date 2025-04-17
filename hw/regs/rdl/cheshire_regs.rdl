@@ -1,0 +1,180 @@
+// Copyright 2025 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+// Licensed under Solderpad Hardware License, Version 0.51, see LICENSE for details.
+//
+// Michael Rogenmoser <michaero@iis.ee.ethz.ch>
+// Nicole Narr <narrn@student.ethz.ch>
+// Christopher Reinwardt <creinwar@student.ethz.ch>
+// Paul Scheffler <paulsc@iis.ee.ethz.ch>
+
+`ifndef CHECHIRE_REGS_RDL
+`define CHECHIRE_REGS_RDL
+
+regfile cheshire_regs #(longint unsigned BASE_ADDR = 0x0) {
+    reg scratch {
+        field {
+            name = "scratch";
+            desc = "Registers for use by software";
+            hw   = na;
+            sw   = rw;
+        } scratch[31:0] = 0x0;
+    };
+
+    enum BootMode { passive = 0; spi_sdcard = 1; spi_s25fs512s = 2; i2c_24xx1025 = 3; };
+
+    reg boot_mode {
+    //   hwqe:     "true"
+    //   hwext:    "true"
+        field {
+            name = "boot_mode";
+            desc = "Method to load boot code (connected to input pins)";
+            sw   = r;
+            hw   = w;
+            encode = BootMode;
+        } boot_mode[1:0];
+    };
+
+    reg rtc_freq {
+    //   hwqe:     "true"
+    //   hwext:    "true"
+        field {
+            name = "ref_freq";
+            desc = "Frequency (Hz) configured for RTC";
+            sw   = r;
+            hw   = w;
+        } ref_freq[31:0];
+    };
+
+
+    reg platform_rom {
+    //   hwqe:     "true"
+    //   hwext:    "true"
+        field {
+            name = "platform_rom";
+            desc = "Address of platform ROM";
+            sw   = r;
+            hw   = w;
+        } platform_rom[31:0];
+    };
+
+    reg num_int_harts {
+    //   hwqe:     "true"
+    //   hwext:    "true"
+        field {
+            name = "num_harts";
+            desc = "Number of internal harts";
+            sw   = r;
+            hw   = w;
+        } num_harts[31:0];
+    };
+
+    reg hw_features {
+        default sw = r;
+        default hw = w;
+        desc = "Specifies which hardware features are available";
+    //   hwqe:     "true"
+    //   hwext:    "true"
+        field {
+            name = "bootrom";
+            desc = "Whether boot ROM is available";
+        } bootrom[0:0];
+        field {
+            name = "llc";
+            desc = "Whether LLC is available";
+        } llc[1:1];
+        field {
+            name = "uart";
+            desc = "Whether UART is available";
+        } uart[2:2];
+        field {
+            name = "spi_host";
+            desc = "Whether SPI host is available";
+        } spi_host[3:3];
+        field {
+            name = "i2c";
+            desc = "Whether I2C is available";
+        } i2c[4:4];
+        field {
+            name = "gpio";
+            desc = "Whether GPIO is available";
+        } gpio[5:5];
+        field {
+            name = "dma";
+            desc = "Whether DMA is available";
+        } dma[6:6];
+        field {
+            name = "serial_link";
+            desc = "Whether serial link is available";
+        } serial_link[7:7];
+        field {
+            name = "vga";
+            desc = "Whether VGA is available";
+        } vga[8:8];
+        field {
+            name = "usb";
+            desc = "Whether USB is available";
+        } usb[9:9];
+        field {
+            name = "axirt";
+            desc = "Whether AXI RT is available";
+        } axirt[10:10];
+        field {
+            name = "clic";
+            desc = "Whether CLIC is available";
+        } clic[11:11];
+        field {
+            name = "irq_router";
+            desc = "Whether IRQ router is available";
+        } irq_router[12:12];
+        field {
+            name = "bus_err";
+            desc = "Whether UNBENT is available";
+        } bus_err[13:13];
+    };
+
+    reg llc_size {
+    //   hwqe:     "true"
+    //   hwext:    "true"
+        field {
+            name = "llc_size";
+            desc = "Total size of LLC in bytes";
+            sw   = r;
+            hw   = w;
+        } llc_size[31:0];
+    };
+
+    reg vga_params {
+    //   hwqe:     "true"
+    //   hwext:    "true"
+        field {
+            name = "red_width";
+            desc = "Red channel width";
+            sw   = r;
+            hw   = w;
+        } red_width[7:0];
+        field {
+            name = "green_width";
+            desc = "Green channel width";
+            sw   = r;
+            hw   = w;
+        } green_width[15:8];
+        field {
+            name = "blue_width";
+            desc = "Blue channel width";
+            sw   = r;
+            hw   = w;
+        } blue_width[23:16];
+    };
+
+    scratch         scratch[16]     @BASE_ADDR + 0x0;
+    boot_mode       boot_mode       @BASE_ADDR + 0x40;
+    rtc_freq        rtc_freq        @BASE_ADDR + 0x44;
+    platform_rom    platform_rom    @BASE_ADDR + 0x48;
+    num_int_harts   num_int_harts   @BASE_ADDR + 0x4C;
+    hw_features     hw_features     @BASE_ADDR + 0x50;
+    llc_size        llc_size        @BASE_ADDR + 0x54;
+    vga_params      vga_params      @BASE_ADDR + 0x58;
+};
+
+`endif // CHECHIRE_REGS_RDL

@@ -1,0 +1,12 @@
+// Copyright 2025 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+// Licensed under Solderpad Hardware License, Version 0.51, see LICENSE for details.
+//
+// Michael Rogenmoser <michaero@iis.ee.ethz.ch>
+
+`include "cheshire_regs.rdl"
+
+addrmap cheshire_top {
+    cheshire_regs cheshire_regs @0x0; // TODO fix addr
+};
