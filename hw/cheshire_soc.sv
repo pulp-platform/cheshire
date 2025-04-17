@@ -229,8 +229,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Connectivity of Xbar
   axi_mst_req_t [AxiIn.num_in-1:0]    axi_in_req, axi_rt_in_req;
   axi_mst_rsp_t [AxiIn.num_in-1:0]    axi_in_rsp, axi_rt_in_rsp;
-  axi_mst_req_t [AxiOut.num_out-1:0]  axi_out_unmux_req;
-  axi_mst_rsp_t [AxiOut.num_out-1:0]  axi_out_unmux_rsp;
+  axi_mst_req_t [AxiOut.num_out-1:0][AxiIn.num_in-1:0]  axi_out_unmux_req;
+  axi_mst_rsp_t [AxiOut.num_out-1:0][AxiIn.num_in-1:0]  axi_out_unmux_rsp;
   axi_slv_req_t [AxiOut.num_out-1:0]  axi_out_req;
   axi_slv_rsp_t [AxiOut.num_out-1:0]  axi_out_rsp;
 
@@ -303,11 +303,11 @@ module cheshire_soc import cheshire_pkg::*; #(
     ) i_axi_xbar_mux (
       .clk_i,
       .rst_ni,
-      .test_i     ( test_mode_i ),
-      .axi_req_i  ( axi_out_unmux_req[i] ),
-      .axi_rsp_o  ( axi_out_unmux_rsp[i] ),
-      .axi_req_o  ( axi_out_req[i] ),
-      .axi_rsp_i  ( axi_out_rsp[i] )
+      .test_i      ( test_mode_i ),
+      .slv_reqs_i  ( axi_out_unmux_req[i] ),
+      .slv_resps_o ( axi_out_unmux_rsp[i] ),
+      .mst_req_o   ( axi_out_req[i] ),
+      .mst_resp_i  ( axi_out_rsp[i] )
     );
   end
 
