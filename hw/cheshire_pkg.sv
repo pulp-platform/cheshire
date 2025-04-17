@@ -129,6 +129,7 @@ package cheshire_pkg;
     // External AXI ports (limited number of ports and rules)
     bit     [MaxExtAxiMstWidth-1:0]     AxiExtNumMst;
     bit     [MaxExtAxiSlvWidth-1:0]     AxiExtNumSlv;
+    bit     [MaxExtAxiSlvWidth-1:0]     AxiExtUnmuxedNumSlv;
     bit     [MaxExtAxiSlvWidth-1:0]     AxiExtNumRules;
     byte_bt [2**MaxExtAxiSlvWidth-1:0]  AxiExtRegionIdx;
     doub_bt [2**MaxExtAxiSlvWidth-1:0]  AxiExtRegionStart;
@@ -393,7 +394,7 @@ package cheshire_pkg;
     // External port indices start after internal ones
     i++; r++;
     ret.ext_base  = i;
-    ret.num_out   = i + cfg.AxiExtNumSlv;
+    ret.num_out   = i + cfg.AxiExtNumSlv + cfg.AxiExtUnmuxedNumSlv;
     ret.num_rules = r + cfg.AxiExtNumRules + cfg.RegExtNumRules;
     // Append external AXI rules to map
     for (int k = 0; k < cfg.AxiExtNumRules; ++k) begin

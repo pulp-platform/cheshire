@@ -22,7 +22,9 @@ module cheshire_soc import cheshire_pkg::*; #(
   parameter type axi_ext_slv_rsp_t  = logic,
   parameter type reg_ext_req_t      = logic,
   parameter type reg_ext_rsp_t      = logic,
-  parameter type impl_in_t          = logic
+  parameter type impl_in_t          = logic,
+  // Dependent parameter, do not modify
+  localparam axi_in_t   AxiIn   = gen_axi_in(Cfg)
 ) (
   input  logic        clk_i,
   input  logic        rst_ni,
@@ -37,6 +39,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   output axi_ext_mst_rsp_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_rsp_o,
   output axi_ext_slv_req_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_req_o,
   input  axi_ext_slv_rsp_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_rsp_i,
+  output axi_ext_slv_req_t [iomsb(Cfg.AxiExtUnmuxedNumSlv):0][iomsb(AxiIn.num_in):0] axi_ext_unmuxed_slv_req_o,
+  input  axi_ext_slv_rsp_t [iomsb(Cfg.AxiExtUnmuxedNumSlv):0][iomsb(AxiIn.num_in):0] axi_ext_unmuxed_slv_rsp_i,
   // External reg demux slaves
   output reg_ext_req_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_req_o,
   input  reg_ext_rsp_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_rsp_i,
@@ -198,7 +202,6 @@ module cheshire_soc import cheshire_pkg::*; #(
   ////////////////
 
   // Generate indices and get maps for all ports
-  localparam axi_in_t   AxiIn   = gen_axi_in(Cfg);
   localparam axi_out_t  AxiOut  = gen_axi_out(Cfg);
 
   // Define needed parameters
@@ -273,7 +276,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .default_mst_port_i     ( '0 )
   );
 
-  for (genvar i = 0; i < AxiOut.num_out; i++) begin : gen_axi_xbar_mux
+  for (genvar i = 0; i < AxiOut.num_out-Cfg.AxiExtUnmuxedNumSlv; i++) begin : gen_axi_xbar_mux
     axi_mux #(
       .SlvAxiIDWidth ( AxiXbarCfg.AxiIdWidthSlvPorts ),
       .slv_aw_chan_t ( axi_mst_aw_chan_t ),
@@ -318,10 +321,16 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   // Connect external slaves
   if (Cfg.AxiExtNumSlv > 0) begin : gen_ext_axi_slv
-    assign axi_ext_slv_req_o = axi_out_req[AxiOut.num_out-1:AxiOut.ext_base];
-    assign axi_out_rsp[AxiOut.num_out-1:AxiOut.ext_base] = axi_ext_slv_rsp_i;
+    assign axi_ext_slv_req_o = axi_out_req[AxiOut.num_out-Cfg.AxiExtUnmuxedNumSlv-1:AxiOut.ext_base];
+    assign axi_out_rsp[AxiOut.num_out-Cfg.AxiExtUnmuxedNumSlv-1:AxiOut.ext_base] = axi_ext_slv_rsp_i;
   end else begin : gen_no_ext_axi_slv
     assign axi_ext_slv_req_o = '0;
+  end
+  if (Cfg.AxiExtUnmuxedNumSlv > 0) begin : gen_ext_unmuxed_axi_slv
+    assign axi_ext_unmuxed_slv_req_o = axi_out_unmux_req[AxiOut.num_out-1:AxiOut.ext_base+Cfg.AxiExtUnmuxedNumSlv];
+    assign axi_out_unmux_rsp[AxiOut.num_out-1:AxiOut.ext_base+Cfg.AxiExtUnmuxedNumSlv] = axi_ext_unmuxed_slv_rsp_i;
+  end else begin : gen_no_ext_unmuxed_axi_slv
+    assign axi_ext_unmuxed_slv_req_o = '0;
   end
 
   /////////////////
