@@ -39,8 +39,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   output axi_ext_mst_rsp_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_rsp_o,
   output axi_ext_slv_req_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_req_o,
   input  axi_ext_slv_rsp_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_rsp_i,
-  output axi_ext_slv_req_t [iomsb(Cfg.AxiExtUnmuxedNumSlv):0][iomsb(AxiIn.num_in):0] axi_ext_unmuxed_slv_req_o,
-  input  axi_ext_slv_rsp_t [iomsb(Cfg.AxiExtUnmuxedNumSlv):0][iomsb(AxiIn.num_in):0] axi_ext_unmuxed_slv_rsp_i,
+  output axi_ext_mst_req_t [iomsb(Cfg.AxiExtUnmuxedNumSlv):0][iomsb(AxiIn.num_in):0] axi_ext_unmuxed_slv_req_o,
+  input  axi_ext_mst_rsp_t [iomsb(Cfg.AxiExtUnmuxedNumSlv):0][iomsb(AxiIn.num_in):0] axi_ext_unmuxed_slv_rsp_i,
   // External reg demux slaves
   output reg_ext_req_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_req_o,
   input  reg_ext_rsp_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_rsp_i,
@@ -255,13 +255,13 @@ module cheshire_soc import cheshire_pkg::*; #(
     .Cfg            ( AxiXbarCfg ),
     .ATOPs          ( 1  ),
     .Connectivity   ( '1 ),
-    .aw_chan_t  ( axi_mst_aw_chan_t ),
+    .aw_chan_t      ( axi_mst_aw_chan_t ),
     .w_chan_t       ( axi_mst_w_chan_t  ),
-    .b_chan_t   ( axi_mst_b_chan_t  ),
-    .ar_chan_t  ( axi_mst_ar_chan_t ),
-    .r_chan_t   ( axi_mst_r_chan_t  ),
-    .req_t      ( axi_mst_req_t ),
-    .resp_t     ( axi_mst_rsp_t ),
+    .b_chan_t       ( axi_mst_b_chan_t  ),
+    .ar_chan_t      ( axi_mst_ar_chan_t ),
+    .r_chan_t       ( axi_mst_r_chan_t  ),
+    .req_t          ( axi_mst_req_t ),
+    .resp_t         ( axi_mst_rsp_t ),
     .rule_t         ( addr_rule_t )
   ) i_axi_xbar (
     .clk_i,
@@ -327,8 +327,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign axi_ext_slv_req_o = '0;
   end
   if (Cfg.AxiExtUnmuxedNumSlv > 0) begin : gen_ext_unmuxed_axi_slv
-    assign axi_ext_unmuxed_slv_req_o = axi_out_unmux_req[AxiOut.num_out-1:AxiOut.ext_base+Cfg.AxiExtUnmuxedNumSlv];
-    assign axi_out_unmux_rsp[AxiOut.num_out-1:AxiOut.ext_base+Cfg.AxiExtUnmuxedNumSlv] = axi_ext_unmuxed_slv_rsp_i;
+    assign axi_ext_unmuxed_slv_req_o = axi_out_unmux_req[AxiOut.num_out-1:AxiOut.ext_base+Cfg.AxiExtNumSlv];
+    assign axi_out_unmux_rsp[AxiOut.num_out-1:AxiOut.ext_base+Cfg.AxiExtNumSlv] = axi_ext_unmuxed_slv_rsp_i;
   end else begin : gen_no_ext_unmuxed_axi_slv
     assign axi_ext_unmuxed_slv_req_o = '0;
   end
