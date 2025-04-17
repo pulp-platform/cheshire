@@ -900,6 +900,10 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
         addr_t  addr_cur  = sec_addr + offset;
         remain    = sec_len - offset;
         page_left = 4096 - (addr_cur & 12'hFFF);
+        if (offset != 0) begin
+          $display("[SLINK] - %0d/%0d bytes (%0d%%)", offset, sec_len,
+                   offset*100/(sec_len > 1 ? sec_len - 1 : 1));
+        end
         // By default the burst length is SlinkBurstBytes
         burst_len = SlinkBurstBytes;
         // Cut the burst length if it exceeds the remaining section length
