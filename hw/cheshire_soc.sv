@@ -8,6 +8,8 @@
 // Thomas Benz <tbenz@iis.ee.ethz.ch>
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
+`include "apb/typedef.svh"
+
 module cheshire_soc import cheshire_pkg::*; #(
   // Cheshire config
   parameter cheshire_cfg_t Cfg = '0,
@@ -984,7 +986,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  Register File  //
   /////////////////////
 
-  cheshire_reg_pkg::cheshire_hw2reg_t reg_hw2reg;
+  cheshire_regs_pkg::cheshire_regs__in_t reg_hw2reg;
 
   assign reg_hw2reg = '{
     boot_mode     : boot_mode_i,
@@ -1015,16 +1017,37 @@ module cheshire_soc import cheshire_pkg::*; #(
     }
   };
 
-  cheshire_reg_top #(
+  `APB_TYPEDEF_ALL(chs_regs_apb, logic[31:0], logic[31:0], logic[3:0])
+  chs_regs_apb_req_t chs_regs_apb_req;
+  chs_regs_apb_resp_t chs_regs_apb_rsp;
+
+  reg_to_apb #(
     .reg_req_t  ( reg_req_t ),
-    .reg_rsp_t  ( reg_rsp_t )
-  ) i_regs (
+    .reg_rsp_t  ( reg_rsp_t ),
+    .apb_req_t  ( chs_regs_apb_req_t ),
+    .apb_rsp_t  ( chs_regs_apb_resp_t ),
+  ) chs_regs_reg_to_apb (
     .clk_i,
     .rst_ni,
     .reg_req_i  ( reg_out_req[RegOut.regs] ),
     .reg_rsp_o  ( reg_out_rsp[RegOut.regs] ),
-    .hw2reg     ( reg_hw2reg ),
-    .devmode_i  ( 1'b1 )
+    .apb_req_o  ( chs_regs_apb_req ),
+    .apb_rsp_i  ( chs_regs_apb_rsp )
+  )
+
+  cheshire_regs_top i_regs (
+    .clk           ( clk_i  ),
+    .arst_n        ( rst_ni ),
+    .s_apb_psel    ( chs_regs_apb_req.psel    ),
+    .s_apb_penable ( chs_regs_apb_req.penable ),
+    .s_apb_pwrite  ( chs_regs_apb_req.pwrite  ),
+    .s_apb_pprot   ( chs_regs_apb_req.pprot   ),
+    .s_apb_paddr   ( chs_regs_apb_req.paddr   ),
+    .s_apb_pwdata  ( chs_regs_apb_req.pwdata  ),
+    .s_apb_pready  ( chs_regs_apb_rsp.pready  ),
+    .s_apb_prdata  ( chs_regs_apb_rsp.prdata  ),
+    .s_apb_pslverr ( chs_regs_apb_rsp.pslverr ),
+    .hwif_in       ( reg_hw2reg )
   );
 
   ////////////////////////

@@ -13,6 +13,7 @@ package:
 
 dependencies:
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.3  }
+  apb:                      { git: "https://github.com/pulp-platform/apb.git",                    version: 0.2.4  }
   axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.6 }
   axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",                version: 0.2.1  }
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.8.2  }
@@ -39,8 +40,8 @@ sources:
   - hw/future/UsbOhciAxi4.v
   - hw/future/spinal_usb_ohci.sv
   - hw/bootrom/cheshire_bootrom.sv
-  - hw/regs/cheshire_reg_pkg.sv
-  - hw/regs/cheshire_reg_top.sv
+  - hw/regs/rtl/cheshire_regs_pkg.sv
+  - hw/regs/rtl/cheshire_regs_top.sv
   - hw/cheshire_idma_wrap.sv
   - hw/cheshire_pkg.sv
   - hw/cheshire_soc.sv

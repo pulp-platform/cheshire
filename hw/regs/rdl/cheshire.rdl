@@ -7,6 +7,6 @@
 
 `include "cheshire_regs.rdl"
 
-addrmap cheshire_top {
-    cheshire_regs cheshire_regs @0x0; // TODO fix addr
+addrmap cheshire {
+    cheshire_regs cheshire_regs @0x1230; // TODO fix addr
 };

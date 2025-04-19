@@ -11,7 +11,7 @@
 `ifndef CHECHIRE_REGS_RDL
 `define CHECHIRE_REGS_RDL
 
-regfile cheshire_regs #(longint unsigned BASE_ADDR = 0x0) {
+addrmap cheshire_regs #(longint unsigned BASE_ADDR = 0x0) {
     reg scratch {
         field {
             name = "scratch";
@@ -21,11 +21,14 @@ regfile cheshire_regs #(longint unsigned BASE_ADDR = 0x0) {
         } scratch[31:0] = 0x0;
     };
 
-    enum BootMode { passive = 0; spi_sdcard = 1; spi_s25fs512s = 2; i2c_24xx1025 = 3; };
+    enum BootMode {
+        passive = 0;
+        spi_sdcard = 1;
+        spi_s25fs512s = 2;
+        i2c_24xx1025 = 3;
+    };
 
     reg boot_mode {
-    //   hwqe:     "true"
-    //   hwext:    "true"
         field {
             name = "boot_mode";
             desc = "Method to load boot code (connected to input pins)";
@@ -36,8 +39,6 @@ regfile cheshire_regs #(longint unsigned BASE_ADDR = 0x0) {
     };
 
     reg rtc_freq {
-    //   hwqe:     "true"
-    //   hwext:    "true"
         field {
             name = "ref_freq";
             desc = "Frequency (Hz) configured for RTC";
@@ -48,8 +49,6 @@ regfile cheshire_regs #(longint unsigned BASE_ADDR = 0x0) {
 
 
     reg platform_rom {
-    //   hwqe:     "true"
-    //   hwext:    "true"
         field {
             name = "platform_rom";
             desc = "Address of platform ROM";
@@ -59,8 +58,6 @@ regfile cheshire_regs #(longint unsigned BASE_ADDR = 0x0) {
     };
 
     reg num_int_harts {
-    //   hwqe:     "true"
-    //   hwext:    "true"
         field {
             name = "num_harts";
             desc = "Number of internal harts";
@@ -73,8 +70,6 @@ regfile cheshire_regs #(longint unsigned BASE_ADDR = 0x0) {
         default sw = r;
         default hw = w;
         desc = "Specifies which hardware features are available";
-    //   hwqe:     "true"
-    //   hwext:    "true"
         field {
             name = "bootrom";
             desc = "Whether boot ROM is available";
@@ -134,8 +129,6 @@ regfile cheshire_regs #(longint unsigned BASE_ADDR = 0x0) {
     };
 
     reg llc_size {
-    //   hwqe:     "true"
-    //   hwext:    "true"
         field {
             name = "llc_size";
             desc = "Total size of LLC in bytes";
@@ -145,8 +138,6 @@ regfile cheshire_regs #(longint unsigned BASE_ADDR = 0x0) {
     };
 
     reg vga_params {
-    //   hwqe:     "true"
-    //   hwext:    "true"
         field {
             name = "red_width";
             desc = "Red channel width";

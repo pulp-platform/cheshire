@@ -32,7 +32,7 @@ AXI_VGA_ROOT      := $(shell $(BENDER) path axi_vga)
 IDMA_ROOT         := $(shell $(BENDER) path idma)
 DRAM_RTL_SIM_ROOT := $(shell $(BENDER) path dram_rtl_sim)
 
-REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
+PEAKRDL := peakrdl
 
 ################
 # Dependencies #
@@ -83,8 +83,8 @@ include $(CHS_ROOT)/sw/sw.mk
 ###############
 
 # SoC registers
-$(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv: $(CHS_ROOT)/hw/regs/cheshire_regs.hjson
-	$(REGTOOL) -r $< --outdir $(dir $@)
+$(CHS_ROOT)/hw/regs/rtl/cheshire_regs_pkg.sv $(CHS_ROOT)/hw/regs/rtl/cheshire_regs_top.sv: $(CHS_ROOT)/hw/regs/rdl/cheshire_regs.rdl
+	peakrdl regblock $(CHS_ROOT)/hw/regs/rdl/cheshire_regs.rdl -o $(CHS_ROOT)/hw/regs/rtl/ --cpuif apb4-flat --default-reset arst_n
 
 # CLINT
 CLINTCORES ?= 1
@@ -118,7 +118,7 @@ $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 include $(IDMA_ROOT)/idma.mk
 
 CHS_HW_ALL += $(IDMA_FULL_RTL)
-CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv
+CHS_HW_ALL += $(CHS_ROOT)/hw/regs/rtl/cheshire_regs_pkg.sv $(CHS_ROOT)/hw/regs/rtl/cheshire_regs_top.sv
 CHS_HW_ALL += $(CLINTROOT)/.generated
 CHS_HW_ALL += $(OTPROOT)/.generated
 CHS_HW_ALL += $(AXIRTROOT)/.generated
