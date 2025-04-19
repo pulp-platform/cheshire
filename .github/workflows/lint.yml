@@ -15,7 +15,7 @@ jobs:
     steps:
     -
       name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     -
       name: Check license
       uses: pulp-platform/pulp-actions/lint-license@v2.4.1
@@ -33,7 +33,7 @@ jobs:
     steps:
     -
       name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     -
       name: Run Verible
       uses: chipsalliance/verible-linter-action@main
@@ -50,7 +50,7 @@ jobs:
     steps:
     -
       name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     -
       name: Run Clang-format
       uses: DoozyX/clang-format-lint-action@v0.14
@@ -76,7 +76,7 @@ jobs:
     steps:
     -
       name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     -
       name: Install Python
       uses: actions/setup-python@v5
