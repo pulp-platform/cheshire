@@ -1064,7 +1064,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .reg_req_t  ( reg_req_t ),
     .reg_rsp_t  ( reg_rsp_t ),
     .apb_req_t  ( chs_regs_apb_req_t ),
-    .apb_rsp_t  ( chs_regs_apb_resp_t ),
+    .apb_rsp_t  ( chs_regs_apb_resp_t )
   ) chs_regs_reg_to_apb (
     .clk_i,
     .rst_ni,
