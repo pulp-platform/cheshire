@@ -1072,7 +1072,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .reg_rsp_o  ( reg_out_rsp[RegOut.regs] ),
     .apb_req_o  ( chs_regs_apb_req ),
     .apb_rsp_i  ( chs_regs_apb_rsp )
-  )
+  );
 
   cheshire_regs_top i_regs (
     .clk           ( clk_i  ),
