@@ -16,7 +16,8 @@ module cheshire_regs (
         output logic [31:0] s_apb_prdata,
         output logic s_apb_pslverr,
 
-        input cheshire_regs_pkg::cheshire_regs__in_t hwif_in
+        input cheshire_regs_pkg::cheshire_regs__in_t hwif_in,
+        output cheshire_regs_pkg::cheshire_regs__out_t hwif_out
     );
 
     //--------------------------------------------------------------------------
@@ -74,10 +75,29 @@ module cheshire_regs (
     assign s_apb_pslverr = cpuif_rd_err | cpuif_wr_err;
 
     logic cpuif_req_masked;
+    logic external_req;
+    logic external_pending;
+    logic external_wr_ack;
+    logic external_rd_ack;
+    always_ff @(posedge clk or negedge arst_n) begin
+        if(~arst_n) begin
+            external_pending <= '0;
+        end else begin
+            if(external_req & ~external_wr_ack & ~external_rd_ack) external_pending <= '1;
+            else if(external_wr_ack | external_rd_ack) external_pending <= '0;
+            `ifndef SYNTHESIS
+                assert(!external_wr_ack || (external_pending | external_req))
+                    else $error("An external wr_ack strobe was asserted when no external request was active");
+                assert(!external_rd_ack || (external_pending | external_req))
+                    else $error("An external rd_ack strobe was asserted when no external request was active");
+            `endif
+        end
+    end
 
     // Read & write latencies are balanced. Stalls not required
-    assign cpuif_req_stall_rd = '0;
-    assign cpuif_req_stall_wr = '0;
+    // except if external
+    assign cpuif_req_stall_rd = external_pending;
+    assign cpuif_req_stall_wr = external_pending;
     assign cpuif_req_masked = cpuif_req
                             & !(!cpuif_req_is_wr & cpuif_req_stall_rd)
                             & !(cpuif_req_is_wr & cpuif_req_stall_wr);
@@ -96,22 +116,35 @@ module cheshire_regs (
         logic vga_params;
     } decoded_reg_strb_t;
     decoded_reg_strb_t decoded_reg_strb;
+    logic decoded_strb_is_external;
+
     logic decoded_req;
     logic decoded_req_is_wr;
     logic [31:0] decoded_wr_data;
     logic [31:0] decoded_wr_biten;
 
     always_comb begin
+        automatic logic is_external;
+        is_external = '0;
         for(int i0=0; i0<16; i0++) begin
             decoded_reg_strb.scratch[i0] = cpuif_req_masked & (cpuif_addr == 7'h0 + (7)'(i0) * 7'h4);
         end
         decoded_reg_strb.boot_mode = cpuif_req_masked & (cpuif_addr == 7'h40);
+        is_external |= cpuif_req_masked & (cpuif_addr == 7'h40) & !cpuif_req_is_wr;
         decoded_reg_strb.rtc_freq = cpuif_req_masked & (cpuif_addr == 7'h44);
+        is_external |= cpuif_req_masked & (cpuif_addr == 7'h44) & !cpuif_req_is_wr;
         decoded_reg_strb.platform_rom = cpuif_req_masked & (cpuif_addr == 7'h48);
+        is_external |= cpuif_req_masked & (cpuif_addr == 7'h48) & !cpuif_req_is_wr;
         decoded_reg_strb.num_int_harts = cpuif_req_masked & (cpuif_addr == 7'h4c);
+        is_external |= cpuif_req_masked & (cpuif_addr == 7'h4c) & !cpuif_req_is_wr;
         decoded_reg_strb.hw_features = cpuif_req_masked & (cpuif_addr == 7'h50);
+        is_external |= cpuif_req_masked & (cpuif_addr == 7'h50) & !cpuif_req_is_wr;
         decoded_reg_strb.llc_size = cpuif_req_masked & (cpuif_addr == 7'h54);
+        is_external |= cpuif_req_masked & (cpuif_addr == 7'h54) & !cpuif_req_is_wr;
         decoded_reg_strb.vga_params = cpuif_req_masked & (cpuif_addr == 7'h58);
+        is_external |= cpuif_req_masked & (cpuif_addr == 7'h58) & !cpuif_req_is_wr;
+        decoded_strb_is_external = is_external;
+        external_req = is_external;
     end
 
     // Pass down signals to next stage
@@ -167,16 +200,60 @@ module cheshire_regs (
         end
     end
 
+    assign hwif_out.boot_mode.req = !decoded_req_is_wr ? decoded_reg_strb.boot_mode : '0;
+    assign hwif_out.boot_mode.req_is_wr = decoded_req_is_wr;
+
+    assign hwif_out.rtc_freq.req = !decoded_req_is_wr ? decoded_reg_strb.rtc_freq : '0;
+    assign hwif_out.rtc_freq.req_is_wr = decoded_req_is_wr;
+
+    assign hwif_out.platform_rom.req = !decoded_req_is_wr ? decoded_reg_strb.platform_rom : '0;
+    assign hwif_out.platform_rom.req_is_wr = decoded_req_is_wr;
+
+    assign hwif_out.num_int_harts.req = !decoded_req_is_wr ? decoded_reg_strb.num_int_harts : '0;
+    assign hwif_out.num_int_harts.req_is_wr = decoded_req_is_wr;
+
+    assign hwif_out.hw_features.req = !decoded_req_is_wr ? decoded_reg_strb.hw_features : '0;
+    assign hwif_out.hw_features.req_is_wr = decoded_req_is_wr;
+
+    assign hwif_out.llc_size.req = !decoded_req_is_wr ? decoded_reg_strb.llc_size : '0;
+    assign hwif_out.llc_size.req_is_wr = decoded_req_is_wr;
+
+    assign hwif_out.vga_params.req = !decoded_req_is_wr ? decoded_reg_strb.vga_params : '0;
+    assign hwif_out.vga_params.req_is_wr = decoded_req_is_wr;
+
     //--------------------------------------------------------------------------
     // Write response
     //--------------------------------------------------------------------------
-    assign cpuif_wr_ack = decoded_req & decoded_req_is_wr;
+    always_comb begin
+        automatic logic wr_ack;
+        wr_ack = '0;
+        
+        external_wr_ack = wr_ack;
+    end
+    assign cpuif_wr_ack = external_wr_ack | (decoded_req & decoded_req_is_wr & ~decoded_strb_is_external);
     // Writes are always granted with no error response
     assign cpuif_wr_err = '0;
 
     //--------------------------------------------------------------------------
     // Readback
     //--------------------------------------------------------------------------
+    logic readback_external_rd_ack_c;
+    always_comb begin
+        automatic logic rd_ack;
+        rd_ack = '0;
+        rd_ack |= hwif_in.boot_mode.rd_ack;
+        rd_ack |= hwif_in.rtc_freq.rd_ack;
+        rd_ack |= hwif_in.platform_rom.rd_ack;
+        rd_ack |= hwif_in.num_int_harts.rd_ack;
+        rd_ack |= hwif_in.hw_features.rd_ack;
+        rd_ack |= hwif_in.llc_size.rd_ack;
+        rd_ack |= hwif_in.vga_params.rd_ack;
+        readback_external_rd_ack_c = rd_ack;
+    end
+
+    logic readback_external_rd_ack;
+
+    assign readback_external_rd_ack = readback_external_rd_ack_c;
 
     logic readback_err;
     logic readback_done;
@@ -187,43 +264,26 @@ module cheshire_regs (
     for(genvar i0=0; i0<16; i0++) begin
         assign readback_array[i0 * 1 + 0][31:0] = (decoded_reg_strb.scratch[i0] && !decoded_req_is_wr) ? field_storage.scratch[i0].scratch.value : '0;
     end
-    assign readback_array[16][1:0] = (decoded_reg_strb.boot_mode && !decoded_req_is_wr) ? hwif_in.boot_mode.boot_mode.next : '0;
-    assign readback_array[16][31:2] = '0;
-    assign readback_array[17][31:0] = (decoded_reg_strb.rtc_freq && !decoded_req_is_wr) ? hwif_in.rtc_freq.ref_freq.next : '0;
-    assign readback_array[18][31:0] = (decoded_reg_strb.platform_rom && !decoded_req_is_wr) ? hwif_in.platform_rom.platform_rom.next : '0;
-    assign readback_array[19][31:0] = (decoded_reg_strb.num_int_harts && !decoded_req_is_wr) ? hwif_in.num_int_harts.num_harts.next : '0;
-    assign readback_array[20][0:0] = (decoded_reg_strb.hw_features && !decoded_req_is_wr) ? hwif_in.hw_features.bootrom.next : '0;
-    assign readback_array[20][1:1] = (decoded_reg_strb.hw_features && !decoded_req_is_wr) ? hwif_in.hw_features.llc.next : '0;
-    assign readback_array[20][2:2] = (decoded_reg_strb.hw_features && !decoded_req_is_wr) ? hwif_in.hw_features.uart.next : '0;
-    assign readback_array[20][3:3] = (decoded_reg_strb.hw_features && !decoded_req_is_wr) ? hwif_in.hw_features.spi_host.next : '0;
-    assign readback_array[20][4:4] = (decoded_reg_strb.hw_features && !decoded_req_is_wr) ? hwif_in.hw_features.i2c.next : '0;
-    assign readback_array[20][5:5] = (decoded_reg_strb.hw_features && !decoded_req_is_wr) ? hwif_in.hw_features.gpio.next : '0;
-    assign readback_array[20][6:6] = (decoded_reg_strb.hw_features && !decoded_req_is_wr) ? hwif_in.hw_features.dma.next : '0;
-    assign readback_array[20][7:7] = (decoded_reg_strb.hw_features && !decoded_req_is_wr) ? hwif_in.hw_features.serial_link.next : '0;
-    assign readback_array[20][8:8] = (decoded_reg_strb.hw_features && !decoded_req_is_wr) ? hwif_in.hw_features.vga.next : '0;
-    assign readback_array[20][9:9] = (decoded_reg_strb.hw_features && !decoded_req_is_wr) ? hwif_in.hw_features.usb.next : '0;
-    assign readback_array[20][10:10] = (decoded_reg_strb.hw_features && !decoded_req_is_wr) ? hwif_in.hw_features.axirt.next : '0;
-    assign readback_array[20][11:11] = (decoded_reg_strb.hw_features && !decoded_req_is_wr) ? hwif_in.hw_features.clic.next : '0;
-    assign readback_array[20][12:12] = (decoded_reg_strb.hw_features && !decoded_req_is_wr) ? hwif_in.hw_features.irq_router.next : '0;
-    assign readback_array[20][13:13] = (decoded_reg_strb.hw_features && !decoded_req_is_wr) ? hwif_in.hw_features.bus_err.next : '0;
-    assign readback_array[20][31:14] = '0;
-    assign readback_array[21][31:0] = (decoded_reg_strb.llc_size && !decoded_req_is_wr) ? hwif_in.llc_size.llc_size.next : '0;
-    assign readback_array[22][7:0] = (decoded_reg_strb.vga_params && !decoded_req_is_wr) ? hwif_in.vga_params.red_width.next : '0;
-    assign readback_array[22][15:8] = (decoded_reg_strb.vga_params && !decoded_req_is_wr) ? hwif_in.vga_params.green_width.next : '0;
-    assign readback_array[22][23:16] = (decoded_reg_strb.vga_params && !decoded_req_is_wr) ? hwif_in.vga_params.blue_width.next : '0;
-    assign readback_array[22][31:24] = '0;
+    assign readback_array[16] = hwif_in.boot_mode.rd_ack ? hwif_in.boot_mode.rd_data : '0;
+    assign readback_array[17] = hwif_in.rtc_freq.rd_ack ? hwif_in.rtc_freq.rd_data : '0;
+    assign readback_array[18] = hwif_in.platform_rom.rd_ack ? hwif_in.platform_rom.rd_data : '0;
+    assign readback_array[19] = hwif_in.num_int_harts.rd_ack ? hwif_in.num_int_harts.rd_data : '0;
+    assign readback_array[20] = hwif_in.hw_features.rd_ack ? hwif_in.hw_features.rd_data : '0;
+    assign readback_array[21] = hwif_in.llc_size.rd_ack ? hwif_in.llc_size.rd_data : '0;
+    assign readback_array[22] = hwif_in.vga_params.rd_ack ? hwif_in.vga_params.rd_data : '0;
 
     // Reduce the array
     always_comb begin
         automatic logic [31:0] readback_data_var;
-        readback_done = decoded_req & ~decoded_req_is_wr;
+        readback_done = decoded_req & ~decoded_req_is_wr & ~decoded_strb_is_external;
         readback_err = '0;
         readback_data_var = '0;
         for(int i=0; i<23; i++) readback_data_var |= readback_array[i];
         readback_data = readback_data_var;
     end
 
-    assign cpuif_rd_ack = readback_done;
+    assign external_rd_ack = readback_external_rd_ack;
+    assign cpuif_rd_ack = readback_done | readback_external_rd_ack;
     assign cpuif_rd_data = readback_data;
     assign cpuif_rd_err = readback_err;
 endmodule

@@ -987,33 +987,72 @@ module cheshire_soc import cheshire_pkg::*; #(
   /////////////////////
 
   cheshire_regs_pkg::cheshire_regs__in_t reg_hw2reg;
+  cheshire_regs_pkg::cheshire_regs__out_t reg_reg2hw;
 
   assign reg_hw2reg = '{
-    boot_mode     : boot_mode_i,
-    rtc_freq      : Cfg.RtcFreq,
-    platform_rom  : Cfg.PlatformRom,
-    num_int_harts : NumIntHarts,
-    hw_features   : '{
-      bootrom     : Cfg.Bootrom,
-      llc         : Cfg.LlcNotBypass,
-      uart        : Cfg.Uart,
-      i2c         : Cfg.I2c,
-      gpio        : Cfg.Gpio,
-      spi_host    : Cfg.SpiHost,
-      dma         : Cfg.Dma,
-      serial_link : Cfg.SerialLink,
-      vga         : Cfg.Vga,
-      usb         : Cfg.Usb,
-      axirt       : Cfg.AxiRt,
-      clic        : Cfg.Clic,
-      irq_router  : Cfg.IrqRouter,
-      bus_err     : Cfg.BusErr
+    boot_mode     : '{
+      rd_ack: 1'b1,
+      rd_data: '{
+        boot_mode: boot_mode_i,
+        default: '0
+      }
     },
-    llc_size      : get_llc_size(Cfg),
+    rtc_freq      : '{
+      rd_ack: 1'b1,
+      rd_data: '{
+        ref_freq: Cfg.RtcFreq,
+        default: '0
+      }
+    },
+    platform_rom  : '{
+      rd_ack: 1'b1,
+      rd_data: '{
+        platform_rom: Cfg.PlatformRom,
+        default: '0
+      }
+    },
+    num_int_harts : '{
+      rd_ack: 1'b1,
+      rd_data: '{
+        num_int_harts: NumIntHarts,
+        default: '0
+      }
+    },
+    hw_features   : '{
+      rd_ack: 1'b1,
+      rd_data:'{
+        bootrom     : Cfg.Bootrom,
+        llc         : Cfg.LlcNotBypass,
+        uart        : Cfg.Uart,
+        i2c         : Cfg.I2c,
+        gpio        : Cfg.Gpio,
+        spi_host    : Cfg.SpiHost,
+        dma         : Cfg.Dma,
+        serial_link : Cfg.SerialLink,
+        vga         : Cfg.Vga,
+        usb         : Cfg.Usb,
+        axirt       : Cfg.AxiRt,
+        clic        : Cfg.Clic,
+        irq_router  : Cfg.IrqRouter,
+        bus_err     : Cfg.BusErr,
+        default: '0
+      }
+    },
+    llc_size      : '{
+      rd_ack: 1'b1,
+      rd_data: '{
+        llc_size: get_llc_size(Cfg),
+        default: '0
+      }
+    },
     vga_params    : '{
-      red_width   : Cfg.VgaRedWidth,
-      green_width : Cfg.VgaGreenWidth,
-      blue_width  : Cfg.VgaBlueWidth
+      rd_ack: 1'b1,
+      rd_data: '{
+        red_width   : Cfg.VgaRedWidth,
+        green_width : Cfg.VgaGreenWidth,
+        blue_width  : Cfg.VgaBlueWidth,
+        default: '0
+      }
     }
   };
 
@@ -1047,7 +1086,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .s_apb_pready  ( chs_regs_apb_rsp.pready  ),
     .s_apb_prdata  ( chs_regs_apb_rsp.prdata  ),
     .s_apb_pslverr ( chs_regs_apb_rsp.pslverr ),
-    .hwif_in       ( reg_hw2reg )
+    .hwif_in       ( reg_hw2reg ),
+    .hwif_out      ( reg_reg2hw )
   );
 
   ////////////////////////

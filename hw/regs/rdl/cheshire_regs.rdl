@@ -22,10 +22,18 @@ addrmap cheshire_regs #(longint unsigned BASE_ADDR = 0x0) {
     };
 
     enum BootMode {
-        passive = 0;
-        spi_sdcard = 1;
-        spi_s25fs512s = 2;
-        i2c_24xx1025 = 3;
+        passive = 0 {
+            desc = "Wait for external preload and launch";
+        };
+        spi_sdcard = 1 {
+            desc = "Boot from SD Card in SPI mode";
+        };
+        spi_s25fs512s = 2 {
+            desc = "Boot from S25FS512S SPI NOR flash";
+        };
+        i2c_24xx1025 = 3 {
+            desc = "Boot from 24xx1025 I2C EEPROM";
+        };
     };
 
     reg boot_mode {
@@ -158,14 +166,14 @@ addrmap cheshire_regs #(longint unsigned BASE_ADDR = 0x0) {
         } blue_width[23:16];
     };
 
-    scratch         scratch[16]     @BASE_ADDR + 0x0;
-    boot_mode       boot_mode       @BASE_ADDR + 0x40;
-    rtc_freq        rtc_freq        @BASE_ADDR + 0x44;
-    platform_rom    platform_rom    @BASE_ADDR + 0x48;
-    num_int_harts   num_int_harts   @BASE_ADDR + 0x4C;
-    hw_features     hw_features     @BASE_ADDR + 0x50;
-    llc_size        llc_size        @BASE_ADDR + 0x54;
-    vga_params      vga_params      @BASE_ADDR + 0x58;
+             scratch         scratch[16]     @BASE_ADDR + 0x0;
+    external boot_mode       boot_mode       @BASE_ADDR + 0x40;
+    external rtc_freq        rtc_freq        @BASE_ADDR + 0x44;
+    external platform_rom    platform_rom    @BASE_ADDR + 0x48;
+    external num_int_harts   num_int_harts   @BASE_ADDR + 0x4C;
+    external hw_features     hw_features     @BASE_ADDR + 0x50;
+    external llc_size        llc_size        @BASE_ADDR + 0x54;
+    external vga_params      vga_params      @BASE_ADDR + 0x58;
 };
 
 `endif // CHECHIRE_REGS_RDL

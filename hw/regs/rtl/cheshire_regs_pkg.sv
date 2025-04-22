@@ -9,151 +9,139 @@ package cheshire_regs_pkg;
 
     localparam BASE_ADDR = 'h0;
 
-    typedef struct {
-        logic [1:0] next;
-    } cheshire_regs__boot_mode__boot_mode__in_t;
+    typedef struct packed {
+        logic [29:0] _reserved_31_2;
+        logic [1:0] boot_mode;
+    } cheshire_regs__boot_mode__external__fields__in_t;
 
     typedef struct {
-        cheshire_regs__boot_mode__boot_mode__in_t boot_mode;
-    } cheshire_regs__boot_mode__in_t;
+        logic rd_ack;
+        cheshire_regs__boot_mode__external__fields__in_t rd_data;
+    } cheshire_regs__boot_mode__external__in_t;
+
+    typedef struct packed {
+        logic [31:0] ref_freq;
+    } cheshire_regs__rtc_freq__external__fields__in_t;
 
     typedef struct {
-        logic [31:0] next;
-    } cheshire_regs__rtc_freq__ref_freq__in_t;
+        logic rd_ack;
+        cheshire_regs__rtc_freq__external__fields__in_t rd_data;
+    } cheshire_regs__rtc_freq__external__in_t;
+
+    typedef struct packed {
+        logic [31:0] platform_rom;
+    } cheshire_regs__platform_rom__external__fields__in_t;
 
     typedef struct {
-        cheshire_regs__rtc_freq__ref_freq__in_t ref_freq;
-    } cheshire_regs__rtc_freq__in_t;
+        logic rd_ack;
+        cheshire_regs__platform_rom__external__fields__in_t rd_data;
+    } cheshire_regs__platform_rom__external__in_t;
+
+    typedef struct packed {
+        logic [31:0] num_harts;
+    } cheshire_regs__num_int_harts__external__fields__in_t;
 
     typedef struct {
-        logic [31:0] next;
-    } cheshire_regs__platform_rom__platform_rom__in_t;
+        logic rd_ack;
+        cheshire_regs__num_int_harts__external__fields__in_t rd_data;
+    } cheshire_regs__num_int_harts__external__in_t;
+
+    typedef struct packed {
+        logic [17:0] _reserved_31_14;
+        logic bus_err;
+        logic irq_router;
+        logic clic;
+        logic axirt;
+        logic usb;
+        logic vga;
+        logic serial_link;
+        logic dma;
+        logic gpio;
+        logic i2c;
+        logic spi_host;
+        logic uart;
+        logic llc;
+        logic bootrom;
+    } cheshire_regs__hw_features__external__fields__in_t;
 
     typedef struct {
-        cheshire_regs__platform_rom__platform_rom__in_t platform_rom;
-    } cheshire_regs__platform_rom__in_t;
+        logic rd_ack;
+        cheshire_regs__hw_features__external__fields__in_t rd_data;
+    } cheshire_regs__hw_features__external__in_t;
+
+    typedef struct packed {
+        logic [31:0] llc_size;
+    } cheshire_regs__llc_size__external__fields__in_t;
 
     typedef struct {
-        logic [31:0] next;
-    } cheshire_regs__num_int_harts__num_harts__in_t;
+        logic rd_ack;
+        cheshire_regs__llc_size__external__fields__in_t rd_data;
+    } cheshire_regs__llc_size__external__in_t;
+
+    typedef struct packed {
+        logic [7:0] _reserved_31_24;
+        logic [7:0] blue_width;
+        logic [7:0] green_width;
+        logic [7:0] red_width;
+    } cheshire_regs__vga_params__external__fields__in_t;
 
     typedef struct {
-        cheshire_regs__num_int_harts__num_harts__in_t num_harts;
-    } cheshire_regs__num_int_harts__in_t;
+        logic rd_ack;
+        cheshire_regs__vga_params__external__fields__in_t rd_data;
+    } cheshire_regs__vga_params__external__in_t;
 
     typedef struct {
-        logic next;
-    } cheshire_regs__hw_features__bootrom__in_t;
-
-    typedef struct {
-        logic next;
-    } cheshire_regs__hw_features__llc__in_t;
-
-    typedef struct {
-        logic next;
-    } cheshire_regs__hw_features__uart__in_t;
-
-    typedef struct {
-        logic next;
-    } cheshire_regs__hw_features__spi_host__in_t;
-
-    typedef struct {
-        logic next;
-    } cheshire_regs__hw_features__i2c__in_t;
-
-    typedef struct {
-        logic next;
-    } cheshire_regs__hw_features__gpio__in_t;
-
-    typedef struct {
-        logic next;
-    } cheshire_regs__hw_features__dma__in_t;
-
-    typedef struct {
-        logic next;
-    } cheshire_regs__hw_features__serial_link__in_t;
-
-    typedef struct {
-        logic next;
-    } cheshire_regs__hw_features__vga__in_t;
-
-    typedef struct {
-        logic next;
-    } cheshire_regs__hw_features__usb__in_t;
-
-    typedef struct {
-        logic next;
-    } cheshire_regs__hw_features__axirt__in_t;
-
-    typedef struct {
-        logic next;
-    } cheshire_regs__hw_features__clic__in_t;
-
-    typedef struct {
-        logic next;
-    } cheshire_regs__hw_features__irq_router__in_t;
-
-    typedef struct {
-        logic next;
-    } cheshire_regs__hw_features__bus_err__in_t;
-
-    typedef struct {
-        cheshire_regs__hw_features__bootrom__in_t bootrom;
-        cheshire_regs__hw_features__llc__in_t llc;
-        cheshire_regs__hw_features__uart__in_t uart;
-        cheshire_regs__hw_features__spi_host__in_t spi_host;
-        cheshire_regs__hw_features__i2c__in_t i2c;
-        cheshire_regs__hw_features__gpio__in_t gpio;
-        cheshire_regs__hw_features__dma__in_t dma;
-        cheshire_regs__hw_features__serial_link__in_t serial_link;
-        cheshire_regs__hw_features__vga__in_t vga;
-        cheshire_regs__hw_features__usb__in_t usb;
-        cheshire_regs__hw_features__axirt__in_t axirt;
-        cheshire_regs__hw_features__clic__in_t clic;
-        cheshire_regs__hw_features__irq_router__in_t irq_router;
-        cheshire_regs__hw_features__bus_err__in_t bus_err;
-    } cheshire_regs__hw_features__in_t;
-
-    typedef struct {
-        logic [31:0] next;
-    } cheshire_regs__llc_size__llc_size__in_t;
-
-    typedef struct {
-        cheshire_regs__llc_size__llc_size__in_t llc_size;
-    } cheshire_regs__llc_size__in_t;
-
-    typedef struct {
-        logic [7:0] next;
-    } cheshire_regs__vga_params__red_width__in_t;
-
-    typedef struct {
-        logic [7:0] next;
-    } cheshire_regs__vga_params__green_width__in_t;
-
-    typedef struct {
-        logic [7:0] next;
-    } cheshire_regs__vga_params__blue_width__in_t;
-
-    typedef struct {
-        cheshire_regs__vga_params__red_width__in_t red_width;
-        cheshire_regs__vga_params__green_width__in_t green_width;
-        cheshire_regs__vga_params__blue_width__in_t blue_width;
-    } cheshire_regs__vga_params__in_t;
-
-    typedef struct {
-        cheshire_regs__boot_mode__in_t boot_mode;
-        cheshire_regs__rtc_freq__in_t rtc_freq;
-        cheshire_regs__platform_rom__in_t platform_rom;
-        cheshire_regs__num_int_harts__in_t num_int_harts;
-        cheshire_regs__hw_features__in_t hw_features;
-        cheshire_regs__llc_size__in_t llc_size;
-        cheshire_regs__vga_params__in_t vga_params;
+        cheshire_regs__boot_mode__external__in_t boot_mode;
+        cheshire_regs__rtc_freq__external__in_t rtc_freq;
+        cheshire_regs__platform_rom__external__in_t platform_rom;
+        cheshire_regs__num_int_harts__external__in_t num_int_harts;
+        cheshire_regs__hw_features__external__in_t hw_features;
+        cheshire_regs__llc_size__external__in_t llc_size;
+        cheshire_regs__vga_params__external__in_t vga_params;
     } cheshire_regs__in_t;
 
-    typedef enum logic [1:0] {
-        cheshire_regs__BootMode__passive = 'h0,
-        cheshire_regs__BootMode__spi_sdcard = 'h1,
-        cheshire_regs__BootMode__spi_s25fs512s = 'h2,
-        cheshire_regs__BootMode__i2c_24xx1025 = 'h3
-    } cheshire_regs__BootMode_e;
+    typedef struct {
+        logic req;
+        logic req_is_wr;
+    } cheshire_regs__boot_mode__external__out_t;
+
+    typedef struct {
+        logic req;
+        logic req_is_wr;
+    } cheshire_regs__rtc_freq__external__out_t;
+
+    typedef struct {
+        logic req;
+        logic req_is_wr;
+    } cheshire_regs__platform_rom__external__out_t;
+
+    typedef struct {
+        logic req;
+        logic req_is_wr;
+    } cheshire_regs__num_int_harts__external__out_t;
+
+    typedef struct {
+        logic req;
+        logic req_is_wr;
+    } cheshire_regs__hw_features__external__out_t;
+
+    typedef struct {
+        logic req;
+        logic req_is_wr;
+    } cheshire_regs__llc_size__external__out_t;
+
+    typedef struct {
+        logic req;
+        logic req_is_wr;
+    } cheshire_regs__vga_params__external__out_t;
+
+    typedef struct {
+        cheshire_regs__boot_mode__external__out_t boot_mode;
+        cheshire_regs__rtc_freq__external__out_t rtc_freq;
+        cheshire_regs__platform_rom__external__out_t platform_rom;
+        cheshire_regs__num_int_harts__external__out_t num_int_harts;
+        cheshire_regs__hw_features__external__out_t hw_features;
+        cheshire_regs__llc_size__external__out_t llc_size;
+        cheshire_regs__vga_params__external__out_t vga_params;
+    } cheshire_regs__out_t;
 endpackage
