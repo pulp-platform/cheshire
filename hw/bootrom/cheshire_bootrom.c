@@ -18,8 +18,6 @@
 #include "hal/uart_debug.h"
 #include "gpt.h"
 
-extern int boot_next_stage(void *);
-
 int boot_passive(uint64_t core_freq) {
     // Initialize UART with debug settings
     uart_debug_init(&__base_uart, core_freq);
@@ -30,7 +28,7 @@ int boot_passive(uint64_t core_freq) {
         if (uart_debug_check(&__base_uart)) return uart_debug_serve(&__base_uart);
     // No UART (or JTAG) requests came in, but scratch[2][2] was set --> run code at scratch[1:0]
     scratch[2] = 0;
-    return boot_next_stage((void *)(uintptr_t)(((uint64_t)scratch[1] << 32) | scratch[0]));
+    return invoke((void *)(uintptr_t)(((uint64_t)scratch[1] << 32) | scratch[0]));
 }
 
 int boot_spi_sdcard(uint64_t core_freq, uint64_t rtc_freq) {
