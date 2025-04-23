@@ -11,7 +11,9 @@ stages:
 
 init:
   stage: nonfree
-  script: make nonfree-init
+  script: |
+    make nonfree-init
+    python3 -m pip install peakrdl --user
   artifacts:
     paths: [ nonfree/ci.yml ]
 
