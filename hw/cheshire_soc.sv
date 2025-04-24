@@ -107,7 +107,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   input  logic [UsbNumPorts-1:0] usb_dp_i,
   output logic [UsbNumPorts-1:0] usb_dp_o,
   output logic [UsbNumPorts-1:0] usb_dp_oe_o,
-  input  impl_in_t [2*Cfg.Cva6IcacheSetAssoc+2*Cfg.Cva6DcacheSetAssoc:0] cva6_sram_impl_i,
+  input  impl_in_t [Cfg.Cva6IcacheSetAssoc+2*Cfg.Cva6DcacheSetAssoc:0] cva6_sram_impl_i,
   input  impl_in_t [2*Cfg.LlcSetAssoc-1:0] llc_sram_impl_i
 );
 
