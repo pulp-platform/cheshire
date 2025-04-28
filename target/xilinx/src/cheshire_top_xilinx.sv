@@ -189,10 +189,12 @@ module cheshire_top_xilinx
     cheshire_cfg_t ret  = FPGACfg;
 `ifdef TARGET_C910
     ret.Core            = C910;
-    ret.AddrWidth       = soc910_pkg::AxiAddrWidth;
-    ret.AxiMaxMstTrans  = soc910_pkg::AxiMaxMstTrans;
-    ret.AxiMstIdWidth   = soc910_pkg::AxiIdWidthMaster;
-    ret.AxiUserWidth    = soc910_pkg::AxiUserWidth;
+    ret.AddrWidth       = 40;
+    ret.AxiDataWidth    = 64; // for SoC, the data path remain 64bit
+    // 8n(Non-cacheable/Device) + 28(cacheable) read + 8n(Non-cacheable/Device) + 32(cacheable) write
+    ret.AxiMaxMstTrans  = 76;
+    ret.AxiMstIdWidth   = 8;
+    ret.AxiUserWidth    = 2;
 `endif
     return ret;
   endfunction

@@ -628,13 +628,16 @@ package cheshire_pkg;
 
 `ifdef TARGET_C910
   // C910 config
+  localparam int unsigned C910AxiDataWidth = 128; // for C910 core axi, the data path is 128bit
   function automatic cheshire_cfg_t gen_cheshire_c910_cfg();
     cheshire_cfg_t ret  = DefaultCfg;
     ret.Core            = C910;
-    ret.AddrWidth       = soc910_pkg::AxiAddrWidth;
-    ret.AxiMaxMstTrans  = soc910_pkg::AxiMaxMstTrans;
-    ret.AxiMstIdWidth   = soc910_pkg::AxiIdWidthMaster;
-    ret.AxiUserWidth    = soc910_pkg::AxiUserWidth;
+    ret.AddrWidth       = 40;
+    ret.AxiDataWidth    = 64; // for SoC, the data path remain 64bit
+    // 8n(Non-cacheable/Device) + 28(cacheable) read + 8n(Non-cacheable/Device) + 32(cacheable) write
+    ret.AxiMaxMstTrans  = 76;
+    ret.AxiMstIdWidth   = 8;
+    ret.AxiUserWidth    = 2;
     return ret;
   endfunction
 `endif

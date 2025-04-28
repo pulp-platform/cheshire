@@ -577,11 +577,11 @@ module cheshire_soc import cheshire_pkg::*; #(
                             axi_user_t)
   // 128-bit axi master
   `CHESHIRE_TYPEDEF_AXI_CT( axi_c910,
-                          addr_t,
-                          logic[soc910_pkg::AxiIdWidthMaster-1:0],
-                          logic[soc910_pkg::AxiDataWidth-1:0],
-                          logic[soc910_pkg::AxiDataWidth/8-1:0],
-                          logic[soc910_pkg::AxiUserWidth-1:0]
+                            addr_t,
+                            logic[Cfg.AxiMstIdWidth-1:0],
+                            logic[C910AxiDataWidth-1:0],
+                            logic[C910AxiDataWidth/8-1:0],
+                            logic[Cfg.AxiUserWidth-1:0]
                           )
 `endif
 
@@ -670,12 +670,12 @@ module cheshire_soc import cheshire_pkg::*; #(
       c910_axi_wrap #(
         .AxiSetModifiable ( 1'b1              ),
         .AxiUnwrapBursts  ( 1'b1              ),
-        .AddrWidth        ( soc910_pkg::AxiAddrWidth    ),
-        .DataWidth        ( soc910_pkg::AxiDataWidth    ),
-        .IdWidth          ( soc910_pkg::AxiIdWidthMaster),
-        .UserWidth        ( soc910_pkg::AxiUserWidth    ),
-        .axi_req_t        ( axi_c910_req_t ),
-        .axi_rsp_t        ( axi_c910_rsp_t )
+        .AddrWidth        ( Cfg.AddrWidth     ),
+        .DataWidth        ( C910AxiDataWidth  ),
+        .IdWidth          ( Cfg.AxiMstIdWidth ),
+        .UserWidth        ( Cfg.AxiUserWidth  ),
+        .axi_req_t        ( axi_c910_req_t    ),
+        .axi_rsp_t        ( axi_c910_rsp_t    )
       ) i_c910_axi_wrap (
         .clk_i,
         .rst_ni,
@@ -750,7 +750,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
       axi_dw_converter #(
         .AxiMaxReads         ( 8                      ), // Number of outstanding reads
-        .AxiSlvPortDataWidth ( soc910_pkg::AxiDataWidth), // Data width of the slv port
+        .AxiSlvPortDataWidth ( C910AxiDataWidth       ), // Data width of the slv port
         .AxiMstPortDataWidth ( Cfg.AxiDataWidth       ), // Data width of the mst port
         .AxiAddrWidth        ( Cfg.AddrWidth          ), // Address width
         .AxiIdWidth          ( Cfg.AxiMstIdWidth      ), // ID width
@@ -818,11 +818,11 @@ module cheshire_soc import cheshire_pkg::*; #(
         );
       end else begin: gen_i_c910_bus_err
           axi_err_unit_wrap #(
-          .AddrWidth          ( Cfg.AddrWidth ),
-          .IdWidth            ( soc910_pkg::AxiIdWidthMaster   ),
-          .UserErrBits        ( Cfg.AxiUserErrBits ),
-          .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
-          .NumOutstanding     ( Cfg.CoreMaxTxns ),
+          .AddrWidth          ( Cfg.AddrWidth       ),
+          .IdWidth            ( Cfg.AxiMstIdWidth   ),
+          .UserErrBits        ( Cfg.AxiUserErrBits  ),
+          .UserErrBitsOffset  ( Cfg.AxiUserErrLsb   ),
+          .NumOutstanding     ( Cfg.CoreMaxTxns     ),
           .NumStoredErrors    ( 4 ),
           .DropOldest         ( 1'b0 ),
           .axi_req_t          ( axi_cva6_req_t ),
