@@ -6,14 +6,16 @@
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-BENDER ?= bender
-VLOGAN ?= vlogan
+BENDER    ?= bender
+VLOGAN    ?= vlogan
+VERILATOR ?= oseda /usr/scratch/kneiff/vlbuild/install/bin/verilator
 
 # Caution: Questasim requires this to point to the *actual* compiler install path
 CXX_PATH := $(shell which $(CXX))
 
-VLOG_ARGS   ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
-VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
+VLOG_ARGS      ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
+VLOGAN_ARGS    ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
+VERILATOR_ARGS ?= --binary -j 0 -Wall -Wno-fatal -Wno-BLKANDNBLK
 
 # Common Bender flags for Cheshire RTL
 CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t cv64a6_imafdcsclic_sv39
@@ -155,25 +157,38 @@ $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh: $(CHS_ROOT)/Bender.yml
 	$(BENDER) script vcs -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOGAN_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
 	chmod +x $@
 
-.PRECIOUS: $(CHS_ROOT)/target/sim/models
-$(CHS_ROOT)/target/sim/models:
-	mkdir -p $@
+$(CHS_ROOT)/target/sim/verilator/cheshire_soc.flist: $(CHS_ROOT)/Bender.yml
+	$(BENDER) script verilator $(CHS_BENDER_RTL_FLAGS) > $@
+	# TODO: Add verilator target for these upstream to avoid patch-in
+	echo '$(shell $(BENDER) path axi)/src/axi_sim_mem.sv' >> $@
+	echo '$(shell $(BENDER) path common_verification)/src/clk_rst_gen.sv' >> $@
+	echo '$(CHS_ROOT)/target/sim/src/elfloader.cpp' >> $@
+
+$(CHS_ROOT)/target/sim/verilator/V%: $(CHS_ROOT)/target/sim/verilator/cheshire_soc.flist
+	mkdir -p $(dir $@)
+	cd $(dir $@) && $(VERILATOR) $(VERILATOR_ARGS) -DASSERTS_OFF -f $< -top-module $*
+	ln -fs $(dir $@)/obj_dir/V$* $@
 
 # Download (partially non-free) simulation models from publically available sources;
 # by running these targets or targets depending on them, you accept this (see README.md).
-$(CHS_ROOT)/target/sim/models/s25fs512s.v: $(CHS_ROOT)/Bender.yml | $(CHS_ROOT)/target/sim/models
+$(CHS_ROOT)/target/sim/models/s25fs512s.v: $(CHS_ROOT)/Bender.yml
+	mkdir -p $(dir $@)
 	wget --no-check-certificate https://freemodelfoundry.com/fmf_vlog_models/flash/s25fs512s.v -O $@
 	touch $@
 
-$(CHS_ROOT)/target/sim/models/24FC1025.v: $(CHS_ROOT)/Bender.yml | $(CHS_ROOT)/target/sim/models
-	wget https://ww1.microchip.com/downloads/en/DeviceDoc/24xx1025_Verilog_Model.zip -o $@
-	unzip -p 24xx1025_Verilog_Model.zip 24FC1025.v > $@
-	rm 24xx1025_Verilog_Model.zip
+$(CHS_ROOT)/target/sim/models/24FC1025.v: $(CHS_ROOT)/Bender.yml
+	mkdir -p $(dir $@)
+	wget https://ww1.microchip.com/downloads/en/DeviceDoc/24xx1025_Verilog_Model.zip -O $@.zip
+	unzip -p $@.zip 24FC1025.v > $@
+	rm $@.zip
 
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh
+CHS_SIM_ALL += $(CHS_ROOT)/target/sim/verilator/cheshire_soc.flist
+
+CHS_VERILATOR_ALL += $(CHS_ROOT)/target/sim/verilator/Vtb_cheshire_soc
 
 ###########
 # DRAMSys #
@@ -196,14 +211,15 @@ include $(CHS_ROOT)/target/xilinx/xilinx.mk
 
 CHS_ALL += $(CHS_SW_ALL) $(CHS_HW_ALL) $(CHS_SIM_ALL)
 
-chs-all:         $(CHS_ALL)
-chs-sw-all:      $(CHS_SW_ALL)
-chs-hw-all:      $(CHS_HW_ALL)
-chs-bootrom-all: $(CHS_BOOTROM_ALL)
-chs-sim-all:     $(CHS_SIM_ALL)
-chs-dramsys-all: $(CHS_DRAMSYS_ALL)
-chs-xilinx-all:  $(CHS_XILINX_ALL)
+chs-all:           $(CHS_ALL)
+chs-sw-all:        $(CHS_SW_ALL)
+chs-hw-all:        $(CHS_HW_ALL)
+chs-bootrom-all:   $(CHS_BOOTROM_ALL)
+chs-sim-all:       $(CHS_SIM_ALL)
+chs-verilator-all: $(CHS_VERILATOR_ALL)
+chs-dramsys-all:   $(CHS_DRAMSYS_ALL)
+chs-xilinx-all:    $(CHS_XILINX_ALL)
 
-CHS_PHONY += chs-all chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-dramsys-all chs-xilinx-all
+CHS_PHONY += chs-all chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-verilator-all chs-dramsys-all chs-xilinx-all
 
 .PHONY: $(CHS_PHONY)

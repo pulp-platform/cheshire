@@ -30,21 +30,26 @@ module tb_cheshire_soc #(
     if (!$value$plusargs("IMAGE=%s",    boot_hex))      boot_hex      = "";
 
     // Set boot mode and preload boot image if there is one
+`ifndef VERILATOR
     fix.vip.set_boot_mode(boot_mode);
     fix.vip.i2c_eeprom_preload(boot_hex);
     fix.vip.spih_norflash_preload(boot_hex);
+`endif
 
     // Wait for reset
     fix.vip.wait_for_reset();
 
+`ifndef VERILATOR
     // Preload in idle mode or wait for completion in autonomous boot
     if (boot_mode == 0) begin
       // Idle boot: preload with the specified mode
       case (preload_mode)
         0: begin      // JTAG
+`endif
           fix.vip.jtag_init();
           fix.vip.jtag_elf_run(preload_elf);
           fix.vip.jtag_wait_for_eoc(exit_code);
+`ifndef VERILATOR
         end 1: begin  // Serial Link
           fix.vip.slink_elf_run(preload_elf);
           fix.vip.slink_wait_for_eoc(exit_code);
@@ -61,9 +66,10 @@ module tb_cheshire_soc #(
       fix.vip.jtag_init();
       fix.vip.jtag_wait_for_eoc(exit_code);
     end
+`endif
 
     // Wait for the UART to finish reading the current byte
-    wait (fix.vip.uart_reading_byte == 0);
+    fix.vip.uart_flush();
 
     $finish;
   end
