@@ -109,9 +109,6 @@ _fp_init:
     fmv.d f30, f0
     fmv.d f31, f0
 
-    // Set FS state to "Clean"
-    csrrc x0, mstatus, t1
-
     // Full fence, then jump to main
     fence
     call main
