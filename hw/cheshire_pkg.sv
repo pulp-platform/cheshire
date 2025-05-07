@@ -101,6 +101,7 @@ package cheshire_pkg;
     dw_bt   AxiUserErrBits;
     dw_bt   AxiUserErrLsb;
     doub_bt AxiUserDefault; // Default user assignment, adjusted by user features (AMO)
+    shrt_bt AxiAtopNumReservations;
     // Reg parameters
     dw_bt   RegMaxReadTxns;
     dw_bt   RegMaxWriteTxns;
@@ -591,6 +592,7 @@ package cheshire_pkg;
     AxiUserErrBits    : 0,
     AxiUserErrLsb     : 0,
     AxiUserDefault    : 0,
+    AxiAtopNumReservations : 2,
     RegMaxReadTxns    : 8,
     RegMaxWriteTxns   : 8,
     RegAmoNumCuts     : 1,

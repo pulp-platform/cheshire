@@ -335,6 +335,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
     .RiscvWordWidth   ( 64 ),
     .NAxiCuts         ( Cfg.RegAmoNumCuts ),
+    .NumReservations  ( Cfg.AxiAtopNumReservations ),
     .axi_req_t        ( axi_slv_req_t ),
     .axi_rsp_t        ( axi_slv_rsp_t )
   ) i_reg_atomics (
@@ -461,6 +462,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
       .RiscvWordWidth   ( 64 ),
       .NAxiCuts         ( Cfg.LlcAmoNumCuts ),
+      .NumReservations  ( Cfg.AxiAtopNumReservations ),
       .axi_req_t        ( axi_slv_req_t ),
       .axi_rsp_t        ( axi_slv_rsp_t )
     ) i_llc_atomics (
@@ -824,6 +826,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
     .RiscvWordWidth   ( 64 ),
     .NAxiCuts         ( Cfg.DbgAmoNumCuts ),
+    .NumReservations  ( Cfg.AxiAtopNumReservations ),
     .axi_req_t        ( axi_slv_req_t ),
     .axi_rsp_t        ( axi_slv_rsp_t )
   ) i_dbg_slv_axi_atomics (
@@ -1384,6 +1387,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
       .RiscvWordWidth   ( 64 ),
       .NAxiCuts         ( Cfg.DmaConfAmoNumCuts ),
+      .NumReservations  ( Cfg.AxiAtopNumReservations ),
       .axi_req_t        ( axi_slv_req_t ),
       .axi_rsp_t        ( axi_slv_rsp_t )
     ) i_dma_conf_atomics (
