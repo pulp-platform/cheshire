@@ -82,8 +82,10 @@
         *(NAME##_dma_src_ptr()) = (uint64_t)src; \
         *(NAME##_dma_dst_ptr()) = (uint64_t)dst; \
         *(NAME##_dma_num_bytes_ptr()) = size; \
-        *(NAME##_dma_num_reps_ptr()) = 0; \
-        *(NAME##_dma_conf_ptr()) = conf; \
+        *(NAME##_dma_conf_ptr()) = conf | (1 << IDMA_REG64_2D_CONF_ENABLE_ND_BIT); \
+        *(NAME##_dma_src_stride_ptr()) = 0; \
+        *(NAME##_dma_dst_stride_ptr()) = 0; \
+        *(NAME##_dma_num_reps_ptr()) = 1; \
         return *(NAME##_dma_nextid_ptr()); \
     } \
 \
