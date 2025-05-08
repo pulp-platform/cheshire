@@ -88,6 +88,13 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   `DDR3_INTF
 `endif
 
+`ifdef USE_SLINK
+  input  logic [SlinkNumChan-1:0]                     slink_rcv_clk_i,
+  output logic [SlinkNumChan-1:0]                     slink_rcv_clk_o,
+  input  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_i,
+  output logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_o,
+`endif
+
   output logic  uart_tx_o,
   input  logic  uart_rx_i,
 
@@ -103,7 +110,6 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   function automatic cheshire_cfg_t gen_cheshire_xilinx_cfg();
     cheshire_cfg_t ret  = DefaultCfg;
     ret.RtcFreq         = 1000000;
-    ret.SerialLink      = 0;
   `ifdef USE_USB
     ret.Usb = 1;
   `else
@@ -527,10 +533,17 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .dbg_active_o       ( ),
     .dbg_ext_req_o      ( ),
     .dbg_ext_unavail_i  ( '0 ),
+`ifdef USE_SLINK
+    .slink_rcv_clk_i,
+    .slink_rcv_clk_o,
+    .slink_i,
+    .slink_o,
+`else
     .slink_rcv_clk_i    ( 1'b1 ),
     .slink_rcv_clk_o    ( ),
     .slink_i            ( '0 ),
     .slink_o            ( ),
+`endif
 `ifdef USE_JTAG
     .jtag_tck_i,
     .jtag_trst_ni,
@@ -538,6 +551,13 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .jtag_tdi_i,
     .jtag_tdo_o,
     // TODO: connect to the tdo pad
+    .jtag_tdo_oe_o      ( ),
+`else
+    .jtag_tck_i         ( 1'b0 ),
+    .jtag_trst_ni       ( 1'b0 ),
+    .jtag_tms_i         ( 1'b0 ),
+    .jtag_tdi_i         ( 1'b0 ),
+    .jtag_tdo_o         ( ),
     .jtag_tdo_oe_o      ( ),
 `endif
     .i2c_sda_o          ( i2c_sda_soc_out ),
@@ -559,6 +579,12 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .vga_red_o,
     .vga_green_o,
     .vga_blue_o,
+`else
+    .vga_hsync_o       ( ),
+    .vga_vsync_o       ( ),
+    .vga_red_o         ( ),
+    .vga_green_o       ( ),
+    .vga_blue_o        ( ),
 `endif
     .uart_tx_o,
     .uart_rx_i,
