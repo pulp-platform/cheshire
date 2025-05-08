@@ -28,6 +28,7 @@
   `define USE_USB
   `define USE_STARTUPE2
   `define USE_QSPI
+  `define USE_SLINK
 `endif
 
 `ifdef TARGET_ZCU102

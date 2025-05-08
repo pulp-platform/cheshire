@@ -119,6 +119,16 @@ set_output_delay -min -clock $usb_clk [expr { 0.10 * $SOC_TCK }] [get_ports {usb
 set_output_delay -max -clock $usb_clk [expr { 0.35 * $SOC_TCK }] [get_ports {usb_d*_o usb_d*_oe}]
 
 ###############
+# Serial Link #
+###############
+
+# TODO: These are very preliminary
+set_input_delay -min -clock $soc_clk [expr { 0.10 * $SOC_TCK }] [get_ports {slink*i}]
+set_input_delay -max -clock $soc_clk [expr { 0.15 * $SOC_TCK }] [get_ports {slink*i}]
+set_output_delay -min -clock $soc_clk [expr { 0.10 * $SOC_TCK }] [get_ports {slink*o}]
+set_output_delay -max -clock $soc_clk [expr { 0.15 * $SOC_TCK }] [get_ports {slink*o}]
+
+###############
 # Assign Pins #
 ###############
 
@@ -199,6 +209,7 @@ set_property -dict { PACKAGE_PIN Y29   IOSTANDARD LVCMOS33 } [get_ports { jtag_t
 set_property -dict { PACKAGE_PIN AE30  IOSTANDARD LVCMOS33 } [get_ports { i2c_scl_io }]; #IO_L16P_T2_13 Sch=sys_scl
 set_property -dict { PACKAGE_PIN AF30  IOSTANDARD LVCMOS33 } [get_ports { i2c_sda_io }]; #IO_L16N_T2_13 Sch=sys_sda
 
+# TODO: Remap to XADC so we can use more SLINK pins?
 # PMOD Header JA (USB 1.1 Adapter)
 set_property -dict { PACKAGE_PIN U27   IOSTANDARD LVCMOS33 } [get_ports { usb_dm_io[3] }]; #IO_L13P_T2_MRCC_14 Sch=ja_p[1]
 set_property -dict { PACKAGE_PIN U28   IOSTANDARD LVCMOS33 } [get_ports { usb_dp_io[3] }]; #IO_L13N_T2_MRCC_14 Sch=ja_n[1]
@@ -208,5 +219,25 @@ set_property -dict { PACKAGE_PIN T22   IOSTANDARD LVCMOS33 } [get_ports { usb_dm
 set_property -dict { PACKAGE_PIN T23   IOSTANDARD LVCMOS33 } [get_ports { usb_dp_io[1] }]; #IO_L5N_T0_D07_14 Sch=ja_n[3]
 set_property -dict { PACKAGE_PIN T20   IOSTANDARD LVCMOS33 } [get_ports { usb_dm_io[0] }]; #IO_L4P_T0_D04_14 Sch=ja_p[4]
 set_property -dict { PACKAGE_PIN T21   IOSTANDARD LVCMOS33 } [get_ports { usb_dp_io[0] }]; #IO_L4N_T0_D05_14 Sch=ja_n[4]
+
+## PMOD Header JC (SLINK 4x RX)
+set_property -dict { PACKAGE_PIN AC26  IOSTANDARD LVCMOS33 } [get_ports { slink_i[0] }]; #IO_L19P_T3_13 Sch=jc[1]
+set_property -dict { PACKAGE_PIN AJ27  IOSTANDARD LVCMOS33 } [get_ports { slink_i[1] }]; #IO_L20P_T3_13 Sch=jc[2]
+set_property -dict { PACKAGE_PIN AH30  IOSTANDARD LVCMOS33 } [get_ports { slink_i[2] }]; #IO_L18N_T2_13 Sch=jc[3]
+set_property -dict { PACKAGE_PIN AK29  IOSTANDARD LVCMOS33 } [get_ports { slink_i[3] }]; #IO_L15P_T2_DQS_13 Sch=jc[4]
+#set_property -dict { PACKAGE_PIN AD26  IOSTANDARD LVCMOS33 } [get_ports { jc[4] }]; #IO_L19N_T3_VREF_13 Sch=jc[7]
+#set_property -dict { PACKAGE_PIN AG30  IOSTANDARD LVCMOS33 } [get_ports { jc[5] }]; #IO_L18P_T2_13 Sch=jc[8]
+#set_property -dict { PACKAGE_PIN AK30  IOSTANDARD LVCMOS33 } [get_ports { jc[6] }]; #IO_L15N_T2_DQS_13 Sch=jc[9]
+set_property -dict { PACKAGE_PIN AK28  IOSTANDARD LVCMOS33 } [get_ports { slink_rcv_clk_i }]; #IO_L20N_T3_13 Sch=jc[10]
+
+## PMOD Header JD (SLINK 4x TX)
+set_property -dict { PACKAGE_PIN V27   IOSTANDARD LVCMOS33 } [get_ports { slink_o[0] }]; #IO_L16N_T2_A15_D31_14 Sch=jd[1]
+set_property -dict { PACKAGE_PIN Y30   IOSTANDARD LVCMOS33 } [get_ports { slink_o[1] }]; #IO_L8P_T1_13 Sch=jd[2]
+set_property -dict { PACKAGE_PIN V24   IOSTANDARD LVCMOS33 } [get_ports { slink_o[2] }]; #IO_L23N_T3_A02_D18_14 Sch=jd[3]
+set_property -dict { PACKAGE_PIN W22   IOSTANDARD LVCMOS33 } [get_ports { slink_o[3] }]; #IO_L24N_T3_A00_D16_14 Sch=jd[4]
+#set_property -dict { PACKAGE_PIN U24   IOSTANDARD LVCMOS33 } [get_ports { jd[4] }]; #IO_L23P_T3_A03_D19_14 Sch=jd[7]
+#set_property -dict { PACKAGE_PIN Y26   IOSTANDARD LVCMOS33 } [get_ports { jd[5] }]; #IO_L1P_T0_13 Sch=jd[8]
+#set_property -dict { PACKAGE_PIN V22   IOSTANDARD LVCMOS33 } [get_ports { jd[6] }]; #IO_L22N_T3_A04_D20_14 Sch=jd[9]
+set_property -dict { PACKAGE_PIN W21   IOSTANDARD LVCMOS33 } [get_ports { slink_rcv_clk_o }]; #IO_L24P_T3_A01_D17_14 Sch=jd[10]
 
 # tclint-enable line-length, spacing
