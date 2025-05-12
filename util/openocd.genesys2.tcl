@@ -4,11 +4,11 @@
 #
 # OpenOCD script for Cheshire on Genesys2.
 
-adapter_khz 8000
-interface ftdi
-ftdi_vid_pid 0x0403 0x6010
-ftdi_layout_init 0x00e8 0x60eb
-ftdi_channel 0
+adapter speed 8000
+adapter driver ftdi
+ftdi vid_pid 0x0403 0x6010
+ftdi layout_init 0x00e8 0x60eb
+ftdi channel 0
 set irlen 5
 
 source [file dirname [info script]]/openocd.common.tcl
