@@ -20,9 +20,6 @@ set SOC_TCK 20.0
 set soc_clk_pin [get_pins i_clkwiz/clk_50]
 set soc_clk [get_clocks -of_objects $soc_clk_pin]
 
-# TODO: This should not be necessary...
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets sys_clk]
-
 
 ############
 # Switches #
