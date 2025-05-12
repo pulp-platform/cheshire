@@ -150,7 +150,7 @@ int section_index = 0;
 extern "C" {
   char get_entry(long long *entry_ret);
   char get_section(long long *address_ret, long long *len_ret);
-  char read_section(long long address, const svOpenArrayHandle buffer, long long len);
+  char read_section_chunk(long long base, long long offset, char* buffer, long long len);
   char read_elf(const char *filename);
 }
 
@@ -187,27 +187,25 @@ extern "C" char get_section(long long *address_ret, long long *len_ret)
   }
 }
 
-extern "C" char read_section(long long address, const svOpenArrayHandle buffer, long long len)
+extern "C" char read_section_chunk(long long base, long long offset, char* buffer, long long len)
 {
-  // get actual pointer
-  char *buf = (char *) svGetArrayPtr(buffer);
-  
-  // check that the address points to a section
-  if (!mems.count(address)) {
-    printf("[ELF] ERROR: No section found for address %p\n", address);
+  // check that the base address points to a section
+  if (!mems.count(base)) {
+    printf("[ELF] ERROR: No section found for base address %p\n", base);
     return -1;
   }
-  
-  // copy array
-  long long int len_tmp = len;
-  for (auto &datum : mems.find(address)->second) {
-    if(len_tmp-- == 0){
-      printf("[ELF] ERROR: Copied 0x%lx bytes. Buffer is full but there is still data available.\n", len);
-      return -1;
-    }
 
-    *buf++ = datum;
+  // get memory vector for this section
+  auto mem = mems.find(base)->second;
+
+  // check for out-of-bounds access
+  if (offset < 0 || len < 0 || offset + len > mem.size()) {
+    printf("[ELF] ERROR: Offset %0p, length %d out of bounds for section at %p with length %d\n", offset, len, base, mem.size());
+    return -1;
   }
+
+  // copy data to SV array
+  std::copy(mem.begin() + offset, mem.begin() + offset + len, buffer);
 
   return 0;
 }
