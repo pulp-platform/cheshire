@@ -1544,7 +1544,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .reg2hw_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t ),
       .NumChannels  ( SlinkNumChan   ),
       .NumLanes     ( SlinkNumLanes  ),
-      .MaxClkDiv    ( SlinkMaxClkDiv )
+      .MaxClkDiv    ( SlinkMaxClkDiv ),
+      .NoRegCdc     ( 1 )
     ) i_serial_link (
       .clk_i,
       .rst_ni,
