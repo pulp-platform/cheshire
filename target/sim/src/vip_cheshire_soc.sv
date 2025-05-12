@@ -884,46 +884,44 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   // Load a binary
   task automatic slink_elf_preload(input string binary, output doub_bt entry);
-    longint sec_addr, sec_len, remain, page_left, offset;
+    longint sec_addr, sec_len;
     $display("[SLINK] Preloading ELF binary: %s", binary);
     if (read_elf(binary))
       $fatal(1, "[SLINK] Failed to load ELF!");
     while (get_section(sec_addr, sec_len)) begin
       byte bf[] = new [sec_len];
+      int burst_len;
       $display("[SLINK] Preloading section at 0x%h (%0d bytes)", sec_addr, sec_len);
       if (read_section(sec_addr, bf, sec_len)) $fatal(1, "[SLINK] Failed to read ELF section!");
-      // Write section in bursts ≤ SlinkBurstBytes that never cross a 4 KiB page
-      offset = 0;
-      while (offset < sec_len) begin
-        int burst_len, bus_offset;
+      // Write section in bursts <= SlinkBurstBytes that never cross a 4 KiB page
+      for (longint sec_offs = 0; sec_offs < sec_len; sec_offs += burst_len) begin
+        longint sec_left, page_left;
         axi_data_t beats[$];
-        addr_t  addr_cur  = sec_addr + offset;
-        remain    = sec_len - offset;
-        page_left = 4096 - (addr_cur & 12'hFFF);
-        if (offset != 0) begin
-          $display("[SLINK] - %0d/%0d bytes (%0d%%)", offset, sec_len,
-                   offset*100/(sec_len > 1 ? sec_len - 1 : 1));
+        int bus_offs;
+        addr_t addr_cur = sec_addr + sec_offs;
+        if (sec_offs != 0) begin
+          $display("[SLINK] - %0d/%0d bytes (%0d%%)", sec_offs, sec_len,
+                   sec_offs*100/(sec_len > 1 ? sec_len - 1 : 1));
         end
         // By default the burst length is SlinkBurstBytes
         burst_len = SlinkBurstBytes;
         // Cut the burst length if it exceeds the remaining section length
-        // or it crosses a 4 KiB page boundary
-        if (burst_len > remain)    burst_len = int'(remain);
+        // or it crosses a 4 KiB page boundary
+        sec_left  = sec_len - sec_offs;
+        page_left = 4096 - (addr_cur & 12'hFFF);
+        if (burst_len > sec_left)  burst_len = int'(sec_left);
         if (burst_len > page_left) burst_len = int'(page_left);
-
-        bus_offset = addr_cur[AxiStrbBits-1:0];
+        bus_offs = addr_cur[AxiStrbBits-1:0];
         // Assemble beats, handling unaligned start in the first beat
-        for (int b = -bus_offset; b < burst_len; b += AxiStrbWidth) begin
+        for (int b = -bus_offs; b < burst_len; b += AxiStrbWidth) begin
           axi_data_t beat = '0;
           for (int e = 0; e < AxiStrbWidth; ++e)
             if (b + e >= 0 && b + e < burst_len)
-              beat[8*e +: 8] = bf[offset + b + e];
+              beat[8*e +: 8] = bf[sec_offs + b + e];
           beats.push_back(beat);
         end
-
-        // Address must be beat‑aligned for axi_write
-        slink_write_beats(addr_cur - bus_offset, AxiStrbBits, beats);
-        offset += burst_len;
+        // Address must be beat‑aligned for slink_write_beats
+        slink_write_beats(addr_cur - bus_offs, AxiStrbBits, beats);
       end
     end
     void'(get_entry(entry));
