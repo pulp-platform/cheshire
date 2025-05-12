@@ -21,28 +21,28 @@ import argparse
 
 # Parse arguments.
 parser = argparse.ArgumentParser(description="Generate thestral_bootrom.sv")
-parser.add_argument("BINARY",
-                    help="Binary image for which to create a bootrom")
 parser.add_argument(
-    "--sv-module",
-    "-m",
+    "BINARY",
+    help="Binary image for which to create a bootrom"
+)
+parser.add_argument(
+    "--sv-module", "-m",
     metavar="BINARY",
-    help=
-    "Combinatorial SystemVerilog module with `reg_interface`. Name of the SystemVerilog module"
+    help="Combinatorial SystemVerilog module with `reg_interface`. Name of the SystemVerilog module"
 )
 # Parse arguments.
 parser.add_argument(
-    "-p",
-    "--pad",
+    "-p", "--pad",
     action="store",
     default=0,
     type=int,
-    help=
-    "Pad to next power of two (if the value is not a power of two it is rounded appropriately)"
+    help="Pad to next power of two (if the value is not a power of two it is rounded appropriately)"
 )
-parser.add_argument("--arm-rom",
-                    action="store_true",
-                    help="Generate am Arm ROM code file.")
+parser.add_argument(
+    "--arm-rom",
+    action="store_true",
+    help="Generate am Arm ROM code file."
+)
 args = parser.parse_args()
 
 # Read the bootrom binary.
@@ -127,7 +127,7 @@ module {module_name} #(
     always_comb begin
         data_o = '0;
         unique case (word)
-        {words};
+            {words};
             default: data_o = '0;
         endcase
     end
