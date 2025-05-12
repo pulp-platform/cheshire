@@ -192,5 +192,9 @@ $(foreach link,$(CHS_SW_LINK_MODES),$(eval CHS_SW_TEST_DUMP += $(CHS_SW_TEST_C_L
 CHS_SW_TEST_ROM_DUMP = $(filter %.rom.dump,$(CHS_SW_TEST_DUMP))
 CHS_SW_TESTS += $(CHS_SW_TEST_ROM_DUMP:.rom.dump=.rom.memh) $(CHS_SW_TEST_ROM_DUMP:.rom.dump=.gpt.memh)
 
+# Generate .memh targets for DRAM-linked tests
+CHS_SW_TEST_DRAM_DUMP = $(filter %.dram.dump,$(CHS_SW_TEST_DUMP))
+CHS_SW_TESTS += $(CHS_SW_TEST_DRAM_DUMP:.dram.dump=.dram.memh)
+
 # Add all dumps to test build
 CHS_SW_TESTS += $(CHS_SW_TEST_DUMP)
