@@ -14,7 +14,7 @@ package:
 dependencies:
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.1  }
   axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.6 }
-  axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",                version: 0.2.1  }
+  axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc",                    rev: 3b772f8106d03dbe6f8b84ae1c52b8dee9ac56bf }
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.8.2  }
   axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: 0.0.0-alpha.10 }
   axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",                version: 0.1.3  }
@@ -29,6 +29,7 @@ dependencies:
   register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",     version: 0.4.4  }
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              version: 0.8.1  }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.1  }
+  tagger:                   { git: "https://github.com/pulp-platform/transaction-tagger.git",     rev: b288376    }
   unbent:                   { git: "https://github.com/pulp-platform/unbent.git",                 version: 0.1.6  }
   dram_rtl_sim:             { git: "https://github.com/pulp-platform/dram_rtl_sim.git",           version: 0.1.1  }
 
