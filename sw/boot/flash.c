@@ -59,10 +59,10 @@ int flash_i2c_24fc1025(uint64_t core_freq, void *img_base) {
 int main() {
     int ret;
     // Read reference frequency and compute core frequency
-    uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
+    uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_CHESHIRE_REGS_RTC_FREQ_REG_OFFSET);
     uint64_t core_freq = clint_get_core_freq(rtc_freq, 2500);
     // Get arguments from scratch registers
-    volatile uint32_t *scratch = reg32(&__base_regs, CHESHIRE_SCRATCH_0_REG_OFFSET);
+    volatile uint32_t *scratch = reg32(&__base_regs, CHESHIRE_CHESHIRE_REGS_SCRATCH_0_REG_OFFSET);
     uint64_t target = scratch[0];
     void *img_base = (void *)(uintptr_t)scratch[1];
     uint64_t sector = scratch[2];

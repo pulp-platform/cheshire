@@ -90,6 +90,6 @@ static inline void *gprw(void *gp) {
 
 // Check if a hardware feature is present from software
 static inline uint32_t chs_hw_feature_present(uint32_t bit) {
-    uint32_t features_bitmap = *reg32(&__base_regs, CHESHIRE_HW_FEATURES_REG_OFFSET);
+    uint32_t features_bitmap = *reg32(&__base_regs, CHESHIRE_CHESHIRE_REGS_HW_FEATURES_REG_OFFSET);
     return (features_bitmap & BIT(bit)) != 0;
 }

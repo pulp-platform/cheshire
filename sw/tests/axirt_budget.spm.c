@@ -12,6 +12,7 @@
 #include "params.h"
 #include "regs/axi_rt.h"
 #include "regs/cheshire.h"
+#include "regs/cheshire_rdl.h"
 #include "util.h"
 
 #define CVA6_BASE_MGR_ID 0
@@ -24,14 +25,14 @@
 
 int main(void) {
     // Immediately return an error if AXI_REALM or DMA are not present
-    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_HW_FEATURES_AXIRT_BIT));
-    CHECK_ASSERT(-2, chs_hw_feature_present(CHESHIRE_HW_FEATURES_DMA_BIT));
+    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_REGS__HW_FEATURES__AXIRT_bp));
+    CHECK_ASSERT(-2, chs_hw_feature_present(CHESHIRE_REGS__HW_FEATURES__DMA_bp));
 
     // This test requires at least two subordinate regions
     CHECK_ASSERT(-3, AXI_RT_PARAM_NUM_SUB >= 2);
 
     // Get internal hart count
-    int num_int_harts = *reg32(&__base_regs, CHESHIRE_NUM_INT_HARTS_REG_OFFSET);
+    int num_int_harts = *reg32(&__base_regs, CHESHIRE_CHESHIRE_REGS_NUM_INT_HARTS_REG_OFFSET);
 
     // Allocate DMA buffers
     volatile uint64_t dma_src_cached[DMA_NUM_BEATS];

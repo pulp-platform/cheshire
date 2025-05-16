@@ -71,6 +71,13 @@ chs-nonfree-init:
 
 -include $(CHS_ROOT)/nonfree/nonfree.mk
 
+#################
+# Addrmap setup #
+#################
+
+PEAKRDL_INCLUDES := -I $(CHS_ROOT)/hw/regs/rdl
+PEAKRDL_INCLUDES += -I $(CHS_SLINK_DIR)/src/regs/rdl
+
 ############
 # Build SW #
 ############
@@ -81,13 +88,10 @@ include $(CHS_ROOT)/sw/sw.mk
 # Generate HW #
 ###############
 
-RDL_INC := -I $(CHS_ROOT)/hw/regs/rdl
-RDL_INC += -I $(CHS_SLINK_DIR)/src/regs/rdl
-
 # SoC registers
 $(CHS_ROOT)/hw/regs/rtl/cheshire_regs_pkg.sv $(CHS_ROOT)/hw/regs/rtl/cheshire_regs_top.sv $(CHS_ROOT)/hw/include/cheshire_addrmap.svh: $(CHS_ROOT)/hw/regs/rdl/cheshire_regs.rdl
 	$(PEAKRDL) regblock $(CHS_ROOT)/hw/regs/rdl/cheshire_regs.rdl -o $(CHS_ROOT)/hw/regs/rtl/ --cpuif apb4-flat --default-reset arst_n
-	$(PEAKRDL) raw-header $(CHS_ROOT)/hw/regs/rdl/cheshire.rdl -o $(CHS_ROOT)/hw/include/cheshire_addrmap.svh --format svh $(RDL_INC)
+	$(PEAKRDL) raw-header $(CHS_ROOT)/hw/regs/rdl/cheshire.rdl -o $(CHS_ROOT)/hw/include/cheshire_addrmap.svh --format svh $(PEAKRDL_INCLUDES)
 
 # CLINT
 CLINTCORES ?= 1
@@ -116,7 +120,7 @@ SLINK_NUM_BITS ?= 8
 
 # Custom serial link
 $(CHS_SLINK_DIR)/.generated:
-	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs BENDER="$(BENDER)" SLINK_NUM_BITS="$(SLINK_NUM_BITS)"" && touch $@
+	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs BENDER="$(BENDER)" SLINK_NUM_BITS="$(SLINK_NUM_BITS)" && touch $@
 
 # iDMA
 include $(IDMA_ROOT)/idma.mk

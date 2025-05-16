@@ -7,5 +7,7 @@ waive --rule=typedef-structs-unions --location="hw/regs/*"
 waive --rule=line-length --location="hw/regs/*"
 waive --rule=no-trailing-spaces --location="hw/regs/*"
 waive --rule=parameter-name-style --location="hw/regs/*"
+waive --rule=generate-label --location="hw/regs/*"
+waive --rule=explicit-parameter-storage-type --location="hw/regs/*"
 # Package contains long lines
 waive --rule=line-length --location="hw/cheshire_pkg.sv"

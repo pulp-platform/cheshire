@@ -14,7 +14,8 @@
 addrmap cheshire #(
     longint unsigned LlcSpmCachedOffset = 0x1000_0000,
     longint unsigned LlcSpmUncachedOffset = 0x1400_0000,
-    longint unsigned LlcSpmSize = 64*1024*1024
+    longint unsigned LlcSpmSize = 64*1024*1024,
+    longint unsigned SlinkNumBits = 8
 ) {
     // debug_rom debug_rom @0x0000_0000;
 
@@ -34,7 +35,9 @@ addrmap cheshire #(
     // I2C I2C @0x0300_3000;
     // SPI_Host SPI_Host @0x0300_4000;
     // GPIO GPIO @0x0300_5000;
-    serial_link_single_channel_reg serial_link @0x0300_6000;
+    serial_link_single_channel_reg #(
+        .NumBits(SlinkNumBits)
+    ) serial_link @0x0300_6000;
     // VGA VGA @0x0300_7000;
     // USB USB @0x0300_8000;
     // UNBENT UNBENT @0x0300_9000; -> update other repo

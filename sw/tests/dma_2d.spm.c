@@ -9,10 +9,11 @@
 #include "util.h"
 #include "dif/clint.h"
 #include "dif/dma.h"
+#include "regs/cheshire_rdl.h"
 
 int main(void) {
     // Immediately return an error if DMA is not present
-    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_HW_FEATURES_DMA_BIT));
+    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_REGS__HW_FEATURES__DMA_bp));
 
     volatile char src_cached[] = "This is a DMA test";
     volatile char gold[] = "This ishis is is is as is a DMA test!";

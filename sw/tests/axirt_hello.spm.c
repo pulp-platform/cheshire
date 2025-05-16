@@ -9,6 +9,7 @@
 // Simple payload to test AXI-RT
 
 #include "regs/cheshire.h"
+#include "regs/cheshire_rdl.h"
 #include "dif/clint.h"
 #include "dif/uart.h"
 #include "axirt.h"
@@ -18,15 +19,15 @@
 
 int main(void) {
     // Immediately return an error if AXI_REALM, DMA, or UART are not present
-    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_HW_FEATURES_AXIRT_BIT));
-    CHECK_ASSERT(-2, chs_hw_feature_present(CHESHIRE_HW_FEATURES_DMA_BIT));
-    CHECK_ASSERT(-3, chs_hw_feature_present(CHESHIRE_HW_FEATURES_UART_BIT));
+    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_REGS__HW_FEATURES__AXIRT_bp));
+    CHECK_ASSERT(-2, chs_hw_feature_present(CHESHIRE_REGS__HW_FEATURES__DMA_bp));
+    CHECK_ASSERT(-3, chs_hw_feature_present(CHESHIRE_REGS__HW_FEATURES__UART_bp));
 
     // This test requires at least two subordinate regions
     CHECK_ASSERT(-4, AXI_RT_PARAM_NUM_SUB >= 2);
 
     char str[] = "Hello AXI-RT!\r\n";
-    uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
+    uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_CHESHIRE_REGS_RTC_FREQ_REG_OFFSET);
     uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
 
     // Enable and configure AXI REALM
@@ -42,7 +43,7 @@ int main(void) {
     __axirt_set_period(100, 1, 0);
 
     // Configure DMA
-    int chs_dma_id = *reg32(&__base_regs, CHESHIRE_NUM_INT_HARTS_REG_OFFSET) + 1;
+    int chs_dma_id = *reg32(&__base_regs, CHESHIRE_CHESHIRE_REGS_NUM_INT_HARTS_REG_OFFSET) + 1;
     __axirt_set_region(0, 0xffffffff, 0, chs_dma_id);
     __axirt_set_region(0x100000000, 0xffffffffffffffff, 1, chs_dma_id);
     __axirt_set_budget(0x10000000, 0, chs_dma_id);
