@@ -1014,7 +1014,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     num_int_harts : '{
       rd_ack: 1'b1,
       rd_data: '{
-        num_int_harts: NumIntHarts,
+        num_harts: NumIntHarts,
         default: '0
       }
     },
@@ -1074,7 +1074,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .apb_rsp_i  ( chs_regs_apb_rsp )
   );
 
-  cheshire_regs_top i_regs (
+  cheshire_regs i_regs (
     .clk           ( clk_i  ),
     .arst_n        ( rst_ni ),
     .s_apb_psel    ( chs_regs_apb_req.psel    ),
@@ -1603,8 +1603,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .r_chan_t     ( axi_mst_r_chan_t  ),
       .w_chan_t     ( axi_mst_w_chan_t  ),
       .b_chan_t     ( axi_mst_b_chan_t  ),
-      .hw2reg_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t ),
-      .reg2hw_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t ),
+      .hw2reg_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg__in_t  ),
+      .reg2hw_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg__out_t ),
       .NumChannels  ( SlinkNumChan   ),
       .NumLanes     ( SlinkNumLanes  ),
       .MaxClkDiv    ( SlinkMaxClkDiv )

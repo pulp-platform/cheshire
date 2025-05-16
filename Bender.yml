@@ -29,7 +29,7 @@ dependencies:
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
   register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",     version: 0.4.5  }
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              version: 0.8.1  }
-  serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.1  }
+  serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            rev: rdl  }
   unbent:                   { git: "https://github.com/pulp-platform/unbent.git",                 version: 0.1.6  }
   dram_rtl_sim:             { git: "https://github.com/pulp-platform/dram_rtl_sim.git",           version: 0.1.1  }
 
@@ -41,7 +41,7 @@ sources:
   - hw/future/spinal_usb_ohci.sv
   - hw/bootrom/cheshire_bootrom.sv
   - hw/regs/rtl/cheshire_regs_pkg.sv
-  - hw/regs/rtl/cheshire_regs_top.sv
+  - hw/regs/rtl/cheshire_regs.sv
   - hw/cheshire_idma_wrap.sv
   - hw/cheshire_pkg.sv
   - hw/cheshire_soc.sv

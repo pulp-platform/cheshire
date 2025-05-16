@@ -10,3 +10,4 @@ markdown-grid-tables
 tclint==0.4.2
 flatdict
 peakrdl
+peakrdl-rawheader @ git+https://github.com/micprog/peakrdl-rawheader.git

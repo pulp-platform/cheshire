@@ -8,6 +8,7 @@
 
 BENDER ?= bender
 VLOGAN ?= vlogan
+PEAKRDL ?= peakrdl
 
 # Caution: Questasim requires this to point to the *actual* compiler install path
 CXX_PATH := $(shell which $(CXX))
@@ -31,8 +32,6 @@ AXIRTROOT         := $(shell $(BENDER) path axi_rt)
 AXI_VGA_ROOT      := $(shell $(BENDER) path axi_vga)
 IDMA_ROOT         := $(shell $(BENDER) path idma)
 DRAM_RTL_SIM_ROOT := $(shell $(BENDER) path dram_rtl_sim)
-
-PEAKRDL := peakrdl
 
 ################
 # Dependencies #
@@ -82,9 +81,13 @@ include $(CHS_ROOT)/sw/sw.mk
 # Generate HW #
 ###############
 
+RDL_INC := -I $(CHS_ROOT)/hw/regs/rdl
+RDL_INC += -I $(CHS_SLINK_DIR)/src/regs/rdl
+
 # SoC registers
-$(CHS_ROOT)/hw/regs/rtl/cheshire_regs_pkg.sv $(CHS_ROOT)/hw/regs/rtl/cheshire_regs_top.sv: $(CHS_ROOT)/hw/regs/rdl/cheshire_regs.rdl
-	peakrdl regblock $(CHS_ROOT)/hw/regs/rdl/cheshire_regs.rdl -o $(CHS_ROOT)/hw/regs/rtl/ --cpuif apb4-flat --default-reset arst_n
+$(CHS_ROOT)/hw/regs/rtl/cheshire_regs_pkg.sv $(CHS_ROOT)/hw/regs/rtl/cheshire_regs_top.sv $(CHS_ROOT)/hw/include/cheshire_addrmap.svh: $(CHS_ROOT)/hw/regs/rdl/cheshire_regs.rdl
+	$(PEAKRDL) regblock $(CHS_ROOT)/hw/regs/rdl/cheshire_regs.rdl -o $(CHS_ROOT)/hw/regs/rtl/ --cpuif apb4-flat --default-reset arst_n
+	$(PEAKRDL) raw-header $(CHS_ROOT)/hw/regs/rdl/cheshire.rdl -o $(CHS_ROOT)/hw/include/cheshire_addrmap.svh --format svh $(RDL_INC)
 
 # CLINT
 CLINTCORES ?= 1
@@ -109,16 +112,19 @@ include $(AXI_VGA_ROOT)/axi_vga.mk
 $(AXI_VGA_ROOT)/.generated:
 	flock -x $@ $(MAKE) axi_vga && touch $@
 
+SLINK_NUM_BITS ?= 8
+
 # Custom serial link
-$(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
-	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
-	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs BENDER="$(BENDER)" && touch $@
+$(CHS_SLINK_DIR)/.generated:
+	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs BENDER="$(BENDER)" SLINK_NUM_BITS="$(SLINK_NUM_BITS)"" && touch $@
 
 # iDMA
 include $(IDMA_ROOT)/idma.mk
 
 CHS_HW_ALL += $(IDMA_FULL_RTL)
-CHS_HW_ALL += $(CHS_ROOT)/hw/regs/rtl/cheshire_regs_pkg.sv $(CHS_ROOT)/hw/regs/rtl/cheshire_regs_top.sv
+CHS_HW_ALL += $(CHS_ROOT)/hw/regs/rtl/cheshire_regs_pkg.sv
+CHS_HW_ALL += $(CHS_ROOT)/hw/regs/rtl/cheshire_regs_top.sv
+CHS_HW_ALL += $(CHS_ROOT)/hw/include/cheshire_addrmap.svh
 CHS_HW_ALL += $(CLINTROOT)/.generated
 CHS_HW_ALL += $(OTPROOT)/.generated
 CHS_HW_ALL += $(AXIRTROOT)/.generated

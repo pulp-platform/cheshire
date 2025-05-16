@@ -9,6 +9,8 @@
 // Collects all existing verification IP (VIP) in one module for use in testbenches of
 // Cheshire-based SoCs and Chips. IOs are of inout direction where applicable.
 
+`include "cheshire_addrmap.svh"
+
 module vip_cheshire_soc import cheshire_pkg::*; #(
   // DUT (must be set)
   parameter cheshire_cfg_t DutCfg           = '0,
@@ -382,7 +384,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   // Wait for termination signal and get return code
   task automatic jtag_wait_for_eoc(output word_bt exit_code);
-    jtag_poll_bit0(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, exit_code, 800);
+    jtag_poll_bit0(AmRegs + `CHESHIRE_CHESHIRE_REGS_SCRATCH_2_REG_OFFSET, exit_code, 800);
     exit_code >>= 1;
     if (exit_code) $error("[JTAG] FAILED: return code %0d", exit_code);
     else $display("[JTAG] SUCCESS");
@@ -726,8 +728,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .r_chan_t     ( axi_mst_r_chan_t  ),
     .w_chan_t     ( axi_mst_w_chan_t  ),
     .b_chan_t     ( axi_mst_b_chan_t  ),
-    .hw2reg_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t ),
-    .reg2hw_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t ),
+    .hw2reg_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg__in_t ),
+    .reg2hw_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg__out_t ),
     .NumChannels  ( SlinkNumChan   ),
     .NumLanes     ( SlinkNumLanes  ),
     .MaxClkDiv    ( SlinkMaxClkDiv )
@@ -940,16 +942,16 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     // Preload
     slink_elf_preload(binary, entry);
     // Write entry point
-    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_1_OFFSET, entry[63:32]);
-    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_0_OFFSET, entry[32:0]);
+    slink_write_32(AmRegs + `CHESHIRE_CHESHIRE_REGS_SCRATCH_1_REG_OFFSET, entry[63:32]);
+    slink_write_32(AmRegs + `CHESHIRE_CHESHIRE_REGS_SCRATCH_0_REG_OFFSET, entry[32:0]);
     // Resume hart 0
-    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, 2);
+    slink_write_32(AmRegs + `CHESHIRE_CHESHIRE_REGS_SCRATCH_2_REG_OFFSET, 2);
     $display("[SLINK] Wrote launch signal and entry point 0x%h", entry);
   endtask
 
   // Wait for termination signal and get return code
   task automatic slink_wait_for_eoc(output word_bt exit_code);
-    slink_poll_bit0(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, exit_code, 800);
+    slink_poll_bit0(AmRegs + `CHESHIRE_CHESHIRE_REGS_SCRATCH_2_REG_OFFSET, exit_code, 800);
     exit_code >>= 1;
     if (exit_code) $error("[SLINK] FAILED: return code %0d", exit_code);
     else $display("[SLINK] SUCCESS");

@@ -197,11 +197,12 @@ packages:
     - common_cells
     - tech_cells_generic
   serial_link:
-    revision: 5a25f5a71074f1ebb6de7b5280f2b16924bcc666
-    version: 1.1.1
+    revision: 92a29adec0b30f8a85cb74e09ede8665a819cccd
+    version: null
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:
+    - apb
     - axi
     - common_cells
     - register_interface
