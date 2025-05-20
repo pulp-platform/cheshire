@@ -12,7 +12,7 @@ package:
     - "Thomas Benz <tbenz@iis.ee.ethz.ch>"
 
 dependencies:
-  apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.1  }
+  apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               rev: nw/refactor }
   axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.6 }
   axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",                version: 0.2.1  }
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.8.2  }

@@ -1,0 +1,24 @@
+# Copyright 2024 ETH Zurich and University of Bologna
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+package:
+  name: obi_peripherals
+  authors:
+    - "Philippe Sauter <phsauter@iis.ee.ethz.ch>"
+    - "Hannah Pochert  <hpochert@ethz.ch>"
+
+dependencies:
+  common_cells: { git: "https://github.com/pulp-platform/common_cells.git",   version: 1.37.0 }
+  obi:          { git: "https://github.com/pulp-platform/obi.git",            version: 0.1.3  }
+
+sources:
+  # obi_uart
+  - hw/obi_uart/obi_uart_pkg.sv
+  - hw/obi_uart/obi_uart_baudgen.sv
+  - hw/obi_uart/obi_uart_interrupts.sv
+  - hw/obi_uart/obi_uart_modem.sv
+  - hw/obi_uart/obi_uart_rx.sv
+  - hw/obi_uart/obi_uart_tx.sv
+  - hw/obi_uart/obi_uart_register.sv
+  - hw/obi_uart/obi_uart.sv
