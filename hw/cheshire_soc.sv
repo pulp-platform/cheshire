@@ -664,18 +664,27 @@ module cheshire_soc import cheshire_pkg::*; #(
         .axi_resp_i       ( core_out_rsp )
       );
     end else begin : gen_c910_core
-      axi_c910_req_t c910_out_req_s1, c910_out_req_s2, c910_out_req_s3;
-      axi_c910_rsp_t c910_out_rsp_s1, c910_out_rsp_s2, c910_out_rsp_s3;
+      axi_c910_req_t c910_out_req_s1, c910_out_req_s2;
+      axi_c910_rsp_t c910_out_rsp_s1, c910_out_rsp_s2;
 
       c910_axi_wrap #(
-        .AxiSetModifiable ( 1'b1              ),
-        .AxiUnwrapBursts  ( 1'b1              ),
-        .AddrWidth        ( Cfg.AddrWidth     ),
-        .DataWidth        ( C910AxiDataWidth  ),
-        .IdWidth          ( Cfg.AxiMstIdWidth ),
-        .UserWidth        ( Cfg.AxiUserWidth  ),
-        .axi_req_t        ( axi_c910_req_t    ),
-        .axi_rsp_t        ( axi_c910_rsp_t    )
+        .AxiSetModifiable     ( 1'b1              ),
+        .AxiUnwrapBursts      ( 1'b1              ),
+        .AxiUndecrementBurst  ( 1'b1              ),
+        .AxiZeroMem           ( 1'b1              ),
+        .AddrWidth            ( Cfg.AddrWidth     ),
+        .DataWidth            ( C910AxiDataWidth  ),
+        .IdWidth              ( Cfg.AxiMstIdWidth ),
+        .UserWidth            ( Cfg.AxiUserWidth  ),
+        // AXI channel structs
+        .aw_chan_t          ( axi_c910_aw_chan_t),
+        .w_chan_t           ( axi_c910_w_chan_t ),
+        .b_chan_t           ( axi_c910_b_chan_t ),
+        .ar_chan_t          ( axi_c910_ar_chan_t),
+        .r_chan_t           ( axi_c910_r_chan_t ),
+        // AXI request & response structs
+        .axi_req_t          ( axi_c910_req_t    ),
+        .axi_rsp_t          ( axi_c910_rsp_t    )
       ) i_c910_axi_wrap (
         .clk_i,
         .rst_ni,
@@ -702,9 +711,9 @@ module cheshire_soc import cheshire_pkg::*; #(
         .axi_rsp_i        ( c910_out_rsp_s1)
       );
 
-      axi_burst_undec #(
-      // the whole burst length in bit
-        .TotalBurstLength ( 512 ),
+      // axi fifo to close timing
+      axi_cut #(
+        .Bypass       ( 0 ),
       // AXI channel structs
         .aw_chan_t    ( axi_c910_aw_chan_t ),
         .w_chan_t     ( axi_c910_w_chan_t  ),
@@ -714,38 +723,15 @@ module cheshire_soc import cheshire_pkg::*; #(
       // AXI request & response structs
         .axi_req_t     ( axi_c910_req_t     ),
         .axi_resp_t    ( axi_c910_rsp_t     )
-      ) i_c910_axi_burst_undec (
-          .clk_i,  // Clock
-          .rst_ni,  // Asynchronous reset active low
-          // slave port
-          .slv_req_i    (c910_out_req_s1 ),
-          .slv_resp_o   (c910_out_rsp_s1 ),
-          // master port
-          .mst_req_o    (c910_out_req_s2),
-          .mst_resp_i   (c910_out_rsp_s2)
-      );
-
-      // axi fifo to close timing
-      axi_cut #(
-        .Bypass       ( 0 ),
-    // AXI channel structs
-        .aw_chan_t    ( axi_c910_aw_chan_t ),
-        .w_chan_t     ( axi_c910_w_chan_t  ),
-        .b_chan_t     ( axi_c910_b_chan_t  ),
-        .ar_chan_t    ( axi_c910_ar_chan_t ),
-        .r_chan_t     ( axi_c910_r_chan_t  ),
-    // AXI request & response structs
-        .axi_req_t     ( axi_c910_req_t     ),
-        .axi_resp_t    ( axi_c910_rsp_t     )
       ) i_c910_timing_axi_cut (
         .clk_i,  // Clock
         .rst_ni,  // Asynchronous reset active low
         // slave port
-        .slv_req_i    (c910_out_req_s2 ),
-        .slv_resp_o   (c910_out_rsp_s2 ),
+        .slv_req_i    (c910_out_req_s1 ),
+        .slv_resp_o   (c910_out_rsp_s1 ),
         // master port
-        .mst_req_o    (c910_out_req_s3),
-        .mst_resp_i   (c910_out_rsp_s3)
+        .mst_req_o    (c910_out_req_s2),
+        .mst_resp_i   (c910_out_rsp_s2)
       );
 
       axi_dw_converter #(
@@ -769,26 +755,11 @@ module cheshire_soc import cheshire_pkg::*; #(
         .clk_i,
         .rst_ni,
         // Slave interface
-        .slv_req_i          ( c910_out_req_s3 ),
-        .slv_resp_o         ( c910_out_rsp_s3 ),
+        .slv_req_i          ( c910_out_req_s2 ),
+        .slv_resp_o         ( c910_out_rsp_s2 ),
         // Master interface
         .mst_req_o          ( core_out_req ),
         .mst_resp_i         ( core_out_rsp )
-      );
-
-      ace_dummy_handler #(
-        .aw_chan_t  ( axi_slv_aw_chan_t ),
-        .w_chan_t   ( axi_slv_w_chan_t  ),
-        .b_chan_t   ( axi_slv_b_chan_t  ),
-        .ar_chan_t  ( axi_slv_ar_chan_t ),
-        .r_chan_t   ( axi_slv_r_chan_t  ),
-        .axi_req_t  ( axi_slv_req_t ),
-        .axi_resp_t ( axi_slv_rsp_t )
-      ) i_ace_dummy_handler (
-        .clk_i,
-        .rst_ni,
-        .axi_slv_req_i ( axi_out_req[AxiOut.ace] ),
-        .axi_slv_rsp_o ( axi_out_rsp[AxiOut.ace] )
       );
     end
 

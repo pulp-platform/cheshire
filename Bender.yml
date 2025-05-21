@@ -13,7 +13,7 @@ package:
 
 dependencies:
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.1  }
-  axi:                      { git: "https://github.com/pulp-platform/axi.git",                    rev: f1434931   }
+  axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.7 }
   axi_llc:                  { git: "https://github.com/Aquaticfuller/axi_llc.git",                rev: edae8021   }
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.8.1  }
   axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: 0.0.0-alpha.4 }
@@ -30,7 +30,7 @@ dependencies:
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              rev: f69f6342   } # zx/cheshire_c910
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 1.1.0  }
   unbent:                   { git: "https://github.com/pulp-platform/unbent.git",                 version: 0.1.5  }
-  pulp_c910:                { git: "https://github.com/pulp-platform/pulp-c910.git",              rev: 6341db3b   } # dev_zx_cheshire_c910
+  pulp-c910:                { git: "https://github.com/pulp-platform/pulp-c910.git",              rev: 1360293e   } # stage
 
 export_include_dirs:
   - hw/include

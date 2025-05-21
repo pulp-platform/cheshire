@@ -1,11 +1,4 @@
 packages:
-  ace:
-    revision: c7f8705195eb0bd72761dd8f92304fabb5b1737a
-    version: null
-    source:
-      Git: https://github.com/pulp-platform/ace.git
-    dependencies:
-    - axi
   apb:
     revision: 77ddf073f194d44b9119949d2421be59789e69ae
     version: 0.2.4
@@ -22,8 +15,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: f14349315fe1bc5f0ac93156baaab9d9d3bd06d0
-    version: null
+    revision: f07498d53ecd5518b277c7d213ec3b71ca4df93c
+    version: 0.39.7
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -51,8 +44,8 @@ packages:
     - common_cells
     - common_verification
   axi_rt:
-    revision: 641ea950e24722af747033f2ab85f0e48ea8d7f8
-    version: 0.0.0-alpha.9
+    revision: 50153a346b753dc2bc7723c446656a43db35d02d
+    version: 0.0.0-alpha.10
     source:
       Git: https://github.com/pulp-platform/axi_rt.git
     dependencies:
@@ -151,8 +144,8 @@ packages:
     - common_cells
     - register_interface
     - tech_cells_generic
-  pulp_c910:
-    revision: 6341db3bd41d372a471d16631b478d86a44eda75
+  pulp-c910:
+    revision: 1360293ede00ac15d35fac09d7f06c2490d10ec4
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp-c910.git
