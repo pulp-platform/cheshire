@@ -48,7 +48,7 @@ The boot ROM supports four builtin boot modes chosen from by the `boot_mode_i` p
 | `0b00`              | Passive Preload       | JTAG, Serial Link, or UART |
 | `0b01`              | SD Card               | SPI                        |
 | `0b10`              | NOR Flash (S25FS512S) | SPI                        |
-| `0b10`              | EEPROM (24FC1025)     | I2C                        |
+| `0b11`              | EEPROM (24FC1025)     | I2C                        |
 
 
 Should a program invoked by the boot ROM return, the boot ROM will attempt to yield control to an external debugger if present, such as GDB, using the `ebreak` instruction.
