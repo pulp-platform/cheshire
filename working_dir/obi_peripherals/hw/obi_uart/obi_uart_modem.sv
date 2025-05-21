@@ -8,7 +8,7 @@
 
 `include "common_cells/registers.svh"
 
-/// Synchronizes incoming modem signals, outputs modem signals and handles loopback 
+/// Synchronizes incoming modem signals, outputs modem signals and handles loopback
 module obi_uart_modem import obi_uart_pkg::*; #()
 (
   input  logic clk_i,
@@ -26,10 +26,10 @@ module obi_uart_modem import obi_uart_pkg::*; #()
   input  reg_read_t reg_read_i,
   output MSR_bits_t reg_write_o
 );
-  // Flow control is left to SW. UART Modem Control only writes modem inputs to 
+  // Flow control is left to SW. UART Modem Control only writes modem inputs to
   // register and sets modem outputs from the register.
 
-  // Modem inputs and outputs are active low. Values seen in the signals are the opposite of 
+  // Modem inputs and outputs are active low. Values seen in the signals are the opposite of
   // the ones read from or written to the modem status/control registers !
 
   //--Modem-Control-Signals-----------------------------------------------------------------------
@@ -42,39 +42,39 @@ module obi_uart_modem import obi_uart_pkg::*; #()
   // Modem Input Synchronisation //
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
-  sync #( 
-    .STAGES (NrSyncStages) 
+  sync #(
+    .STAGES (NrSyncStages)
   ) i_sync_cts (
-    .clk_i, 
-    .rst_ni, 
-    .serial_i(cts_ni), 
+    .clk_i,
+    .rst_ni,
+    .serial_i(cts_ni),
     .serial_o(sync_cts_n)
-  
+
   );
-  sync #( 
-    .STAGES (NrSyncStages) 
+  sync #(
+    .STAGES (NrSyncStages)
   ) i_sync_dsr (
-    .clk_i, 
-    .rst_ni, 
-    .serial_i(dsr_ni), 
+    .clk_i,
+    .rst_ni,
+    .serial_i(dsr_ni),
     .serial_o(sync_dsr_n)
   );
 
-  sync #( 
-    .STAGES (NrSyncStages) 
+  sync #(
+    .STAGES (NrSyncStages)
   ) i_sync_ri (
-    .clk_i, 
-    .rst_ni, 
-    .serial_i(ri_ni),  
+    .clk_i,
+    .rst_ni,
+    .serial_i(ri_ni),
     .serial_o(sync_ri_n)
   );
 
-  sync #( 
-    .STAGES (NrSyncStages) 
+  sync #(
+    .STAGES (NrSyncStages)
   ) i_sync_cd (
-    .clk_i, 
-    .rst_ni, 
-    .serial_i(cd_ni),  
+    .clk_i,
+    .rst_ni,
+    .serial_i(cd_ni),
     .serial_o(sync_cd_n)
   );
 
@@ -82,7 +82,7 @@ module obi_uart_modem import obi_uart_pkg::*; #()
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // Modem Input/Output and Loopback //
   ////////////////////////////////////////////////////////////////////////////////////////////////
-  
+
   always_comb begin
     if(reg_read_i.mcr.loopback == 1'b1) begin
       rts_no  = 1'b1;
@@ -107,16 +107,16 @@ module obi_uart_modem import obi_uart_pkg::*; #()
     end
   end
 
-  `FF(sync_cts_n_q, sync_cts_n_d, '1, clk_i, rst_ni) 
-  `FF(sync_dsr_n_q, sync_dsr_n_d, '1, clk_i, rst_ni) 
-  `FF(sync_ri_n_q, sync_ri_n_d, '1, clk_i, rst_ni) 
-  `FF(sync_cd_n_q, sync_cd_n_d, '1, clk_i, rst_ni) 
+  `FF(sync_cts_n_q, sync_cts_n_d, '1, clk_i, rst_ni)
+  `FF(sync_dsr_n_q, sync_dsr_n_d, '1, clk_i, rst_ni)
+  `FF(sync_ri_n_q, sync_ri_n_d, '1, clk_i, rst_ni)
+  `FF(sync_cd_n_q, sync_cd_n_d, '1, clk_i, rst_ni)
 
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // Modem to MSR //
   ////////////////////////////////////////////////////////////////////////////////////////////////
-  
+
   // Modem Inputs are negated
   assign reg_write_o.cts  = ~sync_cts_n_d;
   assign reg_write_o.dsr  = ~sync_dsr_n_d;

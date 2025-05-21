@@ -56,17 +56,17 @@ module obi_uart_baudgen import obi_uart_pkg::*; #()
   assign divisor_valid = ~(divisor == 0);
   assign oversample_is_divisor = (oversample_count == divisor) & divisor_valid;
   // clear on reaching the divisor or when configuration changes
-  assign oversample_clear = oversample_is_divisor | reg_read_i.obi_write_dllm; 
+  assign oversample_clear = oversample_is_divisor | reg_read_i.obi_write_dllm;
 
   counter #(
-    .WIDTH           (16), 
+    .WIDTH           (16),
     .STICKY_OVERFLOW (0)
   ) i_oversample_counter (
-    .clk_i, 
+    .clk_i,
     .rst_ni,
     .clear_i   ( oversample_clear ), // Synchronous clear: Sets Counter 0 in the next cycle
     .en_i      ( divisor_valid    ), // Count only if configuration is high
-    .load_i    ( 1'b0             ),  
+    .load_i    ( 1'b0             ),
     .down_i    ( 1'b0             ), // Count upwards
     .d_i       ( '0               ),
     .q_o       ( oversample_count ),
@@ -85,14 +85,14 @@ module obi_uart_baudgen import obi_uart_pkg::*; #()
   assign baud_clear = baud_count_overflow | reg_read_i.obi_write_dllm;
 
   counter #(
-    .WIDTH          (4), 
+    .WIDTH          (4),
     .STICKY_OVERFLOW(0)
   ) i_baudrate_counter (
-    .clk_i, 
+    .clk_i,
     .rst_ni,
     .clear_i   ( baud_clear            ), // Synchronous clear: Sets Counter 0 in the next cycle
-    .en_i      ( oversample_is_divisor ), // Count every time oversample counter hits its target      
-    .load_i    ( 1'b0                  ),  
+    .en_i      ( oversample_is_divisor ), // Count every time oversample counter hits its target
+    .load_i    ( 1'b0                  ),
     .down_i    ( 1'b0                  ), // Count upwards
     .d_i       ( '0                    ),
     .q_o       ( baud_count            ),
@@ -102,13 +102,13 @@ module obi_uart_baudgen import obi_uart_pkg::*; #()
   // oversample hits target, counter overflows on the next clock cycle and then clears itself
   // therefore baud_rate_edge_o is high in the same cycle as oversample_rate_edge_o
   assign baud_rate_edge_o = baud_count_overflow;
-  
+
   // Double baud rate directly generated from baudrate counter
   assign count_is_double    = (baud_count[2:0] == '0); // last three bits zero
   // clear_double turns the pulse off after one clock cycle
   assign clear_double_d     = count_is_double;
   assign double_rate_edge_o = count_is_double & ~clear_double_q;
-  
+
   `FF(clear_double_q, clear_double_d, '0, clk_i, rst_ni)
 
 endmodule

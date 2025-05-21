@@ -51,19 +51,22 @@ module obi_uart_rx import obi_uart_pkg::*; #()
   logic fifo_push;
   logic fifo_pop;
   // FIFO Write
-  logic break_interrupt; 
-  logic [3:0] fifo_error_index_q, fifo_error_index_d; 
+  logic break_interrupt;
+  logic [3:0] fifo_error_index_q, fifo_error_index_d;
   // FIFO trigger
-  logic [3:0] tl_characters; 
+  logic [3:0] tl_characters;
   // FIFO timeout
-  logic [5:0] timeout_trigger; 
+  // longest character: 1 start, 8 data, 1 parity, 2 stop -> 12bit
+  // timeout occurs after 4 characters -> 48bit -> $clog2(48) = 6
+  logic [3:0] character_length;
+  logic [5:0] timeout_level;
   logic [5:0] timeout_count_q, timeout_count_d;
 
   //--Write-Read-FIFO-or-Write-RHR----------------------------------------------------------------
   logic rhr_full_q, rhr_full_d;
 
   //--Statemachine-Transition-Signals-------------------------------------------------------------
-  state_type_rx state_q, state_d;
+  state_type_rx_e state_q, state_d;
   logic rsr_finish;
   logic par_finish;
   logic stop_finish;
@@ -91,17 +94,18 @@ module obi_uart_rx import obi_uart_pkg::*; #()
   //----------------------------------------------------------------------------------------------
 
   //--Clear-Counter-------------------------------------------------------------------------------
-  assign timing_clear = ((timing_count == 5'b01111) && oversample_rate_edge_i) | (timing_init_clear) ? 1'b1 : 1'b0;
+  assign timing_clear = ((timing_count == 5'b01111) && oversample_rate_edge_i)
+                        | (timing_init_clear) ? 1'b1 : 1'b0;
 
   counter #(
-    .WIDTH          (5), 
+    .WIDTH          (5),
     .STICKY_OVERFLOW(0)
   ) i_counter (
-    .clk_i, 
+    .clk_i,
     .rst_ni,
     .clear_i   (timing_clear),         // Synchronous clear: Sets Counter 0 in the next cycle
-    .en_i      (oversample_rate_edge_i),        
-    .load_i    (timing_load),  
+    .en_i      (oversample_rate_edge_i),
+    .load_i    (timing_load),
     .down_i    (1'b0),                 // Always count upwards
     .d_i       (timing_offset),
     .q_o       (timing_count),
@@ -125,12 +129,12 @@ module obi_uart_rx import obi_uart_pkg::*; #()
   //----------------------------------------------------------------------------------------------
   // 2-Stage Input Synchronization
   //----------------------------------------------------------------------------------------------
-  sync #( 
-    .STAGES (NrSyncStages) 
+  sync #(
+    .STAGES (NrSyncStages)
   ) i_sync (
-    .clk_i, 
-    .rst_ni, 
-    .serial_i(rxd_i), 
+    .clk_i,
+    .rst_ni,
+    .serial_i(rxd_i),
     .serial_o(sync_rxd)
   );
 
@@ -138,7 +142,7 @@ module obi_uart_rx import obi_uart_pkg::*; #()
   // 3-Sample Majority Filter
   //----------------------------------------------------------------------------------------------
   // The Majority Filter takes 3 samples and sets filtered_rxd high if at least 2 of them are high
-  
+
   always_comb begin
 
     high_count_d = high_count_q;
@@ -154,13 +158,13 @@ module obi_uart_rx import obi_uart_pkg::*; #()
           filtered_rxd_d = 1'b1;
         end else begin
           filtered_rxd_d = 1'b0;
-        end 
+        end
       end
     end
 
   end
 
-  `FF(high_count_q, high_count_d, '0, clk_i, rst_ni) 
+  `FF(high_count_q, high_count_d, '0, clk_i, rst_ni)
   `FF(filtered_rxd_q, filtered_rxd_d, 1'b1, clk_i, rst_ni)
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -168,16 +172,16 @@ module obi_uart_rx import obi_uart_pkg::*; #()
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
   fifo_v3 # (
-    .FALL_THROUGH(),   
-    .DATA_WIDTH  (11), 
-    .DEPTH       (16), 
+    .FALL_THROUGH(),
+    .DATA_WIDTH  (11),
+    .DEPTH       (16),
     .dtype       (),
     .ADDR_DEPTH  ()  // DO NOT OVERWRITE THIS PARAMETER
   ) i_fifo_v3 (
     .clk_i,                   // Clock
     .rst_ni,                  // Asynchronous reset active low
     .flush_i   (fifo_clear),  // flush the queue
-    .testmode_i(1'b0),       
+    .testmode_i(1'b0),
     // status flags
     .full_o    (fifo_full),   // queue is full
     .empty_o   (fifo_empty),  // queue is empty
@@ -189,7 +193,7 @@ module obi_uart_rx import obi_uart_pkg::*; #()
     .data_o    (fifo_data_o), // output data
     .pop_i     (fifo_pop)     // pop head from queue
   );
-  
+
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // General Logic //
   ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -205,14 +209,14 @@ module obi_uart_rx import obi_uart_pkg::*; #()
 
     trigger_o       = 1'b0;    // trigger_o
     tl_characters = 4'b0001; // trigger_o
-    
+
     fifo_push     = 1'b0; // Write
     fifo_data_i   = '0;   // Write
-    
+
     timeout_count_d = timeout_count_q;
     timeout_o         = 1'b0; // timeout_o
-    timeout_trigger = '0;
-    
+    timeout_level = '0;
+
     fifo_error_index_d = fifo_error_index_q; // FIFO Error
 
     //--Register Interface------------------------------------------------------------------------
@@ -221,14 +225,14 @@ module obi_uart_rx import obi_uart_pkg::*; #()
     //--Statemachine Combinational----------------------------------------------------------------
     state_d       = state_q; // Pass along state
     rsr_d         = rsr_q;
-    bitcount_d    = bitcount_q;  
+    bitcount_d    = bitcount_q;
     parity_err_d  = parity_err_q;
     framing_err_d = framing_err_q;
     break_d       = break_q; // Break Interrupt information for Parity and Stop Bits
 
     rsr_finish  = 1'b0;
     par_finish  = 1'b0;
-    stop_finish = 1'b0;   
+    stop_finish = 1'b0;
     write_init  = 1'b0;
 
     data_parity = 1'b0;
@@ -243,14 +247,14 @@ module obi_uart_rx import obi_uart_pkg::*; #()
     rhr_full_d = rhr_full_q;
 
     //--------------------------------------------------------------------------------------------
-    // Word Length 
+    // Word Length
     //--------------------------------------------------------------------------------------------
     case (reg_read_i.lcr.word_len)
       2'b00: word_len_bits = 3'b100; // 5 Bits (4th index in rsr)
       2'b01: word_len_bits = 3'b101; // 6 Bits (5th index in rsr)
       2'b10: word_len_bits = 3'b110; // 7 Bits (6th index in rsr)
       2'b11: word_len_bits = 3'b111; // 8 Bits (7th index in rsr)
-      default: word_len_bits = 3'b111; 
+      default: word_len_bits = 3'b111;
     endcase
 
     //--------------------------------------------------------------------------------------------
@@ -258,7 +262,7 @@ module obi_uart_rx import obi_uart_pkg::*; #()
     //--------------------------------------------------------------------------------------------
 
     //-Clear-RHR-and-Reset-Data-Ready-Bit---------------------------------------------------------
-    if (reg_read_i.obi_read_rhr) begin 
+    if (reg_read_i.obi_read_rhr) begin
       reg_write_o.rhr        = '0;
       reg_write_o.rhr_valid  = 1'b1;
 
@@ -267,7 +271,7 @@ module obi_uart_rx import obi_uart_pkg::*; #()
       reg_write_o.data_ready = 1'b0;
       reg_write_o.dr_valid   = 1'b1;
     end
-    
+
     if (reg_read_i.obi_read_lsr) begin // Clear LSR
       reg_write_o.overrun_err   = 1'b0;
       reg_write_o.par_err       = 1'b0;
@@ -292,10 +296,10 @@ module obi_uart_rx import obi_uart_pkg::*; #()
     //--------------------------------------------------------------------------------------------
     // After rsr_finish, rsr_q is stored until the next time we are in START state
     if (state_q == RXDATA) begin
-      if (timing_bit_center_edge & (bitcount_q <= word_len_bits)) begin 
-        rsr_d[bitcount_q] = filtered_rxd_q; 
+      if (timing_bit_center_edge & (bitcount_q <= word_len_bits)) begin
+        rsr_d[bitcount_q] = filtered_rxd_q;
         bitcount_d        = bitcount_q + 1;
-        if (bitcount_q == word_len_bits) begin 
+        if (bitcount_q == word_len_bits) begin
           rsr_finish = 1'b1;
         end
       end
@@ -309,7 +313,7 @@ module obi_uart_rx import obi_uart_pkg::*; #()
       data_parity  = ^rsr_q; // XOR to compute parity of data bits
 
       if (timing_bit_center_edge) begin
-        case (reg_read_i.lcr[5:4]) // Read Parity Configuration 
+        case (reg_read_i.lcr[5:4]) // Read Parity Configuration
           2'b00: parity_err_d = (data_parity == filtered_rxd_q); // Odd Parity
           2'b01: parity_err_d = (data_parity != filtered_rxd_q); // Even Parity
           2'b10: parity_err_d = (~filtered_rxd_q);               // Forced 1
@@ -322,7 +326,7 @@ module obi_uart_rx import obi_uart_pkg::*; #()
     end
 
     //--------------------------------------------------------------------------------------------
-    // Stop Bit Check 
+    // Stop Bit Check
     //--------------------------------------------------------------------------------------------
     if (state_q == RXSTOP) begin
       framing_err_d = 1'b0;
@@ -345,9 +349,9 @@ module obi_uart_rx import obi_uart_pkg::*; #()
       RXIDLE: begin
         if (~sync_rxd) begin
           state_d = RXSTART;
-          timing_init_clear = 1'b0; 
-          if (oversample_rate_edge_i) begin 
-            timing_load   = 1'b1;     
+          timing_init_clear = 1'b0;
+          if (oversample_rate_edge_i) begin
+            timing_load   = 1'b1;
             timing_offset = 5'b00010; // If first cycle not detected: Set Timing Counter to 2
           end
         end
@@ -355,7 +359,7 @@ module obi_uart_rx import obi_uart_pkg::*; #()
       end
 
       RXSTART: begin
-        if (timing_bit_center_edge) begin 
+        if (timing_bit_center_edge) begin
           if (~filtered_rxd_q) begin
             bitcount_d = 3'b000;
             rsr_d      = '0;
@@ -363,7 +367,7 @@ module obi_uart_rx import obi_uart_pkg::*; #()
           end else begin
             state_d = RXIDLE;
           end
-        end 
+        end
       end
 
       RXDATA: begin // Stays in this state for "word_len_bits" baud_cycles
@@ -384,7 +388,7 @@ module obi_uart_rx import obi_uart_pkg::*; #()
 
       RXSTOP: begin
         if (stop_finish) begin
-          if (framing_err_q) begin 
+          if (framing_err_q) begin
             state_d = RXRESYNCHRONIZE;
           end else begin
             state_d = RXIDLE;
@@ -393,10 +397,10 @@ module obi_uart_rx import obi_uart_pkg::*; #()
       end
 
       RXRESYNCHRONIZE: begin
-        if (~sync_rxd) begin 
+        if (~sync_rxd) begin
           state_d = RXSTART;
         end else begin
-          state_d = RXIDLE; 
+          state_d = RXIDLE;
         end
       end
 
@@ -428,10 +432,10 @@ module obi_uart_rx import obi_uart_pkg::*; #()
         fifo_pop                 = 1'b1;
 
         if (4'b0000 != fifo_error_index_q) begin
-          fifo_error_index_d = fifo_error_index_q - 'b0001; 
+          fifo_error_index_d = fifo_error_index_q - 'b0001;
         end
       end
-      
+
       /*if (rhr_full_q) begin
         reg_write_o.lsr_data_ready = 1'b1;
         reg_write_o.lsr_valid[0]   = 1'b1;
@@ -440,13 +444,13 @@ module obi_uart_rx import obi_uart_pkg::*; #()
       reg_write_o.dr_valid   = 1'b1;
 
     end else begin // FIFO disabled : RHR acts as 1-Byte Holding Register
-    
+
       //--Write-RSR-to-RHR------------------------------------------------------------------------
       if (write_init) begin
         if (rhr_full_q) begin
           reg_write_o.overrun_err   = 1'b1;
           reg_write_o.overrun_valid = 1'b1;
-        end 
+        end
         reg_write_o.rhr          = rsr_q; // If full, RHR just gets overwritten
         reg_write_o.rhr_valid    = 1'b1;
         rhr_full_d               = 1'b1;
@@ -461,7 +465,7 @@ module obi_uart_rx import obi_uart_pkg::*; #()
         reg_write_o.break_valid  = 1'b1;
         reg_write_o.par_valid    = 1'b1;
         reg_write_o.frame_valid  = 1'b1;
-      end 
+      end
 
     end
 
@@ -474,12 +478,12 @@ module obi_uart_rx import obi_uart_pkg::*; #()
       // FIFO Reset
       //------------------------------------------------------------------------------------------
       fifo_clear = 1'b0;
-      
+
       if (reg_read_i.fcr.rx_fifo_rst) begin
         fifo_clear                  = 1'b1;
-        reg_write_o.fifo_rst        = 1'b0; 
+        reg_write_o.fifo_rst        = 1'b0;
         reg_write_o.fifo_rst_valid  = 1'b1;
-      end 
+      end
       //------------------------------------------------------------------------------------------
       // FIFO trigger_o Output
       //------------------------------------------------------------------------------------------
@@ -488,9 +492,9 @@ module obi_uart_rx import obi_uart_pkg::*; #()
         2'b01: tl_characters = 4'b0100; // 4 Characters
         2'b10: tl_characters = 4'b1000; // 8 Characters
         2'b11: tl_characters = 4'b1110; // 14 Characters
-        default: tl_characters = 4'b0001; 
+        default: tl_characters = 4'b0001;
       endcase
-      
+
       if (tl_characters <= fifo_usage) begin
         trigger_o = 1'b1;
       end
@@ -504,10 +508,10 @@ module obi_uart_rx import obi_uart_pkg::*; #()
         end else begin
           fifo_push       = 1'b1;
           break_interrupt = & (~{break_q, rsr_q}); // Interrupt if all character bits are 0s
-          fifo_data_i     = {parity_err_q, framing_err_q, break_interrupt, rsr_q}; // 11 Bits 
+          fifo_data_i     = {parity_err_q, framing_err_q, break_interrupt, rsr_q}; // 11 Bits
 
           if (parity_err_q | framing_err_q | break_interrupt) begin
-            fifo_error_index_d     = fifo_usage;   
+            fifo_error_index_d         = fifo_usage;
             reg_write_o.fifo_err       = 1'b1;
             reg_write_o.fifo_err_valid = 1'b1;
           end
@@ -516,28 +520,25 @@ module obi_uart_rx import obi_uart_pkg::*; #()
       //------------------------------------------------------------------------------------------
       // FIFO timeout
       //------------------------------------------------------------------------------------------
-      // timeout_trigger = (1 Startbit + 8 Databits + 1 Paritybit + 2 Stopbits) * 4
-      timeout_trigger = 6'b000001 + 6'b001000 + 6'b000001 + 6'b000010; // timeout trigger Level
-      timeout_trigger = timeout_trigger << 2; // Multiply by 4
+      // timeout_level = (character_length * 4) +1
+      character_length = (6'd02 +word_len_bits +reg_read_i.lcr.par_en +reg_read_i.lcr.stop_bits);
+      timeout_level = (character_length << 2) + 6'd01;
 
-      if (reg_read_i.fcr.fifo_en & (~fifo_empty)) begin
-        if (write_init | reg_read_i.obi_read_rhr) begin
-          timeout_count_d = '0;
-        end else if (baud_rate_edge_i) begin
+      if (reg_read_i.obi_read_rhr | write_init) begin
+        timeout_count_d = '0;
+      end else if (~fifo_empty) begin
+        if (baud_rate_edge_i) begin
           timeout_count_d = timeout_count_q + 1;
-          if (timeout_trigger == timeout_count_q) begin
-            timeout_o = 1'b1;
-            timeout_count_d = '0;
-          end
         end
-      end else begin
-        timeout_count_d = 1'b0; 
+        if (timeout_count_q == timeout_level) begin
+          timeout_o = 1'b1;
+          timeout_count_d = timeout_count_q;
+        end
       end
 
-    end
+    end // fifo enabled
 
-
-  end
+  end // always_comb
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // FIFO & WRITE RHR Sequential //
@@ -558,14 +559,14 @@ module obi_uart_rx import obi_uart_pkg::*; #()
   `FF(state_q, state_d, RXIDLE, clk_i, rst_ni)
 
   //--RSR-----------------------------------------------------------------------------------------
-  `FF(rsr_q, rsr_d, '0, clk_i, rst_ni) 
+  `FF(rsr_q, rsr_d, '0, clk_i, rst_ni)
   `FF(bitcount_q, bitcount_d, '0, clk_i, rst_ni)
 
   //--Parity--------------------------------------------------------------------------------------
-  `FF(parity_err_q, parity_err_d, '0, clk_i, rst_ni) 
+  `FF(parity_err_q, parity_err_d, '0, clk_i, rst_ni)
 
   //--Stop----------------------------------------------------------------------------------------
-  `FF(framing_err_q, framing_err_d, '0, clk_i, rst_ni) 
+  `FF(framing_err_q, framing_err_d, '0, clk_i, rst_ni)
 
   //--Break-Interrupt-----------------------------------------------------------------------------
   `FF(break_q, break_d, '1, clk_i, rst_ni)

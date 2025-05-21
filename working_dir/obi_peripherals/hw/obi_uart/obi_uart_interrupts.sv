@@ -32,8 +32,8 @@ module obi_uart_interrupts import obi_uart_pkg::*; #()
   //--Interrupt-Control-Signals--------------------------------------------------------------------
   typedef struct packed {
     logic       rls;       // Receive Line Status Interrupt - Error notification
-    logic       rxdr;      // Receiver Data Ready 
-    logic       timeout;   // Reception Timeout 
+    logic       rxdr;      // Receiver Data Ready
+    logic       timeout;   // Reception Timeout
     logic       thr_empty; // THR Empty Interrupt - Data can't be written
     logic       mstat;     // Modem Status Interrupt - Changes in Modem Line
   } reg_intrpt_t;
@@ -49,9 +49,9 @@ module obi_uart_interrupts import obi_uart_pkg::*; #()
     intrpt = '0;
 
     //--Receive-Line-Status-Interrupt--------------------------------------------------------------
-    intrpt.rls = reg_read_i.ier.rlstat & (reg_write_i.rx.overrun_err | reg_write_i.rx.par_err | 
+    intrpt.rls = reg_read_i.ier.rlstat & (reg_write_i.rx.overrun_err | reg_write_i.rx.par_err |
                   reg_write_i.rx.frame_err | reg_write_i.rx.break_intrpt);
-    
+
     //--Receive-Data-Ready-Interrupt---------------------------------------------------------------
     if (reg_read_i.fcr.fifo_en) begin
       intrpt.rxdr = reg_read_i.ier.dtr & rx_fifo_trigger; // data ready in FIFO mode
@@ -66,7 +66,7 @@ module obi_uart_interrupts import obi_uart_pkg::*; #()
     intrpt.thr_empty = reg_read_i.ier.thr_empty & reg_write_i.tx.thr_empty;
 
     //--Modem-Status-Interrupt---------------------------------------------------------------------
-    intrpt.mstat = reg_read_i.ier.mstat & (reg_write_i.modem.d_cts | reg_write_i.modem.d_dsr | 
+    intrpt.mstat = reg_read_i.ier.mstat & (reg_write_i.modem.d_cts | reg_write_i.modem.d_dsr |
                     reg_write_i.modem.te_ri | reg_write_i.modem.d_cd);
   end
 
@@ -84,22 +84,22 @@ module obi_uart_interrupts import obi_uart_pkg::*; #()
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Interrupt Reset Condition //
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    if(reg_read_i.obi_read_lsr | (reg_read_i.obi_read_isr & (reg_isr_o.id == 3'b011))) begin
+    if(reg_read_i.obi_read_lsr) begin
       intrpt_reg_d.rls = 1'b0;
     end
 
-    if(reg_read_i.obi_read_rhr | (reg_read_i.obi_read_isr & (reg_isr_o.id == 3'b010))) begin
+    if(reg_read_i.obi_read_rhr) begin
       intrpt_reg_d.timeout = 1'b0;
       if(~reg_read_i.fcr.fifo_en) begin
         intrpt_reg_d.rxdr = 1'b0;
       end
     end
 
-    if(reg_read_i.obi_write_thr | (reg_read_i.obi_read_isr & (reg_isr_o.id == 3'b001))) begin
+    if(reg_read_i.obi_write_thr) begin
       intrpt_reg_d.thr_empty = 1'b0;
     end
 
-    if (reg_read_i.obi_read_msr | (reg_read_i.obi_read_isr & (reg_isr_o.id == 3'b000))) begin
+    if (reg_read_i.obi_read_msr) begin
       intrpt_reg_d.mstat = 1'b0;
     end
   end

@@ -43,7 +43,7 @@ module obi_uart_tx #()
   logic thr_full_q, thr_full_d;
 
   //--Statemachine-Transition-Signals-------------------------------------------------------------
-  state_type_tx state_q, state_d;
+  state_type_tx_e state_q, state_d;
 
   logic [2:0] word_len_bits;
   logic [7:0] word_len_mask;
@@ -62,13 +62,13 @@ module obi_uart_tx #()
 
   fifo_v3 # (
     .FALL_THROUGH(1'b0),
-    .DATA_WIDTH  (8), 
+    .DATA_WIDTH  (8),
     .DEPTH       (16)
   ) i_fifo_v3 (
     .clk_i,
     .rst_ni,
     .flush_i   (fifo_clear),  // flush the queue
-    .testmode_i(1'b0      ),       
+    .testmode_i(1'b0      ),
     // status flags
     .full_o    (fifo_full),   // queue is full
     .empty_o   (fifo_empty),  // queue is empty
@@ -80,7 +80,7 @@ module obi_uart_tx #()
     .data_o    (fifo_data_o), // output data
     .pop_i     (fifo_pop   )  // pop head from queue
   );
-  
+
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // General Logic //
   ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,14 +113,14 @@ module obi_uart_tx #()
     tsr_empty     = 1'b0;        //TSR
 
     //--------------------------------------------------------------------------------------------
-    // Word Length 
+    // Word Length
     //--------------------------------------------------------------------------------------------
     case (reg_read_i.lcr.word_len)
       2'b00: word_len_bits = 3'b100; // 5 Bits (4th index in tsr)
       2'b01: word_len_bits = 3'b101; // 6 Bits (5th index in tsr)
       2'b10: word_len_bits = 3'b110; // 7 Bits (6th index in tsr)
       2'b11: word_len_bits = 3'b111; // 8 Bits (7th index in tsr)
-      default: word_len_bits = 3'b111; 
+      default: word_len_bits = 3'b111;
     endcase
 
     for (int i = 0; i <= word_len_bits; i = i + 1) begin
@@ -152,7 +152,7 @@ module obi_uart_tx #()
     // TSR - Transmitter Shift Register (parallel to serial)
     //--------------------------------------------------------------------------------------------
     if (state_q == TXDATA & (tsr_count_q <= word_len_bits)) begin
-      txd_d       = tsr_q[tsr_count_q]; 
+      txd_d       = tsr_q[tsr_count_q];
       if (baud_rate_edge_i) begin
         tsr_count_d = tsr_count_q + 1;
         tsr_finish  = (tsr_count_q == word_len_bits)? 1'b1 : 1'b0;
@@ -168,7 +168,7 @@ module obi_uart_tx #()
         tsr_d       = '0;
         tsr_count_d = 1'b0;
         tsr_empty   = 1'b1;
-        
+
         if (reg_read_i.fcr.fifo_en) begin
           if (~fifo_empty & baud_rate_edge_i) begin // Read FIFO into TSR
             tsr_d    = fifo_data_o;
@@ -185,7 +185,7 @@ module obi_uart_tx #()
       end
 
       TXSTART: begin
-        txd_d   = 1'b0; 
+        txd_d   = 1'b0;
         if (baud_rate_edge_i) begin
           state_d = TXDATA;
         end
@@ -202,7 +202,7 @@ module obi_uart_tx #()
       end
 
       TXPAR: begin
-        case (reg_read_i.lcr[5:4])// Read Parity Configuration 
+        case (reg_read_i.lcr[5:4])// Read Parity Configuration
           2'b00: txd_d = ~(^tsr_q); // Odd Parity
           2'b01: txd_d = ^tsr_q;    // Even Parity
           2'b10: txd_d = 1'b1;      // Forced 1
@@ -215,13 +215,13 @@ module obi_uart_tx #()
       end
 
       TXSTOP1: begin
-        txd_d = 1'b1; 
+        txd_d = 1'b1;
         if (reg_read_i.lcr.stop_bits) begin
           // next transaction starts on next baud_rate_edge_i
           state_d = TXIDLE;
         end else if (baud_rate_edge_i) begin
             state_d = TXSTOP2;
-        end  
+        end
       end
 
       TXSTOP2: begin
@@ -250,12 +250,12 @@ module obi_uart_tx #()
 
       if (reg_read_i.fcr.tx_fifo_rst) begin
         fifo_clear = 1'b1;
-        reg_write_o.fifo_rst       = 1'b0; 
+        reg_write_o.fifo_rst       = 1'b0;
         reg_write_o.fifo_rst_valid = 1'b1;
-      end 
+      end
 
       //--Set-LSR---------------------------------------------------------------------------------
-      if (fifo_empty) begin 
+      if (fifo_empty) begin
         reg_write_o.thr_empty = 1'b1;
         reg_write_o.thr_valid = 1'b1;
         if (tsr_empty) begin

@@ -8,7 +8,7 @@
 
 package obi_uart_pkg;
 
-  //-- Configurable values ----------------------------------------------------------------------- 
+  //-- Configurable values -----------------------------------------------------------------------
   localparam int RegAlignBytes = 4; // regs aligned to this many bytes (4 -> 32-bit aligned)
 
   // Number of input synchronization stages
@@ -17,7 +17,7 @@ package obi_uart_pkg;
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // RX and TX Statemachine typedefs //
   ////////////////////////////////////////////////////////////////////////////////////////////////
-  
+
   // RX FSM states
   typedef enum bit [2:0] {
     RXIDLE,
@@ -26,7 +26,7 @@ package obi_uart_pkg;
     RXPAR,
     RXSTOP,
     RXRESYNCHRONIZE
-  } state_type_rx;
+  } state_type_rx_e;
 
   // TX FSM states
   typedef enum bit [2:0] {
@@ -37,7 +37,7 @@ package obi_uart_pkg;
     TXSTOP1,
     TXSTOP2,
     TXWAIT
-  } state_type_tx;
+  } state_type_tx_e;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // Address Offsets //
@@ -48,19 +48,19 @@ package obi_uart_pkg;
   localparam int AddressOffset = $clog2(RegAlignBytes);
 
   // Register Address Offsets
-  localparam bit [AddressBits-1:0] RHR_OFFSET = 3'b000;
-  localparam bit [AddressBits-1:0] THR_OFFSET = 3'b000;
-  localparam bit [AddressBits-1:0] IER_OFFSET = 3'b001;
-  localparam bit [AddressBits-1:0] ISR_OFFSET = 3'b010;
-  localparam bit [AddressBits-1:0] FCR_OFFSET = 3'b010;
-  localparam bit [AddressBits-1:0] LCR_OFFSET = 3'b011;
-  localparam bit [AddressBits-1:0] MCR_OFFSET = 3'b100;
-  localparam bit [AddressBits-1:0] LSR_OFFSET = 3'b101;
-  localparam bit [AddressBits-1:0] MSR_OFFSET = 3'b110;
-  localparam bit [AddressBits-1:0] SPR_OFFSET = 3'b111;
-  localparam bit [AddressBits-1:0] DLL_OFFSET = 3'b000;
-  localparam bit [AddressBits-1:0] DLM_OFFSET = 3'b001;
-  //localparam bit [AddressBits-1:0] PSD_OFFSET = 3'b101;
+  localparam bit [AddressBits-1:0] RegAddrRHR = 3'b000;
+  localparam bit [AddressBits-1:0] RegAddrTHR = 3'b000;
+  localparam bit [AddressBits-1:0] RegAddrIER = 3'b001;
+  localparam bit [AddressBits-1:0] RegAddrISR = 3'b010;
+  localparam bit [AddressBits-1:0] RegAddrFCR = 3'b010;
+  localparam bit [AddressBits-1:0] RegAddrLCR = 3'b011;
+  localparam bit [AddressBits-1:0] RegAddrMCR = 3'b100;
+  localparam bit [AddressBits-1:0] RegAddrLSR = 3'b101;
+  localparam bit [AddressBits-1:0] RegAddrMSR = 3'b110;
+  localparam bit [AddressBits-1:0] RegAddrSPR = 3'b111;
+  localparam bit [AddressBits-1:0] RegAddrDLL = 3'b000;
+  localparam bit [AddressBits-1:0] RegAddrDLM = 3'b001;
+  //localparam bit [AddressBits-1:0] RegAddrPSD = 3'b101;
 
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,13 +85,13 @@ package obi_uart_pkg;
     logic unused5;           // 0
     logic unused4;           // 0
     logic mstat;             // Modem Status
-    logic rlstat;            // Receive Line Status 
+    logic rlstat;            // Receive Line Status
     logic thr_empty;         // THR Empty
     logic dtr;               // Data Ready or Reception Timeout
   } IER_bits_t;
 
   typedef struct packed {
-    logic [1:0] fifos_en;    // UART Standard: 2'b00: 8250 | 2'b01: 16550 | 2'b10: 16750 | 2'b11: 16550A 
+    logic [1:0] fifos_en;    // Standard: 2'b00: 8250; 2'b01: 16550; 2'b10: 16750; 2'b11: 16550A
     logic unused5;           // Optional: DMA
     logic unused4;           // Optional: DMA
     logic [2:0] id;          // Intrpt Code ID
@@ -109,12 +109,12 @@ package obi_uart_pkg;
   } FCR_bits_t;
 
   typedef struct packed {
-    logic       dlab;        // DLAB Address multiplexing 
+    logic       dlab;        // DLAB Address multiplexing
     logic       set_break;   // Set Break
     logic       force_par;   // Force Parity
-    logic       even_par;    // Even Parity 
+    logic       even_par;    // Even Parity
     logic       par_en;      // Parity Enable
-    logic       stop_bits;   // Stop Bits 
+    logic       stop_bits;   // Stop Bits
     logic [1:0] word_len;    // Word Length 2'b00: 5 | 2'b01: 6 | 2'b10: 7 | 2'b11: 8
   } LCR_bits_t;
 
@@ -143,11 +143,11 @@ package obi_uart_pkg;
   typedef struct packed {
     logic cd;                // Carrier Detect
     logic ri;                // Ring Indicator
-    logic dsr;               // Data Set Ready 
+    logic dsr;               // Data Set Ready
     logic cts;               // Clear to Send
-    logic d_cd;              // Delta CD: Indicates change 
+    logic d_cd;              // Delta CD: Indicates change
     logic te_ri;             // Trailing Edge RI: Detects trailing Edge (Transition high to low)
-    logic d_dsr;             // Delta 
+    logic d_dsr;             // Delta
     logic d_cts;             // Delta Clear to Send
   } MSR_bits_t;
 
@@ -163,7 +163,7 @@ package obi_uart_pkg;
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // Registers //
   ////////////////////////////////////////////////////////////////////////////////////////////////
-  
+
   typedef struct packed {
     RHR_bits_t RHR;    // Read Hold Register
     THR_bits_t THR;    // Transmit Hold Register
@@ -186,7 +186,7 @@ package obi_uart_pkg;
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Default values for the Registers from UART 16550A Standard
-  localparam uart_reg_fields_t register_default = '{
+  localparam uart_reg_fields_t RegResetVal = '{
     RHR: 8'h00,
     THR: 8'h00,
     IER: 8'h00,
@@ -198,7 +198,7 @@ package obi_uart_pkg;
     MSR: 8'h00,
     // SPR: 8'h00, // scratch reg not implemented, always return zero
     DLL: 8'h01,
-    DLM: 8'h01
+    DLM: 8'h00
     // PSD: PSD_DEFAULT //  PSD not implemented
   };
 
@@ -210,11 +210,11 @@ package obi_uart_pkg;
   typedef struct packed {
     // current register values
     THR_bits_t thr;
-    IER_bits_t ier; 
-    ISR_bits_t isr; 
+    IER_bits_t ier;
+    ISR_bits_t isr;
     FCR_bits_t fcr;
     LCR_bits_t lcr;
-    MCR_bits_t mcr; 
+    MCR_bits_t mcr;
     DLL_bits_t dll;
     DLM_bits_t dlm;
     // read/write indicators
@@ -228,33 +228,33 @@ package obi_uart_pkg;
 
   // new values from rx module
   typedef struct packed {
-    RHR_bits_t  rhr; 
-    logic       fifo_rst; 
+    RHR_bits_t  rhr;
+    logic       fifo_rst;
     logic       fifo_err;
-    logic       data_ready; 
-    logic       overrun_err; 
-    logic       par_err; 
-    logic       frame_err; 
+    logic       data_ready;
+    logic       overrun_err;
+    logic       par_err;
+    logic       frame_err;
     logic       break_intrpt;
 
     logic       rhr_valid;
     logic       fifo_rst_valid;
     logic       fifo_err_valid;
-    logic       dr_valid; 
-    logic       overrun_valid; 
-    logic       par_valid; 
-    logic       frame_valid; 
+    logic       dr_valid;
+    logic       overrun_valid;
+    logic       par_valid;
+    logic       frame_valid;
     logic       break_valid;
   } rx_reg_write_t;
 
   // new values from tx module
   typedef struct packed {
     logic       fifo_rst;
-    logic       tx_empty; 
+    logic       tx_empty;
     logic       thr_empty;
 
     logic       fifo_rst_valid;
-    logic       empty_valid; 
+    logic       empty_valid;
     logic       thr_valid;
   } tx_reg_write_t;
 
@@ -262,7 +262,7 @@ package obi_uart_pkg;
     rx_reg_write_t rx;
     tx_reg_write_t tx;
     ISR_bits_t     isr;
-    MSR_bits_t     modem;    
+    MSR_bits_t     modem;
   } reg_write_t;
 
 

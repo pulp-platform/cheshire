@@ -18,16 +18,16 @@ module obi_uart #(
 ) (
   input logic      clk_i,  // Primary input clock
   input logic      rst_ni, // Asynchronous active-low reset
-  
+
   // OBI request interface
   input  obi_req_t obi_req_i, // a.addr, a.we, a.be, a.wdata, a.aid, a.a_optional | rready, req
   // OBI response interface
   output obi_rsp_t obi_rsp_o, // r.rdata, r.rid, r.err, r.r_optional | gnt, rvalid
-  
-  output logic     irq_o,   // Interrupt line 
-  output logic     irq_no,  // Negated Interrupt line 
 
-  input  logic     rxd_i,  // Serial Input 
+  output logic     irq_o,   // Interrupt line
+  output logic     irq_no,  // Negated Interrupt line
+
+  input  logic     rxd_i,  // Serial Input
   output logic     txd_o,  // Serial Output
 
   // Modem control pins are optional
@@ -59,7 +59,7 @@ module obi_uart #(
   logic oversample_rate_edge;
   logic double_rate_edge;
   logic baud_rate_edge;
-  
+
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // REGISTER INTERFACE //
   ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,7 +75,7 @@ module obi_uart #(
     .obi_rsp_o,
 
     .reg_read_o  (reg_read),
-    .reg_write_i (reg_write) 
+    .reg_write_i (reg_write)
   );
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -87,11 +87,11 @@ module obi_uart #(
     .clk_i,
     .rst_ni,
 
-    .cts_ni,  
-    .dsr_ni,  
-    .ri_ni,  
-    .cd_ni,  
-    .rts_no, 
+    .cts_ni,
+    .dsr_ni,
+    .ri_ni,
+    .cd_ni,
+    .rts_no,
     .dtr_no,
     .out1_no,
     .out2_no,
@@ -107,7 +107,7 @@ module obi_uart #(
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // BAUDRATE GENERATION //
   ////////////////////////////////////////////////////////////////////////////////////////////////
-  
+
   obi_uart_baudgen #(
   ) i_uart_baudgen (
     .clk_i,
@@ -128,13 +128,13 @@ module obi_uart #(
   ) i_uart_rx (
     .clk_i,
     .rst_ni,
-    
+
     .oversample_rate_edge_i (oversample_rate_edge),
     .baud_rate_edge_i       (baud_rate_edge),
 
     .rxd_i       (rxd),
 
-    .trigger_o   (rx_fifo_trigger), 
+    .trigger_o   (rx_fifo_trigger),
     .timeout_o   (rx_timeout),
 
     .reg_read_i  (reg_read),

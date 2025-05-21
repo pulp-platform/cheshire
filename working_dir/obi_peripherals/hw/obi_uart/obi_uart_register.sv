@@ -79,7 +79,7 @@ module obi_uart_register import obi_uart_pkg::*; #(
   // COMB LOGIC //
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // current register values 
+  // current register values
   assign reg_read_o.thr = reg_q.THR;
   assign reg_read_o.ier = reg_q.IER;
   assign reg_read_o.isr = reg_write_i.isr;
@@ -90,7 +90,7 @@ module obi_uart_register import obi_uart_pkg::*; #(
   assign reg_read_o.dlm = reg_q.DLM;
 
   always_comb begin
-    
+
     //---Defaults---------------------------------------------------------------------------------
     err     = w_err_q;
     w_err_d = 1'b0;
@@ -102,8 +102,8 @@ module obi_uart_register import obi_uart_pkg::*; #(
     reg_read_o.obi_read_msr  = 1'b0;
     reg_read_o.obi_write_thr = 1'b0;
     reg_read_o.obi_write_dllm = 1'b0;
-    
-    rsp_data = 32'h0;  
+
+    rsp_data = 32'h0;
 
     //-- Internal updates to registers -----------------------------------------------------------
     new_reg = reg_q;
@@ -145,31 +145,31 @@ module obi_uart_register import obi_uart_pkg::*; #(
       if (~reg_q.LCR[7]) begin // DLAB = 0 Address Decode
 
         case (word_addr_d)
-          THR_OFFSET: begin
+          RegAddrTHR: begin
             reg_d.THR = obi_req_i.a.wdata[RegWidth-1:0];
             reg_read_o.obi_write_thr = 1'b1;
           end
 
-          IER_OFFSET: begin
+          RegAddrIER: begin
             reg_d.IER = obi_req_i.a.wdata[RegWidth-1:0];
           end
 
-          FCR_OFFSET: begin
+          RegAddrFCR: begin
             reg_d.FCR = obi_req_i.a.wdata[RegWidth-1:0];
           end
 
-          LCR_OFFSET: begin
+          RegAddrLCR: begin
             reg_d.LCR = obi_req_i.a.wdata[RegWidth-1:0];
           end
 
-          MCR_OFFSET: begin
+          RegAddrMCR: begin
             reg_d.MCR = obi_req_i.a.wdata[RegWidth-1:0];
           end
 
-          SPR_OFFSET: begin
+          RegAddrSPR: begin
             // no error but ignored (SPR always returns 0)
           end
-          
+
           default: begin
             w_err_d = 1'b1; // unmapped register access
           end
@@ -178,29 +178,29 @@ module obi_uart_register import obi_uart_pkg::*; #(
       end else begin // DLAB = 1 Address Decode
 
         case (word_addr_d)
-          DLL_OFFSET: begin
+          RegAddrDLL: begin
             reg_d.DLL = obi_req_i.a.wdata[RegWidth-1:0];
             reg_read_o.obi_write_dllm = 1'b1;
           end
 
-          DLM_OFFSET: begin
+          RegAddrDLM: begin
             reg_d.DLM = obi_req_i.a.wdata[RegWidth-1:0];
             reg_read_o.obi_write_dllm = 1'b1;
           end
 
-          FCR_OFFSET: begin
+          RegAddrFCR: begin
             reg_d.FCR = obi_req_i.a.wdata[RegWidth-1:0];
           end
 
-          LCR_OFFSET: begin
+          RegAddrLCR: begin
             reg_d.LCR = obi_req_i.a.wdata[RegWidth-1:0];
           end
 
-          MCR_OFFSET: begin
+          RegAddrMCR: begin
             reg_d.MCR = obi_req_i.a.wdata[RegWidth-1:0];
           end
 
-          SPR_OFFSET: begin
+          RegAddrSPR: begin
             // no error but ignored (SPR always returns 0)
           end
 
@@ -216,60 +216,60 @@ module obi_uart_register import obi_uart_pkg::*; #(
     //-- OBI-Read --------------------------------------------------------------------------------
     if (req_q & ~we_q) begin
 
-      err = 1'b0; 
+      err = 1'b0;
 
       if (~reg_q.LCR[7]) begin // DLAB = 0 Address Decode
 
         case (word_addr_q)
-          RHR_OFFSET: begin
+          RegAddrRHR: begin
             rsp_data[RegWidth-1:0] = reg_q.RHR;
             reg_read_o.obi_read_rhr  = 1'b1;
           end
 
-          IER_OFFSET: begin
+          RegAddrIER: begin
             rsp_data[RegWidth-1:0] = reg_q.IER;
           end
 
-          ISR_OFFSET: begin
+          RegAddrISR: begin
             rsp_data[RegWidth-1:0] = reg_write_i.isr;
             reg_read_o.obi_read_isr  = 1'b1;
           end
 
-          LCR_OFFSET: begin
+          RegAddrLCR: begin
             rsp_data[RegWidth-1:0] = reg_q.LCR;
           end
 
-          MCR_OFFSET: begin
+          RegAddrMCR: begin
             rsp_data[RegWidth-1:0] = reg_q.MCR;
           end
 
-          LSR_OFFSET: begin
+          RegAddrLSR: begin
             rsp_data[RegWidth-1:0] = reg_q.LSR;
             reg_read_o.obi_read_lsr  = 1'b1;
           end
 
-          MSR_OFFSET: begin
+          RegAddrMSR: begin
             rsp_data[RegWidth-1:0] = reg_q.MSR;
             reg_d.MSR = reg_write_i.modem; // sticky bits cleared
           end
 
-          SPR_OFFSET: begin
+          RegAddrSPR: begin
             rsp_data[RegWidth-1:0] = '0; // not implemented
           end
 
           default: begin
-            err = 1'b1; 
+            err = 1'b1;
           end
         endcase
 
       end else begin // DLAB = 1 Address Decode
 
         case (word_addr_q)
-          DLL_OFFSET: begin
+          RegAddrDLL: begin
             rsp_data[RegWidth-1:0] = reg_q.DLL;
           end
 
-          DLM_OFFSET: begin
+          RegAddrDLM: begin
             rsp_data[RegWidth-1:0] = reg_q.DLM;
           end
 
@@ -288,6 +288,6 @@ module obi_uart_register import obi_uart_pkg::*; #(
   // SEQUENTIAL LOGIC //
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
-  `FF(reg_q, reg_d, obi_uart_pkg::register_default, clk_i, rst_ni)
+  `FF(reg_q, reg_d, obi_uart_pkg::RegResetVal, clk_i, rst_ni)
 
 endmodule
