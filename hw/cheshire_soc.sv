@@ -564,16 +564,18 @@ module cheshire_soc import cheshire_pkg::*; #(
   localparam logic [63:0] BootAddr = 64'(Cfg.Bootrom ? AmBrom : Cfg.PlatformRom);
 
   // Debug interface for internal harts
-  dm::hartinfo_t [NumIntHarts-1:0] dbg_int_info;
-  logic          [NumIntHarts-1:0] dbg_int_unavail;
-  logic          [NumIntHarts-1:0] dbg_int_req;
+  dm::hartinfo_t [iomsb(NumIntHarts)-1:0] dbg_int_info;
+  logic          [iomsb(NumIntHarts)-1:0] dbg_int_unavail;
+  logic          [iomsb(NumIntHarts)-1:0] dbg_int_req;
 
   // Core bus error interrupts
   axi_err_intr_t [NumIntHarts-1:0] core_bus_err_intr;
   axi_err_intr_t core_bus_err_intr_comb;
 
   // All internal harts are CVA6 and always available
-  assign dbg_int_info     = {(NumIntHarts){ariane_pkg::DebugHartInfo}};
+  if (NumIntHarts > 0) begin
+    assign dbg_int_info     = {(NumIntHarts){ariane_pkg::DebugHartInfo}};
+  end
   assign dbg_int_unavail  = '0;
 
   // Combine the bus error interrupts of all cores. The error units record which
@@ -798,9 +800,11 @@ module cheshire_soc import cheshire_pkg::*; #(
   assign dbg_slv_addr_long  = dbg_slv_addr;
 
   // Connect internal harts to debug interface
-  assign dbg_info    [NumIntHarts-1:0] = dbg_int_info;
-  assign dbg_unavail [NumIntHarts-1:0] = dbg_int_unavail;
-  assign dbg_int_req = dbg_req[NumIntHarts-1:0];
+  if (NumIntHarts > 0) begin
+    assign dbg_info    [NumIntHarts-1:0] = dbg_int_info;
+    assign dbg_unavail [NumIntHarts-1:0] = dbg_int_unavail;
+    assign dbg_int_req = dbg_req[NumIntHarts-1:0];
+  end
 
   // Connect external harts to debug interface
   if (Cfg.NumExtDbgHarts != 0) begin : gen_dbg_ext

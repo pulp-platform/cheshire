@@ -106,6 +106,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   //  Cheshire Config  //
   ///////////////////////
 
+  `ifndef USE_PERIPHIRE
   // Use default config as far as possible
   function automatic cheshire_cfg_t gen_cheshire_xilinx_cfg();
     cheshire_cfg_t ret  = DefaultCfg;
@@ -117,6 +118,24 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   `endif
     return ret;
   endfunction
+  `else
+    // Use default config as far as possible
+  function automatic cheshire_cfg_t gen_cheshire_xilinx_cfg();
+    cheshire_cfg_t ret  = DefaultCfg;
+    ret.NumExtDbgHarts   = 1;
+    ret.NumCores         = 0;
+    ret.Bootrom          = 0;
+    ret.Uart             = 0;
+    ret.I2c              = 0;
+    ret.SpiHost          = 0;
+    ret.Gpio             = 0;
+    ret.Dma              = 0;
+    ret.Usb              = 0;
+    ret.BusErr           = 0;
+    ret.LlcNotBypass     = 0;
+    return ret;
+  endfunction
+  `endif
 
   // Configure cheshire for FPGA mapping
   localparam cheshire_cfg_t FPGACfg = gen_cheshire_xilinx_cfg();
