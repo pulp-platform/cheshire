@@ -53,6 +53,8 @@ module cheshire_idma_wrap #(
   typedef logic [IdCounterWidth-1:0]   tf_id_t;
   typedef logic [RepWidth-1:0]         reps_t;
   typedef logic [RepWidth-1:0]         strides_t;
+  typedef logic [32-1:0]               reg_data_t;
+  typedef logic [32/8-1:0]             reg_strb_t;
 
   // AXI4+ATOP typedefs
   `AXI_TYPEDEF_AW_CHAN_T(axi_aw_chan_t, addr_t, id_t, user_t)
@@ -63,7 +65,16 @@ module cheshire_idma_wrap #(
   `IDMA_TYPEDEF_FULL_RSP_T(idma_rsp_t, addr_t)
   `IDMA_TYPEDEF_FULL_ND_REQ_T(idma_nd_req_t, idma_req_t, tf_len_t, tf_len_t)
 
-  `REG_BUS_TYPEDEF_ALL(dma_regs, addr_t, data_t, strb_t)
+  //slave type
+  `AXI_TYPEDEF_AW_CHAN_T(axi_slv_aw_chan_t, addr_t, slv_id_t, user_t)
+  `AXI_TYPEDEF_AR_CHAN_T(axi_slv_ar_chan_t, addr_t, slv_id_t, user_t)
+  `AXI_TYPEDEF_W_CHAN_T(axi_slv_w_chan_t, data_t, strb_t, user_t)
+  `AXI_TYPEDEF_R_CHAN_T(axi_slv_r_chan_t, data_t, slv_id_t, user_t)
+  `AXI_TYPEDEF_B_CHAN_T(axi_slv_b_chan_t, slv_id_t, user_t)
+  // narrow AXI type
+  `AXI_TYPEDEF_ALL_CT(axi_dma_regs, axi_dma_regs_req_t, axi_dma_regs_rsp_t, addr_t, slv_id_t, reg_data_t, reg_strb_t, user_t)
+  // regbus type
+  `REG_BUS_TYPEDEF_ALL(dma_regs, addr_t, reg_data_t, reg_strb_t)
 
   typedef struct packed {
     axi_ar_chan_t ar_chan;
@@ -122,21 +133,52 @@ module cheshire_idma_wrap #(
   axi_mst_req_t axi_read_req, axi_write_req;
   axi_mst_rsp_t axi_read_rsp, axi_write_rsp;
 
+  axi_dma_regs_req_t axi_dma_regs_req;
+  axi_dma_regs_rsp_t axi_dma_regs_rsp;
+
+
+  axi_dw_converter #(
+    .AxiMaxReads         ( 32'd2         ),
+    .AxiSlvPortDataWidth ( AxiDataWidth  ),
+    .AxiMstPortDataWidth ( 32'd32        ),
+    .AxiAddrWidth        ( AxiAddrWidth  ),
+    .AxiIdWidth          ( AxiSlvIdWidth ),
+    .aw_chan_t           ( axi_slv_aw_chan_t ),
+    .mst_w_chan_t        ( axi_dma_regs_w_chan_t ),
+    .slv_w_chan_t        ( axi_slv_w_chan_t  ),
+    .b_chan_t            ( axi_slv_b_chan_t  ),
+    .ar_chan_t           ( axi_slv_ar_chan_t ),
+    .mst_r_chan_t        ( axi_dma_regs_r_chan_t ),
+    .slv_r_chan_t        ( axi_slv_r_chan_t  ),
+    .axi_mst_req_t       ( axi_dma_regs_req_t ),
+    .axi_mst_resp_t      ( axi_dma_regs_rsp_t ),
+    .axi_slv_req_t       ( axi_slv_req_t ),
+    .axi_slv_resp_t      ( axi_slv_rsp_t )
+  ) i_axi_dw_converter (
+    .clk_i,
+    .rst_ni,
+    .slv_req_i  ( axi_slv_req_i ),
+    .slv_resp_o ( axi_slv_rsp_o ),
+    .mst_req_o  ( axi_dma_regs_req ),
+    .mst_resp_i ( axi_dma_regs_rsp )
+  );
+
+
   axi_to_reg #(
     .ADDR_WIDTH ( AxiAddrWidth  ),
-    .DATA_WIDTH ( AxiDataWidth  ),
+    .DATA_WIDTH ( 32            ),
     .ID_WIDTH   ( AxiSlvIdWidth ),
     .USER_WIDTH ( AxiUserWidth  ),
-    .axi_req_t  ( axi_slv_req_t ),
-    .axi_rsp_t  ( axi_slv_rsp_t ),
+    .axi_req_t  ( axi_dma_regs_req_t ),
+    .axi_rsp_t  ( axi_dma_regs_rsp_t ),
     .reg_req_t  ( dma_regs_req_t ),
     .reg_rsp_t  ( dma_regs_rsp_t )
   ) i_axi_translate (
     .clk_i,
     .rst_ni,
     .testmode_i,
-    .axi_req_i  ( axi_slv_req_i ),
-    .axi_rsp_o  ( axi_slv_rsp_o ),
+    .axi_req_i  ( axi_dma_regs_req ),
+    .axi_rsp_o  ( axi_dma_regs_rsp ),
     .reg_req_o  ( dma_reg_req ),
     .reg_rsp_i  ( dma_reg_rsp )
    );
