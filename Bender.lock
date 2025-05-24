@@ -162,7 +162,7 @@ packages:
     - common_cells
     - common_verification
   obi_peripherals:
-    revision: 9976765a5e4b26ac4c79021fc0dd95a2f08bcb99
+    revision: f2235a578c73eed9010dbd0731822af5e83aa07d
     version: null
     source:
       Git: git@github.com:pulp-platform/obi_peripherals.git
