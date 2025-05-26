@@ -8,8 +8,6 @@
 // Thomas Benz <tbenz@iis.ee.ethz.ch>
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
-`include "ace/domain.svh"
-
 module cheshire_soc import cheshire_pkg::*; #(
   // Cheshire config
   parameter cheshire_cfg_t Cfg = '0,
@@ -104,6 +102,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   `include "axi/typedef.svh"
   `include "ace/typedef.svh"
   `include "ace/assign.svh"
+  `include "ace/domain.svh"
   `include "common_cells/registers.svh"
   `include "common_cells/assertions.svh"
   `include "cheshire/typedef.svh"
@@ -125,28 +124,26 @@ module cheshire_soc import cheshire_pkg::*; #(
   localparam int unsigned IntrRtdExtBase  = IntrRtdCoreBase + NumIntHarts;
 
   // CCU cfg
-  localparam ccu_pkg::ccu_user_cfg_t CcuUserCfg = '{
-    NoSlvPorts         : NumIntHarts,
-    NoSlvPerGroup      : NumIntHarts,
-    DcacheLineWidth    : ariane_pkg::DCACHE_LINE_WIDTH,
-    AxiSlvIdWidth      : Cva6IdWidth,
-    AxiAddrWidth       : Cfg.AddrWidth,
-    AxiUserWidth       : Cfg.AxiUserWidth,
-    AxiDataWidth       : Cfg.AxiDataWidth,
-    AmoHotfix          : 1,
-    CmAddrBase         : $clog2(ariane_pkg::DCACHE_LINE_WIDTH >> 3),
-    CmAddrWidth        : 12,
-    CutSnoopReq        : 0,
-    CutSnoopResp       : 0,
-    CutSlvAx           : 0,
-    CutSlvReq          : 0,
-    CutSlvResp         : 0,
-    CutMstAx           : 0,
-    CutMstReq          : 0,
-    CutMstResp         : 0
-  };
+  localparam ace_ccu_pkg::ace_ccu_user_cfg_t CcuUserCfg = '{
+        SlvPorts            : NumIntHarts,
+        MaxTransactions     : 8,
+        BlockingWFifoDepth  : 4,
+        AxiUniqueIds        : 0,
+        AxiIdLookupBits     : 3,
+        AxiAddrWidth        : Cfg.AddrWidth,
+        AxiDataWidth        : Cfg.AxiDataWidth,
+        AxiUserWidth        : Cfg.AxiUserWidth,
+        AxiSlvIdWidth       : Cva6IdWidth,
+        CachelineWidth      : ariane_pkg::DCACHE_LINE_WIDTH,
+        CutSlvReq           : 1,
+        CutSlvResp          : 1,
+        CutMstReq           : 0,
+        CutMstResp          : 0,
+        CutSnoopReq         : 1,
+        CutSnoopResp        : 1
+    };
 
-  localparam ccu_pkg::ccu_cfg_t CcuCfg = ccu_pkg::ccu_build_cfg(CcuUserCfg);
+  localparam ace_ccu_pkg::ace_ccu_cfg_t CcuCfg = ace_ccu_pkg::ace_ccu_build_cfg(CcuUserCfg);
   localparam int unsigned CCUIdWidth   = CcuCfg.AxiMstIdWidth;
 
   // This routable type is as wide or wider than all targets.
@@ -714,57 +711,11 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   for (genvar i = 0; i < NumIntHarts; i++) begin : gen_core_surroundings
 
-  ariane_ace::snoop_req_t  snoop_req_in, snoop_req_out;
-  ariane_ace::snoop_resp_t snoop_resp_in, snoop_resp_out;
+  `SNOOP_ASSIGN_REQ_STRUCT(core_cut_rsp[i], core_out_rsp[i])
+  `SNOOP_ASSIGN_RESP_STRUCT(core_out_req[i], core_cut_req[i])
 
-  `SNOOP_ASSIGN_REQ_STRUCT(core_cut_rsp[i], snoop_req_in)
-  `SNOOP_ASSIGN_RESP_STRUCT(snoop_resp_in, core_cut_req[i])
-
-  ace_snoop_cut #(
-    .Bypass       (1'b0),
-    .ac_chan_t    (ariane_ace::ac_chan_t),
-    .cd_chan_t    (ariane_ace::cd_chan_t),
-    .cr_chan_t    (ace_pkg::crresp_t),
-    .snoop_req_t  (ariane_ace::snoop_req_t),
-    .snoop_resp_t (ariane_ace::snoop_resp_t)
-  ) i_snoop_cut (
-    .clk_i,
-    .rst_ni,
-    .mst_req_o  (snoop_req_in),
-    .mst_resp_i (snoop_resp_in),
-    .slv_req_i  (snoop_req_out),
-    .slv_resp_o (snoop_resp_out)
-  );
-
-  `SNOOP_ASSIGN_REQ_STRUCT(snoop_req_out, core_out_rsp[i])
-  `SNOOP_ASSIGN_RESP_STRUCT(core_out_req[i], snoop_resp_out)
-
-  ariane_ace::req_nosnoop_t  ace_req_in,  ace_req_out;
-  ariane_ace::resp_nosnoop_t ace_resp_in, ace_resp_out;
-
-  `ACE_ASSIGN_REQ_STRUCT(ace_req_in, core_cut_req[i])
-  `ACE_ASSIGN_RESP_STRUCT(core_cut_rsp[i], ace_resp_in)
-
-  ace_cut #(
-    .Bypass     (1'b0),
-    .aw_chan_t  (ariane_ace::aw_chan_t),
-    .w_chan_t   (ariane_ace::ariane_axi_w_chan_t),
-    .b_chan_t   (ariane_ace::ariane_axi_b_chan_t),
-    .ar_chan_t  (ariane_ace::ar_chan_t),
-    .r_chan_t   (ariane_ace::r_chan_t),
-    .axi_req_t  (ariane_ace::req_nosnoop_t),
-    .axi_resp_t (ariane_ace::resp_nosnoop_t)
-  ) i_ace_cut (
-    .clk_i,
-    .rst_ni,
-    .slv_req_i  (ace_req_in),
-    .slv_resp_o (ace_resp_in),
-    .mst_req_o  (ace_req_out),
-    .mst_resp_i (ace_resp_out)
-  );
-
-  `ACE_ASSIGN_REQ_STRUCT(core_out_req[i], ace_req_out)
-  `ACE_ASSIGN_RESP_STRUCT(ace_resp_out, core_out_rsp[i])
+  `ACE_ASSIGN_REQ_STRUCT(core_out_req[i], core_cut_req[i])
+  `ACE_ASSIGN_RESP_STRUCT(core_cut_rsp[i], core_out_rsp[i])
 
     if (Cfg.LlcCachePartition) begin : gen_tagger
       tagger #(
@@ -900,27 +851,27 @@ module cheshire_soc import cheshire_pkg::*; #(
   //      CCU      //
   ///////////////////
 
-  // Defines domain_mask_t and domain_set_t
-  `DOMAIN_TYPEDEF_ALL(NumIntHarts)
+  // Defines domain_mask_t and domain_rule_t
+  `DOMAIN_TYPEDEF_ALL(NumIntHarts, domain_bv_t, domain_rule_t)
 
-  domain_set_t  [NumIntHarts-1:0] domain_set;
+  domain_rule_t  [NumIntHarts-1:0] domain_rule;
   initial begin
     for (int i = 0; i < NumIntHarts; i++) begin
-      domain_set[i].initiator = 1 << i;
-      domain_set[i].inner = ~(1 << i);
-      domain_set[i].outer = ~(1 << i);
+      domain_rule[i].initiator = 1 << i;
+      domain_rule[i].inner = ~(1 << i);
+      domain_rule[i].outer = ~(1 << i);
     end
   end
 
   ace_ccu_top_intf #(
-    .CCU_CFG ( CcuCfg )
-  ) i_ccu (
+    .CCU_CFG (CcuCfg)
+  ) ccu (
     .clk_i,
     .rst_ni,
-    .domain_set_i ( domain_set  ),
-    .slv_ports    ( core_to_CCU ),
-    .snoop_ports  ( CCU_to_core ),
-    .mst_port     ( ccu_out_axi )
+    .domain_rule_i (domain_rule),
+    .slv           (core_to_CCU),
+    .snoop         (CCU_to_core),
+    .mst           (ccu_out_axi)
   );
 
   axi_id_remap_intf #(

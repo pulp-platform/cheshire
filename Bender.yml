@@ -13,8 +13,8 @@ package:
 
 dependencies:
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.1  }
-  ace:                      { git: "https://github.com/pulp-platform/ace.git",                    rev: ea2fc9ced5be964b47cfcbcd6eb6518771a9e85d } # branch: ace-cut
-  axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.4 }
+  ace:                      { git: "https://github.com/ricted98/ace.git",                         rev: f3be9fd    } # branch: rt/reorganize
+  axi:                      { git: "https://github.com/ricted98/axi.git",                         rev: f68c9ef    } # branch: rt/ace
   axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc",                    rev: 2f23e6f    } # branch: rt/fix-no-ecc-config
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      rev: 062bc36    } # branch: master
   axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: 0.0.0-alpha.8 }
