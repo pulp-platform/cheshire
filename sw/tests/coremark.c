@@ -1,0 +1,1 @@
+../deps/coremark/core_main.c

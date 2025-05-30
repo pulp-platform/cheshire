@@ -70,6 +70,7 @@ jobs:
         exclude: |
           ./sw/include/regs/*.h
           ./target/sim/src/elfloader.cpp
+          ./sw/tests/coremark.c
 
   lint-tcl:
     runs-on: ubuntu-latest

@@ -48,6 +48,16 @@ CHS_SW_DEPS_SRCS += $(wildcard $(OTPROOT)/sw/device/lib/base/*.c)
 CHS_SW_DEPS_SRCS += $(wildcard $(OTPROOT)/sw/device/lib/dif/*.c)
 CHS_SW_DEPS_SRCS += $(wildcard $(OTPROOT)/sw/device/lib/dif/autogen/*.c)
 
+# Coremark-dependant parameters
+COREMARK_FLAGS_STR ?= $(CHS_SW_CCFLAGS) $(CHS_SW_LDFLAGS)
+COREMARK_ITERATIONS ?= 10
+# The following parameter is the core frequency in Hz (e.g. 200'000'000 Hz)
+COREMARK_CLOCKS_PER_SEC ?= 200000000
+CHS_SW_DEPS_INCS += -I$(CHS_SW_DIR)/deps/coremark
+CHS_SW_DEPS_INCS += -I$(CHS_SW_DIR)/deps/coremark/cheshire
+CHS_SW_DEPS_SRCS += $(wildcard $(CHS_SW_DIR)/deps/coremark/*.c)
+CHS_SW_DEPS_SRCS += $(wildcard $(CHS_SW_DIR)/deps/coremark/cheshire/*.c)
+COREMARK_SW_FLAGS += -DFLAGS_STR="\"$(COREMARK_FLAGS_STR)\"" -DITERATIONS=$(COREMARK_ITERATIONS) -DCLOCKS_PER_SEC=$(COREMARK_CLOCKS_PER_SEC)
 #############
 # Libraries #
 #############
@@ -95,10 +105,10 @@ CHS_SW_GEN_HDRS += $(OTPROOT)/.generated
 
 # All objects require up-to-date patches and headers
 %.o: %.c $(CHS_SW_GEN_HDRS)
-	$(CHS_SW_CC) $(CHS_SW_INCLUDES) $(CHS_SW_CCFLAGS) -c $< -o $@
+	$(CHS_SW_CC) $(CHS_SW_INCLUDES) $(CHS_SW_CCFLAGS) $(COREMARK_SW_FLAGS) -c $< -o $@
 
 %.o: %.S $(CHS_SW_GEN_HDRS)
-	$(CHS_SW_CC) $(CHS_SW_INCLUDES) $(CHS_SW_CCFLAGS) -c $< -o $@
+	$(CHS_SW_CC) $(CHS_SW_INCLUDES) $(CHS_SW_CCFLAGS) $(COREMARK_SW_FLAGS) -c $< -o $@
 
 # Programs may specify a linking mode in their name, e.g. `helloworld.spm.c`.
 # Tests with such infixes are built only for one linking mode, tests without them for all
@@ -106,10 +116,10 @@ define chs_sw_ld_elf_rule
 .PRECIOUS: %.$(1).elf
 
 %.$(1).elf: $$(CHS_SW_LD_DIR)/$(1).ld %.o $$(CHS_SW_LIBS)
-	$$(CHS_SW_CC) $$(CHS_SW_INCLUDES) -T$$< $$(CHS_SW_LDFLAGS) -o $$@ $$*.o $$(CHS_SW_LIBS)
+	$$(CHS_SW_CC) $$(CHS_SW_INCLUDES) -T$$< $$(CHS_SW_LDFLAGS) $(COREMARK_SW_FLAGS) -o $$@ $$*.o $$(CHS_SW_LIBS)
 
 %.$(1).elf: $$(CHS_SW_LD_DIR)/$(1).ld %.$(1).o $$(CHS_SW_LIBS)
-	$$(CHS_SW_CC) $$(CHS_SW_INCLUDES) -T$$< $$(CHS_SW_LDFLAGS) -o $$@ $$*.$(1).o $$(CHS_SW_LIBS)
+	$$(CHS_SW_CC) $$(CHS_SW_INCLUDES) -T$$< $$(CHS_SW_LDFLAGS) $(COREMARK_SW_FLAGS) -o $$@ $$*.$(1).o $$(CHS_SW_LIBS)
 endef
 
 CHS_SW_LINK_MODES ?= $(patsubst $(CHS_SW_LD_DIR)/%.ld,%,$(wildcard $(CHS_SW_LD_DIR)/*.ld))
