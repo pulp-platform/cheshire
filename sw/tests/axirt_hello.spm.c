@@ -15,6 +15,7 @@
 #include "regs/axi_rt.h"
 #include "params.h"
 #include "util.h"
+#include "printf.h"
 
 int main(void) {
     // Immediately return an error if AXI_REALM, DMA, or UART are not present
@@ -24,10 +25,6 @@ int main(void) {
 
     // This test requires at least two subordinate regions
     CHECK_ASSERT(-4, AXI_RT_PARAM_NUM_SUB >= 2);
-
-    char str[] = "Hello AXI-RT!\r\n";
-    uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
-    uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
 
     // Enable and configure AXI REALM
     __axirt_claim(1, 1);
@@ -53,9 +50,6 @@ int main(void) {
     // Enable RT unit for DMA and CVA6 core 0
     __axirt_enable(0x5);
 
-    // Configure UART and write message
-    uart_init(&__base_uart, reset_freq, __BOOT_BAUDRATE);
-    uart_write_str(&__base_uart, str, sizeof(str) - 1);
-    uart_write_flush(&__base_uart);
+    printf("Hello AXI-RT!\r\n");
     return 0;
 }
