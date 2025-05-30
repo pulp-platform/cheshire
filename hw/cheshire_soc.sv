@@ -240,7 +240,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     UniqueIds:          0,
     AxiAddrWidth:       Cfg.AddrWidth,
     AxiDataWidth:       Cfg.AxiDataWidth,
-    NoAddrRules:        AxiOut.num_rules
+    NoAddrRules:        AxiOut.num_rules,
+    deafult: '0
   };
 
   axi_xbar #(
