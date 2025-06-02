@@ -13,6 +13,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   parameter cheshire_cfg_t Cfg = '0,
   // Debug info for external harts
   parameter dm::hartinfo_t [iomsb(Cfg.NumExtDbgHarts):0] ExtHartinfo = '0,
+  parameter bit UartPrelMode = 1'b0,
   // Interconnect types (must agree with Cheshire config)
   parameter type axi_ext_llc_req_t  = logic,
   parameter type axi_ext_llc_rsp_t  = logic,
@@ -1197,6 +1198,41 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   if (Cfg.Uart) begin : gen_uart
 
+  `ifdef TARGET_SIM
+    if (UartPrelMode) begin : gen_real_uart
+      reg_uart_wrap #(
+        .AddrWidth  ( Cfg.AddrWidth ),
+        .reg_req_t  ( reg_req_t ),
+        .reg_rsp_t  ( reg_rsp_t )
+      ) i_uart (
+        .clk_i,
+        .rst_ni,
+        .reg_req_i  ( reg_out_req[RegOut.uart] ),
+        .reg_rsp_o  ( reg_out_rsp[RegOut.uart] ),
+        .intr_o     ( intr.intn.uart ),
+        .out2_no    ( ),
+        .out1_no    ( ),
+        .rts_no     ( uart_rts_no ),
+        .dtr_no     ( uart_dtr_no ),
+        .cts_ni     ( uart_cts_ni ),
+        .dsr_ni     ( uart_dsr_ni ),
+        .dcd_ni     ( uart_dcd_ni ),
+        .rin_ni     ( uart_rin_ni ),
+        .sin_i      ( uart_rx_i   ),
+        .sout_o     ( uart_tx_o   )
+      );
+    end else begin : gen_sim_uart
+      chs_sim_uart #(
+        .reg_req_t ( reg_req_t ),
+        .reg_rsp_t ( reg_rsp_t )
+      ) i_sim_uart (
+        .clk_i,
+        .rst_ni,
+        .reg_req_i ( reg_out_req[RegOut.uart] ),
+        .reg_rsp_o ( reg_out_rsp[RegOut.uart] )
+      );
+    end
+  `else
     reg_uart_wrap #(
       .AddrWidth  ( Cfg.AddrWidth ),
       .reg_req_t  ( reg_req_t ),
@@ -1218,6 +1254,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .sin_i      ( uart_rx_i   ),
       .sout_o     ( uart_tx_o   )
     );
+  `endif
 
   end else begin : gen_no_uart
 

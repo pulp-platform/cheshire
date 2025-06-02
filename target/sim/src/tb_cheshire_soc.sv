@@ -7,13 +7,15 @@
 
 module tb_cheshire_soc #(
   /// The selected simulation configuration from the `tb_cheshire_pkg`.
-  parameter int unsigned SelectedCfg = 32'd0,
-  parameter bit          UseDramSys  = 1'b0
+  parameter int unsigned SelectedCfg  = 32'd0,
+  parameter bit          UseDramSys   = 1'b0,
+  parameter bit          UartPrelMode = 1'b0
 );
 
   fixture_cheshire_soc #(
     .SelectedCfg  (SelectedCfg),
-    .UseDramSys   (UseDramSys)
+    .UseDramSys   (UseDramSys),
+    .UartPrelMode (UartPrelMode)
   ) fix();
 
   string      preload_elf;

@@ -32,7 +32,10 @@ if { [info exists SELCFG] } { append flags "-GSelectedCfg=${SELCFG} " }
 
 set pargs ""
 if { [info exists BOOTMODE] } { append pargs "+BOOTMODE=${BOOTMODE} " }
-if { [info exists PRELMODE] } { append pargs "+PRELMODE=${PRELMODE} " }
+if { [info exists PRELMODE] } {
+    append pargs "+PRELMODE=${PRELMODE} "
+    if { $PRELMODE == 2 } { append flags "-GUartPrelMode=1 " }
+}
 if { [info exists BINARY] } { append pargs "+BINARY=${BINARY} " }
 if { [info exists IMAGE] } { append pargs "+IMAGE=${IMAGE} " }
 

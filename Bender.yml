@@ -49,6 +49,7 @@ sources:
     files:
       - target/sim/models/s25fs512s.v
       - target/sim/models/24FC1025.v
+      - target/sim/src/chs_sim_uart.sv
       - target/sim/src/vip_cheshire_soc.sv
       - target/sim/src/tb_cheshire_pkg.sv
       - target/sim/src/fixture_cheshire_soc.sv

@@ -33,6 +33,9 @@ flags+="-cpp ${CXX_PATH} "
 pargs=""
 [[ -n "${BOOTMODE}" ]] && pargs+="+BOOTMODE=${BOOTMODE} "
 [[ -n "${PRELMODE}" ]] && pargs+="+PRELMODE=${PRELMODE} "
+if [[ "${PRELMODE}" == "2" ]]; then
+    flags+="-pvalue+UartPrelMode=1 "
+fi
 [[ -n "${BINARY}" ]]   && pargs+="+BINARY=${BINARY} "
 [[ -n "${IMAGE}" ]]    && pargs+="+IMAGE=${IMAGE} "
 
