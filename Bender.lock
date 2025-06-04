@@ -15,7 +15,7 @@ packages:
     - apb
     - register_interface
   ara:
-    revision: eb2ebabc17e2a577cc4aaffec7b9f8e8d38772b7
+    revision: f04c2126460fa4a9537ff3668b0fe5ecd604f066
     version: null
     source:
       Git: https://github.com/pulp-platform/ara.git
