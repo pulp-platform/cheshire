@@ -4,6 +4,7 @@
 //
 // Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
+// Mojtaba Rostami <m.rostami1989@gmail.com>
 //
 // Resize AXI AW, IW, and DW before connecting to a Xilinx DRAM controller.
 
@@ -52,6 +53,19 @@ module dram_wrapper_xilinx #(
     integer MaxUniqIds;
     integer MaxTxns;
   } dram_cfg_t;
+
+`ifdef TARGET_VCU118
+  localparam dram_cfg_t cfg = '{
+    EnCdc         : 1,    // 200 MHz AXI (cf. CdcLogDepth)
+    CdcLogDepth   : 5,
+    IdWidth       : 8,
+    AddrWidth     : 31,
+    DataWidth     : 512,
+    StrobeWidth   : 64,
+    MaxUniqIds    : 8,    // TODO: suboptimal, but limited by CVA6/LLC
+    MaxTxns       : 24    // TODO: suboptimal, but limited by CVA6/LLC
+  };
+`endif
 
 `ifdef TARGET_VCU128
   localparam dram_cfg_t cfg = '{
@@ -226,7 +240,12 @@ module dram_wrapper_xilinx #(
   ddr4 i_dram (
     // Reset
     .sys_rst                    ( sys_rst_i    ),  // Active high
+`ifdef TARGET_VCU128    
     .c0_sys_clk_i               ( dram_clk_i   ),
+`elsif TARGET_VCU118
+    .c0_sys_clk_p               ( c0_sys_clk_p                 ),
+    .c0_sys_clk_n               ( c0_sys_clk_n                 ),
+`endif 
     .c0_ddr4_aresetn            ( soc_resetn_i ),
     // Clock and reset out
     .c0_ddr4_ui_clk             ( dram_axi_clk ),
@@ -270,6 +289,7 @@ module dram_wrapper_xilinx #(
     .c0_ddr4_s_axi_rlast        ( cdc_dram_rsp.r.last   ),
     .c0_ddr4_s_axi_rvalid       ( cdc_dram_rsp.r_valid  ),
     // TODO: Shouldn't we map this to an external reg port?
+`ifdef TARGET_VCU128       
     // AXI control
     .c0_ddr4_s_axi_ctrl_awvalid ( '0 ),
     .c0_ddr4_s_axi_ctrl_awready ( ),
@@ -288,6 +308,7 @@ module dram_wrapper_xilinx #(
     .c0_ddr4_s_axi_ctrl_rdata   ( ),
     .c0_ddr4_s_axi_ctrl_rresp   ( ),
     .c0_ddr4_interrupt          ( ),
+`endif
     // Others
     .c0_init_calib_complete     ( ),
     .addn_ui_clkout1            ( dram_clk_o ),
@@ -296,6 +317,7 @@ module dram_wrapper_xilinx #(
     // PHY
     .*
   );
+
 `endif
 
   /////////////////////////
