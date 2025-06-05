@@ -29,58 +29,39 @@
 #define DMA_CONF_DECOUPLE_ALL (DMA_CONF_DECOUPLE_AW | DMA_CONF_DECOUPLE_RW)
 
 #define X(NAME, BASE_ADDR) \
-    extern volatile uint64_t *NAME##_dma_src_ptr(void); \
-    extern volatile uint64_t *NAME##_dma_dst_ptr(void); \
-    extern volatile uint64_t *NAME##_dma_num_bytes_ptr(void); \
-    extern volatile uint64_t *NAME##_dma_conf_ptr(void); \
-    extern volatile uint64_t *NAME##_dma_status_ptr(void); \
-    extern volatile uint64_t *NAME##_dma_nextid_ptr(void); \
-    extern volatile uint64_t *NAME##_dma_done_ptr(void); \
-    extern volatile uint64_t *NAME##_dma_src_stride_ptr(void); \
-    extern volatile uint64_t *NAME##_dma_dst_stride_ptr(void); \
-    extern volatile uint64_t *NAME##_dma_num_reps_ptr(void); \
-\
-    extern uint64_t NAME##_dma_memcpy(uint64_t dst, uint64_t src, uint64_t size, uint64_t cfg); \
-    extern void NAME##_dma_blk_memcpy(uint64_t dst, uint64_t src, uint64_t size, uint64_t cfg); \
-    extern uint64_t NAME##_dma_2d_memcpy(uint64_t dst, uint64_t src, uint64_t size, \
-                                         uint64_t dst_stride, uint64_t src_stride, \
-                                         uint64_t num_reps, uint64_t cfg); \
-    extern void NAME##_dma_2d_blk_memcpy(uint64_t dst, uint64_t src, uint64_t size, \
-                                         uint64_t dst_stride, uint64_t src_stride, \
-                                         uint64_t num_reps, uint64_t cfg); \
-\
-    inline volatile uint64_t *NAME##_dma_src_ptr(void) { \
+    static inline volatile uint64_t *NAME##_dma_src_ptr(void) { \
         return (volatile uint64_t *)DMA_SRC_ADDR(BASE_ADDR); \
     } \
-    inline volatile uint64_t *NAME##_dma_dst_ptr(void) { \
+    static inline volatile uint64_t *NAME##_dma_dst_ptr(void) { \
         return (volatile uint64_t *)DMA_DST_ADDR(BASE_ADDR); \
     } \
-    inline volatile uint64_t *NAME##_dma_num_bytes_ptr(void) { \
+    static inline volatile uint64_t *NAME##_dma_num_bytes_ptr(void) { \
         return (volatile uint64_t *)DMA_NUMBYTES_ADDR(BASE_ADDR); \
     } \
-    inline volatile uint64_t *NAME##_dma_conf_ptr(void) { \
+    static inline volatile uint64_t *NAME##_dma_conf_ptr(void) { \
         return (volatile uint64_t *)DMA_CONF_ADDR(BASE_ADDR); \
     } \
-    inline volatile uint64_t *NAME##_dma_status_ptr(void) { \
+    static inline volatile uint64_t *NAME##_dma_status_ptr(void) { \
         return (volatile uint64_t *)DMA_STATUS_ADDR(BASE_ADDR); \
     } \
-    inline volatile uint64_t *NAME##_dma_nextid_ptr(void) { \
+    static inline volatile uint64_t *NAME##_dma_nextid_ptr(void) { \
         return (volatile uint64_t *)DMA_NEXTID_ADDR(BASE_ADDR); \
     } \
-    inline volatile uint64_t *NAME##_dma_done_ptr(void) { \
+    static inline volatile uint64_t *NAME##_dma_done_ptr(void) { \
         return (volatile uint64_t *)DMA_DONE_ADDR(BASE_ADDR); \
     } \
-    inline volatile uint64_t *NAME##_dma_src_stride_ptr(void) { \
+    static inline volatile uint64_t *NAME##_dma_src_stride_ptr(void) { \
         return (volatile uint64_t *)DMA_SRC_STRIDE_ADDR(BASE_ADDR); \
     } \
-    inline volatile uint64_t *NAME##_dma_dst_stride_ptr(void) { \
+    static inline volatile uint64_t *NAME##_dma_dst_stride_ptr(void) { \
         return (volatile uint64_t *)DMA_DST_STRIDE_ADDR(BASE_ADDR); \
     } \
-    inline volatile uint64_t *NAME##_dma_num_reps_ptr(void) { \
+    static inline volatile uint64_t *NAME##_dma_num_reps_ptr(void) { \
         return (volatile uint64_t *)DMA_NUM_REPS_ADDR(BASE_ADDR); \
     } \
 \
-    inline uint64_t NAME##_dma_memcpy(uint64_t dst, uint64_t src, uint64_t size, uint64_t conf) { \
+    static inline uint64_t NAME##_dma_memcpy(uint64_t dst, uint64_t src, uint64_t size, \
+                                             uint64_t conf) { \
         *(NAME##_dma_src_ptr()) = (uint64_t)src; \
         *(NAME##_dma_dst_ptr()) = (uint64_t)dst; \
         *(NAME##_dma_num_bytes_ptr()) = size; \
@@ -88,16 +69,17 @@
         return *(NAME##_dma_nextid_ptr()); \
     } \
 \
-    inline void NAME##_dma_blk_memcpy(uint64_t dst, uint64_t src, uint64_t size, uint64_t conf) { \
+    static inline void NAME##_dma_blk_memcpy(uint64_t dst, uint64_t src, uint64_t size, \
+                                             uint64_t conf) { \
         volatile uint64_t tf_id = NAME##_dma_memcpy(dst, src, size, conf); \
         while (*(NAME##_dma_done_ptr()) != tf_id) { \
             asm volatile("nop"); \
         } \
     } \
 \
-    inline uint64_t NAME##_dma_2d_memcpy(uint64_t dst, uint64_t src, uint64_t size, \
-                                         uint64_t dst_stride, uint64_t src_stride, \
-                                         uint64_t num_reps, uint64_t conf) { \
+    static inline uint64_t NAME##_dma_2d_memcpy(uint64_t dst, uint64_t src, uint64_t size, \
+                                                uint64_t dst_stride, uint64_t src_stride, \
+                                                uint64_t num_reps, uint64_t conf) { \
         *(NAME##_dma_src_ptr()) = (uint64_t)src; \
         *(NAME##_dma_dst_ptr()) = (uint64_t)dst; \
         *(NAME##_dma_num_bytes_ptr()) = size; \
@@ -108,9 +90,9 @@
         return *(NAME##_dma_nextid_ptr()); \
     } \
 \
-    inline void NAME##_dma_2d_blk_memcpy(uint64_t dst, uint64_t src, uint64_t size, \
-                                         uint64_t dst_stride, uint64_t src_stride, \
-                                         uint64_t num_reps, uint64_t conf) { \
+    static inline void NAME##_dma_2d_blk_memcpy(uint64_t dst, uint64_t src, uint64_t size, \
+                                                uint64_t dst_stride, uint64_t src_stride, \
+                                                uint64_t num_reps, uint64_t conf) { \
         volatile uint64_t tf_id = \
             NAME##_dma_2d_memcpy(dst, src, size, dst_stride, src_stride, num_reps, conf); \
         while (*(NAME##_dma_done_ptr()) != tf_id) { \
@@ -118,7 +100,7 @@
         } \
     } \
 \
-    inline uint64_t NAME##_dma_get_status(void) { \
+    static inline uint64_t NAME##_dma_get_status(void) { \
         return *(NAME##_dma_status_ptr()); \
     }
 
