@@ -63,7 +63,7 @@ chs-clean-deps:
 ######################
 
 CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-CHS_NONFREE_COMMIT ?= a1a4763afd0347d57585855eb11e7eb74cf9e505
+CHS_NONFREE_COMMIT ?= 22e8f601117b111e82599ffddc62000ec43d2b8d
 
 CHS_PHONY += chs-nonfree-init
 chs-nonfree-init:
