@@ -5,6 +5,8 @@
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 // Thomas Benz <tbenz@iis.ee.ethz.ch>
 
+#pragma once
+
 #include <stdint.h>
 #include "regs/idma.h"
 #include "params.h"
