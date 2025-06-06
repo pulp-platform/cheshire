@@ -359,36 +359,35 @@ exit:
   return retval;
 }
 #else
+// Instead of mmap implementation for linux, windows implementation relies on
+// reading elf into the buffer, which fill be passed into load_elf.
 extern "C" char read_elf(const char *filename) {
-  // Reset state
-  sections.clear(); mems.clear(); section_index = 0; entry = 0;
 
-  // Read file into buffer
   std::ifstream in(filename, std::ios::binary | std::ios::ate);
   if (!in) {
-    std::cerr << "[ELF] ERROR: Cannot open file " << filename << "\n";
+    printf("[ELF] ERROR: Cannot open file %s\n", filename);
     return -1;
   }
   std::streamsize size = in.tellg();
   in.seekg(0, std::ios::beg);
   std::vector<char> buf(static_cast<size_t>(size));
   if (!in.read(buf.data(), size)) {
-    std::cerr << "[ELF] ERROR: Failed reading file " << filename << "\n";
+    printf("[ELF] ERROR: Failed to read file %s\n", filename);
     return -1;
   }
 
   if (size < static_cast<std::streamsize>(sizeof(Elf64_Ehdr))) {
-    std::cerr << "[ELF] ERROR: File too small (" << size << ")\n";
+    printf("[ELF] ERROR: File %s too small (%x)\n", filename, size);
     return -1;
   }
 
-  const Elf64_Ehdr *eh = reinterpret_cast<const Elf64_Ehdr*>(buf.data());
-  if (!(IS_ELF32(*eh) || IS_ELF64(*eh))) {
-    std::cerr << "[ELF] ERROR: Invalid ELF signature in " << filename << "\n";
+  const Elf64_Ehdr *eh64 = reinterpret_cast<const Elf64_Ehdr *>(buf.data());
+  if (!(IS_ELF32(*eh64) || IS_ELF64(*eh64))) {
+    printf("[ELF] ERROR: File %s does not contain a valid ELF signature\n", filename);
     return -1;
   }
 
-  if (IS_ELF32(*eh)) {
+  if (IS_ELF32(*eh64)){
     load_elf<Elf32_Ehdr, Elf32_Phdr, Elf32_Shdr, Elf32_Sym>(buf.data(), buf.size());
   } else {
     load_elf<Elf64_Ehdr, Elf64_Phdr, Elf64_Shdr, Elf64_Sym>(buf.data(), buf.size());
