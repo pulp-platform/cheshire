@@ -11,11 +11,17 @@
 #include <svdpi.h>
 #include <cstring>
 #include <string>
+#ifdef _WIN32
+#include <windows.h>
+#include <cassert>
+#include <fstream>
+#else
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <assert.h>
 #include <unistd.h>
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <vector>
@@ -290,6 +296,7 @@ static void load_elf(char *buf, size_t size)
   }
 }
 
+#ifndef _WIN32
 extern "C" char read_elf(const char *filename)
 {
   char *buf = NULL;
@@ -351,3 +358,42 @@ exit_fd:
 exit:
   return retval;
 }
+#else
+extern "C" char read_elf(const char *filename) {
+  // Reset state
+  sections.clear(); mems.clear(); section_index = 0; entry = 0;
+
+  // Read file into buffer
+  std::ifstream in(filename, std::ios::binary | std::ios::ate);
+  if (!in) {
+    std::cerr << "[ELF] ERROR: Cannot open file " << filename << "\n";
+    return -1;
+  }
+  std::streamsize size = in.tellg();
+  in.seekg(0, std::ios::beg);
+  std::vector<char> buf(static_cast<size_t>(size));
+  if (!in.read(buf.data(), size)) {
+    std::cerr << "[ELF] ERROR: Failed reading file " << filename << "\n";
+    return -1;
+  }
+
+  if (size < static_cast<std::streamsize>(sizeof(Elf64_Ehdr))) {
+    std::cerr << "[ELF] ERROR: File too small (" << size << ")\n";
+    return -1;
+  }
+
+  const Elf64_Ehdr *eh = reinterpret_cast<const Elf64_Ehdr*>(buf.data());
+  if (!(IS_ELF32(*eh) || IS_ELF64(*eh))) {
+    std::cerr << "[ELF] ERROR: Invalid ELF signature in " << filename << "\n";
+    return -1;
+  }
+
+  if (IS_ELF32(*eh)) {
+    load_elf<Elf32_Ehdr, Elf32_Phdr, Elf32_Shdr, Elf32_Sym>(buf.data(), buf.size());
+  } else {
+    load_elf<Elf64_Ehdr, Elf64_Phdr, Elf64_Shdr, Elf64_Sym>(buf.data(), buf.size());
+  }
+
+  return 0;
+}
+#endif
