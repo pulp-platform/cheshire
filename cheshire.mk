@@ -43,7 +43,7 @@ BENDER_ROOT ?= $(CHS_ROOT)/.bender
 # Ensure both Bender dependencies and (essential) submodules are checked out
 $(BENDER_ROOT)/.chs_deps:
 	$(BENDER) checkout
-	cd $(CHS_ROOT) && git submodule update --init --recursive sw/deps/printf
+	cd $(CHS_ROOT) && git submodule update --init --recursive sw/deps/printf sw/deps/coremark
 	@touch $@
 
 # Make sure dependencies are more up-to-date than any targets run
