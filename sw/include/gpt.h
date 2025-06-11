@@ -10,8 +10,6 @@
 
 #include <stdint.h>
 
-extern int boot_next_stage(void *);
-
 typedef int (*gpt_read_t)(void *priv, void *buf, uint64_t addr, uint64_t len);
 
 int gpt_check_signature(gpt_read_t read, void *priv);
