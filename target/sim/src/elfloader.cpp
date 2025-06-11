@@ -11,16 +11,18 @@
 #include <svdpi.h>
 #include <cstring>
 #include <string>
-#ifdef _WIN32
-#include <windows.h>
-#include <cassert>
-#include <fstream>
-#else
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+// If known POSIX system, use POSIX features
+#define ELFLOADER_POSIX
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <assert.h>
 #include <unistd.h>
+#else
+// Otherwise, stick to portable C++
+#include <cassert>
+#include <fstream>
 #endif
 #include <stdlib.h>
 #include <stdio.h>
@@ -296,7 +298,7 @@ static void load_elf(char *buf, size_t size)
   }
 }
 
-#ifndef _WIN32
+#ifdef ELFLOADER_POSIX
 extern "C" char read_elf(const char *filename)
 {
   char *buf = NULL;
@@ -359,7 +361,7 @@ exit:
   return retval;
 }
 #else
-// Instead of mmap implementation for linux, windows implementation relies on
+// Instead of mmap implementation for POSIX, generic implementation relies on
 // reading elf into the buffer, which fill be passed into load_elf.
 extern "C" char read_elf(const char *filename) {
 
