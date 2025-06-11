@@ -80,14 +80,19 @@ int main(void) {
     // Initialize src region and golden values
     for (int i = 0; i < DMA_NUM_BEATS; i++) dma_src[i] = 0xcafedeadbaadf00dULL + i;
 
-    // Wait for writes, then launch blocking DMA transfer
+    // Wait for writes, then launch non-blocking DMA transfer
     fence();
-    sys_dma_2d_blk_memcpy((uintptr_t)(void *)dma_dst, (uintptr_t)(void *)dma_src,
-                          sizeof(dma_src_cached), 0, 0, DMA_NUM_REPS, DMA_CONF_DECOUPLE_ALL);
+    sys_dma_2d_memcpy((uintptr_t)(void *)dma_dst, (uintptr_t)(void *)dma_src,
+                      sizeof(dma_src_cached), 0, 0, DMA_NUM_REPS, DMA_CONF_DECOUPLE_ALL);
 
-    // Poll isolate to check if AXI-REALM isolates the dma when the budget is
+    // Wait 5000 cycles for isolation to kick in
+    uint64_t end_wait_cycles = get_mcycle() + 5000;
+    while (end_wait_cycles > get_mcycle())
+        ;
+
+    // Check isolate to check if AXI-REALM isolates the dma when the budget is
     // exceeded. Should return 1 if dma is isolated.
-    int isolate_status = __axirt_poll_isolate(chs_dma_id);
+    int isolate_status = (*reg32(&__base_axirt, AXI_RT_ISOLATED_REG_OFFSET) >> chs_dma_id) & 1;
 
     // Return 0 if manager was correctly isolated
     return !isolate_status;
