@@ -11,11 +11,19 @@
 #include <svdpi.h>
 #include <cstring>
 #include <string>
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+// If known POSIX system, use POSIX features
+#define ELFLOADER_POSIX
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <assert.h>
 #include <unistd.h>
+#else
+// Otherwise, stick to portable C++
+#include <cassert>
+#include <fstream>
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <vector>
@@ -290,6 +298,7 @@ static void load_elf(char *buf, size_t size)
   }
 }
 
+#ifdef ELFLOADER_POSIX
 extern "C" char read_elf(const char *filename)
 {
   char *buf = NULL;
@@ -351,3 +360,41 @@ exit_fd:
 exit:
   return retval;
 }
+#else
+// Instead of mmap implementation for POSIX, generic implementation relies on
+// reading elf into the buffer, which fill be passed into load_elf.
+extern "C" char read_elf(const char *filename) {
+
+  std::ifstream in(filename, std::ios::binary | std::ios::ate);
+  if (!in) {
+    printf("[ELF] ERROR: Cannot open file %s\n", filename);
+    return -1;
+  }
+  std::streamsize size = in.tellg();
+  in.seekg(0, std::ios::beg);
+  std::vector<char> buf(static_cast<size_t>(size));
+  if (!in.read(buf.data(), size)) {
+    printf("[ELF] ERROR: Failed to read file %s\n", filename);
+    return -1;
+  }
+
+  if (size < static_cast<std::streamsize>(sizeof(Elf64_Ehdr))) {
+    printf("[ELF] ERROR: File %s too small (%x)\n", filename, size);
+    return -1;
+  }
+
+  const Elf64_Ehdr *eh64 = reinterpret_cast<const Elf64_Ehdr *>(buf.data());
+  if (!(IS_ELF32(*eh64) || IS_ELF64(*eh64))) {
+    printf("[ELF] ERROR: File %s does not contain a valid ELF signature\n", filename);
+    return -1;
+  }
+
+  if (IS_ELF32(*eh64)){
+    load_elf<Elf32_Ehdr, Elf32_Phdr, Elf32_Shdr, Elf32_Sym>(buf.data(), buf.size());
+  } else {
+    load_elf<Elf64_Ehdr, Elf64_Phdr, Elf64_Shdr, Elf64_Sym>(buf.data(), buf.size());
+  }
+
+  return 0;
+}
+#endif
