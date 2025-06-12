@@ -28,6 +28,9 @@
   `define USE_USB
   `define USE_STARTUPE2
   `define USE_QSPI
+  `define USE_CFG_REGS
+  `define USE_RAM_DELAY
+  `define USE_NUM_LED 8
 `endif
 
 `ifdef TARGET_ZCU102
@@ -35,6 +38,18 @@
   `define USE_JTAG
   `define USE_DDR4
   `define USE_VIO
+`endif
+
+/////////////////////
+// DERIVED CONFIGS //
+/////////////////////
+
+`ifdef USE_RAM_DELAY
+`define USE_CFG_REGS
+`endif
+
+`ifdef USE_NUM_LED
+`define USE_CFG_REGS
 `endif
 
 /////////////////////

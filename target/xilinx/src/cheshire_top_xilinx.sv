@@ -29,6 +29,10 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   input logic [1:0] boot_mode_i,
 `endif
 
+`ifdef USE_NUM_LED
+  output logic [`USE_NUM_LED-1:0] led_o,
+`endif
+
 `ifdef USE_JTAG
   input  logic  jtag_tck_i,
   input  logic  jtag_tms_i,
@@ -108,6 +112,18 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     ret.Usb = 1;
   `else
     ret.Usb = 0;
+  `endif
+  `ifdef USE_CFG_REGS
+    ret.RegExtNumSlv   = 1;
+    ret.RegExtNumRules = 1;
+    // Mirror the address map of the internal configuration registers.
+    // * 256K @ AXI: 0x4000_0000
+    // * 4K   @ AXI: 0x4100_0000
+    // * 256K @ Reg: 0x4200_0000
+    // * 4K   @ Reg: 0x4300_0000
+    ret.RegExtRegionIdx   [0] = 0;
+    ret.RegExtRegionStart [0] = 32'h4300_0000;
+    ret.RegExtRegionEnd   [0] = 32'h4300_1000;
   `endif
     return ret;
   endfunction
@@ -450,16 +466,59 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     end
   end
 
+  ///////////////////
+  // Cfg Registers //
+  ///////////////////
+
+  chs_xilinx_reg_pkg::chs_xilinx_reg2hw_t reg2hw;
+  chs_xilinx_reg_pkg::chs_xilinx_hw2reg_t hw2reg;
+
+  reg_req_t cfg_reg_req;
+  reg_rsp_t cfg_reg_rsp;
+
+`ifdef USE_CFG_REGS
+  chs_xilinx_reg_top #(
+    .reg_req_t ( reg_req_t ),
+    .reg_rsp_t ( reg_rsp_t )
+  ) i_chs_xilinx_reg_top (
+    .clk_i     ( soc_clk ),
+    .rst_ni    ( rst_n   ),
+    .reg_req_i ( cfg_reg_req ),
+    .reg_rsp_o ( cfg_reg_rsp ),
+    .reg2hw    ( reg2hw ),
+    .hw2reg    ( hw2reg ),
+    .devmode_i ( 1'b1   )
+  );
+`endif
+
+  //////////
+  // LEDs //
+  //////////
+
+`ifdef USE_NUM_LED
+  assign led_o = reg2hw.leds;
+`endif
+
   /////////////////
   // Fan Control //
   /////////////////
 
 `ifdef USE_FAN
+  logic [3:0] fan_setting;
+
+`ifdef USE_CFG_REGS
+  assign fan_setting       = reg2hw.fan_ctl;
+  assign hw2reg.fan_ctl.d  = fan_sw;
+  assign hw2reg.fan_ctl.de = ~reg2hw.fan_sw_override;
+`else
+  assign fan_setting = fan_sw;
+`endif
+
   fan_ctrl i_fan_ctrl (
-    .clk_i          ( soc_clk ),
-    .rst_ni         ( rst_n   ),
-    .pwm_setting_i  ( fan_sw  ),
-    .fan_pwm_o      ( fan_pwm )
+    .clk_i          ( soc_clk     ),
+    .rst_ni         ( rst_n       ),
+    .pwm_setting_i  ( fan_setting ),
+    .fan_pwm_o      ( fan_pwm     )
   );
 `endif
 
@@ -467,8 +526,8 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   // DRAM MIG //
   //////////////
 
-  axi_llc_req_t axi_llc_mst_req;
-  axi_llc_rsp_t axi_llc_mst_rsp;
+  axi_llc_req_t axi_llc_mst_req, axi_dram_mst_req;
+  axi_llc_rsp_t axi_llc_mst_rsp, axi_dram_mst_rsp;
 
 `ifdef USE_DDR
   dram_wrapper_xilinx #(
@@ -484,10 +543,47 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .soc_resetn_i ( rst_n   ),
     .soc_clk_i    ( soc_clk ),
     .dram_clk_i   ( sys_clk ),
-    .soc_req_i    ( axi_llc_mst_req ),
-    .soc_rsp_o    ( axi_llc_mst_rsp ),
+    .soc_req_i    ( axi_dram_mst_req ),
+    .soc_rsp_o    ( axi_dram_mst_rsp ),
     .*
   );
+`endif
+
+  ////////////////
+  // DRAM Delay //
+  ////////////////
+
+`ifdef USE_RAM_DELAY
+  axi_fifo_delay_dyn #(
+    .aw_chan_t  ( axi_llc_aw_chan_t ),
+    .w_chan_t   ( axi_llc_w_chan_t  ),
+    .b_chan_t   ( axi_llc_b_chan_t  ),
+    .ar_chan_t  ( axi_llc_ar_chan_t ),
+    .r_chan_t   ( axi_llc_r_chan_t  ),
+    .axi_req_t  ( axi_llc_req_t     ),
+    .axi_resp_t ( axi_llc_rsp_t     ),
+    .DepthAR    ( 32 ), // Power of two
+    .DepthAW    ( 32 ), // Power of two
+    .DepthR     ( 32 ), // Power of two
+    .DepthW     ( 32 ), // Power of two
+    .DepthB     ( 32 ), // Power of two
+    .MaxDelay   ( 2**15-1 ) // This is a bit backwards, but defines 16-bit delay timers.
+  ) i_axi_fifo_delay_dyn (
+    .clk_i      ( soc_clk ),
+    .rst_ni     ( rst_n   ),
+    .aw_delay_i ( reg2hw.dram_aw_delay ),
+    .w_delay_i  ( reg2hw.dram_w_delay  ),
+    .b_delay_i  ( reg2hw.dram_b_delay  ),
+    .ar_delay_i ( reg2hw.dram_ar_delay ),
+    .r_delay_i  ( reg2hw.dram_r_delay  ),
+    .slv_req_i  ( axi_llc_mst_req ),
+    .slv_resp_o ( axi_llc_mst_rsp ),
+    .mst_req_o  ( axi_dram_mst_req ),
+    .mst_resp_i ( axi_dram_mst_rsp )
+  );
+`else
+  assign axi_dram_mst_req = axi_llc_mst_req;
+  assign axi_llc_mst_rsp  = axi_dram_mst_rsp;
 `endif
 
   //////////////////
@@ -517,8 +613,13 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .axi_ext_mst_rsp_o  ( ),
     .axi_ext_slv_req_o  ( ),
     .axi_ext_slv_rsp_i  ( '0 ),
+`ifdef USE_CFG_REGS
+    .reg_ext_slv_req_o  ( cfg_reg_req ),
+    .reg_ext_slv_rsp_i  ( cfg_reg_rsp ),
+`else
     .reg_ext_slv_req_o  ( ),
     .reg_ext_slv_rsp_i  ( '0 ),
+`endif
     .intr_ext_i         ( '0 ),
     .intr_ext_o         ( ),
     .xeip_ext_o         ( ),
