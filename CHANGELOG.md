@@ -7,6 +7,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## 0.3.1 - 2025-06-16
+
+### Added
+
+- target/sim: Add support for non-POSIX systems in `elfloader.cpp`
+
+### Changed
+
+- deps: Update `apb_uart` to `v0.2.2` and its dependencies as needed
+
+### Fixed
+
+- target/sim: Split serial link preload at page boundaries
+- target/sim: Fix `-permissive` flag in `vsim` start script
+- doc: Fix documented boot mode index of I2C EEPROM
+
+
 ## 0.3.0 - 2025-04-14
 
 ### Added
