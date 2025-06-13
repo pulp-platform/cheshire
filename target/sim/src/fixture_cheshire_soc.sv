@@ -58,6 +58,14 @@ module fixture_cheshire_soc #(
   logic [ 3:0]          spih_sd_i;
   logic [ 3:0]          spih_sd_en;
 
+  logic       sd_clk_o;
+  logic       sd_cmd_en;
+  logic       sd_cmd_o;
+  logic       sd_cmd_i;
+  logic       sd_dat_en;
+  logic [3:0] sd_dat_o;
+  logic [3:0] sd_dat_i;
+
   logic [SlinkNumChan-1:0]                    slink_rcv_clk_i;
   logic [SlinkNumChan-1:0]                    slink_rcv_clk_o;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i;
@@ -123,6 +131,13 @@ module fixture_cheshire_soc #(
     .spih_sd_o          ( spih_sd_o   ),
     .spih_sd_en_o       ( spih_sd_en  ),
     .spih_sd_i          ( spih_sd_i   ),
+    .sd_clk_o           ( sd_clk_o  ),
+    .sd_cmd_en_o        ( sd_cmd_en ),
+    .sd_cmd_o           ( sd_cmd_o  ),
+    .sd_cmd_i           ( sd_cmd_i  ),
+    .sd_dat_en_o        ( sd_dat_en ),
+    .sd_dat_o           ( sd_dat_o  ),
+    .sd_dat_i           ( sd_dat_i  ),
     .gpio_i             ( '0 ),
     .gpio_o             ( ),
     .gpio_en_o          ( ),

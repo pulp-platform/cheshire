@@ -68,6 +68,14 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   inout  wire                 spih_sck,
   inout  wire [SpihNumCs-1:0] spih_csb,
   inout  wire [ 3:0]          spih_sd,
+  // SDIO host interface
+  input  logic       sd_clk_o,
+  input  logic       sd_cmd_en,
+  input  logic       sd_cmd_o,
+  output logic       sd_cmd_i,
+  input  logic       sd_dat_en,
+  input  logic [3:0] sd_dat_o,
+  output logic [3:0] sd_dat_i,
   // Serial link interface
   output logic [SlinkNumChan-1:0]                    slink_rcv_clk_i,
   input  logic [SlinkNumChan-1:0]                    slink_rcv_clk_o,
@@ -602,6 +610,20 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     if (image != "")
       $readmemh(image, gen_i2c_eeproms[0].i_i2c_eeprom.MemoryBlock);
   endtask
+
+  ////////////
+  //  SDIO  //
+  ////////////
+
+  sd_card i_sd_card (
+    .sd_clk_i ( sd_clk_o  ),
+    .cmd_en_i ( sd_cmd_en ),
+    .cmd_i    ( sd_cmd_o  ),
+    .cmd_o    ( sd_cmd_i  ),
+    .dat_en_i ( sd_dat_en ),
+    .dat_i    ( sd_dat_o  ),
+    .dat_o    ( sd_dat_i  )
+  );
 
   ////////////////
   //  SPI Host  //
