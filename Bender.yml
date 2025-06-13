@@ -34,6 +34,7 @@ dependencies:
 
 export_include_dirs:
   - hw/include
+  - hw/future/sdhci/rtl
 
 sources:
   - hw/future/UsbOhciAxi4.v
@@ -44,6 +45,27 @@ sources:
   - hw/cheshire_idma_wrap.sv
   - hw/cheshire_pkg.sv
   - hw/cheshire_soc.sv
+  # SDIO
+  - hw/future/sdhci/rtl/reg/sdhci_reg_pkg.sv
+  - hw/future/sdhci/rtl/reg/sdhci_reg_top.sv
+  - hw/future/sdhci/rtl/reg/sdhci_reg_logic.sv
+  - hw/future/sdhci/rtl/sd_clk_generator.sv
+  - hw/future/sdhci/rtl/sram_shift_reg.sv
+  - hw/future/sdhci/rtl/user_sdhci.sv
+  - hw/future/sdhci/rtl/cmd_write/cmd_write.sv
+  - hw/future/sdhci/rtl/cmd_write/crc7_write.sv
+  - hw/future/sdhci/rtl/par_ser_shift_reg.sv
+  - hw/future/sdhci/rtl/ser_par_shift_reg.sv
+  - hw/future/sdhci/rtl/cmd_wrap.sv
+  - hw/future/sdhci/rtl/rsp_read/crc7_read.sv
+  - hw/future/sdhci/rtl/rsp_read/rsp_read.sv
+  - hw/future/sdhci/rtl/dat_write/crc16_write.sv
+  - hw/future/sdhci/rtl/dat_write/dat_write.sv
+  - hw/future/sdhci/rtl/dat_read/crc16_read.sv
+  - hw/future/sdhci/rtl/dat_read/dat_read.sv
+  - hw/future/sdhci/rtl/dat_read/dat_read_timeout.sv
+  - hw/future/sdhci/rtl/dat_wrap.sv
+  - hw/future/sdhci/rtl/dat_buffer.sv
 
   - target: any(simulation, test)
     files:
@@ -53,6 +75,11 @@ sources:
       - target/sim/src/tb_cheshire_pkg.sv
       - target/sim/src/fixture_cheshire_soc.sv
       - target/sim/src/tb_cheshire_soc.sv
+      # SDIO model
+      - hw/future/sdhci/model/sd_crc_7.v
+      - hw/future/sdhci/model/sd_crc_16.v
+      - hw/future/sdhci/model/sdModel.v
+      - hw/future/sdhci/model/sd_card.sv
 
   - target: all(fpga, xilinx)
     files:

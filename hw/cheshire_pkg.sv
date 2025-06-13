@@ -138,6 +138,7 @@ package cheshire_pkg;
     bit     Clic;
     bit     IrqRouter;
     bit     BusErr;
+    bit     Sdio;
     // Parameters for Debug Module
     jtag_idcode_t DbgIdCode;
     dw_bt   DbgMaxReqs;
@@ -237,6 +238,7 @@ package cheshire_pkg;
     logic i2c_rx_threshold;
     logic i2c_fmt_threshold;
     logic uart;
+    logic sdio;
     logic zero;
   } cheshire_int_intr_t;
 
@@ -394,6 +396,7 @@ package cheshire_pkg;
     aw_bt slink;
     aw_bt vga;
     aw_bt usb;
+    aw_bt sdio;
     aw_bt axirt;
     aw_bt irq_router;
     aw_bt [2**MaxCoresWidth-1:0] bus_err;
@@ -419,6 +422,7 @@ package cheshire_pkg;
     if (cfg.SerialLink)   begin i++; ret.slink      = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
     if (cfg.Vga)          begin i++; ret.vga        = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
     if (cfg.Usb)          begin i++; ret.usb        = i; r++; ret.map[r] = '{i, 'h0300_8000, 'h0300_9000}; end
+    if (cfg.Sdio)         begin i++; ret.sdio       = i; r++; ret.map[r] = '{i, 'h0300_a000, 'h0300_b000}; end
     if (cfg.IrqRouter)    begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
     if (cfg.AxiRt)        begin i++; ret.axirt      = i; r++; ret.map[r] = '{i, 'h020c_0000, 'h0210_0000}; end
     if (cfg.Clic) for (int j = 0; j < cfg.NumCores; j++) begin
@@ -612,6 +616,7 @@ package cheshire_pkg;
     Clic              : 0,
     IrqRouter         : 0,
     BusErr            : 1,
+    Sdio              : 1,
     // Debug
     DbgIdCode         : CheshireIdCode,
     DbgMaxReqs        : 4,

@@ -82,6 +82,14 @@ module cheshire_soc import cheshire_pkg::*; #(
   output logic [ 3:0]           spih_sd_o,
   output logic [ 3:0]           spih_sd_en_o,
   input  logic [ 3:0]           spih_sd_i,
+  // SDIO host interface
+  output logic       sd_clk_o,
+  output logic       sd_cmd_en_o,
+  output logic       sd_cmd_o,
+  input  logic       sd_cmd_i,
+  output logic       sd_dat_en_o,
+  output logic [3:0] sd_dat_o,
+  input  logic [3:0] sd_dat_i,
   // GPIO interface
   input  logic [31:0] gpio_i,
   output logic [31:0] gpio_o,
@@ -1005,7 +1013,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       axirt       : Cfg.AxiRt,
       clic        : Cfg.Clic,
       irq_router  : Cfg.IrqRouter,
-      bus_err     : Cfg.BusErr
+      bus_err     : Cfg.BusErr,
+      sdio        : Cfg.Sdio
     },
     llc_size      : get_llc_size(Cfg),
     vga_params    : '{
@@ -1331,6 +1340,41 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign intr.intn.spih_error      = 0;
     assign intr.intn.spih_spi_event  = 0;
 
+  end
+
+  ////////////
+  //  SDIO  //
+  ////////////
+
+  if (Cfg.Sdio) begin : gen_sdio
+
+    user_sdhci #(
+      .AddrWidth ( Cfg.AddrWidth ),
+      .reg_req_t ( reg_req_t ),
+      .reg_rsp_t ( reg_rsp_t )
+    ) i_user_sdhci (
+      .clk_i,
+      .rst_ni,
+      .reg_req_i   ( reg_out_req[RegOut.sdio] ),
+      .reg_rsp_o   ( reg_out_rsp[RegOut.sdio] ),
+      .sd_clk_o,
+      .sd_cmd_en_o,
+      .sd_cmd_o,
+      .sd_cmd_i,
+      .sd_dat_en_o,
+      .sd_dat_o,
+      .sd_dat_i,
+      .interrupt_o ( intr.intn.sdio )
+    );
+
+  end else begin : gen_no_sdio
+    assign sd_clk_o = '0;
+    assign sd_cmd_en_o = '0;
+    assign sd_cmd_o = '0;
+    assign sd_dat_en_o = '0;
+    assign sd_dat_o = '0;
+    assign intr.intn.sdio = '0;
+    assign reg_out_rsp[RegOut.sdio] = '0;
   end
 
   ////////////
