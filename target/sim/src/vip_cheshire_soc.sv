@@ -18,14 +18,14 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter type          axi_ext_mst_req_t = logic,
   parameter type          axi_ext_mst_rsp_t = logic,
   // Timing
-  parameter time          ClkPeriodSys      = 5ns,
+  parameter time          ClkPeriodSys      = 20ns,
   parameter time          ClkPeriodJtag     = 20ns,
   parameter time          ClkPeriodRtc      = 30518ns,
   parameter int unsigned  RstCycles         = 5,
   parameter real          TAppl             = 0.1,
   parameter real          TTest             = 0.9,
   // UART
-  parameter int unsigned  UartBaudRate      = 115200,
+  parameter int unsigned  UartBaudRate      = 1000000,
   parameter int unsigned  UartParityEna     = 0,
   parameter int unsigned  UartBurstBytes    = 256,
   parameter int unsigned  UartWaitCycles    = 60,
