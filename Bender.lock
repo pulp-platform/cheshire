@@ -3,16 +3,18 @@ packages:
     revision: 77ddf073f194d44b9119949d2421be59789e69ae
     version: 0.2.4
     source:
-      Git: https://github.com/pulp-platform/apb
+      Git: https://github.com/pulp-platform/apb.git
     dependencies:
     - common_cells
   apb_uart:
-    revision: 6c7dde3d749ac8274377745c105da8c8b8cd27c6
-    version: 0.2.1
+    revision: 8182a85d234417db46fe833533f8536644d3bee3
+    version: 0.2.3
     source:
       Git: https://github.com/pulp-platform/apb_uart.git
     dependencies:
     - apb
+    - obi
+    - obi_peripherals
     - register_interface
   axi:
     revision: 39f5f2d51c5e524f6fc5cf8b6e901f7dcc5622d7
@@ -85,8 +87,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: 13f28aa0021fc22c0d01a12d618fda58d2c93239
-    version: 1.33.0
+    revision: 9afda9abb565971649c2aa0985639c096f351171
+    version: 1.38.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -152,13 +154,21 @@ packages:
     - common_cells
     - register_interface
   obi:
-    revision: 5321106817e177d6c16ecc4daa922b96b1bc946b
-    version: 0.1.5
+    revision: 0155fc34e900c7c884e081c0a1114a247937ff69
+    version: 0.1.7
     source:
       Git: https://github.com/pulp-platform/obi.git
     dependencies:
     - common_cells
     - common_verification
+  obi_peripherals:
+    revision: 079894a6cbd4e544c477643d184a4c340bd4e391
+    version: 0.1.1
+    source:
+      Git: https://github.com/pulp-platform/obi_peripherals.git
+    dependencies:
+    - common_cells
+    - obi
   opentitan_peripherals:
     revision: cd3153de2783abd3d03d0595e6c4b32413c62f14
     version: 0.4.0
@@ -169,8 +179,8 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: ae616e5a1ec2b41e72d200e5ab09c65e94aebd3d
-    version: 0.4.4
+    revision: 5daa85d164cf6b54ad061ea1e4c6f3624556e467
+    version: 0.4.5
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:
