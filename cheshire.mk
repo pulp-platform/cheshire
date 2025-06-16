@@ -63,7 +63,7 @@ chs-clean-deps:
 ######################
 
 CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-CHS_NONFREE_COMMIT ?= 92f6f02
+CHS_NONFREE_COMMIT ?= a111e47
 
 CHS_PHONY += chs-nonfree-init
 chs-nonfree-init:
@@ -82,17 +82,26 @@ include $(CHS_ROOT)/sw/sw.mk
 # Generate HW #
 ###############
 
+# `CHS_NUM_IRQ_HARTS` and `CHS_NUM_PLIC_SRCS` are used to generate register files.
+# They must match the corresponding SystemVerilog parameters.
+CHS_NUM_IRQ_HARTS  ?= 1
+CHS_NUM_PLIC_SRCS  ?= 58
+CHS_NUM_PLIC_PRIOW ?= 7
+
 # SoC registers
 $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv: $(CHS_ROOT)/hw/regs/cheshire_regs.hjson
 	$(REGTOOL) -r $< --outdir $(dir $@)
 
 # CLINT
-CLINTCORES ?= 1
+CLINTCORES ?= $(CHS_NUM_IRQ_HARTS)
 include $(CLINTROOT)/clint.mk
 $(CLINTROOT)/.generated:
 	flock -x $@ $(MAKE) clint && touch $@
 
 # OpenTitan peripherals
+$(CHS_ROOT)/hw/rv_plic.cfg.hjson: $(CHS_ROOT)/util/gen_pliccfg.py
+	$< $(CHS_NUM_IRQ_HARTS) $(CHS_NUM_PLIC_SRCS) $(CHS_NUM_PLIC_PRIOW) > $@
+
 include $(OTPROOT)/otp.mk
 $(OTPROOT)/.generated: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
 	flock -x $@ sh -c "cp $< $(dir $@)/src/rv_plic/; $(MAKE) -j1 otp" && touch $@
