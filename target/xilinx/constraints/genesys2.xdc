@@ -87,6 +87,29 @@ set_output_delay -min -clock $soc_clk [expr { 0.020 * $SOC_TCK }] [ \
 set_output_delay -max -clock $soc_clk [expr { 0.063 * $SOC_TCK }] [ \
     get_ports {sd_d_* sd_*_o spih_sd_* spih_csb_o}]
 
+#########################
+# SD Timing constraints #
+#########################
+
+set sd_ports [get_ports {sd_cmd_io sd_dat0_io sd_dat1_io sd_dat2_io sd_dat3_io}]
+
+create_generated_clock  -name SD_CLK \
+                        -source [get_pins sd_clk_o_OBUF_inst/O] \
+                        -divide_by 1 \
+                        [get_ports sd_clk_o]
+
+# SD card outputs (CARD -> FPAGA) guarantee 5ns setup/hold times around SD_CLK
+#setup
+set_input_delay -clock [get_clocks SD_CLK] -max -5.0 $sd_ports
+#hold
+set_input_delay -clock [get_clocks SD_CLK] -min 5.0  $sd_ports
+
+# SD Cards demands 3ns setup/hold times around SD_CLK
+#setup
+set_output_delay -clock [get_clocks SD_CLK] -max -3.0 $sd_ports
+#hold
+set_output_delay -clock [get_clocks SD_CLK] -min 3.0 $sd_ports
+
 #######
 # I2C #
 #######
@@ -208,5 +231,13 @@ set_property -dict { PACKAGE_PIN T22   IOSTANDARD LVCMOS33 } [get_ports { usb_dm
 set_property -dict { PACKAGE_PIN T23   IOSTANDARD LVCMOS33 } [get_ports { usb_dp_io[1] }]; #IO_L5N_T0_D07_14 Sch=ja_n[3]
 set_property -dict { PACKAGE_PIN T20   IOSTANDARD LVCMOS33 } [get_ports { usb_dm_io[0] }]; #IO_L4P_T0_D04_14 Sch=ja_p[4]
 set_property -dict { PACKAGE_PIN T21   IOSTANDARD LVCMOS33 } [get_ports { usb_dp_io[0] }]; #IO_L4N_T0_D05_14 Sch=ja_n[4]
+
+# PMOD Header JB (Pmod MicroSD)
+set_property -dict { PACKAGE_PIN V29   IOSTANDARD LVCMOS33 }     [get_ports { sd_dat3_io }]; #IO_L17P_T2_A14_D30_14 Sch=jb_p[1]
+set_property -dict { PACKAGE_PIN V30   IOSTANDARD LVCMOS33 }     [get_ports { sd_cmd_io  }]; #IO_L17N_T2_A13_D29_14 Sch=jb_n[1]
+set_property -dict { PACKAGE_PIN V25   IOSTANDARD LVCMOS33 }     [get_ports { sd_dat0_io }]; #IO_L18P_T2_A12_D28_14 Sch=jb_p[2]
+set_property -dict { PACKAGE_PIN W26   IOSTANDARD LVCMOS33 }     [get_ports { sd_clk_o   }]; #IO_L18N_T2_A11_D27_14 Sch=jb_n[2]
+set_property -dict { PACKAGE_PIN T25   IOSTANDARD LVCMOS33 }     [get_ports { sd_dat1_io }]; #IO_L14P_T2_SRCC_14 Sch=jb_p[3]
+set_property -dict { PACKAGE_PIN U25   IOSTANDARD LVCMOS33 }     [get_ports { sd_dat2_io }]; #IO_L14N_T2_SRCC_14 Sch=jb_n[3]
 
 # tclint-enable line-length, spacing

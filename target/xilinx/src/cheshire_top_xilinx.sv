@@ -56,6 +56,15 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   output logic        sd_sclk_o,
 `endif
 
+`ifdef USE_SDIO
+  output logic        sd_clk_o,
+  inout  logic        sd_cmd_io,
+  inout  logic        sd_dat0_io,
+  inout  logic        sd_dat1_io,
+  inout  logic        sd_dat2_io,
+  inout  logic        sd_dat3_io
+`endif
+
 `ifdef USE_FAN
   input  logic [3:0]  fan_sw,
   output logic        fan_pwm,
@@ -291,6 +300,30 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   assign spi_sd_sd_in[0]  = 1'b0;
   assign spi_sd_sd_in[2]  = 1'b0;
   assign spi_sd_sd_in[3]  = 1'b0;
+`endif
+
+  //////////
+  // SDIO //
+  //////////
+
+  logic       sdio_cmd_en_o;
+  logic       sdio_cmd_o;
+  logic       sdio_cmd_i;
+  logic       sdio_dat_en_o;
+  logic [3:0] sdio_dat_o;
+  logic [3:0] sdio_dat_i;
+
+`ifdef USE_SDIO
+    assign sd_cmd_io  = sdio_cmd_en_o ? sdio_cmd_o : 1'b1;
+    assign sd_dat0_io = sdio_dat_en_o ? sdio_dat_o[0] : 1'b1;
+    assign sd_dat1_io = sdio_dat_en_o ? sdio_dat_o[1] : 1'b1;
+    assign sd_dat2_io = sdio_dat_en_o ? sdio_dat_o[2] : 1'b1;
+    assign sd_dat3_io = sdio_dat_en_o ? sdio_dat_o[3] : 1'b1;
+    assign sdio_cmd_i = sd_cmd_io;
+    assign sdio_dat_i[0] = sd_dat0_io;
+    assign sdio_dat_i[1] = sd_dat1_io;
+    assign sdio_dat_i[2] = sd_dat2_io;
+    assign sdio_dat_i[3] = sd_dat3_io;
 `endif
 
   ////////////
@@ -553,6 +586,15 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .spih_sd_o          ( spi_sd_soc_out  ),
     .spih_sd_en_o       ( spi_sd_en       ),
     .spih_sd_i          ( spi_sd_soc_in   ),
+`ifdef USE_SDIO
+    .sd_clk_o,
+`endif
+    .sd_cmd_en_o        ( sdio_cmd_en_o   ),
+    .sd_cmd_o           ( sdio_cmd_o      ),
+    .sd_cmd_i           ( sdio_cmd_i      ),
+    .sd_dat_en_o        ( sdio_dat_en_o   ),
+    .sd_dat_o           ( sdio_dat_o      ),
+    .sd_dat_i           ( sdio_dat_i      ),
 `ifdef USE_VGA
     .vga_hsync_o,
     .vga_vsync_o,
