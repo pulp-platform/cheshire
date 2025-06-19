@@ -15,7 +15,7 @@ VLOGAN ?= vlogan
 ifeq ($(strip $(WSL_DISTRO_NAME)),)
 	CXX_PATH := $(shell which $(CXX))
 else
-	CXX_PATH := $(shell cmd.exe /c "where $(CXX)" | tr -d '\r' | head -n 1 | sed 's|\\|/|g')
+	CXX_PATH := $(shell /c/Windows/System32/cmd.exe /c "where $(CXX)" | tr -d '\r' | head -n 1 | sed 's|\\|/|g')
 endif
 
 VLOG_ARGS   ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
