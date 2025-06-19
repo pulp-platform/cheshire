@@ -51,6 +51,7 @@ target/sim/vcs/vc_hdrs.h
 # Verilator generated files
 target/sim/verilator/obj_dir/
 target/sim/verilator/*.flist
+target/sim/verilator/*.fst
 target/sim/verilator/*.vlt
 target/sim/verilator/*.vcd
 target/sim/verilator/logs/

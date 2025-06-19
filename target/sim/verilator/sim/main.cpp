@@ -1,11 +1,34 @@
 #include <memory> // std::unique_ptr
 
 #include <verilated.h> // common Verilator routines
-#include <verilated_vcd_c.h> // trace to VCD
+#include <verilated_fst_c.h> // trace to VCD
 
 #include "Vcheshire_soc_wrapper.h" // Verilated model
 
 #define TRACE
+
+extern int jtag_tick(int port, unsigned char *jtag_TCK, unsigned char *jtag_TMS,
+    unsigned char *jtag_TDI, unsigned char *jtag_TRSTn, unsigned char jtag_TDO);
+
+
+static void jtag_tick_io(Vcheshire_soc_wrapper& top) {
+  static int count = 0;
+  if (count < 5) {
+    count++;
+    return;
+  }
+  count = 0;
+
+  unsigned char tck, tms, tdi, trst_n;
+  int ret = jtag_tick(3335, &tck, &tms, &tdi, &trst_n, top.jtag_tdo_o);
+  if (ret)
+    VL_PRINTF("ret = 0x%08x\n", ret);
+  top.jtag_tck_i   = tck;
+  top.jtag_tms_i   = tms;
+  top.jtag_tdi_i   = tdi;
+  top.jtag_trst_ni = trst_n;
+}
+
 
 int main(int argc, char** argv) {
     // This is a more complicated example, please also see the simpler examples/make_hello_c.
@@ -45,9 +68,9 @@ int main(int argc, char** argv) {
 
 #ifdef TRACE
     Verilated::traceEverOn(true);
-    const auto trace = std::make_unique<VerilatedVcdC>();
-    top->trace(trace.get(), 2);
-    trace->open("dump.vcd");
+    const auto trace = std::make_unique<VerilatedFstC>();
+    top->trace(trace.get(), 5);
+    trace->open("dump.fst");
 #endif
 
     // Set Vtop's input signals
@@ -61,6 +84,8 @@ int main(int argc, char** argv) {
 
     // Simulate until $finish
     while (!contextp->gotFinish()) {
+        unsigned char clk_prev = top->clk_o;
+
         contextp->timeInc(1);  // 1 timeprecision period passes...
 
         // VL_PRINTF("toggle...\n");
@@ -88,6 +113,10 @@ int main(int argc, char** argv) {
 #ifdef TRACE
         trace->dump(contextp->time());
 #endif
+
+        if (top->rst_no && !top->clk_o && clk_prev) {
+          jtag_tick_io(*top);
+        }
 
         // // Read outputs
         // VL_PRINTF("[%" PRId64 "] clk=%x rstl=%x iquad=%" PRIx64 " -> oquad=%" PRIx64

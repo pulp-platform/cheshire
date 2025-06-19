@@ -7,10 +7,20 @@
 module cheshire_soc_wrapper #(
   parameter time ClkPeriodSys         = 5ns,
   parameter time ClkPeriodRtc         = 30518ns,
-  parameter int unsigned RstClkCycles = 5
+  parameter int unsigned RstClkCycles = 5,
+
+  parameter int unsigned RemoteBitbangPort = 3335
 ) (
   output logic clk_o,
-  output logic rst_no
+  output logic rst_no,
+
+  // JTAG
+  input  logic jtag_tck_i,
+  input  logic jtag_trst_ni,
+  input  logic jtag_tms_i,
+  input  logic jtag_tdi_i,
+  output logic jtag_tdo_o,
+  output logic jtag_tdo_oe_o
 );
 
   `include "cheshire/typedef.svh"
@@ -39,6 +49,7 @@ module cheshire_soc_wrapper #(
   logic jtag_tms;
   logic jtag_tdi;
   logic jtag_tdo;
+  logic jtag_tdo_oe;
 
   logic uart_tx;
   logic uart_rx;
@@ -74,7 +85,7 @@ module cheshire_soc_wrapper #(
     .axi_ext_slv_rsp_t  ( axi_slv_rsp_t ),
     .reg_ext_req_t      ( reg_req_t ),
     .reg_ext_rsp_t      ( reg_rsp_t )
-  ) dut (
+  ) i_dut (
     .clk_i              ( clk       ),
     .rst_ni             ( rst_n     ),
     .test_mode_i        ( test_mode ),
@@ -96,12 +107,12 @@ module cheshire_soc_wrapper #(
     .dbg_active_o       ( ),
     .dbg_ext_req_o      ( ),
     .dbg_ext_unavail_i  ( '0 ),
-    .jtag_tck_i         ( jtag_tck    ),
-    .jtag_trst_ni       ( jtag_trst_n ),
-    .jtag_tms_i         ( jtag_tms    ),
-    .jtag_tdi_i         ( jtag_tdi    ),
-    .jtag_tdo_o         ( jtag_tdo    ),
-    .jtag_tdo_oe_o      ( ),
+    .jtag_tck_i         ( jtag_tck_i    ),
+    .jtag_trst_ni       ( jtag_trst_ni  ),
+    .jtag_tms_i         ( jtag_tms_i    ),
+    .jtag_tdi_i         ( jtag_tdi_i    ),
+    .jtag_tdo_o         ( jtag_tdo_o    ),
+    .jtag_tdo_oe_o      ( jtag_tdo_oe_o ),
     .uart_tx_o          ( uart_tx ),
     .uart_rx_i          ( uart_rx ),
     .uart_rts_no        ( ),
