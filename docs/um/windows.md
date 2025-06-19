@@ -23,6 +23,7 @@ Confirmed working scenarios include:
 Follow Microsoft's official guide to set up WSL2: [How to install Linux on Windows with WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
 
 ### Install Dependencies
+
 Once WSL2 is installed, open a WSL terminal and follow the [Cheshire Getting Started guide](https://pulp-platform.github.io/cheshire/gs/#dependencies) to install dependencies.
 
 ### Install Required EDA Tools on Windows
@@ -30,7 +31,7 @@ Once WSL2 is installed, open a WSL terminal and follow the [Cheshire Getting Sta
 - For **synthesis**: Install **Vivado** on the Windows host.
 - For **simulation**: Install **QuestaSim** (note that **VCS** is not available for Windows).
 
-## 2. Adjust WSL Mount Points
+## 2. Configure WSL
 
 By default, WSL mounts Windows drives under `/mnt/`. This creates inconsistencies between Windows and WSL paths. To align the mount point structure, change the root mount location to `/` by editing `/etc/wsl.conf` inside WSL:
 
@@ -49,6 +50,8 @@ wsl --shutdown
 ```
 
 Launch WSL again afterward.
+
+Check [Potential Issues](#potential-issues) section for additional configuration steps if needed.
 
 ## 3. Working with Paths
 
@@ -75,7 +78,7 @@ Follow the rest of the [tool configuration guide](https://pulp-platform.github.i
 
 ```bash
 # Example:
-export VIVADO="cmd.exe /c/Xilinx/Vivado/2023.1/bin/vivado.bat"
+export VIVADO="/c/Windows/System32/cmd.exe /c/Xilinx/Vivado/2023.1/bin/vivado.bat"
 ```
 
 ### Tested Targets
@@ -92,3 +95,36 @@ vsim.exe
 ```
 
 You can run Windows GUI and console applications from within WSL without issues (via `-gui` and `-batch` flags respectively).
+
+## Potential Issues
+
+### PATH variable
+
+By default, WSL imports the Windows host's `PATH` variable, which often includes paths containing spaces (e.g., paths to `Program Files`). This can cause issues during the build process. For example, when building the `images` target in the `cva6-sdk` submodule, you might encounter the following error:
+
+```text
+PATH contains spaces and or tabs, or newline characters. That won't work. Fix the PATH.
+```
+
+While it is [technically possible](https://gist.github.com/deadash/82413acc7b59c0dc127c192ddfc608bb) to escape spaces in `PATH`, this approach will **not** work for this particular build target, which requires **removing** all problematic entries from `PATH`.
+
+The general workaround to this problem is to filter `PATH` at shell startup. Add the following line to the end of your ~/.bashrc (or relevant shell init file):
+
+```bash
+export PATH=$(echo "$PATH" | tr ':' '\n' | grep -v ' ' | paste -sd:)
+```
+
+This will remove all paths with spaces from your `PATH` variable.
+
+Restart the shell or source the edited file to apply the changes. This solution retains useful Windows paths such as `/c/Windows/System32/`, allowing tools like `cmd.exe` to remain accessible. If your simulator is installed in a directory without spaces, you can continue to run it via `vsim.exe` from within WSL.
+
+Alternatively, you can disable Windows path import in WSL by adding the following lines to `/etc/wsl.conf`:
+
+```conf
+[interop]
+appendWindowsPath = false
+```
+
+Shutdown and launch WSL again afterward. A disadvantage of this approach is that you will no longer be able to run Windows host executables (e.g., `cmd.exe`, `vsim.exe`) without specifying the full path.
+
+> **Note:** Building Cheshire targets will generally work regardless of whether you apply any of the suggested `PATH` adjustments. However, modifying `PATH` may be necessary for building certain submodule targets, such as the `images` target in the `cva6-sdk` submodule.
