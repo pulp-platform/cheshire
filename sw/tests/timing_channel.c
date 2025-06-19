@@ -15,7 +15,7 @@
 #include "printf.h"
 #include <stdint.h>
 
-#define DATA_POINTS 1024
+#define DATA_POINTS 2048
 
 #define SECTION(name) __attribute__((__section__(name)))
 
@@ -86,8 +86,6 @@ struct result {
 struct result results[DATA_POINTS] SECTION(".results");
 uint32_t current_secret;
 
-volatile void *llc_cfg = (void *)0x03001000;
-
 uint32_t random(void) {
     static uint32_t state = 0xACE1ACE1;
 
@@ -112,8 +110,8 @@ volatile line_t manual_evict_data[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] SECTIO
 void evict_llc(void) {
 #if !MANUAL_EVICT
     /* This appears to be broken. */
-    *(uint32_t *)(llc_cfg + AXI_LLC_CFG_FLUSH_LOW_REG_OFFSET) = 0xff;
-    *(uint32_t *)(llc_cfg + AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
+    *reg32(&__base_llc, AXI_LLC_CFG_FLUSH_LOW_REG_OFFSET) = 0xff;
+    *reg32(&__base_llc, AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
 #else
 for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
     for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
@@ -129,7 +127,7 @@ void domain_switch(void) {
     fencet();
 
     // This should remove the channel.
-    // evict_llc();
+    evict_llc();
 }
 
 
@@ -180,18 +178,18 @@ int main(void) {
 
     if ((uintptr_t)&data == 0x0000000010000000) {
         printf("data in SPM... leaving all as SPM\r\n");
-        *(uint32_t *)(llc_cfg + AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111111;
+        *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111111;
     } else if ((uintptr_t)&data == 0x0000000080000000) {
         printf("data in DRAM... making one way cache\r\n");
-        *(uint32_t *)(llc_cfg + AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111110;
+        *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111110;
         // turn the cache off entirely for testing
-        // *(uint32_t *)(llc_cfg + AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111111;
+        // *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111111;
     } else {
         printf("data unknown location 0x%p, 0x%p, 0x%p\r\n", &data, &__base_spm, &__base_dram);
         return 1;
     }
 
-    *(uint32_t *)(llc_cfg + AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
+    *reg32(&__base_llc, AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
 
     evict_llc();
     sfence();
@@ -204,17 +202,17 @@ int main(void) {
     }
 
     {
-        uint32_t set_asso = *(uint32_t *)(llc_cfg + AXI_LLC_SET_ASSO_LOW_REG_OFFSET);
+        uint32_t set_asso = *reg32(&__base_llc, AXI_LLC_SET_ASSO_LOW_REG_OFFSET);
         if (set_asso != LLC_MAX_NUM_WAYS) {
             printf("set associativity does not match; %d\r\n", set_asso);
             return 1;
         }
-        uint32_t num_lines = *(uint32_t *)(llc_cfg + AXI_LLC_NUM_LINES_LOW_REG_OFFSET);
+        uint32_t num_lines = *reg32(&__base_llc, AXI_LLC_NUM_LINES_LOW_REG_OFFSET);
         if (num_lines != LLC_WAY_NUM_LINES) {
             printf("num lines does not match; %d\r\n", num_lines);
             return 1;
         }
-        uint32_t num_blocks = *(uint32_t *)(llc_cfg + AXI_LLC_NUM_BLOCKS_LOW_REG_OFFSET);
+        uint32_t num_blocks = *reg32(&__base_llc, AXI_LLC_NUM_BLOCKS_LOW_REG_OFFSET);
         if (num_blocks != LLC_LINE_NUM_BLOCKS) {
             printf("num blocks does not match; %d\r\n", num_blocks);
             return 1;
