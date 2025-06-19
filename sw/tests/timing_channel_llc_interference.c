@@ -83,6 +83,10 @@ uint32_t random(void) {
 volatile line_t manual_evict_data[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000)));
 #endif
 
+static inline int page_colour(uintptr_t addr) {
+    return (addr & ((1UL << 12) | (1UL << 13))) >> 12;
+}
+
 void evict_llc(void) {
 #if !MANUAL_EVICT
     /* This appears to be broken. */
@@ -116,7 +120,9 @@ void trojan(void) {
         for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
             volatile void *v = &data_trojan[way][line];
             volatile uint32_t rv;
-            asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
+            if (page_colour((uintptr_t)v) == 0) {
+                asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
+            }
         }
     }
 
@@ -129,7 +135,9 @@ void spy(uint32_t round) {
         for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
             volatile void *v = &data_spy[way][line];
             volatile uint32_t rv;
-            asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
+            if (page_colour((uintptr_t)v) == 1) {
+                asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
+            }
         }
     }
     uint32_t after = rdcycle();
