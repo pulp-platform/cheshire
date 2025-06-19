@@ -103,7 +103,8 @@ You can run Windows GUI and console applications from within WSL without issues 
 By default, WSL imports the Windows host's `PATH` variable, which often includes paths containing spaces (e.g., paths to `Program Files`). This can cause issues during the build process. For example, when building the `images` target in the `cva6-sdk` submodule, you might encounter the following error:
 
 ```text
-PATH contains spaces and or tabs, or newline characters. That won't work. Fix the PATH.
+Your PATH contains spaces, TABs, and/or newline (\n) characters.
+This doesn't work. Fix you PATH.
 ```
 
 While it is [technically possible](https://gist.github.com/deadash/82413acc7b59c0dc127c192ddfc608bb) to escape spaces in `PATH`, this approach will **not** work for this particular build target, which requires **removing** all problematic entries from `PATH`.
