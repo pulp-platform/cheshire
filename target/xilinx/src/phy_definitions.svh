@@ -28,6 +28,8 @@
   `define USE_USB
   `define USE_STARTUPE2
   `define USE_QSPI
+  `define USE_CFG_REGS
+  `define USE_RAM_DELAY
 `endif
 
 `ifdef TARGET_ZCU102
@@ -40,6 +42,10 @@
 /////////////////////
 // DRAM INTERFACES //
 /////////////////////
+
+`ifdef USE_RAM_DELAY
+`define USE_CFG_REGS
+`endif
 
 `ifdef USE_DDR4
 `define USE_DDR
