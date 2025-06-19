@@ -13,7 +13,17 @@ source ${xilinx_root}/scripts/common.tcl
 init_impl $xilinx_root $argc $argv
 
 # Addtional args provide IPs
-read_ip [exec realpath {*}[lrange $argv 2 end]]
+# Despite info provided by help, Vivado can't read_ip with multiple args
+# on Windows. Because of that this script read_ip one by one.
+set ip_paths {}
+foreach arg [lrange $argv 2 end] {
+    lappend ip_paths [file normalize $arg]
+}
+
+foreach ip $ip_paths {
+    puts "Reading IP: $ip"
+    read_ip $ip
+}
 
 # Load constraints
 import_files -fileset constrs_1 -norecurse ${xilinx_root}/constraints/${proj}.xdc
