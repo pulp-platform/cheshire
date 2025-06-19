@@ -28,7 +28,7 @@ SECTIONS {
     *(.sdata.*)
   } > dram
 
-  .bss : ALIGN(16) {
+  .bss (NOLOAD) : ALIGN(16) {
     __bss_start = .;
     *(.bss)
     *(.bss.*)

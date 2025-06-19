@@ -15,7 +15,7 @@
 #include "printf.h"
 #include <stdint.h>
 
-#define DATA_POINTS 2048
+#define DATA_POINTS 4096
 
 #define SECTION(name) __attribute__((__section__(name)))
 
@@ -38,7 +38,7 @@ static inline void ifence(void) { asm volatile("fence.i" ::: "memory"); }
 /* size of one block in bytes */
 #define LLC_BLOCK_NUM_BYTES 8
 
-#define LLC_ACTIVE_NUM_WAYS 1
+#define LLC_ACTIVE_NUM_WAYS 8
 
 typedef struct {
     uint8_t inner[LLC_LINE_NUM_BLOCKS * LLC_BLOCK_NUM_BYTES];
@@ -47,33 +47,9 @@ _Static_assert(sizeof(line_t) == 64, "sizeof line is 64bytes");
 
 _Static_assert(sizeof(line_t) * LLC_MAX_NUM_WAYS * LLC_WAY_NUM_LINES == 128 * 1024, "full sizeof cache is 128KiB");
 
-#define SHARED_DATA_LINE_ALIGNED 0
+volatile line_t data_trojan[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
+volatile line_t data_spy[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
 
-#if SHARED_DATA_LINE_ALIGNED
-#define SHARED_DATA_NUMBER_WAYS LLC_ACTIVE_NUM_WAYS
-#define SHARED_DATA_NUMBER_LINES 32
-
-_Static_assert(SHARED_DATA_NUMBER_WAYS <= LLC_MAX_NUM_WAYS, "less than number");
-_Static_assert(SHARED_DATA_NUMBER_LINES <= LLC_WAY_NUM_LINES, "less than number");
-/* if number lines != all lines then number ways == 1. */
-_Static_assert(!(SHARED_DATA_NUMBER_LINES != LLC_MAX_NUM_WAYS) || SHARED_DATA_NUMBER_WAYS == 1,
-               "number lines != all ==> number ways = 1");
-
-volatile line_t data[SHARED_DATA_NUMBER_WAYS][SHARED_DATA_NUMBER_LINES] SECTION(".shared_data");
-
-#else
-/* these aren't really ways or lines*/
-#define SHARED_DATA_NUMBER_WAYS 1
-#define SHARED_DATA_NUMBER_LINES 128
-
-typedef struct { uint64_t inner[1]; } weird_line_t;
-
-/* asid pool is an array of pointers, BIT(7)=128 sized */
-volatile weird_line_t data[SHARED_DATA_NUMBER_WAYS][SHARED_DATA_NUMBER_LINES] SECTION(".shared_data");
-
-#endif
-
-_Static_assert(sizeof(data) <= 16 * 1024, "sizeof the data for fitting in SPM is less than one way");
 
 struct result {
     uint32_t cycle_count;
@@ -104,7 +80,7 @@ uint32_t random(void) {
 
 #define MANUAL_EVICT 1
 #if MANUAL_EVICT
-volatile line_t manual_evict_data[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] SECTION(".dram");
+volatile line_t manual_evict_data[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000)));
 #endif
 
 void evict_llc(void) {
@@ -134,11 +110,11 @@ void domain_switch(void) {
 void trojan(void) {
     evict_llc();
 
-    uint32_t secret = random() % SHARED_DATA_NUMBER_LINES;
+    uint32_t secret = random() % LLC_WAY_NUM_LINES;
 
     for (uint32_t line = 0; line < secret; line++)  {
-        for (uint32_t way = 0; way < SHARED_DATA_NUMBER_WAYS; way++) {
-            volatile void *v = &data[way][line];
+        for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
+            volatile void *v = &data_trojan[way][line];
             volatile uint32_t rv;
             asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
         }
@@ -149,9 +125,9 @@ void trojan(void) {
 
 void spy(uint32_t round) {
     uint32_t before = rdcycle();
-    for (uint32_t line = 0; line < SHARED_DATA_NUMBER_LINES; line++)  {
-        for (uint32_t way = 0; way < SHARED_DATA_NUMBER_WAYS; way++) {
-            volatile void *v = &data[way][line];
+    for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
+        for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
+            volatile void *v = &data_spy[way][line];
             volatile uint32_t rv;
             asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
         }
@@ -174,32 +150,30 @@ int main(void) {
     uart_init(&__base_uart, reset_freq, __BOOT_BAUDRATE);
     uart_write_str(&__base_uart, str, sizeof(str) - 1);
 
-    printf("text: %p, shared data: %p\r\n", &main, &data);
+    printf("text: %p, trojan data: %p, spy data %p\r\n", &main, &data_trojan, &data_spy);
 
-    if ((uintptr_t)&data == 0x0000000010000000) {
-        printf("data in SPM... leaving all as SPM\r\n");
-        *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111111;
-    } else if ((uintptr_t)&data == 0x0000000080000000) {
-        printf("data in DRAM... making one way cache\r\n");
-        *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111110;
-        // turn the cache off entirely for testing
-        // *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111111;
-    } else {
-        printf("data unknown location 0x%p, 0x%p, 0x%p\r\n", &data, &__base_spm, &__base_dram);
-        return 1;
-    }
-
+    /* leave 1 way for SPM for code. */
+    *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b00000001;
+    // turn the cache off entirely for testing
+    // *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111111;
     *reg32(&__base_llc, AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
 
     evict_llc();
     sfence();
     ifence();
 
-    data[0][0].inner[0] = 0xAB;
-    if (data[0][0].inner[0] != 0xAB) {
+    data_trojan[0][0].inner[0] = 0xAB;
+    if (data_trojan[0][0].inner[0] != 0xAB) {
         printf("data sanity check failed\r\n");
         return 1;
     }
+
+    data_spy[0][0].inner[0] = 0xAB;
+    if (data_spy[0][0].inner[0] != 0xAB) {
+        printf("data sanity check failed\r\n");
+        return 1;
+    }
+
 
     {
         uint32_t set_asso = *reg32(&__base_llc, AXI_LLC_SET_ASSO_LOW_REG_OFFSET);
