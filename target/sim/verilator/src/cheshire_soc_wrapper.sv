@@ -27,7 +27,13 @@ module cheshire_soc_wrapper #(
 
   import cheshire_pkg::*;
 
-  localparam cheshire_cfg_t DutCfg = DefaultCfg;
+  function automatic cheshire_pkg::cheshire_cfg_t gen_cheshire_cfg();
+    cheshire_pkg::cheshire_cfg_t ret = cheshire_pkg::DefaultCfg;
+    ret.SerialLink = 1'b0;
+    return ret;
+  endfunction
+
+  localparam cheshire_cfg_t DutCfg = gen_cheshire_cfg();
 
   `CHESHIRE_TYPEDEF_ALL(, DutCfg)
 
@@ -64,8 +70,8 @@ module cheshire_soc_wrapper #(
   logic i2c_scl_o;
   logic i2c_scl_i;
   logic i2c_scl_en;
-  assign i2c_sda_i = 1'b0;
-  assign i2c_scl_i = 1'b0;
+  assign i2c_sda_i = 1'b1;
+  assign i2c_scl_i = 1'b1;
 
   logic                 spih_sck_o;
   logic                 spih_sck_en;
@@ -80,8 +86,8 @@ module cheshire_soc_wrapper #(
   logic [SlinkNumChan-1:0]                    slink_rcv_clk_o;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o;
-  assign slink_rcv_clk_i = '0;
-  assign slink_i         = '0;
+  assign slink_rcv_clk_i = '1;
+  assign slink_i         = '1;
 
   cheshire_soc #(
     .Cfg                ( DutCfg ),
