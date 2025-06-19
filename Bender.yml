@@ -54,6 +54,10 @@ sources:
       - target/sim/src/fixture_cheshire_soc.sv
       - target/sim/src/tb_cheshire_soc.sv
 
+  - target: any(verilator)
+    files:
+      - target/sim/verilator/src/cheshire_soc_wrapper.sv
+
   - target: all(fpga, xilinx)
     files:
       - target/xilinx/src/phy_definitions.svh

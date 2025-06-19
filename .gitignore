@@ -48,6 +48,14 @@ target/sim/vcs/ucli.key
 target/sim/vcs/work*
 target/sim/vcs/vc_hdrs.h
 
+# Verilator generated files
+target/sim/verilator/obj_dir/
+target/sim/verilator/*.flist
+target/sim/verilator/*.vlt
+target/sim/verilator/*.vcd
+target/sim/verilator/logs/
+target/sim/verilator/trace_hart_*.dasm
+
 # Xilinx generated files
 target/xilinx/build
 target/xilinx/out
