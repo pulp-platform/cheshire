@@ -59,4 +59,8 @@ sources:
       - target/xilinx/src/phy_definitions.svh
       - target/xilinx/src/dram_wrapper_xilinx.sv
       - target/xilinx/src/fan_ctrl.sv
+      - target/xilinx/src/future/stream_fifo_delay_dyn.sv
+      - target/xilinx/src/future/axi_fifo_delay_dyn.sv
+      - target/xilinx/src/regs/chs_xilinx_reg_pkg.sv
+      - target/xilinx/src/regs/chs_xilinx_reg_top.sv
       - target/xilinx/src/cheshire_top_xilinx.sv

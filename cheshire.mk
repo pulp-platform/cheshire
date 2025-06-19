@@ -86,6 +86,10 @@ include $(CHS_ROOT)/sw/sw.mk
 $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv: $(CHS_ROOT)/hw/regs/cheshire_regs.hjson
 	$(REGTOOL) -r $< --outdir $(dir $@)
 
+# Xilinx registers
+$(CHS_ROOT)/target/xilinx/src/regs/chs_xilinx_reg_pkg.sv $(CHS_ROOT)/target/xilinx/src/regs/chs_xilinx_reg_top.sv: $(CHS_ROOT)/target/xilinx/src/regs/chs_xilinx_regs.hjson
+	$(REGTOOL) -r $< --outdir $(dir $@)
+
 # CLINT
 CLINTCORES ?= 1
 include $(CLINTROOT)/clint.mk
@@ -119,6 +123,7 @@ include $(IDMA_ROOT)/idma.mk
 
 CHS_HW_ALL += $(IDMA_FULL_RTL)
 CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv
+CHS_HW_ALL += $(CHS_ROOT)/target/xilinx/src/regs/chs_xilinx_reg_pkg.sv $(CHS_ROOT)/target/xilinx/src/regs/chs_xilinx_reg_top.sv
 CHS_HW_ALL += $(CLINTROOT)/.generated
 CHS_HW_ALL += $(OTPROOT)/.generated
 CHS_HW_ALL += $(AXIRTROOT)/.generated
