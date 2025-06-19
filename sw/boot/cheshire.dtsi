@@ -115,15 +115,23 @@
       reg = <0x0 0x4000000 0x0 0x4000000>;
     };
     idma: dma-controller@01000000  {
-      model = "eth,idma-desc";
-      compatible = "eth,idma-desc";
+      model = "eth,idma-engine";
+      compatible = "eth,idma-engine";
       reg = <0x0 0x01000000 0x0 0x1000>;
       interrupt-parent = <&PLIC0>;
       interrupts = <20>;
       eth,input-slots = <1>;
       eth,pending-slots = <1>;
+      #dma-cells = <1>;
+      dma-channels = <32>;
+		  dma-requests = <127>;
     };
-
+    idma-proxy@0 {
+      status = "okay";
+      compatible = "eth,idma-proxy";
+      reg = <0 0>;
+      dmas = <&idma 0>;
+      dma-names = "idma_chan0";
+    };
   };
-
 };
