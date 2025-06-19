@@ -37,9 +37,13 @@ module cheshire_soc_wrapper #(
 
   logic       clk;
   logic       rst_n;
+
   logic       test_mode;
   logic [1:0] boot_mode;
   logic       rtc;
+
+  assign test_mode = 1'b0;
+  assign boot_mode = 2'b00; // passive
 
   axi_llc_req_t axi_llc_mst_req;
   axi_llc_rsp_t axi_llc_mst_rsp;
@@ -60,6 +64,8 @@ module cheshire_soc_wrapper #(
   logic i2c_scl_o;
   logic i2c_scl_i;
   logic i2c_scl_en;
+  assign i2c_sda_i = 1'b0;
+  assign i2c_scl_i = 1'b0;
 
   logic                 spih_sck_o;
   logic                 spih_sck_en;
@@ -68,11 +74,14 @@ module cheshire_soc_wrapper #(
   logic [ 3:0]          spih_sd_o;
   logic [ 3:0]          spih_sd_i;
   logic [ 3:0]          spih_sd_en;
+  assign spih_sd_i = 1'b0;
 
   logic [SlinkNumChan-1:0]                    slink_rcv_clk_i;
   logic [SlinkNumChan-1:0]                    slink_rcv_clk_o;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o;
+  assign slink_rcv_clk_i = '0;
+  assign slink_i         = '0;
 
   cheshire_soc #(
     .Cfg                ( DutCfg ),
@@ -156,9 +165,10 @@ module cheshire_soc_wrapper #(
     .usb_dp_oe_o        ( )
   );
 
-  /////////////////////////////
-  //  Clock/Reset Generation //
-  /////////////////////////////
+  //////////////////////////////
+  //  Clock/Reset Generation  //
+  //////////////////////////////
+
   clk_rst_gen #(
     .ClkPeriod    ( ClkPeriodSys ),
     .RstClkCycles ( RstClkCycles )
@@ -175,9 +185,9 @@ module cheshire_soc_wrapper #(
     .rst_no ( )
   );
 
-  /////////////////
-  //  I/O to C++ //
-  /////////////////
+  //////////////////
+  //  I/O to C++  //
+  //////////////////
 
   assign clk_o = clk;
   assign rst_no = rst_n;
