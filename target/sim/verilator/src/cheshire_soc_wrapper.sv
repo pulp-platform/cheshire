@@ -191,6 +191,42 @@ module cheshire_soc_wrapper #(
     .rst_no ( )
   );
 
+  ////////////
+  //  DRAM  //
+  ////////////
+
+  axi_sim_mem #(
+    .AddrWidth          ( DutCfg.AddrWidth    ),
+    .DataWidth          ( DutCfg.AxiDataWidth ),
+    .IdWidth            ( $bits(axi_llc_id_t) ),
+    .UserWidth          ( DutCfg.AxiUserWidth ),
+    .axi_req_t          ( axi_llc_req_t ),
+    .axi_rsp_t          ( axi_llc_rsp_t ),
+    .WarnUninitialized  ( 0 ),
+    .ClearErrOnAccess   ( 1 ),
+    .ApplDelay          ( 0ps ),
+    .AcqDelay           ( 0ps )
+  ) i_dram_sim_mem (
+    .clk_i              ( clk   ),
+    .rst_ni             ( rst_n ),
+    .axi_req_i          ( axi_llc_mst_req ),
+    .axi_rsp_o          ( axi_llc_mst_rsp ),
+    .mon_w_valid_o      ( ),
+    .mon_w_addr_o       ( ),
+    .mon_w_data_o       ( ),
+    .mon_w_id_o         ( ),
+    .mon_w_user_o       ( ),
+    .mon_w_beat_count_o ( ),
+    .mon_w_last_o       ( ),
+    .mon_r_valid_o      ( ),
+    .mon_r_addr_o       ( ),
+    .mon_r_data_o       ( ),
+    .mon_r_id_o         ( ),
+    .mon_r_user_o       ( ),
+    .mon_r_beat_count_o ( ),
+    .mon_r_last_o       ( )
+  );
+
   //////////////////
   //  I/O to C++  //
   //////////////////
