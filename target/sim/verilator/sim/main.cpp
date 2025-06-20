@@ -5,24 +5,23 @@
 
 #include "Vcheshire_soc_wrapper.h" // Verilated model
 
-#define TRACE
+
+bool do_exit = false;
+int  exit_code = 0;
 
 extern int jtag_tick(int port, unsigned char *jtag_TCK, unsigned char *jtag_TMS,
     unsigned char *jtag_TDI, unsigned char *jtag_TRSTn, unsigned char jtag_TDO);
 
 
 static void jtag_tick_io(Vcheshire_soc_wrapper& top) {
-  static int count = 0;
-  if (count < 5) {
-    count++;
-    return;
-  }
-  count = 0;
-
   unsigned char tck, tms, tdi, trst_n;
   int ret = jtag_tick(3335, &tck, &tms, &tdi, &trst_n, top.jtag_tdo_o);
-  if (ret)
-    VL_PRINTF("ret = 0x%08x\n", ret);
+  if (ret) {
+    do_exit = true;
+    exit_code = ret >> 1;
+    return;
+  }
+
   top.jtag_tck_i   = tck;
   top.jtag_tms_i   = tms;
   top.jtag_tdi_i   = tdi;
@@ -83,7 +82,7 @@ int main(int argc, char** argv) {
     // top->in_wide[2] = 0x3;
 
     // Simulate until $finish
-    while (!contextp->gotFinish()) {
+    while (!contextp->gotFinish() && !do_exit) {
         unsigned char clk_prev = top->clk_o;
 
         contextp->timeInc(1);  // 1 timeprecision period passes...
@@ -143,5 +142,5 @@ int main(int argc, char** argv) {
 
     // Return good completion status
     // Don't use exit() or destructor won't get called
-    return 0;
+    return exit_code;
 }
