@@ -6,3 +6,6 @@
 	path = sw/deps/cva6-sdk
 	url = https://github.com/pulp-platform/cva6-sdk.git
 	ignore = dirty
+[submodule "sw/deps/coremark"]
+	path = sw/deps/coremark
+	url = https://github.com/yvantor/coremark.git
