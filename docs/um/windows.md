@@ -98,6 +98,8 @@ You can run Windows GUI and console applications from within WSL without issues 
 
 ## Potential Issues
 
+All currently known issues are related to building Buildroot, which is included as part of the `cva6-sdk` submodule. These problems may occur, for example, when attempting to build a Linux image for a synthesizable system.
+
 ### PATH variable
 
 By default, WSL imports the Windows host's `PATH` variable, which often includes paths containing spaces (e.g., paths to `Program Files`). This can cause issues during the build process. For example, when building the `images` target in the `cva6-sdk` submodule, you might encounter the following error:
@@ -129,3 +131,25 @@ appendWindowsPath = false
 Shutdown and launch WSL again afterward. A disadvantage of this approach is that you will no longer be able to run Windows host executables (e.g., `cmd.exe`, `vsim.exe`) without specifying the full path.
 
 > **Note:** Building Cheshire targets will generally work regardless of whether you apply any of the suggested `PATH` adjustments. However, modifying `PATH` may be necessary for building certain submodule targets, such as the `images` target in the `cva6-sdk` submodule.
+
+### File system problems
+
+Even with the `PATH` variable adjusted to be compatible with Buildroot, you may encounter another issue when running `make images`. The error will look like:
+
+```text
+riscv64-buildroot-linux-gnu/bin/ld: cannot find Scrt1.o: No such file or directory
+riscv64-buildroot-linux-gnu/bin/ld: cannot find -lc
+collect2: error: ld returned 1 exit status
+```
+
+This issue typically occurs when attempting to build Buildroot (as part of the `cva6-sdk` submodule) from within WSL **while the project directory resides on a Windows-mounted drive**. This is likely due to limitations in how symbolic links or other file system features are handled on mounted Windows file systems in WSL.
+
+To work around this, you can instruct Buildroot to perform the compilation in a separate output directory located **within the native WSL file system** (e.g., your home directory or `/tmp`).
+
+A patch enabling this behavior is available [here](https://gist.github.com/HepoH3/c0005d711c1291e7a935d4d4488f4e59).
+
+After applying the patch, you can run the build from a Windows-mounted project directory using a command like:
+
+```bash
+make images BUILDROOT_OUT=~/buildroot_out
+```
