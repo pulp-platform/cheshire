@@ -8,14 +8,19 @@
 `ifndef __CHESHIRE_RDL__
 `define __CHESHIRE_RDL__
 
-`include "serial_link_single_channel.rdl"
+`include "clint.rdl"
 `include "cheshire_regs.rdl"
+`include "serial_link_single_channel.rdl"
+`include "axi_bus_err_unit.rdl"
 
 addrmap cheshire #(
+    longint unsigned NumCores = 1,
     longint unsigned LlcSpmCachedOffset = 0x1000_0000,
     longint unsigned LlcSpmUncachedOffset = 0x1400_0000,
     longint unsigned LlcSpmSize = 64*1024*1024,
-    longint unsigned SlinkNumBits = 8
+    longint unsigned SlinkNumBits = 8,
+    bit              DmaPresent = 1,
+    bit              VgaPresent = 0
 ) {
     // debug_rom debug_rom @0x0000_0000;
 
@@ -25,8 +30,8 @@ addrmap cheshire #(
         mementries = 256*1024*8/64;
         memwidth = 64;
     } Boot_ROM @0x0200_0000;
-    // clint clint @0x0204_0000; -> update other repo
-    // IRQ_router IRQ_router @0x0208_0000; -> update other repo
+    clint #(.NumCores(NumCores)) clint @0x0204_0000;
+    // IRQ_router IRQ_router[NumIntrSources] @0x0208_0000; -> update other repo
     // AXI_RT (Cfg) AXI_RT @0x020C_0000; -> update other repo
 
     cheshire_regs cheshire_regs @0x0300_0000;
@@ -40,7 +45,11 @@ addrmap cheshire #(
     ) serial_link @0x0300_6000;
     // VGA VGA @0x0300_7000;
     // USB USB @0x0300_8000;
-    // UNBENT UNBENT @0x0300_9000; -> update other repo
+    axi_bus_err_unit vga_bus_err_unit @0x0300_9000;
+    vga_bus_err_unit->ispresent = VgaPresent;
+    axi_bus_err_unit dma_bus_err_unit @0x0300_9040;
+    dma_bus_err_unit->ispresent = DmaPresent;
+    axi_bus_err_unit cva6_bus_err_unit[NumCores] @0x0300_9080 += 0x40;
 
     // PLIC PLIC @0x0400_0000;
     // CLICs CLICs @0x0800_0000;

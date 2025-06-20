@@ -77,6 +77,8 @@ chs-nonfree-init:
 
 PEAKRDL_INCLUDES := -I $(CHS_ROOT)/hw/regs/rdl
 PEAKRDL_INCLUDES += -I $(CHS_SLINK_DIR)/src/regs/rdl
+PEAKRDL_INCLUDES += -I $(shell $(BENDER) path clint)/rdl
+PEAKRDL_INCLUDES += -I $(shell $(BENDER) path unbent)/rdl
 
 ############
 # Build SW #

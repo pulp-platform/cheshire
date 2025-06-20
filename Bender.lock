@@ -79,13 +79,13 @@ packages:
     - common_cells
     - register_interface
   clint:
-    revision: d5390a805c20f9226758a152ba1645f61da73349
-    version: 0.2.0
+    revision: 9f26f052551cfb21438cc14c3f3e9fd10878b7e8
+    version: null
     source:
       Git: https://github.com/pulp-platform/clint.git
     dependencies:
+    - apb
     - common_cells
-    - register_interface
   common_cells:
     revision: 9afda9abb565971649c2aa0985639c096f351171
     version: 1.38.0
@@ -197,7 +197,7 @@ packages:
     - common_cells
     - tech_cells_generic
   serial_link:
-    revision: 92a29adec0b30f8a85cb74e09ede8665a819cccd
+    revision: 2c0167fc9df19e4a87a7445c2c0e7e816ccd6354
     version: null
     source:
       Git: https://github.com/pulp-platform/serial_link.git
@@ -205,7 +205,6 @@ packages:
     - apb
     - axi
     - common_cells
-    - register_interface
   tech_cells_generic:
     revision: 7968dd6e6180df2c644636bc6d2908a49f2190cf
     version: 0.2.13
@@ -214,11 +213,11 @@ packages:
     dependencies:
     - common_verification
   unbent:
-    revision: e9c9d5cfb635f2d4668c816ce9235798cfecb297
-    version: 0.1.6
+    revision: 5e8d1eed185d83034446fe0bc2a5d21c9cba3f45
+    version: null
     source:
       Git: https://github.com/pulp-platform/unbent.git
     dependencies:
+    - apb
     - axi
     - common_cells
-    - register_interface
