@@ -1,9 +1,12 @@
+#include <chrono> // timers
 #include <memory> // std::unique_ptr
 
 #include <verilated.h> // common Verilator routines
 #include <verilated_fst_c.h> // trace to VCD
 
 #include "Vcheshire_soc_wrapper.h" // Verilated model
+
+#define SIMULATION_RATE_CHUNK 1024
 
 // #define TRACE
 
@@ -82,7 +85,11 @@ int main(int argc, char** argv) {
     // top->in_wide[1] = 0x22222222;
     // top->in_wide[2] = 0x3;
 
+
     // Simulate until $finish
+    auto start = std::chrono::high_resolution_clock::now();
+    auto last = start;
+    uint64_t cycle = 0;
     while (!contextp->gotFinish() && !do_exit) {
         unsigned char clk_prev = top->clk_o;
 
@@ -116,6 +123,21 @@ int main(int argc, char** argv) {
 
         if (top->rst_no && !top->clk_o && clk_prev) {
           jtag_tick_io(*top);
+        }
+
+        if (!clk_prev && top->clk_o) {
+          // posedge clk
+          cycle++;
+          if (cycle % SIMULATION_RATE_CHUNK == 0) {
+            auto current = std::chrono::high_resolution_clock::now();
+            auto total_elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(current - start).count();
+            auto last_elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(current - last).count();
+            last = current;
+            auto total_cycles_per_sec = 1000000.0 * cycle / total_elapsed_us;
+            auto last_cycles_per_sec = 1000000.0 * SIMULATION_RATE_CHUNK / last_elapsed_us;
+            VL_PRINTF("elapsed: %lu us, %.1f cycles/sec (total), %.1f cycles/sec (last)\n",
+                total_elapsed_us, total_cycles_per_sec, last_cycles_per_sec);
+          }
         }
 
         // // Read outputs
