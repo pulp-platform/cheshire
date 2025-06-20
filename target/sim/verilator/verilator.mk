@@ -16,7 +16,7 @@ VERILATOR_WNO   = -Wno-fatal -Wno-style \
 									-Wno-BLKANDNBLK -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC -Wno-WIDTHCONCAT -Wno-ASCRANGE
 VERILATOR_FIX   = --unroll-count 51 --unroll-stmts 1
 VERILATOR_ARGS  ?= -j 0 -Wall --timing -timescale 1ns/1ns $(VERILATOR_WNO) $(VERILATOR_FIX) -O3 \
-									 --trace-fst --trace-structs --trace-threads 1 --no-trace-top --trace-depth 5
+									 # --trace --trace-structs --no-trace-top --trace-depth 5
 
 VERILATOR_CXX_SRCS = $(CHS_VERILATOR_DIR)/sim/main.cpp \
 										 $(RISCV_DBG_DIR)/tb/remote_bitbang/remote_bitbang.c \

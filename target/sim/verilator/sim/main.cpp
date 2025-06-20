@@ -5,6 +5,7 @@
 
 #include "Vcheshire_soc_wrapper.h" // Verilated model
 
+// #define TRACE
 
 bool do_exit = false;
 int  exit_code = 0;
