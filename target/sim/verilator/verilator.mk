@@ -31,7 +31,7 @@ VERILATOR_ARGS += -DASSERTS_OFF
 
 # Tracing
 # enables VCD tracing of the topmost 5 layers
-VERILATOR_ARGS += --trace --trace-structs --no-trace-top --trace-depth 5 -CFLAGS "-DCHS_TRACE_VCD=1"
+# VERILATOR_ARGS += --trace --trace-structs --no-trace-top --trace-depth 5 -CFLAGS "-DCHS_TRACE_VCD=1"
 
 VERILATOR_CXX_SRCS = $(CHS_VERILATOR_DIR)/sim/main.cpp \
 	$(RISCV_DBG_DIR)/tb/remote_bitbang/remote_bitbang.c \

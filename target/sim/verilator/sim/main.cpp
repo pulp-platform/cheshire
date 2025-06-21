@@ -13,7 +13,7 @@
 
 #define RST_CYCLES 5
 
-#define SIMULATION_RATE_CHUNK 1024
+#define SIMULATION_RATE_CHUNK 10000
 
 // #define BENCHMARK
 
@@ -39,6 +39,15 @@ static void jtag_tick_io(Vcheshire_soc_wrapper& top) {
   top.jtag_trst_ni = trst_n;
 }
 
+static void handle_uart(char data) {
+  static std::string uart_buffer;
+  uart_buffer.push_back(data);
+
+  if (data == '\r' || data == '\n') {
+    VL_PRINTF("[UART] %s", uart_buffer.c_str());
+    uart_buffer.clear();
+  }
+}
 
 int main(int argc, char** argv) {
     // This is a more complicated example, please also see the simpler examples/make_hello_c.
@@ -131,6 +140,10 @@ int main(int argc, char** argv) {
 
         // Monitoring (posedge clk_i)
         if (top->clk_i) {
+          if (top->uart_data_valid_o) {
+            handle_uart(top->uart_data_o);
+          }
+
           if (cycle % SIMULATION_RATE_CHUNK == 0) {
             auto current = std::chrono::high_resolution_clock::now();
             auto total_elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(current - start).count();
@@ -142,7 +155,7 @@ int main(int argc, char** argv) {
                 total_elapsed_us, total_cycles_per_sec, last_cycles_per_sec);
           }
 #ifdef BENCHMARK
-          if (cycle == 100000)
+          if (cycle == 1000000)
             break;
 #endif
         }

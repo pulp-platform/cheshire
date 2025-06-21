@@ -15,7 +15,11 @@ module cheshire_soc_wrapper (
   input  logic jtag_tms_i,
   input  logic jtag_tdi_i,
   output logic jtag_tdo_o,
-  output logic jtag_tdo_oe_o
+  output logic jtag_tdo_oe_o,
+
+  // UART
+  output logic       uart_data_valid_o,
+  output logic [7:0] uart_data_o
 );
 
   `include "cheshire/typedef.svh"
@@ -191,5 +195,22 @@ module cheshire_soc_wrapper (
   //   .mon_r_last_o       ( )
   // );
   assign axi_llc_mst_rsp = '0;
+
+  ////////////
+  //  UART  //
+  ////////////
+
+  verilator_uart_rx #(
+    .BaudPeriodCycles(1000 * 1000 * 1000 / 115200 / 5)  // 1 second / baud rate / clock period
+  ) i_uart_rx (
+    .clk_i,
+    .rst_ni,
+    .uart_rx_i    ( uart_tx           ),
+    .data_valid_o ( uart_data_valid_o ),
+    .data_o       ( uart_data_o       )
+  );
+
+  // no UART input into DUT
+  assign uart_rx = 1'b0;
 
 endmodule
