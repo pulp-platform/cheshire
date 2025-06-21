@@ -2,7 +2,7 @@
 #include <memory> // std::unique_ptr
 
 #include <verilated.h> // common Verilator routines
-#include <verilated_fst_c.h> // trace to VCD
+#include <verilated_vcd_c.h> // trace to VCD
 
 #include "Vcheshire_soc_wrapper.h" // Verilated model
 
@@ -15,7 +15,7 @@
 
 #define SIMULATION_RATE_CHUNK 1024
 
-// #define TRACE
+// #define BENCHMARK
 
 bool do_exit = false;
 int  exit_code = 0;
@@ -76,11 +76,11 @@ int main(int argc, char** argv) {
     // "TOP" will be the hierarchical name of the module
     const auto top = std::make_unique<Vcheshire_soc_wrapper>(contextp.get(), "TOP");
 
-#ifdef TRACE
+#if CHS_TRACE_VCD
     Verilated::traceEverOn(true);
-    const auto trace = std::make_unique<VerilatedFstC>();
+    const auto trace = std::make_unique<VerilatedVcdC>();
     top->trace(trace.get(), 5);
-    trace->open("dump.fst");
+    trace->open("dump.vcd");
 #endif
 
     // Initial Inputs
@@ -107,14 +107,16 @@ int main(int argc, char** argv) {
             top->rst_ni = 1;
 
           // Toggle Real Time Clock
-          if (contextp->time() < next_rtc_toggle_ps) {
+          if (contextp->time() >= next_rtc_toggle_ps) {
             top->rtc_i = !top->rtc_i;
             next_rtc_toggle_ps += RTC_PERIOD_PS / 2;
           }
 
           // JTAG I/O
           if (top->rst_ni) {
+#ifndef BENCHMARK
             jtag_tick_io(*top);
+#endif
           }
         }
 
@@ -123,7 +125,7 @@ int main(int argc, char** argv) {
         // Evaluate model
         top->eval();
 
-#ifdef TRACE
+#if CHS_TRACE_VCD
         trace->dump(contextp->time());
 #endif
 
@@ -139,8 +141,10 @@ int main(int argc, char** argv) {
             VL_PRINTF("elapsed: %lu us, %.1f cycles/sec (total), %.1f cycles/sec (last)\n",
                 total_elapsed_us, total_cycles_per_sec, last_cycles_per_sec);
           }
+#ifdef BENCHMARK
           if (cycle == 100000)
             break;
+#endif
         }
     }
 

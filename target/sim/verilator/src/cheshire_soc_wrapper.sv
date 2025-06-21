@@ -38,20 +38,12 @@ module cheshire_soc_wrapper (
 
   logic       test_mode;
   logic [1:0] boot_mode;
-  logic       rtc;
 
   assign test_mode = 1'b0;
   assign boot_mode = 2'b00; // passive
 
   axi_llc_req_t axi_llc_mst_req;
   axi_llc_rsp_t axi_llc_mst_rsp;
-
-  logic jtag_tck;
-  logic jtag_trst_n;
-  logic jtag_tms;
-  logic jtag_tdi;
-  logic jtag_tdo;
-  logic jtag_tdo_oe;
 
   logic uart_tx;
   logic uart_rx;
@@ -97,7 +89,7 @@ module cheshire_soc_wrapper (
     .rst_ni             ( rst_ni    ),
     .test_mode_i        ( test_mode ),
     .boot_mode_i        ( boot_mode ),
-    .rtc_i              ( rtc       ),
+    .rtc_i              ( rtc_i     ),
     .axi_llc_mst_req_o  ( axi_llc_mst_req ),
     .axi_llc_mst_rsp_i  ( axi_llc_mst_rsp ),
     .axi_ext_mst_req_i  ( '0 ),
