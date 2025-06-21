@@ -25,6 +25,13 @@ extern int jtag_tick(int port, unsigned char *jtag_TCK, unsigned char *jtag_TMS,
 
 
 static void jtag_tick_io(Vcheshire_soc_wrapper& top) {
+  static int count = 0;
+  if (count < 10) {
+    count++;
+    return;
+  }
+  count = 0;
+
   unsigned char tck, tms, tdi, trst_n;
   int ret = jtag_tick(3335, &tck, &tms, &tdi, &trst_n, top.jtag_tdo_o);
   if (ret) {
@@ -123,7 +130,7 @@ int main(int argc, char** argv) {
 
           // JTAG I/O
           if (top->rst_ni) {
-#ifndef BENCHMARK
+#if 0
             jtag_tick_io(*top);
 #endif
           }
