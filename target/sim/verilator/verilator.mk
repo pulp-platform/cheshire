@@ -20,7 +20,6 @@ VERILATOR_ARGS += -O3 --x-assign fast --x-initial fast --noassert
 # Disable common_cells assertions
 VERILATOR_ARGS += -DASSERTS_OFF
 # C++ Compiler Optimization
-
 # VERILATOR_ARGS += -CFLAGS "-march=native"
 # VERILATOR_ARGS += -CFLAGS "-mtune=native"
 # VERILATOR_ARGS += -CFLAGS "-O2"
@@ -31,9 +30,10 @@ VERILATOR_ARGS += -DASSERTS_OFF
 
 # Tracing
 # enables VCD tracing of the topmost 5 layers
-# VERILATOR_ARGS += --trace --trace-structs --no-trace-top --trace-depth 5 -CFLAGS "-DCHS_TRACE_VCD=1"
+# VERILATOR_ARGS += --trace --trace-structs --no-trace-top --trace-depth 5
 
 VERILATOR_CXX_SRCS = $(CHS_VERILATOR_DIR)/sim/main.cpp \
+	$(CHS_ROOT)/target/sim/src/elfloader.cpp \
 	$(RISCV_DBG_DIR)/tb/remote_bitbang/remote_bitbang.c \
 	$(RISCV_DBG_DIR)/tb/remote_bitbang/sim_jtag.c
 

@@ -4,7 +4,14 @@
 //
 // Max Wipfli <mwipfli@student.ethz.ch>
 
-module cheshire_soc_wrapper (
+function automatic cheshire_pkg::cheshire_cfg_t gen_cheshire_cfg();
+  cheshire_pkg::cheshire_cfg_t ret = cheshire_pkg::DefaultCfg;
+  return ret;
+endfunction
+
+module cheshire_soc_wrapper # (
+  parameter cheshire_pkg::cheshire_cfg_t DutCfg = gen_cheshire_cfg()
+) (
   input logic clk_i,
   input logic rtc_i,
   input logic rst_ni,
@@ -19,21 +26,20 @@ module cheshire_soc_wrapper (
 
   // UART
   output logic       uart_data_valid_o,
-  output logic [7:0] uart_data_o
-);
+  output logic [7:0] uart_data_o,
 
-  `include "cheshire/typedef.svh"
+  // Memory Interface (Serial Link)
+  input  logic                             slink_mem_req_i,
+  input  logic [DutCfg.AddrWidth-1:0]      slink_mem_addr_i,
+  input  logic                             slink_mem_we_i,
+  input  logic [DutCfg.AxiDataWidth-1:0]   slink_mem_wdata_i,
+  input  logic [DutCfg.AxiDataWidth/8-1:0] slink_mem_be_i,
+  output logic                             slink_mem_gnt_o
+);
 
   import cheshire_pkg::*;
 
-  function automatic cheshire_pkg::cheshire_cfg_t gen_cheshire_cfg();
-    cheshire_pkg::cheshire_cfg_t ret = cheshire_pkg::DefaultCfg;
-    ret.SerialLink = 1'b0;
-    return ret;
-  endfunction
-
-  localparam cheshire_cfg_t DutCfg = gen_cheshire_cfg();
-
+  `include "cheshire/typedef.svh"
   `CHESHIRE_TYPEDEF_ALL(, DutCfg)
 
   ///////////
@@ -74,8 +80,6 @@ module cheshire_soc_wrapper (
   logic [SlinkNumChan-1:0]                    slink_rcv_clk_o;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o;
-  assign slink_rcv_clk_i = '1;
-  assign slink_i         = '1;
 
   cheshire_soc #(
     .Cfg                ( DutCfg ),
@@ -212,5 +216,79 @@ module cheshire_soc_wrapper (
 
   // no UART input into DUT
   assign uart_rx = 1'b0;
+
+  ///////////////////
+  //  Serial Link  //
+  ///////////////////
+
+  axi_mst_req_t slink_axi_mst_req;
+  axi_mst_rsp_t slink_axi_mst_rsp;
+
+  // Mirror instance of serial link, reflecting another chip
+  serial_link #(
+    .axi_req_t    ( axi_mst_req_t ),
+    .axi_rsp_t    ( axi_mst_rsp_t ),
+    .cfg_req_t    ( reg_req_t ),
+    .cfg_rsp_t    ( reg_rsp_t ),
+    .aw_chan_t    ( axi_mst_aw_chan_t ),
+    .ar_chan_t    ( axi_mst_ar_chan_t ),
+    .r_chan_t     ( axi_mst_r_chan_t  ),
+    .w_chan_t     ( axi_mst_w_chan_t  ),
+    .b_chan_t     ( axi_mst_b_chan_t  ),
+    .hw2reg_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t ),
+    .reg2hw_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t ),
+    .NumChannels  ( SlinkNumChan   ),
+    .NumLanes     ( SlinkNumLanes  ),
+    .MaxClkDiv    ( SlinkMaxClkDiv )
+  ) i_serial_link (
+    .clk_i          ( clk_i  ),
+    .rst_ni         ( rst_ni ),
+    .clk_sl_i       ( clk_i  ),
+    .rst_sl_ni      ( rst_ni ),
+    .clk_reg_i      ( clk_i  ),
+    .rst_reg_ni     ( rst_ni ),
+    .testmode_i     ( test_mode ),
+    .axi_in_req_i   ( slink_axi_mst_req ),
+    .axi_in_rsp_o   ( slink_axi_mst_rsp ),
+    .axi_out_req_o  (    ),
+    .axi_out_rsp_i  ( '0 ),
+    .cfg_req_i      ( '0 ),
+    .cfg_rsp_o      (    ),
+    .ddr_rcv_clk_i  ( slink_rcv_clk_o ),
+    .ddr_rcv_clk_o  ( slink_rcv_clk_i ),
+    .ddr_i          ( slink_o ),
+    .ddr_o          ( slink_i ),
+    .isolated_i     ( '0 ),
+    .isolate_o      ( ),
+    .clk_ena_o      ( ),
+    .reset_no       ( )
+  );
+
+  // Adapter to memory interface for easier C++ handling
+  axi_from_mem #(
+    .MemAddrWidth ( DutCfg.AddrWidth    ),
+    .AxiAddrWidth ( DutCfg.AddrWidth    ),
+    .DataWidth    ( DutCfg.AxiDataWidth ),
+    .MaxRequests  ( 8                   ),
+    .AxiProt      ( 3'b000              ),
+    .axi_req_t    ( axi_mst_req_t       ),
+    .axi_rsp_t    ( axi_mst_rsp_t       )
+  ) i_serial_link_mem (
+    .clk_i,
+    .rst_ni,
+    .mem_req_i       ( slink_mem_req_i   ),
+    .mem_addr_i      ( slink_mem_addr_i  ),
+    .mem_we_i        ( slink_mem_we_i    ),
+    .mem_wdata_i     ( slink_mem_wdata_i ),
+    .mem_be_i        ( slink_mem_be_i    ),
+    .mem_gnt_o       ( slink_mem_gnt_o   ),
+    .mem_rsp_valid_o (                   ),
+    .mem_rsp_rdata_o (                   ),
+    .mem_rsp_error_o (                   ),
+    .slv_aw_cache_i  ( 4'b0000           ),
+    .slv_ar_cache_i  ( 4'b0000           ),
+    .axi_req_o       ( slink_axi_mst_req ),
+    .axi_rsp_i       ( slink_axi_mst_rsp )
+  );
 
 endmodule
