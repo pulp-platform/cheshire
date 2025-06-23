@@ -124,8 +124,10 @@ int main(int argc, char** argv) {
     // May be overridden by commandArgs argument parsing
     contextp->randReset(2);
 
+#if VM_TRACE
     // Verilator must compute traced signals
     contextp->traceEverOn(true);
+#endif
 
     // Pass arguments so Verilated code can see them, e.g. $value$plusargs
     // This needs to be called before you create any model
@@ -150,6 +152,7 @@ int main(int argc, char** argv) {
     auto last = start;
     uint64_t cycle = 0;
     uint64_t next_rtc_toggle_ps = 0;
+    bool reset_done = false;
 
     mem_master = std::make_unique<Mem64Master>(
         &topp->slink_mem_req_i,
@@ -172,13 +175,16 @@ int main(int argc, char** argv) {
 
         // Apply Inputs (negedge clk_i)
         if (!topp->clk_i) {
-          // Apply Reset
-          if (cycle == 1)
+          if (cycle == 1) {
+            // Apply Reset
             topp->rst_ni = 0;
+          }
 
-          // Release Reset
-          if (cycle == RST_CYCLES + 1)
+          if (cycle == RST_CYCLES + 1) {
+            // Release Reset
             topp->rst_ni = 1;
+            reset_done = true;
+          }
 
           // Toggle Real Time Clock
           if (contextp->time() >= next_rtc_toggle_ps) {
@@ -192,7 +198,7 @@ int main(int argc, char** argv) {
             elf_preload_write_enqueue();
 
           // I/O
-          if (cycle > RST_CYCLES && topp->rst_ni) {
+          if (reset_done) {
 #if 0
             jtag_tick_io();
 #endif
@@ -203,7 +209,7 @@ int main(int argc, char** argv) {
         contextp->timeInc(TIME_STEP_PS);
 
         // Monitor Synchronous Outputs: just before @(posedge clk_i)
-        if (topp->clk_i) {
+        if (reset_done && topp->clk_i) {
           mem_master->handle_before();
         }
 
@@ -211,7 +217,7 @@ int main(int argc, char** argv) {
         topp->eval();
 
         // Apply Synchronous Inputs: just after @(posedge clk_i)
-        if (topp->clk_i) {
+        if (reset_done && topp->clk_i) {
           mem_master->handle_after();
         }
 
@@ -234,8 +240,8 @@ int main(int argc, char** argv) {
             last = current;
             auto total_cycles_per_sec = 1000000.0 * cycle / total_elapsed_us;
             auto last_cycles_per_sec = 1000000.0 * SIMULATION_RATE_CHUNK / last_elapsed_us;
-            VL_PRINTF("elapsed: %lu us, %.1f cycles/sec (total), %.1f cycles/sec (last)\n",
-                total_elapsed_us, total_cycles_per_sec, last_cycles_per_sec);
+            VL_PRINTF("elapsed: %lu us, %lu cycles, %.1f cycles/sec (total), %.1f cycles/sec (last)\n",
+                total_elapsed_us, cycle, total_cycles_per_sec, last_cycles_per_sec);
           }
 #ifdef BENCHMARK
           if (cycle == 1000000)
@@ -247,7 +253,7 @@ int main(int argc, char** argv) {
     // Final model cleanup
     topp->final();
 
-#ifdef TRACE
+#if VM_TRACE
       trace->close();
 #endif
 
