@@ -1,8 +1,0 @@
-# this files are produces by the process.sh script so we don't need to save
-*.plot
-*.csv
-*.prepared
-*.cm
-# we do save the PNG and log since that's the most human readable though
-!*.png
-!*.log
