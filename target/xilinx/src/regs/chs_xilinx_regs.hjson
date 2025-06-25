@@ -1,0 +1,84 @@
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+// Licensed under Solderpad Hardware License, Version 0.51, see LICENSE for details.
+//
+// Nicole Narr <narrn@student.ethz.ch>
+// Christopher Reinwardt <creinwar@student.ethz.ch>
+// Paul Scheffler <paulsc@iis.ee.ethz.ch>
+
+{
+  name: "chs_xilinx"
+  clock_primary: "clk_i"
+  bus_interfaces: [
+    { protocol: "reg_iface", direction: "device" }
+  ],
+  regwidth: 32
+  registers: [
+
+    { name:     "fan_ctl"
+      desc:     "PWM Setting"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "3:0", name: "fan_ctl", desc: "PWM Setting" }
+      ]
+    },
+    { name:     "fan_sw_override"
+      desc:     "Override Fan Switches"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0:0", name: "fan_sw_override", desc: "Override Fan Switches" }
+      ]
+    },
+    { name:     "leds"
+      desc:     "LED Control"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0", name: "leds", desc: "LED Control" }
+      ]
+    },
+    { name:     "dram_aw_delay"
+      desc:     "DRAM AW Delay in Cycles"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "15:0", name: "fan_ctl", desc: "DRAM AW Delay in Cycles" }
+      ]
+    },
+    { name:     "dram_w_delay"
+      desc:     "DRAM W Delay in Cycles"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "15:0", name: "fan_ctl", desc: "DRAM W Delay in Cycles" }
+      ]
+    },
+    { name:     "dram_b_delay"
+      desc:     "DRAM B Delay in Cycles"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "15:0", name: "fan_ctl", desc: "DRAM B Delay in Cycles" }
+      ]
+    },
+    { name:     "dram_ar_delay"
+      desc:     "DRAM AR Delay in Cycles"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "15:0", name: "fan_ctl", desc: "DRAM AR Delay in Cycles" }
+      ]
+    },
+    { name:     "dram_r_delay"
+      desc:     "DRAM R Delay in Cycles"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "15:0", name: "fan_ctl", desc: "DRAM R Delay in Cycles" }
+      ]
+    }
+  ]
+}

@@ -14,6 +14,16 @@ CHS_XILINX_DIR ?= $(CHS_ROOT)/target/xilinx
 # Required to split stems
 .SECONDEXPANSION:
 
+###############
+# Generate HW #
+###############
+
+# FPGA-level configuration registers
+$(CHS_XILINX_DIR)/src/regs/chs_xilinx_reg_pkg.sv $(CHS_XILINX_DIR)/src/regs/chs_xilinx_reg_top.sv: $(CHS_XILINX_DIR)/src/regs/chs_xilinx_regs.hjson
+	$(REGTOOL) -r $< --outdir $(dir $@)
+
+CHS_XILINX_HW := $(CHS_XILINX_DIR)/src/regs/chs_xilinx_reg_pkg.sv $(CHS_XILINX_DIR)/src/regs/chs_xilinx_reg_top.sv
+
 ##############
 # Xilinx IPs #
 ##############
@@ -40,7 +50,7 @@ CHS_XILINX_BOARDS := genesys2 vcu128
 CHS_XILINX_IPS_genesys2 := clkwiz vio mig7s
 CHS_XILINX_IPS_vcu128   := clkwiz vio ddr4
 
-$(CHS_XILINX_DIR)/scripts/add_sources.%.tcl: $(CHS_ROOT)/Bender.yml
+$(CHS_XILINX_DIR)/scripts/add_sources.%.tcl: $(CHS_ROOT)/Bender.yml $(CHS_XILINX_HW)
 	$(BENDER) script vivado -t fpga -t $* $(CHS_BENDER_RTL_FLAGS) > $@
 
 define chs_xilinx_bit_rule
