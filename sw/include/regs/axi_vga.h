@@ -62,12 +62,19 @@ extern "C" {
 // Size of whole frame
 #define AXI_VGA_FRAME_SIZE_REG_OFFSET 0x30
 
-// Number of beats in a burst
+// Total number of beats prefetched as burst
 #define AXI_VGA_BURST_LEN_REG_OFFSET 0x34
 #define AXI_VGA_BURST_LEN_BURST_LEN_MASK 0xff
 #define AXI_VGA_BURST_LEN_BURST_LEN_OFFSET 0
 #define AXI_VGA_BURST_LEN_BURST_LEN_FIELD \
   ((bitfield_field32_t) { .mask = AXI_VGA_BURST_LEN_BURST_LEN_MASK, .index = AXI_VGA_BURST_LEN_BURST_LEN_OFFSET })
+
+// Maximum number of beats in each burst requested from AXI
+#define AXI_VGA_BURST_SPLIT_LEN_REG_OFFSET 0x38
+#define AXI_VGA_BURST_SPLIT_LEN_BURST_LEN_MASK 0xff
+#define AXI_VGA_BURST_SPLIT_LEN_BURST_LEN_OFFSET 0
+#define AXI_VGA_BURST_SPLIT_LEN_BURST_LEN_FIELD \
+  ((bitfield_field32_t) { .mask = AXI_VGA_BURST_SPLIT_LEN_BURST_LEN_MASK, .index = AXI_VGA_BURST_SPLIT_LEN_BURST_LEN_OFFSET })
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -62,8 +62,8 @@ packages:
     dependencies:
     - common_cells
   axi_vga:
-    revision: 3718b9930f94a9eaad8ee50b4bccc71df0403084
-    version: 0.1.3
+    revision: 741a1fdf9a55f082d73866352c24c64c781ab066
+    version: null
     source:
       Git: https://github.com/pulp-platform/axi_vga.git
     dependencies:
