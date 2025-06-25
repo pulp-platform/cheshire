@@ -179,4 +179,3 @@ wait_on_run ${proj}_synth_1
 
 # Symlink proj for easy access and build tracking, ensuring its update
 file delete -force ${project_root}/out.xci
-file link -symbolic ${project_root}/out.xci $xci
