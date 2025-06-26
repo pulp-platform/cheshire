@@ -675,8 +675,8 @@ package cheshire_pkg;
     LlcOutRegionEnd   : 64'h1_0000_0000,
     LlcUserMsb        : 0,
     LlcUserLsb        : 0,
-    LlcCachePartition : 0,
-    LlcMaxPartition   : 0,
+    LlcCachePartition : 1,
+    LlcMaxPartition   : 16,
     LlcRemapHash      : axi_llc_pkg::Modulo,
     // VGA: RGB565
     VgaRedWidth       : 5,

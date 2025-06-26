@@ -119,7 +119,7 @@ $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 include $(IDMA_ROOT)/idma.mk
 
 # LLC partitioning configuration
-CHS_LLC_PARTITION     ?= 0
+CHS_LLC_PARTITION     ?= 1
 CHS_LLC_MAXPARTITIONS ?= 16
 
 $(CHS_LLC_DIR)/.generated:
