@@ -5,17 +5,20 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
+// Enrico Zelioli <ezelioli@iis.ee.ethz.ch>
 
-// TODO: Avoid hardcoding in addresses and offsets
-
-#include "smp.h"
-
+#include <regs/cheshire.h>
+#include <regs/axi_llc.h>
 .section .text._start
 
 // Minimal bootrom loader
 .global _start
 .align 4
 _start:
+    // Globally disable Machine and Supervisor interrupts (MIE, SIE = 0).
+    // Note that this will *not* stop WFI from resuming on enabled interrupts.
+    csrrc zero, mstatus, 10
+
     // Reset all integer GPRs; we do *not* assume FP in the boot ROM.
     li x1, 0
     li x4, 0
@@ -47,8 +50,12 @@ _start:
     li x30, 0
     li x31, 0
 
-    // Pause SMP harts
-    smp_pause(t0, t1)
+    // Pause SMP harts: enable only MSIE, disable all other interrupt sources
+    li   t1, 0x8
+    csrw mie, t1
+    li   t0, 0
+    csrr t1, mhartid
+    bne  t0, t1, _smp_wait
 
     // Init stack and global pointer with safe, linked values
     la sp, __stack_pointer$
@@ -58,33 +65,35 @@ _start:
     .option pop
 
     // If LLC present: Wait for end of BIST, then extend stack and set to all SPM
-    la t0, __base_regs
-    lw t0, 80(t0)   // regs.HW_FEATURES
-    andi t0, t0, 2  // regs.HW_FEATURES.llc
+    la   t0, __base_regs
+    lwu  t0, CHESHIRE_HW_FEATURES_REG_OFFSET(t0)
+    andi t0, t0, (1 << CHESHIRE_HW_FEATURES_LLC_BIT)
     beqz t0, _prom_check_run
-    la t0, __base_llc
+    la   t0, __base_llc
 _wait_llc_bist:
-    lw t1, 72(t0)   // llc.BIST_STATUS_DONE_BIT
+    lwu  t1, AXI_LLC_BIST_STATUS_REG_OFFSET(t0) // Check BIST status done bit
     beqz t1, _wait_llc_bist
-    li t1, -1
-    sw t1, 0(t0)    // llc.CFG_SPM_LOW
-    sw t1, 4(t0)    // llc.CFG_SPM_HIGH
-    li t1, 1
-    sw t1, 16(t0)   // llc.CFG_COMMIT
+    li   t1, -1
+    sw   t1, AXI_LLC_CFG_SPM_LOW_REG_OFFSET(t0)
+    sw   t1, AXI_LLC_CFG_SPM_HIGH_REG_OFFSET(t0)
+    li   t1, 1
+    sw   t1, AXI_LLC_COMMIT_CFG_REG_OFFSET(t0)
     // Correct stack to start at end of SPM
-    la t0, __base_regs
-    la sp, __base_spm
-    lw t0, 84(t0)   // regs.LLC_SIZE
-    add sp, sp, t0
+    la   t0, __base_regs
+    la   sp, __base_spm
+    lwu  t0, CHESHIRE_LLC_SIZE_REG_OFFSET(t0)
+    add  sp, sp, t0
     addi sp, sp, -8
 
-// Enter Platform ROM if present.
+// Enter Platform ROM if present. Falls through to `_boot`.
 _prom_check_run:
     // Note that we have internal access to SPM here *if and only if* there is an LLC.
-    la t0, __base_regs
-    lw t0, 72(t0)   // regs.PLATFORM_ROM
-    beqz t0, _boot
-    jalr t0
+    li   t0, 0
+    li   t1, 0
+    la   ra, __base_regs
+    lwu  ra, CHESHIRE_PLATFORM_ROM_REG_OFFSET(ra)
+    beqz ra, _boot
+    jalr ra, 0(ra)
 
 // Reset regs, full fence, then jump to main
 _boot:
@@ -99,34 +108,44 @@ _boot:
 .align 4
 _exit:
     // Save the return value to scratch register 2, try `ebreak`, then wait forever
+    // Set bit 0 to signal that the execution is done.
     slli a0, a0, 1
     ori  a0, a0, 1
     la t0, __base_regs
-    sw a0, 8(t0)     // regs.SCRATCH[2]
+    sw a0, CHESHIRE_SCRATCH_2_REG_OFFSET(t0)
     ebreak
 1:  wfi
     j 1b
 
-.global boot_next_stage
-.align 4
-boot_next_stage:
-    // Non-SMP hart: Write boot address into global scratch registers
-    la t0, __base_regs
-    sw a0, 16(t0)   // regs.SCRATCH[4]
-    srli a0, a0, 32
-    sw a0, 20(t0)   // regs.SCRATCH[5]
-    fence
-    // Resume SMP harts
-    smp_resume(t0, t1, t2)
-    // Load boot address from global scratch registers
-    la t0, __base_regs
-    lwu t1, 20(t0)  // regs.SCRATCH[5]
+// Nonzero harts wait for and handle wakeup here
+_smp_wait:
+    // Set mtvec, sleep, and check MSIP; repeat unless MSIP is set (M IPI is pending).
+    la   t0, 1f
+    csrw t0, mtvec
+    wfi
+1:  csrr t0, mip
+    andi t0, t0, 0x8
+    beqz t0, _smp_wait
+    // Clear CLINT M IPI register for this hart
+    la   t0, __base_clint
+    csrr ra, mhartid
+    slli t1, ra, 2
+    add  t1, t1, t0
+    sw   zero, 0(t1) // *(CLINT_BASE + hart_id * 4) = 0
+    // Check SMP enable (scratch[6][0]).
+    // If this is not set, go back to sleep, as we are not meant to resume.
+    la   t0, __base_regs
+    lwu  t0, CHESHIRE_SCRATCH_6_REG_OFFSET(t0)
+    andi t0, t0, 1
+    beqz t0, _smp_wait
+    // Jump to scratch[5:4]. Synchronization, if any, should be done there.
+    la   t1, __base_regs
+    lwu  t0, CHESHIRE_SCRATCH_4_REG_OFFSET(t1)
+    lwu  t1, CHESHIRE_SCRATCH_5_REG_OFFSET(t1)
     slli t1, t1, 32
-    lwu t0, 16(t0)  // regs.SCRATCH[4]
-    or t0, t0, t1
-    // Store hartid to a0
-    csrr a0, mhartid
-    // Jump to boot address
-    jalr ra, 0(t0)
-    // We should never get here
-    ret
+    ori  ra, t1, t0
+    li   t0, 0
+    li   t1, 1
+    jalr ra, 0(ra)
+    // Should we return, go back to `_start` to be parked again.
+    j _start
