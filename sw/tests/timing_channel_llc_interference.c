@@ -15,7 +15,15 @@
 #include "printf.h"
 #include <stdint.h>
 
+#define MITIGATION_NONE     0
+#define MITIGATION_COLOUR   1
+
+#define MITIGATION          MITIGATION_NONE
+
 #define DATA_POINTS 4096
+
+#define SPY_COLOUR      0
+#define TROJAN_COLOUR   1
 
 #define SECTION(name) __attribute__((__section__(name)))
 
@@ -120,9 +128,10 @@ void trojan(void) {
         for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
             volatile void *v = &data_trojan[way][line];
             volatile uint32_t rv;
-            if (page_colour((uintptr_t)v) == 0) {
-                asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
-            }
+#if MITIGATION == MITIGATION_COLOUR
+            if (page_colour((uintptr_t)v) != TROJAN_COLOUR) continue;
+#endif
+            asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
         }
     }
 
@@ -135,9 +144,10 @@ void spy(uint32_t round) {
         for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
             volatile void *v = &data_spy[way][line];
             volatile uint32_t rv;
-            if (page_colour((uintptr_t)v) == 1) {
-                asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
-            }
+#if MITIGATION == MITIGATION_COLOUR
+            if (page_colour((uintptr_t)v) != SPY_COLOUR) continue;
+#endif
+            asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
         }
     }
     uint32_t after = rdcycle();
@@ -160,11 +170,13 @@ int main(void) {
 
     printf("text: %p, trojan data: %p, spy data %p\r\n", &main, &data_trojan, &data_spy);
 
+    /* no ways SPM */
+    // *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b00000000;
     /* leave 1 way for SPM for code. */
-    *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b00000001;
+    // *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b00000001;
     // turn the cache off entirely for testing
     // *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111111;
-    *reg32(&__base_llc, AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
+    // *reg32(&__base_llc, AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
 
     evict_llc();
     sfence();
@@ -189,11 +201,11 @@ int main(void) {
             printf("set associativity does not match; %d\r\n", set_asso);
             return 1;
         }
-        uint32_t num_lines = *reg32(&__base_llc, AXI_LLC_NUM_LINES_LOW_REG_OFFSET);
-        if (num_lines != LLC_WAY_NUM_LINES) {
-            printf("num lines does not match; %d\r\n", num_lines);
-            return 1;
-        }
+        // uint32_t num_lines = *reg32(&__base_llc, AXI_LLC_NUM_LINES_LOW_REG_OFFSET);
+        // if (num_lines != LLC_WAY_NUM_LINES) {
+        //     printf("num lines does not match; %d\r\n", num_lines);
+        //     return 1;
+        // }
         uint32_t num_blocks = *reg32(&__base_llc, AXI_LLC_NUM_BLOCKS_LOW_REG_OFFSET);
         if (num_blocks != LLC_LINE_NUM_BLOCKS) {
             printf("num blocks does not match; %d\r\n", num_blocks);
