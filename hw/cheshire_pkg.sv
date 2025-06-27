@@ -637,7 +637,7 @@ package cheshire_pkg;
     VgaBlueWidth      : 5,
     VgaHCountWidth    : 24, // TODO: Default is 32; is this needed?
     VgaVCountWidth    : 24, // TODO: See above
-    VgaBufferDepth    : 16,
+    VgaBufferDepth    : 32,
     VgaMaxReadTxns    : 24,
     // Serial Link: map other chip's lower 32bit to 'h1_000_0000
     SlinkMaxTxnsPerId : 4,
