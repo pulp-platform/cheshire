@@ -125,6 +125,13 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     ret.RegExtRegionStart [0] = 32'h4300_0000;
     ret.RegExtRegionEnd   [0] = 32'h4300_1000;
   `endif
+  `ifdef USE_VCLIC
+    ret.Clic = 1;
+    ret.ClicVsclic = 1;
+    ret.ClicVsprio = 1;
+    ret.ClicNumVsctxts = 4;
+    ret.ClicPrioWidth = 1;
+  `endif
     return ret;
   endfunction
 
