@@ -150,6 +150,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Interrupt requests to all interruptible harts
   cheshire_xeip_t [NumIrqHarts-1:0] xeip;
   logic           [NumIrqHarts-1:0] mtip, msip;
+  logic           [NumIntHarts-1:0][63:0] mtime; // need to route it to CSR in order to create the time shadow read-only
 
   // Interrupt 0 is hardwired to zero by convention.
   // Other internal interrupts are synchronous (for now) and need not be synced;
@@ -616,6 +617,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .irq_i            ( xeip[i] ),
       .ipi_i            ( msip[i] ),
       .time_irq_i       ( mtip[i] ),
+      .mtime_i          ( mtime[i] ),
       .debug_req_i      ( dbg_int_req[i] ),
       .clic_irq_valid_i ( clic_irq_valid ),
       .clic_irq_id_i    ( clic_irq_id    ),
@@ -1088,6 +1090,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .reg_req_i    ( reg_out_req[RegOut.clint] ),
     .reg_rsp_o    ( reg_out_rsp[RegOut.clint] ),
     .rtc_i,
+    .mtime_o      ( mtime ),
     .timer_irq_o  ( mtip ),
     .ipi_o        ( msip )
   );
