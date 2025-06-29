@@ -50,7 +50,7 @@ CHS_SW_DEPS_SRCS += $(wildcard $(OTPROOT)/sw/device/lib/dif/autogen/*.c)
 
 # Coremark-dependant parameters
 COREMARK_FLAGS_STR ?= $(CHS_SW_CCFLAGS) $(CHS_SW_LDFLAGS)
-COREMARK_ITERATIONS ?= 10
+COREMARK_ITERATIONS ?= 5000
 # The following parameter is the core frequency in Hz (e.g. 200'000'000 Hz)
 COREMARK_CLOCKS_PER_SEC ?= 200000000
 CHS_SW_DEPS_INCS += -I$(CHS_SW_DIR)/deps/coremark
