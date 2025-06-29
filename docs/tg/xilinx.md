@@ -135,12 +135,12 @@ Insert your SD card and reset into boot mode 1. You should see a `Hello World!` 
 Build a GPT disk image for your desired binary as explained above, then flash it to your board's flash. For `helloworld`:
 
 ```
-make CHS_XILINX_FLASH_BIN=sw/tests/helloworld.gpt.bin chs-xilinx-flash-<myboard>
+make CHS_XILINX_FLASH_IMG=sw/tests/helloworld.gpt.bin chs-xilinx-flash-<myboard>
 ```
 
 Flashing an image should take about 10 minutes. *Note that after flashing, your board's bitstream must be reprogrammed* as it is overridden for this task.
 
-If the image given by `CHS_XILINX_FLASH_BIN` does not exist, `make` will attempt to build it before flashing. If `CHS_XILINX_FLASH_BIN` is not provided, the target assumes the default Linux image for your board.
+If the image given by `CHS_XILINX_FLASH_IMG` does not exist, `make` will attempt to build it before flashing. If `CHS_XILINX_FLASH_IMG` is not provided, the target assumes the default Linux image for your board.
 
 After flashing your disk image and reprogramming your bitstream, reset into boot mode 2. For `helloworld`, you should again see a `Hello World!` UART output.
 
