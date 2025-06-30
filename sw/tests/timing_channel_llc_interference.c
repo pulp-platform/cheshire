@@ -8,6 +8,7 @@
 
 #include "regs/cheshire.h"
 #include "regs/axi_llc.h"
+#include "regs/tagger.h"
 #include "dif/clint.h"
 #include "dif/uart.h"
 #include "params.h"
@@ -17,8 +18,11 @@
 
 #define MITIGATION_NONE     0
 #define MITIGATION_COLOUR   1
+// TODO.
+// #define MITIGATION_SPM      2
+#define MITIGATION_DPLLC    3
 
-#define MITIGATION          MITIGATION_NONE
+#define MITIGATION          MITIGATION_DPLLC
 
 #define DATA_POINTS 4096
 
@@ -158,6 +162,36 @@ void spy(uint32_t round) {
     results[round].secret = current_secret;
 }
 
+void setup_dpllc() {
+    /* the transaction tagger registers are (somewhat) similar to that of the
+       RISC-V PMP registers.
+
+       see tagger/README.md for the registers.
+
+       we setup two regions covering the spy & trojan registers.
+
+       XXX: ??? how to do rest?
+
+    */
+
+    /* Sanity check that it is connected */
+    // printf("thing! %lx\r\n", *reg32(&__base_tagger, TAGGER_REG_PAT_COMMIT_REG_OFFSET));
+
+    // // Run basic register rw tests
+    // LLC_RW_TEST_REG(AXI_LLC_CFG_FLUSH_PARTITION_LOW_REG_OFFSET, 0xcafedead);
+    // LLC_RW_TEST_REG(AXI_LLC_CFG_FLUSH_PARTITION_HIGH_REG_OFFSET, 0xcafedead);
+
+    // LLC_RW_TEST_REG(AXI_LLC_CFG_SET_PARTITION_LOW_0_REG_OFFSET, 0xdefec8ed);
+    // LLC_RW_TEST_REG(AXI_LLC_CFG_SET_PARTITION_LOW_1_REG_OFFSET, 0xdefec8ed);
+
+    // LLC_RW_TEST_REG(AXI_LLC_CFG_SET_PARTITION_HIGH_0_REG_OFFSET, 0xdeadc0de);
+    // LLC_RW_TEST_REG(AXI_LLC_CFG_SET_PARTITION_HIGH_1_REG_OFFSET, 0xdeadc0de);
+
+    // printf("llc ver = 0x%016X\n", version);
+    // uart_write_flush(&__base_uart);
+
+}
+
 int main(void) {
     CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_HW_FEATURES_UART_BIT));
     CHECK_ASSERT(-2, chs_hw_feature_present(CHESHIRE_HW_FEATURES_LLC_BIT));
@@ -177,6 +211,10 @@ int main(void) {
     // turn the cache off entirely for testing
     // *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111111;
     // *reg32(&__base_llc, AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
+
+#if MITIGATION == MITIGATION_DPLLC
+    setup_dpllc();
+#endif
 
     evict_llc();
     sfence();
