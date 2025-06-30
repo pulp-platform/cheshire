@@ -45,6 +45,7 @@ SECTIONS {
   __base_vga      = 0x03007000;
   __base_usb      = 0x03008000;
   __base_bus_err  = 0x03009000;
+  __base_tagger   = 0x0300A000; /* AmTagger in cheshire_pkg.svg */
   __base_plic     = 0x04000000;
   __base_clic     = 0x08000000;
   __base_spm      = ORIGIN(spm);
