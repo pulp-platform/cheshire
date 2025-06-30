@@ -201,6 +201,7 @@ int main(void) {
             printf("set associativity does not match; %d\r\n", set_asso);
             return 1;
         }
+        // broken for DPLLC.
         // uint32_t num_lines = *reg32(&__base_llc, AXI_LLC_NUM_LINES_LOW_REG_OFFSET);
         // if (num_lines != LLC_WAY_NUM_LINES) {
         //     printf("num lines does not match; %d\r\n", num_lines);
