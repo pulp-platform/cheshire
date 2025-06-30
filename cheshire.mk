@@ -43,7 +43,7 @@ BENDER_ROOT ?= $(CHS_ROOT)/.bender
 # Ensure both Bender dependencies and (essential) submodules are checked out
 $(BENDER_ROOT)/.chs_deps:
 	$(BENDER) checkout
-	cd $(CHS_ROOT) && git submodule update --init --recursive sw/deps/printf
+	cd $(CHS_ROOT) && git submodule update --init --recursive sw/deps/printf sw/deps/coremark
 	@touch $@
 
 # Make sure dependencies are more up-to-date than any targets run
@@ -63,7 +63,7 @@ chs-clean-deps:
 ######################
 
 CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-CHS_NONFREE_COMMIT ?= 92f6f02
+CHS_NONFREE_COMMIT ?= 23bf67d # yt/coremark
 
 CHS_PHONY += chs-nonfree-init
 chs-nonfree-init:
