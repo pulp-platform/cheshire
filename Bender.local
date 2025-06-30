@@ -1,5 +1,0 @@
-overrides:
-  cva6:
-    path: .local/cva6
-  clint:
-    path: .local/clint	
