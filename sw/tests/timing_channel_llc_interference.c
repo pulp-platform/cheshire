@@ -204,13 +204,14 @@ int main(void) {
 
     printf("text: %p, trojan data: %p, spy data %p\r\n", &main, &data_trojan, &data_spy);
 
+    // IMPORTANT: cheshire starts with it all disabled.
     /* no ways SPM */
-    // *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b00000000;
+    *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b00000000;
     /* leave 1 way for SPM for code. */
     // *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b00000001;
     // turn the cache off entirely for testing
     // *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111111;
-    // *reg32(&__base_llc, AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
+    *reg32(&__base_llc, AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
 
 #if MITIGATION == MITIGATION_DPLLC
     setup_dpllc();
