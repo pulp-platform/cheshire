@@ -162,9 +162,11 @@ void spy(uint32_t round) {
     results[round].secret = current_secret;
 }
 
-void setup_dpllc() {
+int setup_dpllc() {
     /* the transaction tagger registers are (somewhat) similar to that of the
        RISC-V PMP registers.
+
+       "tagger_patid" module says "Take a page from testbench of axi-io-pmp pmp_entry.sv"
 
        see tagger/README.md for the registers.
 
@@ -172,24 +174,188 @@ void setup_dpllc() {
 
        XXX: ??? how to do rest?
 
+
+       if none match then partId = 0. see patid_r in tagger.sv
+
+
+        // how HW generates the table.
+        if (tagger_reg2hw.pat_commit[0].q) begin
+            for (int unsigned k = 0; k < MAXPARTITION; k++) begin
+                // shift the corresponding patid and conf to the LSB position
+                patid_temp = (patid_table >> (PATID_LEN * k));
+                conf_temp = (conf_table >> (2 * k));
+                // 4-byte default size
+                tag_tab_d[k].addr[33:2] = tagger_reg2hw.pat_addr[k].q[31:0];
+                // read the LSB position patid and conf out
+                tag_tab_d[k].patid = patid_temp[PATID_LEN-1:0];
+                tag_tab_d[k].conf = conf_temp[1:0];
+            end
+
+
     */
 
     /* Sanity check that it is connected */
-    // printf("thing! %lx\r\n", *reg32(&__base_tagger, TAGGER_REG_PAT_COMMIT_REG_OFFSET));
+    uint32_t commit_val = *reg32(&__base_tagger, TAGGER_REG_PAT_COMMIT_REG_OFFSET);
+    if (commit_val != 0) {
+        printf("commit val was zero (maybe 0xdeadc0de disconnected?) 0x%x\r\n", commit_val);
+        return 1;
+    }
+    /* 16 regions. (=MAXPARTITION) */
+#define TAGGER_NUM_REGIONS 16
+/* I think this is right? */
+#define TAGGER_PATID_LEN 5
+    // static const uint32_t TAGGER_NUM_REGIONS = 16;
 
-    // // Run basic register rw tests
-    // LLC_RW_TEST_REG(AXI_LLC_CFG_FLUSH_PARTITION_LOW_REG_OFFSET, 0xcafedead);
-    // LLC_RW_TEST_REG(AXI_LLC_CFG_FLUSH_PARTITION_HIGH_REG_OFFSET, 0xcafedead);
+#define TAGGER_REG_PAT_ADDR_N_REG_OFFSET(n)                                    \
+    (TAGGER_REG_PAT_ADDR_0_REG_OFFSET +                                        \
+     (TAGGER_REG_PAT_ADDR_1_REG_OFFSET - TAGGER_REG_PAT_ADDR_0_REG_OFFSET) * (n))
 
-    // LLC_RW_TEST_REG(AXI_LLC_CFG_SET_PARTITION_LOW_0_REG_OFFSET, 0xdefec8ed);
-    // LLC_RW_TEST_REG(AXI_LLC_CFG_SET_PARTITION_LOW_1_REG_OFFSET, 0xdefec8ed);
+#define TAGGER_REG_PATID_N_REG_OFFSET(n)                                    \
+    (TAGGER_REG_PATID_0_REG_OFFSET +                                        \
+     (TAGGER_REG_PATID_1_REG_OFFSET - TAGGER_REG_PATID_0_REG_OFFSET) * (n))
 
-    // LLC_RW_TEST_REG(AXI_LLC_CFG_SET_PARTITION_HIGH_0_REG_OFFSET, 0xdeadc0de);
-    // LLC_RW_TEST_REG(AXI_LLC_CFG_SET_PARTITION_HIGH_1_REG_OFFSET, 0xdeadc0de);
+    _Static_assert(TAGGER_REG_PAT_ADDR_N_REG_OFFSET(0) == TAGGER_REG_PAT_ADDR_0_REG_OFFSET);
+    _Static_assert(TAGGER_REG_PAT_ADDR_N_REG_OFFSET(7) == TAGGER_REG_PAT_ADDR_7_REG_OFFSET);
+    _Static_assert(TAGGER_REG_PAT_ADDR_N_REG_OFFSET(15) == TAGGER_REG_PAT_ADDR_15_REG_OFFSET);
 
-    // printf("llc ver = 0x%016X\n", version);
-    // uart_write_flush(&__base_uart);
+    _Static_assert(TAGGER_REG_PATID_N_REG_OFFSET(0) == TAGGER_REG_PATID_0_REG_OFFSET);
+    _Static_assert(TAGGER_REG_PATID_N_REG_OFFSET(2) == TAGGER_REG_PATID_2_REG_OFFSET);
 
+
+#define TAGGER_DEBUG 1
+// #define TAGGER_DEBUG 0
+
+#if TAGGER_DEBUG
+    for (uint32_t n = 0; n < TAGGER_REG_PAT_ADDR_MULTIREG_COUNT; n++) {
+        printf("TAGGER_REG_PAT_ADDR_%u_REG: 0x%x\r\n", n,
+               *reg32(&__base_tagger, TAGGER_REG_PAT_ADDR_N_REG_OFFSET(n)));
+    }
+    printf("\r\n");
+    for (uint32_t n = 0; n < TAGGER_REG_PATID_MULTIREG_COUNT; n++) {
+        printf("TAGGER_REG_PATID_%u_REG: 0x%x\r\n", n,
+               *reg32(&__base_tagger, TAGGER_REG_PATID_N_REG_OFFSET(n)));
+    }
+    printf("\r\n");
+    printf("TAGGER_REG_ADDR_CONF_REG: 0x%x\r\n",
+           *reg32(&__base_tagger, TAGGER_REG_ADDR_CONF_REG_OFFSET));
+#endif
+
+    enum TaggerAddrConf {
+        /* OFF (no tagging) */
+        // XX: Is this basically 0?
+        TaggerAddrConf_Off = 0b00,
+        /* TOR (top of range) */
+        TaggerAddrConf_TOR = 0b01,
+        /* NA4 (naturally aligned four-byte region) */
+        TaggerAddrConf_NA4 = 0b10,
+        /* NAPOT (naturally aligned power-of-two-region >= 8 bytes) */
+        TaggerAddrConf_NAPOT = 0b11,
+    };
+
+    struct tagger_region {
+        /* actually should be >32 bits?? IDK??? where does the size come in. */
+        union {
+            uint32_t addr;
+            // struct {
+                // uint32_t paddr;
+                // uint32_t size;
+            // };
+        };
+        enum TaggerAddrConf conf;
+         /* actually 5 bits */
+        uint8_t patid;
+    };
+
+    static const struct tagger_region region_configs[TAGGER_NUM_REGIONS] = {
+        /* (unused): TOR prev implicitly starts @ 0 */
+
+        /* start of dram is 0x8000'0000. this is purely a marker. */
+        [ 0] = { .addr = 0x80000000, .conf = TaggerAddrConf_Off, .patid = 0 },
+        /* this is [0x8000'0000 to 0x8000'B000), i.e. text etc */
+        [ 1] = { .addr = 0x8000B000, .conf = TaggerAddrConf_TOR, .patid = 0 },
+        /* this is then [0x8000'B0000 to 0x8002'B000), i.e. spy data */
+        [ 2] = { .addr = 0x8002B000, .conf = TaggerAddrConf_TOR, .patid = 1 },
+        /* this is then [0x8002'B0000 to 0x8004'B000), i.e. trojan data */
+        [ 3] = { .addr = 0x8004B000, .conf = TaggerAddrConf_TOR, .patid = 2 },
+        /* then the rest of memory is left unspecified. */
+        [ 4] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
+        [ 5] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
+        [ 6] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
+        [ 7] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
+        [ 8] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
+        [ 9] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
+        [10] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
+        [11] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
+        [12] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
+        [13] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
+        [14] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
+        [15] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
+    };
+
+    printf("configuring regions...\r\n");
+    for (uint32_t region = 0; region < TAGGER_NUM_REGIONS; region++) {
+        const struct tagger_region *config = &region_configs[region];
+
+        printf("configuring region %d with addr reg 0x%x, config: %d, patid: %d\r\n",
+               region, config->addr, config->conf, config->patid);
+
+        *reg32(&__base_tagger, TAGGER_REG_PAT_ADDR_N_REG_OFFSET(region)) = config->addr;
+
+        /* This is essentially a 32-bit integer interpreted as an array of 2-bit values.
+           region 0 maps to bits {0, 1}, region k to bits {2k, 2k+1}, region 15 to {30, 31}.
+        */
+        uint32_t addr_conf = *reg32(&__base_tagger, TAGGER_REG_ADDR_CONF_REG_OFFSET);
+        /* assert it fits within 32 bits. */
+        _Static_assert(TAGGER_REG_PARAM_REG_WIDTH == 32);
+        CHECK_ASSERT(-1, (2 * region + 1) <= TAGGER_REG_PARAM_REG_WIDTH);
+        addr_conf &= ~(BIT(2 * region) | BIT(2 * region + 1));
+        CHECK_ASSERT(-2, (0b00 <= config->conf) && (config->conf <= 0b11));
+        addr_conf |= (config->conf << (2 * region));
+        *reg32(&__base_tagger, TAGGER_REG_ADDR_CONF_REG_OFFSET) = addr_conf;
+
+        /* PATID is mapped across several registers:
+            so region 0 is bits [0, 4]
+            and region k is bits [5 * k, 5 * (k + 1) - 1]
+
+            each register is 32 bit words, so if both of them fall in the same 32 bits it's easy
+        */
+        _Static_assert(TAGGER_REG_PARAM_REG_WIDTH == 32);
+        uint32_t lower_bit = TAGGER_PATID_LEN * region;
+        uint32_t upper_bit = TAGGER_PATID_LEN * (region + 1) - 1;
+        if ((lower_bit / 32) == (upper_bit / 32)) {
+            uint32_t mask = BIT_MASK(TAGGER_PATID_LEN) << (lower_bit % 32);
+            /* fits in 5 bits */
+            CHECK_ASSERT(-3, (0b00 <= config->patid) && (config->patid <= 0b11111));
+            uint32_t v = *reg32(&__base_tagger, TAGGER_REG_PATID_N_REG_OFFSET(lower_bit / 32));
+            v &= ~mask;
+            v |= (config->patid) << (lower_bit % 32);
+            *reg32(&__base_tagger, TAGGER_REG_PATID_N_REG_OFFSET(lower_bit / 32)) = v;
+        } else {
+            // XXX: Handle this case...
+            printf("overlapping, skipped config...\r\n");
+        }
+    }
+
+    // XXX: Is only the COMMIT_0 bit for all? => I think so.
+    /* Commit.*/
+    *reg32(&__base_tagger, TAGGER_REG_PAT_COMMIT_REG_OFFSET) = BIT(TAGGER_REG_PAT_COMMIT_COMMIT_0_BIT);
+
+#if TAGGER_DEBUG
+    for (uint32_t n = 0; n < TAGGER_REG_PAT_ADDR_MULTIREG_COUNT; n++) {
+        printf("TAGGER_REG_PAT_ADDR_%u_REG: 0x%x\r\n", n,
+               *reg32(&__base_tagger, TAGGER_REG_PAT_ADDR_N_REG_OFFSET(n)));
+    }
+    printf("\r\n");
+    for (uint32_t n = 0; n < TAGGER_REG_PATID_MULTIREG_COUNT; n++) {
+        printf("TAGGER_REG_PATID_%u_REG: 0x%x\r\n", n,
+               *reg32(&__base_tagger, TAGGER_REG_PATID_N_REG_OFFSET(n)));
+    }
+    printf("\r\n");
+    printf("TAGGER_REG_ADDR_CONF_REG: 0x%x\r\n",
+           *reg32(&__base_tagger, TAGGER_REG_ADDR_CONF_REG_OFFSET));
+#endif
+
+    return 0;
 }
 
 int main(void) {
@@ -211,10 +377,14 @@ int main(void) {
     // *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b00000001;
     // turn the cache off entirely for testing
     // *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111111;
-    *reg32(&__base_llc, AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
+    *reg32(&__base_llc, AXI_LLC_COMMIT_CFG_REG_OFFSET) = BIT(AXI_LLC_COMMIT_CFG_COMMIT_BIT);
 
 #if MITIGATION == MITIGATION_DPLLC
-    setup_dpllc();
+    int ret = setup_dpllc();
+    if (ret) {
+        printf("dpllc setup failed (code: %d)\r\n", ret);
+        return ret;
+    };
 #endif
 
     evict_llc();
