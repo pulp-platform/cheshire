@@ -23,7 +23,7 @@ dependencies:
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                  version: 0.2.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           version: 1.38.0 }
   common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.3  }
-  # 6cf3ffc897f6205aa1b03a2494f157f5c2852391 au-ts fork rebased
+  # c0b73e85a0654fd702af897dde8772c192b3aa15 au-ts fork rebased
   cva6:                     { git: "https://github.com/au-ts/cva6.git",                   rev: flamingo }
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.6.3  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
