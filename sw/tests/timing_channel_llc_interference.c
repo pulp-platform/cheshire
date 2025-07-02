@@ -116,7 +116,7 @@ for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
 }
 
 void domain_switch(void) {
-    fencet();
+    // fencet();
 
     // This should remove the channel.
     // evict_llc();
@@ -192,6 +192,10 @@ int setup_dpllc() {
             end
 
 
+
+        See axi_llc_config_pat.sv
+            for CfgFlushPartition CommitPartitionCfg FlushedSet
+
     */
 
     /* Sanity check that it is connected */
@@ -200,9 +204,12 @@ int setup_dpllc() {
         printf("commit val was zero (maybe 0xdeadc0de disconnected?) 0x%x\r\n", commit_val);
         return 1;
     }
+
+#define LLC_MAXPARTITION 16
     /* 16 regions. (=MAXPARTITION) */
-#define TAGGER_NUM_REGIONS 16
+#define TAGGER_NUM_REGIONS LLC_MAXPARTITION
 /* I think this is right? */
+// ySE: xilinx/build/cheshire.genesys2.log:1718:        Parameter PATID_LEN bound to: 32'b00000000000000000000000000000101
 #define TAGGER_PATID_LEN 5
     // static const uint32_t TAGGER_NUM_REGIONS = 16;
 
@@ -354,6 +361,136 @@ int setup_dpllc() {
     printf("TAGGER_REG_ADDR_CONF_REG: 0x%x\r\n",
            *reg32(&__base_tagger, TAGGER_REG_ADDR_CONF_REG_OFFSET));
 #endif
+
+    /* Whoever designed these registers. Why
+        Laid out in memory like
+
+        [Low1][Low2][Low3][Hi1][Hi2][Hi3]
+
+        rather than [Low1][Hi1][Low2][Hi2]
+
+        Just. why.
+
+
+        See axi_llc_config_pat.sv
+
+
+    */
+
+    /// For example, if Cfg.NumLines=256, FlushedSet[0] is responsible for set #0-63, FlushedSet[1] is responsible
+    /// for set 64-127, FlushedSet[2] is responsible for set 128-191, FlushedSet[3] is responsible for set 192-255.
+    /* This shows whether the sets have been flushed. */
+    printf("AXI_LLC_FLUSHED_SET_LOW_0_REG_OFFSET: %x\r\n",
+           *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_LOW_0_REG_OFFSET));
+    printf("AXI_LLC_FLUSHED_SET_HIGH_0_REG_OFFSET: %x\r\n",
+           *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_HIGH_0_REG_OFFSET));
+    printf("AXI_LLC_FLUSHED_SET_LOW_1_REG_OFFSET: %x\r\n",
+           *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_LOW_1_REG_OFFSET));
+    printf("AXI_LLC_FLUSHED_SET_HIGH_1_REG_OFFSET: %x\r\n",
+           *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_HIGH_1_REG_OFFSET));
+    printf("AXI_LLC_FLUSHED_SET_LOW_2_REG_OFFSET: %x\r\n",
+           *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_LOW_2_REG_OFFSET));
+    printf("AXI_LLC_FLUSHED_SET_HIGH_2_REG_OFFSET: %x\r\n",
+           *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_HIGH_2_REG_OFFSET));
+    printf("AXI_LLC_FLUSHED_SET_LOW_3_REG_OFFSET: %x\r\n",
+           *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_LOW_3_REG_OFFSET));
+    printf("AXI_LLC_FLUSHED_SET_HIGH_3_REG_OFFSET: %x\r\n",
+           *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_HIGH_3_REG_OFFSET));
+
+    /// For example, if MaxPartition=12 and Cfg.NumLines=512, CfgSetPartition[0][8:0] defines pat0 size,
+    /// CfgSetPartition[0][17:9] defines pat1 size, ...,  CfgSetPartition[0][62:54] defines pat6 size,
+    /// CfgSetPartition[0][63] is reserved. CfgSetPartition[1][8:0] defines pat7 size, ..., CfgSetPartition[1][44:36]
+    /// defines pat11 size, CfgSetPartition[1][63:37] is reserved.
+
+#define AXI_LLC_CFG_SET_PARTITION_LOW_N_REG_OFFSET(n)                          \
+    (AXI_LLC_CFG_SET_PARTITION_LOW_0_REG_OFFSET +                              \
+     (AXI_LLC_CFG_SET_PARTITION_LOW_1_REG_OFFSET -                             \
+      AXI_LLC_CFG_SET_PARTITION_LOW_0_REG_OFFSET) *                            \
+         (n))
+
+    _Static_assert(AXI_LLC_CFG_SET_PARTITION_LOW_N_REG_OFFSET(0) == AXI_LLC_CFG_SET_PARTITION_LOW_0_REG_OFFSET);
+    _Static_assert(AXI_LLC_CFG_SET_PARTITION_LOW_N_REG_OFFSET(1) == AXI_LLC_CFG_SET_PARTITION_LOW_1_REG_OFFSET);
+
+#define AXI_LLC_CFG_SET_PARTITION_HIGH_N_REG_OFFSET(n)                          \
+    (AXI_LLC_CFG_SET_PARTITION_HIGH_0_REG_OFFSET +                              \
+     (AXI_LLC_CFG_SET_PARTITION_HIGH_1_REG_OFFSET -                             \
+      AXI_LLC_CFG_SET_PARTITION_HIGH_0_REG_OFFSET) *                            \
+         (n))
+
+    _Static_assert(AXI_LLC_CFG_SET_PARTITION_HIGH_N_REG_OFFSET(0) == AXI_LLC_CFG_SET_PARTITION_HIGH_0_REG_OFFSET);
+    _Static_assert(AXI_LLC_CFG_SET_PARTITION_HIGH_N_REG_OFFSET(1) == AXI_LLC_CFG_SET_PARTITION_HIGH_1_REG_OFFSET);
+
+
+    /* $clog(NumLines) = $clog(256) = 8. */
+#define PARTITION_SET_SIZE_BITS 8
+    _Static_assert(BIT(PARTITION_SET_SIZE_BITS) == LLC_WAY_NUM_LINES);
+    /* Since MaxPartition=16 then CfgSetPartition[0][7:0] (low32) defines pat0
+                                  CfgSetPartition[0][31:24] (low32) defines pat3
+                                  CfgSetPartition[0][39:32] (hi32) defines pat4
+                                  CfgSetPartition[0][63:56] (hi32) defines pat7
+                                  CfgSetPartition[1][7:0] (low32) defines pat8
+                                  etc
+    */
+
+    // XXX: How is this handled by default? all partitions are 0?
+
+    static const uint32_t partition_set_sizes[LLC_MAXPARTITION] = {
+        [ 0] = 0,
+        [ 1] = 0,
+        [ 2] = 0,
+        [ 3] = 0,
+        [ 4] = 0,
+        [ 5] = 0,
+        [ 6] = 0,
+        [ 7] = 0,
+        [ 8] = 0,
+        [ 9] = 0,
+        [10] = 0,
+        [11] = 0,
+        [12] = 0,
+        [13] = 0,
+        [14] = 0,
+        [15] = 0,
+    };
+
+    uint32_t lo_bit = 0;
+    uint32_t reg_no = 0;
+    for (uint32_t partition = 0; partition < LLC_MAXPARTITION; partition++) {
+        uint32_t hi_bit = lo_bit + 7; // inclusive upper end.
+        CHECK_ASSERT(-5, hi_bit <= 63);
+        CHECK_ASSERT(-6, reg_no <= AXI_LLC_CFG_SET_PARTITION_HIGH_MULTIREG_COUNT);
+
+        uint32_t reg_lo = *reg32(&__base_llc, AXI_LLC_CFG_SET_PARTITION_LOW_N_REG_OFFSET(reg_no));
+        uint32_t reg_hi = *reg32(&__base_llc, AXI_LLC_CFG_SET_PARTITION_HIGH_N_REG_OFFSET(reg_no));
+        uint64_t reg = reg_lo | ((uint64_t)reg_hi << 32);
+
+        printf("partition %d is reg %d bits %d to %d (orig value: %lx)\r\n", partition, reg_no, lo_bit, hi_bit, reg);
+
+        uint32_t mask = BIT_MASK(PARTITION_SET_SIZE_BITS) << (lo_bit);
+        reg &= ~mask;
+        uint32_t size = partition_set_sizes[partition];
+        CHECK_ASSERT(-6, size < BIT(PARTITION_SET_SIZE_BITS));
+        reg |= size << lo_bit;
+
+        reg_lo = reg & BIT_MASK(32);
+        reg_hi = (reg >> 32) & BIT_MASK(32);
+
+        *reg32(&__base_llc, AXI_LLC_CFG_SET_PARTITION_LOW_N_REG_OFFSET(reg_no)) = reg_lo;
+        *reg32(&__base_llc, AXI_LLC_CFG_SET_PARTITION_HIGH_N_REG_OFFSET(reg_no)) = reg_hi;
+
+        printf("-> new value: %lx\r\n", reg);
+
+        lo_bit += 8;
+        if (lo_bit >= 64) {
+            lo_bit = 0;
+            reg_no += 1;
+        }
+    }
+
+
+
+    /* Commit changes to CfgSetPartition */
+    *reg32(&__base_llc, AXI_LLC_COMMIT_PARTITION_CFG_REG_OFFSET) = BIT(AXI_LLC_COMMIT_PARTITION_CFG_COMMIT_BIT);
 
     return 0;
 }
