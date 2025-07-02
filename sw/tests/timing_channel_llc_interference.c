@@ -410,12 +410,11 @@ int main(void) {
             printf("set associativity does not match; %d\r\n", set_asso);
             return 1;
         }
-        // broken for DPLLC.
-        // uint32_t num_lines = *reg32(&__base_llc, AXI_LLC_NUM_LINES_LOW_REG_OFFSET);
-        // if (num_lines != LLC_WAY_NUM_LINES) {
-        //     printf("num lines does not match; %d\r\n", num_lines);
-        //     return 1;
-        // }
+        uint32_t num_lines = *reg32(&__base_llc, AXI_LLC_NUM_LINES_LOW_REG_OFFSET);
+        if (num_lines != LLC_WAY_NUM_LINES) {
+            printf("num lines does not match; %d\r\n", num_lines);
+            return 1;
+        }
         uint32_t num_blocks = *reg32(&__base_llc, AXI_LLC_NUM_BLOCKS_LOW_REG_OFFSET);
         if (num_blocks != LLC_LINE_NUM_BLOCKS) {
             printf("num blocks does not match; %d\r\n", num_blocks);
