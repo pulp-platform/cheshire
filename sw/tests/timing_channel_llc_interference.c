@@ -22,7 +22,7 @@
 // #define MITIGATION_SPM      2
 #define MITIGATION_DPLLC    3
 
-#define MITIGATION          MITIGATION_DPLLC
+#define MITIGATION          MITIGATION_NONE
 
 #define DATA_POINTS 4096
 
@@ -116,7 +116,7 @@ for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
 }
 
 void domain_switch(void) {
-    // fencet();
+    fencet();
 
     // This should remove the channel.
     // evict_llc();
