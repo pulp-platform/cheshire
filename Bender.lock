@@ -26,10 +26,10 @@ packages:
     - common_verification
     - tech_cells_generic
   axi_llc:
-    revision: d8d41097c43e1bf8448bd40f258fdeb8482a9a8c
+    revision: 8e9b0a6008f96493773839a36f41ceddff4bff4a
     version: null
     source:
-      Git: https://github.com/pulp-platform/axi_llc.git
+      Git: https://github.com/midnightveil/cheshire_axi_llc
     dependencies:
     - axi
     - common_cells
@@ -62,8 +62,8 @@ packages:
     dependencies:
     - common_cells
   axi_vga:
-    revision: 3718b9930f94a9eaad8ee50b4bccc71df0403084
-    version: 0.1.3
+    revision: 4d3e70d4f47bb74edc1ab68d99ffc02382e0fb9e
+    version: 0.1.4
     source:
       Git: https://github.com/pulp-platform/axi_vga.git
     dependencies:
@@ -72,7 +72,7 @@ packages:
     - register_interface
   clic:
     revision: 72472df17362734e4d2ac2bcb8c80a452fba9808
-    version: null
+    version: 3.0.0-rc5
     source:
       Git: https://github.com/pulp-platform/clic.git
     dependencies:
@@ -95,16 +95,16 @@ packages:
     - common_verification
     - tech_cells_generic
   common_verification:
-    revision: 9c07fa860593b2caabd9b5681740c25fac04b878
-    version: 0.2.3
+    revision: fb1885f48ea46164a10568aeff51884389f67ae3
+    version: 0.2.5
     source:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 8927bdbeea13bfbcc8c6d2e7433e7b446ecfdc47
+    revision: 6cf3ffc897f6205aa1b03a2494f157f5c2852391
     version: null
     source:
-      Git: https://github.com/pulp-platform/cva6.git
+      Git: https://github.com/au-ts/cva6.git
     dependencies:
     - axi
     - common_cells
@@ -119,7 +119,7 @@ packages:
     - axi
   fpnew:
     revision: e5aa6a01b5bbe1675c3aa8872e1203413ded83d1
-    version: 0.2.3
+    version: null
     source:
       Git: https://github.com/pulp-platform/cvfpu.git
     dependencies:
@@ -133,8 +133,8 @@ packages:
     dependencies:
     - common_cells
   idma:
-    revision: c12caf59bb482fe44b27361f6924ad346b2d22fe
-    version: 0.6.3
+    revision: ff5d56fffb3767814db88d6bf8f381974ea33aa5
+    version: 0.6.4
     source:
       Git: https://github.com/pulp-platform/iDMA.git
     dependencies:
@@ -197,8 +197,8 @@ packages:
     - common_cells
     - tech_cells_generic
   serial_link:
-    revision: 5a25f5a71074f1ebb6de7b5280f2b16924bcc666
-    version: 1.1.1
+    revision: c55df03a1da06b00e567cf968b1b1a5f40c9f802
+    version: 1.1.2
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:

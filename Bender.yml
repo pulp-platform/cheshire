@@ -14,7 +14,8 @@ package:
 dependencies:
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.3  }
   axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.8 }
-  axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc",                    rev: d8d41097c43e1bf8448bd40f258fdeb8482a9a8c }
+  # axi_llc flamingo branch but with a patch so NumLines is right
+  axi_llc:                  { git: "https://github.com/midnightveil/cheshire_axi_llc",            rev: 8e9b0a6008f96493773839a36f41ceddff4bff4a }
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.8.2  }
   axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: 0.0.0-alpha.10 }
   axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",                version: 0.1.3  }
@@ -22,7 +23,8 @@ dependencies:
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                  version: 0.2.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           version: 1.38.0 }
   common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.3  }
-  cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: flamingo   }
+  # 6cf3ffc897f6205aa1b03a2494f157f5c2852391 au-ts fork rebased
+  cva6:                     { git: "https://github.com/au-ts/cva6.git",                   rev: flamingo }
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.6.3  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
