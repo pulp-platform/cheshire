@@ -146,8 +146,6 @@ void domain_switch(void) {
 
 
 void trojan(void) {
-    evict_llc();
-
     uint32_t secret = random() % LLC_WAY_NUM_LINES;
 
     for (uint32_t line = 0; line < secret; line++)  {
@@ -590,15 +588,18 @@ int main(void) {
         }
     }
 
-    evict_llc();
-
     for (uint32_t round = 0; round < DATA_POINTS; round++) {
         if (round % 1000 == 0) {
             printf("1000 points done\r\n");
         }
 
+        /* spy "initial": prime */
+        evict_llc();
+        domain_switch();
+
         trojan();
         domain_switch();
+
         spy(round);
         domain_switch();
     }
@@ -608,6 +609,8 @@ int main(void) {
     for (uint32_t i = 0; i < DATA_POINTS; i++) {
         printf("%u %u\r\n", results[i].secret, results[i].cycle_count);
     }
+
+    printf("QED\r\n");
 
     return 0;
 }
