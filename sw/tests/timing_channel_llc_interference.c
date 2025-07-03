@@ -94,6 +94,10 @@ uint32_t random(void) {
 #define MANUAL_EVICT 1
 #if MANUAL_EVICT
 volatile line_t manual_evict_data[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000)));
+#if MITIGATION == MITIGATION_DPLLC
+volatile line_t manual_evict_data_pat1[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000)));
+volatile line_t manual_evict_data_pat2[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000)));
+#endif
 #endif
 
 static inline int page_colour(uintptr_t addr) {
@@ -113,6 +117,23 @@ for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
         asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
     }
 }
+
+    #if MITIGATION == MITIGATION_DPLLC
+    for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
+        for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
+            volatile void *v = &manual_evict_data_pat1[way][line];
+            volatile uint32_t rv;
+            asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
+        }
+    }
+    for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
+        for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
+            volatile void *v = &manual_evict_data_pat2[way][line];
+            volatile uint32_t rv;
+            asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
+        }
+    }
+    #endif
 #endif
 }
 
@@ -285,9 +306,11 @@ int setup_dpllc() {
         [ 2] = { .addr = 0x8002B000, .conf = TaggerAddrConf_TOR, .patid = 1 },
         /* this is then [0x8002'B0000 to 0x8004'B000), i.e. trojan data */
         [ 3] = { .addr = 0x8004B000, .conf = TaggerAddrConf_TOR, .patid = 2 },
+        /* this is then [0x804B'0000 to 0x8006'B0000), i.e. eviction data for partition 2 */
+        [ 4] = { .addr = 0x8006B000, .conf = TaggerAddrConf_TOR, .patid = 2 },
+        /* this is then [0x806B'0000 to 0x8008'B0000), i.e. eviction data for partition 1 */
+        [ 5] = { .addr = 0x8008B000, .conf = TaggerAddrConf_TOR, .patid = 1 },
         /* then the rest of memory is left unspecified. */
-        [ 4] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
-        [ 5] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
         [ 6] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
         [ 7] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
         [ 8] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
@@ -302,6 +325,8 @@ int setup_dpllc() {
 
     CHECK_ASSERT(-7, (uintptr_t)&data_spy == region_configs[1].addr);
     CHECK_ASSERT(-8, (uintptr_t)&data_trojan == region_configs[2].addr);
+    CHECK_ASSERT(-9, (uintptr_t)&manual_evict_data_pat2 == region_configs[3].addr);
+    CHECK_ASSERT(-10, (uintptr_t)&manual_evict_data_pat1 == region_configs[4].addr);
 
     printf("configuring regions...\r\n");
     for (uint32_t region = 0; region < TAGGER_NUM_REGIONS; region++) {
@@ -384,21 +409,21 @@ int setup_dpllc() {
     /// For example, if Cfg.NumLines=256, FlushedSet[0] is responsible for set #0-63, FlushedSet[1] is responsible
     /// for set 64-127, FlushedSet[2] is responsible for set 128-191, FlushedSet[3] is responsible for set 192-255.
     /* This shows whether the sets have been flushed. */
-    printf("AXI_LLC_FLUSHED_SET_LOW_0_REG_OFFSET: %x\r\n",
+    printf("AXI_LLC_FLUSHED_SET_LOW_0_REG: %x\r\n",
            *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_LOW_0_REG_OFFSET));
-    printf("AXI_LLC_FLUSHED_SET_HIGH_0_REG_OFFSET: %x\r\n",
+    printf("AXI_LLC_FLUSHED_SET_HIGH_0_REG: %x\r\n",
            *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_HIGH_0_REG_OFFSET));
-    printf("AXI_LLC_FLUSHED_SET_LOW_1_REG_OFFSET: %x\r\n",
+    printf("AXI_LLC_FLUSHED_SET_LOW_1_REG: %x\r\n",
            *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_LOW_1_REG_OFFSET));
-    printf("AXI_LLC_FLUSHED_SET_HIGH_1_REG_OFFSET: %x\r\n",
+    printf("AXI_LLC_FLUSHED_SET_HIGH_1_REG: %x\r\n",
            *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_HIGH_1_REG_OFFSET));
-    printf("AXI_LLC_FLUSHED_SET_LOW_2_REG_OFFSET: %x\r\n",
+    printf("AXI_LLC_FLUSHED_SET_LOW_2_REG: %x\r\n",
            *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_LOW_2_REG_OFFSET));
-    printf("AXI_LLC_FLUSHED_SET_HIGH_2_REG_OFFSET: %x\r\n",
+    printf("AXI_LLC_FLUSHED_SET_HIGH_2_REG: %x\r\n",
            *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_HIGH_2_REG_OFFSET));
-    printf("AXI_LLC_FLUSHED_SET_LOW_3_REG_OFFSET: %x\r\n",
+    printf("AXI_LLC_FLUSHED_SET_LOW_3_REG: %x\r\n",
            *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_LOW_3_REG_OFFSET));
-    printf("AXI_LLC_FLUSHED_SET_HIGH_3_REG_OFFSET: %x\r\n",
+    printf("AXI_LLC_FLUSHED_SET_HIGH_3_REG: %x\r\n",
            *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_HIGH_3_REG_OFFSET));
 
     /// For example, if MaxPartition=12 and Cfg.NumLines=512, CfgSetPartition[0][8:0] defines pat0 size,
