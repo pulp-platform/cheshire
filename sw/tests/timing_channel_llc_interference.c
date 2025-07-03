@@ -60,8 +60,8 @@ _Static_assert(sizeof(line_t) == 64, "sizeof line is 64bytes");
 
 _Static_assert(sizeof(line_t) * LLC_MAX_NUM_WAYS * LLC_WAY_NUM_LINES == 128 * 1024, "full sizeof cache is 128KiB");
 
-volatile line_t data_trojan[LLC_ACTIVE_NUM_WAYS][96] __attribute__((aligned(0x1000))) SECTION(".bss");
-volatile line_t data_spy[LLC_ACTIVE_NUM_WAYS][96] __attribute__((aligned(0x1000))) SECTION(".bss");
+volatile line_t data_trojan[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
+volatile line_t data_spy[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
 
 
 struct result {
@@ -308,17 +308,17 @@ int setup_dpllc() {
         /* start of dram is 0x8000'0000. this is purely a marker. */
         [ 0] = { .addr = 0x80000000, .conf = TaggerAddrConf_Off, .patid = 0 },
         /* this is [0x8000'0000 to 0x8000'B000), i.e. text etc */
-        [ 1] = { .addr = 0x80053000, .conf = TaggerAddrConf_TOR, .patid = 0 },
+        [ 1] = { .addr = 0x8000B000, .conf = TaggerAddrConf_TOR, .patid = 0 },
         /* this is then [0x8000'B000 to 0x8002'B000), i.e. spy data */
-        [ 2] = { .addr = 0x8005F000, .conf = TaggerAddrConf_TOR, .patid = 1 },
+        [ 2] = { .addr = 0x8002B000, .conf = TaggerAddrConf_TOR, .patid = 1 },
         /* this is then [0x8002'B000 to 0x8004'B000), i.e. trojan data */
-        [ 3] = { .addr = 0x8006B000, .conf = TaggerAddrConf_TOR, .patid = 2 },
+        [ 3] = { .addr = 0x8004B000, .conf = TaggerAddrConf_TOR, .patid = 2 },
         /* this is then [0x8004'B000 to 0x8005'7000), i.e. eviction data for partition 2 */
-        [ 4] = { .addr = 0x80077000, .conf = TaggerAddrConf_TOR, .patid = 2 },
+        [ 4] = { .addr = 0x80057000, .conf = TaggerAddrConf_TOR, .patid = 2 },
         /* this is then [0x8005'7000 to 0x8006'3000), i.e. eviction data for partition 1 */
-        [ 5] = { .addr = 0x80083000, .conf = TaggerAddrConf_TOR, .patid = 1 },
+        [ 5] = { .addr = 0x80063000, .conf = TaggerAddrConf_TOR, .patid = 1 },
         /* this is then [0x8006'3000 to 0x8006'7000), i.e. eviction data for partition 0 */
-        [ 6] = { .addr = 0x80087000, .conf = TaggerAddrConf_TOR, .patid = 0 },
+        [ 6] = { .addr = 0x80067000, .conf = TaggerAddrConf_TOR, .patid = 0 },
         /* then the rest of memory (assumed: 8MiB) is left in partition 0 */
         [ 7] = { .addr = 0x80800000, .conf = TaggerAddrConf_TOR, .patid = 0 },
         /* then the rest of physical address range is left unspecified. */
