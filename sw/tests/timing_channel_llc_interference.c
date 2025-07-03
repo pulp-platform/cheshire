@@ -21,6 +21,7 @@
 // TODO.
 // #define MITIGATION_SPM      2
 #define MITIGATION_DPLLC    3
+#define MITIGATION_NO_CACHE 4
 
 #define MITIGATION          MITIGATION_DPLLC
 
@@ -509,8 +510,12 @@ int main(void) {
     printf("text: %p, trojan data: %p, spy data %p\r\n", &main, &data_trojan, &data_spy);
 
     // IMPORTANT: cheshire starts with it all disabled.
+#if MITIGATION != MITIGATION_NO_CACHE
     /* no ways SPM */
     *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b00000000;
+#else /* is no cache */
+    *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b11111111;
+#endif
     /* leave 1 way for SPM for code. */
     // *reg32(&__base_llc, AXI_LLC_CFG_SPM_LOW_REG_OFFSET) = 0b00000001;
     // turn the cache off entirely for testing
