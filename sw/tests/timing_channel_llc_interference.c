@@ -93,10 +93,12 @@ uint32_t random(void) {
 
 #define MANUAL_EVICT 1
 #if MANUAL_EVICT
+#if MITIGATION != MITIGATION_DPLLC
 volatile line_t manual_evict_data[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000)));
-#if MITIGATION == MITIGATION_DPLLC
-volatile line_t manual_evict_data_pat1[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000)));
-volatile line_t manual_evict_data_pat2[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000)));
+#else
+volatile line_t manual_evict_data_pat0[LLC_ACTIVE_NUM_WAYS][32] __attribute__((aligned(0x1000)));
+volatile line_t manual_evict_data_pat1[LLC_ACTIVE_NUM_WAYS][96] __attribute__((aligned(0x1000)));
+volatile line_t manual_evict_data_pat2[LLC_ACTIVE_NUM_WAYS][96] __attribute__((aligned(0x1000)));
 #endif
 #endif
 
@@ -110,6 +112,7 @@ void evict_llc(void) {
     *reg32(&__base_llc, AXI_LLC_CFG_FLUSH_LOW_REG_OFFSET) = 0xff;
     *reg32(&__base_llc, AXI_LLC_COMMIT_CFG_REG_OFFSET) = (1U << AXI_LLC_COMMIT_CFG_COMMIT_BIT);
 #else
+#if MITIGATION != MITIGATION_DPLLC
 for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
     for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
         volatile void *v = &manual_evict_data[way][line];
@@ -117,23 +120,29 @@ for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
         asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
     }
 }
-
-    #if MITIGATION == MITIGATION_DPLLC
-    for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
+#else /* is DPLLC */
+    for (uint32_t line = 0; line < 32; line++)  {
+        for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
+            volatile void *v = &manual_evict_data_pat0[way][line];
+            volatile uint32_t rv;
+            asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
+        }
+    }
+    for (uint32_t line = 0; line < 96; line++)  {
         for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
             volatile void *v = &manual_evict_data_pat1[way][line];
             volatile uint32_t rv;
             asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
         }
     }
-    for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
+    for (uint32_t line = 0; line < 96; line++)  {
         for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
             volatile void *v = &manual_evict_data_pat2[way][line];
             volatile uint32_t rv;
             asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
         }
     }
-    #endif
+#endif
 #endif
 }
 
@@ -300,17 +309,19 @@ int setup_dpllc() {
         [ 0] = { .addr = 0x80000000, .conf = TaggerAddrConf_Off, .patid = 0 },
         /* this is [0x8000'0000 to 0x8000'B000), i.e. text etc */
         [ 1] = { .addr = 0x8000B000, .conf = TaggerAddrConf_TOR, .patid = 0 },
-        /* this is then [0x8000'B0000 to 0x8002'B000), i.e. spy data */
+        /* this is then [0x8000'B000 to 0x8002'B000), i.e. spy data */
         [ 2] = { .addr = 0x8002B000, .conf = TaggerAddrConf_TOR, .patid = 1 },
-        /* this is then [0x8002'B0000 to 0x8004'B000), i.e. trojan data */
+        /* this is then [0x8002'B000 to 0x8004'B000), i.e. trojan data */
         [ 3] = { .addr = 0x8004B000, .conf = TaggerAddrConf_TOR, .patid = 2 },
-        /* this is then [0x804B'0000 to 0x8006'B0000), i.e. eviction data for partition 2 */
-        [ 4] = { .addr = 0x8006B000, .conf = TaggerAddrConf_TOR, .patid = 2 },
-        /* this is then [0x806B'0000 to 0x8008'B0000), i.e. eviction data for partition 1 */
-        [ 5] = { .addr = 0x8008B000, .conf = TaggerAddrConf_TOR, .patid = 1 },
-        /* then the rest of memory is left unspecified. */
-        [ 6] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
-        [ 7] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
+        /* this is then [0x8004'B000 to 0x8005'7000), i.e. eviction data for partition 2 */
+        [ 4] = { .addr = 0x80057000, .conf = TaggerAddrConf_TOR, .patid = 2 },
+        /* this is then [0x8005'7000 to 0x8006'3000), i.e. eviction data for partition 1 */
+        [ 5] = { .addr = 0x80063000, .conf = TaggerAddrConf_TOR, .patid = 1 },
+        /* this is then [0x8006'3000 to 0x8006'7000), i.e. eviction data for partition 0 */
+        [ 6] = { .addr = 0x80067000, .conf = TaggerAddrConf_TOR, .patid = 0 },
+        /* then the rest of memory (assumed: 8MiB) is left in partition 0 */
+        [ 7] = { .addr = 0x80800000, .conf = TaggerAddrConf_TOR, .patid = 0 },
+        /* then the rest of physical address range is left unspecified. */
         [ 8] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
         [ 9] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
         [10] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
@@ -325,6 +336,7 @@ int setup_dpllc() {
     CHECK_ASSERT(-8, (uintptr_t)&data_trojan == region_configs[2].addr);
     CHECK_ASSERT(-9, (uintptr_t)&manual_evict_data_pat2 == region_configs[3].addr);
     CHECK_ASSERT(-10, (uintptr_t)&manual_evict_data_pat1 == region_configs[4].addr);
+    CHECK_ASSERT(-11, (uintptr_t)&manual_evict_data_pat0 == region_configs[5].addr);
 
     printf("configuring regions...\r\n");
     for (uint32_t region = 0; region < TAGGER_NUM_REGIONS; region++) {
@@ -354,19 +366,39 @@ int setup_dpllc() {
             each register is 32 bit words, so if both of them fall in the same 32 bits it's easy
         */
         _Static_assert(TAGGER_REG_PARAM_REG_WIDTH == 32);
+        /* fits in 5 bits */
+        CHECK_ASSERT(-3, (0b00 <= config->patid) && (config->patid <= 0b11111));
         uint32_t lower_bit = TAGGER_PATID_LEN * region;
         uint32_t upper_bit = TAGGER_PATID_LEN * (region + 1) - 1;
         if ((lower_bit / 32) == (upper_bit / 32)) {
             uint32_t mask = BIT_MASK(TAGGER_PATID_LEN) << (lower_bit % 32);
-            /* fits in 5 bits */
-            CHECK_ASSERT(-3, (0b00 <= config->patid) && (config->patid <= 0b11111));
             uint32_t v = *reg32(&__base_tagger, TAGGER_REG_PATID_N_REG_OFFSET(lower_bit / 32));
             v &= ~mask;
             v |= (config->patid) << (lower_bit % 32);
             *reg32(&__base_tagger, TAGGER_REG_PATID_N_REG_OFFSET(lower_bit / 32)) = v;
         } else {
-            // XXX: Handle this case...
-            printf("overlapping, skipped config...\r\n");
+            /* In this case it looks like     [32 bit word 1]   [32 bit word 2]
+                                                          ^^     ^^^
+            */
+            uint32_t lower_bit_count = 32 - (lower_bit % 32);
+            CHECK_ASSERT(-12, lower_bit_count < 5);
+            uint32_t lower_mask = BIT_MASK(lower_bit_count) << (lower_bit % 32);
+            uint32_t lower_v = *reg32(&__base_tagger, TAGGER_REG_PATID_N_REG_OFFSET(lower_bit / 32));
+            lower_v &= ~lower_mask;
+            lower_v |= (config->patid & BIT_MASK(lower_bit_count)) << (lower_bit % 32);
+            *reg32(&__base_tagger, TAGGER_REG_PATID_N_REG_OFFSET(lower_bit / 32)) = lower_v;
+
+
+            uint32_t upper_bit_count = (upper_bit % 32) + 1;
+            printf("lower bit count: %d, upper bit count: %d\r\n", lower_bit_count, upper_bit_count);
+            printf("lower bit: %d, upper bit: %d\r\n", lower_bit, upper_bit);
+            CHECK_ASSERT(-13, upper_bit_count < 5);
+            CHECK_ASSERT(-14, upper_bit_count + lower_bit_count == 5);
+            uint32_t upper_mask = BIT_MASK(upper_bit_count); /* no shift, starts from 0 */
+            uint32_t upper_v = *reg32(&__base_tagger, TAGGER_REG_PATID_N_REG_OFFSET(upper_bit / 32));
+            upper_v &= ~upper_mask;
+            upper_v |= ((config->patid >> lower_bit_count) & BIT_MASK(upper_bit_count)); /* no shift, starts from 0 */
+            *reg32(&__base_tagger, TAGGER_REG_PATID_N_REG_OFFSET(upper_bit / 32)) = upper_v;
         }
     }
 
