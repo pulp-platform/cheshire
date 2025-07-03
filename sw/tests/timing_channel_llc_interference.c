@@ -22,7 +22,7 @@
 // #define MITIGATION_SPM      2
 #define MITIGATION_DPLLC    3
 
-#define MITIGATION          MITIGATION_NONE
+#define MITIGATION          MITIGATION_DPLLC
 
 #define DATA_POINTS 4096
 
@@ -299,6 +299,9 @@ int setup_dpllc() {
         [15] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
     };
 
+    CHECK_ASSERT(-7, (uintptr_t)&data_spy == region_configs[1].addr);
+    CHECK_ASSERT(-8, (uintptr_t)&data_trojan == region_configs[2].addr);
+
     printf("configuring regions...\r\n");
     for (uint32_t region = 0; region < TAGGER_NUM_REGIONS; region++) {
         const struct tagger_region *config = &region_configs[region];
@@ -435,9 +438,9 @@ int setup_dpllc() {
     // XXX: How is this handled by default? all partitions are 0?
 
     static const uint32_t partition_set_sizes[LLC_MAXPARTITION] = {
-        [ 0] = 0,
-        [ 1] = 0,
-        [ 2] = 0,
+        [ 0] = 32,
+        [ 1] = 96,
+        [ 2] = 96,
         [ 3] = 0,
         [ 4] = 0,
         [ 5] = 0,
@@ -464,7 +467,7 @@ int setup_dpllc() {
         uint32_t reg_hi = *reg32(&__base_llc, AXI_LLC_CFG_SET_PARTITION_HIGH_N_REG_OFFSET(reg_no));
         uint64_t reg = reg_lo | ((uint64_t)reg_hi << 32);
 
-        printf("partition %d is reg %d bits %d to %d (orig value: %lx)\r\n", partition, reg_no, lo_bit, hi_bit, reg);
+        printf("partition %d is reg %d bits %d to %d (orig value: %016lx)\r\n", partition, reg_no, lo_bit, hi_bit, reg);
 
         uint32_t mask = BIT_MASK(PARTITION_SET_SIZE_BITS) << (lo_bit);
         reg &= ~mask;
@@ -478,7 +481,7 @@ int setup_dpllc() {
         *reg32(&__base_llc, AXI_LLC_CFG_SET_PARTITION_LOW_N_REG_OFFSET(reg_no)) = reg_lo;
         *reg32(&__base_llc, AXI_LLC_CFG_SET_PARTITION_HIGH_N_REG_OFFSET(reg_no)) = reg_hi;
 
-        printf("-> new value: %lx\r\n", reg);
+        printf("-> new value: %016lx\r\n", reg);
 
         lo_bit += 8;
         if (lo_bit >= 64) {
@@ -486,8 +489,6 @@ int setup_dpllc() {
             reg_no += 1;
         }
     }
-
-
 
     /* Commit changes to CfgSetPartition */
     *reg32(&__base_llc, AXI_LLC_COMMIT_PARTITION_CFG_REG_OFFSET) = BIT(AXI_LLC_COMMIT_PARTITION_CFG_COMMIT_BIT);
