@@ -96,8 +96,10 @@ uint32_t random(void) {
 #if MITIGATION != MITIGATION_DPLLC
 volatile line_t manual_evict_data[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000)));
 #else
-#define DPLLC_PARTITION_1_LINES 128
-#define DPLLC_PARTITION_2_LINES 128
+#define DPLLC_PARTITION_COMMON_LINES 64
+#define DPLLC_PARTITION_1_LINES 96
+#define DPLLC_PARTITION_2_LINES 96
+_Static_assert(DPLLC_PARTITION_COMMON_LINES + DPLLC_PARTITION_1_LINES + DPLLC_PARTITION_2_LINES <= LLC_WAY_NUM_LINES);
 char manual_evict_end_marker[1];
 volatile line_t manual_evict_data_pat2[LLC_ACTIVE_NUM_WAYS][DPLLC_PARTITION_2_LINES] __attribute__((aligned(0x1000)));
 volatile line_t manual_evict_data_pat1[LLC_ACTIVE_NUM_WAYS][DPLLC_PARTITION_1_LINES] __attribute__((aligned(0x1000)));
@@ -548,15 +550,20 @@ int setup_dpllc() {
 
         I think this means it bypasses the cache entirely.
 
+        EDIT: NO, that seems wrong....
+            see reworked3 test and then reworked-pat0=32,pat1=96,pat2=96.
+
      */
 
     /* Since we have 256 lines, having pat1 and pat2 use 128 lines means that
        anything in partition 0 (or any others) should bypass the cache and
        just go directly to memory.
        This is good for our purposes.
+
+       XXXX: That doesn't seem to work, see reworked3.
     */
     static const uint32_t partition_set_sizes[LLC_MAXPARTITION] = {
-        [ 0] = 0,
+        [ 0] = DPLLC_PARTITION_COMMON_LINES,
         [ 1] = DPLLC_PARTITION_1_LINES,
         [ 2] = DPLLC_PARTITION_2_LINES,
         [ 3] = 0,
@@ -585,11 +592,11 @@ int setup_dpllc() {
         uint32_t reg_hi = *reg32(&__base_llc, AXI_LLC_CFG_SET_PARTITION_HIGH_N_REG_OFFSET(reg_no));
         uint64_t reg = reg_lo | ((uint64_t)reg_hi << 32);
 
-        printf("partition %d is reg %d bits %d to %d (orig value: %016lx)\r\n", partition, reg_no, lo_bit, hi_bit, reg);
+        uint32_t size = partition_set_sizes[partition];
+        printf("partition %d is reg %d bits %d..%d (size: %x, orig value: %016lx)\r\n", partition, reg_no, lo_bit, hi_bit, size, reg);
 
         uint32_t mask = BIT_MASK(PARTITION_SET_SIZE_BITS) << (lo_bit);
         reg &= ~mask;
-        uint32_t size = partition_set_sizes[partition];
         CHECK_ASSERT(-6, size < BIT(PARTITION_SET_SIZE_BITS));
         reg |= size << lo_bit;
 
