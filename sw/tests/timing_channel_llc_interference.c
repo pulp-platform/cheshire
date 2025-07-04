@@ -25,7 +25,7 @@
 
 #define MITIGATION          MITIGATION_DPLLC
 
-#define DATA_POINTS 40960
+#define DATA_POINTS 20480
 
 #define SPY_COLOUR      0
 #define TROJAN_COLOUR   1
@@ -96,9 +96,9 @@ uint32_t random(void) {
 #if MITIGATION != MITIGATION_DPLLC
 volatile line_t manual_evict_data[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000)));
 #else
-volatile line_t manual_evict_data_pat0[LLC_ACTIVE_NUM_WAYS][32] __attribute__((aligned(0x1000)));
-volatile line_t manual_evict_data_pat1[LLC_ACTIVE_NUM_WAYS][96] __attribute__((aligned(0x1000)));
-volatile line_t manual_evict_data_pat2[LLC_ACTIVE_NUM_WAYS][96] __attribute__((aligned(0x1000)));
+char manual_evict_end_marker[1];
+volatile line_t manual_evict_data_pat2[LLC_ACTIVE_NUM_WAYS][128] __attribute__((aligned(0x1000)));
+volatile line_t manual_evict_data_pat1[LLC_ACTIVE_NUM_WAYS][128] __attribute__((aligned(0x1000)));
 #endif
 #endif
 
@@ -121,13 +121,6 @@ for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
     }
 }
 #else /* is DPLLC */
-    for (uint32_t line = 0; line < 32; line++)  {
-        for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
-            volatile void *v = &manual_evict_data_pat0[way][line];
-            volatile uint32_t rv;
-            asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
-        }
-    }
     for (uint32_t line = 0; line < 96; line++)  {
         for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
             volatile void *v = &manual_evict_data_pat1[way][line];
@@ -191,6 +184,7 @@ void spy(uint32_t round) {
     results[round].secret = current_secret;
 }
 
+#if MITIGATION == MITIGATION_DPLLC
 int setup_dpllc() {
     /* the transaction tagger registers are (somewhat) similar to that of the
        RISC-V PMP registers.
@@ -302,41 +296,64 @@ int setup_dpllc() {
         uint8_t patid;
     };
 
-    static const struct tagger_region region_configs[TAGGER_NUM_REGIONS] = {
+    /* for some reason can't be static. */
+    const struct tagger_region region_configs[TAGGER_NUM_REGIONS] = {
         /* (unused): TOR prev implicitly starts @ 0 */
 
+        // this table talks in terms of the *end* of the range whereas we get the *start*.
+
         /* start of dram is 0x8000'0000. this is purely a marker. */
-        [ 0] = { .addr = 0x80000000, .conf = TaggerAddrConf_Off, .patid = 0 },
-        /* this is [0x8000'0000 to 0x8000'B000), i.e. text etc */
-        [ 1] = { .addr = 0x8000B000, .conf = TaggerAddrConf_TOR, .patid = 0 },
-        /* this is then [0x8000'B000 to 0x8002'B000), i.e. spy data */
-        [ 2] = { .addr = 0x8002B000, .conf = TaggerAddrConf_TOR, .patid = 1 },
-        /* this is then [0x8002'B000 to 0x8004'B000), i.e. trojan data */
-        [ 3] = { .addr = 0x8004B000, .conf = TaggerAddrConf_TOR, .patid = 2 },
-        /* this is then [0x8004'B000 to 0x8005'7000), i.e. eviction data for partition 2 */
-        [ 4] = { .addr = 0x80057000, .conf = TaggerAddrConf_TOR, .patid = 2 },
-        /* this is then [0x8005'7000 to 0x8006'3000), i.e. eviction data for partition 1 */
-        [ 5] = { .addr = 0x80063000, .conf = TaggerAddrConf_TOR, .patid = 1 },
-        /* this is then [0x8006'3000 to 0x8006'7000), i.e. eviction data for partition 0 */
-        [ 6] = { .addr = 0x80067000, .conf = TaggerAddrConf_TOR, .patid = 0 },
+        [ 0] = { .addr = 0x80000000, .conf = TaggerAddrConf_Off },
+        /* .text segment starts at 0x8000'0000 and any other data here too.
+            belongs to partition 0.
+
+            it ends (conceptually) at the spy data region.
+        */
+        [ 1] = { .addr = (uintptr_t)&data_spy, .conf = TaggerAddrConf_TOR, .patid = 0 },
+        /* the spy region ends when the trojan region starts.
+           belongs to partition 1.
+        */
+        [ 2] = { .addr = (uintptr_t)&data_trojan, .conf = TaggerAddrConf_TOR, .patid = 1 },
+        /* the trojan region ends when the manual evict data starts
+            belongs to partition 2.
+        */
+        [ 3] = { .addr = (uintptr_t)&manual_evict_data_pat1, .conf = TaggerAddrConf_TOR, .patid = 2 },
+        /* the manual evict data (partition 1) ends when the data for partition 2 starts.
+            it obviously belongs to partition 1.
+        */
+        [ 4] = { .addr = (uintptr_t)&manual_evict_data_pat2, .conf = TaggerAddrConf_TOR, .patid = 1 },
+        /* the manual evict data (partition 2) ends at the marker
+            belongs to partition 2. */
+        [ 5] = { .addr = (uintptr_t)&manual_evict_end_marker, .conf = TaggerAddrConf_TOR, .patid = 2 },
         /* then the rest of memory (assumed: 8MiB) is left in partition 0 */
-        [ 7] = { .addr = 0x80800000, .conf = TaggerAddrConf_TOR, .patid = 0 },
-        /* then the rest of physical address range is left unspecified. */
-        [ 8] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
-        [ 9] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
-        [10] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
-        [11] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
-        [12] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
-        [13] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
-        [14] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
-        [15] = { .addr = 0, .conf = TaggerAddrConf_Off, .patid = 0 },
+        [ 6] = { .addr = 0x80800000, .conf = TaggerAddrConf_TOR, .patid = 0 },
+        /* then the rest of the physical address range is left unspecified. */
+        [ 7] = { .conf = TaggerAddrConf_TOR },
+        [ 8] = { .conf = TaggerAddrConf_Off },
+        [ 9] = { .conf = TaggerAddrConf_Off },
+        [10] = { .conf = TaggerAddrConf_Off },
+        [11] = { .conf = TaggerAddrConf_Off },
+        [12] = { .conf = TaggerAddrConf_Off },
+        [13] = { .conf = TaggerAddrConf_Off },
+        [14] = { .conf = TaggerAddrConf_Off },
+        [15] = { .conf = TaggerAddrConf_Off },
     };
 
-    CHECK_ASSERT(-7, (uintptr_t)&data_spy == region_configs[1].addr);
-    CHECK_ASSERT(-8, (uintptr_t)&data_trojan == region_configs[2].addr);
-    CHECK_ASSERT(-9, (uintptr_t)&manual_evict_data_pat2 == region_configs[3].addr);
-    CHECK_ASSERT(-10, (uintptr_t)&manual_evict_data_pat1 == region_configs[4].addr);
-    CHECK_ASSERT(-11, (uintptr_t)&manual_evict_data_pat0 == region_configs[5].addr);
+    /* make sure that the data_ and the eviction data is contiguous as we rely on it */
+    CHECK_ASSERT(-7, ((uintptr_t)&data_trojan) + sizeof(data_trojan) == ((uintptr_t)&manual_evict_data_pat1));
+
+    for (uint32_t k = 0; k < TAGGER_NUM_REGIONS; k++) {
+        uint32_t addr = region_configs[k].addr;
+        uint32_t prev_addr = (k == 0) ? 0 : region_configs[k - 1].addr;
+
+        if (addr == 0) continue;
+        if (prev_addr >= addr) {
+            printf("memory layout ordering in the region_configs is wrong: "
+                   "partition %d has addr 0x%x whereas previous was 0x%x\r\n",
+                   k, addr, prev_addr);
+            return -21;
+        }
+    }
 
     printf("configuring regions...\r\n");
     for (uint32_t region = 0; region < TAGGER_NUM_REGIONS; region++) {
@@ -531,10 +548,15 @@ int setup_dpllc() {
 
      */
 
+    /* Since we have 256 lines, having pat1 and pat2 use 128 lines means that
+       anything in partition 0 (or any others) should bypass the cache and
+       just go directly to memory.
+       This is good for our purposes.
+    */
     static const uint32_t partition_set_sizes[LLC_MAXPARTITION] = {
-        [ 0] = 32,
-        [ 1] = 96,
-        [ 2] = 96,
+        [ 0] = 0,
+        [ 1] = 128,
+        [ 2] = 128,
         [ 3] = 0,
         [ 4] = 0,
         [ 5] = 0,
@@ -589,6 +611,7 @@ int setup_dpllc() {
 
     return 0;
 }
+#endif
 
 int main(void) {
     CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_HW_FEATURES_UART_BIT));
