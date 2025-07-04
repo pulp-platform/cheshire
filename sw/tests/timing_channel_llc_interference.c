@@ -96,9 +96,11 @@ uint32_t random(void) {
 #if MITIGATION != MITIGATION_DPLLC
 volatile line_t manual_evict_data[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000)));
 #else
+#define DPLLC_PARTITION_1_LINES 128
+#define DPLLC_PARTITION_2_LINES 128
 char manual_evict_end_marker[1];
-volatile line_t manual_evict_data_pat2[LLC_ACTIVE_NUM_WAYS][128] __attribute__((aligned(0x1000)));
-volatile line_t manual_evict_data_pat1[LLC_ACTIVE_NUM_WAYS][128] __attribute__((aligned(0x1000)));
+volatile line_t manual_evict_data_pat2[LLC_ACTIVE_NUM_WAYS][DPLLC_PARTITION_2_LINES] __attribute__((aligned(0x1000)));
+volatile line_t manual_evict_data_pat1[LLC_ACTIVE_NUM_WAYS][DPLLC_PARTITION_1_LINES] __attribute__((aligned(0x1000)));
 #endif
 #endif
 
@@ -121,14 +123,14 @@ for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
     }
 }
 #else /* is DPLLC */
-    for (uint32_t line = 0; line < 96; line++)  {
+    for (uint32_t line = 0; line < DPLLC_PARTITION_1_LINES; line++)  {
         for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
             volatile void *v = &manual_evict_data_pat1[way][line];
             volatile uint32_t rv;
             asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
         }
     }
-    for (uint32_t line = 0; line < 96; line++)  {
+    for (uint32_t line = 0; line < DPLLC_PARTITION_2_LINES; line++)  {
         for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
             volatile void *v = &manual_evict_data_pat2[way][line];
             volatile uint32_t rv;
@@ -555,8 +557,8 @@ int setup_dpllc() {
     */
     static const uint32_t partition_set_sizes[LLC_MAXPARTITION] = {
         [ 0] = 0,
-        [ 1] = 128,
-        [ 2] = 128,
+        [ 1] = DPLLC_PARTITION_1_LINES,
+        [ 2] = DPLLC_PARTITION_2_LINES,
         [ 3] = 0,
         [ 4] = 0,
         [ 5] = 0,
