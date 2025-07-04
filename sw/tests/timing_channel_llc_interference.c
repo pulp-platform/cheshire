@@ -96,9 +96,9 @@ uint32_t random(void) {
 #if MITIGATION != MITIGATION_DPLLC
 volatile line_t manual_evict_data[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000)));
 #else
-#define DPLLC_PARTITION_COMMON_LINES 64
-#define DPLLC_PARTITION_1_LINES 96
-#define DPLLC_PARTITION_2_LINES 96
+#define DPLLC_PARTITION_COMMON_LINES 8
+#define DPLLC_PARTITION_1_LINES 124
+#define DPLLC_PARTITION_2_LINES 124
 _Static_assert(DPLLC_PARTITION_COMMON_LINES + DPLLC_PARTITION_1_LINES + DPLLC_PARTITION_2_LINES <= LLC_WAY_NUM_LINES);
 char manual_evict_end_marker[1];
 volatile line_t manual_evict_data_pat2[LLC_ACTIVE_NUM_WAYS][DPLLC_PARTITION_2_LINES] __attribute__((aligned(0x1000)));
@@ -561,6 +561,8 @@ int setup_dpllc() {
        This is good for our purposes.
 
        XXXX: That doesn't seem to work, see reworked3.
+       XXXX: Yep, see the reworked ones, we can definitely see that if pat0
+             is interfering with all our other part1/part2 interactions
     */
     static const uint32_t partition_set_sizes[LLC_MAXPARTITION] = {
         [ 0] = DPLLC_PARTITION_COMMON_LINES,
