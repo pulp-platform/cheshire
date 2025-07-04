@@ -330,7 +330,7 @@ int setup_dpllc() {
         /* then the rest of memory (assumed: 8MiB) is left in partition 0 */
         [ 6] = { .addr = 0x80800000, .conf = TaggerAddrConf_TOR, .patid = 0 },
         /* then the rest of the physical address range is left unspecified. */
-        [ 7] = { .conf = TaggerAddrConf_TOR },
+        [ 7] = { .conf = TaggerAddrConf_Off },
         [ 8] = { .conf = TaggerAddrConf_Off },
         [ 9] = { .conf = TaggerAddrConf_Off },
         [10] = { .conf = TaggerAddrConf_Off },
@@ -348,7 +348,7 @@ int setup_dpllc() {
         uint32_t addr = region_configs[k].addr;
         uint32_t prev_addr = (k == 0) ? 0 : region_configs[k - 1].addr;
 
-        if (addr == 0) continue;
+        if (region_configs[k].conf == TaggerAddrConf_Off) continue;
         if (prev_addr >= addr) {
             printf("memory layout ordering in the region_configs is wrong: "
                    "partition %d has addr 0x%x whereas previous was 0x%x\r\n",
