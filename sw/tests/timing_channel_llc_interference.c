@@ -491,7 +491,45 @@ int setup_dpllc() {
                                   etc
     */
 
-    // XXX: How is this handled by default? all partitions are 0?
+    // XXX: How is this handled by default? all partitions are 0 sized? => YES.
+    /*
+            "If a partition's size is 0, the entry will be put into the shared region"
+            "If the patid is larger than the table supported, assign it to the shared region"
+
+        axi_llc stores a partition_table of [MaxPartition:0] i.e. MaxPartition + 1 entiries
+        the top entry is the "shared region"; which is share_index and share_size.
+
+                assign share_size  =  partition_table_i[MaxPartition].NumIndex;
+                assign share_index =  partition_table_i[MaxPartition].StartIndex;
+                assign pat_size    =  (curr_chan_i.user <= MaxPartition) ? partition_table_i[curr_chan_i.user].NumIndex : share_size;
+                assign start_index =  (curr_chan_i.user <= MaxPartition) ? partition_table_i[curr_chan_i.user].StartIndex : share_index;
+
+
+            /// Partition table which tells the range of indice assigned to each partition:
+            /// The number of entry in partition_table is one more than MaxPartition because it needs to hold
+            /// the remaining part as shared region for any other partition that has not been allocated.
+            /// If the entry is 0, then it means that the partition uses the shared region of cache.
+            /// When we process data access of such partition, we should look up partition_table_o[MaxPartition]
+            /// for hit/miss information.
+
+        partition_table_o[MaxPartition].StartIndex = partition_table_o[MaxPartition-1].StartIndex + partition_table_o[MaxPartition-1].NumIndex;
+        partition_table_o[MaxPartition].NumIndex = Cfg.NumLines - partition_table_o[MaxPartition].StartIndex;
+
+
+        Seems like the "shared region" is defined as the remaining lines of the cache not allocated to other partitions.
+
+        If there's no remaining, i.e. NumIndex = 0, then:
+
+            assign aw_bypass = (slv_aw_partition_id_i == flush_set_partition_q) ||
+                              ((!partition_table_o[slv_aw_partition_id_i].NumIndex) && (flush_set_partition_q == MaxPartition)) ||
+                              (flush_set_partition_q == (MaxPartition + 1));
+            assign ar_bypass = (slv_ar_partition_id_i == flush_set_partition_q) ||
+                              ((!partition_table_o[slv_ar_partition_id_i].NumIndex) && (flush_set_partition_q == MaxPartition)) ||
+                              (flush_set_partition_q == (MaxPartition + 1));
+
+        I think this means it bypasses the cache entirely.
+
+     */
 
     static const uint32_t partition_set_sizes[LLC_MAXPARTITION] = {
         [ 0] = 32,
