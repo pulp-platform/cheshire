@@ -83,6 +83,7 @@ int main(void) {
     // Launch payload
     payload_t fw = __BOOT_ZSL_FW;
     printf("[ZSL] Launch firmware at %lx with device tree at %lx\r\n", fw, __BOOT_ZSL_DTB);
+    fence();
     fencei();
     return fw(0, (uintptr_t)__BOOT_ZSL_DTB, 0);
 }
