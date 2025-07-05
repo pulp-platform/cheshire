@@ -517,7 +517,7 @@ package cheshire_pkg;
     ret.BHTEntries            = cfg.Cva6BHTEntries;
     ret.NrPMPEntries          = cfg.Cva6NrPMPEntries;
     // Hacky shit
-    ret.DcacheFlushOnFence      = 0;
+    ret.DcacheFlushOnFence      = 1;
     ret.DcacheInvalidateOnFlush = 0;
     // Return modified config
     return ret;
