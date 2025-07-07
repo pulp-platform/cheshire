@@ -240,8 +240,8 @@ int main(int argc, char** argv) {
             last = current;
             auto total_cycles_per_sec = 1000000.0 * cycle / total_elapsed_us;
             auto last_cycles_per_sec = 1000000.0 * SIMULATION_RATE_CHUNK / last_elapsed_us;
-            VL_PRINTF("elapsed: %lu us, %lu cycles, %.1f cycles/sec (total), %.1f cycles/sec (last)\n",
-                total_elapsed_us, cycle, total_cycles_per_sec, last_cycles_per_sec);
+            VL_PRINTF("elapsed: %.3f sec, %lu cycles, %.1f cycles/sec (total), %.1f cycles/sec (last)\n",
+                total_elapsed_us / 1e6, cycle, total_cycles_per_sec, last_cycles_per_sec);
           }
 #ifdef BENCHMARK
           if (cycle == 1000000)
