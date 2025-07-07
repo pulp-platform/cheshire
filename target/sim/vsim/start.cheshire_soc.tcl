@@ -29,6 +29,7 @@ if { ![info exists VOPTARGS] } {
 
 set flags "-suppress 3009 -suppress 8386 -error 7 -cpppath ${CXX_PATH} "
 if { [info exists SELCFG] } { append flags "-GSelectedCfg=${SELCFG} " }
+if { [info exists UARTBAUD] } { append flags "-GUartBaudRate=${UARTBAUD} " }
 
 set pargs ""
 if { [info exists BOOTMODE] } { append pargs "+BOOTMODE=${BOOTMODE} " }
