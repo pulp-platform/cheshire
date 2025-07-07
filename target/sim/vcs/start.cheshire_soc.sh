@@ -29,6 +29,7 @@ fi
 
 flags+="-cpp ${CXX_PATH} "
 [[ -n "${SELCFG}" ]]   && flags+="-pvalue+SelectedCfg=${SELCFG} "
+[[ -n "${UARTBAUD}" ]] && flags+="-pvalue+UartBaudRate=${UARTBAUD} "
 
 pargs=""
 [[ -n "${BOOTMODE}" ]] && pargs+="+BOOTMODE=${BOOTMODE} "

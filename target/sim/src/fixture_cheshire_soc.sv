@@ -8,8 +8,9 @@
 
 module fixture_cheshire_soc #(
   /// The selected simulation configuration from the `tb_cheshire_pkg`.
-  parameter int unsigned SelectedCfg = 32'd0,
-  parameter bit          UseDramSys  = 1'b0
+  parameter int unsigned SelectedCfg  = 32'd0,
+  parameter bit          UseDramSys   = 1'b0,
+  parameter int unsigned UartBaudRate = 115200
 );
 
   `include "cheshire/typedef.svh"
@@ -170,6 +171,7 @@ module fixture_cheshire_soc #(
   vip_cheshire_soc #(
     .DutCfg            ( DutCfg ),
     .UseDramSys        ( UseDramSys ),
+    .UartBaudRate      ( UartBaudRate ),
     .axi_ext_llc_req_t ( axi_llc_req_t ),
     .axi_ext_llc_rsp_t ( axi_llc_rsp_t ),
     .axi_ext_mst_req_t ( axi_mst_req_t ),
