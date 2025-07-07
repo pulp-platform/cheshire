@@ -109,6 +109,34 @@ static void elf_preload_write_enqueue() {
     VL_PRINTF("[ELF] enqueued %zu memory writes\n", num_writes);
 }
 
+static void poll_for_exit() {
+    static bool request_inflight = false;
+    static uint64_t idle_cycles = 0;
+
+    if (request_inflight) {
+      auto maybe_response = mem_master->get_read_response();
+      if (maybe_response) {
+        auto data = maybe_response->data;
+
+        request_inflight = false;
+        idle_cycles = 0;
+        if (data & 0x1) {
+          do_exit = true;
+          exit_code = data >> 1;
+          VL_PRINTF("[EXIT] received exit code from software: %d\n", exit_code);
+        }
+      }
+    } else {
+      idle_cycles++;
+
+      if (idle_cycles >= 1000) {
+        mem_master->read(0x03000008);
+        request_inflight = true;
+      }
+    }
+
+}
+
 int main(int argc, char** argv) {
     // Create logs/ directory in case we have traces to put under it
     Verilated::mkdir("logs");
@@ -160,7 +188,9 @@ int main(int argc, char** argv) {
         &topp->slink_mem_we_i,
         &topp->slink_mem_wdata_i,
         &topp->slink_mem_be_i,
-        &topp->slink_mem_gnt_o
+        &topp->slink_mem_gnt_o,
+        &topp->slink_mem_rsp_valid_o,
+        &topp->slink_mem_rsp_rdata_o
     );
 
     // ELF preloading
@@ -199,6 +229,7 @@ int main(int argc, char** argv) {
 
           // I/O
           if (reset_done) {
+            poll_for_exit();
 #if 0
             jtag_tick_io();
 #endif

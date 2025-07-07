@@ -34,7 +34,9 @@ module cheshire_soc_wrapper # (
   input  logic                             slink_mem_we_i,
   input  logic [DutCfg.AxiDataWidth-1:0]   slink_mem_wdata_i,
   input  logic [DutCfg.AxiDataWidth/8-1:0] slink_mem_be_i,
-  output logic                             slink_mem_gnt_o
+  output logic                             slink_mem_gnt_o,
+  output logic                             slink_mem_rsp_valid_o,
+  output logic [DutCfg.AxiDataWidth-1:0]   slink_mem_rsp_rdata_o
 );
 
   import cheshire_pkg::*;
@@ -276,19 +278,19 @@ module cheshire_soc_wrapper # (
   ) i_serial_link_mem (
     .clk_i,
     .rst_ni,
-    .mem_req_i       ( slink_mem_req_i   ),
-    .mem_addr_i      ( slink_mem_addr_i  ),
-    .mem_we_i        ( slink_mem_we_i    ),
-    .mem_wdata_i     ( slink_mem_wdata_i ),
-    .mem_be_i        ( slink_mem_be_i    ),
-    .mem_gnt_o       ( slink_mem_gnt_o   ),
-    .mem_rsp_valid_o (                   ),
-    .mem_rsp_rdata_o (                   ),
-    .mem_rsp_error_o (                   ),
-    .slv_aw_cache_i  ( 4'b0000           ),
-    .slv_ar_cache_i  ( 4'b0000           ),
-    .axi_req_o       ( slink_axi_mst_req ),
-    .axi_rsp_i       ( slink_axi_mst_rsp )
+    .mem_req_i       ( slink_mem_req_i       ),
+    .mem_addr_i      ( slink_mem_addr_i      ),
+    .mem_we_i        ( slink_mem_we_i        ),
+    .mem_wdata_i     ( slink_mem_wdata_i     ),
+    .mem_be_i        ( slink_mem_be_i        ),
+    .mem_gnt_o       ( slink_mem_gnt_o       ),
+    .mem_rsp_valid_o ( slink_mem_rsp_valid_o ),
+    .mem_rsp_rdata_o ( slink_mem_rsp_rdata_o ),
+    .mem_rsp_error_o (                       ),
+    .slv_aw_cache_i  ( 4'b0000               ),
+    .slv_ar_cache_i  ( 4'b0000               ),
+    .axi_req_o       ( slink_axi_mst_req     ),
+    .axi_rsp_i       ( slink_axi_mst_rsp     )
   );
 
 endmodule
