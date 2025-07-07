@@ -207,7 +207,7 @@ module cheshire_soc_wrapper # (
   ////////////
 
   verilator_uart_rx #(
-    .BaudPeriodCycles(1000 * 1000 * 1000 / 115200 / 5)  // 1 second / baud rate / clock period
+    .BaudPeriodCycles(1000 * 1000 * 1000 / 2500000 / 5)  // 1 second / baud rate / clock period
   ) i_uart_rx (
     .clk_i,
     .rst_ni,
