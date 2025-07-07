@@ -19,6 +19,8 @@ VERILATOR_ARGS  ?= -j 0 -Wall $(VERILATOR_WNO) -timescale 1ns/1ps
 VERILATOR_ARGS += -O3 --x-assign fast --x-initial fast --noassert
 # Disable common_cells assertions
 VERILATOR_ARGS += -DASSERTS_OFF
+# multithreading
+VERILATOR_ARGS += --threads 12
 # C++ Compiler Optimization
 # VERILATOR_ARGS += -CFLAGS "-march=native"
 # VERILATOR_ARGS += -CFLAGS "-mtune=native"
