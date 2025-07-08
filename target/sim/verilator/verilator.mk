@@ -11,6 +11,8 @@ RISCV_DBG_DIR = $(shell bender path riscv-dbg)
 VERILATOR_PREFIX ?= oseda
 VERILATOR        ?= verilator
 
+CHS_VERILATOR_THREADS ?= 4
+
 # Silly Verilator warnings: these are perfectly valid and should not be warnings
 VERILATOR_WNO   = -Wno-fatal -Wno-style \
 	-Wno-BLKANDNBLK -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC -Wno-WIDTHCONCAT -Wno-ASCRANGE
@@ -20,7 +22,7 @@ VERILATOR_ARGS += -O3 --x-assign fast --x-initial fast --noassert
 # Disable common_cells assertions
 VERILATOR_ARGS += -DASSERTS_OFF
 # multithreading
-VERILATOR_ARGS += --threads 8
+VERILATOR_ARGS += --threads $(CHS_VERILATOR_THREADS)
 # C++ Compiler Optimization
 VERILATOR_ARGS += -CFLAGS "-O3" -CFLAGS "-march=native" -CFLAGS "-mtune=native"
 # Use Clang (faster simulation than GCC)
@@ -53,6 +55,6 @@ $(CHS_ROOT)/target/sim/verilator/cheshire_soc.vlt: $(CHS_ROOT)/target/sim/verila
 	@echo "#!/bin/sh" > $@
 	@echo 'set -eu' >> $@
 	@echo 'cd $$(dirname "$$0")' >> $@
-	@echo '$(VERILATOR_PREFIX) ./obj_dir/Vcheshire_soc_wrapper "$$@"' >> $@
+	@echo 'taskset -c 0-$(shell expr $(CHS_VERILATOR_THREADS) - 1) $(VERILATOR_PREFIX) ./obj_dir/Vcheshire_soc_wrapper "$$@"' >> $@
 	@chmod +x $@
 
