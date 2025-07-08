@@ -23,6 +23,8 @@ VERILATOR_ARGS += -DASSERTS_OFF
 VERILATOR_ARGS += --threads 8
 # C++ Compiler Optimization
 VERILATOR_ARGS += -CFLAGS "-O3" -CFLAGS "-march=native" -CFLAGS "-mtune=native"
+# Use Clang (faster simulation than GCC)
+VERILATOR_ARGS += --compiler clang -MAKEFLAGS "CC=clang" -MAKEFLAGS "CXX=clang++"
 
 # Profiling
 # generates `gmon.out` that can be processed by `gprof` and then `verilator_profcfunc`
