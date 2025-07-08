@@ -9,6 +9,7 @@
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 
 #include <svdpi.h>
+#include <vpi_user.h>
 #include <cstring>
 #include <string>
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
@@ -30,6 +31,7 @@
 #include <map>
 #include <iostream>
 #include <stdint.h>
+#include <fesvr/dtm.h>
 
 #define IS_ELF(hdr) \
   ((hdr).e_ident[0] == 0x7f && (hdr).e_ident[1] == 'E' && \
@@ -160,6 +162,16 @@ extern "C" {
   char get_section(long long *address_ret, long long *len_ret);
   char read_section(long long address, const svOpenArrayHandle buffer, long long len);
   char read_elf(const char *filename);
+  int debug_tick(
+  unsigned char* debug_req_valid,
+  unsigned char  debug_req_ready,
+  int*           debug_req_bits_addr,
+  int*           debug_req_bits_op,
+  int*           debug_req_bits_data,
+  unsigned char  debug_resp_valid,
+  unsigned char* debug_resp_ready,
+  int            debug_resp_bits_resp,
+  int            debug_resp_bits_data);
 }
 
 static void write (uint64_t address, uint64_t len, uint8_t *buf)
@@ -398,3 +410,53 @@ extern "C" char read_elf(const char *filename) {
   return 0;
 }
 #endif
+
+dtm_t* dtm;
+/*------------------------
+From SimDTM.cc
+------------------------*/
+extern "C" int debug_tick
+(
+  unsigned char* debug_req_valid,
+  unsigned char  debug_req_ready,
+  int*           debug_req_bits_addr,
+  int*           debug_req_bits_op,
+  int*           debug_req_bits_data,
+  unsigned char  debug_resp_valid,
+  unsigned char* debug_resp_ready,
+  int            debug_resp_bits_resp,
+  int            debug_resp_bits_data
+)
+{
+  if (!dtm) {
+      //the list of argv are the program that will be runned after pk is booted.
+      // Need to find a way to make it easier to change programs, maybe like it was done...
+      int htif_argc = 3;
+      char* htif_argv[htif_argc];
+      htif_argv[0] = (char*)"htif";
+      htif_argv[1] = (char*)"/scratch/ga25f6/cheshire/sw/apps/pk_dram";
+      htif_argv[2] = (char*)"/scratch/ga25f6/cheshire/sw/apps/helloworld.o";
+
+      dtm = new dtm_t(htif_argc, htif_argv);
+  }
+
+
+  dtm_t::resp resp_bits;
+  resp_bits.resp = debug_resp_bits_resp;
+  resp_bits.data = debug_resp_bits_data;
+
+  dtm->tick
+  (
+    debug_req_ready,
+    debug_resp_valid,
+    resp_bits
+  );
+
+  *debug_resp_ready = dtm->resp_ready();
+  *debug_req_valid = dtm->req_valid();
+  *debug_req_bits_addr = dtm->req_bits().addr;
+  *debug_req_bits_op = dtm->req_bits().op;
+  *debug_req_bits_data = dtm->req_bits().data;
+
+  return dtm->done() ? (dtm->exit_code() << 1 | 1) : 0;
+}

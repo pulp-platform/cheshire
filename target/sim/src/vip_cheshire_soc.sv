@@ -72,7 +72,14 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   output logic [SlinkNumChan-1:0]                    slink_rcv_clk_i,
   input  logic [SlinkNumChan-1:0]                    slink_rcv_clk_o,
   output logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i,
-  input  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o
+  input  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o,
+  // DMI
+  output dm::dmi_req_t dmi_req,
+  output logic         dmi_req_valid,
+  input  logic         dmi_req_ready,
+  input dm::dmi_resp_t dmi_resp,
+  output logic         dmi_resp_ready,
+  input  logic         dmi_resp_valid
 );
 
   `include "cheshire/typedef.svh"
@@ -88,6 +95,19 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   import "DPI-C" function byte get_entry(output longint entry);
   import "DPI-C" function byte get_section(output longint address, output longint len);
   import "DPI-C" context function byte read_section(input longint address, inout byte buffer[], input longint len);
+  import "DPI-C" function int debug_tick
+(
+  output bit     debug_req_valid,
+  input  bit     debug_req_ready,
+  output int     debug_req_bits_addr,
+  output int     debug_req_bits_op,
+  output int     debug_req_bits_data,
+
+  input  bit        debug_resp_valid,
+  output bit        debug_resp_ready,
+  input  int        debug_resp_bits_resp,
+  input  int        debug_resp_bits_data
+);
 
   ////////////
   //  DRAM  //
@@ -954,6 +974,32 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     if (exit_code) $error("[SLINK] FAILED: return code %0d", exit_code);
     else $display("[SLINK] SUCCESS");
   endtask
+    task automatic wait_boot_pk();
+    #(ClkPeriodSys * 200000 * 2); // wait 2s, pk should be booted (take around 1.5s).
+  endtask
+
+  //////////////
+  //  SimDTM  //
+  //////////////
+
+  logic [31:0] sim_exit; // TODO: wire this up in the testbench
+  logic [1:0] dmi_req_bits_op;
+  assign dmi_req.op = dm::dtm_op_e'(dmi_req_bits_op); // need to check if it's this variable, 
+
+  SimDTM i_SimDTM (
+    .clk                  ( clk                ),
+    .reset                ( rst_n              ),
+    .debug_req_valid      ( dmi_req_valid      ),
+    .debug_req_ready      ( dmi_req_ready      ),
+    .debug_req_bits_addr  ( dmi_req.addr       ),
+    .debug_req_bits_op    ( dmi_req_bits_op    ),
+    .debug_req_bits_data  ( dmi_req.data       ),
+    .debug_resp_valid     ( dmi_resp_valid     ),
+    .debug_resp_ready     ( dmi_resp_ready     ),
+    .debug_resp_bits_resp ( dmi_resp.resp      ),
+    .debug_resp_bits_data ( dmi_resp.data      ),
+    .exit                 ( sim_exit           )
+  );
 
 endmodule
 

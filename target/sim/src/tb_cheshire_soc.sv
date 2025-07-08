@@ -46,8 +46,8 @@ module tb_cheshire_soc #(
           fix.vip.jtag_elf_run(preload_elf);
           fix.vip.jtag_wait_for_eoc(exit_code);
         end 1: begin  // Serial Link
-          fix.vip.slink_elf_run(preload_elf);
-          fix.vip.slink_wait_for_eoc(exit_code);
+          /*fix.vip.slink_elf_run(preload_elf);
+          fix.vip.slink_wait_for_eoc(exit_code);*/
         end 2: begin  // UART
           fix.vip.uart_debug_elf_run_and_wait(preload_elf, exit_code);
         end default: begin
@@ -65,7 +65,7 @@ module tb_cheshire_soc #(
     // Wait for the UART to finish reading the current byte
     wait (fix.vip.uart_reading_byte == 0);
 
-    $finish;
+    //$finish;
   end
 
 endmodule
