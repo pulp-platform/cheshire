@@ -256,7 +256,8 @@ int main(int argc, char** argv) {
 
           // I/O
           if (reset_done) {
-            poll_for_exit();
+            if (preload_done_cycle > 0)
+              poll_for_exit();
 #if 0
             jtag_tick_io();
 #endif
