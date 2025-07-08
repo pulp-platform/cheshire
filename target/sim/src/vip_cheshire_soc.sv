@@ -193,6 +193,15 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     boot_mode = mode;
   endtask
 
+  bit [63:0] clock_cycle;
+  initial begin
+    clock_cycle = '0;
+    forever begin
+      @(posedge clk);
+      clock_cycle = clock_cycle + 1'b1;
+    end
+  end
+
   ////////////
   //  JTAG  //
   ////////////
@@ -931,6 +940,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   // Run a binary
   task automatic slink_elf_run(input string binary);
     doub_bt entry;
+    $system("date +\%s.\%3N > starttime.txt");
+    $system($sformatf("echo %0d > startcycle.txt", clock_cycle));
     // Wait for bootrom to ungate Serial Link
     if (DutCfg.LlcNotBypass) begin
       word_bt regval;
@@ -945,6 +956,9 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     // Resume hart 0
     slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, 2);
     $display("[SLINK] Wrote launch signal and entry point 0x%h", entry);
+
+    $system("date +\%s.\%3N > launchtime.txt");
+    $system($sformatf("echo %0d > launchcycle.txt", clock_cycle));
   endtask
 
   // Wait for termination signal and get return code
@@ -953,6 +967,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     exit_code >>= 1;
     if (exit_code) $error("[SLINK] FAILED: return code %0d", exit_code);
     else $display("[SLINK] SUCCESS");
+    $system("date +\%s.\%3N > endtime.txt");
+    $system($sformatf("echo %0d > endcycle.txt", clock_cycle));
   endtask
 
 endmodule
