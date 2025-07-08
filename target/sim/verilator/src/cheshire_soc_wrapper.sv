@@ -271,7 +271,7 @@ module cheshire_soc_wrapper # (
     .MemAddrWidth ( DutCfg.AddrWidth    ),
     .AxiAddrWidth ( DutCfg.AddrWidth    ),
     .DataWidth    ( DutCfg.AxiDataWidth ),
-    .MaxRequests  ( 8                   ),
+    .MaxRequests  ( 64                  ),
     .AxiProt      ( 3'b000              ),
     .axi_req_t    ( axi_mst_req_t       ),
     .axi_rsp_t    ( axi_mst_rsp_t       )
