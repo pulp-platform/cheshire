@@ -169,38 +169,67 @@ module cheshire_soc_wrapper # (
   //  DRAM  //
   ////////////
 
-  // axi_sim_mem #(
-  //   .AddrWidth          ( DutCfg.AddrWidth    ),
-  //   .DataWidth          ( DutCfg.AxiDataWidth ),
-  //   .IdWidth            ( $bits(axi_llc_id_t) ),
-  //   .UserWidth          ( DutCfg.AxiUserWidth ),
-  //   .axi_req_t          ( axi_llc_req_t ),
-  //   .axi_rsp_t          ( axi_llc_rsp_t ),
-  //   .WarnUninitialized  ( 0 ),
-  //   .ClearErrOnAccess   ( 1 ),
-  //   .ApplDelay          ( 0ps ),
-  //   .AcqDelay           ( 0ps )
-  // ) i_dram_sim_mem (
-  //   .clk_i              ( clk_i  ),
-  //   .rst_ni             ( rst_ni ),
-  //   .axi_req_i          ( axi_llc_mst_req ),
-  //   .axi_rsp_o          ( axi_llc_mst_rsp ),
-  //   .mon_w_valid_o      ( ),
-  //   .mon_w_addr_o       ( ),
-  //   .mon_w_data_o       ( ),
-  //   .mon_w_id_o         ( ),
-  //   .mon_w_user_o       ( ),
-  //   .mon_w_beat_count_o ( ),
-  //   .mon_w_last_o       ( ),
-  //   .mon_r_valid_o      ( ),
-  //   .mon_r_addr_o       ( ),
-  //   .mon_r_data_o       ( ),
-  //   .mon_r_id_o         ( ),
-  //   .mon_r_user_o       ( ),
-  //   .mon_r_beat_count_o ( ),
-  //   .mon_r_last_o       ( )
-  // );
-  assign axi_llc_mst_rsp = '0;
+  // Emulate DRAM using an AXI-to-MEM adapter and a huge tc_sram spanning the full address space.
+
+  logic                             dram_mem_req;
+  logic [DutCfg.AddrWidth-1:0]      dram_mem_addr;
+  logic [DutCfg.AxiDataWidth-1:0]   dram_mem_wdata;
+  logic [DutCfg.AxiDataWidth/8-1:0] dram_mem_strb;
+  logic                             dram_mem_we;
+  logic                             dram_mem_rvalid;
+  logic [DutCfg.AxiDataWidth-1:0]   dram_mem_rdata;
+
+  axi_to_mem #(
+    .axi_req_t    ( axi_llc_req_t       ),
+    .axi_resp_t   ( axi_llc_rsp_t       ),
+    .AddrWidth    ( DutCfg.AddrWidth    ),
+    .DataWidth    ( DutCfg.AxiDataWidth ),
+    .IdWidth      ( $bits(axi_llc_id_t) ),
+    .NumBanks     ( 1                   ),
+    .BufDepth     ( 1                   ),
+    .HideStrb     ( 1'b1                ),
+    .OutFifoDepth ( 1                   )
+  ) i_dram_axi (
+    .clk_i,
+    .rst_ni,
+    .busy_o       (                 ),
+    .axi_req_i    ( axi_llc_mst_req ),
+    .axi_resp_o   ( axi_llc_mst_rsp ),
+    .mem_req_o    ( dram_mem_req    ),
+    .mem_gnt_i    ( 1'b1            ),
+    .mem_addr_o   ( dram_mem_addr   ),
+    .mem_wdata_o  ( dram_mem_wdata  ),
+    .mem_strb_o   ( dram_mem_strb   ),
+    .mem_atop_o   (                 ),
+    .mem_we_o     ( dram_mem_we     ),
+    .mem_rvalid_i ( dram_mem_rvalid ),
+    .mem_rdata_i  ( dram_mem_rdata  )
+  );
+
+  // NOTE: This strategy ceases to work once we overflow 32-bit integers for NumDramWords, as
+  // tc_sram was never design for things like this.
+  localparam int unsigned DramDataWidth = $clog2(DutCfg.LlcOutRegionEnd - DutCfg.LlcOutRegionStart);
+  localparam int unsigned NumDramWords = (1 << DramDataWidth) / DutCfg.AxiDataWidth;
+  tc_sram #(
+    .NumWords  ( NumDramWords        ),
+    .DataWidth ( DutCfg.AxiDataWidth ),
+    .ByteWidth ( 8                   ),
+    .NumPorts  ( 1                   ),
+    .Latency   ( 1                   )
+  ) i_dram (
+    .clk_i,
+    .rst_ni,
+    .req_i   ( dram_mem_req                     ),
+    .we_i    ( dram_mem_we                      ),
+    .addr_i  ( dram_mem_addr[DramDataWidth-1:0] ),
+    .wdata_i ( dram_mem_wdata                   ),
+    .be_i    ( dram_mem_strb                    ),
+    .rdata_o ( dram_mem_rdata                   )
+  );
+
+  logic dram_mem_req_q;
+  `FF(dram_mem_req_q, dram_mem_req, 1'b0);
+  assign dram_mem_rvalid = dram_mem_req_q;
 
   ////////////
   //  UART  //
