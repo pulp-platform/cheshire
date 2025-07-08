@@ -122,23 +122,25 @@ module cheshire_idma_wrap #(
   axi_mst_req_t axi_read_req, axi_write_req;
   axi_mst_rsp_t axi_read_rsp, axi_write_rsp;
 
-  axi_to_reg #(
-    .ADDR_WIDTH ( AxiAddrWidth  ),
-    .DATA_WIDTH ( AxiDataWidth  ),
-    .ID_WIDTH   ( AxiSlvIdWidth ),
-    .USER_WIDTH ( AxiUserWidth  ),
-    .axi_req_t  ( axi_slv_req_t ),
-    .axi_rsp_t  ( axi_slv_rsp_t ),
-    .reg_req_t  ( dma_regs_req_t ),
-    .reg_rsp_t  ( dma_regs_rsp_t )
+  axi_to_reg_v2 #(
+    .AxiAddrWidth ( AxiAddrWidth  ),
+    .AxiDataWidth ( AxiDataWidth  ),
+    .AxiIdWidth   ( AxiSlvIdWidth ),
+    .AxiUserWidth ( AxiUserWidth  ),
+    .RegDataWidth ( 32 ),
+    .CutMemReqs   ( 1 ),
+    .axi_req_t    ( axi_slv_req_t ),
+    .axi_rsp_t    ( axi_slv_rsp_t ),
+    .reg_req_t    ( dma_regs_req_t ),
+    .reg_rsp_t    ( dma_regs_rsp_t )
   ) i_axi_translate (
     .clk_i,
     .rst_ni,
-    .testmode_i,
     .axi_req_i  ( axi_slv_req_i ),
     .axi_rsp_o  ( axi_slv_rsp_o ),
     .reg_req_o  ( dma_reg_req ),
-    .reg_rsp_i  ( dma_reg_rsp )
+    .reg_rsp_i  ( dma_reg_rsp ),
+    .busy_o     ( )
    );
 
   if (!IsTwoD) begin : gen_1d

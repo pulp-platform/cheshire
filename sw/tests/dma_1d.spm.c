@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Paul Scheffler <paulsc@iis.ee.ethz.ch>
+// Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 //
-// Simple 2D test for iDMA. This is intended *only for execution from SPM*.
+// Simple 1D test for iDMA. This is intended *only for execution from SPM*.
 
 #include "util.h"
 #include "dif/clint.h"
@@ -15,7 +15,7 @@ int main(void) {
     CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_HW_FEATURES_DMA_BIT));
 
     volatile char src_cached[] = "This is a DMA test";
-    volatile char gold[] = "This ishis is is is as is a DMA test!";
+    volatile char gold[] = "This is a DMA test!";
 
     // Allocate destination memory in SPM
     volatile char dst_cached[sizeof(gold)];
@@ -31,9 +31,9 @@ int main(void) {
     dst[sizeof(gold) - 2] = '!';
     dst[sizeof(gold) - 1] = '\0';
 
-    // Issue blocking 2D memcpy (exclude null terminator from source)
-    sys_dma_2d_blk_memcpy((uintptr_t)(void *)dst, (uintptr_t)(void *)src, sizeof(src_cached) - 4, 7,
-                          1, 4, DMA_CONF_DECOUPLE_NONE);
+    // Issue blocking memcpy (exclude null terminator from source)
+    sys_dma_blk_memcpy((uintptr_t)(void *)dst, (uintptr_t)(void *)src, sizeof(src_cached) - 1,
+                       DMA_CONF_DECOUPLE_NONE);
 
     // Check destination string
     int errors = sizeof(gold);
