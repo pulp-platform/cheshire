@@ -53,6 +53,6 @@ $(CHS_ROOT)/target/sim/verilator/cheshire_soc.vlt: $(CHS_ROOT)/target/sim/verila
 	@echo "#!/bin/sh" > $@
 	@echo 'set -eu' >> $@
 	@echo 'cd $$(dirname "$$0")' >> $@
-	@echo '$(VERILATOR_PREFIX) ./obj_dir/Vcheshire_soc_wrapper' >> $@
+	@echo '$(VERILATOR_PREFIX) ./obj_dir/Vcheshire_soc_wrapper "$$@"' >> $@
 	@chmod +x $@
 
