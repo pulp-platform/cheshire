@@ -10,7 +10,8 @@ function automatic cheshire_pkg::cheshire_cfg_t gen_cheshire_cfg();
 endfunction
 
 module cheshire_soc_wrapper # (
-  parameter cheshire_pkg::cheshire_cfg_t DutCfg = gen_cheshire_cfg()
+  parameter cheshire_pkg::cheshire_cfg_t DutCfg       = gen_cheshire_cfg(),
+  parameter int unsigned                 UartBaudRate = 8 * 115200
 ) (
   input logic clk_i,
   input logic rtc_i,
@@ -236,7 +237,7 @@ module cheshire_soc_wrapper # (
   ////////////
 
   verilator_uart_rx #(
-    .BaudPeriodCycles(1000 * 1000 * 1000 / 2500000 / 5)  // 1 second / baud rate / clock period
+    .BaudPeriodCycles(1000 * 1000 * 1000 / UartBaudRate / 5)  // 1 second / baud rate / clock period
   ) i_uart_rx (
     .clk_i,
     .rst_ni,
