@@ -60,6 +60,10 @@ public:
         *m_mem_be_o = 0;
     }
 
+    bool has_write() {
+        return !m_write_request_queue.empty();
+    }
+
     void write(uint64_t addr, uint64_t data) {
         m_write_request_queue.push({ addr, data });
     }
