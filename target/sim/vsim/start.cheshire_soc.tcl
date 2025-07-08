@@ -48,6 +48,9 @@ if { [info exists USE_DRAMSYS] } {
     }
 }
 
+# Need to link fesvr library
+append flags "-gblso /scratch/ga25f6/riscv-isa-sim/install/lib/libfesvr.so"
+
 # tclint-disable-next-line command-args
 eval "vsim -c ${TESTBENCH} -t 1ps -vopt -voptargs=\"${VOPTARGS}\"" ${pargs} ${flags}
 
