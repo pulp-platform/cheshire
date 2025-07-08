@@ -17,7 +17,7 @@
 
 #define RST_CYCLES 5
 
-#define SIMULATION_RATE_CHUNK 10000
+#define SIMULATION_RATE_CHUNK 50000
 
 // #define BENCHMARK
 
@@ -37,6 +37,11 @@ int  exit_code = 0;
 extern int jtag_tick(int port, unsigned char *jtag_TCK, unsigned char *jtag_TMS,
     unsigned char *jtag_TDI, unsigned char *jtag_TRSTn, unsigned char jtag_TDO);
 
+
+double get_seconds() {
+    auto duration = std::chrono::system_clock::now().time_since_epoch();
+    return std::chrono::duration_cast<std::chrono::microseconds>(duration).count() / 1e6;
+}
 
 static void jtag_tick_io() {
   static int count = 0;
@@ -161,6 +166,17 @@ int main(int argc, char** argv) {
     // This needs to be called before you create any model
     contextp->commandArgs(argc, argv);
 
+    const char *filename_plusarg = contextp->commandArgsPlusMatch("BINARY=");
+    if (strlen(filename_plusarg) == 0) {
+      VL_PRINTF("Error: no binary specified (+BINARY=...)\n");
+      return 1;
+    }
+    const char *filename = filename_plusarg + strlen("+BINARY=");
+    if (!filename || strlen(filename) == 0 || filename[0] != '/') {
+      VL_PRINTF("Error: +BINARY requires absolute path\n");
+      return 1;
+    }
+
     // "TOP" will be the hierarchical name of the module
     topp = std::make_unique<Vcheshire_soc_wrapper>(contextp.get(), "TOP");
 
@@ -182,6 +198,12 @@ int main(int argc, char** argv) {
     uint64_t next_rtc_toggle_ps = 0;
     bool reset_done = false;
 
+    uint64_t start_cycle = cycle;
+    uint64_t start_time = get_seconds();
+
+    uint64_t preload_done_cycle = 0;
+    double preload_done_time = -1;
+
     mem_master = std::make_unique<Mem64Master>(
         &topp->slink_mem_req_i,
         &topp->slink_mem_addr_i,
@@ -194,7 +216,6 @@ int main(int argc, char** argv) {
     );
 
     // ELF preloading
-    const char *filename = "../../../sw/tests/helloworld.spm.elf";
     if (!elf_preload_open(filename))
       return 1;
 
@@ -226,6 +247,12 @@ int main(int argc, char** argv) {
           // We should rather poll until the SPM has been configured properly.
           if (cycle == 2000)
             elf_preload_write_enqueue();
+
+          if (cycle > 2000 && !preload_done_cycle && !mem_master->has_write()) {
+            preload_done_cycle = cycle;
+            preload_done_time = get_seconds();
+            VL_PRINTF("[ELF] preload complete\n");
+          }
 
           // I/O
           if (reset_done) {
@@ -281,6 +308,18 @@ int main(int argc, char** argv) {
         }
     }
 
+    uint64_t exit_cycle = cycle;
+    double exit_time = get_seconds();
+
+    auto total_cycles = exit_cycle - start_cycle;
+    auto total_time = exit_time - start_time;
+    VL_PRINTF("[STAT] total:            %.3f seconds, %lu cycles, %.1f kHz\n",
+        total_time, total_cycles, total_cycles / total_time / 1e3);
+    auto run_cycles = exit_cycle - preload_done_cycle;
+    auto run_time = exit_time - preload_done_time;
+    VL_PRINTF("[STAT] after preloading: %.3f seconds, %lu cycles, %.1f kHz\n",
+        run_time, run_cycles, run_cycles / run_time / 1e3);
+
     // Final model cleanup
     topp->final();
 
@@ -295,6 +334,7 @@ int main(int argc, char** argv) {
 #endif
 
     // Final simulation summary
+    VL_PRINTF("\n");
     contextp->statsPrintSummary();
 
     // Return good completion status
