@@ -20,11 +20,9 @@ VERILATOR_ARGS += -O3 --x-assign fast --x-initial fast --noassert
 # Disable common_cells assertions
 VERILATOR_ARGS += -DASSERTS_OFF
 # multithreading
-VERILATOR_ARGS += --threads 12
+VERILATOR_ARGS += --threads 8
 # C++ Compiler Optimization
-# VERILATOR_ARGS += -CFLAGS "-march=native"
-# VERILATOR_ARGS += -CFLAGS "-mtune=native"
-# VERILATOR_ARGS += -CFLAGS "-O2"
+VERILATOR_ARGS += -CFLAGS "-O3" -CFLAGS "-march=native" -CFLAGS "-mtune=native"
 
 # Profiling
 # generates `gmon.out` that can be processed by `gprof` and then `verilator_profcfunc`
