@@ -555,7 +555,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     uart_boot_scoop_expect("ACK", UartDebugAck);
     // Preload
     uart_debug_elf_preload(binary, entry);
-  $display("[UART] Sending EXEC command for address %0x", entry);
+    $display("[UART] Sending EXEC command for address %0x", entry);
     // Send exec command and receive ACK
     uart_write_byte(UartDebugCmdExec);
     for (int i = 0; i < 8; ++i)
