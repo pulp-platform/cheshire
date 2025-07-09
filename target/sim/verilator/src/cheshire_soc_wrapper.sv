@@ -169,34 +169,41 @@ module cheshire_soc_wrapper # (
   //  DRAM  //
   ////////////
 
-  // Emulate DRAM using an AXI-to-MEM adapter and a huge tc_sram spanning the full address space.
+  // Emulate DRAM using an AXI-to-MEM adapter and a tc_sram
 
-  logic                             dram_mem_req;
-  logic [DutCfg.AddrWidth-1:0]      dram_mem_addr;
-  logic [DutCfg.AxiDataWidth-1:0]   dram_mem_wdata;
-  logic [DutCfg.AxiDataWidth/8-1:0] dram_mem_strb;
-  logic                             dram_mem_we;
-  logic                             dram_mem_rvalid;
-  logic [DutCfg.AxiDataWidth-1:0]   dram_mem_rdata;
+  // NOTE: This strategy ceases to work once we overflow 32-bit integers for NumDramWords, as
+  // tc_sram was never designed for things like this.
+  // This also assumes that the DRAM region is naturally aligned to a power of two.
+  localparam int unsigned DramAddrWidth     = $clog2(DutCfg.LlcOutRegionEnd - DutCfg.LlcOutRegionStart);
+  localparam int unsigned DramDataWidth     = DutCfg.AxiDataWidth;
 
-  axi_to_mem #(
+  logic [1:0]                      dram_mem_req;
+  logic [1:0][DramAddrWidth-1:0]   dram_mem_addr;
+  logic [1:0][DramDataWidth-1:0]   dram_mem_wdata;
+  logic [1:0][DramDataWidth/8-1:0] dram_mem_strb;
+  logic [1:0]                      dram_mem_we;
+  logic [1:0]                      dram_mem_rvalid;
+  logic [1:0][DramDataWidth-1:0]   dram_mem_rdata;
+
+  axi_to_mem_split #(
     .axi_req_t    ( axi_llc_req_t       ),
     .axi_resp_t   ( axi_llc_rsp_t       ),
-    .AddrWidth    ( DutCfg.AddrWidth    ),
-    .DataWidth    ( DutCfg.AxiDataWidth ),
+    .AddrWidth    ( DramAddrWidth       ),
+    .AxiDataWidth ( DramDataWidth       ),
     .IdWidth      ( $bits(axi_llc_id_t) ),
-    .NumBanks     ( 1                   ),
+    .MemDataWidth ( DramDataWidth       ),
     .BufDepth     ( 1                   ),
     .HideStrb     ( 1'b1                ),
     .OutFifoDepth ( 1                   )
   ) i_dram_axi (
     .clk_i,
     .rst_ni,
+    .test_i       ( 1'b0            ),
     .busy_o       (                 ),
     .axi_req_i    ( axi_llc_mst_req ),
     .axi_resp_o   ( axi_llc_mst_rsp ),
     .mem_req_o    ( dram_mem_req    ),
-    .mem_gnt_i    ( 1'b1            ),
+    .mem_gnt_i    ( 2'b11           ),
     .mem_addr_o   ( dram_mem_addr   ),
     .mem_wdata_o  ( dram_mem_wdata  ),
     .mem_strb_o   ( dram_mem_strb   ),
@@ -206,29 +213,35 @@ module cheshire_soc_wrapper # (
     .mem_rdata_i  ( dram_mem_rdata  )
   );
 
-  // NOTE: This strategy ceases to work once we overflow 32-bit integers for NumDramWords, as
-  // tc_sram was never design for things like this.
-  localparam int unsigned DramDataWidth = $clog2(DutCfg.LlcOutRegionEnd - DutCfg.LlcOutRegionStart);
-  localparam int unsigned NumDramWords = (1 << DramDataWidth) / DutCfg.AxiDataWidth;
+  localparam int unsigned DramWordAddrWidth = DramAddrWidth - $clog2(DramDataWidth / 8);
+  localparam int unsigned NumDramWords      = 1 << DramWordAddrWidth;
+
+  // Translate byte addresses (from axi_to_mem_split) to word addresses (for tc_sram)
+  logic [1:0][DramWordAddrWidth-1:0] dram_mem_word_addr;
+  assign dram_mem_word_addr = {
+    dram_mem_addr[1][DramAddrWidth-1:DramAddrWidth-DramWordAddrWidth],
+    dram_mem_addr[0][DramAddrWidth-1:DramAddrWidth-DramWordAddrWidth]
+  };
+
   tc_sram #(
-    .NumWords  ( NumDramWords        ),
-    .DataWidth ( DutCfg.AxiDataWidth ),
-    .ByteWidth ( 8                   ),
-    .NumPorts  ( 1                   ),
-    .Latency   ( 1                   )
-  ) i_dram (
+    .NumWords  ( NumDramWords  ),
+    .DataWidth ( DramDataWidth ),
+    .ByteWidth ( 8             ),
+    .NumPorts  ( 2             ),
+    .Latency   ( 1             )
+  ) i_dram(
     .clk_i,
     .rst_ni,
-    .req_i   ( dram_mem_req                     ),
-    .we_i    ( dram_mem_we                      ),
-    .addr_i  ( dram_mem_addr[DramDataWidth-1:0] ),
-    .wdata_i ( dram_mem_wdata                   ),
-    .be_i    ( dram_mem_strb                    ),
-    .rdata_o ( dram_mem_rdata                   )
+    .req_i   ( dram_mem_req       ),
+    .we_i    ( dram_mem_we        ),
+    .addr_i  ( dram_mem_word_addr ),
+    .wdata_i ( dram_mem_wdata     ),
+    .be_i    ( dram_mem_strb      ),
+    .rdata_o ( dram_mem_rdata     )
   );
 
-  logic dram_mem_req_q;
-  `FF(dram_mem_req_q, dram_mem_req, 1'b0);
+  logic [1:0] dram_mem_req_q;
+  `FF(dram_mem_req_q, dram_mem_req, 2'b0);
   assign dram_mem_rvalid = dram_mem_req_q;
 
   ////////////
