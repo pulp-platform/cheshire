@@ -978,7 +978,10 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     if (exit_code) $error("[SLINK] FAILED: return code %0d", exit_code);
     else $display("[SLINK] SUCCESS");
   endtask
-    task automatic wait_boot_pk();
+
+  // when running pk, there is not eoc, so it will never ends,
+  //that why you should us this function instead of slink_wait_for_eoc
+  task automatic wait_boot_pk();
     #(ClkPeriodSys * 200000 * 2); // wait 2s, pk should be booted (take around 1.5s).
   endtask
 
