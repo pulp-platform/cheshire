@@ -138,6 +138,9 @@ CHS_BROM_FLAGS = $(CHS_SW_LDFLAGS) -Os -fno-zero-initialized-in-bss -flto -fwhol
 $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.elf: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.ld $(CHS_BROM_SRCS)
 	$(CHS_SW_CC) $(CHS_SW_INCLUDES) -T$< $(CHS_BROM_FLAGS) -o $@ $(CHS_BROM_SRCS)
 
+$(CHS_ROOT)/hw/bootrom/cheshire_bootrom.dump: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.elf
+	$(CHS_SW_OBJDUMP) -d -S $< > $@
+
 $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.bin $(CHS_ROOT)/util/gen_bootrom.py
 	$(CHS_ROOT)/util/gen_bootrom.py --sv-module cheshire_bootrom $< > $@
 
