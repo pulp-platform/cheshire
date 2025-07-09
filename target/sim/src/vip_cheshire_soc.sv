@@ -550,7 +550,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     $display("[UART] Waiting for debug loop to start");
     #(UartWaitCycles*UartBaudPeriod);
     // We send an ACK challenge to the debug server and wait for an ACK response
-    $display("[UART] Sending ACK chellenge");
+    $display("[UART] Sending ACK challenge");
     uart_write_byte(UartDebugAck);
     uart_boot_scoop_expect("ACK", UartDebugAck);
     // Preload
