@@ -68,18 +68,20 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   inout  wire                 spih_sck,
   inout  wire [SpihNumCs-1:0] spih_csb,
   inout  wire [ 3:0]          spih_sd,
-  // Serial link interface
-  output logic [SlinkNumChan-1:0]                    slink_rcv_clk_i,
-  input  logic [SlinkNumChan-1:0]                    slink_rcv_clk_o,
-  output logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i,
-  input  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o,
+`ifdef FESVR_DTM
   // DMI
   output dm::dmi_req_t dmi_req,
   output logic         dmi_req_valid,
   input  logic         dmi_req_ready,
   input dm::dmi_resp_t dmi_resp,
   output logic         dmi_resp_ready,
-  input  logic         dmi_resp_valid
+  input  logic         dmi_resp_valid,
+`endif 
+  // Serial link interface
+  output logic [SlinkNumChan-1:0]                    slink_rcv_clk_i,
+  input  logic [SlinkNumChan-1:0]                    slink_rcv_clk_o,
+  output logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i,
+  input  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o
 );
 
   `include "cheshire/typedef.svh"
@@ -95,6 +97,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   import "DPI-C" function byte get_entry(output longint entry);
   import "DPI-C" function byte get_section(output longint address, output longint len);
   import "DPI-C" context function byte read_section(input longint address, inout byte buffer[], input longint len);
+`ifdef FESVR_DTM
   import "DPI-C" function int debug_tick
 (
   output bit     debug_req_valid,
@@ -108,6 +111,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   input  int        debug_resp_bits_resp,
   input  int        debug_resp_bits_data
 );
+`endif
 
   ////////////
   //  DRAM  //
@@ -978,6 +982,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     #(ClkPeriodSys * 200000 * 2); // wait 2s, pk should be booted (take around 1.5s).
   endtask
 
+`ifdef FESVR_DTM
   //////////////
   //  SimDTM  //
   //////////////
@@ -1000,6 +1005,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .debug_resp_bits_data ( dmi_resp.data      ),
     .exit                 ( sim_exit           )
   );
+`endif
 
 endmodule
 

@@ -151,8 +151,16 @@ $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: $(CHS_ROOT)/Bender.yml
 	$(BENDER) script vsim -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++17 -I/scratch/ga25f6/riscv-isa-sim/install/include" -cpppath "$(CXX_PATH)"' >> $@
 
+$(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc_fesvr.tcl: $(CHS_ROOT)/Bender.yml
+	$(BENDER) script vsim -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOG_ARGS) +define+FESVR_DTM" > $@
+	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++17 -I/scratch/ga25f6/riscv-isa-sim/install/include" -cpppath "$(CXX_PATH)"' >> $@
+
 $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh: $(CHS_ROOT)/Bender.yml
 	$(BENDER) script vcs -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOGAN_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
+	chmod +x $@
+
+$(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc_fesvr.sh: $(CHS_ROOT)/Bender.yml
+	$(BENDER) script vcs -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOGAN_ARGS) +define+FESVR_DTM" --vlogan-bin="$(VLOGAN)" > $@
 	chmod +x $@
 
 .PRECIOUS: $(CHS_ROOT)/target/sim/models
@@ -173,7 +181,9 @@ $(CHS_ROOT)/target/sim/models/24FC1025.v: $(CHS_ROOT)/Bender.yml | $(CHS_ROOT)/t
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
+CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc_fesvr.tcl
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh
+CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc_fesvr.sh
 
 ###########
 # DRAMSys #
