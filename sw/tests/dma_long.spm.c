@@ -23,7 +23,7 @@ int main(void) {
     for (int i = 1; i <= 11; ++i) {
         fence();
         uint64_t len = 1 << i;
-        uint64_t reps = 1024*1024 >> i;
+        uint64_t reps = 64*1024 >> i;
 
         mcycle_start = get_mcycle();
 
