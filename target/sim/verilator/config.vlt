@@ -1,0 +1,7 @@
+`verilator_config
+
+// CVA6: avoid wrong runtime results (probably a Verilator bug) from "combinational loops"
+// This can show up in some cases as a core deadlock.
+// Probably this issue: https://github.com/verilator/verilator/issues/5350
+split_var -module "load_unit" -var "req_port_i"
+split_var -module "load_unit" -var "req_port_o"

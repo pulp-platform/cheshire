@@ -53,6 +53,7 @@ target/sim/verilator/obj_dir/
 target/sim/verilator/*.flist
 target/sim/verilator/*.fst
 target/sim/verilator/*.vlt
+!target/sim/verilator/config.vlt
 target/sim/verilator/*.vcd
 target/sim/verilator/logs/
 target/sim/verilator/trace_hart_*.dasm
