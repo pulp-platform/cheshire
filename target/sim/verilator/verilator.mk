@@ -21,6 +21,8 @@ VERILATOR_ARGS  ?= -j 0 -Wall $(VERILATOR_WNO) -timescale 1ns/1ps
 VERILATOR_ARGS += -O3 --x-assign fast --x-initial fast --noassert
 # Disable common_cells assertions
 VERILATOR_ARGS += -DASSERTS_OFF
+# Disable CVA6 instruction tracer
+VERILATOR_ARGS += -DCVA6_NO_TRACE
 # multithreading
 VERILATOR_ARGS += --threads $(CHS_VERILATOR_THREADS)
 # C++ Compiler Optimization
