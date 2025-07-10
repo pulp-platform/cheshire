@@ -131,6 +131,8 @@ public:
 
             if (m_write_request_queue.empty()) {
                 printf("Mem64Master: emptied write queue\n");
+            } else if (m_write_request_queue.size() % 1000 == 0) {
+                printf("Mem64Master: %zu writes remaining\n", m_write_request_queue.size());
             }
         }
 
