@@ -11,7 +11,7 @@ endfunction
 
 module cheshire_soc_wrapper # (
   parameter cheshire_pkg::cheshire_cfg_t DutCfg       = gen_cheshire_cfg(),
-  parameter int unsigned                 UartBaudRate = 8 * 115200
+  parameter int unsigned                 UartBaudRate = 115200
 ) (
   input logic clk_i,
   input logic rtc_i,
