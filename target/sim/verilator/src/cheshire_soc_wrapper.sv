@@ -224,13 +224,13 @@ module cheshire_soc_wrapper # (
     dram_mem_addr[0][DramAddrWidth-1:DramAddrWidth-DramWordAddrWidth]
   };
 
-  tc_sram #(
+  verilator_ram #(
     .NumWords  ( NumDramWords  ),
     .DataWidth ( DramDataWidth ),
     .ByteWidth ( 8             ),
     .NumPorts  ( 2             ),
     .Latency   ( 1             )
-  ) i_dram(
+  ) i_dram (
     .clk_i,
     .rst_ni,
     .req_i   ( dram_mem_req       ),

@@ -84,7 +84,7 @@ static bool elf_preload_open(const char *filename) {
     return true;
 }
 
-static void elf_preload_write_enqueue() {
+static void elf_preload_write_enqueue(bool is_zsl) {
     long long section_address, section_len;
     size_t num_writes = 0;
 
@@ -93,6 +93,14 @@ static void elf_preload_write_enqueue() {
 
         char *buf = (char *)calloc(section_len + sizeof(uint64_t), 1);
         read_section_raw(section_address, buf, section_len);
+
+        if (is_zsl) {
+          assert(section_address == 0);
+          section_address = 0x10000000; // SPM start
+          VL_PRINTF("[ELF] ZSL will be loaded at 0x%llx instead of 0x0\n", section_address);
+        } else {
+          assert(section_address != 0);
+        }
 
         for (size_t i = 0; i < section_len; i += sizeof(uint64_t)) {
             mem_master->write(section_address + i, *(uint64_t *)(buf + i));
@@ -104,6 +112,7 @@ static void elf_preload_write_enqueue() {
 
     long long entry;
     get_entry(&entry);
+    VL_PRINTF("[ELF] entry point: %p\n", (void*)entry);
     // write entrypoint
     mem_master->write(0x03000000, entry);
     num_writes++;
@@ -112,6 +121,39 @@ static void elf_preload_write_enqueue() {
     num_writes++;
 
     VL_PRINTF("[ELF] enqueued %zu memory writes\n", num_writes);
+}
+
+static void bin_preload_write_enqueue(const char* bin_path, uint64_t load_addr) {
+    FILE *fp = fopen(bin_path, "rb");
+    if (!fp) {
+      perror("fopen");
+      exit(1);
+    }
+    fseek(fp, 0, SEEK_END);
+    uint64_t size = ftell(fp);
+    if (size >= 0x200000) size = 0x200000; // HACK: only load first page of fw_payload
+    fseek(fp, 0, SEEK_SET);
+    uint64_t num_words = (size + sizeof(uint64_t) - 1) / sizeof(uint64_t);
+    uint64_t* buf = (uint64_t*)calloc(num_words, sizeof(uint64_t));
+    size_t nread = fread(buf, 1, size, fp);
+    if (nread != size) {
+      VL_PRINTF("[BIN] Error: could not read entire file %s\n", bin_path);
+      exit(1);
+    }
+    fclose(fp);
+
+    size_t num_writes = 0;
+    for (size_t i = 0; i < num_words; i++) {
+      if (buf[i] == 0x0)
+        // skip writing zeros (for speed)
+        continue;
+
+      mem_master->write(load_addr + i * sizeof(uint64_t), buf[i]);
+      num_writes++;
+    }
+
+    free(buf);
+    VL_PRINTF("[BIN] enqueued %zu memory writes (skipped %zu zero words)\n", num_writes, num_words - num_writes);
 }
 
 static void poll_for_exit() {
@@ -166,16 +208,37 @@ int main(int argc, char** argv) {
     // This needs to be called before you create any model
     contextp->commandArgs(argc, argv);
 
+    // for (int i = 0; i < argc; i++) {
+    //   VL_PRINTF("%s\n", argv[i]);
+    // }
+
     const char *filename_plusarg = contextp->commandArgsPlusMatch("BINARY=");
     if (strlen(filename_plusarg) == 0) {
       VL_PRINTF("Error: no binary specified (+BINARY=...)\n");
       return 1;
     }
-    const char *filename = filename_plusarg + strlen("+BINARY=");
+    const char *filename = strdup(filename_plusarg + strlen("+BINARY="));
     if (!filename || strlen(filename) == 0 || filename[0] != '/') {
       VL_PRINTF("Error: +BINARY requires absolute path\n");
       return 1;
     }
+    VL_PRINTF("[ELF] BINARY: %s\n", filename);
+
+    const char *fw_payload_plusarg = contextp->commandArgsPlusMatch("FW_PAYLOAD=");
+    const char *fw_payload_bin = NULL;
+    if (strlen(fw_payload_plusarg) != 0) {
+      fw_payload_bin = strdup(fw_payload_plusarg + strlen("+FW_PAYLOAD="));
+      VL_PRINTF("[FW] FW_PAYLOAD: %s\n", fw_payload_bin);
+    }
+
+    const char *fw_dtb_plusarg = contextp->commandArgsPlusMatch("FW_DTB=");
+    const char *fw_dtb_bin = NULL;
+    if (strlen(fw_dtb_plusarg) != 0) {
+      fw_dtb_bin = strdup(fw_dtb_plusarg + strlen("+FW_DTB="));
+      VL_PRINTF("[FW] DTB: %s\n", fw_dtb_bin);
+    }
+
+    bool is_firmware = fw_payload_bin != NULL;
 
     // "TOP" will be the hierarchical name of the module
     topp = std::make_unique<Vcheshire_soc_wrapper>(contextp.get(), "TOP");
@@ -245,8 +308,14 @@ int main(int argc, char** argv) {
 
           // TODO: This is determined experimentally.
           // We should rather poll until the SPM has been configured properly.
-          if (cycle == 2000)
-            elf_preload_write_enqueue();
+          if (cycle == 2000) {
+            if (is_firmware) {
+              // preload payloads before the actual ZSL ELF, to avoid premature execution
+              bin_preload_write_enqueue(fw_payload_bin, 0x80000000);
+              bin_preload_write_enqueue(fw_dtb_bin, 0x80800000);
+            }
+            elf_preload_write_enqueue(is_firmware);
+          }
 
           if (cycle > 2000 && !preload_done_cycle && !mem_master->has_write()) {
             preload_done_cycle = cycle;
@@ -256,7 +325,7 @@ int main(int argc, char** argv) {
 
           // I/O
           if (reset_done) {
-            if (preload_done_cycle > 0)
+            if (!is_firmware && preload_done_cycle > 0)
               poll_for_exit();
 #if 0
             jtag_tick_io();
