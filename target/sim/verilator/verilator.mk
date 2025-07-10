@@ -28,7 +28,18 @@ VERILATOR_ARGS += --threads $(CHS_VERILATOR_THREADS)
 # C++ Compiler Optimization
 VERILATOR_ARGS += -CFLAGS "-O3" -CFLAGS "-march=native" -CFLAGS "-mtune=native"
 # Use Clang (faster simulation than GCC)
-VERILATOR_ARGS += --compiler clang -MAKEFLAGS "CC=clang" -MAKEFLAGS "CXX=clang++"
+VERILATOR_ARGS += --compiler clang -MAKEFLAGS "CC=clang" -MAKEFLAGS "CXX=clang++" -MAKEFLAGS "LINK=clang++"
+
+# Link Time Optimization (LTO)
+# VERILATOR_ARGS += -CFLAGS "-flto" -LDFLAGS "-flto"
+
+# Thread Profile-Guided Optimization (PGO)
+# VERILATOR_ARGS += --prof-pgo
+# VERILATOR_ARGS += profile.vlt
+
+# Compiler Profile-Guided Optimization (PGO)
+# VERILATOR_ARGS += -CFLAGS "-fprofile-generate" -MAKEFLAGS "LINK=clang++" -LDFLAGS "-fprofile-generate"
+# VERILATOR_ARGS += -CFLAGS "-fprofile-use=../default.profdata"
 
 # Profiling
 # generates `gmon.out` that can be processed by `gprof` and then `verilator_profcfunc`
