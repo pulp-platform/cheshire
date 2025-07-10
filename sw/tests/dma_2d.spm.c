@@ -34,6 +34,7 @@ int main(void) {
     // Issue blocking 2D memcpy (exclude null terminator from source)
     sys_dma_2d_blk_memcpy((uintptr_t)(void *)dst, (uintptr_t)(void *)src, sizeof(src_cached) - 4, 7,
                           1, 4, DMA_CONF_DECOUPLE_NONE);
+    fence();
 
     // Check destination string
     int errors = sizeof(gold);
