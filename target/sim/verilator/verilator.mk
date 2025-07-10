@@ -43,14 +43,14 @@ VERILATOR_CXX_SRCS = $(CHS_VERILATOR_DIR)/sim/main.cpp \
 	$(RISCV_DBG_DIR)/tb/remote_bitbang/remote_bitbang.c \
 	$(RISCV_DBG_DIR)/tb/remote_bitbang/sim_jtag.c
 
+VERILATOR_CONFIG = $(CHS_VERILATOR_DIR)/config.vlt
+
 $(CHS_VERILATOR_DIR)/cheshire_soc.flist: $(CHS_ROOT)/Bender.yml
 	$(BENDER) script verilator $(CHS_BENDER_RTL_FLAGS) > $@
-	# TODO: Add verilator target for these upstream to avoid patch-in
-	echo '$(shell $(BENDER) path axi)/src/axi_sim_mem.sv' >> $@
 
-$(CHS_ROOT)/target/sim/verilator/obj_dir/Vcheshire_soc_wrapper: $(CHS_ROOT)/target/sim/verilator/cheshire_soc.flist $(VERILATOR_CXX_SRCS)
+$(CHS_ROOT)/target/sim/verilator/obj_dir/Vcheshire_soc_wrapper: $(CHS_ROOT)/target/sim/verilator/cheshire_soc.flist $(VERILATOR_CXX_SRCS) $(VERILATOR_CONFIG)
 	+cd $(CHS_VERILATOR_DIR) && $(VERILATOR_PREFIX) $(VERILATOR) $(VERILATOR_ARGS) \
-		-DASSERTS_OFF -f $< $(VERILATOR_CXX_SRCS) \
+		-f $< $(VERILATOR_CXX_SRCS) $(VERILATOR_CONFIG) \
 		--cc --exe --build --top-module cheshire_soc_wrapper
 
 $(CHS_ROOT)/target/sim/verilator/cheshire_soc.vlt: $(CHS_ROOT)/target/sim/verilator/obj_dir/Vcheshire_soc_wrapper
