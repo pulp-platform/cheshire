@@ -37,7 +37,17 @@ module cheshire_soc_wrapper # (
   input  logic [DutCfg.AxiDataWidth/8-1:0] slink_mem_be_i,
   output logic                             slink_mem_gnt_o,
   output logic                             slink_mem_rsp_valid_o,
-  output logic [DutCfg.AxiDataWidth-1:0]   slink_mem_rsp_rdata_o
+  output logic [DutCfg.AxiDataWidth-1:0]   slink_mem_rsp_rdata_o,
+
+  // Memory Interface (DRAM)
+  input  logic                             dram_mem_req_i,
+  input  logic [DutCfg.AddrWidth-1:0]      dram_mem_addr_i,
+  input  logic                             dram_mem_we_i,
+  input  logic [DutCfg.AxiDataWidth-1:0]   dram_mem_wdata_i,
+  input  logic [DutCfg.AxiDataWidth/8-1:0] dram_mem_be_i,
+  output logic                             dram_mem_gnt_o,
+  output logic                             dram_mem_rsp_valid_o,
+  output logic [DutCfg.AxiDataWidth-1:0]   dram_mem_rsp_rdata_o
 );
 
   import cheshire_pkg::*;
@@ -178,13 +188,13 @@ module cheshire_soc_wrapper # (
   localparam int unsigned DramAddrWidth     = $clog2(DutCfg.LlcOutRegionEnd - DutCfg.LlcOutRegionStart);
   localparam int unsigned DramDataWidth     = DutCfg.AxiDataWidth;
 
-  logic [1:0]                      dram_mem_req;
-  logic [1:0][DramAddrWidth-1:0]   dram_mem_addr;
-  logic [1:0][DramDataWidth-1:0]   dram_mem_wdata;
-  logic [1:0][DramDataWidth/8-1:0] dram_mem_strb;
-  logic [1:0]                      dram_mem_we;
-  logic [1:0]                      dram_mem_rvalid;
-  logic [1:0][DramDataWidth-1:0]   dram_mem_rdata;
+  logic [2:0]                      dram_mem_req;
+  logic [2:0][DramAddrWidth-1:0]   dram_mem_addr;
+  logic [2:0][DramDataWidth-1:0]   dram_mem_wdata;
+  logic [2:0][DramDataWidth/8-1:0] dram_mem_strb;
+  logic [2:0]                      dram_mem_we;
+  logic [2:0]                      dram_mem_rvalid;
+  logic [2:0][DramDataWidth-1:0]   dram_mem_rdata;
 
   axi_to_mem_split #(
     .axi_req_t    ( axi_llc_req_t       ),
@@ -194,32 +204,55 @@ module cheshire_soc_wrapper # (
     .IdWidth      ( $bits(axi_llc_id_t) ),
     .MemDataWidth ( DramDataWidth       ),
     .BufDepth     ( 1                   ),
-    .HideStrb     ( 1'b1                ),
+    .HideStrb     ( 1'b0                ),
     .OutFifoDepth ( 1                   )
   ) i_dram_axi (
     .clk_i,
     .rst_ni,
-    .test_i       ( 1'b0            ),
-    .busy_o       (                 ),
-    .axi_req_i    ( axi_llc_mst_req ),
-    .axi_resp_o   ( axi_llc_mst_rsp ),
-    .mem_req_o    ( dram_mem_req    ),
-    .mem_gnt_i    ( 2'b11           ),
-    .mem_addr_o   ( dram_mem_addr   ),
-    .mem_wdata_o  ( dram_mem_wdata  ),
-    .mem_strb_o   ( dram_mem_strb   ),
-    .mem_atop_o   (                 ),
-    .mem_we_o     ( dram_mem_we     ),
-    .mem_rvalid_i ( dram_mem_rvalid ),
-    .mem_rdata_i  ( dram_mem_rdata  )
+    .test_i       ( 1'b0                 ),
+    .busy_o       (                      ),
+    .axi_req_i    ( axi_llc_mst_req      ),
+    .axi_resp_o   ( axi_llc_mst_rsp      ),
+    .mem_req_o    ( dram_mem_req[1:0]    ),
+    .mem_gnt_i    ( 2'b11                ),
+    .mem_addr_o   ( dram_mem_addr[1:0]   ),
+    .mem_wdata_o  ( dram_mem_wdata[1:0]  ),
+    .mem_strb_o   ( dram_mem_strb[1:0]   ),
+    .mem_atop_o   (                      ),
+    .mem_we_o     ( dram_mem_we[1:0]     ),
+    .mem_rvalid_i ( dram_mem_rvalid[1:0] ),
+    .mem_rdata_i  ( dram_mem_rdata[1:0]  )
   );
+
+  // direct access port from C++
+  assign dram_mem_req[2]      = dram_mem_req_i;
+  assign dram_mem_addr[2]     = dram_mem_addr_i;
+  assign dram_mem_wdata[2]    = dram_mem_wdata_i;
+  assign dram_mem_strb[2]     = dram_mem_be_i;
+  assign dram_mem_we[2]       = dram_mem_we_i;
+  assign dram_mem_gnt_o       = 1'b1;
+  assign dram_mem_rsp_valid_o = dram_mem_rvalid[2];
+  assign dram_mem_rsp_rdata_o = dram_mem_rdata[2];
 
   localparam int unsigned DramWordAddrWidth = DramAddrWidth - $clog2(DramDataWidth / 8);
   localparam int unsigned NumDramWords      = 1 << DramWordAddrWidth;
 
+  logic [DramAddrWidth-1:0] dram_mem_raddr_q;
+  `FF(dram_mem_raddr_q, dram_mem_addr[0], '0);
+
+  always_ff @(posedge clk_i) begin
+    // if (rst_ni && dram_mem_req[1] && dram_mem_we[1]) begin
+    //   $display("[DRAM] wrote 0x%x to address 0x%x", dram_mem_wdata[1], dram_mem_addr[1]);
+    // end
+    if (rst_ni && dram_mem_rvalid[0]) begin
+      $display("[DRAM] address 0x%x -> data 0x%x", dram_mem_raddr_q, dram_mem_rdata[0]);
+    end
+  end
+
   // Translate byte addresses (from axi_to_mem_split) to word addresses (for tc_sram)
-  logic [1:0][DramWordAddrWidth-1:0] dram_mem_word_addr;
+  logic [2:0][DramWordAddrWidth-1:0] dram_mem_word_addr;
   assign dram_mem_word_addr = {
+    dram_mem_addr[2][DramAddrWidth-1:DramAddrWidth-DramWordAddrWidth],
     dram_mem_addr[1][DramAddrWidth-1:DramAddrWidth-DramWordAddrWidth],
     dram_mem_addr[0][DramAddrWidth-1:DramAddrWidth-DramWordAddrWidth]
   };
@@ -228,7 +261,7 @@ module cheshire_soc_wrapper # (
     .NumWords  ( NumDramWords  ),
     .DataWidth ( DramDataWidth ),
     .ByteWidth ( 8             ),
-    .NumPorts  ( 2             ),
+    .NumPorts  ( 3             ),
     .Latency   ( 1             )
   ) i_dram (
     .clk_i,
@@ -241,8 +274,8 @@ module cheshire_soc_wrapper # (
     .rdata_o ( dram_mem_rdata     )
   );
 
-  logic [1:0] dram_mem_req_q;
-  `FF(dram_mem_req_q, dram_mem_req, 2'b0);
+  logic [2:0] dram_mem_req_q;
+  `FF(dram_mem_req_q, dram_mem_req, 3'b000);
   assign dram_mem_rvalid = dram_mem_req_q;
 
   ////////////
