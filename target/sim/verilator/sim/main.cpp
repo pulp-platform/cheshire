@@ -1,4 +1,5 @@
 #include <chrono> // timers
+#include <cstdint>
 #include <memory> // std::unique_ptr
 
 #include <verilated.h> // common Verilator routines
@@ -30,7 +31,8 @@ extern "C" {
 
 std::unique_ptr<VerilatedContext> contextp;
 std::unique_ptr<Vcheshire_soc_wrapper> topp;
-std::unique_ptr<Mem64Master> mem_master;
+std::unique_ptr<Mem64Master> slink_master;
+std::unique_ptr<Mem64Master> dram_master;
 bool do_exit = false;
 int  exit_code = 0;
 
@@ -75,6 +77,30 @@ static void handle_uart(char data) {
   }
 }
 
+static size_t write_chunk(uint64_t dst_addr, uint64_t* data, size_t num_words) {
+    assert(dst_addr % sizeof(uint64_t) == 0 && "aligned address");
+    size_t num_writes = 0;
+
+    for (size_t i = 0; i < num_words; i++) {
+        uint64_t word_addr = dst_addr + i * sizeof(uint64_t);
+        if (word_addr >= 0x80000000ULL && word_addr < 0x100000000ULL) {
+            // DRAM
+            if (data[i] == 0)
+                // DRAM is zero-initialized, so skip writing zero words
+                continue;
+            dram_master->write(word_addr, data[i]);
+            num_writes++;
+        } else {
+            slink_master->write(word_addr, data[i]);
+            num_writes++;
+        }
+    }
+
+    VL_PRINTF("[MEM] writing %zu words to %p (skipping %zu zero words)\n",
+        num_writes, (void *)dst_addr, num_words - num_writes);
+    return num_writes;
+}
+
 static bool elf_preload_open(const char *filename) {
     char ret = read_elf(filename);
     if (ret != 0) {
@@ -84,15 +110,16 @@ static bool elf_preload_open(const char *filename) {
     return true;
 }
 
-static void elf_preload_write_enqueue(bool is_zsl) {
+static uint64_t elf_preload_write_enqueue(bool is_zsl) {
     long long section_address, section_len;
     size_t num_writes = 0;
 
     while (get_section(&section_address, &section_len)) {
         VL_PRINTF("[ELF] loading section at 0x%llx (%lld bytes)\n", section_address, section_len);
+        size_t num_words = (section_len + sizeof(uint64_t) - 1) / sizeof(uint64_t); // div ceil
 
-        char *buf = (char *)calloc(section_len + sizeof(uint64_t), 1);
-        read_section_raw(section_address, buf, section_len);
+        uint64_t* buf = (uint64_t*)calloc(num_words, sizeof(uint64_t));
+        read_section_raw(section_address, (char *)buf, section_len);
 
         if (is_zsl) {
           assert(section_address == 0);
@@ -102,25 +129,14 @@ static void elf_preload_write_enqueue(bool is_zsl) {
           assert(section_address != 0);
         }
 
-        for (size_t i = 0; i < section_len; i += sizeof(uint64_t)) {
-            mem_master->write(section_address + i, *(uint64_t *)(buf + i));
-            num_writes++;
-        }
-
+        num_writes += write_chunk(section_address, buf, num_words);
         free(buf);
     }
+    VL_PRINTF("[ELF] enqueued %zu memory writes\n", num_writes);
 
     long long entry;
     get_entry(&entry);
-    VL_PRINTF("[ELF] entry point: %p\n", (void*)entry);
-    // write entrypoint
-    mem_master->write(0x03000000, entry);
-    num_writes++;
-    // set start bit (read by boot ROM)
-    mem_master->write(0x03000008, 2);
-    num_writes++;
-
-    VL_PRINTF("[ELF] enqueued %zu memory writes\n", num_writes);
+    return entry;
 }
 
 static void bin_preload_write_enqueue(const char* bin_path, uint64_t load_addr) {
@@ -131,7 +147,6 @@ static void bin_preload_write_enqueue(const char* bin_path, uint64_t load_addr) 
     }
     fseek(fp, 0, SEEK_END);
     uint64_t size = ftell(fp);
-    if (size >= 0x200000) size = 0x200000; // HACK: only load first page of fw_payload
     fseek(fp, 0, SEEK_SET);
     uint64_t num_words = (size + sizeof(uint64_t) - 1) / sizeof(uint64_t);
     uint64_t* buf = (uint64_t*)calloc(num_words, sizeof(uint64_t));
@@ -142,18 +157,16 @@ static void bin_preload_write_enqueue(const char* bin_path, uint64_t load_addr) 
     }
     fclose(fp);
 
-    size_t num_writes = 0;
-    for (size_t i = 0; i < num_words; i++) {
-      if (buf[i] == 0x0)
-        // skip writing zeros (for speed)
-        continue;
-
-      mem_master->write(load_addr + i * sizeof(uint64_t), buf[i]);
-      num_writes++;
-    }
-
+    write_chunk(load_addr, buf, num_words);
     free(buf);
-    VL_PRINTF("[BIN] enqueued %zu memory writes (skipped %zu zero words)\n", num_writes, num_words - num_writes);
+}
+
+static void elf_preload_start_enqueue(uint64_t entrypoint_addr) {
+    VL_PRINTF("[ELF] starting execution, entry point %p\n", (void*)entrypoint_addr);
+    // write entrypoint
+    slink_master->write(0x03000000, entrypoint_addr);
+    // set start bit (read by boot ROM)
+    slink_master->write(0x03000008, 2);
 }
 
 static void poll_for_exit() {
@@ -161,7 +174,7 @@ static void poll_for_exit() {
     static uint64_t idle_cycles = 0;
 
     if (request_inflight) {
-      auto maybe_response = mem_master->get_read_response();
+      auto maybe_response = slink_master->get_read_response();
       if (maybe_response) {
         auto data = maybe_response->data;
 
@@ -177,7 +190,7 @@ static void poll_for_exit() {
       idle_cycles++;
 
       if (idle_cycles >= 1000) {
-        mem_master->read(0x03000008);
+        slink_master->read(0x03000008);
         request_inflight = true;
       }
     }
@@ -267,7 +280,7 @@ int main(int argc, char** argv) {
     uint64_t preload_done_cycle = 0;
     double preload_done_time = -1;
 
-    mem_master = std::make_unique<Mem64Master>(
+    slink_master = std::make_unique<Mem64Master>(
         &topp->slink_mem_req_i,
         &topp->slink_mem_addr_i,
         &topp->slink_mem_we_i,
@@ -277,6 +290,19 @@ int main(int argc, char** argv) {
         &topp->slink_mem_rsp_valid_o,
         &topp->slink_mem_rsp_rdata_o
     );
+
+    dram_master = std::make_unique<Mem64Master>(
+        &topp->dram_mem_req_i,
+        &topp->dram_mem_addr_i,
+        &topp->dram_mem_we_i,
+        &topp->dram_mem_wdata_i,
+        &topp->dram_mem_be_i,
+        &topp->dram_mem_gnt_o,
+        &topp->dram_mem_rsp_valid_o,
+        &topp->dram_mem_rsp_rdata_o
+    );
+
+    uint64_t entrypoint_addr = -1;
 
     // ELF preloading
     if (!elf_preload_open(filename))
@@ -291,11 +317,13 @@ int main(int argc, char** argv) {
         if (!topp->clk_i) {
           if (cycle == 1) {
             // Apply Reset
+            VL_PRINTF("[RST] applying reset\n");
             topp->rst_ni = 0;
           }
 
           if (cycle == RST_CYCLES + 1) {
             // Release Reset
+            VL_PRINTF("[RST] releasing reset\n");
             topp->rst_ni = 1;
             reset_done = true;
           }
@@ -312,15 +340,19 @@ int main(int argc, char** argv) {
             if (is_firmware) {
               // preload payloads before the actual ZSL ELF, to avoid premature execution
               bin_preload_write_enqueue(fw_payload_bin, 0x80000000);
-              bin_preload_write_enqueue(fw_dtb_bin, 0x80800000);
+              bin_preload_write_enqueue(fw_dtb_bin,     0x90000000);
             }
-            elf_preload_write_enqueue(is_firmware);
+            entrypoint_addr = elf_preload_write_enqueue(is_firmware);
           }
 
-          if (cycle > 2000 && !preload_done_cycle && !mem_master->has_write()) {
-            preload_done_cycle = cycle;
-            preload_done_time = get_seconds();
-            VL_PRINTF("[ELF] preload complete\n");
+          if (cycle > 2000 && !preload_done_cycle) {
+            if (!slink_master->has_write() && !dram_master->has_write()) {
+              preload_done_cycle = cycle;
+              preload_done_time = get_seconds();
+              VL_PRINTF("[ELF] preload complete\n");
+
+              elf_preload_start_enqueue(entrypoint_addr);
+            }
           }
 
           // I/O
@@ -338,7 +370,8 @@ int main(int argc, char** argv) {
 
         // Monitor Synchronous Outputs: just before @(posedge clk_i)
         if (reset_done && topp->clk_i) {
-          mem_master->handle_before();
+          slink_master->handle_before();
+          dram_master->handle_before();
         }
 
         // Evaluate model
@@ -346,7 +379,8 @@ int main(int argc, char** argv) {
 
         // Apply Synchronous Inputs: just after @(posedge clk_i)
         if (reset_done && topp->clk_i) {
-          mem_master->handle_after();
+          slink_master->handle_after();
+          dram_master->handle_after();
         }
 
 #if VM_TRACE
