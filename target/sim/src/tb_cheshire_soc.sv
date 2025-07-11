@@ -29,6 +29,11 @@ module tb_cheshire_soc #(
     if (!$value$plusargs("BINARY=%s",   preload_elf))   preload_elf   = "";
     if (!$value$plusargs("IMAGE=%s",    boot_hex))      boot_hex      = "";
 
+`ifdef FESVR_DTM
+    // locking SimDTM
+    assign fix.vip.start_SimDTM = 1'b0;
+`endif
+
     // Set boot mode and preload boot image if there is one
     fix.vip.set_boot_mode(boot_mode);
     fix.vip.i2c_eeprom_preload(boot_hex);
@@ -37,9 +42,36 @@ module tb_cheshire_soc #(
     // Wait for reset
     fix.vip.wait_for_reset();
 
-// if using fesvr, the preloading is handled by fesvr dtm
-`ifndef FESVR_DTM
-    // Preload in idle mode or wait for completion in autonomous boot
+`ifdef FESVR_DTM
+    if (boot_mode == 0) begin
+      // Idle boot: preload with the specified mode
+      case (preload_mode)
+        // JTAG : jtag_dmi not connected when using fesvr
+        1: begin  // Serial Link
+          fix.vip.wait_boot_pk(); // tmp : to check that it works
+          assign fix.vip.start_SimDTM = 1'b1;
+        end 2: begin  // UART
+          fix.vip.wait_boot_pk(); // tmp : to check that it works
+          assign fix.vip.start_SimDTM = 1'b1;
+        end default: begin
+          $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);
+        end
+      endcase
+    end else if (boot_mode == 1) begin
+      $fatal(1, "Unsupported boot mode %d (SD Card)!", boot_mode);
+    end else begin
+      // Autonomous boot: Only poll return code
+      fix.vip.jtag_init();
+      fix.vip.jtag_wait_for_eoc(exit_code);
+    end
+
+    // Wait for the UART to finish reading the current byte
+    wait (fix.vip.uart_reading_byte == 0);
+
+    // finish will end the simulation but it's still running..
+    //$finish;
+  end
+`else
     if (boot_mode == 0) begin
       // Idle boot: preload with the specified mode
       case (preload_mode)

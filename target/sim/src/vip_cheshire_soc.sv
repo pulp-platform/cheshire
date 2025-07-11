@@ -990,23 +990,24 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   //  SimDTM  //
   //////////////
 
+  logic start_SimDTM; // wired up in the testbench 
   logic [31:0] sim_exit; // TODO: wire this up in the testbench
   logic [1:0] dmi_req_bits_op;
   assign dmi_req.op = dm::dtm_op_e'(dmi_req_bits_op); // need to check if it's this variable, 
 
   SimDTM i_SimDTM (
-    .clk                  ( clk                ),
-    .reset                ( rst_n              ),
-    .debug_req_valid      ( dmi_req_valid      ),
-    .debug_req_ready      ( dmi_req_ready      ),
-    .debug_req_bits_addr  ( dmi_req.addr       ),
-    .debug_req_bits_op    ( dmi_req_bits_op    ),
-    .debug_req_bits_data  ( dmi_req.data       ),
-    .debug_resp_valid     ( dmi_resp_valid     ),
-    .debug_resp_ready     ( dmi_resp_ready     ),
-    .debug_resp_bits_resp ( dmi_resp.resp      ),
-    .debug_resp_bits_data ( dmi_resp.data      ),
-    .exit                 ( sim_exit           )
+    .clk                  ( clk                  ),
+    .reset                ( rst_n & start_SimDTM ),
+    .debug_req_valid      ( dmi_req_valid        ),
+    .debug_req_ready      ( dmi_req_ready        ),
+    .debug_req_bits_addr  ( dmi_req.addr         ),
+    .debug_req_bits_op    ( dmi_req_bits_op      ),
+    .debug_req_bits_data  ( dmi_req.data         ),
+    .debug_resp_valid     ( dmi_resp_valid       ),
+    .debug_resp_ready     ( dmi_resp_ready       ),
+    .debug_resp_bits_resp ( dmi_resp.resp        ),
+    .debug_resp_bits_data ( dmi_resp.data        ),
+    .exit                 ( sim_exit             )
   );
 `endif
 
