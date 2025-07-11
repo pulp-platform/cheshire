@@ -58,20 +58,19 @@ set_property IOSTANDARD  LVCMOS18 [get_ports "uart_rx_i"] ;# Bank  67 VCCO - VCC
 set_property PACKAGE_PIN BB21     [get_ports "uart_tx_o"] ;# Bank  67 VCCO - VCC1V8   - IO_L2P_T0L_N2_67
 set_property IOSTANDARD  LVCMOS18 [get_ports "uart_tx_o"] ;# Bank  67 VCCO - VCC1V8   - IO_L2P_T0L_N2_67
 
-# Jtag GPIOs goes to the FMC XM105 where the debug cable is connected (example Digilent HS2)
-
-set_property PACKAGE_PIN AP35    [get_ports jtag_vdd_o] ; # AP35 - C14 (FMCP_HSPC_LA10_P) - J1.02 - VDD
-set_property IOSTANDARD LVCMOS18 [get_ports jtag_vdd_o] ;
-set_property PACKAGE_PIN AR35    [get_ports jtag_gnd_o] ; # AR35 - C15 (FMCP_HSPC_LA10_N) - J1.04 - GND
-set_property IOSTANDARD LVCMOS18 [get_ports jtag_gnd_o] ;
-set_property PACKAGE_PIN AJ30    [get_ports jtag_tdo_o] ; # AJ30 - H16 (FMCP_HSPC_LA11_P) - J52.5 - TDO
-set_property IOSTANDARD LVCMOS18 [get_ports jtag_tdo_o] ;
-set_property PACKAGE_PIN AJ31    [get_ports jtag_tck_i] ; # AJ31 - H17 (FMCP_HSPC_LA11_N) - J52.7 - TCK
-set_property IOSTANDARD LVCMOS18 [get_ports jtag_tck_i] ;
-set_property PACKAGE_PIN AH33    [get_ports jtag_tms_i] ; # AH33 - G15 (FMCP_HSPC_LA12_P) - J52.1 - TMS
-set_property IOSTANDARD LVCMOS18 [get_ports jtag_tms_i] ;
-set_property PACKAGE_PIN AH34    [get_ports jtag_tdi_i] ; # AH34 - G16 (FMCP_HSPC_LA12_N) - J52.3 - TDI
-set_property IOSTANDARD LVCMOS18 [get_ports jtag_tdi_i] ;
+# JTAG routed on J53 PMOD male pin header
+# PMOD1_0, J53.1 -> TMS
+set_property PACKAGE_PIN N28     [get_ports jtag_tms_i]
+set_property IOSTANDARD LVCMOS12 [get_ports jtag_tms_i]
+# PMOD1_1, J53.3 -> TDI
+set_property PACKAGE_PIN M30     [get_ports jtag_tdi_i]
+set_property IOSTANDARD LVCMOS12 [get_ports jtag_tdi_i]
+# PMOD1_2, J53.5 -> TDO
+set_property PACKAGE_PIN N30     [get_ports jtag_tdo_o]
+set_property IOSTANDARD LVCMOS12 [get_ports jtag_tdo_o]
+# PMOD1_3, J53.7 -> TCK
+set_property PACKAGE_PIN P30     [get_ports jtag_tck_i]
+set_property IOSTANDARD LVCMOS12 [get_ports jtag_tck_i]
 
 # Active high reset
 set_property PACKAGE_PIN L19 [get_ports sys_reset]
