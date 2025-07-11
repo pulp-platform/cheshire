@@ -971,6 +971,24 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     $display("[SLINK] Wrote launch signal and entry point 0x%h", entry);
   endtask
 
+    // Preload a binary without running it -> prerun ?
+  task automatic slink_elf_prerun(input string binary);
+    doub_bt entry;
+    // Wait for bootrom to ungate Serial Link
+    if (DutCfg.LlcNotBypass) begin
+      word_bt regval;
+      $display("[SLINK] Wait for LLC configuration");
+      slink_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
+    end
+    // Preload
+    slink_elf_preload(binary, entry);
+    // Write entry point
+    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_1_OFFSET, entry[63:32]);
+    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_0_OFFSET, entry[32:0]);
+    // Not resuming hart 0, handled by fesvr's dtm
+    $display("[SLINK] Wrote entry point 0x%h", entry);
+  endtask
+
   // Wait for termination signal and get return code
   task automatic slink_wait_for_eoc(output word_bt exit_code);
     slink_poll_bit0(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, exit_code, 800);

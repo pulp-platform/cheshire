@@ -46,12 +46,9 @@ module tb_cheshire_soc #(
     if (boot_mode == 0) begin
       // Idle boot: preload with the specified mode
       case (preload_mode)
-        // JTAG : jtag_dmi not connected when using fesvr
+        // Preload done only using slink in this case cause it's the fastest way available
         1: begin  // Serial Link
-          fix.vip.wait_boot_pk(); // tmp : to check that it works
-          assign fix.vip.start_SimDTM = 1'b1;
-        end 2: begin  // UART
-          fix.vip.wait_boot_pk(); // tmp : to check that it works
+          fix.vip.slink_elf_prerun(preload_elf);
           assign fix.vip.start_SimDTM = 1'b1;
         end default: begin
           $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);

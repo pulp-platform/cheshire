@@ -411,7 +411,13 @@ extern "C" char read_elf(const char *filename) {
 }
 #endif
 
-dtm_t* dtm;
+class preload_aware_dtm_t : public dtm_t {
+  public:
+    preload_aware_dtm_t(int argc, char **argv) : dtm_t(argc, argv) {}
+    bool is_address_preloaded(addr_t taddr, size_t len) override { return true; }
+};
+
+preload_aware_dtm_t* dtm;
 /*------------------------
 From SimDTM.cc
 ------------------------*/
@@ -437,7 +443,7 @@ extern "C" int debug_tick
       htif_argv[1] = (char*)"/scratch/ga25f6/cheshire/sw/apps/pk_dram";
       htif_argv[2] = (char*)"/scratch/ga25f6/cheshire/sw/apps/helloworld.o";
 
-      dtm = new dtm_t(htif_argc, htif_argv);
+      dtm = new preload_aware_dtm_t(htif_argc, htif_argv);
   }
 
 
