@@ -27,6 +27,8 @@ jobs:
         # Exclude generated headers (no license checker support for optional lines)
         exclude_paths: |
           sw/include/regs/*.h
+          sw/include/coremark/*
+          sw/lib/coremark/*
 
   lint-sv:
     runs-on: ubuntu-latest
@@ -69,6 +71,8 @@ jobs:
           }
         exclude: |
           ./sw/include/regs/*.h
+          ./sw/include/coremark/*
+          ./sw/lib/coremark/*
           ./target/sim/src/elfloader.cpp
           ./sw/tests/coremark.c
 

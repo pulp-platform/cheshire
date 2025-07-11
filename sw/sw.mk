@@ -54,9 +54,9 @@ COREMARK_ITERATIONS ?= 5000
 # The following parameter is the core frequency in Hz (e.g. 200'000'000 Hz)
 COREMARK_CLOCKS_PER_SEC ?= 200000000
 CHS_SW_DEPS_INCS += -I$(CHS_SW_DIR)/deps/coremark
-CHS_SW_DEPS_INCS += -I$(CHS_SW_DIR)/deps/coremark/cheshire
+CHS_SW_DEPS_INCS += -I$(CHS_SW_DIR)/include/coremark
 CHS_SW_DEPS_SRCS += $(wildcard $(CHS_SW_DIR)/deps/coremark/*.c)
-CHS_SW_DEPS_SRCS += $(wildcard $(CHS_SW_DIR)/deps/coremark/cheshire/*.c)
+CHS_SW_DEPS_SRCS += $(wildcard $(CHS_SW_DIR)/lib/coremark/*.c)
 COREMARK_SW_FLAGS += -DFLAGS_STR="\"$(COREMARK_FLAGS_STR)\"" -DITERATIONS=$(COREMARK_ITERATIONS) -DCLOCKS_PER_SEC=$(COREMARK_CLOCKS_PER_SEC)
 #############
 # Libraries #

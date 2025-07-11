@@ -8,4 +8,4 @@
 	ignore = dirty
 [submodule "sw/deps/coremark"]
 	path = sw/deps/coremark
-	url = https://github.com/yvantor/coremark.git
+	url = https://github.com/eembc/coremark.git
