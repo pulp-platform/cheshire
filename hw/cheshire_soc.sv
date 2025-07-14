@@ -8,6 +8,8 @@
 // Thomas Benz <tbenz@iis.ee.ethz.ch>
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
+`include "common_cells/registers.svh"
+
 module cheshire_soc import cheshire_pkg::*; #(
   // Cheshire config
   parameter cheshire_cfg_t Cfg = '0,
@@ -612,6 +614,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     logic [Cfg.AxiDataWidth-1:0] mem_wdata, mem_rdata;
     logic [(Cfg.AxiDataWidth/8)-1:0] mem_strb;
 
+    `FF(mem_rvalid, mem_req, 1'b0, clk_i, ndmreset_n)
+
     axi_to_mem #(
       .axi_req_t    (axi_ext_llc_req_t),
       .axi_resp_t   (axi_ext_llc_rsp_t),
@@ -629,7 +633,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_req_i    (axi_mem_req),
       .axi_resp_o   (axi_mem_rsp),
       .mem_req_o    (mem_req),
-      .mem_gnt_i    (mem_gnt),
+      .mem_gnt_i    (1'b1),
       .mem_addr_o   (mem_addr),
       .mem_wdata_o  (mem_wdata),
       .mem_strb_o   (mem_strb),
