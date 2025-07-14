@@ -591,13 +591,13 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     axi_cut #(
       .Bypass       (1'b0),
-      .aw_chan_t    (axi_ext_llc_aw_chan_t),
-      .w_chan_t     (axi_ext_llc_w_chan_t),
-      .b_chan_t     (axi_ext_llc_b_chan_t),
-      .ar_chan_t    (axi_ext_llc_ar_chan_t),
-      .r_chan_t     (axi_ext_llc_r_chan_t),
-      .axi_req_t    (axi_ext_llc_req_t),
-      .axi_resp_t   (axi_ext_llc_rsp_t)
+      .aw_chan_t    (axi_llc_aw_chan_t),
+      .w_chan_t     (axi_llc_w_chan_t),
+      .b_chan_t     (axi_llc_b_chan_t),
+      .ar_chan_t    (axi_llc_ar_chan_t),
+      .r_chan_t     (axi_llc_r_chan_t),
+      .axi_req_t    (axi_llc_req_t),
+      .axi_resp_t   (axi_llc_rsp_t)
     ) i_axi_mem_cut (
       .clk_i,
       .rst_ni     (ndmreset_n),
