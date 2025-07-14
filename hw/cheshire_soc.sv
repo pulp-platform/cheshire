@@ -609,7 +609,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .mst_resp_i (axi_mem_rsp)
     );
 
-    logic mem_req, mem_gnt, mem_we, mem_rvalid;
+    logic mem_req, mem_we, mem_rvalid;
     logic [Cfg.AddrWidth-1:0] mem_addr;
     logic [Cfg.AxiDataWidth-1:0] mem_wdata, mem_rdata;
     logic [(Cfg.AxiDataWidth/8)-1:0] mem_strb;
@@ -621,7 +621,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_resp_t   (axi_ext_llc_rsp_t),
       .AddrWidth    (Cfg.AddrWidth),
       .DataWidth    (Cfg.AxiDataWidth),
-      .IdWidth      (AxiSlvIdWidth),
+      .IdWidth      (AxiSlvIdWidth+1),
       .NumBanks     (1),
       .BufDepth     (1),
       .HideStrb     (1'b0),
