@@ -32,6 +32,10 @@
 
 #define SECTION(name) __attribute__((__section__(name)))
 
+#define ALIGN(x,a)              __ALIGN_MASK(x,(typeof(x))(a)-1)
+#define __ALIGN_MASK(x,mask)    (((x)+(mask))&~(mask))
+_Static_assert(ALIGN(0x3, 0x4) == 0x4);
+
 static inline uint32_t rdcycle() {
     uint32_t rv;
     asm volatile ("rdcycle %0": "=r" (rv) ::);
@@ -60,9 +64,21 @@ _Static_assert(sizeof(line_t) == 64, "sizeof line is 64bytes");
 
 _Static_assert(sizeof(line_t) * LLC_MAX_NUM_WAYS * LLC_WAY_NUM_LINES == 128 * 1024, "full sizeof cache is 128KiB");
 
+#if MITIGATION != MITIGATION_DPLLC
 volatile line_t data_trojan[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
 volatile line_t data_spy[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
+#else
 
+#define DPLLC_PARTITION_COMMON_LINES 8
+#define DPLLC_PARTITION_1_LINES 124 /* spy */
+#define DPLLC_PARTITION_2_LINES 124 /* trojan */
+#define DPLLC_SPY_PARTITION_LINES DPLLC_PARTITION_1_LINES
+#define DPLLC_TROJAN_PARTITION_LINES DPLLC_PARTITION_2_LINES
+_Static_assert(DPLLC_PARTITION_COMMON_LINES + DPLLC_PARTITION_1_LINES + DPLLC_PARTITION_2_LINES <= LLC_WAY_NUM_LINES);
+
+volatile line_t data_trojan[LLC_ACTIVE_NUM_WAYS][DPLLC_TROJAN_PARTITION_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
+volatile line_t data_spy[LLC_ACTIVE_NUM_WAYS][DPLLC_SPY_PARTITION_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
+#endif
 
 struct result {
     uint32_t cycle_count;
@@ -96,10 +112,6 @@ uint32_t random(void) {
 #if MITIGATION != MITIGATION_DPLLC
 volatile line_t manual_evict_data[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000)));
 #else
-#define DPLLC_PARTITION_COMMON_LINES 8
-#define DPLLC_PARTITION_1_LINES 124
-#define DPLLC_PARTITION_2_LINES 124
-_Static_assert(DPLLC_PARTITION_COMMON_LINES + DPLLC_PARTITION_1_LINES + DPLLC_PARTITION_2_LINES <= LLC_WAY_NUM_LINES);
 char manual_evict_end_marker[1];
 volatile line_t manual_evict_data_pat2[LLC_ACTIVE_NUM_WAYS][DPLLC_PARTITION_2_LINES] __attribute__((aligned(0x1000)));
 volatile line_t manual_evict_data_pat1[LLC_ACTIVE_NUM_WAYS][DPLLC_PARTITION_1_LINES] __attribute__((aligned(0x1000)));
@@ -152,7 +164,7 @@ void domain_switch(void) {
 
 
 void trojan(void) {
-    uint32_t secret = random() % LLC_WAY_NUM_LINES;
+    uint32_t secret = random() % DPLLC_TROJAN_PARTITION_LINES;
 
     for (uint32_t line = 0; line < secret; line++)  {
         for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
@@ -170,7 +182,7 @@ void trojan(void) {
 
 void spy(uint32_t round) {
     uint32_t before = rdcycle();
-    for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
+    for (uint32_t line = 0; line < DPLLC_SPY_PARTITION_LINES; line++)  {
         for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
             volatile void *v = &data_spy[way][line];
             volatile uint32_t rv;
@@ -344,7 +356,7 @@ int setup_dpllc() {
     };
 
     /* make sure that the data_ and the eviction data is contiguous as we rely on it */
-    CHECK_ASSERT(-7, ((uintptr_t)&data_trojan) + sizeof(data_trojan) == ((uintptr_t)&manual_evict_data_pat1));
+    CHECK_ASSERT(-7, (ALIGN(((uintptr_t)&data_trojan) + sizeof(data_trojan), 0x1000) == ((uintptr_t)&manual_evict_data_pat1)));
 
     for (uint32_t k = 0; k < TAGGER_NUM_REGIONS; k++) {
         uint32_t addr = region_configs[k].addr;
