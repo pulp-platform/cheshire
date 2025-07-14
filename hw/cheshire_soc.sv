@@ -586,6 +586,27 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_llc_events_o    ( /* TODO: connect me to regs? */ )
     );
 
+    axi_ext_llc_req_t axi_mem_req;
+    axi_ext_llc_rsp_t axi_mem_rsp;
+
+    axi_cut #(
+      .Bypass       (1'b0),
+      .aw_chan_t    (axi_ext_llc_aw_chan_t),
+      .w_chan_t     (axi_ext_llc_w_chan_t),
+      .b_chan_t     (axi_ext_llc_b_chan_t),
+      .ar_chan_t    (axi_ext_llc_ar_chan_t),
+      .r_chan_t     (axi_ext_llc_r_chan_t),
+      .axi_req_t    (axi_ext_llc_req_t),
+      .axi_resp_t   (axi_ext_llc_rsp_t)
+    ) i_axi_mem_cut (
+      .clk_i,
+      .rst_ni     (ndmreset_n),
+      .slv_req_i  (axi_llc_mst_req),
+      .slv_resp_o (axi_llc_mst_rsp),
+      .mst_req_o  (axi_mem_req),
+      .mst_resp_i (axi_mem_rsp)
+    );
+
     logic mem_req, mem_gnt, mem_we, mem_rvalid;
     logic [Cfg.AddrWidth-1:0] mem_addr;
     logic [Cfg.AxiDataWidth-1:0] mem_wdata, mem_rdata;
@@ -605,8 +626,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clk_i,
       .rst_ni       (ndmreset_n),
       .busy_o       (),
-      .axi_req_i    (axi_llc_mst_req),
-      .axi_resp_o   (axi_llc_mst_rsp),
+      .axi_req_i    (axi_mem_req),
+      .axi_resp_o   (axi_mem_rsp),
       .mem_req_o    (mem_req),
       .mem_gnt_i    (mem_gnt),
       .mem_addr_o   (mem_addr),
