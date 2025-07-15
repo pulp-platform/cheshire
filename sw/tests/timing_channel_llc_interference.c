@@ -738,5 +738,7 @@ int main(void) {
 
     printf("QED\r\n");
 
+    while (1);
+
     return 0;
 }
