@@ -672,7 +672,7 @@ package cheshire_pkg;
     LlcAmoPostCut     : 1,
     LlcOutConnect     : 1,
     LlcOutRegionStart : 'h8000_0000,
-    LlcOutRegionEnd   : 64'h1_0000_0000,
+    LlcOutRegionEnd   : 64'h8010_0000,
     LlcUserMsb        : 0,
     LlcUserLsb        : 0,
     LlcCachePartition : 1,

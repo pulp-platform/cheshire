@@ -643,7 +643,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .mem_rdata_i  (mem_rdata)
     );
 
-    localparam int NumWords = 512*1024*8/Cfg.AxiDataWidth; // 512 KiB
+    localparam int NumWords = 1024*1024*8/Cfg.AxiDataWidth; // 1 MiB
 
     tc_sram #(
       .NumWords    (NumWords),
