@@ -69,12 +69,16 @@ volatile line_t data_trojan[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute_
 volatile line_t data_spy[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
 #else
 
-#define DPLLC_PARTITION_COMMON_LINES 8
-#define DPLLC_PARTITION_1_LINES 124 /* spy */
-#define DPLLC_PARTITION_2_LINES 124 /* trojan */
+#define DPLLC_PARTITION_0_LINES 8   /* common code/data */
+#define DPLLC_PARTITION_1_LINES 120 /* spy */
+#define DPLLC_PARTITION_2_LINES 120 /* trojan */
+#define DPLLC_PARTITION_3_LINES 8   /* results */
+
+#define DPLLC_PARTITION_COMMON_LINES DPLLC_PARTITION_0_LINES
 #define DPLLC_SPY_PARTITION_LINES DPLLC_PARTITION_1_LINES
 #define DPLLC_TROJAN_PARTITION_LINES DPLLC_PARTITION_2_LINES
-_Static_assert(DPLLC_PARTITION_COMMON_LINES + DPLLC_PARTITION_1_LINES + DPLLC_PARTITION_2_LINES <= LLC_WAY_NUM_LINES);
+#define DPLLC_RESULTS_PARTITION_LINES DPLLC_PARTITION_3_LINES
+_Static_assert(DPLLC_PARTITION_0_LINES + DPLLC_PARTITION_1_LINES + DPLLC_PARTITION_2_LINES + DPLLC_PARTITION_3_LINES <= LLC_WAY_NUM_LINES);
 
 volatile line_t data_trojan[LLC_ACTIVE_NUM_WAYS][DPLLC_TROJAN_PARTITION_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
 volatile line_t data_spy[LLC_ACTIVE_NUM_WAYS][DPLLC_SPY_PARTITION_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
@@ -89,6 +93,7 @@ struct result {
    the spy round, and we write after.
 */
 struct result results[DATA_POINTS] SECTION(".results");
+extern void *__results_end;
 uint32_t current_secret;
 
 uint32_t random(void) {
@@ -341,11 +346,15 @@ int setup_dpllc() {
         /* the manual evict data (partition 2) ends at the marker
             belongs to partition 2. */
         [ 5] = { .addr = (uintptr_t)&manual_evict_end_marker, .conf = TaggerAddrConf_TOR, .patid = 2 },
+        /* then everything else in .bss is partition 0 (common)
+           up to the start of results.
+        */
+        [ 6] = { .addr = (uintptr_t)&results, .conf = TaggerAddrConf_TOR, .patid = 0 },
+        /* then results lives in partition 3. */
+        [ 7] = { .addr = (uintptr_t)&__results_end, .conf = TaggerAddrConf_TOR, .patid = 3 },
         /* then the rest of memory (assumed: 8MiB) is left in partition 0 */
-        [ 6] = { .addr = 0x80800000, .conf = TaggerAddrConf_TOR, .patid = 0 },
+        [ 8] = { .addr = 0x80800000, .conf = TaggerAddrConf_TOR, .patid = 0 },
         /* then the rest of the physical address range is left unspecified. */
-        [ 7] = { .conf = TaggerAddrConf_Off },
-        [ 8] = { .conf = TaggerAddrConf_Off },
         [ 9] = { .conf = TaggerAddrConf_Off },
         [10] = { .conf = TaggerAddrConf_Off },
         [11] = { .conf = TaggerAddrConf_Off },
@@ -577,10 +586,10 @@ int setup_dpllc() {
              is interfering with all our other part1/part2 interactions
     */
     static const uint32_t partition_set_sizes[LLC_MAXPARTITION] = {
-        [ 0] = DPLLC_PARTITION_COMMON_LINES,
+        [ 0] = DPLLC_PARTITION_0_LINES,
         [ 1] = DPLLC_PARTITION_1_LINES,
         [ 2] = DPLLC_PARTITION_2_LINES,
-        [ 3] = 0,
+        // [ 3] = DPLLC_PARTITION_3_LINES,
         [ 4] = 0,
         [ 5] = 0,
         [ 6] = 0,

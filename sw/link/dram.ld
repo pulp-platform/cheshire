@@ -41,4 +41,9 @@ SECTIONS {
     *(.bulk)
     *(.bulk.*)
   } > dram
+
+  .results 0x80056000 : ALIGN(16) {
+    *(.results)
+    __results_end = .;
+  } > dram
 }
