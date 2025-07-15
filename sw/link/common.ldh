@@ -17,7 +17,8 @@ MEMORY {
   extrom (rx)   : ORIGIN = 0x00000000, LENGTH = 48K
   spm (rwx)     : ORIGIN = 0x10000000, LENGTH = 64K
   /* We  assume at least 8 MiB of DRAM (minimum for Linux). */
-  dram (rwx)    : ORIGIN = 0x80000000, LENGTH = 8M
+  /* XXXX: SRAM DRAM implementation */
+  dram (rwx)    : ORIGIN = 0x80000000, LENGTH = 512K
 }
 
 SECTIONS {
