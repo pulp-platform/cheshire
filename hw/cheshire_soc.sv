@@ -643,8 +643,10 @@ module cheshire_soc import cheshire_pkg::*; #(
       .mem_rdata_i  (mem_rdata)
     );
 
+    localparam int NumWords = 512*1024*8/Cfg.AxiDataWidth; // 512 KiB
+
     tc_sram #(
-      .NumWords    (512*1024*8/Cfg.AxiDataWidth), // 512 KiB
+      .NumWords    (NumWords),
       .DataWidth   (Cfg.AxiDataWidth),
       .ByteWidth   (8),
       .NumPorts    (1),
@@ -657,7 +659,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .rst_ni  (ndmreset_n),
       .req_i   (mem_req),
       .we_i    (mem_we),
-      .addr_i  (mem_addr),
+      .addr_i  (mem_addr[$clog2(Cfg.AxiDataWidth/8)+:$clog2(NumWords)]),
       .wdata_i (mem_wdata),
       .be_i    (mem_strb),
       .rdata_o (mem_rdata)
