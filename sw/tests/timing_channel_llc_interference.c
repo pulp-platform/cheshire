@@ -351,7 +351,7 @@ int setup_dpllc() {
         */
         [ 6] = { .addr = (uintptr_t)&results, .conf = TaggerAddrConf_TOR, .patid = 0 },
         /* then results lives in partition 3. */
-        [ 7] = { .addr = (uintptr_t)&__results_end, .conf = TaggerAddrConf_TOR, .patid = 4 },
+        [ 7] = { .addr = (uintptr_t)&__results_end, .conf = TaggerAddrConf_TOR, .patid = 3 },
         /* then the rest of memory (assumed: 8MiB) is left in partition 0 */
         [ 8] = { .addr = 0x80800000, .conf = TaggerAddrConf_TOR, .patid = 0 },
         /* then the rest of the physical address range is left unspecified. */
@@ -585,10 +585,8 @@ int setup_dpllc() {
         [ 0] = DPLLC_PARTITION_0_LINES,
         [ 1] = DPLLC_PARTITION_1_LINES,
         [ 2] = DPLLC_PARTITION_2_LINES,
-        // XXXX: Partition 3 seems broken?? Use partition 4 instead...?????
-        // [ 3] = DPLLC_PARTITION_3_LINES,
-        [ 3] = 0,
-        [ 4] = DPLLC_PARTITION_3_LINES,
+        [ 3] = DPLLC_PARTITION_3_LINES,
+        [ 4] = 0,
         [ 5] = 0,
         [ 6] = 0,
         [ 7] = 0,
@@ -612,14 +610,15 @@ int setup_dpllc() {
         uint32_t reg_lo = *reg32(&__base_llc, AXI_LLC_CFG_SET_PARTITION_LOW_N_REG_OFFSET(reg_no));
         uint32_t reg_hi = *reg32(&__base_llc, AXI_LLC_CFG_SET_PARTITION_HIGH_N_REG_OFFSET(reg_no));
         uint64_t reg = reg_lo | ((uint64_t)reg_hi << 32);
+        uint64_t old_reg = reg;
 
         uint32_t size = partition_set_sizes[partition];
         printf("partition %d is reg %d bits %d..%d (size: %x, orig value: %016lx)\r\n", partition, reg_no, lo_bit, hi_bit, size, reg);
 
-        uint32_t mask = BIT_MASK(PARTITION_SET_SIZE_BITS) << (lo_bit);
+        uint64_t mask = ((uint64_t)BIT_MASK(PARTITION_SET_SIZE_BITS)) << (lo_bit);
         reg &= ~mask;
         CHECK_ASSERT(-6, size < BIT(PARTITION_SET_SIZE_BITS));
-        reg |= size << lo_bit;
+        reg |= ((uint64_t)size) << lo_bit;
 
         reg_lo = reg & BIT_MASK(32);
         reg_hi = (reg >> 32) & BIT_MASK(32);
@@ -627,7 +626,9 @@ int setup_dpllc() {
         *reg32(&__base_llc, AXI_LLC_CFG_SET_PARTITION_LOW_N_REG_OFFSET(reg_no)) = reg_lo;
         *reg32(&__base_llc, AXI_LLC_CFG_SET_PARTITION_HIGH_N_REG_OFFSET(reg_no)) = reg_hi;
 
-        printf("-> new value: %016lx\r\n", reg);
+        if (reg != old_reg) {
+            printf("-> new value: %016lx\r\n", reg);
+        }
 
         lo_bit += 8;
         if (lo_bit >= 64) {
@@ -679,8 +680,8 @@ int main(void) {
 #endif
 
     printf("evicting\r\n");
-
     evict_llc();
+    printf("fencing\r\n");
     sfence();
     ifence();
 
