@@ -351,7 +351,7 @@ int setup_dpllc() {
         */
         [ 6] = { .addr = (uintptr_t)&results, .conf = TaggerAddrConf_TOR, .patid = 0 },
         /* then results lives in partition 3. */
-        [ 7] = { .addr = (uintptr_t)&__results_end, .conf = TaggerAddrConf_TOR, .patid = 3 },
+        [ 7] = { .addr = (uintptr_t)&__results_end, .conf = TaggerAddrConf_TOR, .patid = 4 },
         /* then the rest of memory (assumed: 8MiB) is left in partition 0 */
         [ 8] = { .addr = 0x80800000, .conf = TaggerAddrConf_TOR, .patid = 0 },
         /* then the rest of the physical address range is left unspecified. */
@@ -585,8 +585,10 @@ int setup_dpllc() {
         [ 0] = DPLLC_PARTITION_0_LINES,
         [ 1] = DPLLC_PARTITION_1_LINES,
         [ 2] = DPLLC_PARTITION_2_LINES,
-        [ 3] = DPLLC_PARTITION_3_LINES,
-        [ 4] = 0,
+        // XXXX: Partition 3 seems broken?? Use partition 4 instead...?????
+        // [ 3] = DPLLC_PARTITION_3_LINES,
+        [ 3] = 0,
+        [ 4] = DPLLC_PARTITION_3_LINES,
         [ 5] = 0,
         [ 6] = 0,
         [ 7] = 0,
