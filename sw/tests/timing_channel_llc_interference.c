@@ -65,24 +65,22 @@ _Static_assert(sizeof(line_t) == 64, "sizeof line is 64bytes");
 _Static_assert(sizeof(line_t) * LLC_MAX_NUM_WAYS * LLC_WAY_NUM_LINES == 128 * 1024, "full sizeof cache is 128KiB");
 
 #if MITIGATION != MITIGATION_DPLLC
-volatile line_t data_trojan[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
-volatile line_t data_spy[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
+#define TROJAN_LINES LLC_WAY_NUM_LINES
+#define SPY_LINES    LLC_WAY_NUM_LINES
 #else
-
 #define DPLLC_PARTITION_0_LINES 8   /* common code/data */
 #define DPLLC_PARTITION_1_LINES 120 /* spy */
 #define DPLLC_PARTITION_2_LINES 120 /* trojan */
 #define DPLLC_PARTITION_3_LINES 8   /* results */
 
-#define DPLLC_PARTITION_COMMON_LINES DPLLC_PARTITION_0_LINES
-#define DPLLC_SPY_PARTITION_LINES DPLLC_PARTITION_1_LINES
-#define DPLLC_TROJAN_PARTITION_LINES DPLLC_PARTITION_2_LINES
-#define DPLLC_RESULTS_PARTITION_LINES DPLLC_PARTITION_3_LINES
-_Static_assert(DPLLC_PARTITION_0_LINES + DPLLC_PARTITION_1_LINES + DPLLC_PARTITION_2_LINES + DPLLC_PARTITION_3_LINES <= LLC_WAY_NUM_LINES);
+#define SPY_LINES DPLLC_PARTITION_1_LINES
+#define TROJAN_LINES DPLLC_PARTITION_2_LINES
 
-volatile line_t data_trojan[LLC_ACTIVE_NUM_WAYS][DPLLC_TROJAN_PARTITION_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
-volatile line_t data_spy[LLC_ACTIVE_NUM_WAYS][DPLLC_SPY_PARTITION_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
+_Static_assert(DPLLC_PARTITION_0_LINES + DPLLC_PARTITION_1_LINES + DPLLC_PARTITION_2_LINES + DPLLC_PARTITION_3_LINES <= LLC_WAY_NUM_LINES);
 #endif
+
+volatile line_t data_trojan[LLC_ACTIVE_NUM_WAYS][TROJAN_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
+volatile line_t data_spy[LLC_ACTIVE_NUM_WAYS][SPY_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
 
 struct result {
     uint32_t cycle_count;
@@ -169,7 +167,7 @@ void domain_switch(void) {
 
 
 void trojan(void) {
-    uint32_t secret = random() % DPLLC_TROJAN_PARTITION_LINES;
+    uint32_t secret = random() % TROJAN_LINES;
 
     for (uint32_t line = 0; line < secret; line++)  {
         for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
@@ -187,7 +185,7 @@ void trojan(void) {
 
 void spy(uint32_t round) {
     uint32_t before = rdcycle();
-    for (uint32_t line = 0; line < DPLLC_SPY_PARTITION_LINES; line++)  {
+    for (uint32_t line = 0; line < SPY_LINES; line++)  {
         for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
             volatile void *v = &data_spy[way][line];
             volatile uint32_t rv;
