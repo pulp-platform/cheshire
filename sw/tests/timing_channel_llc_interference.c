@@ -25,7 +25,7 @@
 
 #define MITIGATION          MITIGATION_DPLLC
 
-#define DATA_POINTS 20480
+#define DATA_POINTS 1024
 
 #define SPY_COLOUR      0
 #define TROJAN_COLOUR   1
