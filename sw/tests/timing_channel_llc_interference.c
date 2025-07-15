@@ -629,6 +629,8 @@ int setup_dpllc() {
         }
     }
 
+    printf("committing changes\r\n");
+
     /* Commit changes to CfgSetPartition */
     *reg32(&__base_llc, AXI_LLC_COMMIT_PARTITION_CFG_REG_OFFSET) = BIT(AXI_LLC_COMMIT_PARTITION_CFG_COMMIT_BIT);
 
@@ -669,6 +671,8 @@ int main(void) {
     };
 #endif
 
+    printf("evicting\r\n");
+
     evict_llc();
     sfence();
     ifence();
@@ -706,7 +710,7 @@ int main(void) {
 
     for (uint32_t round = 0; round < DATA_POINTS; round++) {
         if (round % 1000 == 0) {
-            printf("1000 points done\r\n");
+            printf("%d points done\r\n", round);
         }
 
         /* spy "initial": prime */
