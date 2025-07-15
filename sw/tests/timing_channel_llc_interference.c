@@ -580,16 +580,12 @@ int setup_dpllc() {
        anything in partition 0 (or any others) should bypass the cache and
        just go directly to memory.
        This is good for our purposes.
-
-       XXXX: That doesn't seem to work, see reworked3.
-       XXXX: Yep, see the reworked ones, we can definitely see that if pat0
-             is interfering with all our other part1/part2 interactions
     */
     static const uint32_t partition_set_sizes[LLC_MAXPARTITION] = {
         [ 0] = DPLLC_PARTITION_0_LINES,
         [ 1] = DPLLC_PARTITION_1_LINES,
         [ 2] = DPLLC_PARTITION_2_LINES,
-        // [ 3] = DPLLC_PARTITION_3_LINES,
+        [ 3] = DPLLC_PARTITION_3_LINES,
         [ 4] = 0,
         [ 5] = 0,
         [ 6] = 0,
