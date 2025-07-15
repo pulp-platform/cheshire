@@ -69,11 +69,9 @@ volatile line_t data_trojan[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute_
 volatile line_t data_spy[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
 #else
 
-#define DPLLC_PARTITION_0_LINES 8 /* common */
-#define DPLLC_PARTITION_1_LINES 96 /* spy */
-#define DPLLC_PARTITION_2_LINES 96 /* trojan */
-
-#define DPLLC_PARTITION_COMMON_LINES DPLLC_PARTITION_0_LINES
+#define DPLLC_PARTITION_COMMON_LINES 8
+#define DPLLC_PARTITION_1_LINES 124 /* spy */
+#define DPLLC_PARTITION_2_LINES 124 /* trojan */
 #define DPLLC_SPY_PARTITION_LINES DPLLC_PARTITION_1_LINES
 #define DPLLC_TROJAN_PARTITION_LINES DPLLC_PARTITION_2_LINES
 _Static_assert(DPLLC_PARTITION_COMMON_LINES + DPLLC_PARTITION_1_LINES + DPLLC_PARTITION_2_LINES <= LLC_WAY_NUM_LINES);
@@ -117,7 +115,6 @@ volatile line_t manual_evict_data[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attr
 char manual_evict_end_marker[1];
 volatile line_t manual_evict_data_pat2[LLC_ACTIVE_NUM_WAYS][DPLLC_PARTITION_2_LINES] __attribute__((aligned(0x1000)));
 volatile line_t manual_evict_data_pat1[LLC_ACTIVE_NUM_WAYS][DPLLC_PARTITION_1_LINES] __attribute__((aligned(0x1000)));
-volatile line_t manual_evict_data_pat0[LLC_ACTIVE_NUM_WAYS][DPLLC_PARTITION_0_LINES] __attribute__((aligned(0x1000)));
 #endif
 #endif
 
@@ -150,13 +147,6 @@ for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
     for (uint32_t line = 0; line < DPLLC_PARTITION_2_LINES; line++)  {
         for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
             volatile void *v = &manual_evict_data_pat2[way][line];
-            volatile uint32_t rv;
-            asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
-        }
-    }
-    for (uint32_t line = 0; line < DPLLC_PARTITION_0_LINES; line++)  {
-        for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
-            volatile void *v = &manual_evict_data_pat0[way][line];
             volatile uint32_t rv;
             asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
         }
@@ -343,19 +333,18 @@ int setup_dpllc() {
         /* the trojan region ends when the manual evict data starts
             belongs to partition 2.
         */
-        [ 3] = { .addr = (uintptr_t)&manual_evict_data_pat0, .conf = TaggerAddrConf_TOR, .patid = 2 },
-        /* the manual evict data (partition 0) ends when data for partition 1 starts*/
-        [ 4] = { .addr = (uintptr_t)&manual_evict_data_pat1, .conf = TaggerAddrConf_TOR, .patid = 0 },
+        [ 3] = { .addr = (uintptr_t)&manual_evict_data_pat1, .conf = TaggerAddrConf_TOR, .patid = 2 },
         /* the manual evict data (partition 1) ends when the data for partition 2 starts.
             it obviously belongs to partition 1.
         */
-        [ 5] = { .addr = (uintptr_t)&manual_evict_data_pat2, .conf = TaggerAddrConf_TOR, .patid = 1 },
+        [ 4] = { .addr = (uintptr_t)&manual_evict_data_pat2, .conf = TaggerAddrConf_TOR, .patid = 1 },
         /* the manual evict data (partition 2) ends at the marker
             belongs to partition 2. */
-        [ 6] = { .addr = (uintptr_t)&manual_evict_end_marker, .conf = TaggerAddrConf_TOR, .patid = 2 },
+        [ 5] = { .addr = (uintptr_t)&manual_evict_end_marker, .conf = TaggerAddrConf_TOR, .patid = 2 },
         /* then the rest of memory (assumed: 8MiB) is left in partition 0 */
-        [ 7] = { .addr = 0x80800000, .conf = TaggerAddrConf_TOR, .patid = 0 },
+        [ 6] = { .addr = 0x80800000, .conf = TaggerAddrConf_TOR, .patid = 0 },
         /* then the rest of the physical address range is left unspecified. */
+        [ 7] = { .conf = TaggerAddrConf_Off },
         [ 8] = { .conf = TaggerAddrConf_Off },
         [ 9] = { .conf = TaggerAddrConf_Off },
         [10] = { .conf = TaggerAddrConf_Off },
@@ -367,7 +356,7 @@ int setup_dpllc() {
     };
 
     /* make sure that the data_ and the eviction data is contiguous as we rely on it */
-    CHECK_ASSERT(-7, (ALIGN(((uintptr_t)&data_trojan) + sizeof(data_trojan), 0x1000) == ((uintptr_t)&manual_evict_data_pat0)));
+    CHECK_ASSERT(-7, (ALIGN(((uintptr_t)&data_trojan) + sizeof(data_trojan), 0x1000) == ((uintptr_t)&manual_evict_data_pat1)));
 
     for (uint32_t k = 0; k < TAGGER_NUM_REGIONS; k++) {
         uint32_t addr = region_configs[k].addr;
