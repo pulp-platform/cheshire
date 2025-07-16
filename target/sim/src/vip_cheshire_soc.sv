@@ -1027,6 +1027,14 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .debug_resp_bits_data ( dmi_resp.data        ),
     .exit                 ( sim_exit             )
   );
+
+  task automatic fesvr_wait_for_exit(output word_bt exit_code);
+    while (~sim_exit[0]) begin
+        #(ClkPeriodSys * 100);
+    end 
+    if (sim_exit == 1) $error("[FESVR] SUCCESS");
+    else $display("[FESVR] FAILED: return code %0d", sim_exit);
+  endtask
 `endif
 
 endmodule
