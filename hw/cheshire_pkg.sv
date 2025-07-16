@@ -519,6 +519,7 @@ package cheshire_pkg;
     // Hacky shit
     ret.DcacheFlushOnFence      = 1;
     ret.DcacheInvalidateOnFlush = 0;
+    ret.WtDcacheWbufDepth       = 7;
     // Return modified config
     return ret;
   endfunction
