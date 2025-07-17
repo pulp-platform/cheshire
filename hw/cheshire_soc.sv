@@ -558,7 +558,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
 
-  localparam config_pkg::cva6_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
+  localparam config_pkg::cva6_user_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
 
   // Boot from boot ROM only if available, otherwise from platform ROM
   localparam logic [63:0] BootAddr = 64'(Cfg.Bootrom ? AmBrom : Cfg.PlatformRom);
@@ -598,9 +598,11 @@ module cheshire_soc import cheshire_pkg::*; #(
     logic [$clog2(NumClicIntrs)-1:0] clic_irq_id;
     logic [7:0]        clic_irq_level;
     riscv::priv_lvl_t  clic_irq_priv;
+    logic              clic_irq_v;
+    logic [5:0]        clic_irq_vsid;
 
     cva6 #(
-      .CVA6Cfg        ( Cva6Cfg ),
+      .CVA6Cfg        ( build_config_pkg::build_config(Cva6Cfg) ),
       .axi_ar_chan_t  ( axi_cva6_ar_chan_t ),
       .axi_aw_chan_t  ( axi_cva6_aw_chan_t ),
       .axi_w_chan_t   ( axi_cva6_w_chan_t  ),
@@ -621,6 +623,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clic_irq_id_i    ( clic_irq_id    ),
       .clic_irq_level_i ( clic_irq_level ),
       .clic_irq_priv_i  ( clic_irq_priv  ),
+      .clic_irq_v_i     ( clic_irq_v     ),
+      .clic_irq_vsid_i  ( clic_irq_vsid  ),
       .clic_irq_shv_i   ( clic_irq_shv   ),
       .clic_irq_ready_o ( clic_irq_ready ),
       .clic_kill_req_i  ( clic_irq_kill_req ),
@@ -675,12 +679,16 @@ module cheshire_soc import cheshire_pkg::*; #(
       };
 
       clic #(
-        .N_SOURCE   ( NumClicIntrs ),
-        .INTCTLBITS ( Cfg.ClicIntCtlBits ),
-        .reg_req_t  ( reg_req_t ),
-        .reg_rsp_t  ( reg_rsp_t ),
-        .SSCLIC     ( 1 ),
-        .USCLIC     ( 0 )
+        .N_SOURCE    ( NumClicIntrs ),
+        .INTCTLBITS  ( Cfg.ClicIntCtlBits ),
+        .reg_req_t   ( reg_req_t ),
+        .reg_rsp_t   ( reg_rsp_t ),
+        .SSCLIC      ( 1 ),
+        .USCLIC      ( 0 ),
+        .VSCLIC      ( Cfg.ClicVsclic ),
+        .N_VSCTXTS   ( Cfg.ClicNumVsctxts ),
+        .VSPRIO      ( Cfg.ClicVsprio ),
+        .VSPRIO_W    ( Cfg.ClicPrioWidth )
       ) i_clic (
         .clk_i,
         .rst_ni,
@@ -693,6 +701,8 @@ module cheshire_soc import cheshire_pkg::*; #(
         .irq_level_o    ( clic_irq_level ),
         .irq_shv_o      ( clic_irq_shv   ),
         .irq_priv_o     ( clic_irq_priv  ),
+        .irq_v_o        ( clic_irq_v     ),
+        .irq_vsid_o     ( clic_irq_vsid  ),
         .irq_kill_req_o ( clic_irq_kill_req ),
         .irq_kill_ack_i ( clic_irq_kill_ack )
       );
@@ -704,6 +714,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       assign clic_irq_level    = '0;
       assign clic_irq_shv      = '0;
       assign clic_irq_priv     = riscv::priv_lvl_t'(0);
+      assign clic_irq_v        = '0;
+      assign clic_irq_vsid     = '0;
       assign clic_irq_kill_req = '0;
 
     end
