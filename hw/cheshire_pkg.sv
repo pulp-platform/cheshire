@@ -73,6 +73,25 @@ package cheshire_pkg;
     // control the CIE region's size and whether it abuts with the top or bottom of this range.
     doub_bt Cva6ExtCieLength;
     bit     Cva6ExtCieOnTop;
+    shrt_bt Cva6NrScoreboardEntries;
+    shrt_bt Cva6MaxOutstandingStores;
+    word_bt Cva6IcacheByteSize;
+    shrt_bt Cva6IcacheSetAssoc;
+    shrt_bt Cva6IcacheLineWidth;
+    config_pkg::cache_type_t Cva6DCacheType;
+    word_bt Cva6DcacheByteSize;
+    shrt_bt Cva6DcacheSetAssoc;
+    shrt_bt Cva6DcacheLineWidth;
+    bit     Cva6DcacheFlushOnFence;
+    bit     Cva6DcacheInvalidateOnFlush;
+    shrt_bt Cva6InstrTlbEntries;
+    shrt_bt Cva6DataTlbEntries;
+    bit     Cva6UseSharedTlb;
+    shrt_bt Cva6SharedTlbDepth;
+    shrt_bt Cva6NrLoadPipeRegs;
+    shrt_bt Cva6NrStorePipeRegs;
+    shrt_bt Cva6DcacheIdWidth;
+    bit     Cva6SuperscalarEn;
     // Hart parameters
     bit [MaxCoresWidth-1:0] NumCores;
     doub_bt NumExtIrqHarts;
@@ -522,6 +541,25 @@ package cheshire_pkg;
     ret.BTBEntries            = cfg.Cva6BTBEntries;
     ret.BHTEntries            = cfg.Cva6BHTEntries;
     ret.NrPMPEntries          = cfg.Cva6NrPMPEntries;
+    ret.NrScoreboardEntries     = cfg.Cva6NrScoreboardEntries;
+    ret.MaxOutstandingStores    = cfg.Cva6MaxOutstandingStores;
+    ret.IcacheByteSize          = cfg.Cva6IcacheByteSize;
+    ret.IcacheSetAssoc          = cfg.Cva6IcacheSetAssoc;
+    ret.IcacheLineWidth         = cfg.Cva6IcacheLineWidth;
+    ret.DCacheType              = cfg.Cva6DCacheType;
+    ret.DcacheByteSize          = cfg.Cva6DcacheByteSize;
+    ret.DcacheSetAssoc          = cfg.Cva6DcacheSetAssoc;
+    ret.DcacheLineWidth         = cfg.Cva6DcacheLineWidth;
+    ret.DcacheFlushOnFence      = cfg.Cva6DcacheFlushOnFence;
+    ret.DcacheInvalidateOnFlush = cfg.Cva6DcacheInvalidateOnFlush;
+    ret.InstrTlbEntries         = cfg.Cva6InstrTlbEntries;
+    ret.DataTlbEntries          = cfg.Cva6DataTlbEntries;
+    ret.UseSharedTlb            = cfg.Cva6UseSharedTlb;
+    ret.SharedTlbDepth          = cfg.Cva6SharedTlbDepth;
+    ret.NrLoadPipeRegs          = cfg.Cva6NrLoadPipeRegs;
+    ret.NrStorePipeRegs         = cfg.Cva6NrStorePipeRegs;
+    ret.DcacheIdWidth           = cfg.Cva6DcacheIdWidth;
+    ret.SuperscalarEn           = cfg.Cva6SuperscalarEn;
     // Return modified config
     return ret;
   endfunction
@@ -543,6 +581,25 @@ package cheshire_pkg;
     Cva6NrPMPEntries  : 0,
     Cva6ExtCieLength  : 'h2000_0000,  // [0x2.., 0x4..) is CIE, [0x4.., 0x8..) is non-CIE
     Cva6ExtCieOnTop   : 0,
+    Cva6NrScoreboardEntries     : 8,
+    Cva6MaxOutstandingStores    : 7,
+    Cva6IcacheByteSize          : 16384,
+    Cva6IcacheSetAssoc          : 4,
+    Cva6IcacheLineWidth         : 128,
+    Cva6DCacheType              : config_pkg::WB,
+    Cva6DcacheByteSize          : 32768,
+    Cva6DcacheSetAssoc          : 8,
+    Cva6DcacheLineWidth         : 128,
+    Cva6DcacheFlushOnFence      : 1,
+    Cva6DcacheInvalidateOnFlush : 0,
+    Cva6InstrTlbEntries         : 16,
+    Cva6DataTlbEntries          : 16,
+    Cva6UseSharedTlb            : 1,
+    Cva6SharedTlbDepth          : 64,
+    Cva6NrLoadPipeRegs          : 1,
+    Cva6NrStorePipeRegs         : 0,
+    Cva6DcacheIdWidth           : 1,
+    Cva6SuperscalarEn           : 0,
     // Harts
     NumCores          : 1,
     CoreMaxTxns       : 8,
