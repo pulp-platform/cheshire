@@ -21,13 +21,15 @@ module cheshire_soc import cheshire_pkg::*; #(
   parameter type axi_ext_slv_req_t  = logic,
   parameter type axi_ext_slv_rsp_t  = logic,
   parameter type reg_ext_req_t      = logic,
-  parameter type reg_ext_rsp_t      = logic
+  parameter type reg_ext_rsp_t      = logic,
+  parameter type impl_in_t          = logic
 ) (
   input  logic        clk_i,
   input  logic        rst_ni,
   input  logic        test_mode_i,
   input  logic [1:0]  boot_mode_i,
   input  logic        rtc_i,
+  input  impl_in_t [Cfg.Cva6IcacheSetAssoc+Cfg.Cva6DcacheSetAssoc:0] cva6_sram_impl_i,
   // External AXI LLC (DRAM) port
   output axi_ext_llc_req_t axi_llc_mst_req_o,
   input  axi_ext_llc_rsp_t axi_llc_mst_rsp_i,
@@ -609,10 +611,12 @@ module cheshire_soc import cheshire_pkg::*; #(
       .b_chan_t       ( axi_cva6_b_chan_t  ),
       .r_chan_t       ( axi_cva6_r_chan_t  ),
       .noc_req_t      ( axi_cva6_req_t ),
-      .noc_resp_t     ( axi_cva6_rsp_t )
+      .noc_resp_t     ( axi_cva6_rsp_t ),
+      .impl_in_t      ( impl_in_t )
     ) i_core_cva6 (
       .clk_i,
       .rst_ni,
+      .sram_impl_i      ( cva6_sram_impl_i ),
       .boot_addr_i      ( BootAddr ),
       .hart_id_i        ( 64'(i) ),
       .irq_i            ( xeip[i] ),
