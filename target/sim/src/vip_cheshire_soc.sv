@@ -98,18 +98,21 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   import "DPI-C" function byte get_section(output longint address, output longint len);
   import "DPI-C" context function byte read_section(input longint address, inout byte buffer[], input longint len);
 `ifdef FESVR_DTM
+  import "DPI-C" function chandle debug_new(input string pk_path, input string app_path);
   import "DPI-C" function int debug_tick
 (
-  output bit     debug_req_valid,
-  input  bit     debug_req_ready,
-  output int     debug_req_bits_addr,
-  output int     debug_req_bits_op,
-  output int     debug_req_bits_data,
+  input chandle fesvr_dtm,
 
-  input  bit        debug_resp_valid,
-  output bit        debug_resp_ready,
-  input  int        debug_resp_bits_resp,
-  input  int        debug_resp_bits_data
+  output bit debug_req_valid,
+  input  bit debug_req_ready,
+  output int debug_req_bits_addr,
+  output int debug_req_bits_op,
+  output int debug_req_bits_data,
+
+  input  bit debug_resp_valid,
+  output bit debug_resp_ready,
+  input  int debug_resp_bits_resp,
+  input  int debug_resp_bits_data
 );
 `endif
 
@@ -1008,32 +1011,76 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   //  SimDTM  //
   //////////////
 
-  logic start_SimDTM; // wired up in the testbench 
+  /*---------------------------------
+  Mostly comming from SimDTM.sv
+---------------------------------*/
+
+  chandle fesvr_dtm;
+
+  logic start_SimDTM; // wired up in the testbench
   logic [31:0] sim_exit; // TODO: wire this up in the testbench
   logic [1:0] dmi_req_bits_op;
   assign dmi_req.op = dm::dtm_op_e'(dmi_req_bits_op); // need to check if it's this variable, 
 
-  SimDTM i_SimDTM (
-    .clk                  ( clk                  ),
-    .reset                ( rst_n & start_SimDTM ),
-    .debug_req_valid      ( dmi_req_valid        ),
-    .debug_req_ready      ( dmi_req_ready        ),
-    .debug_req_bits_addr  ( dmi_req.addr         ),
-    .debug_req_bits_op    ( dmi_req_bits_op      ),
-    .debug_req_bits_data  ( dmi_req.data         ),
-    .debug_resp_valid     ( dmi_resp_valid       ),
-    .debug_resp_ready     ( dmi_resp_ready       ),
-    .debug_resp_bits_resp ( dmi_resp.resp        ),
-    .debug_resp_bits_data ( dmi_resp.data        ),
-    .exit                 ( sim_exit             )
-  );
+  wire #0.1 __debug_req_ready = dmi_req_ready;
+  wire #0.1 __debug_resp_valid = dmi_resp_valid;
+  wire [31:0] #0.1 __debug_resp_bits_resp = {30'b0, dmi_resp.resp};
+  wire [31:0] #0.1 __debug_resp_bits_data = dmi_resp.data;
+
+  bit __debug_req_valid;
+  int __debug_req_bits_addr;
+  int __debug_req_bits_op;
+  int __debug_req_bits_data;
+  bit __debug_resp_ready;
+  int __exit;
+
+  assign #0.1 dmi_req_valid = __debug_req_valid;
+  assign #0.1 dmi_req.addr = __debug_req_bits_addr[6:0];
+  assign #0.1 dmi_req_bits_op = __debug_req_bits_op[1:0];
+  assign #0.1 dmi_req.data = __debug_req_bits_data[31:0];
+  assign #0.1 dmi_resp_ready = __debug_resp_ready;
+  assign #0.1 sim_exit = __exit;
+
+  always @(posedge clk)
+  begin
+    if(!(rst_n & start_SimDTM)) begin
+      __debug_req_valid = 0;
+      __debug_resp_ready = 0;
+      __exit = 0;
+    end else begin
+      __exit = debug_tick(
+        fesvr_dtm,
+        __debug_req_valid,
+        __debug_req_ready,
+        __debug_req_bits_addr,
+        __debug_req_bits_op,
+        __debug_req_bits_data,
+        __debug_resp_valid,
+        __debug_resp_ready,
+        __debug_resp_bits_resp,
+        __debug_resp_bits_data
+      );
+    end
+  end
 
   task automatic fesvr_wait_for_exit(output word_bt exit_code);
     while (~sim_exit[0]) begin
         #(ClkPeriodSys * 100);
     end 
-    if (sim_exit == 1) $error("[FESVR] SUCCESS");
-    else $display("[FESVR] FAILED: return code %0d", sim_exit);
+    if (sim_exit == 1) $display("[FESVR] SUCCESS");
+    else $error("[FESVR] FAILED: return code %0d", sim_exit);
+  endtask
+
+  task automatic fesvr_stop();
+    start_SimDTM = 0;
+  endtask
+
+  task automatic fesvr_start();
+    start_SimDTM = 1;
+  endtask
+
+  task automatic fesvr_set(input string kernel, input string binary);
+    fesvr_dtm = debug_new(kernel, binary);
   endtask
 `endif
 

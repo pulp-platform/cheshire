@@ -157,12 +157,21 @@ std::map<uint64_t, std::vector<uint8_t>> mems;
 uint64_t entry = 0;
 int section_index = 0;
 
+// custom class for dtm
+class preload_aware_dtm_t : public dtm_t {
+  public:
+    preload_aware_dtm_t(int argc, char **argv) : dtm_t(argc, argv) {}
+    bool is_address_preloaded(addr_t taddr, size_t len) override { return true; }
+};
+
 extern "C" {
   char get_entry(long long *entry_ret);
   char get_section(long long *address_ret, long long *len_ret);
   char read_section(long long address, const svOpenArrayHandle buffer, long long len);
   char read_elf(const char *filename);
+  void* debug_new(char *pk_path, char *app_path);
   int debug_tick(
+  preload_aware_dtm_t*  dtm,
   unsigned char* debug_req_valid,
   unsigned char  debug_req_ready,
   int*           debug_req_bits_addr,
@@ -172,6 +181,7 @@ extern "C" {
   unsigned char* debug_resp_ready,
   int            debug_resp_bits_resp,
   int            debug_resp_bits_data);
+  int read_csr_dtm();
 }
 
 static void write (uint64_t address, uint64_t len, uint8_t *buf)
@@ -411,18 +421,29 @@ extern "C" char read_elf(const char *filename) {
 }
 #endif
 
-class preload_aware_dtm_t : public dtm_t {
-  public:
-    preload_aware_dtm_t(int argc, char **argv) : dtm_t(argc, argv) {}
-    bool is_address_preloaded(addr_t taddr, size_t len) override { return true; }
-};
 
-preload_aware_dtm_t* dtm;
+
 /*------------------------
-From SimDTM.cc
+Inspired by SimDTM.cc
 ------------------------*/
+
+extern "C" void* debug_new(char *pk_path, char *app_path) {
+    int htif_argc = 3;
+    char* htif_argv[htif_argc];
+    htif_argv[0] = (char*)"htif";
+    htif_argv[1] = pk_path;
+    htif_argv[2] = app_path;
+
+    preload_aware_dtm_t *dtm = (preload_aware_dtm_t *) malloc(sizeof(preload_aware_dtm_t));
+    dtm = new preload_aware_dtm_t(htif_argc, htif_argv);
+
+    return (void *)dtm;
+}
+
+
 extern "C" int debug_tick
 (
+  preload_aware_dtm_t* dtm,
   unsigned char* debug_req_valid,
   unsigned char  debug_req_ready,
   int*           debug_req_bits_addr,
@@ -434,19 +455,6 @@ extern "C" int debug_tick
   int            debug_resp_bits_data
 )
 {
-  if (!dtm) {
-      //the list of argv are the program that will be runned after pk is booted.
-      // Need to find a way to make it easier to change programs, maybe like it was done...
-      int htif_argc = 3;
-      char* htif_argv[htif_argc];
-      htif_argv[0] = (char*)"htif";
-      htif_argv[1] = (char*)"/scratch/ga25f6/cheshire/sw/apps/pk_dram";
-      htif_argv[2] = (char*)"/scratch/ga25f6/cheshire/sw/apps/helloworld.o";
-
-      dtm = new preload_aware_dtm_t(htif_argc, htif_argv);
-  }
-
-
   dtm_t::resp resp_bits;
   resp_bits.resp = debug_resp_bits_resp;
   resp_bits.data = debug_resp_bits_data;

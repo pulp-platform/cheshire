@@ -31,7 +31,7 @@ module tb_cheshire_soc #(
 
 `ifdef FESVR_DTM
     // locking SimDTM
-    assign fix.vip.start_SimDTM = 1'b0;
+    fix.vip.fesvr_stop();
 `endif
 
     // Set boot mode and preload boot image if there is one
@@ -49,7 +49,8 @@ module tb_cheshire_soc #(
         // Preload done only using slink in this case cause it's the fastest way available
         1: begin  // Serial Link
           fix.vip.slink_elf_prerun(preload_elf);
-          assign fix.vip.start_SimDTM = 1'b1;
+          fix.vip.fesvr_set(preload_elf, "/scratch/ga25f6/cheshire/sw/apps/helloworld.riscv");
+          fix.vip.fesvr_start();
           fix.vip.fesvr_wait_for_exit(exit_code);
         end default: begin
           $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);
