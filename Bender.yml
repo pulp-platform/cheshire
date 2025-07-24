@@ -47,7 +47,6 @@ sources:
 
   - target: any(simulation, test)
     files:
-      - target/sim/src/SimDTM.sv
       - target/sim/models/s25fs512s.v
       - target/sim/models/24FC1025.v
       - target/sim/src/vip_cheshire_soc.sv
