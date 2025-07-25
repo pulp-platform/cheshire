@@ -7,7 +7,7 @@
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-VIVADO ?= vitis-2024.2 vivado
+VIVADO := vitis-2024.2 vivado
 
 CHS_XILINX_DIR ?= $(CHS_ROOT)/target/xilinx
 
