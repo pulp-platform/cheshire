@@ -1,6 +1,6 @@
 # Simulation
 
-This page describes how to simulate Cheshire to *execute baremetal programs*. Please first read [Getting Started](../gs.md) to make sure to make sure have all dependencies and built the hardware, software, and simulation scripts.
+This page describes how to simulate Cheshire to *execute baremetal programs*. Please first read [Getting Started](../gs.md) to make sure have all dependencies and built the hardware, software, and simulation scripts.
 
 We currently provide working setups for:
 
