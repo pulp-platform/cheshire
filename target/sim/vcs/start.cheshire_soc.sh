@@ -35,6 +35,7 @@ pargs=""
 [[ -n "${PRELMODE}" ]] && pargs+="+PRELMODE=${PRELMODE} "
 [[ -n "${BINARY}" ]]   && pargs+="+BINARY=${BINARY} "
 [[ -n "${IMAGE}" ]]    && pargs+="+IMAGE=${IMAGE} "
+[[ -n "${PK}" ]]       && pargs+="+PK=${PK} "
 
 # DRAMSys
 if [ -n "${USE_DRAMSYS}" ]; then

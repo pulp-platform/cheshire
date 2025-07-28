@@ -16,6 +16,7 @@ module tb_cheshire_soc #(
     .UseDramSys   (UseDramSys)
   ) fix();
 
+  string      pk_path;
   string      preload_elf;
   string      boot_hex;
   logic [1:0] boot_mode;
@@ -28,6 +29,7 @@ module tb_cheshire_soc #(
     if (!$value$plusargs("PRELMODE=%d", preload_mode))  preload_mode  = 0;
     if (!$value$plusargs("BINARY=%s",   preload_elf))   preload_elf   = "";
     if (!$value$plusargs("IMAGE=%s",    boot_hex))      boot_hex      = "";
+    if (!$value$plusargs("PK=%s",       pk_path))       pk_path       = "";
 
 `ifdef FESVR_DTM
     // locking SimDTM
@@ -48,8 +50,8 @@ module tb_cheshire_soc #(
       case (preload_mode)
         // Preload done only using slink in this case cause it's the fastest way available
         1: begin  // Serial Link
-          fix.vip.slink_elf_prerun("/scratch/ga25f6/pk_dram"); // preload with slink
-          fix.vip.fesvr_set("/scratch/ga25f6/pk_dram", preload_elf); // creating a dtm class
+          fix.vip.slink_elf_prerun(pk_path); // preload with slink
+          fix.vip.fesvr_set(pk_path, preload_elf); // creating a dtm class
           fix.vip.fesvr_start(); // starting dtm tick 
           fix.vip.fesvr_wait_for_exit(exit_code); //waiting on exit code to be zero
         end default: begin
