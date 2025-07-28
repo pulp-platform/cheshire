@@ -48,10 +48,10 @@ module tb_cheshire_soc #(
       case (preload_mode)
         // Preload done only using slink in this case cause it's the fastest way available
         1: begin  // Serial Link
-          fix.vip.slink_elf_prerun(preload_elf);
-          fix.vip.fesvr_set(preload_elf, "/scratch/ga25f6/cheshire/sw/apps/helloworld.riscv");
-          fix.vip.fesvr_start();
-          fix.vip.fesvr_wait_for_exit(exit_code);
+          fix.vip.slink_elf_prerun("/scratch/ga25f6/pk_dram"); // preload with slink
+          fix.vip.fesvr_set("/scratch/ga25f6/pk_dram", preload_elf); // creating a dtm class
+          fix.vip.fesvr_start(); // starting dtm tick 
+          fix.vip.fesvr_wait_for_exit(exit_code); //waiting on exit code to be zero
         end default: begin
           $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);
         end
