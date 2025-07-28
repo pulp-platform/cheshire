@@ -1,0 +1,1983 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../sw/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.16">
+    
+    
+      
+        <title>Architecture - Cheshire</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.7e37652d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#architecture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Cheshire" class="md-header__button md-logo" aria-label="Cheshire" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cheshire
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pulp-platform/cheshire" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pulp-platform/cheshire
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Cheshire" class="md-nav__button md-logo" aria-label="Cheshire" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Cheshire
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pulp-platform/cheshire" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pulp-platform/cheshire
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../.." class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            Home
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../tg/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Targets
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Targets
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tg/sim/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Simulation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tg/xilinx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Xilinx FPGAs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tg/integr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    SoC Integration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    User Manual
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Manual
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Architecture
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Architecture
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#memory-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      Memory Map
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#components-and-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Components and Parameters
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Components and Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cva6-cores" class="md-nav__link">
+    <span class="md-ellipsis">
+      CVA6 Cores
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interconnect" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interconnect
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interrupts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interrupts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      Debug Module
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#last-level-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      Last Level Cache
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vga-controller" class="md-nav__link">
+    <span class="md-ellipsis">
+      VGA Controller
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usb-11-ohci-controller" class="md-nav__link">
+    <span class="md-ellipsis">
+      USB 1.1 (OHCI) Controller
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serial-link" class="md-nav__link">
+    <span class="md-ellipsis">
+      Serial Link
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dma-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      DMA Engine
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#i2c-spi-gpios" class="md-nav__link">
+    <span class="md-ellipsis">
+      I2C, SPI, GPIOs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uart" class="md-nav__link">
+    <span class="md-ellipsis">
+      UART
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boot-rom" class="md-nav__link">
+    <span class="md-ellipsis">
+      Boot ROM
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sw/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Software Stack
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#memory-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      Memory Map
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#components-and-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Components and Parameters
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Components and Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cva6-cores" class="md-nav__link">
+    <span class="md-ellipsis">
+      CVA6 Cores
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interconnect" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interconnect
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interrupts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interrupts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      Debug Module
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#last-level-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      Last Level Cache
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vga-controller" class="md-nav__link">
+    <span class="md-ellipsis">
+      VGA Controller
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usb-11-ohci-controller" class="md-nav__link">
+    <span class="md-ellipsis">
+      USB 1.1 (OHCI) Controller
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serial-link" class="md-nav__link">
+    <span class="md-ellipsis">
+      Serial Link
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dma-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      DMA Engine
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#i2c-spi-gpios" class="md-nav__link">
+    <span class="md-ellipsis">
+      I2C, SPI, GPIOs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uart" class="md-nav__link">
+    <span class="md-ellipsis">
+      UART
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boot-rom" class="md-nav__link">
+    <span class="md-ellipsis">
+      Boot ROM
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="architecture">Architecture</h1>
+<p><img alt="Cheshire Block Diagram" src="../../img/arch.svg" /></p>
+<p>Cheshire is highly configurable; available features and resources depend on its parameterization. The above block diagram depicts a fully-featured Cheshire SoC, which currently provides:</p>
+<ul>
+<li>
+<p><strong>Cores</strong>:</p>
+<ul>
+<li>Up to 31 Linux-capable CVA6 cores with self-invalidation-based coherence</li>
+<li>A RISC-V debug module with JTAG transport</li>
+</ul>
+</li>
+<li>
+<p><strong>Peripherals</strong>:</p>
+<ul>
+<li>Various standard IO interfaces (UART, I2C, SPI, and GPIOs)</li>
+<li>A boot ROM enabling boot from SD cards, SPI flash, or I2C EEPROM</li>
+<li>A VGA display controller with built-in DMA</li>
+<li>A fully-digital chip-to-chip or die-to-die serial link</li>
+<li>A high-throughput system DMA</li>
+</ul>
+</li>
+<li>
+<p><strong>Interconnect</strong>:</p>
+<ul>
+<li>A last level cache (LLC) configurable as a scratchpad memory (SPM) per-way</li>
+<li>Up to 16 external AXI4 manager ports and 16 AXI and Regbus subordinate ports</li>
+<li>Per-manager AXI4 traffic regulators for real-time applications</li>
+<li>Per-manager AXI4 bus error units (UNBENT) for interconnect error handling</li>
+</ul>
+</li>
+<li>
+<p><strong>Interrupts</strong>:</p>
+<ul>
+<li>Core-local (CLINT <em>and</em> CLIC) and platform (PLIC) interrupt controllers</li>
+<li>Dynamic interrupt routing from and to internal and external targets.</li>
+</ul>
+</li>
+</ul>
+<h2 id="memory-map">Memory Map</h2>
+<p>Cheshire's internal memory map is <em>static</em>. While device instantiation and layout may vary, each device is provided an address space of <em>fixed</em> location and size. For this, Cheshire <em>reserves</em> the address space from <code>0x0</code> to <code>0x2000_0000</code>, which is currently allocated as follows:</p>
+<table>
+<thead>
+<tr>
+<th colspan="1" rowspan="1">
+<p>Block</p>
+</th>
+<th colspan="1" rowspan="1">
+<p>Device</p>
+</th>
+<th colspan="1" rowspan="1">
+<p>Start</p>
+</th>
+<th colspan="1" rowspan="1">
+<p>Size</p>
+</th>
+<th colspan="1" rowspan="1">
+<p>Flags</p>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="1" rowspan="1">
+<p>256K periphs @ AXI</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Debug ROM</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0000_0000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>256K</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>E</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>4K periphs @ AXI</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>AXI DMA (Cfg)</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0100_0000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>4K</p>
+</td>
+<td colspan="1" rowspan="1"></td>
+</tr>
+<tr>
+<td colspan="1" rowspan="4">
+<p>256K periphs @ Reg<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Boot ROM</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0200_0000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>256K</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>E</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>CLINT</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0204_0000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>256K</p>
+</td>
+<td colspan="1" rowspan="1"></td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>IRQ router</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0208_0000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>256K</p>
+</td>
+<td colspan="1" rowspan="1"></td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>AXI RT (Cfg)</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x020C_0000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>256K</p>
+</td>
+<td colspan="1" rowspan="1"></td>
+</tr>
+<tr>
+<td colspan="1" rowspan="10">
+<p>4K periphs @ Reg<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>SoC Regs</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0300_0000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>4K</p>
+</td>
+<td colspan="1" rowspan="1"></td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>LLC (Cfg)</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0300_1000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>4K</p>
+</td>
+<td colspan="1" rowspan="1"></td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>UART</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0300_2000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>4K</p>
+</td>
+<td colspan="1" rowspan="1"></td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>I2C</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0300_3000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>4K</p>
+</td>
+<td colspan="1" rowspan="1"></td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>SPI Host</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0300_4000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>4K</p>
+</td>
+<td colspan="1" rowspan="1"></td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>GPIO</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0300_5000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>4K</p>
+</td>
+<td colspan="1" rowspan="1"></td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Serial Link (Cfg)</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0300_6000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>4K</p>
+</td>
+<td colspan="1" rowspan="1"></td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>VGA (Cfg)</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0300_7000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>4K</p>
+</td>
+<td colspan="1" rowspan="1"></td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>USB 1.1 (Cfg)</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0300_8000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>4K</p>
+</td>
+<td colspan="1" rowspan="1"></td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>UNBENT</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0300_9000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>4K</p>
+</td>
+<td colspan="1" rowspan="1"></td>
+</tr>
+<tr>
+<td colspan="1" rowspan="2">
+<p>INTCs @ Reg<br />
+<br />
+</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>PLIC</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0400_0000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>64M</p>
+</td>
+<td colspan="1" rowspan="1"></td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>CLICs</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x0800_0000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>64M</p>
+</td>
+<td colspan="1" rowspan="1"></td>
+</tr>
+<tr>
+<td colspan="1" rowspan="2">
+<p>LLC SPM @ AXI<br />
+<br />
+</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>cached</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x1000_0000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>64M</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>CIE</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>uncached</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>0x1400_0000</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>64M</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>IE</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The flags are defined as follows:</p>
+<ul>
+<li><strong>C</strong><em>acheable</em>: Accessed data may be cached in the L1 or LLC caches</li>
+<li><strong>I</strong><em>dempotent</em>: Multiple identical or composing accesses are equivalent to one access</li>
+<li><strong>E</strong><em>xecutable</em>: Data in this region may be executed.</li>
+</ul>
+<p>Additionally, Cheshire assumes the following parameterized layout for external resources:</p>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Start</th>
+<th>End</th>
+<th>Flags</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>External on-chip</td>
+<td><code>0x2000_0000</code></td>
+<td><code>0x8000_0000</code></td>
+<td>(Param.)</td>
+</tr>
+<tr>
+<td>LLC out (DRAM)</td>
+<td><code>LlcOutRegionStart</code></td>
+<td><code>LlcOutRegionEnd</code></td>
+<td>CIE</td>
+</tr>
+<tr>
+<td>Serial Link</td>
+<td><code>SlinkRegionStart</code></td>
+<td><code>SlinkRegionEnd</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>The <em>external on-chip</em> region is split into one subregion with full <code>CIE</code> flags and one without flags to minimize parameterization complexity. The <code>Cva6ExtCieOnTop</code> and <code>Cva6ExtCieLength</code> parameters control the order and partitioning of these two regions, respectively.</p>
+<p>The <em>LLC out</em> region must not collide with any other regions and defaults on starting at the lowest available address, <code>0x8000_0000</code>. The <em>Serial Link</em> region defaults on starting at <code>0x1_0000_0000</code>, configuring the <code>SlinkTxAddrMask</code> and <code>SlinkTxAddrDomain</code> parameters to mirror the lower 32-bit space of another identical chip from this address base.</p>
+<h2 id="components-and-parameters">Components and Parameters</h2>
+<p>Except for external hart debug info and interface types (see <a href="../../tg/integr/#instantiating-cheshire">Instantiating Cheshire</a>), Cheshire is fully parameterized through its <code>Cfg</code> struct parameter. We will first describe global parameters, then discuss the functionality and parameterization of each component individually.</p>
+<p>For defaults of any parameters, <code>cheshire_pkg::DefaultCfg</code> is the <em>single source of truth</em>. Note, however, that this does <em>not</em> mean <code>DefaultCfg</code> parameters are suitable for your system or usecase; please carefully consider and choose all parameters in your instantiation.</p>
+<p>The following global parameters control basic functionality and features and can be read by software in the <em>SoC Registers</em>:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type / Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RtcFreq</code></td>
+<td><code>word_bt</code></td>
+<td>Frequency (Hz) configured for real-time clock</td>
+</tr>
+<tr>
+<td><code>PlatformRom</code></td>
+<td><code>word_bt</code></td>
+<td>Address of platform ROM; see <a href="#boot-rom">Boot ROM</a></td>
+</tr>
+<tr>
+<td><code>Bootrom</code></td>
+<td><code>bit</code></td>
+<td>Whether boot ROM is available</td>
+</tr>
+<tr>
+<td><code>Uart</code></td>
+<td><code>bit</code></td>
+<td>Whether UART is available</td>
+</tr>
+<tr>
+<td><code>I2c</code></td>
+<td><code>bit</code></td>
+<td>Whether I2C host is available</td>
+</tr>
+<tr>
+<td><code>SpiHost</code></td>
+<td><code>bit</code></td>
+<td>Whether SPI is available</td>
+</tr>
+<tr>
+<td><code>Gpio</code></td>
+<td><code>bit</code></td>
+<td>Whether GPIO is available</td>
+</tr>
+<tr>
+<td><code>Dma</code></td>
+<td><code>bit</code></td>
+<td>Whether DMA is available</td>
+</tr>
+<tr>
+<td><code>SerialLink</code></td>
+<td><code>bit</code></td>
+<td>Whether serial link is available</td>
+</tr>
+<tr>
+<td><code>Vga</code></td>
+<td><code>bit</code></td>
+<td>Whether VGA is available</td>
+</tr>
+<tr>
+<td><code>Usb</code></td>
+<td><code>bit</code></td>
+<td>Whether USB 1.1 (OHCI) host is available</td>
+</tr>
+<tr>
+<td><code>AxiRt</code></td>
+<td><code>bit</code></td>
+<td>Whether AXI RT is available</td>
+</tr>
+<tr>
+<td><code>Clic</code></td>
+<td><code>bit</code></td>
+<td>Whether CLIC is available</td>
+</tr>
+<tr>
+<td><code>IrqRouter</code></td>
+<td><code>bit</code></td>
+<td>Whether IRQ Router is available</td>
+</tr>
+<tr>
+<td><code>BusErr</code></td>
+<td><code>bit</code></td>
+<td>Whether UNBENT (bus error unit) is available</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cva6-cores">CVA6 Cores</h3>
+<p>Cheshire defaults on using CVA6 with hypervisor and CLIC support enabled; RV32 configurations are <em>not</em> supported. Most parameters for the CVA6 cores are derived from Cheshire's configuration or immutable. The available core parameters are listed below:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type / Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NumCores</code></td>
+<td><code>1..31</code></td>
+<td>Number of instantiated CVA6 cores</td>
+</tr>
+<tr>
+<td><code>Cva6RASDepth</code></td>
+<td><code>shrt_bt</code></td>
+<td>Depth of CVA6 return address stack (RAS)</td>
+</tr>
+<tr>
+<td><code>Cva6(BTB|BHT|NrPMP)Entries</code></td>
+<td><code>shrt_bt</code></td>
+<td>Number of BTB, BHT, and PMP entries in CVA6</td>
+</tr>
+<tr>
+<td><code>Cva6ExtCieLength</code></td>
+<td><code>doub_bt</code></td>
+<td>CIE subregion length in external on-chip region</td>
+</tr>
+<tr>
+<td><code>Cva6ExtCieOnTop</code></td>
+<td><code>bit</code></td>
+<td>Whether CIE subregion is on top or bottom</td>
+</tr>
+<tr>
+<td><code>CoreMaxTxns</code></td>
+<td><code>dw_bt</code></td>
+<td>Maximum total AXI4 transactions per core</td>
+</tr>
+<tr>
+<td><code>CoreMaxTxnsPerId</code></td>
+<td><code>dw_bt</code></td>
+<td>Maximum total AXI4 transactions per core and ID</td>
+</tr>
+<tr>
+<td><code>CoreUserAmoOffs</code></td>
+<td><code>doub_bt</code></td>
+<td>Base offset for core IDs within user AMO range</td>
+</tr>
+</tbody>
+</table>
+<p>Each CVA6 core is a standalone AXI4 manager at the crossbar. Coherence is maintained through a self-invalidation scheme and RISC-V atomics are handled through a custom, user-channel-based AXI4 extension. For the latter, we wrap the cores and other managers to give each a default user channel assignment and, for atomics-capable managers, a unique ID on a slice of user bits.</p>
+<h3 id="interconnect">Interconnect</h3>
+<p>The interconnect is composed of a main <a href="https://github.com/pulp-platform/axi">AXI4</a> crossbar with AXI5 atomic operations (ATOPs) support and an auxiliary <a href="https://github.com/pulp-platform/register_interface">Regbus</a> demultiplexer providing access to numerous peripherals and configuration interfaces. The Regbus has a static data width of 32 bit.</p>
+<p>As the Regbus protocol is not capable of bursts, parallel read and writes, or pipelining, it is much less performant than AXI4, but also much cheaper to implement. Thus, our approach of hierarchically combining AXI4 and Regbus significantly improves interconnect scaling.</p>
+<p>The internal interconnect exposes the following parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type / Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AddrWidth</code></td>
+<td><code>32..64</code></td>
+<td>AXI4 and Regbus address width</td>
+</tr>
+<tr>
+<td><code>Axi(Data|User|MstId)Width</code></td>
+<td><code>shrt_bt</code></td>
+<td>AXI4 data, user, and manager ID width</td>
+</tr>
+<tr>
+<td><code>AxiMax(Mst|Slv)Trans</code></td>
+<td><code>shrt_bt</code></td>
+<td>AXI4 maximum inflight transactions at crossbar</td>
+</tr>
+<tr>
+<td><code>AxiUserDefault</code></td>
+<td><code>doub_bt</code></td>
+<td>AXI4 default user value amended by user features</td>
+</tr>
+<tr>
+<td><code>AxiUserAmo(Msb|Lsb)</code></td>
+<td><code>dw_bt</code></td>
+<td>AXI4 user channel bit-range used by RISC-V AMOs</td>
+</tr>
+<tr>
+<td><code>AxiUserErr(Bits|Lsb)</code></td>
+<td><code>dw_bt</code></td>
+<td>AXI4 user channel bit-range for custom errors</td>
+</tr>
+<tr>
+<td><code>RegMax(Read|Write)Txns</code></td>
+<td><code>dw_bt</code></td>
+<td>Max. inflight transactions at Regbus AMO filter</td>
+</tr>
+<tr>
+<td><code>RegAmoNumCuts</code></td>
+<td><code>aw_bt</code></td>
+<td>Number of timing cuts inside Regbus AMO filter</td>
+</tr>
+<tr>
+<td><code>RegAmoPostCut</code></td>
+<td><code>bit</code></td>
+<td>Whether to insert a cut after Regbus AMO filter</td>
+</tr>
+<tr>
+<td><code>RegAdaptMemCut</code></td>
+<td><code>bit</code></td>
+<td>Whether to insert a cut inside AXI-to-Rb. adapter</td>
+</tr>
+<tr>
+<td><code>(Axi|Reg)ExtNum(Mst|Slv)</code></td>
+<td><code>0..15</code></td>
+<td>AXI4 and Regbus number of external Mgrs. or Subs.</td>
+</tr>
+<tr>
+<td><code>(Axi|Reg)ExtNumRules</code></td>
+<td><code>0..15</code></td>
+<td>AXI4 and Regbus number of external address rules</td>
+</tr>
+<tr>
+<td><code>(Axi|Reg)ExtRegion*</code></td>
+<td><code>doub_bt</code></td>
+<td>AXI4 and Regbus external address regions</td>
+</tr>
+<tr>
+<td><code>AxiRtNumPending</code></td>
+<td><code>aw_bt</code></td>
+<td>Number of outstanding transactions in RT units</td>
+</tr>
+<tr>
+<td><code>AxiRtWBufferDepth</code></td>
+<td><code>dw_bt</code></td>
+<td>The depth of the AXI-RT write buffer</td>
+</tr>
+<tr>
+<td><code>AxiRtNumAddrRegions</code></td>
+<td><code>aw_bt</code></td>
+<td>Number of address regions for every AXI manager</td>
+</tr>
+<tr>
+<td><code>AxiRtCutPaths</code></td>
+<td><code>bit</code></td>
+<td>Enable internal cuts in the RT units</td>
+</tr>
+<tr>
+<td><code>AxiRtEnableChecks</code></td>
+<td><code>bit</code></td>
+<td>Enable transaction checks within the RT units</td>
+</tr>
+</tbody>
+</table>
+<p>Both the AXI4 and Regbus interconnects support exposing a limited number of external manager and subordinate ports; this is the intended mechanism through which Cheshire can be integrated with wrapping SoCs' memory systems.</p>
+<p>The parameter <code>AxiUserDefault</code> defines the default AXI4 user signal assignment. <code>AxiUserAmo(Msb|Lsb)</code> and <code>AxiUserErr(Bits|Lsb)</code> define which bits of the user signals identify RISC-V atomics managers and communicate custom errors, respectively.</p>
+<p>The AXI4 interconnect has two optional features. <code>AxiRt</code> adds traffic regulation units to each AXI4 manager to provide bandwidth and traffic control for real-time applications. <code>BusErr</code> adds the UNBENT bus error reporter to all managers spawning requests and imprecisely reports AXI4 error responses through a Regbus-mapped interface.</p>
+<h3 id="interrupts">Interrupts</h3>
+<p>Cheshire provides a flexible RISC-V interrupt architecture that can route and multiplex internal and external interrupts to both internal and external controllers and targets. For simplicity, the internal interrupt map is static (non-existent interrupts being tied to 0), while the external interrupt map depends on the surrounding system. Interrupts expose the following parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type / Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NumExtInIntrs</code></td>
+<td><code>doub_bt</code></td>
+<td>Total number of external interrupt sources</td>
+</tr>
+<tr>
+<td><code>NumExtClicIntrs</code></td>
+<td><code>shrt_bt</code></td>
+<td>Number of external interrupt sources allocated in CLIC</td>
+</tr>
+<tr>
+<td><code>ClicIntCtlBits</code></td>
+<td><code>shrt_bt</code></td>
+<td>Number of interrupt control bits in CLIC</td>
+</tr>
+<tr>
+<td><code>NumExtOutIntrTgts</code></td>
+<td><code>byte_bt</code></td>
+<td>Number of external interrupt targets</td>
+</tr>
+<tr>
+<td><code>NumExtOutIntrs</code></td>
+<td><code>shrt_bt</code></td>
+<td>Number of sources for external interrupt targets</td>
+</tr>
+<tr>
+<td><code>NumExtIrqHarts</code></td>
+<td><code>doub_bt</code></td>
+<td>Number of external interruptible harts</td>
+</tr>
+</tbody>
+</table>
+<p>First, all internal (<code>intr.intn</code>) and external (<code>intr_ext_i</code>) interrupt sources are collected (<code>intr</code>). From here, they either pass through an <em>interrupt router</em> if enabled (<code>IrqRouter</code>) or are simply fanned out to interrupt <em>targets</em>, which may support as many or fewer interrupt sources as provided by <code>intr</code>. If a target supports fewer sources, its interrupt sources are <em>truncated</em>.</p>
+<p>Cheshire provides both a core-local interruptor (CLINT), grouping all per-core interrupts in one module, and a shared platform-level interrupt controller (PLIC). The former is used only for inter-processor and timer interrupts, while the latter is a proper interrupt target. If enabled (<code>Clic</code>), each CVA6 core also has a core-local interrupt controller (CLIC), another interrupt target. In addition to the PLIC and CLICs, any number external interrupt targets may be defined (<code>NumExtOutIntrTgts</code>) with their own number of incoming sources (<code>NumExtIrqHarts</code>).</p>
+<p>Finally, the PLIC and grouped CLINT also support allocating external harts for which to manage interrupts (<code>NumExtIrqHarts</code>), i.e. harts without interrupt controllers of themselves.</p>
+<h3 id="debug-module">Debug Module</h3>
+<p>Cheshire provides a RISC-V-compliant <a href="https://github.com/pulp-platform/riscv-dbg">Debug Module</a> with JTAG transport. It supports debugging both internal and external harts as well as system bus access (SBA). It exposes the following parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type / Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DbgIdCode</code></td>
+<td><code>word_bt</code></td>
+<td>JTAG ID code reported by Debug module</td>
+</tr>
+<tr>
+<td><code>DbgMaxReqs</code></td>
+<td><code>dw_bt</code></td>
+<td>Maximum outstanding requests to manager port</td>
+</tr>
+<tr>
+<td><code>DbgMax(Read|Write)Txns</code></td>
+<td><code>dw_bt</code></td>
+<td>Maximum ourstanding requests to subordinate port</td>
+</tr>
+<tr>
+<td><code>DbgAmoNumCuts</code></td>
+<td><code>aw_bt</code></td>
+<td>Number of timing cuts inside Debug AMO filter</td>
+</tr>
+<tr>
+<td><code>DbgAmoPostCut</code></td>
+<td><code>bit</code></td>
+<td>Whether to insert a cut after Debug AMO filter</td>
+</tr>
+</tbody>
+</table>
+<h3 id="last-level-cache">Last Level Cache</h3>
+<p>The <a href="https://github.com/pulp-platform/axi_llc">Last Level Cache</a> (LLC) sits between Cheshire and its main memory (usually DRAM). It is assumed to be the only manager accessing this memory and caches all accesses to it unless explicitly bypassed through AXI cache control signals. It exposes the following parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type / Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>LlcOutConnect</code></td>
+<td><code>bit</code></td>
+<td>Whether to create a manager port for the LLC</td>
+</tr>
+<tr>
+<td><code>LlcNotBypass</code></td>
+<td><code>bit</code></td>
+<td>Whether to instantiate the LLC or create a bypass</td>
+</tr>
+<tr>
+<td><code>LlcOutRegion(Start|End)</code></td>
+<td><code>doub_bt</code></td>
+<td>Mapped region of outgoing LLC manager port (DRAM)</td>
+</tr>
+<tr>
+<td><code>LlcSetAssoc</code></td>
+<td><code>shrt_bt</code></td>
+<td>Number of sets in LLC</td>
+</tr>
+<tr>
+<td><code>LlcNum(Lines|Blocks)</code></td>
+<td><code>shrt_bt</code></td>
+<td>Number of lines and blocks for LLC</td>
+</tr>
+<tr>
+<td><code>LlcMax(Read|Write)Txns</code></td>
+<td><code>dw_bt</code></td>
+<td>Max. number of outstanding requests to LLC</td>
+</tr>
+<tr>
+<td><code>LlcAmoNumCuts</code></td>
+<td><code>aw_bt</code></td>
+<td>Number of timing cuts inside manager AMO filter</td>
+</tr>
+<tr>
+<td><code>LlcAmoPostCut</code></td>
+<td><code>bit</code></td>
+<td>Whether to insert a cut after manager AMO filter</td>
+</tr>
+</tbody>
+</table>
+<p>Each way of the LLC can individually be switched between caching and acting as a scratchpad memory (SPM). On initial boot, all ways are configured as SPM and the LLC does not cache any accesses; the SPM is used as a working memory for the boot ROM to enable autonomous bootstrapping from external memory.</p>
+<p>The LLC may be entirely omitted through <code>LlcNotBypass</code>, for example if a more elaborate external main memory system is used. In this case, an external substitute scratchpad memory is required <em>iff</em> Cheshire should boot and run bare-metal code from scratchpad memory as usual. If the LLC is omitted, its port remains <em>iff</em> <code>LlcOutConnect</code> is set, providing a manager port with a RISC-V atomics filter and the above parameters only.</p>
+<h3 id="vga-controller">VGA Controller</h3>
+<p>The <a href="https://github.com/pulp-platform/axi_vga">VGA Controller</a> enables the drawing of video frames in memory over a VGA interface. It autonomously fetches frame data using an AXI manager port. Note that it currently only supports whole-byte pixel formats. It exposes the following parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type / Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Vga(Red|Green|Blue)Width</code></td>
+<td><code>byte_bt</code></td>
+<td>Bit width of red, green, and blue output channels</td>
+</tr>
+<tr>
+<td><code>Vga(H|V)CountWidth</code></td>
+<td><code>aw_bt</code></td>
+<td>Horizontal and vertical sync counter width</td>
+</tr>
+<tr>
+<td><code>VgaBufferDepth</code></td>
+<td><code>dw_bt</code></td>
+<td>Depth of internal read data FIFO</td>
+</tr>
+<tr>
+<td><code>VgaMaxReadTxns</code></td>
+<td><code>dw_bt</code></td>
+<td>Maximum number of outstanding reads</td>
+</tr>
+</tbody>
+</table>
+<h3 id="usb-11-ohci-controller">USB 1.1 (OHCI) Controller</h3>
+<p>The USB 1.1 (OHCI) Host Controller was generated from the <a href="https://github.com/SpinalHDL/SpinalHDL">SpinalHDL</a> library and provides a fully digital root hub with four ports. Note that it currently only supports single-core CVA6 configurations with the default cache and can only access a 32-bit physical address subspaces. It exposes the following parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type / Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>UsbDmaMaxReads</code></td>
+<td><code>dw_bt</code></td>
+<td>Maximum outstanding reads for USB controller DMA</td>
+</tr>
+<tr>
+<td><code>UsbAddrDomain</code></td>
+<td><code>doub_bt</code></td>
+<td>Address domain to cast USB DMA requests into</td>
+</tr>
+<tr>
+<td><code>UsbAddrMask</code></td>
+<td><code>doub_bt</code></td>
+<td>Address mask to apply on USB DMA requests</td>
+</tr>
+</tbody>
+</table>
+<h3 id="serial-link">Serial Link</h3>
+<p>The <a href="https://github.com/pulp-platform/serial_link">Serial Link</a> is a fully digital, double-data-rate (DDR) chip-to-chip or die-to-die interface serializing AXI4. It can be used to communicate with other SoCs using it, such as other Cheshire instances or FPGAs providing further peripheral or accelerator functionality. It exposes the following parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type / Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SlinkMaxClkDiv</code></td>
+<td><code>shrt_bt</code></td>
+<td>Max. system clock divider for DDR interface</td>
+</tr>
+<tr>
+<td><code>SlinkMaxTxnsPerId</code></td>
+<td><code>dw_bt</code></td>
+<td>Max. number of inflight outgoing requests per ID</td>
+</tr>
+<tr>
+<td><code>SlinkMaxUniqIds</code></td>
+<td><code>dw_bt</code></td>
+<td>Max. number of inflight IDs for outgoing requests</td>
+</tr>
+<tr>
+<td><code>SlinkRegion(Start|End)</code></td>
+<td><code>doub_bt</code></td>
+<td>Address range for outgoing requests</td>
+</tr>
+<tr>
+<td><code>SlinkTxAddrMask</code></td>
+<td><code>doub_bt</code></td>
+<td>Address mask to apply on incoming requests</td>
+</tr>
+<tr>
+<td><code>SlinkTxAddrDomain</code></td>
+<td><code>doub_bt</code></td>
+<td>Address domain to cast incoming requests into</td>
+</tr>
+<tr>
+<td><code>SlinkUserAmoBit</code></td>
+<td><code>dw_bt</code></td>
+<td>AXI4 AMO user bit to set on incoming requests</td>
+</tr>
+</tbody>
+</table>
+<h3 id="dma-engine">DMA Engine</h3>
+<p>The <a href="https://github.com/pulp-platform/iDMA">iDMA Engine</a> enables high-throughput asynchronous transfers between any two subordinate address ranges in the system. The hardware supports, if enabled, up to two-dimensional transfers directly in hardware. It exposes the following parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type / Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DmaConfMax(Read|Write)Txns</code></td>
+<td><code>dw_bt</code></td>
+<td>Max. number of outstanding requests to DMA config</td>
+</tr>
+<tr>
+<td><code>DmaConfAmoNumCuts</code></td>
+<td><code>aw_bt</code></td>
+<td>Number of timing cuts inside config AMO filter</td>
+</tr>
+<tr>
+<td><code>DmaConfAmoPostCut</code></td>
+<td><code>bit</code></td>
+<td>Whether to insert a cut after config AMO filter</td>
+</tr>
+<tr>
+<td><code>DmaConfEnableTwoD</code></td>
+<td><code>bit</code></td>
+<td>Whether the 2D hardware extension is present</td>
+</tr>
+<tr>
+<td><code>DmaNumAxInFlight</code></td>
+<td><code>dw_bt</code></td>
+<td>Number of outstanding transfers the DMA launches</td>
+</tr>
+<tr>
+<td><code>DmaMemSysDepth</code></td>
+<td><code>dw_bt</code></td>
+<td>The <em>approximate</em> depth of the memory system</td>
+</tr>
+<tr>
+<td><code>DmaJobFifoDepth</code></td>
+<td><code>aw_bt</code></td>
+<td>The depth of the job FIFO</td>
+</tr>
+<tr>
+<td><code>DmaRAWCouplingAvail</code></td>
+<td><code>bit</code></td>
+<td>Whether the R-AW coupling feature is available</td>
+</tr>
+</tbody>
+</table>
+<h3 id="i2c-spi-gpios">I2C, SPI, GPIOs</h3>
+<p>The I2C host, SPI host, and GPIO interface are IPs provided by <a href="https://github.com/lowRISC/opentitan">OpenTitan</a> and adapted for use in PULP systems. They remain compatible with and use OpenTitan's device interface functions (DIFs) with minor patches. For more information on these peripherals, please consult the <a href="https://opentitan.org/book/hw/ip/index.html">OpenTitan IP Block Documentation</a>. These peripherals expose the following parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type / Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GpioInputSyncs</code></td>
+<td><code>bit</code></td>
+<td>Whether to add two-FF synchronizers to GPIO inputs</td>
+</tr>
+</tbody>
+</table>
+<h3 id="uart">UART</h3>
+<p>Cheshire's <a href="https://github.com/pulp-platform/apb_uart">UART</a> is compatible with the TI 16750. Thus, it is compatible with OpenSBI, U-Boot, and Linux out of the box. Note that Cheshire exposes the interface's <em>modem access control</em> for systems that wish to use it; if you do not, be sure to <em>correctly</em> tie off these signals.</p>
+<h3 id="boot-rom">Boot ROM</h3>
+<p>The boot ROM contains the first code executed by Cheshire's internal cores after reset. It serves to load a mutable program from an external source in a safe, swift, and verifiable fashion. It deserves particular attention because when implemented in unchangeable hardware, boot ROM bugs may seriously impact or altogether destroy the functionality of silicon implementations. For more information on Cheshire's built-in boot ROM, see the <a href="../sw/#boot-rom">Boot ROM</a> section in the <a href="../sw/">Software Stack</a> chapter.</p>
+<p>The boot ROM can optionally invoke a <a href="../../tg/integr/#platform-rom">Platform ROM</a> before code loading to set up essential features of the surrounding system; this is done <em>iff</em> the platform ROM address parameter (<code>PlatformRom</code>) is nonzero. If the boot ROM is not instantiated (<code>BootRom</code>), the internal cores will attempt to boot directly from the configured Platform ROM instead.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: User Manual">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                User Manual
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../sw/" class="md-footer__link md-footer__link--next" aria-label="Next: Software Stack">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Software Stack
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.expand", "navigation.tracking", "navigation.sections", "navigation.indexes", "navigation.footer"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.50899def.min.js"></script>
+      
+    
+  </body>
+</html>
