@@ -70,6 +70,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   inout  wire [ 3:0]          spih_sd,
 `ifdef FESVR_DTM
   // DMI
+  output logic         dmi_rst_ni,
   output dm::dmi_req_t dmi_req,
   output logic         dmi_req_valid,
   input  logic         dmi_req_ready,
@@ -1017,7 +1018,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   chandle fesvr_dtm;
 
-  logic start_SimDTM; // wired up in the testbench
   logic [31:0] sim_exit; // TODO: wire this up in the testbench
   logic [1:0] dmi_req_bits_op;
   assign dmi_req.op = dm::dtm_op_e'(dmi_req_bits_op); // need to check if it's this variable, 
@@ -1043,7 +1043,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   always @(posedge clk)
   begin
-    if(!(rst_n & start_SimDTM)) begin
+    if(!(rst_n & dmi_rst_ni)) begin
       __debug_req_valid = 0;
       __debug_resp_ready = 0;
       __exit = 0;
@@ -1072,16 +1072,16 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   endtask
 
   task automatic fesvr_stop();
-    start_SimDTM = 0;
+    dmi_rst_ni = 0;
   endtask
 
   task automatic fesvr_start();
-    start_SimDTM = 1;
+    dmi_rst_ni = 1;
   endtask
 
   task automatic fesvr_set(input string kernel, input string binary);
     fesvr_dtm = debug_new(kernel, binary);
-  endtask
+  endtask 
 `endif
 
 endmodule

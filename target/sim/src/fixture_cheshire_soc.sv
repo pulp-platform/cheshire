@@ -65,6 +65,7 @@ module fixture_cheshire_soc #(
 
 `ifdef FESVR_DTM
   //DMI
+  logic          dmi_rst_ni;
   dm::dmi_req_t  dmi_req;
   logic          dmi_req_valid;
   logic          dmi_req_ready;
@@ -146,6 +147,7 @@ module fixture_cheshire_soc #(
     .vga_green_o        ( ),
     .vga_blue_o         ( ),
   `ifdef FESVR_DTM
+    .dmi_rst_ni         ( dmi_rst_ni  ),
     .dmi_req_valid_i    ( dmi_req_valid  ),
     .dmi_req_ready_o    ( dmi_req_ready  ),
     .dmi_req_i          ( dmi_req        ),

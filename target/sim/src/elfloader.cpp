@@ -181,7 +181,6 @@ extern "C" {
   unsigned char* debug_resp_ready,
   int            debug_resp_bits_resp,
   int            debug_resp_bits_data);
-  int read_csr_dtm();
 }
 
 static void write (uint64_t address, uint64_t len, uint8_t *buf)
