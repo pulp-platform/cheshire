@@ -78,6 +78,7 @@ package cheshire_pkg;
     word_bt Cva6IcacheByteSize;
     shrt_bt Cva6IcacheSetAssoc;
     shrt_bt Cva6IcacheLineWidth;
+    doub_bt Cva6ICacheSpmAddrBase;
     config_pkg::cache_type_t Cva6DCacheType;
     word_bt Cva6DcacheByteSize;
     shrt_bt Cva6DcacheSetAssoc;
@@ -534,9 +535,9 @@ package cheshire_pkg;
     ret.NonIdempotentAddrBase = {64'h0000_0000, NoCieBase};
     ret.NOCType               = config_pkg::NOC_TYPE_AXI4_ATOP;
     ret.NonIdempotentLength   = {64'h1000_0000, 64'h6000_0000 - cfg.Cva6ExtCieLength};
-    ret.NrExecuteRegionRules  = 6;   // Debug, Bootrom, SPM, SPM Uncached, LLCOut, ExtCI;
-    ret.ExecuteRegionAddrBase = {AmDbg,     AmBrom,    AmSpm,   AmSpmUnc, cfg.LlcOutRegionStart, CieBase};
-    ret.ExecuteRegionLength   = {64'h40000, 64'h40000, SizeSpm, SizeSpm,  SizeLlcOut,            cfg.Cva6ExtCieLength};
+    ret.NrExecuteRegionRules  = 7;   // Debug, Bootrom, SPM, SPM Uncached, ISPM, LLCOut, ExtCI;
+    ret.ExecuteRegionAddrBase = {AmDbg,     AmBrom,    AmSpm,   AmSpmUnc, cfg.Cva6ICacheSpmAddrBase,   cfg.LlcOutRegionStart, CieBase};
+    ret.ExecuteRegionLength   = {64'h40000, 64'h40000, SizeSpm, SizeSpm,  64'(cfg.Cva6IcacheByteSize), SizeLlcOut,            cfg.Cva6ExtCieLength};
     ret.NrCachedRegionRules   = 3;   // CachedSPM, LLCOut, ExtCI;
     ret.CachedRegionAddrBase  = {AmSpm,   cfg.LlcOutRegionStart,  CieBase};
     ret.CachedRegionLength    = {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength};
@@ -556,6 +557,8 @@ package cheshire_pkg;
     ret.IcacheByteSize          = cfg.Cva6IcacheByteSize;
     ret.IcacheSetAssoc          = cfg.Cva6IcacheSetAssoc;
     ret.IcacheLineWidth         = cfg.Cva6IcacheLineWidth;
+    ret.ICacheSpmAddrBase       = cfg.Cva6ICacheSpmAddrBase;
+    ret.ICacheSpmLength         = cfg.Cva6IcacheByteSize;
     ret.DCacheType              = cfg.Cva6DCacheType;
     ret.DcacheByteSize          = cfg.Cva6DcacheByteSize;
     ret.DcacheSetAssoc          = cfg.Cva6DcacheSetAssoc;
@@ -598,6 +601,7 @@ package cheshire_pkg;
     Cva6IcacheByteSize          : 16384,
     Cva6IcacheSetAssoc          : 4,
     Cva6IcacheLineWidth         : 128,
+    Cva6ICacheSpmAddrBase       : 64'h01A0_0000,
     Cva6DCacheType              : config_pkg::WB,
     Cva6DcacheByteSize          : 32768,
     Cva6DcacheSetAssoc          : 8,
