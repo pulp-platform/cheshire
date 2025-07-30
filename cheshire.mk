@@ -10,7 +10,13 @@ BENDER ?= bender
 VLOGAN ?= vlogan
 
 # Caution: Questasim requires this to point to the *actual* compiler install path
-CXX_PATH := $(shell which $(CXX))
+# If Make has been started from WSL, search Windows compiler,
+# take first occurrence and replace '\' in path with '/'.
+ifeq ($(strip $(WSL_DISTRO_NAME)),)
+	CXX_PATH := $(shell which $(CXX))
+else
+	CXX_PATH := $(shell /c/Windows/System32/cmd.exe /c "where $(CXX)" | tr -d '\r' | head -n 1 | sed 's|\\|/|g')
+endif
 
 VLOG_ARGS   ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
 VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
@@ -146,10 +152,19 @@ CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/boo
 ##############
 # Simulation #
 ##############
+ifneq ($(strip $(WSL_DISTRO_NAME)),)
+	CHS_ROOT_OS_SPECIFIC := $(shell wslpath -m $(realpath $(CHS_ROOT)))
+else
+ 	CHS_ROOT_OS_SPECIFIC := $(realpath $(CHS_ROOT))
+endif
 
 $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: $(CHS_ROOT)/Bender.yml
 	$(BENDER) script vsim -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOG_ARGS)" > $@
-	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11" -cpppath "$(CXX_PATH)"' >> $@
+ifneq ($(strip $(WSL_DISTRO_NAME)),)
+	# If run from WSL, replace pattern like "/c/..." with "c:/..."
+	sed -i -E 's|(set ROOT ")/([a-zA-Z])/(.*)"|\1\2:/\3"|g' $@
+endif
+	echo 'vlog "$(CHS_ROOT_OS_SPECIFIC)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11" -cpppath "$(CXX_PATH)"' >> $@
 
 $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh: $(CHS_ROOT)/Bender.yml
 	$(BENDER) script vcs -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOGAN_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
