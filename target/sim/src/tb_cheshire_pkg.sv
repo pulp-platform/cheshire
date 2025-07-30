@@ -23,14 +23,26 @@ package tb_cheshire_pkg;
       return ret;
     endfunction
 
+    // A dedicated vCLIC config
+    function automatic cheshire_cfg_t gen_cheshire_vclic_cfg();
+      cheshire_cfg_t ret = DefaultCfg;
+      ret.Clic = 1;
+      ret.ClicVsclic = 1;
+      ret.ClicVsprio = 1;
+      ret.ClicNumVsctxts = 4;
+      ret.ClicPrioWidth = 1;
+      return ret;
+    endfunction
+
     // Number of Cheshire configurations
-    localparam int unsigned NumCheshireConfigs = 32'd3;
+    localparam int unsigned NumCheshireConfigs = 32'd4;
 
     // Assemble a configuration array indexed by a numeric parameter
     localparam cheshire_cfg_t [NumCheshireConfigs-1:0] TbCheshireConfigs = {
-        gen_cheshire_clic_cfg(), // 2: CLIC-enabled configuration
-        gen_cheshire_rt_cfg(),   // 1: RT-enabled configuration
-        DefaultCfg               // 0: Default configuration
+        gen_cheshire_vclic_cfg(), // 3: vCLIC-enabled configuration
+        gen_cheshire_clic_cfg(),  // 2: CLIC-enabled configuration
+        gen_cheshire_rt_cfg(),    // 1: RT-enabled configuration
+        DefaultCfg                // 0: Default configuration
     };
 
 endpackage

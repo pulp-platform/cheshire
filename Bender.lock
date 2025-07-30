@@ -71,8 +71,8 @@ packages:
     - common_cells
     - register_interface
   clic:
-    revision: 8ed76ffc779a435d0ed034f3068e4c3334fe2ecf
-    version: 2.0.0
+    revision: 72472df17362734e4d2ac2bcb8c80a452fba9808
+    version: 3.0.0-rc5
     source:
       Git: https://github.com/pulp-platform/clic.git
     dependencies:
@@ -101,7 +101,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 9338c2ca7cf1a47aef54322f89ce867825c3c8d5
+    revision: 4c02b24fe7c04690f626776a92274da24f80d1da
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -118,8 +118,8 @@ packages:
     dependencies:
     - axi
   fpnew:
-    revision: f231041c610f270ffc03cbdac38739ddb6426572
-    version: null
+    revision: e5aa6a01b5bbe1675c3aa8872e1203413ded83d1
+    version: 0.2.3
     source:
       Git: https://github.com/pulp-platform/cvfpu.git
     dependencies:
