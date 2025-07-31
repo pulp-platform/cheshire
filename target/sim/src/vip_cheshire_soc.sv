@@ -1001,12 +1001,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     else $display("[SLINK] SUCCESS");
   endtask
 
-  // when running pk, there is not eoc, so it will never ends,
-  //that why you should us this function instead of slink_wait_for_eoc
-  task automatic wait_boot_pk();
-    #(ClkPeriodSys * 200000 * 2); // wait 2s, pk should be booted (take around 1.5s).
-  endtask
-
 `ifdef FESVR_DTM
   //////////////
   //  SimDTM  //

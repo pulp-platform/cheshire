@@ -68,7 +68,6 @@ module tb_cheshire_soc #(
         end 1: begin  // Serial Link
           fix.vip.slink_elf_run(preload_elf);
           fix.vip.slink_wait_for_eoc(exit_code);
-          //fix.vip.wait_boot_pk();
         end 2: begin  // UART
           fix.vip.uart_debug_elf_run_and_wait(preload_elf, exit_code);
         end default: begin
