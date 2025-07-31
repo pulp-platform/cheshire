@@ -244,12 +244,7 @@ module dram_wrapper_xilinx #(
   ddr4 i_dram (
     // Reset
     .sys_rst                    ( sys_rst_i    ),  // Active high
-    `ifdef TARGET_VCU118
-      .c0_sys_clk_p               ( c0_sys_clk_p ),
-      .c0_sys_clk_n               ( c0_sys_clk_n ),
-    `elsif TARGET_VCU128
-      .c0_sys_clk_i               ( dram_clk_i   ),
-    `endif
+    .c0_sys_clk_i               ( dram_clk_i   ),
     .c0_ddr4_aresetn            ( soc_resetn_i ),
     // Clock and reset out
     .c0_ddr4_ui_clk             ( dram_axi_clk ),

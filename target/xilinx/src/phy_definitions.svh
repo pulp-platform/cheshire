@@ -89,8 +89,6 @@
   inout  [8:0]  c0_ddr4_dqs_t,
 
 `define VCU118_DDR4_INTF \
-  input         c0_sys_clk_p, \
-  input         c0_sys_clk_n, \
   output        c0_ddr4_reset_n, \
   output [0:0]  c0_ddr4_ck_t, \
   output [0:0]  c0_ddr4_ck_c, \
