@@ -229,7 +229,7 @@ switch $proj {
                     CONFIG.C0.DDR4_AxiIDWidth {8} \
                     CONFIG.C0.BANK_GROUP_WIDTH {1} \
                     CONFIG.C0.DDR4_AxiSelection {true} \
-                ] [get_ips $proj]
+                    ] [get_ips $proj]
             }
             default { nocfgexit $proj $board }
         }
