@@ -24,7 +24,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   parameter type axi_ext_slv_rsp_t  = logic,
   parameter type reg_ext_req_t      = logic,
   parameter type reg_ext_rsp_t      = logic,
-  parameter type impl_in_t          = logic
+  parameter type impl_in_t          = logic,
+  parameter type rvfi_ext_t         = logic
 ) (
   input  logic        clk_i,
   input  logic        rst_ni,
@@ -110,7 +111,9 @@ module cheshire_soc import cheshire_pkg::*; #(
   output logic [UsbNumPorts-1:0] usb_dp_o,
   output logic [UsbNumPorts-1:0] usb_dp_oe_o,
   input  impl_in_t [Cfg.Cva6IcacheSetAssoc+Cfg.Cva6DcacheSetAssoc:0] cva6_sram_impl_i,
-  input  impl_in_t [2*Cfg.LlcSetAssoc-1:0] llc_sram_impl_i
+  input  impl_in_t [2*Cfg.LlcSetAssoc-1:0] llc_sram_impl_i,
+  // RVFI
+  output rvfi_ext_t [Cfg.NumCores-1:0] rvfi_o
 );
 
   `include "axi/typedef.svh"
@@ -686,7 +689,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
 
-  localparam config_pkg::cva6_user_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
+  localparam config_pkg::cva6_cfg_t Cva6Cfg = build_config_pkg::build_config(gen_cva6_cfg(Cfg));
 
   // Boot from boot ROM only if available, otherwise from platform ROM
   localparam logic [63:0] BootAddr = 64'(Cfg.Bootrom ? AmBrom : Cfg.PlatformRom);
@@ -729,8 +732,11 @@ module cheshire_soc import cheshire_pkg::*; #(
     logic              clic_irq_v;
     logic [5:0]        clic_irq_vsid;
 
+    // Tracer interface
+    rvfi_probes_t rvfi_probes;
+
     cva6 #(
-      .CVA6Cfg        ( build_config_pkg::build_config(Cva6Cfg) ),
+      .CVA6Cfg        ( Cva6Cfg            ),
       .axi_ar_chan_t  ( axi_cva6_ar_chan_t ),
       .axi_aw_chan_t  ( axi_cva6_aw_chan_t ),
       .axi_w_chan_t   ( axi_cva6_w_chan_t  ),
@@ -759,11 +765,28 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clic_irq_ready_o ( clic_irq_ready ),
       .clic_kill_req_i  ( clic_irq_kill_req ),
       .clic_kill_ack_o  ( clic_irq_kill_ack ),
-      .rvfi_probes_o    ( ),
+      .rvfi_probes_o    ( rvfi_probes ),
       .cvxif_req_o      ( ),
       .cvxif_resp_i     ( '0 ),
       .noc_req_o        ( core_out_req ),
       .noc_resp_i       ( core_out_rsp )
+    );
+
+    cva6_rvfi #(
+      .CVA6Cfg             ( Cva6Cfg             ),
+      .rvfi_instr_t        ( rvfi_instr_t        ),
+      .rvfi_csr_t          ( rvfi_csr_t          ),
+      .rvfi_probes_instr_t ( rvfi_probes_instr_t ),
+      .rvfi_probes_csr_t   ( rvfi_probes_csr_t   ),
+      .rvfi_probes_t       ( rvfi_probes_t       ),
+      .rvfi_to_iti_t       ( rvfi_to_iti_t       )
+    ) i_cva6_rvfi (
+      .clk_i         ( clk_i           ),
+      .rst_ni        ( rst_ni          ),
+      .rvfi_probes_i ( rvfi_probes     ),
+      .rvfi_instr_o  ( rvfi_o[i].instr ),
+      .rvfi_to_iti_o (                 ),
+      .rvfi_csr_o    ( rvfi_o[i].csr   )
     );
 
     if (Cfg.BusErr) begin : gen_cva6_bus_err

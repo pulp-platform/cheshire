@@ -17,6 +17,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter type          axi_ext_llc_rsp_t = logic,
   parameter type          axi_ext_mst_req_t = logic,
   parameter type          axi_ext_mst_rsp_t = logic,
+  parameter type          rvfi_ext_t        = logic,
   // Timing
   parameter time          ClkPeriodSys      = 5ns,
   parameter time          ClkPeriodJtag     = 20ns,
@@ -52,6 +53,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   // External serial link AXI port
   input  axi_ext_mst_req_t axi_slink_mst_req,
   output axi_ext_mst_rsp_t axi_slink_mst_rsp,
+  // RVFI
+  input  rvfi_ext_t [DutCfg.NumCores-1:0] rvfi,
   // JTAG interface
   output logic jtag_tck,
   output logic jtag_trst_n,
@@ -954,6 +957,27 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     if (exit_code) $error("[SLINK] FAILED: return code %0d", exit_code);
     else $display("[SLINK] SUCCESS");
   endtask
+
+  //////////////
+  //  Tracer  //
+  //////////////
+
+  for (genvar i = 0; i < DutCfg.NumCores; i++) begin : gen_tracer
+    rvfi_tracer  #(
+      .CVA6Cfg      ( build_config_pkg::build_config(gen_cva6_cfg(DutCfg)) ),
+      .rvfi_instr_t ( rvfi_instr_t                                         ),
+      .rvfi_csr_t   ( rvfi_csr_t                                           ),
+      .HART_ID      ( i                                                    ),
+      .DEBUG_START  ( 0                                                    ),
+      .DEBUG_STOP   ( 0                                                    )
+    ) i_rvfi_tracer (
+      .clk_i         ( clk           ),
+      .rst_ni        ( rst_n         ),
+      .rvfi_i        ( rvfi[i].instr ),
+      .rvfi_csr_i    ( rvfi[i].csr   ),
+      .end_of_test_o (               )
+    );
+  end
 
 endmodule
 

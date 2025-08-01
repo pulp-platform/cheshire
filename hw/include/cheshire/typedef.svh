@@ -9,6 +9,7 @@
 
 `include "axi/typedef.svh"
 `include "register_interface/typedef.svh"
+`include "rvfi_types.svh"
 
 `define CHESHIRE_TYPEDEF_AXI_CT(__name, __addr_t, __id_t, __data_t, __strb_t, __user_t) \
   `AXI_TYPEDEF_ALL_CT(__name, __name``_req_t, __name``_rsp_t, \
@@ -33,10 +34,27 @@
 `define CHESHIRE_TYPEDEF_REG(__name, __addr_t) \
   `REG_BUS_TYPEDEF_ALL(__name, __addr_t, logic [31:0], logic [3:0])
 
+`define CHESHIRE_TYPEDEF_RVFI(__prefix, __cva6_cfg) \
+  localparam type __prefix``_instr_t          = `RVFI_INSTR_T(__cva6_cfg); \
+  localparam type __prefix``_csr_elmt_t       = `RVFI_CSR_ELMT_T(__cva6_cfg); \
+  localparam type __prefix``_csr_t            = `RVFI_CSR_T(__cva6_cfg, __prefix``_csr_elmt_t); \
+  localparam type __prefix``_t                = struct packed { \
+    __prefix``_csr_t csr; \
+    __prefix``_instr_t [__cva6_cfg.NrCommitPorts-1:0] instr; \
+  }; \
+  localparam type __prefix``_to_iti_t         = `RVFI_TO_ITI_T(__cva6_cfg); \
+  localparam type __prefix``_probes_instr_t   = `RVFI_PROBES_INSTR_T(__cva6_cfg); \
+  localparam type __prefix``_probes_csr_t     = `RVFI_PROBES_CSR_T(__cva6_cfg); \
+  localparam type __prefix``_probes_t         = struct packed { \
+    __prefix``_probes_csr_t csr; \
+    __prefix``_probes_instr_t instr; \
+  }; \
+
 // Note that the prefix does *not* include a leading underscore.
 `define CHESHIRE_TYPEDEF_ALL(__prefix, __cfg) \
   localparam type __prefix``addr_t = logic [__cfg.AddrWidth-1:0]; \
   `CHESHIRE_TYPEDEF_AXI(__prefix``axi, __prefix``axi_llc, __prefix``addr_t, __cfg) \
-  `CHESHIRE_TYPEDEF_REG(__prefix``reg, __prefix``addr_t)
+  `CHESHIRE_TYPEDEF_REG(__prefix``reg, __prefix``addr_t) \
+  `CHESHIRE_TYPEDEF_RVFI(__prefix``rvfi, build_config_pkg::build_config(gen_cva6_cfg(__cfg)))
 
 `endif
