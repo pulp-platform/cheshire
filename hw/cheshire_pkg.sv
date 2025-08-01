@@ -314,6 +314,7 @@ package cheshire_pkg;
   localparam doub_bt AmSpm    = 'h1000_0000;  // Cached region at bottom, uncached on top
   localparam doub_bt AmSpmUnc = 'h1400_0000;
   localparam doub_bt AmClic   = 'h0800_0000;
+  localparam doub_bt AmL2SPM  = 'h7800_0000;
 
   // Static masks
   localparam doub_bt AmSpmRegionMask = 'h03FF_FFFF;
@@ -532,12 +533,12 @@ package cheshire_pkg;
     ret.NrNonIdempotentRules    = 2;   // Periphs, ExtNonCI;
     ret.NonIdempotentAddrBase   = {64'h0000_0000, NoCieBase};
     ret.NonIdempotentLength     = {64'h1000_0000, 64'h6000_0000 - cfg.Cva6ExtCieLength};
-    ret.NrExecuteRegionRules    = 6;   // Debug, Bootrom, SPM, SPM Uncached, LLCOut, ExtCIE
-    ret.ExecuteRegionAddrBase   = {AmDbg,     AmBrom,    AmSpm,   AmSpmUnc, cfg.LlcOutRegionStart, CieBase};
-    ret.ExecuteRegionLength     = {64'h40000, 64'h40000, SizeSpm, SizeSpm, SizeLlcOut, cfg.Cva6ExtCieLength};
-    ret.NrCachedRegionRules     = 3;   // CachedSPM, LLCOut, ExtCI;
-    ret.CachedRegionAddrBase    = {AmSpm,   cfg.LlcOutRegionStart,  CieBase};
-    ret.CachedRegionLength      = {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength};
+    ret.NrExecuteRegionRules    = 6;   // Debug, Bootrom, SPM, SPM Uncached, LLCOut, ExtCIE, L2SPM
+    ret.ExecuteRegionAddrBase   = {AmDbg,     AmBrom,    AmSpm,   AmSpmUnc, cfg.LlcOutRegionStart, CieBase, AmL2SPM};
+    ret.ExecuteRegionLength     = {64'h40000, 64'h40000, SizeSpm, SizeSpm, SizeLlcOut, cfg.Cva6ExtCieLength,64'h800000};
+    ret.NrCachedRegionRules     = 4;   // CachedSPM, LLCOut, ExtCI,L2SPM;
+    ret.CachedRegionAddrBase    = {AmSpm,   cfg.LlcOutRegionStart,  CieBase,              AmL2SPM};
+    ret.CachedRegionLength      = {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength, 64'h800000 };
     ret.RVSCLIC                 = cfg.Clic;
     ret.RVVCLIC                 = cfg.ClicVsclic;
     ret.CLICNumInterruptSrc     = NumCoreIrqs + NumIntIntrs + cfg.NumExtClicIntrs;

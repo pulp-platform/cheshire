@@ -35,6 +35,13 @@ SECTIONS {
     __bss_end = .;
   } > spm
 
+  .ptables_noinit (NOLOAD) : ALIGN(16)
+  {
+      . = ALIGN(16);
+      KEEP(*(.ptables_noinit))
+  } > spm
+
+
   .bulk : ALIGN(16) {
     *(.bulk)
     *(.bulk.*)
