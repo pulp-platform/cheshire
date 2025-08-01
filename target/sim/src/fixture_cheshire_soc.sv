@@ -146,6 +146,8 @@ module fixture_cheshire_soc #(
     .usb_dp_i           ( '0 ),
     .usb_dp_o           ( ),
     .usb_dp_oe_o        ( ),
+    .cva6_sram_impl_i   ( '0 ),
+    .llc_sram_impl_i    ( '0 ),
     .rvfi_o             ( rvfi )
   );
 
