@@ -94,7 +94,10 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
 
   output logic  uart_tx_o,
   input  logic  uart_rx_i,
-
+`ifdef USE_CAN
+  input  logic can_rx_i,
+  output logic can_tx_o,
+`endif
   inout  wire [UsbNumPorts-1:0] usb_dm_io,
   inout  wire [UsbNumPorts-1:0] usb_dp_io
 );
@@ -108,6 +111,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     cheshire_cfg_t ret  = DefaultCfg;
     ret.RtcFreq         = 1000000;
     ret.SerialLink      = 0;
+    ret.CanBusFpga      = 1;
   `ifdef USE_USB
     ret.Usb = 1;
   `else
@@ -663,6 +667,10 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
 `endif
     .uart_tx_o,
     .uart_rx_i,
+`ifdef USE_CAN
+    .can_rx_i,
+    .can_tx_o,
+`endif
     .usb_clk_i          ( usb_clk ),
     .usb_rst_ni         ( rst_n ), // Technically should sync to `usb_clk`, but pulse is long enough
     .usb_dm_i,
