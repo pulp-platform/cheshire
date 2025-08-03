@@ -63,6 +63,9 @@ module fixture_cheshire_soc #(
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o;
 
+  logic can_rx_i;
+  logic can_tx_o;
+
   cheshire_soc #(
     .Cfg                ( DutCfg ),
     .ExtHartinfo        ( '0 ),
@@ -142,7 +145,9 @@ module fixture_cheshire_soc #(
     .usb_dm_oe_o        ( ),
     .usb_dp_i           ( '0 ),
     .usb_dp_o           ( ),
-    .usb_dp_oe_o        ( )
+    .usb_dp_oe_o        ( ),
+    .can_rx_i           ( can_rx_i ),
+    .can_tx_o           ( can_tx_o )
   );
 
   ////////////////////////

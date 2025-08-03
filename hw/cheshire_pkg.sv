@@ -138,6 +138,8 @@ package cheshire_pkg;
     bit     Clic;
     bit     IrqRouter;
     bit     BusErr;
+    bit     CanBus;
+    bit     CanBusFpga;
     // Parameters for Debug Module
     jtag_idcode_t DbgIdCode;
     dw_bt   DbgMaxReqs;
@@ -279,6 +281,7 @@ package cheshire_pkg;
   localparam doub_bt AmLlc    = 'h0300_1000;
   localparam doub_bt AmSlink  = 'h0300_6000;
   localparam doub_bt AmBusErr = 'h0300_9000;
+  localparam doub_bt AmCanBus = 'h0300_A000;
   localparam doub_bt AmSpm    = 'h1000_0000;  // Cached region at bottom, uncached on top
   localparam doub_bt AmSpmUnc = 'h1400_0000;
   localparam doub_bt AmClic   = 'h0800_0000;
@@ -396,6 +399,7 @@ package cheshire_pkg;
     aw_bt usb;
     aw_bt axirt;
     aw_bt irq_router;
+    aw_bt can_bus;
     aw_bt [2**MaxCoresWidth-1:0] bus_err;
     aw_bt [2**MaxCoresWidth-1:0] clic;
     aw_bt ext_base;
@@ -427,6 +431,7 @@ package cheshire_pkg;
     if (cfg.BusErr) for (int j = 0; j < 2 + cfg.NumCores; j++) begin
       i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, AmBusErr + j*'h40,  AmBusErr + (j+1)*'h40};
     end
+    if (cfg.CanBus) begin i++; ret.can_bus = i; r++; ret.map[r] = '{i, AmCanBus, AmCanBus +'h1000}; end
     i++; r++;
     ret.ext_base  = i;
     ret.num_out   = i + cfg.RegExtNumSlv;
@@ -612,6 +617,8 @@ package cheshire_pkg;
     Clic              : 0,
     IrqRouter         : 0,
     BusErr            : 1,
+    CanBus            : 1,
+    CanBusFpga        : 0,
     // Debug
     DbgIdCode         : CheshireIdCode,
     DbgMaxReqs        : 4,

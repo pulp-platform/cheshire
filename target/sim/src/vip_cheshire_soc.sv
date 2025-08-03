@@ -72,7 +72,10 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   output logic [SlinkNumChan-1:0]                    slink_rcv_clk_i,
   input  logic [SlinkNumChan-1:0]                    slink_rcv_clk_o,
   output logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i,
-  input  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o
+  input  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o,
+  // CAN BUS Interface
+  output logic can_rx_i,
+  input  logic can_tx_o
 );
 
   `include "cheshire/typedef.svh"
@@ -953,7 +956,14 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     exit_code >>= 1;
     if (exit_code) $error("[SLINK] FAILED: return code %0d", exit_code);
     else $display("[SLINK] SUCCESS");
-  endtask
+  endtask // slink_wait_for_eoc
+
+  ///////////////
+  //  CAN BUS  //
+  ///////////////
+
+  // Temporarily bind to zero CAN BUS RX channel
+  assign can_rx_i = 1'b0;
 
 endmodule
 
