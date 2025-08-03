@@ -105,7 +105,10 @@ module cheshire_soc import cheshire_pkg::*; #(
   output logic [UsbNumPorts-1:0] usb_dm_oe_o,
   input  logic [UsbNumPorts-1:0] usb_dp_i,
   output logic [UsbNumPorts-1:0] usb_dp_o,
-  output logic [UsbNumPorts-1:0] usb_dp_oe_o
+  output logic [UsbNumPorts-1:0] usb_dp_oe_o,
+  // CAN BUS interface
+  input  logic can_rx_i,
+  output logic can_tx_o
 );
 
   `include "axi/typedef.svh"
@@ -1711,6 +1714,64 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign usb_dp_oe_o = '0;
 
     assign intr.intn.usb = 0;
+
+  end
+
+  ///////////////
+  //  CAN BUS  //
+  ///////////////
+
+  if (Cfg.CanBus) begin : gen_can_bus
+    `include "apb/typedef.svh"
+    `APB_TYPEDEF_REQ_T (can_apb_req_t, logic [Cfg.AddrWidth-1:0], logic [31:0], logic [3:0])
+    `APB_TYPEDEF_RESP_T(can_apb_rsp_t, logic [31:0])
+    logic [63:0] can_timestamp;
+    can_apb_req_t can_apb_req;
+    can_apb_rsp_t can_apb_rsp;
+    assign can_timestamp = '1;
+
+    reg_to_apb #(
+      .reg_req_t ( reg_req_t ),
+      .reg_rsp_t ( reg_rsp_t ),
+      .apb_req_t ( can_apb_req_t ),
+      .apb_rsp_t ( can_apb_rsp_t )
+    ) i_can_reg2apb (
+      .clk_i,
+      .rst_ni,
+      .reg_req_i ( reg_out_req[RegOut.can_bus] ),
+      .reg_rsp_o ( reg_out_rsp[RegOut.can_bus] ),
+      .apb_req_o ( can_apb_req ),
+      .apb_rsp_i ( can_apb_rsp )
+    );
+
+    can_top_apb #(
+      .rx_buffer_size   ( 32 ),
+      .txt_buffer_count ( 2 ),
+      .target_technology( Cfg.CanBusFpga ) // 0 for ASIC or 1 for FPGA
+    ) i_apb_to_can (
+      .aclk             ( clk_i  ),
+      .arstn            ( rst_ni ),
+      .scan_enable      ( 1'b0 ),
+      .res_n_out        ( ),
+      .irq              ( car_can_intr ),
+      .CAN_tx           ( can_tx_o ),
+      .CAN_rx           ( can_rx_i ),
+      .timestamp        ( can_timestamp ),
+      .s_apb_paddr      ( can_apb_req.paddr[31:0] ),
+      .s_apb_penable    ( can_apb_req.penable ),
+      .s_apb_pprot      ( can_apb_req.pprot ),
+      .s_apb_prdata     ( can_apb_rsp.prdata ),
+      .s_apb_pready     ( can_apb_rsp.pready ),
+      .s_apb_psel       ( can_apb_req.psel ),
+      .s_apb_pslverr    ( can_apb_rsp.pslverr ),
+      .s_apb_pstrb      ( can_apb_req.pstrb ),
+      .s_apb_pwdata     ( can_apb_req.pwdata ),
+      .s_apb_pwrite     ( can_apb_req.pwrite )
+    );
+
+  end else begin : gen_no_can_bus
+
+    assign can_tx_o = '0;
 
   end
 

@@ -28,6 +28,7 @@ extern void *__base_dma;
 extern void *__base_axirt;
 extern void *__base_axirtgrd;
 extern void *__base_bus_err;
+extern void *__base_can_bus;
 extern void *__base_clic;
 extern void *__base_usb;
 extern void *__base_spm;
