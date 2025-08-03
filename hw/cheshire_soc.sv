@@ -1725,6 +1725,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   `APB_TYPEDEF_REQ_T (can_apb_req_t, logic [Cfg.AddrWidth-1:0], logic [31:0], logic [3:0])
   `APB_TYPEDEF_RESP_T(can_apb_rsp_t, logic [31:0])
   if (Cfg.CanBus) begin : gen_can_bus
+
     logic [63:0] can_timestamp;
     can_apb_req_t can_apb_req;
     can_apb_rsp_t can_apb_rsp;
