@@ -1476,6 +1476,9 @@ module cheshire_soc import cheshire_pkg::*; #(
       axi_in_req[AxiIn.dma].ar.user = Cfg.AxiUserDefault;
     end
 
+    axi_mst_req_t axi_dma_req_precut;
+    axi_mst_rsp_t axi_dma_rsp_precut;
+
     cheshire_idma_wrap #(
       .AxiAddrWidth     ( Cfg.AddrWidth     ),
       .AxiDataWidth     ( Cfg.AxiDataWidth  ),
@@ -1495,10 +1498,28 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clk_i,
       .rst_ni,
       .testmode_i     ( test_mode_i ),
-      .axi_mst_req_o  ( axi_dma_req           ),
-      .axi_mst_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
+      .axi_mst_req_o  ( axi_dma_req_precut ),
+      .axi_mst_rsp_i  ( axi_dma_rsp_precut ),
       .axi_slv_req_i  ( dma_cut_req ),
       .axi_slv_rsp_o  ( dma_cut_rsp )
+    );
+
+    axi_cut #(
+      .Bypass     ( ~Cfg.DmaPostCut   ),
+      .aw_chan_t  ( axi_mst_aw_chan_t ),
+      .w_chan_t   ( axi_mst_w_chan_t  ),
+      .b_chan_t   ( axi_mst_b_chan_t  ),
+      .ar_chan_t  ( axi_mst_ar_chan_t ),
+      .r_chan_t   ( axi_mst_r_chan_t  ),
+      .axi_req_t  ( axi_mst_req_t ),
+      .axi_resp_t ( axi_mst_rsp_t )
+    ) i_idma_axi_rt_cut (
+      .clk_i,
+      .rst_ni,
+      .slv_req_i  ( axi_dma_req_precut    ),
+      .slv_resp_o ( axi_dma_rsp_precut    ),
+      .mst_req_o  ( axi_dma_req           ),
+      .mst_resp_i ( axi_in_rsp[AxiIn.dma] )
     );
 
     if (Cfg.BusErr) begin : gen_dma_bus_err
