@@ -9,3 +9,5 @@
 [submodule "sw/deps/benchmarks"]
 	path = sw/deps/benchmarks
 	url = git@github.com:alex96295/cpu-benchmarks-collection.git
+[submodule "sw/deps/benchmarks/"]
+	url = https://github.com/alex96295/cpu-benchmarks-collection.git
