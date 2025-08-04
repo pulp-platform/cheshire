@@ -28,7 +28,7 @@ CHS_SW_CCFLAGS ?= $(CHS_SW_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-b
 CHS_SW_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_SW_LD_DIR)
 CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
 
-CHS_SW_ALL += $(CHS_SW_LIBS) $(CHS_SW_GEN_HDRS) $(CHS_SW_TESTS) $(CHS_SW_TOOLS)
+CHS_SW_ALL += $(CHS_SW_LIBS) $(CHS_SW_GEN_HDRS) $(CHS_SW_TESTS) $(CHS_SW_TOOLS) $(CHS_SW_BENCHMARKS)
 
 .PRECIOUS: %.elf %.dtb
 
@@ -194,3 +194,14 @@ CHS_SW_TESTS += $(CHS_SW_TEST_ROM_DUMP:.rom.dump=.rom.memh) $(CHS_SW_TEST_ROM_DU
 
 # Add all dumps to test build
 CHS_SW_TESTS += $(CHS_SW_TEST_DUMP)
+
+##############
+# Benchmarks #
+##############
+
+CHS_SW_BENCHMARKS := chs_sw_benchmarks
+chs-sw-benchmarks:
+  cd $(CHS_SW_DIR)/deps/benchmakks && \
+  $(shell ./scripts/apply_patches.sh && \
+	make build-all PLATFORM=cheshire && \
+	cd $(CHS_ROOT)
