@@ -65,7 +65,10 @@ void uart_read_str(void *uart_base, void *dst, uint64_t len) {
 
 // Default UART provides console
 void _putchar(char byte) {
+    // Add carriage return if newline character is detected
+    if (byte == '\n') uart_write(&__base_uart, '\r');
     uart_write(&__base_uart, byte);
+    uart_write_flush(&__base_uart);
 }
 
 char _getchar() {
