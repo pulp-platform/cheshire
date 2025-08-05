@@ -252,7 +252,8 @@ int setup_dpllc() {
 #define TAGGER_NUM_REGIONS LLC_MAXPARTITION
 /* I think this is right? */
 // ySE: xilinx/build/cheshire.genesys2.log:1718:        Parameter PATID_LEN bound to: 32'b00000000000000000000000000000101
-#define TAGGER_PATID_LEN 5
+// Nils: This *should* be log2(LLC_MAXPARTITION)
+#define TAGGER_PATID_LEN 4
     // static const uint32_t TAGGER_NUM_REGIONS = 16;
 
 #define TAGGER_REG_PAT_ADDR_N_REG_OFFSET(n)                                    \
@@ -311,7 +312,7 @@ int setup_dpllc() {
             // };
         };
         enum TaggerAddrConf conf;
-         /* actually 5 bits */
+         /* actually 4 bits */
         uint8_t patid;
     };
 
@@ -385,7 +386,8 @@ int setup_dpllc() {
         printf("configuring region %d with addr reg 0x%x, config: %d, patid: %d\r\n",
                region, config->addr, config->conf, config->patid);
 
-        *reg32(&__base_tagger, TAGGER_REG_PAT_ADDR_N_REG_OFFSET(region)) = config->addr;
+        // Store address right-shifted by 2 (4-byte granularity)
+        *reg32(&__base_tagger, TAGGER_REG_PAT_ADDR_N_REG_OFFSET(region)) = config->addr >> 2;
 
         /* This is essentially a 32-bit integer interpreted as an array of 2-bit values.
            region 0 maps to bits {0, 1}, region k to bits {2k, 2k+1}, region 15 to {30, 31}.
@@ -400,14 +402,14 @@ int setup_dpllc() {
         *reg32(&__base_tagger, TAGGER_REG_ADDR_CONF_REG_OFFSET) = addr_conf;
 
         /* PATID is mapped across several registers:
-            so region 0 is bits [0, 4]
-            and region k is bits [5 * k, 5 * (k + 1) - 1]
+            so region 0 is bits [0, 3]
+            and region k is bits [4 * k, 4 * (k + 1) - 1]
 
             each register is 32 bit words, so if both of them fall in the same 32 bits it's easy
         */
         _Static_assert(TAGGER_REG_PARAM_REG_WIDTH == 32);
-        /* fits in 5 bits */
-        CHECK_ASSERT(-3, (0b00 <= config->patid) && (config->patid <= 0b11111));
+        /* fits in 4 bits */
+        CHECK_ASSERT(-3, (0b00 <= config->patid) && (config->patid <= 0b1111));
         uint32_t lower_bit = TAGGER_PATID_LEN * region;
         uint32_t upper_bit = TAGGER_PATID_LEN * (region + 1) - 1;
         if ((lower_bit / 32) == (upper_bit / 32)) {
