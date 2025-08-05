@@ -169,7 +169,8 @@ extern "C" {
   char get_section(long long *address_ret, long long *len_ret);
   char read_section(long long address, const svOpenArrayHandle buffer, long long len);
   char read_elf(const char *filename);
-  void* debug_new(char *pk_path, char *app_path);
+  void* debug_new_pk(char *pk_path, char *app_path);
+  void* debug_new(char *app_path);
   int debug_tick(
   preload_aware_dtm_t*  dtm,
   unsigned char* debug_req_valid,
@@ -426,12 +427,24 @@ extern "C" char read_elf(const char *filename) {
 Inspired by SimDTM.cc
 ------------------------*/
 
-extern "C" void* debug_new(char *pk_path, char *app_path) {
+extern "C" void* debug_new_pk(char *pk_path, char *app_path) {
     int htif_argc = 3;
     char* htif_argv[htif_argc];
     htif_argv[0] = (char*)"htif";
     htif_argv[1] = pk_path;
     htif_argv[2] = app_path;
+
+    preload_aware_dtm_t *dtm = (preload_aware_dtm_t *) malloc(sizeof(preload_aware_dtm_t));
+    dtm = new preload_aware_dtm_t(htif_argc, htif_argv);
+
+    return (void *)dtm;
+}
+
+extern "C" void* debug_new(char *app_path) {
+    int htif_argc = 2;
+    char* htif_argv[htif_argc];
+    htif_argv[0] = (char*)"htif";
+    htif_argv[1] = app_path;
 
     preload_aware_dtm_t *dtm = (preload_aware_dtm_t *) malloc(sizeof(preload_aware_dtm_t));
     dtm = new preload_aware_dtm_t(htif_argc, htif_argv);

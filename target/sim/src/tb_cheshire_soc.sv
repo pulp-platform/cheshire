@@ -22,6 +22,7 @@ module tb_cheshire_soc #(
   logic [1:0] boot_mode;
   logic [1:0] preload_mode;
   bit [31:0]  exit_code;
+  logic       using_pk;
 
   initial begin
     // Fetch plusargs or use safe (fail-fast) defaults
@@ -29,7 +30,10 @@ module tb_cheshire_soc #(
     if (!$value$plusargs("PRELMODE=%d", preload_mode))  preload_mode  = 0;
     if (!$value$plusargs("BINARY=%s",   preload_elf))   preload_elf   = "";
     if (!$value$plusargs("IMAGE=%s",    boot_hex))      boot_hex      = "";
-    if (!$value$plusargs("PK=%s",       pk_path))       pk_path       = "";
+    if (!$value$plusargs("PK=%s",       pk_path)) begin
+      pk_path  = "";
+      using_pk = 0;
+    end else using_pk = 1;
 
 `ifdef FESVR_DTM
     // locking SimDTM
@@ -49,9 +53,15 @@ module tb_cheshire_soc #(
       // Idle boot: preload with the specified mode, only slink when fesvr
       case (preload_mode)
         // Preload done only using slink in this case cause it's the fastest way available
+        // !! fesvr_set before fesvr_start !!
         1: begin  // Serial Link
-          fix.vip.slink_elf_prerun(pk_path); // preload with slink
-          fix.vip.fesvr_set(pk_path, preload_elf); // creating a dtm class
+          if (using_pk) begin
+            fix.vip.slink_elf_prerun(pk_path); // preload with slink
+            fix.vip.fesvr_set_pk(pk_path, preload_elf); // creating a dtm class
+          end else begin
+            fix.vip.slink_elf_prerun(preload_elf); // preload with slink
+            fix.vip.fesvr_set(preload_elf); // creating a dtm class
+          end
           fix.vip.fesvr_start(); // starting dtm tick 
           fix.vip.fesvr_wait_for_exit(exit_code); //waiting on exit code to be zero
         end default: begin

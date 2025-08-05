@@ -99,7 +99,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   import "DPI-C" function byte get_section(output longint address, output longint len);
   import "DPI-C" context function byte read_section(input longint address, inout byte buffer[], input longint len);
 `ifdef FESVR_DTM
-  import "DPI-C" function chandle debug_new(input string pk_path, input string app_path);
+  import "DPI-C" function chandle debug_new_pk(input string pk_path, input string app_path);
+  import "DPI-C" function chandle debug_new(input string app_path);
   import "DPI-C" function int debug_tick
 (
   input chandle fesvr_dtm,
@@ -1062,7 +1063,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     while (sim_init == sim_exit) begin
         #(ClkPeriodSys * 100);
     end 
-    if (sim_exit == 1) $display("[FESVR] SUCCESS");
+    if (sim_exit == 1) $display("[FESVR] SUCCESS : code %0d", sim_exit);
     else $error("[FESVR] FAILED: return code %0d", sim_exit);
   endtask
 
@@ -1074,8 +1075,12 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     dmi_rst_ni = 1;
   endtask
 
-  task automatic fesvr_set(input string kernel, input string binary);
-    fesvr_dtm = debug_new(kernel, binary);
+  task automatic fesvr_set(input string binary);
+    fesvr_dtm = debug_new(binary);
+  endtask 
+
+  task automatic fesvr_set_pk(input string kernel, input string binary);
+    fesvr_dtm = debug_new_pk(kernel, binary);
   endtask 
 `endif
 
