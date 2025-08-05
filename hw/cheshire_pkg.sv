@@ -624,7 +624,7 @@ package cheshire_pkg;
     // Interconnect
     AddrWidth         : 48,
     AxiDataWidth      : 64,
-    AxiUserWidth      : 2,  // AMO(2)
+    AxiUserWidth      : 6,  // Tagger(4), AMO(2)
     AxiMstIdWidth     : 2,
     AxiMaxMstTrans    : 24,
     AxiMaxSlvTrans    : 24,
@@ -673,8 +673,8 @@ package cheshire_pkg;
     LlcOutConnect     : 1,
     LlcOutRegionStart : 'h8000_0000,
     LlcOutRegionEnd   : 64'h8010_0000,
-    LlcUserMsb        : 0,
-    LlcUserLsb        : 0,
+    LlcUserMsb        : 5,
+    LlcUserLsb        : 2,
     LlcCachePartition : 1,
     LlcMaxPartition   : 16,
     LlcRemapHash      : axi_llc_pkg::Modulo,
