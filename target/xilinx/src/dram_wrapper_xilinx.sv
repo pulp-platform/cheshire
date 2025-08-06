@@ -18,7 +18,11 @@ module dram_wrapper_xilinx #(
   parameter type axi_soc_ar_chan_t = logic,
   parameter type axi_soc_r_chan_t  = logic,
   parameter type axi_soc_req_t     = logic,
-  parameter type axi_soc_resp_t    = logic
+  parameter type axi_soc_resp_t    = logic,
+  parameter int unsigned DdrCsNWidth = 1,
+  parameter int unsigned DdrDmDbiNWidth = 8,
+  parameter int unsigned DdrDqWidth = 64,
+  parameter int unsigned DdrDqsWidth = 8
 ) (
   // System reset
   input  logic  sys_rst_i,
@@ -28,12 +32,7 @@ module dram_wrapper_xilinx #(
   input  logic  soc_clk_i,
   // PHY interfaces
 `ifdef USE_DDR4
-  `ifdef TARGET_VCU118
-    `VCU118_DDR4_INTF
-  `endif
-  `ifdef TARGET_VCU128
-    `VCU128_DDR4_INTF
-  `endif
+  `DDR4_INTF(DdrCsNWidth, DdrDmDbiNWidth, DdrDqWidth, DdrDqsWidth)
 `endif
 `ifdef USE_DDR3
   `DDR3_INTF
