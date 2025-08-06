@@ -7,7 +7,8 @@ This page describes how to map Cheshire on Xilinx FPGAs to *execute baremetal pr
 We currently provide working setups for:
 
 - Digilent Genesys 2 with Vivado `>= 2020.2`
-- Xilinx VCU128/VCU118 with Vivado `>= 2020.2`
+- Xilinx VCU118 with Vivado `>= 2020.2`
+- Xilinx VCU128 with Vivado `>= 2020.2`
 
 We are working on support for more boards in the future.
 
@@ -39,7 +40,7 @@ Before flashing the bitstream to your device, take note of the position of onboa
 
 The reset, JTAG TAP, UART, I2C, and VGA are all connected to their onboard logic or ports. The UART has *no flow control*. The microSD slot is connected to chip select 0 of the SPI host peripheral. Serial link and GPIOs are currently not available.
 
-### Xilinx VCU128/VCU118 (`vcu128`, `vcu118`)
+### Xilinx VCU118 (`vcu118`) and VCU128 (`vcu128`)
 
 Since there are no switches on these boards, the boot mode must be selected using Virtual IOs (see [Virtual IOs](#virtual_ios) below).
 
