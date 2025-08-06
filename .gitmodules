@@ -6,3 +6,11 @@
 	path = sw/deps/cva6-sdk
 	url = https://github.com/pulp-platform/cva6-sdk.git
 	ignore = dirty
+[submodule "sw/deps/riscv-isa-sim"]
+	path = sw/deps/riscv-isa-sim
+	url = https://github.com/riscv-software-src/riscv-isa-sim
+	ignore = dirty
+[submodule "sw/deps/riscv-pk"]
+	path = sw/deps/riscv-pk
+	url = https://github.com/riscv-software-src/riscv-pk.git
+	ignore = dirty
