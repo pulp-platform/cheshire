@@ -23,23 +23,7 @@ set hw_cfgmem [get_property PROGRAM.HW_CFGMEM $hw_device]
 # TODO: add bitstream flashing for genesys2
 switch $board {
     genesys2 -
-    vcu128 {
-        set mcs ${project_root}/image.mcs
-        write_cfgmem -force -format mcs -size 256 -interface SPIx4 \
-            -loaddata "up $offs $file" -checksum -file $mcs
-        set_property -dict [list \
-            PROGRAM.ADDRESS_RANGE {use_file} \
-            PROGRAM.FILES [list $mcs] \
-            PROGRAM.PRM_FILE {} \
-            PROGRAM.UNUSED_PIN_TERMINATION {pull-none} \
-            PROGRAM.BLANK_CHECK {0} \
-            PROGRAM.ERASE {1} \
-            PROGRAM.CFG_PROGRAM {1} \
-            PROGRAM.VERIFY {1} \
-            PROGRAM.CHECKSUM {0} \
-            ] $hw_cfgmem
-    }
-    vcu118 {
+    {vcu118 vcu128} {
         set mcs ${project_root}/image.mcs
         write_cfgmem -force -format mcs -size 256 -interface SPIx4 \
             -loaddata "up $offs $file" -checksum -file $mcs
