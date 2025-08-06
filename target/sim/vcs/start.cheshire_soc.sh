@@ -51,7 +51,7 @@ fi
 COLOR_NC='\e[0m'
 COLOR_BLUE='\e[0;34m'
 
-${VCS_BIN} ${flags} -CFLAGS "-std=c++17 -I/scratch/ga25f6/riscv-isa-sim/install/include" -LIBS "-rdynamic -Wl,-rpath=/scratch/ga25f6/riscv-isa-sim/install/lib -L/scratch/ga25f6/riscv-isa-sim/install/lib -lfesvr" ../src/elfloader.cpp ${TESTBENCH} | tee elaborate.log
+${VCS_BIN} ${flags} -CFLAGS "-std=c++17 -I../../../sw/deps/riscv-isa-sim/install/include" -LIBS "-rdynamic -Wl,-rpath=../../../sw/deps/riscv-isa-sim/install/lib -L../../../sw/deps/riscv-isa-sim/install/lib -lfesvr" ../src/elfloader.cpp ${TESTBENCH} | tee elaborate.log
 
 # Start simulation
 printf ${COLOR_BLUE}"${VCS_VERSION} ${VERDI_VERSION} ./simv ${pargs}"${COLOR_NC}"\n"
