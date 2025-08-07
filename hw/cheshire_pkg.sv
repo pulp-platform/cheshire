@@ -298,7 +298,7 @@ package cheshire_pkg;
 
   // AXI Xbar master indices
   typedef struct packed {
-    aw_bt [2**MaxCoresWidth-1:0] cores;
+    aw_bt cores;
     aw_bt dbg;
     aw_bt dma;
     aw_bt slink;
@@ -311,7 +311,7 @@ package cheshire_pkg;
   function automatic axi_in_t gen_axi_in(cheshire_cfg_t cfg);
     axi_in_t ret = '{default: '0};
     int unsigned i = 0;
-    for (int j = 0; j < cfg.NumCores; j++) begin ret.cores[i] = i; i++; end
+    ret.cores[i] = i; i++;
     ret.dbg = i;
     if (cfg.Dma)        begin i++; ret.dma   = i; end
     if (cfg.SerialLink) begin i++; ret.slink = i; end
@@ -544,9 +544,9 @@ package cheshire_pkg;
     Cva6ExtCieLength  : 'h2000_0000,  // [0x2.., 0x4..) is CIE, [0x4.., 0x8..) is non-CIE
     Cva6ExtCieOnTop   : 0,
     // Harts
-    NumCores          : 1,
+    NumCores          : 2,
     CoreMaxTxns       : 8,
-    CoreMaxTxnsPerId  : 4,
+    CoreMaxTxnsPerId  : 1,
     CoreUserAmoOffs   : 0, // Convention: lower AMO bits for cores, MSB for serial link
     // Interrupts
     NumExtInIntrs     : 0,
@@ -559,7 +559,7 @@ package cheshire_pkg;
     AddrWidth         : 48,
     AxiDataWidth      : 64,
     AxiUserWidth      : 2,  // AMO(2)
-    AxiMstIdWidth     : 2,
+    AxiMstIdWidth     : 4,
     AxiMaxMstTrans    : 24,
     AxiMaxSlvTrans    : 24,
     AxiUserAmoMsb     : 1, // Convention: lower AMO bits for cores, MSB for serial link
