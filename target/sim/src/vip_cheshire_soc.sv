@@ -350,34 +350,39 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   endtask
 
   // Halt the core and preload a binary
-  task automatic jtag_elf_halt_load(input string binary, output doub_bt entry);
+  task automatic jtag_elf_halt(input string binary, output doub_bt entry, input int unsigned hart_id=0);
     dm::dmstatus_t status;
+    // Halt hart i
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, hartsello: hart_id, default: '0});
+    do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
+    while (~status.allhalted);
+    $display("[JTAG] Halted hart %d", hart_id);
+  endtask
+
+  // Run a binary
+  task automatic jtag_elf_run(input string binary);
+    doub_bt entry;
     // Wait until bootrom initialized LLC
     if (DutCfg.LlcNotBypass) begin
       word_bt regval;
       $display("[JTAG] Wait for LLC configuration");
       jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
     end
-    // Halt hart 0
-    jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, default: '0});
-    do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
-    while (~status.allhalted);
-    $display("[JTAG] Halted hart 0");
-    // Preload binary
-    jtag_elf_preload(binary, entry);
-  endtask
-
-  // Run a binary
-  task automatic jtag_elf_run(input string binary);
-    doub_bt entry;
-    jtag_elf_halt_load(binary, entry);
-    // Repoint execution
-    jtag_write(dm::Data1, entry[63:32]);
-    jtag_write(dm::Data0, entry[31:0]);
-    jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
-    // Resume hart 0
-    jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
-    $display("[JTAG] Resumed hart 0 from 0x%h", entry);
+    for (int unsigned i = 0; i < DutCfg.NumCores; i++) begin
+      jtag_elf_halt(binary, entry, hart_id);
+      // Preload binary only with the "main" core
+      if (i == 0) jtag_elf_preload(binary, entry);
+      // Repoint execution
+      jtag_write(dm::Data1, entry[63:32]);
+      jtag_write(dm::Data0, entry[31:0]);
+      jtag_write(dm::Command, 32'h0033_07b1, 1, 1);
+      // Resume hart i
+      jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, hartsello: i, default: '0});
+      do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
+      while (~status.allresumeack);
+      jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 0, dmactive: 1, hartsello: i, default: '0});
+      $display("[JTAG] Resumed hart %d from 0x%h", i, entry);
+    end
   endtask
 
   // Wait for termination signal and get return code
