@@ -13,25 +13,19 @@
 
 // TODO: Expose more IO: unused SPI CS, Serial Link, etc.
 
-module cheshire_top_xilinx import cheshire_pkg::*;
-`ifdef USE_DDR4
-#(
-  `ifdef TARGET_VCU118
-    localparam int unsigned DdrCsNWidth = 1,
-    localparam int unsigned DdrDmDbiNWidth = 8,
-    localparam int unsigned DdrDqWidth = 64,
-    localparam int unsigned DdrDqsWidth = 8
-  `endif
-  `ifdef TARGET_VCU128
-    localparam int unsigned DdrCsNWidth = 2,
-    localparam int unsigned DdrDmDbiNWidth = 9,
-    localparam int unsigned DdrDqWidth = 72,
-    localparam int unsigned DdrDqsWidth = 9
-  `endif
-)(
-`else
-(
+module cheshire_top_xilinx import cheshire_pkg::*; #(
+`ifdef TARGET_VCU128
+  localparam int unsigned DdrCsNWidth = 2,
+  localparam int unsigned DdrDmDbiNWidth = 9,
+  localparam int unsigned DdrDqWidth = 72,
+  localparam int unsigned DdrDqsWidth = 9
+`else // Default to VCU118
+  localparam int unsigned DdrCsNWidth = 1,
+  localparam int unsigned DdrDmDbiNWidth = 8,
+  localparam int unsigned DdrDqWidth = 64,
+  localparam int unsigned DdrDqsWidth = 8
 `endif
+)(
   input  logic  sys_clk_p,
   input  logic  sys_clk_n,
 
