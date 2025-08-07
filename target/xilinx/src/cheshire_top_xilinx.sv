@@ -13,7 +13,19 @@
 
 // TODO: Expose more IO: unused SPI CS, Serial Link, etc.
 
-module cheshire_top_xilinx import cheshire_pkg::*; (
+module cheshire_top_xilinx import cheshire_pkg::*; #(
+`ifdef TARGET_VCU128
+  localparam int unsigned DdrCsNWidth = 2,
+  localparam int unsigned DdrDmDbiNWidth = 9,
+  localparam int unsigned DdrDqWidth = 72,
+  localparam int unsigned DdrDqsWidth = 9
+`else // Default to VCU118
+  localparam int unsigned DdrCsNWidth = 1,
+  localparam int unsigned DdrDmDbiNWidth = 8,
+  localparam int unsigned DdrDqWidth = 64,
+  localparam int unsigned DdrDqsWidth = 8
+`endif
+)(
   input  logic  sys_clk_p,
   input  logic  sys_clk_n,
 
@@ -86,7 +98,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
 `endif
 
 `ifdef USE_DDR4
-  `DDR4_INTF
+  `DDR4_INTF(DdrCsNWidth, DdrDmDbiNWidth, DdrDqWidth, DdrDqsWidth)
 `endif
 `ifdef USE_DDR3
   `DDR3_INTF
@@ -332,7 +344,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   assign qspi_cs_b_ts = ~spi_cs_en;
   assign qspi_dqo_ts  = ~spi_sd_en;
 
-  // On VCU128/ZCU102, SPI ports are not directly available
+  // On VCU128/VCU118/ZCU102, SPI ports are not directly available
 `ifdef USE_STARTUPE3
   STARTUPE3 #(
     .PROG_USR("FALSE"),
@@ -537,7 +549,11 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .axi_soc_ar_chan_t ( axi_llc_ar_chan_t ),
     .axi_soc_r_chan_t  ( axi_llc_r_chan_t  ),
     .axi_soc_req_t     ( axi_llc_req_t     ),
-    .axi_soc_resp_t    ( axi_llc_rsp_t     )
+    .axi_soc_resp_t    ( axi_llc_rsp_t     ),
+    .DdrCsNWidth       ( DdrCsNWidth       ),
+    .DdrDmDbiNWidth    ( DdrDmDbiNWidth    ),
+    .DdrDqWidth        ( DdrDqWidth        ),
+    .DdrDqsWidth       ( DdrDqsWidth       )
   ) i_dram_wrapper (
     .sys_rst_i    ( sys_rst ),
     .soc_resetn_i ( rst_n   ),
