@@ -142,7 +142,8 @@ switch $proj {
                     CONFIG.C_NUM_PROBE_IN {0} \
                     ] [get_ips $proj]
             }
-            {vcu118 vcu128} {
+            vcu118 -
+            vcu128 {
                 set_property -dict [list \
                     CONFIG.C_NUM_PROBE_OUT {3} \
                     CONFIG.C_PROBE_OUT0_INIT_VAL {0x0} \
