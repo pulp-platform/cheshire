@@ -79,8 +79,8 @@ _Static_assert(sizeof(line_t) * LLC_MAX_NUM_WAYS * LLC_WAY_NUM_LINES == 128 * 10
 _Static_assert(DPLLC_PARTITION_0_LINES + DPLLC_PARTITION_1_LINES + DPLLC_PARTITION_2_LINES + DPLLC_PARTITION_3_LINES <= LLC_WAY_NUM_LINES);
 #endif
 
-volatile line_t data_trojan[LLC_ACTIVE_NUM_WAYS][TROJAN_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
-volatile line_t data_spy[LLC_ACTIVE_NUM_WAYS][SPY_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
+volatile line_t data_trojan[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
+volatile line_t data_spy[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
 
 struct result {
     uint32_t cycle_count;
