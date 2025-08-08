@@ -716,15 +716,13 @@ int main(void) {
         }
     }
 
+    // Initial prime
+    spy(0);
+
     for (uint32_t round = 0; round < DATA_POINTS; round++) {
         if (round % 1000 == 0) {
             printf("%d points done\r\n", round);
         }
-
-        /* spy "initial": prime */
-        evict_llc();
-        domain_switch();
-
         trojan();
         domain_switch();
 
