@@ -8,17 +8,22 @@
 
 They are inside *sw/deps*, you will just need to run ``git submodule update --init --recursive`` to download them.
 
-### RISC-V Frontend Server : fesvr
-To build the fesvr, you can run make build-fesvr from cheshire directory.\
-It will create a shared library, that will be used by simulation tools and DPI.
-
-Make sure that fesvr is correctly build, you should see in *sw/deps*, the lib in *riscv-isa-sim/install/lib* and 3 directories in *riscv-isa-sim/install/include*
-
 ### Cheshire
 Nothing change for the installation, 2 new script should be generated, to add fesvr support when running vsim or vcs. 
 Then you can run ``make all`` as usual.
 
+### RISC-V Frontend Server : fesvr
+FESVR should have been built when running the ``make all``.\
+Make sure that fesvr is correctly build, you should see in *sw/deps*, the lib in *riscv-isa-sim/install/lib* and 3 directories in *riscv-isa-sim/install/include*
+
+To build the fesvr, you can run make build-fesvr from cheshire directory.\
+It will create a shared library, that will be used by simulation tools and DPI.
+
+
 ### RISC-V Proxy kernel : pk 
+pk should have been built when running the ``make all``.\
+Keep in mind the path to your pk installation, it might be used in cheshire simulation.
+
 To build pk, you can do as following : 
 ```
 mkdir build install
@@ -27,7 +32,6 @@ cd build
 make
 make install
 ```
-Keep in mind the path to your pk installation, it might be used in cheshire simulation
 
 
 ## Simulation
@@ -137,7 +141,7 @@ Two main problems happen when installing the fesvr like explained in it document
 To solve the first problem, the shared lib can simply be created by adding ``fesvr_install_shared_lib = yes`` in *fesvr/fesvr.mk.in* but this would require to change the code, it can also be done by running a command in the terminal to create it directly than copying it in the *install/lib* directory.
 
 The second problem is caused by **USE_CONTEXT** being defined in *fesvr/context.h*.\
-This is due to **\_\_GLIBC\_\_** being defined because, when compiling context.cc, the flag ``-I/usr/include`` give the full repository which will cause **\_\_GLIBC\_\_** to be defined. But context.cc only needs one header inside of */usr/include*, so by giving it as an argument instead of the full directory when compiling context.cc, we can bypass this problem.
+This is due to **\_\_GLIBC\_\_** being defined because, when compiling context.cc, the flag ``-I/usr/include`` is used. Giving the full directory which will cause **\_\_GLIBC\_\_** to be defined. But context.cc does not needs it, in fact, not a single file compiled does need it (for fesvr library), so we can bypass this problem by not using this flag when compiling our own fesvr shared library.
 
 A script allow to compile the shared lib, making it easier.
 

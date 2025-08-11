@@ -213,16 +213,11 @@ FESVR_LDFLAGS := -L. -Wl,--export-dynamic -L/usr/lib64 \
 
 FESVR_LIBS := -lpthread -ldl -lpthread
 
-FESVR_CXXFLAGS_COMMON := -MMD -MP \
+FESVR_CXXFLAGS := -MMD -MP \
 	-DPREFIX=\"$(FESVR_PREFIX)/\" \
 	-Wall -Wno-nonportable-include-path \
 	-g -O2 -fPIC -std=c++2a \
 	-iquote . -I.. -iquote ../fesvr -iquote ../riscv -iquote ../softfloat
-
-FESVR_CXXFLAGS := $(FESVR_CXXFLAGS_COMMON)
-# context need to only have pthread.h
-FESVR_CXXFLAGS_CONTEXT := $(FESVR_CXXFLAGS_COMMON) 
-
 
 # List of source files EXCLUDING context.cc
 FESVR_SRCS := \
@@ -238,7 +233,8 @@ FESVR_SRCS := \
 	../fesvr/dummy.cc \
 	../fesvr/option_parser.cc \
 	../fesvr/term.cc \
-	../fesvr/tsi.cc
+	../fesvr/tsi.cc \
+	../fesvr/context.cc
 
 build-fesvr:
 	@mkdir -p $(FESVR_BUILD) $(FESVR_INSTALL)/lib \
@@ -248,7 +244,6 @@ build-fesvr:
 	( cd $(FESVR_BUILD) && \
 		../configure --prefix=$(FESVR_PREFIX) --without-boost-regex && \
 		$(CXX) $(FESVR_CXXFLAGS) -c $(FESVR_SRCS) && \
-		$(CXX) $(FESVR_CXXFLAGS_CONTEXT) -c ../fesvr/context.cc && \
 		$(CXX) $(FESVR_LDFLAGS) -o libfesvr.so *.o $(FESVR_LIBS) )
 	cp $(FESVR_BUILD)/libfesvr.so $(FESVR_INSTALL)/lib
 	cp $(FESVR_DIR)/fesvr/*.h $(FESVR_INSTALL)/include/fesvr
