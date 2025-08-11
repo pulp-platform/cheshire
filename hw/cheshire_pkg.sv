@@ -521,6 +521,7 @@ package cheshire_pkg;
     doub_bt SizeLlcOut = cfg.LlcOutRegionEnd - cfg.LlcOutRegionStart;
     doub_bt CieBase   = cfg.Cva6ExtCieOnTop ? 64'h8000_0000 - cfg.Cva6ExtCieLength : 64'h2000_0000;
     doub_bt NoCieBase = cfg.Cva6ExtCieOnTop ? 64'h2000_0000 : 64'h2000_0000 + cfg.Cva6ExtCieLength;
+    doub_bt SlinkRegionLenght = cfg.SlinkRegionEnd - cfg.SlinkRegionStart;
     // Base our config on the upstream default for this variant
     config_pkg::cva6_user_cfg_t ret = cva6_config_pkg::cva6_cfg;
     // Modify what we need to
@@ -536,12 +537,12 @@ package cheshire_pkg;
     ret.NonIdempotentAddrBase = {64'h0000_0000, NoCieBase};
     ret.NOCType               = config_pkg::NOC_TYPE_AXI4_ATOP;
     ret.NonIdempotentLength   = {64'h1000_0000, 64'h6000_0000 - cfg.Cva6ExtCieLength};
-    ret.NrExecuteRegionRules  = 7;   // Debug, Bootrom, SPM, SPM Uncached, ISPM, LLCOut, ExtCI;
-    ret.ExecuteRegionAddrBase = {AmDbg,     AmBrom,    AmSpm,   AmSpmUnc, cfg.Cva6ICacheSpmAddrBase,   cfg.LlcOutRegionStart, CieBase};
-    ret.ExecuteRegionLength   = {64'h40000, 64'h40000, SizeSpm, SizeSpm,  64'(cfg.Cva6IcacheByteSize), SizeLlcOut,            cfg.Cva6ExtCieLength};
-    ret.NrCachedRegionRules   = 3;   // CachedSPM, LLCOut, ExtCI;
-    ret.CachedRegionAddrBase  = {AmSpm,   cfg.LlcOutRegionStart,  CieBase};
-    ret.CachedRegionLength    = {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength};
+    ret.NrExecuteRegionRules  = 8;   // Debug, Bootrom, SPM, SPM Uncached, ISPM, LLCOut, ExtCI, Slink;
+    ret.ExecuteRegionAddrBase = {AmDbg,     AmBrom,    AmSpm,   AmSpmUnc, cfg.Cva6ICacheSpmAddrBase,   cfg.LlcOutRegionStart, CieBase,              cfg.SlinkRegionStart};
+    ret.ExecuteRegionLength   = {64'h40000, 64'h40000, SizeSpm, SizeSpm,  64'(cfg.Cva6IcacheByteSize), SizeLlcOut,            cfg.Cva6ExtCieLength, SlinkRegionLenght};
+    ret.NrCachedRegionRules   = 4;   // CachedSPM, LLCOut, ExtCI, Slink;
+    ret.CachedRegionAddrBase  = {AmSpm,   cfg.LlcOutRegionStart,  CieBase,              cfg.SlinkRegionStart};
+    ret.CachedRegionLength    = {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength, SlinkRegionLenght};
     ret.DebugEn               = 1;
     ret.RVSCLIC               = cfg.Clic;
     ret.RVXHCLIC              = cfg.ClicVsclic;
