@@ -356,7 +356,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, hartsello: hart_id, default: '0});
     do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
     while (~status.allhalted);
-    $display("[JTAG] Halted hart %d", hart_id);
+    $display("[JTAG] Halted hart %0d", hart_id);
   endtask
 
   // Run a binary
@@ -382,7 +382,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
       while (~status.allresumeack);
       jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 0, dmactive: 1, hartsello: i, default: '0});
-      $display("[JTAG] Resumed hart %d from 0x%h", i, entry);
+      $display("[JTAG] Resumed hart %0d from 0x%h", i, entry);
     end
   endtask
 
