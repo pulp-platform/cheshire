@@ -34,14 +34,14 @@ VERILATOR_ARGS += -CFLAGS "-O3" -CFLAGS "-march=native" -CFLAGS "-mtune=native"
 VERILATOR_ARGS += --compiler clang -MAKEFLAGS "CC=clang" -MAKEFLAGS "CXX=clang++" -MAKEFLAGS "LINK=clang++"
 
 # Link Time Optimization (LTO)
-# VERILATOR_ARGS += -CFLAGS "-flto" -LDFLAGS "-flto"
+VERILATOR_ARGS += -CFLAGS "-flto" -LDFLAGS "-flto"
 
 # Thread Profile-Guided Optimization (PGO)
 # VERILATOR_ARGS += --prof-pgo
 # VERILATOR_ARGS += profile.vlt
 
 # Compiler Profile-Guided Optimization (PGO)
-# VERILATOR_ARGS += -CFLAGS "-fprofile-generate" -MAKEFLAGS "LINK=clang++" -LDFLAGS "-fprofile-generate"
+# VERILATOR_ARGS += -CFLAGS "-fprofile-generate" -CFLAGS "-fprofile-update=atomic" -LDFLAGS "-fprofile-generate" -LDFLAGS "-fprofile-update=atomic"
 # VERILATOR_ARGS += -CFLAGS "-fprofile-use=../default.profdata"
 
 # Profiling
