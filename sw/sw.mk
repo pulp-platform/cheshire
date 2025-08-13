@@ -200,7 +200,7 @@ CHS_SW_TESTS += $(CHS_SW_TEST_DUMP)
 #########
 .PHONY: build-fesvr
 
-FESVR_DIR       := sw/deps/riscv-isa-sim
+FESVR_DIR       := $(CHS_ROOT)/sw/deps/riscv-isa-sim
 FESVR_BUILD := $(FESVR_DIR)/build
 FESVR_INSTALL   := $(FESVR_DIR)/install
 FESVR_PREFIX    := $(shell realpath $(FESVR_INSTALL))
@@ -249,6 +249,9 @@ build-fesvr:
 	cp $(FESVR_DIR)/fesvr/*.h $(FESVR_INSTALL)/include/fesvr
 	cp $(FESVR_DIR)/riscv/*.h $(FESVR_INSTALL)/include/riscv
 	cp $(FESVR_DIR)/softfloat/*.h $(FESVR_INSTALL)/include/softfloat
+	mkdir $(CHS_ROOT)/target/sim/vcs/simv.daidir
+	( cd $(CHS_ROOT)/target/sim/vcs/simv.daidir && \
+		ln -s $(FESVR_INSTALL)/lib/libfesvr.so . )
 
 .PHONY: build-pk
 
