@@ -240,15 +240,6 @@ module cheshire_soc_wrapper # (
   logic [DramAddrWidth-1:0] dram_mem_raddr_q;
   `FF(dram_mem_raddr_q, dram_mem_addr[0], '0);
 
-  always_ff @(posedge clk_i) begin
-    // if (rst_ni && dram_mem_req[1] && dram_mem_we[1]) begin
-    //   $display("[DRAM] wrote 0x%x to address 0x%x", dram_mem_wdata[1], dram_mem_addr[1]);
-    // end
-    if (rst_ni && dram_mem_rvalid[0]) begin
-      $display("[DRAM] address 0x%x -> data 0x%x", dram_mem_raddr_q, dram_mem_rdata[0]);
-    end
-  end
-
   // Translate byte addresses (from axi_to_mem_split) to word addresses (for tc_sram)
   logic [2:0][DramWordAddrWidth-1:0] dram_mem_word_addr;
   assign dram_mem_word_addr = {
