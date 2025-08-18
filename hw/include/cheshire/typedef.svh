@@ -53,8 +53,9 @@
 // Note that the prefix does *not* include a leading underscore.
 `define CHESHIRE_TYPEDEF_ALL(__prefix, __cfg) \
   localparam type __prefix``addr_t = logic [__cfg.AddrWidth-1:0]; \
+  localparam config_pkg::cva6_cfg_t __chs_cva6_cfg = build_config_pkg::build_config(gen_cva6_cfg(__cfg)); \
   `CHESHIRE_TYPEDEF_AXI(__prefix``axi, __prefix``axi_llc, __prefix``addr_t, __cfg) \
   `CHESHIRE_TYPEDEF_REG(__prefix``reg, __prefix``addr_t) \
-  `CHESHIRE_TYPEDEF_RVFI(__prefix``rvfi, build_config_pkg::build_config(gen_cva6_cfg(__cfg)))
+  `CHESHIRE_TYPEDEF_RVFI(__prefix``rvfi, __chs_cva6_cfg)
 
 `endif
