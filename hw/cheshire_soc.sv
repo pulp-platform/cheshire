@@ -591,84 +591,93 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_llc_events_o    ( /* TODO: connect me to regs? */ )
     );
 
-    axi_ext_llc_req_t axi_mem_req;
-    axi_ext_llc_rsp_t axi_mem_rsp;
+    if (Cfg.MainMemUseSRAM) begin : gen_main_mem_sram
 
-    axi_cut #(
-      .Bypass       (1'b0),
-      .aw_chan_t    (axi_llc_aw_chan_t),
-      .w_chan_t     (axi_llc_w_chan_t),
-      .b_chan_t     (axi_llc_b_chan_t),
-      .ar_chan_t    (axi_llc_ar_chan_t),
-      .r_chan_t     (axi_llc_r_chan_t),
-      .axi_req_t    (axi_llc_req_t),
-      .axi_resp_t   (axi_llc_rsp_t)
-    ) i_axi_mem_cut (
-      .clk_i,
-      .rst_ni     (ndmreset_n),
-      .slv_req_i  (axi_llc_mst_req),
-      .slv_resp_o (axi_llc_mst_rsp),
-      .mst_req_o  (axi_mem_req),
-      .mst_resp_i (axi_mem_rsp)
-    );
+      axi_ext_llc_req_t axi_mem_req;
+      axi_ext_llc_rsp_t axi_mem_rsp;
 
-    logic mem_req, mem_we, mem_rvalid;
-    logic [Cfg.AddrWidth-1:0] mem_addr;
-    logic [Cfg.AxiDataWidth-1:0] mem_wdata, mem_rdata;
-    logic [(Cfg.AxiDataWidth/8)-1:0] mem_strb;
+      axi_cut #(
+        .Bypass       (1'b0),
+        .aw_chan_t    (axi_llc_aw_chan_t),
+        .w_chan_t     (axi_llc_w_chan_t),
+        .b_chan_t     (axi_llc_b_chan_t),
+        .ar_chan_t    (axi_llc_ar_chan_t),
+        .r_chan_t     (axi_llc_r_chan_t),
+        .axi_req_t    (axi_llc_req_t),
+        .axi_resp_t   (axi_llc_rsp_t)
+      ) i_axi_mem_cut (
+        .clk_i,
+        .rst_ni     (ndmreset_n),
+        .slv_req_i  (axi_llc_mst_req),
+        .slv_resp_o (axi_llc_mst_rsp),
+        .mst_req_o  (axi_mem_req),
+        .mst_resp_i (axi_mem_rsp)
+      );
 
-    `FF(mem_rvalid, mem_req, 1'b0, clk_i, ndmreset_n)
+      logic mem_req, mem_we, mem_rvalid;
+      logic [Cfg.AddrWidth-1:0] mem_addr;
+      logic [Cfg.AxiDataWidth-1:0] mem_wdata, mem_rdata;
+      logic [(Cfg.AxiDataWidth/8)-1:0] mem_strb;
 
-    axi_to_mem #(
-      .axi_req_t    (axi_ext_llc_req_t),
-      .axi_resp_t   (axi_ext_llc_rsp_t),
-      .AddrWidth    (Cfg.AddrWidth),
-      .DataWidth    (Cfg.AxiDataWidth),
-      .IdWidth      (AxiSlvIdWidth+1),
-      .NumBanks     (1),
-      .BufDepth     (1),
-      .HideStrb     (1'b0),
-      .OutFifoDepth (1)
-    ) i_axi_to_main_mem (
-      .clk_i,
-      .rst_ni       (ndmreset_n),
-      .busy_o       (),
-      .axi_req_i    (axi_mem_req),
-      .axi_resp_o   (axi_mem_rsp),
-      .mem_req_o    (mem_req),
-      .mem_gnt_i    (1'b1),
-      .mem_addr_o   (mem_addr),
-      .mem_wdata_o  (mem_wdata),
-      .mem_strb_o   (mem_strb),
-      .mem_atop_o   (),
-      .mem_we_o     (mem_we),
-      .mem_rvalid_i (mem_rvalid),
-      .mem_rdata_i  (mem_rdata)
-    );
+      `FF(mem_rvalid, mem_req, 1'b0, clk_i, ndmreset_n)
 
-    localparam int NumWords = 1024*1024*8/Cfg.AxiDataWidth; // 1 MiB
+      axi_to_mem #(
+        .axi_req_t    (axi_ext_llc_req_t),
+        .axi_resp_t   (axi_ext_llc_rsp_t),
+        .AddrWidth    (Cfg.AddrWidth),
+        .DataWidth    (Cfg.AxiDataWidth),
+        .IdWidth      (AxiSlvIdWidth+1),
+        .NumBanks     (1),
+        .BufDepth     (1),
+        .HideStrb     (1'b0),
+        .OutFifoDepth (1)
+      ) i_axi_to_main_mem (
+        .clk_i,
+        .rst_ni       (ndmreset_n),
+        .busy_o       (),
+        .axi_req_i    (axi_mem_req),
+        .axi_resp_o   (axi_mem_rsp),
+        .mem_req_o    (mem_req),
+        .mem_gnt_i    (1'b1),
+        .mem_addr_o   (mem_addr),
+        .mem_wdata_o  (mem_wdata),
+        .mem_strb_o   (mem_strb),
+        .mem_atop_o   (),
+        .mem_we_o     (mem_we),
+        .mem_rvalid_i (mem_rvalid),
+        .mem_rdata_i  (mem_rdata)
+      );
 
-    tc_sram #(
-      .NumWords    (NumWords),
-      .DataWidth   (Cfg.AxiDataWidth),
-      .ByteWidth   (8),
-      .NumPorts    (1),
-      .Latency     (1),
-      .SimInit     ("zeros"),
-      .PrintSimCfg (0),
-      .ImplKey     ("none")
-    ) i_main_mem (
-      .clk_i,
-      .rst_ni  (ndmreset_n),
-      .req_i   (mem_req),
-      .we_i    (mem_we),
-      .addr_i  (mem_addr[$clog2(Cfg.AxiDataWidth/8)+:$clog2(NumWords)]),
-      .wdata_i (mem_wdata),
-      .be_i    (mem_strb),
-      .rdata_o (mem_rdata)
-    );
+      localparam int NumWords = 1024*1024*8/Cfg.AxiDataWidth; // 1 MiB
 
-    assign axi_llc_mst_req_o  = '0;
+      tc_sram #(
+        .NumWords    (NumWords),
+        .DataWidth   (Cfg.AxiDataWidth),
+        .ByteWidth   (8),
+        .NumPorts    (1),
+        .Latency     (1),
+        .SimInit     ("zeros"),
+        .PrintSimCfg (0),
+        .ImplKey     ("none")
+      ) i_main_mem (
+        .clk_i,
+        .rst_ni  (ndmreset_n),
+        .req_i   (mem_req),
+        .we_i    (mem_we),
+        .addr_i  (mem_addr[$clog2(Cfg.AxiDataWidth/8)+:$clog2(NumWords)]),
+        .wdata_i (mem_wdata),
+        .be_i    (mem_strb),
+        .rdata_o (mem_rdata)
+      );
+
+      assign axi_llc_mst_req_o  = '0;
+
+    end else begin : gen_main_mem_out
+
+      assign axi_llc_mst_req_o  = axi_llc_mst_req;
+      assign axi_llc_mst_rsp = axi_llc_mst_rsp_i;
+
+    end
 
   end else if (Cfg.LlcOutConnect) begin : gen_llc_bypass
 
