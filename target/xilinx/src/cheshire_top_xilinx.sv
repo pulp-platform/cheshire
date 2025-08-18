@@ -600,7 +600,8 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .axi_ext_slv_req_t  ( axi_slv_req_t ),
     .axi_ext_slv_rsp_t  ( axi_slv_rsp_t ),
     .reg_ext_req_t      ( reg_req_t ),
-    .reg_ext_rsp_t      ( reg_rsp_t )
+    .reg_ext_rsp_t      ( reg_rsp_t ),
+    .rvfi_ext_t         ( rvfi_t )
   ) i_cheshire_soc (
     .clk_i              ( soc_clk ),
     .rst_ni             ( rst_n   ),
@@ -670,7 +671,10 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .usb_dm_oe_o,
     .usb_dp_i,
     .usb_dp_o,
-    .usb_dp_oe_o
+    .usb_dp_oe_o,
+    .cva6_sram_impl_i   ( '0 ),
+    .llc_sram_impl_i    ( '0 ),
+    .rvfi_o             ( )
   );
 
 endmodule
