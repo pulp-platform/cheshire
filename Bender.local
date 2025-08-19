@@ -1,0 +1,3 @@
+overrides:
+  common_cells: { git: "https://github.com/pulp-platform/common_cells.git", rev: master }
+  cva6:         { git: "https://github.com/MaxWipfli/pulp_cva6.git",        rev: verilator_speedup }
