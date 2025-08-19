@@ -15,7 +15,7 @@ dependencies:
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.3  }
   axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.8 }
   # axi_llc flamingo branch but with a patch so NumLines is right
-  axi_llc:                  { git: "https://github.com/midnightveil/cheshire_axi_llc",            rev: 8e9b0a6008f96493773839a36f41ceddff4bff4a }
+  axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",                rev: nw/urst }
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.8.2  }
   axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: 0.0.0-alpha.10 }
   axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",                version: 0.1.3  }

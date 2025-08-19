@@ -26,10 +26,10 @@ packages:
     - common_verification
     - tech_cells_generic
   axi_llc:
-    revision: 8e9b0a6008f96493773839a36f41ceddff4bff4a
+    revision: 4fbc3b6d3a0ef89986657467617e82e8445b0301
     version: null
     source:
-      Git: https://github.com/midnightveil/cheshire_axi_llc
+      Git: https://github.com/pulp-platform/axi_llc.git
     dependencies:
     - axi
     - common_cells
