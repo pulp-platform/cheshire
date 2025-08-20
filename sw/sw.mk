@@ -249,9 +249,6 @@ build-fesvr:
 	cp $(FESVR_DIR)/fesvr/*.h $(FESVR_INSTALL)/include/fesvr
 	cp $(FESVR_DIR)/riscv/*.h $(FESVR_INSTALL)/include/riscv
 	cp $(FESVR_DIR)/softfloat/*.h $(FESVR_INSTALL)/include/softfloat
-	mkdir $(CHS_ROOT)/target/sim/vcs/simv.daidir
-	( cd $(CHS_ROOT)/target/sim/vcs/simv.daidir && \
-		ln -s $(FESVR_INSTALL)/lib/libfesvr.so . )
 
 .PHONY: build-pk
 
