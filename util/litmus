@@ -72,10 +72,8 @@ litmus_patch_uart () {
 
 ## Combine all log files in `${LITMUS_LOGS}` directory within a single log file
 litmus_combine_logs () {
-	[ -f ${LITMUS_LOG} ] && rm ${LITMUS_LOG}
-	for file in $(ls ${LITMUS_LOGS}/*); do
-		cat ${file} >> ${LITMUS_LOG}
-	done
+    [ -f "${LITMUS_LOG}" ] && rm "${LITMUS_LOG}"
+    cat "${LITMUS_LOGS}"/* > "${LITMUS_LOG}"
 }
 
 ## Compare the Litmus tests logs with the reference model
