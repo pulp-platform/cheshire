@@ -7,7 +7,6 @@
 // Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 // Yann Picod <ypicod@ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
-
 `include "cheshire/typedef.svh"
 `include "phy_definitions.svh"
 
@@ -74,6 +73,15 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   output logic [4:0]  vga_blue_o,
 `endif
 
+`ifdef USE_DDR4
+  `ifdef TARGET_ZCU104
+    `TARGET_ZCU104_INTF
+  `endif
+`endif
+`ifdef USE_DDR3
+  `DDR3_INTF
+`endif
+
 `ifdef USE_QSPI
 `ifndef USE_STARTUPE3
 `ifndef USE_STARTUPE2
@@ -83,13 +91,6 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   output wire        spih_csb_o,
   inout  wire  [3:0] spih_sd_io,
 `endif
-`endif
-
-`ifdef USE_DDR4
-  `DDR4_INTF
-`endif
-`ifdef USE_DDR3
-  `DDR3_INTF
 `endif
 
   output logic  uart_tx_o,

@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: SHL-0.51
 #
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
+#
+
 
 # genesys2 board params
 set bpart(genesys2) "digilentinc.com:genesys2:part0:1.1"
@@ -15,6 +17,12 @@ set bpart(vcu128) "xilinx.com:vcu128:part0:1.0"
 set fpart(vcu128) "xcvu37p-fsvh2892-2L-e"
 set hwdev(vcu128) "xcvu37p_0"
 set cfgmp(vcu128) "mt25qu02g-spi-x1_x2_x4"
+
+# zcu104 board params
+set bpart(zcu104) "xilinx.com:zcu104:part0:1.1"
+set fpart(zcu104) "xczu7ev-ffvc1156-2-e"
+set hwdev(zcu104) "xcvu9p_0"
+#set cfgmp(zcu104) "mt25qu02g-spi-x1_x2_x4"
 
 
 # Initialize an implementation project
