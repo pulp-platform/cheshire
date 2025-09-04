@@ -4,7 +4,6 @@
 // Abdelkadir Chantar <abdelkadir.chantar@tuni.fi> 
 //
 // Cyril Koenig <cykoenig@iis.ee.ethz.ch>
-//
 
 `ifdef TARGET_ZCU104
   `define USE_RESETN

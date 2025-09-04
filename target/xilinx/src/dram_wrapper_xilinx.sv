@@ -8,7 +8,6 @@
 //
 // Resize AXI AW, IW, and DW before connecting to a Xilinx DRAM controller.
 
-
 `include "cheshire/typedef.svh"
 `include "phy_definitions.svh"
 `include "common_cells/registers.svh"

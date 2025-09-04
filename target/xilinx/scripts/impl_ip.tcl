@@ -6,7 +6,6 @@
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 # Abdelkadir Chantar <abdelkadir.chantar@tuni.fi>
-#
 
 # Initialize implementation
 set xilinx_root [file dirname [file dirname [file normalize [info script]]]]

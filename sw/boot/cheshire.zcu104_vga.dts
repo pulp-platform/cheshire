@@ -1,5 +1,4 @@
-// Created by Abdelkadir Chantar <abdelkadir.chantar@tuni.fi> 
-//                                  - Add vga support
+// Created by Abdelkadir Chantar <abdelkadir.chantar@tuni.fi> - Add vga support
 //
 
 /include/ "cheshire.zcu104.dts"

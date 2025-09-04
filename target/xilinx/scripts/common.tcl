@@ -3,8 +3,6 @@
 # SPDX-License-Identifier: SHL-0.51
 #
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
-#
-
 
 # genesys2 board params
 set bpart(genesys2) "digilentinc.com:genesys2:part0:1.1"

@@ -1,5 +1,4 @@
-// Created by Abdelkadir Chantar <abdelkadir.chantar@tuni.fi> 
-//                                  - Add device tree for ZCU104 board
+// Created by Abdelkadir Chantar <abdelkadir.chantar@tuni.fi> - Add device tree for ZCU104 board
 //
 
 /include/ "cheshire.dtsi"

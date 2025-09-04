@@ -7,6 +7,7 @@
 // Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 // Yann Picod <ypicod@ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
+
 `include "cheshire/typedef.svh"
 `include "phy_definitions.svh"
 

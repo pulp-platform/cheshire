@@ -29,7 +29,6 @@ set MIG_TCK 5
 set MIG_RST_I [get_pin i_dram_wrapper/i_dram/c0_ddr4_aresetn]
 set_false_path -hold -setup -through $MIG_RST_I
 
-
 # Constrain outgoing reset
 set MIG_RST_O [get_pins i_dram_wrapper/i_dram/c0_ddr4_ui_clk_sync_rst]
 set_false_path -hold -through $MIG_RST_O
@@ -55,7 +54,6 @@ set_property -dict { PACKAGE_PIN G8 IOSTANDARD LVCMOS33 } [get_ports uart_rx_i ]
 set_property -dict { PACKAGE_PIN H8 IOSTANDARD LVCMOS33 } [get_ports uart_tx_o ]; # "USB UART Tx" PMOD - PIN3 
 
 # Jtag GPIOs goes to the FMC XM105 where the debug cable is connected (example Digilent HS2)
-
 set_property -dict {PACKAGE_PIN G6 IOSTANDARD LVCMOS33} [get_ports jtag_tck_i  ];  # "PMOD - PIN2" -  BD0
 set_property -dict {PACKAGE_PIN H6 IOSTANDARD LVCMOS33} [get_ports jtag_tdi_i   ]; # "PMOD - PIN4" -  BD1 
 set_property -dict {PACKAGE_PIN G7 IOSTANDARD LVCMOS33} [get_ports jtag_tdo_o   ]; # "PMOD - PIN5" -  BD2  
@@ -67,7 +65,7 @@ set_property -dict {PACKAGE_PIN D4 IOSTANDARD LVCMOS33} [get_ports jtag_trst_ni 
 set_property -dict {PACKAGE_PIN F23 IOSTANDARD LVDS} [get_ports sys_clk_p]; # "CLK_125MHZ_P"
 set_property -dict {PACKAGE_PIN E23 IOSTANDARD LVDS} [get_ports sys_clk_n]; # "CLK_125MHZ_N"
 
-
+# boot mode 
 set_property -dict {PACKAGE_PIN F4 IOSTANDARD LVCMOS12} [get_ports boot_mode_i[0]]; 
 set_property -dict {PACKAGE_PIN F5 IOSTANDARD LVCMOS12} [get_ports boot_mode_i[1]]; 
 
@@ -76,14 +74,12 @@ set_property -dict {PACKAGE_PIN F5 IOSTANDARD LVCMOS12} [get_ports boot_mode_i[1
 set_property -dict {PACKAGE_PIN E4 IOSTANDARD LVCMOS33} [get_ports sys_resetn]; 
 
 
-
 ########
 # DRAM #
 ########
 
 set_property PACKAGE_PIN AH18       [get_ports c0_sys_clk_p]
 set_property IOSTANDARD DIFF_SSTL12 [get_ports c0_sys_clk_p]
-
 set_property PACKAGE_PIN AH17       [get_ports "c0_sys_clk_n" ]
 set_property IOSTANDARD DIFF_SSTL12 [get_ports c0_sys_clk_n]
 
