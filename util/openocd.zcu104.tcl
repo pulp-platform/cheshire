@@ -1,3 +1,7 @@
+# Copyright 2025 Tampere University
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+#
 # Abdelkadir Chantar <abdelkadir.chantar@tuni.fi>
 
 adapter driver ftdi
