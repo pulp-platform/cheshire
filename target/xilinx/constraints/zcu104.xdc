@@ -1,4 +1,4 @@
-# Copyright 2025 Tampere University
+# Copyright 2025 lowRISC contributors.
 # Solderpad Hardware License, Version 0.51, see LICENSE for details.
 # SPDX-License-Identifier: SHL-0.51
 #

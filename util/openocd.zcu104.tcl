@@ -1,8 +1,11 @@
-# Copyright 2025 Tampere University.
+# Copyright 2025 lowRISC contributors.
 # Solderpad Hardware License, Version 0.51, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: SHL-0.51
+#
+# Abdelkadir Chantar <abdelkadir.chantar@tuni.fi>
 #
 # OpenOCD script for Cheshire on ZCU104.
+
 adapter driver ftdi
 adapter serial FT5X1XMQ;
 adapter speed 1000
