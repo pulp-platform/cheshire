@@ -65,7 +65,7 @@ set_property -dict {PACKAGE_PIN D4 IOSTANDARD LVCMOS33} [get_ports jtag_trst_ni 
 set_property -dict {PACKAGE_PIN F23 IOSTANDARD LVDS} [get_ports sys_clk_p];# "CLK_125MHZ_P"
 set_property -dict {PACKAGE_PIN E23 IOSTANDARD LVDS} [get_ports sys_clk_n];# "CLK_125MHZ_N"
 
-# boot mode 
+# boot mode
 set_property -dict {PACKAGE_PIN F4 IOSTANDARD LVCMOS12} [get_ports boot_mode_i[0]];
 set_property -dict {PACKAGE_PIN F5 IOSTANDARD LVCMOS12} [get_ports boot_mode_i[1]];
 
