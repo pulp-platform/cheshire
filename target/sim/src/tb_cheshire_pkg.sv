@@ -38,6 +38,7 @@ package tb_cheshire_pkg;
     function automatic cheshire_cfg_t gen_cheshire_dualcore_cfg();
       cheshire_cfg_t ret = DefaultCfg;
       ret.NumCores = 2;
+      ret.AxiMstIdWidth = 4;
       return ret;
     endfunction
 

@@ -8,11 +8,17 @@
 `define CHESHIRE_TYPEDEF_SVH_
 
 `include "axi/typedef.svh"
+`include "ace/typedef.svh"
 `include "register_interface/typedef.svh"
 
 `define CHESHIRE_TYPEDEF_AXI_CT(__name, __addr_t, __id_t, __data_t, __strb_t, __user_t) \
   `AXI_TYPEDEF_ALL_CT(__name, __name``_req_t, __name``_rsp_t, \
       __addr_t, __id_t, __data_t, __strb_t, __user_t)
+
+`define CHESHIRE_TYPEDEF_ACE_CT(__name, __addr_t, __id_t, __data_t, __strb_t, __user_t) \
+  `ACE_TYPEDEF_ALL_CT(__name, __name``_req_t, __name``_rsp_t, \
+      __addr_t, __id_t, __data_t, __strb_t, __user_t) \
+  `SNOOP_TYPEDEF_ALL_CT(__name``_snoop, __name``_snoop_req_t, __name``_snoop_rsp_t, __addr_t, __data_t)
 
 `define CHESHIRE_TYPEDEF_AXI(__name, __name_llc, __addr_t, __cfg) \
   localparam cheshire_pkg::axi_in_t __name``__AxiIn = cheshire_pkg::gen_axi_in(__cfg); \

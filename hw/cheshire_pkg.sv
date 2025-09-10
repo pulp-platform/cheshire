@@ -298,7 +298,7 @@ package cheshire_pkg;
 
   // AXI Xbar master indices
   typedef struct packed {
-    aw_bt [2**MaxCoresWidth-1:0] cores;
+    aw_bt cores;
     aw_bt dbg;
     aw_bt dma;
     aw_bt slink;
@@ -311,7 +311,7 @@ package cheshire_pkg;
   function automatic axi_in_t gen_axi_in(cheshire_cfg_t cfg);
     axi_in_t ret = '{default: '0};
     int unsigned i = 0;
-    for (int j = 0; j < cfg.NumCores; j++) begin ret.cores[i] = i; i++; end
+    ret.cores[i] = i; i++;
     ret.dbg = i;
     if (cfg.Dma)        begin i++; ret.dma   = i; end
     if (cfg.SerialLink) begin i++; ret.slink = i; end
