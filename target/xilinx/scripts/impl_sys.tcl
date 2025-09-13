@@ -22,6 +22,9 @@ import_files -fileset constrs_1 -norecurse ${xilinx_root}/constraints/${board}.x
 # Load RTL sources
 source ${xilinx_root}/scripts/add_sources.${board}.tcl
 
+# Avoid changing top level randomly in case of error
+set_property source_mgmt_mode None [current_project]
+
 # Set top module
 set_property top ${proj}_top_xilinx [current_fileset]
 update_compile_order -fileset sources_1
