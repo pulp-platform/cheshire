@@ -272,7 +272,7 @@ int setup_dpllc() {
     _Static_assert(TAGGER_REG_PATID_N_REG_OFFSET(2) == TAGGER_REG_PATID_2_REG_OFFSET);
 
 
-#define TAGGER_DEBUG 1
+// #define TAGGER_DEBUG 1
 // #define TAGGER_DEBUG 0
 
 #if TAGGER_DEBUG
@@ -379,12 +379,12 @@ int setup_dpllc() {
         }
     }
 
-    printf("configuring regions...\r\n");
+    //printf("configuring regions...\r\n");
     for (uint32_t region = 0; region < TAGGER_NUM_REGIONS; region++) {
         const struct tagger_region *config = &region_configs[region];
 
-        printf("configuring region %d with addr reg 0x%x, config: %d, patid: %d\r\n",
-               region, config->addr, config->conf, config->patid);
+        //printf("configuring region %d with addr reg 0x%x, config: %d, patid: %d\r\n",
+	//region, config->addr, config->conf, config->patid);
 
         // Store address right-shifted by 2 (4-byte granularity)
         *reg32(&__base_tagger, TAGGER_REG_PAT_ADDR_N_REG_OFFSET(region)) = config->addr >> 2;
@@ -432,8 +432,8 @@ int setup_dpllc() {
 
 
             uint32_t upper_bit_count = (upper_bit % 32) + 1;
-            printf("lower bit count: %d, upper bit count: %d\r\n", lower_bit_count, upper_bit_count);
-            printf("lower bit: %d, upper bit: %d\r\n", lower_bit, upper_bit);
+            //printf("lower bit count: %d, upper bit count: %d\r\n", lower_bit_count, upper_bit_count);
+            //printf("lower bit: %d, upper bit: %d\r\n", lower_bit, upper_bit);
             CHECK_ASSERT(-13, upper_bit_count < 5);
             CHECK_ASSERT(-14, upper_bit_count + lower_bit_count == 5);
             uint32_t upper_mask = BIT_MASK(upper_bit_count); /* no shift, starts from 0 */
@@ -481,22 +481,22 @@ int setup_dpllc() {
     /// For example, if Cfg.NumLines=256, FlushedSet[0] is responsible for set #0-63, FlushedSet[1] is responsible
     /// for set 64-127, FlushedSet[2] is responsible for set 128-191, FlushedSet[3] is responsible for set 192-255.
     /* This shows whether the sets have been flushed. */
-    printf("AXI_LLC_FLUSHED_SET_LOW_0_REG: %x\r\n",
-           *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_LOW_0_REG_OFFSET));
-    printf("AXI_LLC_FLUSHED_SET_HIGH_0_REG: %x\r\n",
-           *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_HIGH_0_REG_OFFSET));
-    printf("AXI_LLC_FLUSHED_SET_LOW_1_REG: %x\r\n",
-           *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_LOW_1_REG_OFFSET));
-    printf("AXI_LLC_FLUSHED_SET_HIGH_1_REG: %x\r\n",
-           *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_HIGH_1_REG_OFFSET));
-    printf("AXI_LLC_FLUSHED_SET_LOW_2_REG: %x\r\n",
-           *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_LOW_2_REG_OFFSET));
-    printf("AXI_LLC_FLUSHED_SET_HIGH_2_REG: %x\r\n",
-           *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_HIGH_2_REG_OFFSET));
-    printf("AXI_LLC_FLUSHED_SET_LOW_3_REG: %x\r\n",
-           *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_LOW_3_REG_OFFSET));
-    printf("AXI_LLC_FLUSHED_SET_HIGH_3_REG: %x\r\n",
-           *reg32(&__base_llc, AXI_LLC_FLUSHED_SET_HIGH_3_REG_OFFSET));
+    //printf("AXI_LLC_FLUSHED_SET_LOW_0_REG: %x\r\n",
+           //*reg32(&__base_llc, AXI_LLC_FLUSHED_SET_LOW_0_REG_OFFSET));
+//printf("AXI_LLC_FLUSHED_SET_HIGH_0_REG: %x\r\n",
+           //*reg32(&__base_llc, AXI_LLC_FLUSHED_SET_HIGH_0_REG_OFFSET));
+//printf("AXI_LLC_FLUSHED_SET_LOW_1_REG: %x\r\n",
+           //*reg32(&__base_llc, AXI_LLC_FLUSHED_SET_LOW_1_REG_OFFSET));
+//printf("AXI_LLC_FLUSHED_SET_HIGH_1_REG: %x\r\n",
+           //*reg32(&__base_llc, AXI_LLC_FLUSHED_SET_HIGH_1_REG_OFFSET));
+//printf("AXI_LLC_FLUSHED_SET_LOW_2_REG: %x\r\n",
+           //*reg32(&__base_llc, AXI_LLC_FLUSHED_SET_LOW_2_REG_OFFSET));
+//printf("AXI_LLC_FLUSHED_SET_HIGH_2_REG: %x\r\n",
+           //*reg32(&__base_llc, AXI_LLC_FLUSHED_SET_HIGH_2_REG_OFFSET));
+//printf("AXI_LLC_FLUSHED_SET_LOW_3_REG: %x\r\n",
+           //*reg32(&__base_llc, AXI_LLC_FLUSHED_SET_LOW_3_REG_OFFSET));
+//printf("AXI_LLC_FLUSHED_SET_HIGH_3_REG: %x\r\n",
+           //*reg32(&__base_llc, AXI_LLC_FLUSHED_SET_HIGH_3_REG_OFFSET));
 
     /// For example, if MaxPartition=12 and Cfg.NumLines=512, CfgSetPartition[0][8:0] defines pat0 size,
     /// CfgSetPartition[0][17:9] defines pat1 size, ...,  CfgSetPartition[0][62:54] defines pat6 size,
@@ -613,7 +613,7 @@ int setup_dpllc() {
         uint64_t old_reg = reg;
 
         uint32_t size = partition_set_sizes[partition];
-        printf("partition %d is reg %d bits %d..%d (size: %x, orig value: %016lx)\r\n", partition, reg_no, lo_bit, hi_bit, size, reg);
+        //printf("partition %d is reg %d bits %d..%d (size: %x, orig value: %016lx)\r\n", partition, reg_no, lo_bit, hi_bit, size, reg);
 
         uint64_t mask = ((uint64_t)BIT_MASK(PARTITION_SET_SIZE_BITS)) << (lo_bit);
         reg &= ~mask;
@@ -627,7 +627,7 @@ int setup_dpllc() {
         *reg32(&__base_llc, AXI_LLC_CFG_SET_PARTITION_HIGH_N_REG_OFFSET(reg_no)) = reg_hi;
 
         if (reg != old_reg) {
-            printf("-> new value: %016lx\r\n", reg);
+            //printf("-> new value: %016lx\r\n", reg);
         }
 
         lo_bit += 8;
@@ -637,7 +637,7 @@ int setup_dpllc() {
         }
     }
 
-    printf("committing changes\r\n");
+//printf("committing changes\r\n");
 
     /* Commit changes to CfgSetPartition */
     *reg32(&__base_llc, AXI_LLC_COMMIT_PARTITION_CFG_REG_OFFSET) = BIT(AXI_LLC_COMMIT_PARTITION_CFG_COMMIT_BIT);
