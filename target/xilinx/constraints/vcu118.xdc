@@ -25,7 +25,7 @@ set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets soc_clk]
 # MIG #
 #######
 
-# Dram axi clock : 300 MHz (defined by MIG constraints)
+# Dram axi clock : 333 MHz (defined by MIG constraints)
 set MIG_TCK 3
 
 # False-path incoming reset

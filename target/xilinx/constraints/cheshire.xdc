@@ -79,5 +79,6 @@ set_false_path -hold -through [get_pins -of_objects [get_cells -hier \
 ########
 # QSPI #
 ########
+
 # Configuring QSPI to load bitstream faster
 set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]

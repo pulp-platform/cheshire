@@ -11,7 +11,7 @@
 &spi {
   boot-with = <1>;
   nor@1 {
-    // Note : u-boot does not find mt25qu02g
+    // Note : u-boot does not find mt25qu01g
     compatible = "mt25qu01g", "jedec,spi-nor";
     reg = <0x1>; // CS
     spi-max-frequency = <25000000>;
