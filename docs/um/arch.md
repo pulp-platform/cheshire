@@ -189,6 +189,15 @@ Cheshire provides both a core-local interruptor (CLINT), grouping all per-core i
 
 Finally, the PLIC and grouped CLINT also support allocating external harts for which to manage interrupts (`NumExtIrqHarts`), i.e. harts without interrupt controllers of themselves.
 
+When the CLIC is enabled, Cheshire optionally supports the [vCLIC](https://ieeexplore.ieee.org/document/10817928) extension, which can delegate interrupts to virtual machines (VMs) in hardware. This extension exposes the following parameters:
+
+| Parameter           | Type / Range | Description                                            |
+| ------------------- | ------------ | ------------------------------------------------------ |
+| `ClicVsclic`        | `bit`        | Enable delegation of interrupts to VMs                 |
+| `ClicNumVsctxts`    | `byte_bt`    | Number of supported virtual interrupt contexts         |
+| `ClicVsprio`        | `bit`        | Enable per-context priorities for virtual interrupts   |
+| `ClicPrioWidth`     | `aw_bt`      | Bit width of per-context priorities                    |
+
 ### Debug Module
 
 Cheshire provides a RISC-V-compliant [Debug Module](https://github.com/pulp-platform/riscv-dbg) with JTAG transport. It supports debugging both internal and external harts as well as system bus access (SBA). It exposes the following parameters:
