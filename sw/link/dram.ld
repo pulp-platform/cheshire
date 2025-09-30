@@ -28,12 +28,17 @@ SECTIONS {
     *(.sdata.*)
   } > dram
 
-  .bss (NOLOAD) : ALIGN(16) {
+  .bss (NOLOAD) : ALIGN(12) {
     __bss_start = .;
     *(.bss)
     *(.bss.*)
     *(.sbss)
     *(.sbss.*)
+    *(.mybss.shared)
+    *(.mybss.spy)
+    *(.mybss.trojan)
+    *(.mybss.manevict1)
+    *(.mybss.manevict2)
     __bss_end = .;
   } > dram
 
@@ -42,7 +47,7 @@ SECTIONS {
     *(.bulk.*)
   } > dram
 
-  .results 0x80040000 : ALIGN(16) {
+  .results 0x80080000 : ALIGN(16) {
     *(.results)
     __results_end = .;
   } > dram

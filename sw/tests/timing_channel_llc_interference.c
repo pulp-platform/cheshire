@@ -79,8 +79,8 @@ _Static_assert(sizeof(line_t) * LLC_MAX_NUM_WAYS * LLC_WAY_NUM_LINES == 128 * 10
 _Static_assert(DPLLC_PARTITION_0_LINES + DPLLC_PARTITION_1_LINES + DPLLC_PARTITION_2_LINES + DPLLC_PARTITION_3_LINES <= LLC_WAY_NUM_LINES);
 #endif
 
-volatile line_t data_trojan[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
-volatile line_t data_spy[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".bss");
+volatile line_t data_trojan[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".mybss.trojan");
+volatile line_t data_spy[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".mybss.spy");
 
 struct result {
     uint32_t cycle_count;
@@ -115,9 +115,9 @@ uint32_t random(void) {
 #if MITIGATION != MITIGATION_DPLLC
 volatile line_t manual_evict_data[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000)));
 #else
-char manual_evict_end_marker[1];
-volatile line_t manual_evict_data_pat2[LLC_ACTIVE_NUM_WAYS][DPLLC_PARTITION_2_LINES] __attribute__((aligned(0x1000)));
-volatile line_t manual_evict_data_pat1[LLC_ACTIVE_NUM_WAYS][DPLLC_PARTITION_1_LINES] __attribute__((aligned(0x1000)));
+char manual_evict_end_marker[1] SECTION(".mybss.manevict2");
+volatile line_t manual_evict_data_pat2[LLC_ACTIVE_NUM_WAYS][DPLLC_PARTITION_2_LINES] __attribute__((aligned(0x1000))) SECTION(".mybss.manevict2");
+volatile line_t manual_evict_data_pat1[LLC_ACTIVE_NUM_WAYS][DPLLC_PARTITION_1_LINES] __attribute__((aligned(0x1000))) SECTION(".mybss.manevict1");
 #endif
 #endif
 
