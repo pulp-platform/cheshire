@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: SHL-0.51
 //
 // Cyril Koenig <cykoenig@iis.ee.ethz.ch>
+// Yvan Tortorella <yvan.tortorella@gmail.com>
+// Mojtaba Rostami <m.rostami1989@gmail.com>
 
 `ifdef TARGET_VCU118
   `define USE_RESET

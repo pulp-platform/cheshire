@@ -5,6 +5,7 @@
 # Nils Wistoff <nwistoff@iis.ee.ethz.ch>
 # Noah Huetter <huettern@iis.ee.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
+# Yvan Tortorella <yvan.tortorella@gmail.com>
 
 # Open hardware target
 set xilinx_root [file dirname [file dirname [file dirname [file normalize [info script]]]]]

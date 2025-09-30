@@ -6,6 +6,8 @@
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
+# Yvan Tortorella <yvan.tortorella@gmail.com>
+# Mojtaba Rostami <m.rostami1989@gmail.com>
 
 VIVADO ?= vitis-2022.1 vivado
 
