@@ -16,15 +16,15 @@
 
 module cheshire_top_xilinx import cheshire_pkg::*; #(
 `ifdef TARGET_VCU128
-  localparam int unsigned DdrCsNWidth = 2,
-  localparam int unsigned DdrDmDbiNWidth = 9,
-  localparam int unsigned DdrDqWidth = 72,
-  localparam int unsigned DdrDqsWidth = 9
+  localparam int unsigned Ddr4CsNWidth = 2,
+  localparam int unsigned Ddr4DmDbiNWidth = 9,
+  localparam int unsigned Ddr4DqWidth = 72,
+  localparam int unsigned Ddr4DqsWidth = 9
 `else // Default to VCU118
-  localparam int unsigned DdrCsNWidth = 1,
-  localparam int unsigned DdrDmDbiNWidth = 8,
-  localparam int unsigned DdrDqWidth = 64,
-  localparam int unsigned DdrDqsWidth = 8
+  localparam int unsigned Ddr4CsNWidth = 1,
+  localparam int unsigned Ddr4DmDbiNWidth = 8,
+  localparam int unsigned Ddr4DqWidth = 64,
+  localparam int unsigned Ddr4DqsWidth = 8
 `endif
 )(
   input  logic  sys_clk_p,
@@ -99,7 +99,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
 `endif
 
 `ifdef USE_DDR4
-  `DDR4_INTF(DdrCsNWidth, DdrDmDbiNWidth, DdrDqWidth, DdrDqsWidth)
+  `DDR4_INTF(Ddr4CsNWidth, Ddr4DmDbiNWidth, Ddr4DqWidth, Ddr4DqsWidth)
 `endif
 `ifdef USE_DDR3
   `DDR3_INTF
@@ -551,10 +551,10 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
     .axi_soc_r_chan_t  ( axi_llc_r_chan_t  ),
     .axi_soc_req_t     ( axi_llc_req_t     ),
     .axi_soc_resp_t    ( axi_llc_rsp_t     ),
-    .DdrCsNWidth       ( DdrCsNWidth       ),
-    .DdrDmDbiNWidth    ( DdrDmDbiNWidth    ),
-    .DdrDqWidth        ( DdrDqWidth        ),
-    .DdrDqsWidth       ( DdrDqsWidth       )
+    .Ddr4CsNWidth      ( Ddr4CsNWidth      ),
+    .Ddr4DmDbiNWidth   ( Ddr4DmDbiNWidth   ),
+    .Ddr4DqWidth       ( Ddr4DqWidth       ),
+    .Ddr4DqsWidth      ( Ddr4DqsWidth      )
   ) i_dram_wrapper (
     .sys_rst_i    ( sys_rst ),
     .soc_resetn_i ( rst_n   ),
