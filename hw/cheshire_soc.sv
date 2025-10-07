@@ -588,8 +588,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   assign intr.intn.bus_err.cores = core_bus_err_intr_comb;
 
   for (genvar i = 0; i < NumIntHarts; i++) begin : gen_cva6_cores
-    axi_cva6_req_t core_out_req, core_ur_req;
-    axi_cva6_rsp_t core_out_rsp, core_ur_rsp;
+    axi_cva6_req_t core_out_req, core_ur_req /*verilator split_var*/;
+    axi_cva6_rsp_t core_out_rsp, core_ur_rsp /*verilator split_var*/;
 
     // CLIC interface
     logic clic_irq_valid, clic_irq_ready;
