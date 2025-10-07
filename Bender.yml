@@ -20,7 +20,8 @@ dependencies:
   axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",                version: 0.1.3  }
   clic:                     { git: "https://github.com/pulp-platform/clic.git",                   version: 3.0.0  }
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                  version: 0.2.0  }
-  common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           version: 1.38.0 }
+  # TODO: Request release from phsauter
+  common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           rev: 1d5c6fc3da60f0a920a5113b143624770bc1a279 }
   common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.3  }
   cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: pulp-v2.0.0 }
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.6.4  }
@@ -53,6 +54,12 @@ sources:
       - target/sim/src/tb_cheshire_pkg.sv
       - target/sim/src/fixture_cheshire_soc.sv
       - target/sim/src/tb_cheshire_soc.sv
+
+  - target: any(verilator)
+    files:
+      - target/sim/verilator/src/verilator_ram.sv
+      - target/sim/verilator/src/verilator_uart_rx.sv
+      - target/sim/verilator/src/cheshire_soc_wrapper.sv
 
   - target: all(fpga, xilinx)
     files:

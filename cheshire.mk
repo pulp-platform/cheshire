@@ -175,6 +175,8 @@ CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh
 
+include $(CHS_ROOT)/target/sim/verilator/verilator.mk
+
 ###########
 # DRAMSys #
 ###########
