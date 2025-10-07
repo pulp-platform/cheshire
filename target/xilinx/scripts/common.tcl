@@ -16,6 +16,12 @@ set fpart(vcu128) "xcvu37p-fsvh2892-2L-e"
 set hwdev(vcu128) "xcvu37p_0"
 set cfgmp(vcu128) "mt25qu02g-spi-x1_x2_x4"
 
+# zcu104 board params
+set bpart(zcu104) "xilinx.com:zcu104:part0:1.1"
+set fpart(zcu104) "xczu7ev-ffvc1156-2-e"
+set hwdev(zcu104) "xcvu9p_0"
+#set cfgmp(zcu104) "mt25qu02g-spi-x1_x2_x4"
+
 
 # Initialize an implementation project
 proc init_impl {xilinx_root argc argv} {

@@ -1,0 +1,25 @@
+// Copyright 2025 lowRISC contributors.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+//
+// Created by Abdelkadir Chantar <abdelkadir.chantar@tuni.fi> - Add vga support
+
+/include/ "cheshire.zcu104.dts"
+
+
+&chosen {
+  #address-cells = <2>;
+  #size-cells = <2>;
+  ranges;
+  bootargs = "earlycon console=ttyS0,115200 root=/dev/ram rw";
+  stdout-path = "/soc/serial@3002000";  
+  framebuffer0: framebuffer@A0000000 {
+    compatible = "simple-framebuffer";
+    reg = <0x0 0xA0000000 0x0 (640 * 480 * 2)>;
+    width = <640>;
+    height = <480>;
+    stride = <(640 * 2)>;
+    format = "r5g6b5";
+    status = "okay";
+  };
+};

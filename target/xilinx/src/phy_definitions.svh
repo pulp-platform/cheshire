@@ -1,8 +1,16 @@
 // Copyright 2023 ETH Zurich and University of Bologna.
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
+// Abdelkadir Chantar <abdelkadir.chantar@tuni.fi> 
 //
 // Cyril Koenig <cykoenig@iis.ee.ethz.ch>
+
+`ifdef TARGET_ZCU104
+  `define USE_RESETN
+  `define USE_DDR4
+  `define USE_JTAG
+  `define USE_VIO
+`endif
 
 `ifdef TARGET_VCU128
   `define USE_RESET
@@ -62,6 +70,24 @@
 `ifdef USE_DDR3
 `define USE_DDR
 `endif
+
+`define TARGET_ZCU104_INTF \
+  input           c0_sys_clk_p, \
+  input           c0_sys_clk_n, \
+  output          c0_ddr4_reset_n, \
+  output [0:0]    c0_ddr4_ck_t, \
+  output [0:0]    c0_ddr4_ck_c, \
+  output          c0_ddr4_act_n, \
+  output [16:0]   c0_ddr4_adr, \
+  output [1:0]    c0_ddr4_ba, \
+  output [1:0]    c0_ddr4_bg, \
+  output [0:0]    c0_ddr4_cke, \
+  output [0:0]    c0_ddr4_odt, \
+  output [0:0]    c0_ddr4_cs_n, \
+  inout  [7:0]    c0_ddr4_dm_dbi_n, \
+  inout  [63:0]   c0_ddr4_dq, \
+  inout  [7:0]    c0_ddr4_dqs_c, \
+  inout  [7:0]    c0_ddr4_dqs_t,
 
 `define DDR4_INTF \
   output          c0_ddr4_reset_n, \
