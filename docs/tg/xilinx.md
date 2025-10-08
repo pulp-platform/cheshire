@@ -7,6 +7,7 @@ This page describes how to map Cheshire on Xilinx FPGAs to *execute baremetal pr
 We currently provide working setups for:
 
 - Digilent Genesys 2 with Vivado `>= 2020.2`
+- Xilinx VCU118 with Vivado `>= 2020.2`
 - Xilinx VCU128 with Vivado `>= 2020.2`
 
 We are working on support for more boards in the future.
@@ -39,11 +40,11 @@ Before flashing the bitstream to your device, take note of the position of onboa
 
 The reset, JTAG TAP, UART, I2C, and VGA are all connected to their onboard logic or ports. The UART has *no flow control*. The microSD slot is connected to chip select 0 of the SPI host peripheral. Serial link and GPIOs are currently not available.
 
-### Xilinx VCU128 (`vcu128`)
+### Xilinx VCU118 (`vcu118`) and VCU128 (`vcu128`)
 
-Since there are no switches on this board, the boot mode must be selected using Virtual IOs (see [Virtual IOs](#virtual_ios) below).
+Since there are no switches on these boards, the boot mode must be selected using Virtual IOs (see [Virtual IOs](#virtual_ios) below).
 
-This board provides a JTAG TAP and a UART without flow control connected to onboard ports. The SPI host peripheral connects to the `STARTUPE3` IP block, which provides access to the onboard flash. All other IOs are currently not available.
+These boards provide a JTAG TAP and a UART without flow control connected to onboard ports. The SPI host peripheral connects to the `STARTUPE3` IP block, which provides access to the onboard flash. All other IOs are currently not available.
 
 ### Virtual IOs
 
@@ -135,12 +136,12 @@ Insert your SD card and reset into boot mode 1. You should see a `Hello World!` 
 Build a GPT disk image for your desired binary as explained above, then flash it to your board's flash. For `helloworld`:
 
 ```
-make CHS_XILINX_FLASH_BIN=sw/tests/helloworld.gpt.bin chs-xilinx-flash-<myboard>
+make CHS_XILINX_FLASH_IMG=sw/tests/helloworld.gpt.bin chs-xilinx-flash-<myboard>
 ```
 
 Flashing an image should take about 10 minutes. *Note that after flashing, your board's bitstream must be reprogrammed* as it is overridden for this task.
 
-If the image given by `CHS_XILINX_FLASH_BIN` does not exist, `make` will attempt to build it before flashing. If `CHS_XILINX_FLASH_BIN` is not provided, the target assumes the default Linux image for your board.
+If the image given by `CHS_XILINX_FLASH_IMG` does not exist, `make` will attempt to build it before flashing. If `CHS_XILINX_FLASH_IMG` is not provided, the target assumes the default Linux image for your board.
 
 After flashing your disk image and reprogramming your bitstream, reset into boot mode 2. For `helloworld`, you should again see a `Hello World!` UART output.
 

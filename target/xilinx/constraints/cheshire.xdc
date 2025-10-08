@@ -6,6 +6,7 @@
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
+# Yvan Tortorella <yvan.tortorella@gmail.com>
 
 #################
 # Clock routing #
@@ -74,3 +75,10 @@ set_false_path -hold -through [get_pins -of_objects [get_cells -hier \
     -filter {ORIG_REF_NAME == axi_cdc_src || REF_NAME == axi_cdc_src}] -filter {NAME =~ *async*}]
 set_false_path -hold -through [get_pins -of_objects [get_cells -hier \
     -filter {ORIG_REF_NAME == axi_cdc_dst || REF_NAME == axi_cdc_dst}] -filter {NAME =~ *async*}]
+
+########
+# QSPI #
+########
+
+# Configuring QSPI to load bitstream faster
+set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]

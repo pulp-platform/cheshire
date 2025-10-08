@@ -3,6 +3,17 @@
 // SPDX-License-Identifier: SHL-0.51
 //
 // Cyril Koenig <cykoenig@iis.ee.ethz.ch>
+// Yvan Tortorella <yvan.tortorella@gmail.com>
+// Mojtaba Rostami <m.rostami1989@gmail.com>
+
+`ifdef TARGET_VCU118
+  `define USE_RESET
+  `define USE_JTAG
+  `define USE_DDR4
+  `define USE_QSPI
+  `define USE_STARTUPE3
+  `define USE_VIO
+`endif
 
 `ifdef TARGET_VCU128
   `define USE_RESET
@@ -63,21 +74,21 @@
 `define USE_DDR
 `endif
 
-`define DDR4_INTF \
-  output          c0_ddr4_reset_n, \
-  output [0:0]    c0_ddr4_ck_t, \
-  output [0:0]    c0_ddr4_ck_c, \
-  output          c0_ddr4_act_n, \
-  output [16:0]   c0_ddr4_adr, \
-  output [1:0]    c0_ddr4_ba, \
-  output [0:0]    c0_ddr4_bg, \
-  output [0:0]    c0_ddr4_cke, \
-  output [0:0]    c0_ddr4_odt, \
-  output [1:0]    c0_ddr4_cs_n, \
-  inout  [8:0]    c0_ddr4_dm_dbi_n, \
-  inout  [71:0]   c0_ddr4_dq, \
-  inout  [8:0]    c0_ddr4_dqs_c, \
-  inout  [8:0]    c0_ddr4_dqs_t,
+`define DDR4_INTF(Ddr4CsNWidth, Ddr4DmDbiNWidth, Ddr4DqWidth, Ddr4DqsWidth) \
+  output                       c0_ddr4_reset_n, \
+  output [0:0]                 c0_ddr4_ck_t, \
+  output [0:0]                 c0_ddr4_ck_c, \
+  output                       c0_ddr4_act_n, \
+  output [16:0]                c0_ddr4_adr, \
+  output [1:0]                 c0_ddr4_ba, \
+  output [0:0]                 c0_ddr4_bg, \
+  output [0:0]                 c0_ddr4_cke, \
+  output [0:0]                 c0_ddr4_odt, \
+  output [Ddr4CsNWidth-1:0]    c0_ddr4_cs_n, \
+  inout  [Ddr4DmDbiNWidth-1:0] c0_ddr4_dm_dbi_n, \
+  inout  [Ddr4DqWidth-1:0]     c0_ddr4_dq, \
+  inout  [Ddr4DqsWidth-1:0]    c0_ddr4_dqs_c, \
+  inout  [Ddr4DqsWidth-1:0]    c0_ddr4_dqs_t,
 
 `define DDR3_INTF \
   output        ddr3_ck_p, \
