@@ -1,9 +1,9 @@
 packages:
   ace:
-    revision: f3be9fd2bc20259137c6471bbd01d51192302bd0
+    revision: d298dfe1ee1db37b84202bf642c7b3b1b9766252
     version: null
     source:
-      Git: https://github.com/ricted98/ace.git
+      Git: https://github.com/pulp-platform/ace.git
     dependencies:
     - axi
     - axi_riscv_atomics
@@ -12,22 +12,24 @@ packages:
     revision: 77ddf073f194d44b9119949d2421be59789e69ae
     version: 0.2.4
     source:
-      Git: https://github.com/pulp-platform/apb
+      Git: https://github.com/pulp-platform/apb.git
     dependencies:
     - common_cells
   apb_uart:
-    revision: 6c7dde3d749ac8274377745c105da8c8b8cd27c6
-    version: 0.2.1
+    revision: 8182a85d234417db46fe833533f8536644d3bee3
+    version: 0.2.3
     source:
       Git: https://github.com/pulp-platform/apb_uart.git
     dependencies:
     - apb
+    - obi
+    - obi_peripherals
     - register_interface
   axi:
-    revision: f68c9ef5dffdc82baf149aa035731f47301f4665
+    revision: 37fa3a93882916abfd446917dc7302b69368fbce
     version: null
     source:
-      Git: https://github.com/ricted98/axi.git
+      Git: https://github.com/pulp-platform/axi.git
     dependencies:
     - common_cells
     - common_verification
@@ -136,8 +138,8 @@ packages:
     dependencies:
     - common_cells
   idma:
-    revision: ff5d56fffb3767814db88d6bf8f381974ea33aa5
-    version: 0.6.4
+    revision: 28a36e5e07705549e59fc33db96ab681bc1ca88e
+    version: 0.6.5
     source:
       Git: https://github.com/pulp-platform/iDMA.git
     dependencies:
@@ -164,6 +166,14 @@ packages:
     dependencies:
     - common_cells
     - common_verification
+  obi_peripherals:
+    revision: 079894a6cbd4e544c477643d184a4c340bd4e391
+    version: 0.1.1
+    source:
+      Git: https://github.com/pulp-platform/obi_peripherals.git
+    dependencies:
+    - common_cells
+    - obi
   opentitan_peripherals:
     revision: cd3153de2783abd3d03d0595e6c4b32413c62f14
     version: 0.4.0
@@ -184,8 +194,8 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: 5daa85d164cf6b54ad061ea1e4c6f3624556e467
-    version: 0.4.5
+    revision: 8e8c209ea559d3b54f45cf30fcce95ce70ff5e49
+    version: 0.4.6
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:
