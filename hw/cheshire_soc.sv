@@ -127,9 +127,12 @@ module cheshire_soc import cheshire_pkg::*; #(
   localparam ace_ccu_pkg::ace_ccu_user_cfg_t CcuUserCfg = '{
         SlvPorts            : NumIntHarts,
         MaxTransactions     : 8,
-        BlockingWFifoDepth  : 4,
+        ShareableWFifoDepth : 4,
+        ReplayEn            : 0,
+        // ReplayEntries       : 2,
         AxiUniqueIds        : 0,
         AxiIdLookupBits     : 3,
+        NLineWidth          : Cfg.AddrWidth - $clog2(ariane_pkg::DCACHE_LINE_WIDTH / 8),
         AxiAddrWidth        : Cfg.AddrWidth,
         AxiDataWidth        : Cfg.AxiDataWidth,
         AxiUserWidth        : Cfg.AxiUserWidth,
@@ -173,12 +176,12 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AXI_DATA_WIDTH ( Cfg.AxiDataWidth ),
     .AXI_ID_WIDTH   ( Cva6IdWidth      ),
     .AXI_USER_WIDTH ( Cfg.AxiUserWidth )
-  ) core_to_CCU[NumIntHarts-1:0]();
+  ) core_to_CCU[NumIntHarts]();
 
   SNOOP_BUS #(
     .SNOOP_ADDR_WIDTH ( Cfg.AddrWidth    ),
     .SNOOP_DATA_WIDTH ( Cfg.AxiDataWidth )
-  ) CCU_to_core[NumIntHarts-1:0]();
+  ) CCU_to_core[NumIntHarts]();
 
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( Cfg.AddrWidth     ),
