@@ -68,8 +68,8 @@ module tb_cheshire_soc #(
       fix.vip.jtag_wait_for_eoc(exit_code);
     end
 
-    // Wait for the UART to finish reading the current byte
-    wait (fix.vip.uart_reading_byte == 0);
+    // Wait for the UART to finish reading the current byte and flush buffer
+    fix.vip.uart_flush();
 
     $finish;
   end

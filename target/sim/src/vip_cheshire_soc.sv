@@ -26,7 +26,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter real          TTest             = 0.9,
   // UART
   parameter int unsigned  UartBaudRate      = 115200,
-  parameter int unsigned  UartParityEna     = 0,
+  parameter bit           UartParityEna     = 0,
   parameter int unsigned  UartBurstBytes    = 256,
   parameter int unsigned  UartWaitCycles    = 60,
   // Serial Link
@@ -456,6 +456,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   logic   uart_boot_ena;
   logic   uart_boot_eoc;
   logic   uart_reading_byte;
+  string  uart_buffer = "";
 
   initial begin
     uart_rx           = 1;
@@ -516,11 +517,9 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   endtask
 
   // Continually read characters and print lines
-  // TODO: we should be able to support CR properly, but buffers are hard to deal with...
   initial begin
-    static byte_bt uart_read_buf [$];
     byte_bt bite;
-    string line;
+    static int unsigned pos = 0;
     wait_for_reset();
     forever begin
       uart_read_byte(bite);
@@ -528,20 +527,31 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
         uart_boot_byte  = bite;
         uart_boot_ena = 0;
       end else if (bite == "\n") begin
-        if (uart_read_buf.size() > 0) begin
-          line = {>>8{uart_read_buf}};
-          $display("[UART] %s", line);
-          uart_read_buf.delete();
-        end else begin
-          $display("[UART]");
-        end
+        $display("[UART] %s", uart_buffer);
+        // Respect offset of newline without CR
+        uart_buffer = pos ? {(pos){" "}} : "";
+      end else if (bite == "\x0d") begin
+        pos = 0;
       end else if (bite == UartDebugEoc) begin
         uart_boot_eoc = 1;
       end else begin
-        uart_read_buf.push_back(bite);
+        if (pos < uart_buffer.len()) uart_buffer.putc(pos, bite);
+        else uart_buffer = {uart_buffer, string'(bite)};
+        pos++;
       end
     end
   end
+
+  // Wait for pending UART receives and flush line buffer
+  task automatic uart_flush();
+    // Wait for inflight reads
+    wait (uart_reading_byte == 0);
+    // Advance time to allow printing initial to handle a final newline
+    #(ClkPeriodSys);
+    // If there is any line data left, print it
+    if (uart_buffer.len())
+      $display("[UFIN] %s", uart_buffer);
+  endtask
 
   // A length of zero indcates a write (write lengths are inferred from their queue)
   task automatic uart_debug_rw(doub_bt addr, doub_bt len_or_w, ref byte_bt data [$]);
