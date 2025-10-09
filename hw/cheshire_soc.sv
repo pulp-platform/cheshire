@@ -558,6 +558,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     end
 
     axi_llc_reg_wrap #(
+      .EnableEcc        ( 0                ),
       .SetAssociativity ( Cfg.LlcSetAssoc  ),
       .NumLines         ( Cfg.LlcNumLines  ),
       .NumBlocks        ( Cfg.LlcNumBlocks ),
@@ -670,7 +671,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   cva6_wrap #(
     .Cfg              ( Cfg                ),
-    .EccEnable        ( 1                  ),
+    .EccEnable        ( 0                  ),
     .Cva6Cfg          ( Cva6Cfg            ),
     .NumHarts         ( NumIntHarts        ),
     .reg_req_t        ( reg_req_t          ),
