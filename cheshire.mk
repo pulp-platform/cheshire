@@ -185,6 +185,12 @@ include $(DRAM_RTL_SIM_ROOT)/dram_rtl_sim.mk
 CHS_DRAMSYS_ALL += $(DRAMSYS_ROOT)/build/lib/libsystemc.so
 
 #############
+# Verilator #
+#############
+
+include $(CHS_ROOT)/target/verilator/verilator.mk
+
+#############
 # FPGA Flow #
 #############
 
@@ -202,8 +208,9 @@ chs-hw-all:      $(CHS_HW_ALL)
 chs-bootrom-all: $(CHS_BOOTROM_ALL)
 chs-sim-all:     $(CHS_SIM_ALL)
 chs-dramsys-all: $(CHS_DRAMSYS_ALL)
+chs-vlt-all:     $(CHS_VLT_ALL)
 chs-xilinx-all:  $(CHS_XILINX_ALL)
 
-CHS_PHONY += chs-all chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-dramsys-all chs-xilinx-all
+CHS_PHONY += chs-all chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-dramsys-all chs-vlt-all chs-xilinx-all
 
 .PHONY: $(CHS_PHONY)
