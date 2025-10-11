@@ -7,6 +7,8 @@
 //
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
+// Max Wipfli <mwipfli@student.ethz.ch>
+// Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 #include <svdpi.h>
 #include <cstring>
@@ -30,6 +32,8 @@
 #include <map>
 #include <iostream>
 #include <stdint.h>
+
+#include "elfloader.h"
 
 #define IS_ELF(hdr) \
   ((hdr).e_ident[0] == 0x7f && (hdr).e_ident[1] == 'E' && \
@@ -155,13 +159,6 @@ std::map<uint64_t, std::vector<uint8_t>> mems;
 uint64_t entry = 0;
 int section_index = 0;
 
-extern "C" {
-  char get_entry(long long *entry_ret);
-  char get_section(long long *address_ret, long long *len_ret);
-  char read_section(long long address, const svOpenArrayHandle buffer, long long len);
-  char read_elf(const char *filename);
-}
-
 static void write (uint64_t address, uint64_t len, uint8_t *buf)
 {
   std::vector<uint8_t> mem;
@@ -199,7 +196,11 @@ extern "C" char read_section(long long address, const svOpenArrayHandle buffer, 
 {
   // get actual pointer
   char *buf = (char *) svGetArrayPtr(buffer);
-  
+  return read_section_raw(address, buf, len);
+}
+
+extern "C" char read_section_raw(long long address, char *buf, long long len)
+{
   // check that the address points to a section
   if (!mems.count(address)) {
     printf("[ELF] ERROR: No section found for address %p\n", address);
