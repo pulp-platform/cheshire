@@ -14,24 +14,37 @@ package:
 dependencies:
   apb:                      { git: "https://github.com/pulp-platform/apb.git",                    version: 0.2.4  }
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.3  }
-  axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.8 }
-  axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",                version: 0.2.1  }
-  axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.8.2  }
+  axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.9 }
+  axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",                version: 0.2.2  }
+  axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.8.3  }
   axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: 0.0.0-alpha.10 }
-  axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",                version: 0.1.3  }
+  axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",                version: 0.1.4  }
   clic:                     { git: "https://github.com/pulp-platform/clic.git",                   version: 3.0.0  }
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                  version: 0.2.0  }
-  common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           version: 1.38.0 }
-  common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.3  }
+  common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           version: 1.39.0 }
+  common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.5  }
   cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: pulp-v2.0.0 }
-  iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.6.4  }
+  dram_rtl_sim:             { git: "https://github.com/pulp-platform/dram_rtl_sim.git",           version: 0.1.1  }
+  iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.6.5  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
-  register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",     version: 0.4.5  }
+  register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",     version: 0.4.7  }
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              version: 0.8.1  }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 2.0.0  }
   unbent:                   { git: "https://github.com/pulp-platform/unbent.git",                 version: 0.1.6  }
-  dram_rtl_sim:             { git: "https://github.com/pulp-platform/dram_rtl_sim.git",           version: 0.1.1  }
+
+# OpenTitan DPI VIPs used in Verilator simulation
+vendor_package:
+  - name: lowrisc_opentitan_dpi
+    target_dir: "target/verilator/vendor"
+    upstream: { git: "https://github.com/lowRISC/opentitan.git", rev: "f01486e21f1ae828da674185b730bb843403088f" }
+    mapping:
+      - {from: 'hw/dv/dpi/common/tcp_server', to: 'tcp_server'}
+      - {from: 'hw/dv/dpi/uartdpi', to: 'uart'}
+      - {from: 'hw/dv/dpi/jtagdpi', to: 'jtag'}
+    exclude_from_upstream:
+      - "*.core"
+      - "*README.md"
 
 export_include_dirs:
   - hw/include
@@ -47,7 +60,7 @@ sources:
   - hw/cheshire_pkg.sv
   - hw/cheshire_soc.sv
 
-  - target: any(simulation, test)
+  - target: all(any(simulation, test), not(verilator))
     files:
       - target/sim/models/s25fs512s.v
       - target/sim/models/24FC1025.v
@@ -55,6 +68,12 @@ sources:
       - target/sim/src/tb_cheshire_pkg.sv
       - target/sim/src/fixture_cheshire_soc.sv
       - target/sim/src/tb_cheshire_soc.sv
+
+  - target: verilator
+    files:
+      - target/verilator/vendor/jtag/jtagdpi.sv
+      - target/verilator/vendor/uart/uartdpi.sv
+      - target/verilator/src/cheshire_top_verilator.sv
 
   - target: all(fpga, xilinx)
     files:
