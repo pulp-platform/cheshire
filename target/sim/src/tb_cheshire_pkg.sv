@@ -39,8 +39,10 @@ package tb_cheshire_pkg;
 
     // Assemble a configuration array indexed by a numeric parameter
     localparam cheshire_cfg_t [NumCheshireConfigs-1:0] TbCheshireConfigs = {
+        `ifndef TARGET_OPENHW
         gen_cheshire_vclic_cfg(), // 3: vCLIC-enabled configuration
         gen_cheshire_clic_cfg(),  // 2: CLIC-enabled configuration
+        `endif
         gen_cheshire_rt_cfg(),    // 1: RT-enabled configuration
         DefaultCfg                // 0: Default configuration
     };
