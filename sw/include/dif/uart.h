@@ -45,3 +45,8 @@ void uart_read_str(void *uart_base, void *dst, uint64_t len);
 void _putchar(char byte);
 
 char _getchar();
+
+// `printf` standalone implementation
+void putchar_(char byte);
+
+char getchar_();

@@ -1,6 +1,6 @@
 [submodule "sw/deps/printf"]
 	path = sw/deps/printf
-	url = https://github.com/mpaland/printf
+	url = https://github.com/eyalroz/printf
 	ignore = dirty
 [submodule "sw/deps/cva6-sdk"]
 	path = sw/deps/cva6-sdk

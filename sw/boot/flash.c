@@ -18,7 +18,7 @@
 #include "hal/spi_sdcard.h"
 #include "hal/uart_debug.h"
 #include "gpt.h"
-#include "printf.h"
+#include "printf/printf.h"
 
 int flash_spi_sdcard(uint64_t core_freq, uint64_t rtc_freq, void *img_base, uint64_t sector,
                      uint64_t len) {

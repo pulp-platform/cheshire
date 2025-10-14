@@ -71,3 +71,12 @@ void _putchar(char byte) {
 char _getchar() {
     return uart_read(&__base_uart);
 }
+
+// `printf` standalone implementation
+void putchar_(char byte) {
+    uart_write(&__base_uart, byte);
+}
+
+char getchar_() {
+    return uart_read(&__base_uart);
+}

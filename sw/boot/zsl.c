@@ -13,7 +13,7 @@
 #include "dif/clint.h"
 #include "gpt.h"
 #include "dif/uart.h"
-#include "printf.h"
+#include "printf/printf.h"
 
 // Type for firmware payload
 typedef int (*payload_t)(uint64_t, uint64_t, uint64_t);

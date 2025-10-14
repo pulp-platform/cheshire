@@ -23,7 +23,7 @@ CHS_SW_DTB_TGUID := BA442F61-2AEF-42DE-9233-E4D75D3ACB9D
 CHS_SW_FW_TGUID  := 99EC86DA-3F5B-4B0D-8F4B-C4BACFA5F859
 CHS_SW_DISK_SIZE ?= 16M
 
-CHS_SW_FLAGS   ?= -DOT_PLATFORM_RV32 -march=rv64gc_zifencei -mabi=lp64d -mstrict-align -O2 -Wall -Wextra -static -ffunction-sections -fdata-sections -frandom-seed=cheshire -fuse-linker-plugin -flto -Wl,-flto
+CHS_SW_FLAGS   ?= -DOT_PLATFORM_RV32 -DPRINTF_ALIAS_STANDARD_FUNCTION_NAMES_HARD=1 -march=rv64gc_zifencei -mabi=lp64d -mstrict-align -O2 -Wall -Wextra -static -ffunction-sections -fdata-sections -frandom-seed=cheshire -fuse-linker-plugin -flto -Wl,-flto
 CHS_SW_CCFLAGS ?= $(CHS_SW_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
 CHS_SW_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_SW_LD_DIR)
 CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
@@ -36,12 +36,12 @@ CHS_SW_ALL += $(CHS_SW_LIBS) $(CHS_SW_GEN_HDRS) $(CHS_SW_TESTS) $(CHS_SW_TOOLS)
 # Dependencies #
 ################
 
-CHS_SW_DEPS_INCS  = -I$(CHS_SW_DIR)/deps/printf
+CHS_SW_DEPS_INCS  = -I$(CHS_SW_DIR)/deps/printf/src
 CHS_SW_DEPS_INCS += -I$(CHS_LLC_DIR)/sw/include
 CHS_SW_DEPS_INCS += -I$(AXIRTROOT)/sw/lib
 CHS_SW_DEPS_INCS += -I$(OTPROOT)
 CHS_SW_DEPS_INCS += -I$(OTPROOT)/sw/include
-CHS_SW_DEPS_SRCS  = $(CHS_SW_DIR)/deps/printf/printf.c
+CHS_SW_DEPS_SRCS  = $(CHS_SW_DIR)/deps/printf/src/printf/printf.c
 CHS_SW_DEPS_SRCS += $(CHS_LLC_DIR)/sw/lib/axi_llc_reg32.c
 CHS_SW_DEPS_SRCS += $(AXIRTROOT)/sw/lib/axirt.c
 CHS_SW_DEPS_SRCS += $(wildcard $(OTPROOT)/sw/device/lib/base/*.c)
