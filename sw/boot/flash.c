@@ -68,8 +68,8 @@ int main() {
     uint64_t sector = scratch[2];
     uint64_t len = scratch[3];
     // Flash chosen disk
-    printf("[FLASH] Write buffer at 0x%x of length %d to target %d, sector %d ... ", img_base, len,
-           target, sector);
+    printf("[FLASH] Write buffer at 0x%p of length %ld to target %ld, sector %ld ... ", img_base,
+           len, target, sector);
     switch (target) {
     case 1: {
         ret = flash_spi_sdcard(core_freq, rtc_freq, img_base, sector, len);
