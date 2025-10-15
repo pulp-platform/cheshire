@@ -39,14 +39,14 @@ static inline void load_part_or_spin(void *priv, const uint64_t *pguid, void *co
     else if (part_idx < 0)
         printf("[ZSL] No %s", name);
     else {
-        printf("[ZSL] Copy %s (part %d, LBA %d-%d) to 0x%lx... ", name, part_idx, lba_begin,
+        printf("[ZSL] Copy %s (part %ld, LBA %ld-%ld) to 0x%p... ", name, part_idx, lba_begin,
                lba_end, dst);
         grread(priv, dst, 0x200 * lba_begin, 0x200 * (lba_end - lba_begin + 1));
         printf("OK\r\n");
         return;
     }
     // Catch
-    printf(" with at most %d sectors and type GUID 0x%llx%llx", max_lbas, pguid[1], pguid[0]);
+    printf(" with at most %ld sectors and type GUID 0x%lx%lx", max_lbas, pguid[1], pguid[0]);
     while (1) wfi();
 }
 
@@ -65,13 +65,13 @@ int main(void) {
     // Print boot-critical cat, and also parameters
     printf(" /\\___/\\       Boot mode:       %d\r\n"
            "( o   o )      Real-time clock: %d Hz\r\n"
-           "(  =^=  )      System clock:    %d Hz\r\n"
-           "(        )     Read global ptr: 0x%08x\r\n"
-           "(    P    )    Read pointer:    0x%08x\r\n"
-           "(  U # L   )   Read argument:   0x%08x\r\n"
+           "(  =^=  )      System clock:    %ld Hz\r\n"
+           "(        )     Read global ptr: 0x%p\r\n"
+           "(    P    )    Read pointer:    0x%p\r\n"
+           "(  U # L   )   Read argument:   0x%p\r\n"
            "(    P      )\r\n"
            "(           ))))))))))\r\n\r\n",
-           bootmode, rtc_freq, core_freq, rgp, read, priv);
+           bootmode, rtc_freq, core_freq, rgp, (void *)(uintptr_t)read, priv);
 
     // If this is a GPT disk boot, load payload and device tree
     if (read & 1) {
@@ -82,7 +82,8 @@ int main(void) {
 
     // Launch payload
     payload_t fw = __BOOT_ZSL_FW;
-    printf("[ZSL] Launch firmware at %lx with device tree at %lx\r\n", fw, __BOOT_ZSL_DTB);
+    printf("[ZSL] Launch firmware at %p with device tree at %p\r\n", (void *)(uintptr_t)fw,
+           __BOOT_ZSL_DTB);
     fencei();
     return fw(0, (uintptr_t)__BOOT_ZSL_DTB, 0);
 }
@@ -94,8 +95,8 @@ void trap_vector() {
                  "csrr %3, mie; csrr %4, mstatus; csrr %5, mtval"
                  : "=r"(mcause), "=r"(mepc), "=r"(mip), "=r"(mie), "=r"(mstatus), "=r"(mtval));
     printf("\r\n==== [ZSL] trap encountered ====\r\n"
-           " mcause:     0x%016x\r\n mepc:       0x%016x\r\n mip:        0x%016x\r\n"
-           " mie:        0x%016x\r\n mstatus:    0x%016x\r\n mtval:      0x%016x\r\n"
+           " mcause:     0x%016lx\r\n mepc:       0x%016lx\r\n mip:        0x%016lx\r\n"
+           " mie:        0x%016lx\r\n mstatus:    0x%016lx\r\n mtval:      0x%016lx\r\n"
            "================================\r\n",
            mcause, mepc, mip, mie, mstatus, mtval);
     while (1) wfi();
