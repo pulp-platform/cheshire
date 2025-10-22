@@ -118,10 +118,10 @@ packages:
     dependencies:
     - axi
   fpnew:
-    revision: e5aa6a01b5bbe1675c3aa8872e1203413ded83d1
+    revision: 1ff6b1bfb35cdad8f619c50afc7bd6bbe5833d72
     version: null
     source:
-      Git: https://github.com/pulp-platform/cvfpu.git
+      Git: https://github.com/ricted98/cvfpu.git
     dependencies:
     - common_cells
     - fpu_div_sqrt_mvp
