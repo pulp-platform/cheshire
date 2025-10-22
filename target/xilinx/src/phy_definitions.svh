@@ -63,6 +63,12 @@
 `define USE_CFG_REGS
 `endif
 
+`ifdef USE_CHESHIRE_RT
+`define USE_CVA6RT
+`define USE_AXIRT
+`define USE_VCLIC
+`endif
+
 /////////////////////
 // DRAM INTERFACES //
 /////////////////////
