@@ -45,15 +45,24 @@ package tb_cheshire_pkg;
       return ret;
     endfunction
 
+    // A dedicated superscalar config
+    function automatic cheshire_cfg_t gen_cheshire_superscalar_cfg();
+      cheshire_cfg_t ret = DefaultCfg;
+      ret.Cva6SuperscalarEn = 1;
+      ret.Cva6ALUBypass = 1;
+      return ret;
+    endfunction
+
     // Number of Cheshire configurations
-    localparam int unsigned NumCheshireConfigs = 32'd4;
+    localparam int unsigned NumCheshireConfigs = 32'd5;
 
     // Assemble a configuration array indexed by a numeric parameter
     localparam cheshire_cfg_t [NumCheshireConfigs-1:0] TbCheshireConfigs = {
-        gen_cheshire_vclic_cfg(), // 3: vCLIC-enabled configuration
-        gen_cheshire_clic_cfg(),  // 2: CLIC-enabled configuration
-        gen_cheshire_rt_cfg(),    // 1: RT-enabled configuration
-        DefaultCfg                // 0: Default configuration
+        gen_cheshire_superscalar_cfg(), // 4: superscalar-enabled configuration
+        gen_cheshire_vclic_cfg(),       // 3: vCLIC-enabled configuration
+        gen_cheshire_clic_cfg(),        // 2: CLIC-enabled configuration
+        gen_cheshire_rt_cfg(),          // 1: RT-enabled configuration
+        DefaultCfg                      // 0: Default configuration
     };
 
 endpackage
