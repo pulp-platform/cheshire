@@ -145,6 +145,21 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
     ret.ClicNumVsctxts = 4;
     ret.ClicPrioWidth = 1;
   `endif
+  `ifdef USE_AXIRT
+    ret.AxiRt = 1;
+  `endif
+  `ifdef USE_CVA6RT
+    ret.Cva6InstrTlbEntries = 16;
+    ret.Cva6DataTlbEntries = 64;
+    ret.Cva6TlbColoring = 1;
+    ret.Cva6NumTlbColors = 16;
+    ret.Cva6LockableTlbWays = 8;
+    ret.Cva6UseSharedTlb = 0;
+  `endif
+  `ifdef USE_CVA6S
+    ret.Cva6SuperscalarEn = 1;
+    ret.Cva6ALUBypass = 1;
+  `endif
     return ret;
   endfunction
 
