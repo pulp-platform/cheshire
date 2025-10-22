@@ -86,6 +86,9 @@ package cheshire_pkg;
     bit     Cva6DcacheInvalidateOnFlush;
     shrt_bt Cva6InstrTlbEntries;
     shrt_bt Cva6DataTlbEntries;
+    bit     Cva6TlbColoring;
+    shrt_bt Cva6NumTlbColors;
+    shrt_bt Cva6LockableTlbWays;
     bit     Cva6UseSharedTlb;
     shrt_bt Cva6SharedTlbDepth;
     shrt_bt Cva6NrLoadPipeRegs;
@@ -555,6 +558,9 @@ package cheshire_pkg;
     ret.DcacheInvalidateOnFlush = cfg.Cva6DcacheInvalidateOnFlush;
     ret.InstrTlbEntries         = cfg.Cva6InstrTlbEntries;
     ret.DataTlbEntries          = cfg.Cva6DataTlbEntries;
+    ret.TlbColoring             = cfg.Cva6TlbColoring;
+    ret.NumTlbColors            = cfg.Cva6NumTlbColors;
+    ret.LockableTlbWays         = cfg.Cva6LockableTlbWays;
     ret.UseSharedTlb            = cfg.Cva6UseSharedTlb;
     ret.SharedTlbDepth          = cfg.Cva6SharedTlbDepth;
     ret.NrLoadPipeRegs          = cfg.Cva6NrLoadPipeRegs;
@@ -595,7 +601,10 @@ package cheshire_pkg;
     Cva6DcacheFlushOnFence      : 1,
     Cva6DcacheInvalidateOnFlush : 0,
     Cva6InstrTlbEntries         : 16,
-    Cva6DataTlbEntries          : 16,
+    Cva6DataTlbEntries          : 64,
+    Cva6TlbColoring             : 0,
+    Cva6NumTlbColors            : 1,
+    Cva6LockableTlbWays         : 0,
     Cva6UseSharedTlb            : 1,
     Cva6SharedTlbDepth          : 64,
     Cva6NrLoadPipeRegs          : 1,
