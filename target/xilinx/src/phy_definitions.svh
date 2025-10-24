@@ -70,6 +70,7 @@
 `define USE_CVA6RT
 `define USE_AXIRT
 `define USE_VCLIC
+`define USE_LLC_PARTITIONING
 `endif
 
 /////////////////////
