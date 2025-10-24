@@ -160,6 +160,9 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
     ret.Cva6SuperscalarEn = 1;
     ret.Cva6ALUBypass = 1;
   `endif
+  `ifdef USE_LLC_PARTITIONING
+    ret.LlcCachePartition = 1;
+  `endif
     return ret;
   endfunction
 
