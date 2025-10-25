@@ -1,0 +1,5 @@
+overrides:
+  dram_rtl_sim: { git: "https://github.com/pulp-platform/dram_rtl_sim.git", rev: e8dfca0c3b543662477655aa97ac1f46b06b3e7c } # yt/xcelium
+  axi: { git: "https://github.com/pulp-platform/axi.git", rev: b6fafdaab75d3b5ed77afb70e50a69d72888b71b } # yt/xcelium
+  apb: { git: "https://github.com/pulp-platform/apb.git", rev: 80401545497174c29a3b7dcdea915dd959d6e354 } # yt/xcelium
+  cva6: { git: "https://github.com/pulp-platform/cva6.git", rev: 004dad806db8453f8da1577c15a3604b9e311edd } # yt/xcelium
