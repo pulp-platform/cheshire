@@ -155,6 +155,9 @@ $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh: $(CHS_ROOT)/Bender.yml
 	$(BENDER) script vcs -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOGAN_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
 	chmod +x $@
 
+$(CHS_ROOT)/target/sim/xcelium/compile.cheshire_soc.f: $(CHS_ROOT)/Bender.yml
+	$(BENDER) script xcelium -t sim -t test $(CHS_BENDER_RTL_FLAGS) > $@
+
 .PRECIOUS: $(CHS_ROOT)/target/sim/models
 $(CHS_ROOT)/target/sim/models:
 	mkdir -p $@
@@ -174,6 +177,7 @@ CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh
+CHS_SIM_ALL += $(CHS_ROOT)/target/sim/xcelium/compile.cheshire_soc.f
 
 ###########
 # DRAMSys #
