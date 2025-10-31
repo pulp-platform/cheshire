@@ -40,7 +40,7 @@ static const uint32_t __BOOT_BAUDRATE = 115200;
 static const uint64_t __BOOT_SPM_MAX_LBAS = 2 * 48;
 
 // Locations for payload and device tree
-static void *const __BOOT_ZSL_DTB = (void *)0x80800000;
+static void *const __BOOT_ZSL_DTB = (void *)0x81800000;
 static void *const __BOOT_ZSL_FW = (void *)0x80000000;
 
 // GUID of zero-stage loader partition we boot from
