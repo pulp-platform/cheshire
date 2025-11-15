@@ -1,4 +1,5 @@
 overrides:
+  axi_riscv_atomics: { git: "https://github.com/pulp-platform/axi_riscv_atomics.git", rev: 8f95a6d5977353f249abdfbb19fa60b8a221eb00 } # yt/xcelium
   dram_rtl_sim: { git: "https://github.com/pulp-platform/dram_rtl_sim.git", rev: e8dfca0c3b543662477655aa97ac1f46b06b3e7c } # yt/xcelium
   axi: { git: "https://github.com/pulp-platform/axi.git", rev: b6fafdaab75d3b5ed77afb70e50a69d72888b71b } # yt/xcelium
   apb: { git: "https://github.com/pulp-platform/apb.git", rev: 80401545497174c29a3b7dcdea915dd959d6e354 } # yt/xcelium
