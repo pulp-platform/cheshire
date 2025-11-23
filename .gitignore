@@ -56,3 +56,4 @@ vivado*
 
 # Bender/Yosys generated files
 target/yosys/out
+target/yosys/*.log

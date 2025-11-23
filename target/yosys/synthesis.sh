@@ -19,4 +19,4 @@ cd $SCRIPTDIR
 mkdir -p out
 $BENDER script flist-plus $BENDER_TARGETS $BENDER_DEFINES > out/cheshire.f
 
-$YOSYS -s yosys.ys
+$YOSYS -q -l synthesis.log -s yosys.ys

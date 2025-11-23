@@ -41,7 +41,6 @@ write_verilog -norename -noexpr out/elaborated.v
 tee -o out/elaborated.rpt stat
 
 synth
-rename -wire -suffix _reg t:*DFF*
 dfflibmap -liberty synthetic.lib
 abc -liberty synthetic.lib -script "+strash;dch -x;map -B 0.9;topo;"
 hilomap -singleton -hicell tiehi y_o -locell tielo y_o

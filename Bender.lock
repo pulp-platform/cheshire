@@ -17,8 +17,8 @@ packages:
     - obi_peripherals
     - register_interface
   axi:
-    revision: 7d0e5dfd795be32f23dcf8c1f9c32650ff7bb0fa
-    version: null
+    revision: a256a3b86394fedf19e361047fccfdd7f6ef83e4
+    version: 0.39.9
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -71,8 +71,8 @@ packages:
     - common_cells
     - register_interface
   clic:
-    revision: 97933f7503a7709c8feed3b446c5b1c136e29c41
-    version: null
+    revision: 6515a71eb4ae3b143ab912d265e79832b3179a76
+    version: 3.0.0
     source:
       Git: https://github.com/pulp-platform/clic.git
     dependencies:
@@ -189,8 +189,8 @@ packages:
     - common_cells
     - common_verification
   riscv-dbg:
-    revision: ee4b5c07704398efec045a90f653816b1a170bb8
-    version: null
+    revision: 2bc55e1e43a472b629a84ef3090a2aa13e13d351
+    version: 0.9.0
     source:
       Git: https://github.com/pulp-platform/riscv-dbg.git
     dependencies:
