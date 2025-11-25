@@ -71,4 +71,18 @@ export PRELMODE=1
 ./start.cheshire_soc.sh
 ```
 
+## Xcelium
+Variables are read from your shell environment. After building Cheshire, start a POSIX-compliant shell in `target/sim/xcelium` and run:
+
+```sh
+# Preload `helloworld.spm.elf` through serial link
+export BINARY="../../../sw/tests/helloworld.spm.elf"
+export BOOTMODE=0
+export PRELMODE=1
+
+# Start and run simulation
+./start.cheshire_soc.sh
+```
+
 The design needs to be recompiled only when hardware is changed. The simulation can be run repeatedly using `start.cheshire_soc.sh`, allowing binary (or image) and load method changes beforehand.
+
