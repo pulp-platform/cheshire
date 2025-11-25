@@ -8,7 +8,7 @@ name: publish-docs
 
 on:
   push:
-    branches: [ main ]
+    branches: [ yt/xcelium ]
   workflow_dispatch:
 
 jobs:
