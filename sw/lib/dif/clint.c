@@ -11,7 +11,7 @@
 #include "util.h"
 #include "params.h"
 
-static volatile clint_t * const clint = (volatile clint_t * const)&__base_clint;
+static volatile clint_t *const clint = (volatile clint_t *const)&__base_clint;
 
 uint64_t clint_get_mtime() {
     return ((uint64_t)clint->mtime.high.w << 32) | (clint->mtime.low.w);
