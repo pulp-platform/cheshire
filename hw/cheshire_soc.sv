@@ -1135,14 +1135,14 @@ module cheshire_soc import cheshire_pkg::*; #(
   /////////////
 
   clint #(
-    .reg_req_t  ( reg_req_t ),
-    .reg_rsp_t  ( reg_rsp_t )
+    .apb_req_t  ( apb_req_t ),
+    .apb_rsp_t  ( apb_resp_t )
   ) i_clint (
     .clk_i,
     .rst_ni,
     .testmode_i   ( test_mode_i ),
-    .reg_req_i    ( reg_out_req[RegOut.clint] ),
-    .reg_rsp_o    ( reg_out_rsp[RegOut.clint] ),
+    .apb_req_i    ( reg_apb_req[RegOut.clint] ),
+    .apb_rsp_o    ( reg_apb_rsp[RegOut.clint] ),
     .rtc_i,
     .timer_irq_o  ( mtip ),
     .ipi_o        ( msip )
