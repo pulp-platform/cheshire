@@ -436,9 +436,9 @@ package cheshire_pkg;
       r++;
       end
     // Set APB mask for all reg-bus ports whose IP uses an APB4-flat interface
-    ret.apb_mask = '0;
     ret.apb_mask[ret.regs] = 1'b1;
     if (cfg.SerialLink) ret.apb_mask[ret.slink] = 1'b1;
+    ret.apb_mask[ret.clint] = 1'b1;
     return ret;
   endfunction
 
