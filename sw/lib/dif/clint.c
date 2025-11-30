@@ -11,9 +11,10 @@
 #include "util.h"
 #include "params.h"
 
+static volatile clint_t * const clint = (volatile clint_t * const)&__base_clint;
+
 uint64_t clint_get_mtime() {
-    return (((uint64_t)*reg32(&__base_clint, CLINT_MTIME_HIGH_REG_OFFSET)) << 32) |
-           ((uint64_t)*reg32(&__base_clint, CLINT_MTIME_LOW_REG_OFFSET));
+    return ((uint64_t)clint->mtime.high.w << 32) | (clint->mtime.low.w);
 }
 
 void clint_spin_until(uint64_t tgt_mtime) {
@@ -46,10 +47,9 @@ uint64_t clint_get_core_freq(uint64_t ref_freq, uint64_t ref_time_inv) {
 void clint_set_mtimecmpx(uint64_t timer_idx, uint64_t value) {
     uint32_t vlo = (uint32_t)(value);
     uint32_t vhi = (uint32_t)(value >> 32);
-    uint64_t mtimecmp_offs = timer_idx << 3;
     // Write high register first
-    *reg32(&__base_clint, CLINT_MTIMECMP_HIGH0_REG_OFFSET + mtimecmp_offs) = vhi;
-    *reg32(&__base_clint, CLINT_MTIMECMP_LOW0_REG_OFFSET + mtimecmp_offs) = vlo;
+    clint->mtimecmp[timer_idx].high.w = vhi;
+    clint->mtimecmp[timer_idx].low.w = vlo;
 }
 
 void clint_sleep_until(uint64_t timer_idx, uint64_t tgt_mtime) {
