@@ -33,6 +33,7 @@ IDMA_ROOT         := $(shell $(BENDER) path idma)
 DRAM_RTL_SIM_ROOT := $(shell $(BENDER) path dram_rtl_sim)
 
 REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
+PEAKRDL ?= peakrdl
 
 ################
 # Dependencies #
@@ -108,9 +109,8 @@ $(AXI_VGA_ROOT)/.generated:
 	flock -x $@ $(MAKE) axi_vga && touch $@
 
 # Custom serial link
-$(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
-	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
-	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs BENDER="$(BENDER)" && touch $@
+SLINK_NUM_LANES ?= 4
+include $(CHS_SLINK_DIR)/slink.mk
 
 # iDMA
 include $(IDMA_ROOT)/idma.mk
@@ -121,7 +121,7 @@ CHS_HW_ALL += $(CLINTROOT)/src/clint_reg.sv
 CHS_HW_ALL += $(OTPROOT)/.generated
 CHS_HW_ALL += $(AXIRTROOT)/.generated
 CHS_HW_ALL += $(AXI_VGA_ROOT)/.generated
-CHS_HW_ALL += $(CHS_SLINK_DIR)/.generated
+CHS_HW_ALL += $(CHS_SLINK_DIR)/src/regs/slink_reg.sv
 
 #####################
 # Generate Boot ROM #
