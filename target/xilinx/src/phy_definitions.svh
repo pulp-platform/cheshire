@@ -71,6 +71,7 @@
 `define USE_AXIRT
 `define USE_VCLIC
 `define USE_LLC_PARTITIONING
+`define USE_APB_TIMER
 `endif
 
 /////////////////////
