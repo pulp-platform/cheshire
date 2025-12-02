@@ -25,6 +25,7 @@ package tb_cheshire_pkg;
       ret.ClicNumVsctxts = 4;
       ret.ClicPrioWidth = 1;
       ret.LlcCachePartition = 1;
+      ret.ApbTimer = 1;
       return ret;
     endfunction
 
