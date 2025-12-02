@@ -6,6 +6,12 @@ packages:
       Git: https://github.com/pulp-platform/apb.git
     dependencies:
     - common_cells
+  apb_timer:
+    revision: 0cbc6cbc26c94b8e3bf27cc058c48ef89ea3d4c3
+    version: 0.1.0
+    source:
+      Git: https://github.com/pulp-platform/apb_timer.git
+    dependencies: []
   apb_uart:
     revision: 8182a85d234417db46fe833533f8536644d3bee3
     version: 0.2.3

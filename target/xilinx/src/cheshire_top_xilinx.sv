@@ -163,6 +163,9 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
   `ifdef USE_LLC_PARTITIONING
     ret.LlcCachePartition = 1;
   `endif
+  `ifdef USE_APB_TIMER
+    ret.ApbTimer = 1;
+  `endif
     return ret;
   endfunction
 
