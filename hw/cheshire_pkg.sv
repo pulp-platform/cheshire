@@ -27,9 +27,9 @@ package cheshire_pkg;
 
   // Parameters defined by generated hardware (regenerate to adapt)
   localparam int unsigned SpihNumCs       = spi_host_reg_pkg::NumCS - 1;  // Last CS is dummy
-  localparam int unsigned SlinkNumChan    = serial_link_single_channel_reg_pkg::NumChannels;
-  localparam int unsigned SlinkNumLanes   = serial_link_single_channel_reg_pkg::NumBits/2;
-  localparam int unsigned SlinkMaxClkDiv  = 1 << serial_link_single_channel_reg_pkg::Log2MaxClkDiv;
+  localparam int unsigned SlinkNumChan    = slink_reg_pkg::NumChannels;
+  localparam int unsigned SlinkNumLanes   = slink_reg_pkg::NumLanes;
+  localparam int unsigned SlinkMaxClkDiv  = 1 << slink_reg_pkg::Log2MaxClkDiv;
   localparam int unsigned ClintNumCores   = clint_reg_pkg::NumCores;
   localparam int unsigned UsbNumPorts     = spinal_usb_ohci_pkg::NumPhyPorts;
 
