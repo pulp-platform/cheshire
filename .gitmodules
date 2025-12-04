@@ -6,3 +6,9 @@
 	path = sw/deps/cva6-sdk
 	url = https://github.com/pulp-platform/cva6-sdk.git
 	ignore = dirty
+[submodule "sw/deps/freertos-on-cheshire"]
+	path = sw/deps/freertos-on-cheshire
+	url = git@iis-git.ee.ethz.ch:ezelioli/freertos-on-cheshire.git
+[submodule "sw/deps/opensbi"]
+	path = sw/deps/opensbi
+	url = git@github.com:pulp-platform/opensbi.git
