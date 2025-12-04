@@ -727,7 +727,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       .b_chan_t     ( axi_mst_b_chan_t  ),
       .apb_req_t    ( apb_req_t ),
       .apb_rsp_t    ( apb_resp_t ),
-      .NoRegCdC     ( 1'b1 ) // Since reg_clk_i is assigned to clk_i
+      .NoRegCdc     ( 1'b1 ) // Since reg_clk_i is assigned to clk_i
   ) i_serial_link (
     .clk_i          ( clk   ),
     .rst_ni         ( rst_n ),
