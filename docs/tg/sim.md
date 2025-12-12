@@ -6,6 +6,7 @@ We currently provide working setups for:
 
 - Questa Advanced Simulator (QuestaSim) `>= 2022.3`
 - VCS `>= 2024.09`
+- Xcelium `>= 2025.03`
 
 We plan on supporting more simulators in the future. If your situation requires it, simulating Cheshire on other setups should be straightforward.
 
