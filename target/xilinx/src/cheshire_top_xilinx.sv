@@ -535,6 +535,12 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
 
   axi_llc_req_t axi_llc_mst_req, axi_dram_mst_req;
   axi_llc_rsp_t axi_llc_mst_rsp, axi_dram_mst_rsp;
+  axi_llc_rsp_t axi_dram_mst_rsp_tmp;
+
+  always_comb begin
+    axi_dram_mst_rsp = axi_dram_mst_rsp_tmp;
+    axi_dram_mst_rsp.r.resp = '0;
+  end
 
 `ifdef USE_DDR
   dram_wrapper_xilinx #(
@@ -551,7 +557,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .soc_clk_i    ( soc_clk ),
     .dram_clk_i   ( sys_clk ),
     .soc_req_i    ( axi_dram_mst_req ),
-    .soc_rsp_o    ( axi_dram_mst_rsp ),
+    .soc_rsp_o    ( axi_dram_mst_rsp_tmp ),
     .*
   );
 `endif
