@@ -11,7 +11,7 @@ VLOGAN ?= vlogan
 
 # Caution: Questasim requires this to point to the *actual* compiler install path
 CXX_PATH := $(shell which $(CXX))
-QUESTA   ?= questa-2023.4
+QUESTA   ?= questa-2025.1
 
 VLOG_ARGS   ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
 VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
