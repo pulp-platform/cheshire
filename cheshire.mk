@@ -18,7 +18,7 @@ VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
 
 # Common Bender flags for Cheshire RTL
 CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t cv64a6_imafdchsclic_sv39_hpdcache_wb
-NUM_CORES            ?= 1
+NUM_CORES            ?= 2
 
 # Define used paths (prefixed to avoid name conflicts)
 CHS_ROOT      ?= $(shell $(BENDER) path cheshire)
