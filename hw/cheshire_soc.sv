@@ -578,6 +578,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   cva6_noc_rsp_t [NumIntHarts-1:0] ccu_in_rsp;
   cva6_noc_snoop_req_t [NumIntHarts-1:0] ccu_out_snoop_req;
   cva6_noc_snoop_rsp_t [NumIntHarts-1:0] ccu_out_snoop_rsp;
+  logic [NumIntHarts-1:0] ccu_in_rack;
+  logic [NumIntHarts-1:0] ccu_in_wack;
 
   // All internal harts are CVA6 and always available
   assign dbg_int_info     = {(NumIntHarts){ariane_pkg::DebugHartInfo}};
@@ -650,7 +652,9 @@ module cheshire_soc import cheshire_pkg::*; #(
       .snoop_req_i      ( core_snoop_req ),
       .snoop_resp_o     ( core_snoop_rsp ),
       .noc_req_o        ( core_out_req ),
-      .noc_resp_i       ( core_out_rsp )
+      .noc_resp_i       ( core_out_rsp ),
+      .noc_rack_o       ( ccu_in_rack[i] ),
+      .noc_wack_o       ( ccu_in_wack[i] )
     );
 
     if (Cfg.BusErr) begin : gen_cva6_bus_err
@@ -789,85 +793,76 @@ module cheshire_soc import cheshire_pkg::*; #(
   //      CCU      //
   ///////////////////
 
-  localparam ace_ccu_pkg::ace_ccu_user_cfg_t CcuUserCfg = '{
-    SlvPorts            : NumIntHarts,
-    MaxTransactions     : 8,
-    ShareableWFifoDepth : 4,
-    ReplayEn            : 0,
-    AxiUniqueIds        : 0,
-    AxiIdLookupBits     : 3,
-    NLineWidth          : Cfg.AddrWidth - $clog2(Cva6Cfg.DcacheLineWidth / 8),
-    AxiAddrWidth        : Cfg.AddrWidth,
-    AxiDataWidth        : Cfg.AxiDataWidth,
-    AxiUserWidth        : Cfg.AxiUserWidth,
-    AxiSlvIdWidth       : Cva6IdWidth,
-    CachelineWidth      : Cva6Cfg.DcacheLineWidth,
-    CutSlvReq           : 1,
-    CutSlvResp          : 1,
-    CutMstReq           : 0,
-    CutMstResp          : 0,
-    CutSnoopReq         : 1,
-    CutSnoopResp        : 1,
-    AmoAxiUserAsId      : 1,
-    AmoAxiUserIdMsb     : Cfg.AxiUserAmoMsb,
-    AmoAxiUserIdLsb     : Cfg.AxiUserAmoLsb,
-    AmoAxiAddrLsb       : 3,
-    AmoNumReservations  : NumIntHarts
+  localparam ccu_pkg::ccu_user_config_t ccuUserCfg = '{
+    numSubordinates          : NumIntHarts,
+    numShareableTransactions : 8,
+    numWriteTransactions     : 4,
+    numSnoopTransactions     : 4,
+    axiAddressWidth          : Cfg.AddrWidth,
+    axiDataWidth             : Cfg.AxiDataWidth,
+    axiUserWidth             : Cfg.AxiUserWidth,
+    axiSubordinateIdWidth    : Cva6IdWidth,
+    cachelineWidth           : Cva6Cfg.DcacheLineWidth,
+    addressCheckLsb          : 4,
+    addressCheckMsb          : 19
   };
 
-  localparam ace_ccu_pkg::ace_ccu_cfg_t CcuCfg = ace_ccu_pkg::ace_ccu_build_cfg(CcuUserCfg);
+  localparam ccu_pkg::ccu_config_t ccuCfg = ccu_pkg::ccu_build_cfg(ccuUserCfg);
 
-  typedef logic [CcuCfg.AxiMstIdWidth-1:0] ccu_id_t;
+  typedef logic [ccuCfg.axiManagerIdWidth-1:0] ccu_id_t;
 
   `CHESHIRE_TYPEDEF_AXI_CT(ccu_axi, addr_t, ccu_id_t, axi_data_t, axi_strb_t, axi_user_t)
-  `DOMAIN_TYPEDEF_ALL(NumIntHarts, domain_bv_t, domain_rule_t)
+  `ACE_TYPEDEF_DOMAIN_TYPEDEF_MAP_T(NumIntHarts, domain_map_t)
 
   ccu_axi_req_t ccu_out_req;
   ccu_axi_rsp_t ccu_out_rsp;
 
-  domain_rule_t  [NumIntHarts-1:0] domain_rule;
+  domain_map_t [NumIntHarts-1:0] domain_map;
 
   for (genvar i = 0; i < NumIntHarts; i++) begin
-    assign domain_rule[i].initiator = 1 << i;
-    assign domain_rule[i].inner = ~(1 << i);
-    assign domain_rule[i].outer = ~(1 << i);
+    assign domain_map[i].initiator = 1 << i;
+    assign domain_map[i].inner = ~(1 << i);
+    assign domain_map[i].outer = ~(1 << i);
   end
 
-  ace_ccu_top #(
-    .CcuCfg       (CcuCfg),
-    .domain_rule_t(domain_rule_t),
-    .slv_ar_t     (cva6_noc_ar_chan_t),
-    .slv_aw_t     (cva6_noc_aw_chan_t),
-    .w_t          (cva6_noc_w_chan_t),
-    .slv_b_t      (cva6_noc_b_chan_t),
-    .slv_r_t      (cva6_noc_r_chan_t),
-    .slv_req_t    (cva6_noc_req_t),
-    .slv_resp_t   (cva6_noc_rsp_t),
-    .mst_ar_t     (ccu_axi_ar_chan_t),
-    .mst_aw_t     (ccu_axi_aw_chan_t),
-    .mst_b_t      (ccu_axi_b_chan_t),
-    .mst_r_t      (ccu_axi_r_chan_t),
-    .mst_req_t    (ccu_axi_req_t),
-    .mst_resp_t   (ccu_axi_rsp_t),
-    .snoop_ac_t   (cva6_noc_snoop_ac_chan_t),
-    .snoop_cr_t   (cva6_noc_snoop_cr_chan_t),
-    .snoop_cd_t   (cva6_noc_snoop_cd_chan_t),
-    .snoop_req_t  (cva6_noc_snoop_req_t),
-    .snoop_resp_t (cva6_noc_snoop_rsp_t)
+  ccu_top #(
+    .ccuCfg                     (ccuCfg),
+    .domain_map_t               (domain_map_t),
+    .ccu_ace_subordinate_ar_t   (cva6_noc_ar_chan_t),
+    .ccu_ace_subordinate_aw_t   (cva6_noc_aw_chan_t),
+    .ccu_w_t                    (cva6_noc_w_chan_t),
+    .ccu_ace_subordinate_r_t    (cva6_noc_r_chan_t),
+    .ccu_ace_subordinate_b_t    (cva6_noc_b_chan_t),
+    .ccu_ace_subordinate_req_t  (cva6_noc_req_t),
+    .ccu_ace_subordinate_resp_t (cva6_noc_rsp_t),
+    .ccu_axi_manager_ar_t       (ccu_axi_ar_chan_t),
+    .ccu_axi_manager_aw_t       (ccu_axi_aw_chan_t),
+    .ccu_axi_manager_r_t        (ccu_axi_r_chan_t),
+    .ccu_axi_manager_b_t        (ccu_axi_b_chan_t),
+    .ccu_axi_manager_req_t      (ccu_axi_req_t),
+    .ccu_axi_manager_resp_t     (ccu_axi_rsp_t),
+    .ccu_snoop_ac_t             (cva6_noc_snoop_ac_chan_t),
+    .ccu_snoop_cr_t             (cva6_noc_snoop_cr_chan_t),
+    .ccu_snoop_cd_t             (cva6_noc_snoop_cd_chan_t),
+    .ccu_snoop_req_t            (cva6_noc_snoop_req_t),
+    .ccu_snoop_resp_t           (cva6_noc_snoop_rsp_t)
   ) i_ace_ccu (
     .clk_i,
     .rst_ni,
-    .slv_req_i    (ccu_in_req),
-    .slv_resp_o   (ccu_in_rsp),
-    .domain_rule_i(domain_rule),
-    .snoop_req_o  (ccu_out_snoop_req),
-    .snoop_resp_i (ccu_out_snoop_rsp),
-    .mst_req_o    (ccu_out_req),
-    .mst_resp_i   (ccu_out_rsp)
-  );
+    .domain_map_i       (domain_map),
+    .subordinate_req_i  (ccu_in_req),
+    .subordinate_resp_o (ccu_in_rsp),
+    .subordinate_rack_i (ccu_in_rack),
+    .subordinate_wack_i (ccu_in_wack),
+    .snoop_req_o        (ccu_out_snoop_req),
+    .snoop_resp_i       (ccu_out_snoop_rsp),
+    .manager_req_o      (ccu_out_req),
+    .manager_resp_i     (ccu_out_rsp)
+);
+
 
   axi_iw_converter #(
-  .AxiSlvPortIdWidth      (CcuCfg.AxiMstIdWidth),
+  .AxiSlvPortIdWidth      (ccuCfg.axiManagerIdWidth),
   .AxiMstPortIdWidth      (Cfg.AxiMstIdWidth),
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // TODO: check the following parameters
