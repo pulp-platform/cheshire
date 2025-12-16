@@ -4,6 +4,17 @@ Cheshire is a minimal Linux-capable host platform built around the RISC-V [CVA6]
 
 Cheshire is developed as part of the PULP project, a joint effort between ETH Zurich and the University of Bologna.
 
+## Emulator Tender
+
+Detailed information about the prerequisites to execute the benchmarks for the emulator tender can be found [here](https://hackmd.io/@U4uKXvr_RZyd_F2gfOmzlg/rk-XoPrZ-l).
+The evaluation creteria for the emulator tender will be:
+* Execution speed with 0% waveforms logging
+* Execution speed with 100% waveforms logging
+* % of waveforms than can be logged for the benchmark (if not 100%)
+* Compilation time
+* Number of code lines changed in DUT
+* Number of code lines changed in testbench
+
 ## Quick Start
 
 * To learn how to build and use Cheshire, see [Getting Started](https://pulp-platform.github.io/cheshire/gs/).
