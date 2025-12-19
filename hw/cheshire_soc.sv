@@ -241,6 +241,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     AxiAddrWidth:       Cfg.AddrWidth,
     AxiDataWidth:       Cfg.AxiDataWidth,
     NoAddrRules:        AxiOut.num_rules,
+    // Setting a `default` here allows for custom XBars with extended configs outside Cheshire.
+    // Importantly, this requires that '0 *disables* any and all such custom extensions.
     default: '0
   };
 
