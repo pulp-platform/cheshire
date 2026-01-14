@@ -32,64 +32,38 @@ typedef union {
     uint32_t w;
 } clint__msip_t;
 
-// Reg - clint::mtimecmp::low
-#define CLINT__MTIMECMP__LOW__VALUE_bm 0xffffffff
-#define CLINT__MTIMECMP__LOW__VALUE_bp 0
-#define CLINT__MTIMECMP__LOW__VALUE_bw 32
-#define CLINT__MTIMECMP__LOW__VALUE_reset 0x0
+// Reg - clint::mtimecmp
+#define CLINT__MTIMECMP__LOW_bm 0xffffffff
+#define CLINT__MTIMECMP__LOW_bp 0
+#define CLINT__MTIMECMP__LOW_bw 32
+#define CLINT__MTIMECMP__LOW_reset 0x0
+#define CLINT__MTIMECMP__HIGH_bm 0xffffffff00000000
+#define CLINT__MTIMECMP__HIGH_bp 32
+#define CLINT__MTIMECMP__HIGH_bw 32
+#define CLINT__MTIMECMP__HIGH_reset 0x0
 typedef union {
     struct __attribute__ ((__packed__)) {
-        uint32_t value :32;
+        uint64_t low :32;
+        uint64_t high :32;
     } f;
-    uint32_t w;
-} clint__mtimecmp__low_t;
-
-// Reg - clint::mtimecmp::high
-#define CLINT__MTIMECMP__HIGH__VALUE_bm 0xffffffff
-#define CLINT__MTIMECMP__HIGH__VALUE_bp 0
-#define CLINT__MTIMECMP__HIGH__VALUE_bw 32
-#define CLINT__MTIMECMP__HIGH__VALUE_reset 0x0
-typedef union {
-    struct __attribute__ ((__packed__)) {
-        uint32_t value :32;
-    } f;
-    uint32_t w;
-} clint__mtimecmp__high_t;
-
-// Regfile - clint::mtimecmp
-typedef struct __attribute__ ((__packed__)) {
-    clint__mtimecmp__low_t low;
-    clint__mtimecmp__high_t high;
+    uint64_t w;
 } clint__mtimecmp_t;
 
-// Reg - clint::mtime::low
-#define CLINT__MTIME__LOW__VALUE_bm 0xffffffff
-#define CLINT__MTIME__LOW__VALUE_bp 0
-#define CLINT__MTIME__LOW__VALUE_bw 32
-#define CLINT__MTIME__LOW__VALUE_reset 0x0
+// Reg - clint::mtime
+#define CLINT__MTIME__LOW_bm 0xffffffff
+#define CLINT__MTIME__LOW_bp 0
+#define CLINT__MTIME__LOW_bw 32
+#define CLINT__MTIME__LOW_reset 0x0
+#define CLINT__MTIME__HIGH_bm 0xffffffff00000000
+#define CLINT__MTIME__HIGH_bp 32
+#define CLINT__MTIME__HIGH_bw 32
+#define CLINT__MTIME__HIGH_reset 0x0
 typedef union {
     struct __attribute__ ((__packed__)) {
-        uint32_t value :32;
+        uint64_t low :32;
+        uint64_t high :32;
     } f;
-    uint32_t w;
-} clint__mtime__low_t;
-
-// Reg - clint::mtime::high
-#define CLINT__MTIME__HIGH__VALUE_bm 0xffffffff
-#define CLINT__MTIME__HIGH__VALUE_bp 0
-#define CLINT__MTIME__HIGH__VALUE_bw 32
-#define CLINT__MTIME__HIGH__VALUE_reset 0x0
-typedef union {
-    struct __attribute__ ((__packed__)) {
-        uint32_t value :32;
-    } f;
-    uint32_t w;
-} clint__mtime__high_t;
-
-// Regfile - clint::mtime
-typedef struct __attribute__ ((__packed__)) {
-    clint__mtime__low_t low;
-    clint__mtime__high_t high;
+    uint64_t w;
 } clint__mtime_t;
 
 // Addrmap - clint
