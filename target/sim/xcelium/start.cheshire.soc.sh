@@ -31,7 +31,7 @@ if [ -n "${SELCFG}" ]; then
     pargs="-gpg "SelectedCfg => ${SELCFG}" "
 fi
 
-[[-n "${USE_GUI}"]]      && pargs+="-gui "
+[[ -n "${USE_GUI}" ]]    && pargs+="-gui "
 [[ -n "${BOOTMODE}" ]]   && pargs+="+BOOTMODE=${BOOTMODE} "
 [[ -n "${PRELMODE}" ]]   && pargs+="+PRELMODE=${PRELMODE} "
 [[ -n "${BINARY}" ]]     && pargs+="+BINARY=${BINARY} "
