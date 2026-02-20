@@ -178,14 +178,14 @@ switch $proj {
                     CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram} \
                     CONFIG.C0.DDR4_InputClockPeriod {10000} \
                     CONFIG.C0.DDR4_CLKOUT0_DIVIDE {3} \
-                    CONFIG.C0.DDR4_DataWidth {72} \
+                    CONFIG.C0.DDR4_DataWidth {64} \
                     CONFIG.C0.DDR4_DataMask {NO_DM_NO_DBI} \
                     CONFIG.C0.DDR4_AxiDataWidth {512} \
                     CONFIG.C0.DDR4_AxiAddressWidth {32} \
                     CONFIG.C0.DDR4_AxiIDWidth {8} \
                     CONFIG.C0.BANK_GROUP_WIDTH {1} \
                     CONFIG.C0.DDR4_AxiSelection {true} \
-                    CONFIG.C0.DDR4_Ecc {true} \
+                    CONFIG.C0.DDR4_Ecc {false} \
                     CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
                     CONFIG.C0.CS_WIDTH {2} \
                     CONFIG.C0.DDR4_Clamshell {true} \
