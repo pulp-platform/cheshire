@@ -185,8 +185,8 @@ switch $proj {
                     CONFIG.C0.DDR4_AxiIDWidth {8} \
                     CONFIG.C0.BANK_GROUP_WIDTH {1} \
                     CONFIG.C0.DDR4_AxiSelection {true} \
+                    CONFIG.C0.DDR4_MCS_ECC {false} \
                     CONFIG.C0.DDR4_Ecc {false} \
-                    CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
                     CONFIG.C0.CS_WIDTH {2} \
                     CONFIG.C0.DDR4_Clamshell {true} \
                     ] [get_ips $proj]
@@ -207,6 +207,7 @@ switch $proj {
                     CONFIG.C0.BANK_GROUP_WIDTH {1} \
                     CONFIG.C0.DDR4_AxiSelection {true} \
                     CONFIG.C0.DDR4_MCS_ECC {false} \
+                    CONFIG.C0.DDR4_Ecc {false} \
                     CONFIG.C0.DDR4_CasWriteLatency {12} \
                     CONFIG.C0.DDR4_CasLatency {18} \
                     CONFIG.C0.DDR4_TimePeriod {833} \
