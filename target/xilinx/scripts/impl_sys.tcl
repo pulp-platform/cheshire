@@ -12,18 +12,26 @@ set xilinx_root [file dirname [file dirname [file normalize [info script]]]]
 source ${xilinx_root}/scripts/common.tcl
 init_impl $xilinx_root $argc $argv
 
-# Addtional args provide IPs
-# Despite info provided by help, Vivado can't read_ip with multiple args
-# on Windows. Because of that this script read_ip one by one.
-set ip_paths {}
-foreach arg [lrange $argv 2 end] {
-    lappend ip_paths [file normalize $arg]
+# Cross-platform Tcl implementation of the realpath utility.
+# Unlike a simple call to `normalize`, this function not only converts
+# a path to an absolute path, but also resolves symbolic links.
+proc realpath_tcl {path} {
+    set p [file normalize $path]
+
+    while {[file type $p] eq "link"} {
+        set p [file normalize [file readlink $p]]
+    }
+
+    return $p
 }
 
-foreach ip $ip_paths {
-    puts "Reading IP: $ip"
-    read_ip $ip
+# Addtional args provide IPs
+set ip_paths {}
+foreach arg [lrange $argv 2 end] {
+    lappend ip_paths [realpath_tcl $arg]
 }
+puts [list read_ip $ip_paths]
+read_ip $ip_paths
 
 # Load constraints
 import_files -fileset constrs_1 -norecurse ${xilinx_root}/constraints/${proj}.xdc
