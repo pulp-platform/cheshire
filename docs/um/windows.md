@@ -78,7 +78,7 @@ Follow the rest of the [tool configuration guide](https://pulp-platform.github.i
 
 ```bash
 # Example:
-export VIVADO="/c/Windows/System32/cmd.exe /c/Xilinx/Vivado/2023.1/bin/vivado.bat"
+export VIVADO="/c/Windows/System32/cmd.exe /C 'C:/Xilinx/Vivado/2023.1/bin/vivado.bat'"
 ```
 
 ### Tested Targets
