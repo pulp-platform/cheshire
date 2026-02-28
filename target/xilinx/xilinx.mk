@@ -28,6 +28,16 @@ IP           = $(word 2,$(BOARD_AND_IP))
 IP_SUFFIX    = .srcs/sources_1/ip/$(IP)
 IP_XCI_PATH  = $(IP)$(IP_SUFFIX)/$(IP).xci
 
+ifneq ($(strip $(WSL_DISTRO_NAME)),)
+define PLATFORM_PATH
+$(shell wslpath -m $(1))
+endef
+else
+define PLATFORM_PATH
+$(1)
+endef
+endif
+
 # We split the stem into a board and an IP and resolve dependencies accordingly
 $(CHS_XILINX_DIR)/build/%/out.xci: \
 		$(CHS_XILINX_DIR)/scripts/impl_ip.tcl \
@@ -35,12 +45,8 @@ $(CHS_XILINX_DIR)/build/%/out.xci: \
 		| $(CHS_XILINX_DIR)/build/%/
 	@rm -f $(CHS_XILINX_DIR)/build/$(*)*.log $(CHS_XILINX_DIR)/build/$(*)*.jou
 	cd $| && { \
-		IMPL_TCL="$<"; \
-		if [ -n "$$WSL_DISTRO_NAME" ]; then \
-			IMPL_TCL=$$(wslpath -m $$IMPL_TCL); \
-		fi; \
 		$(VIVADO) -mode batch -log ../$*.log -jou ../$*.jou \
-		-source $$IMPL_TCL -tclargs $(BOARD_AND_IP); \
+		-source $(call PLATFORM_PATH,$<) -tclargs $(BOARD_AND_IP); \
 		ln -s $(@D)/$(IP_XCI_PATH) $(@D)/out.xci; \
 	}
 
@@ -60,8 +66,6 @@ ifneq ($(strip $(WSL_DISTRO_NAME)),)
 	sed -i -E 's|(set ROOT ")/([a-zA-Z])/(.*)"|\1\2:/\3"|g' $@
 endif
 
-# wslpath can't work with multiple path at once, so we need to process them in
-# a loop.
 define chs_xilinx_bit_rule
 $$(CHS_XILINX_DIR)/out/%.$(1).bit: \
 		$$(CHS_XILINX_DIR)/scripts/impl_sys.tcl \
@@ -70,22 +74,9 @@ $$(CHS_XILINX_DIR)/out/%.$(1).bit: \
 		$$(CHS_HW_ALL) \
 		| $$(CHS_XILINX_DIR)/build/$(1).%/
 	@rm -f $$(CHS_XILINX_DIR)/build/$$*.$(1)*.log $$(CHS_XILINX_DIR)/build/$$*.$(1)*.jou
-	cd $$| && { \
-		IMPL_TCL=$$<; \
-		if [ -n "$$$$WSL_DISTRO_NAME" ]; then \
-			IMPL_TCL=$$$$(wslpath -m $$$$IMPL_TCL); \
-			XCI_LIST="$(CHS_XILINX_IPS_$(1):%=$(CHS_XILINX_DIR)/build/$(1).%/out.xci)";\
-			XCI_LIST_PROCESSED=""; \
-			for f in $$$$XCI_LIST; do \
-				XCI_LIST_PROCESSED="$$$$XCI_LIST_PROCESSED $$$$(wslpath -m $$$$f)"; \
-			done; \
-		else \
-			XCI_LIST_PROCESSED="$$$$XCI_LIST"; \
-		fi; \
-		echo $$$$XCI_LIST_PROCESSED; \
-		$$(VIVADO) -mode batch -log ../$$*.$(1).log -jou ../$$*.$(1).jou -source \
-			$$$$IMPL_TCL -tclargs $(1) $$* $$$$XCI_LIST_PROCESSED; \
-	}
+	cd $$| && $$(VIVADO) -mode batch -log ../$$*.$(1).log -jou ../$$*.$(1).jou -source $$(call PLATFORM_PATH,$$<) \
+		-tclargs $(1) $$* $$(foreach ip,$$(CHS_XILINX_IPS_$(1)),$$(call PLATFORM_PATH,$$(CHS_XILINX_DIR)/build/$(1).$$(ip)/out.xci))
+
 CHS_PHONY += chs-xilinx-$(1)
 chs-xilinx-$(1): $$(CHS_XILINX_DIR)/out/cheshire.$(1).bit
 endef
