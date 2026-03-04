@@ -24,14 +24,15 @@
 
 int main(void) {
     // Immediately return an error if AXI_REALM or DMA are not present
-    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_HW_FEATURES_AXIRT_BIT));
-    CHECK_ASSERT(-2, chs_hw_feature_present(CHESHIRE_HW_FEATURES_DMA_BIT));
+    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_REGS__HW_FEATURES__AXIRT_bp));
+    CHECK_ASSERT(-2, chs_hw_feature_present(CHESHIRE_REGS__HW_FEATURES__DMA_bp));
 
     // This test requires at least two subordinate regions
     CHECK_ASSERT(-3, AXI_RT_PARAM_NUM_SUB >= 2);
 
     // Get internal hart count
-    int num_int_harts = *reg32(&__base_regs, CHESHIRE_NUM_INT_HARTS_REG_OFFSET);
+    volatile cheshire_regs_t *regs = (volatile cheshire_regs_t *)(&__base_regs);
+    int num_int_harts = (int)regs->num_int_harts.f.num_harts;
 
     // Allocate DMA buffers
     volatile uint64_t dma_src_cached[DMA_NUM_BEATS];
