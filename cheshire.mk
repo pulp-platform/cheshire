@@ -35,8 +35,7 @@ DRAM_RTL_SIM_ROOT := $(shell $(BENDER) path dram_rtl_sim)
 REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
 PEAKRDL ?= peakrdl
 
-PEAKRDL_INCLUDES  := -I $(CHS_ROOT)/hw/regs/rdl
-PEAKRDL_INCLUDES  += -I $(shell $(BENDER) path clint)/rdl
+PEAKRDL_INCLUDES  := -I $(CHS_ROOT)/hw/regs
 
 ################
 # Dependencies #
@@ -87,12 +86,11 @@ include $(CHS_ROOT)/sw/sw.mk
 ###############
 
 # SoC registers
-$(CHS_ROOT)/hw/regs/rtl/cheshire_regs_pkg.sv $(CHS_ROOT)/hw/regs/rtl/cheshire_regs.sv: \
-    $(CHS_ROOT)/hw/regs/rdl/cheshire_regs.rdl
-	@mkdir -p $(dir $@)
-	$(PEAKRDL) regblock $< -o $(CHS_ROOT)/hw/regs/rtl/ --cpuif apb4-flat --default-reset arst_n
+$(CHS_ROOT)/hw/regs/cheshire_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_regs.sv: \
+    $(CHS_ROOT)/hw/regs/cheshire_regs.rdl
+	$(PEAKRDL) regblock $< -o $(CHS_ROOT)/hw/regs/ --cpuif apb4-flat --default-reset arst_n
 	@sed -i '1i// Copyright 2025 ETH Zurich and University of Bologna.\n// Solderpad Hardware License, Version 0.51, see LICENSE for details.\n// SPDX-License-Identifier: SHL-0.51\n' \
-	    $(CHS_ROOT)/hw/regs/rtl/cheshire_regs.sv $(CHS_ROOT)/hw/regs/rtl/cheshire_regs_pkg.sv
+	    $(CHS_ROOT)/hw/regs/cheshire_regs.sv $(CHS_ROOT)/hw/regs/cheshire_regs_pkg.sv
 
 # CLINT
 CLINTCORES ?= 1
@@ -126,7 +124,7 @@ $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 include $(IDMA_ROOT)/idma.mk
 
 CHS_HW_ALL += $(IDMA_FULL_RTL)
-CHS_HW_ALL += $(CHS_ROOT)/hw/regs/rtl/cheshire_regs_pkg.sv $(CHS_ROOT)/hw/regs/rtl/cheshire_regs.sv
+CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_regs.sv
 CHS_HW_ALL += $(CLINTROOT)/.generated
 CHS_HW_ALL += $(OTPROOT)/.generated
 CHS_HW_ALL += $(AXIRTROOT)/.generated

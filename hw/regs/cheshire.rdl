@@ -1,0 +1,22 @@
+// Copyright 2025 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+//
+// Paul Scheffler <paulsc@iis.ee.ethz.ch>
+
+`ifndef CHESHIRE_RDL
+`define CHESHIRE_RDL
+
+`include "cheshire_regs.rdl"
+
+addrmap cheshire {
+    desc = "Cheshire SoC system address map";
+
+    // Cheshire SoC register file (cheshire_pkg.sv: AmRegs = 0x0300_0000)
+    cheshire_regs cheshire_regs @0x0300_0000;
+
+    // Further IP addrmaps added here as their RDL files become available
+    // (clint, serial_link, ...)
+};
+
+`endif // CHESHIRE_RDL
