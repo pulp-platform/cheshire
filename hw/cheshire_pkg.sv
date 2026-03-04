@@ -60,6 +60,7 @@ package cheshire_pkg;
   typedef bit [63:0] doub_bt;
   typedef bit [ 9:0] dw_bt;   // data widths
   typedef bit [ 5:0] aw_bt;   // address, ID widths or small buffers
+  typedef bit [cheshire_regs_pkg::CHESHIRE_REGS_MIN_ADDR_WIDTH-1:0] reg_aw_bt; // Address widths for reg APB bus
 
   // Externally controllable parameters
   typedef struct packed {
