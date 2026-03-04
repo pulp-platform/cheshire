@@ -63,7 +63,7 @@ chs-clean-deps:
 ######################
 
 CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-CHS_NONFREE_COMMIT ?= 354b0aa
+CHS_NONFREE_COMMIT ?= fischeti/uv # TODO(fischeti): Revert to a specific commit
 
 CHS_PHONY += chs-nonfree-init
 chs-nonfree-init:
