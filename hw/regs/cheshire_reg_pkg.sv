@@ -14,6 +14,33 @@ package cheshire_reg_pkg;
   ////////////////////////////
 
   typedef struct packed {
+    struct packed {
+      logic        q;
+    } clk_gate_en_uart;
+    struct packed {
+      logic        q;
+    } clk_gate_en_i2c;
+    struct packed {
+      logic        q;
+    } clk_gate_en_spih;
+    struct packed {
+      logic        q;
+    } clk_gate_en_slink;
+    struct packed {
+      logic        q;
+    } clk_gate_en_gpio;
+    struct packed {
+      logic        q;
+    } clk_gate_en_vga;
+    struct packed {
+      logic        q;
+    } clk_gate_en_usb;
+    struct packed {
+      logic [24:0] q;
+    } reserved;
+  } cheshire_reg2hw_clk_gate_en_peripherals_reg_t;
+
+  typedef struct packed {
     logic [1:0]  d;
   } cheshire_hw2reg_boot_mode_reg_t;
 
@@ -90,6 +117,11 @@ package cheshire_reg_pkg;
     } blue_width;
   } cheshire_hw2reg_vga_params_reg_t;
 
+  // Register -> HW type
+  typedef struct packed {
+    cheshire_reg2hw_clk_gate_en_peripherals_reg_t clk_gate_en_peripherals; // [31:0]
+  } cheshire_reg2hw_t;
+
   // HW -> register type
   typedef struct packed {
     cheshire_hw2reg_boot_mode_reg_t boot_mode; // [167:166]
@@ -125,6 +157,7 @@ package cheshire_reg_pkg;
   parameter logic [BlockAw-1:0] CHESHIRE_HW_FEATURES_OFFSET = 7'h 50;
   parameter logic [BlockAw-1:0] CHESHIRE_LLC_SIZE_OFFSET = 7'h 54;
   parameter logic [BlockAw-1:0] CHESHIRE_VGA_PARAMS_OFFSET = 7'h 58;
+  parameter logic [BlockAw-1:0] CHESHIRE_CLK_GATE_EN_PERIPHERALS_OFFSET = 7'h 5c;
 
   // Reset values for hwext registers and their fields
   parameter logic [1:0] CHESHIRE_BOOT_MODE_RESVAL = 2'h 0;
@@ -159,11 +192,12 @@ package cheshire_reg_pkg;
     CHESHIRE_NUM_INT_HARTS,
     CHESHIRE_HW_FEATURES,
     CHESHIRE_LLC_SIZE,
-    CHESHIRE_VGA_PARAMS
+    CHESHIRE_VGA_PARAMS,
+    CHESHIRE_CLK_GATE_EN_PERIPHERALS
   } cheshire_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] CHESHIRE_PERMIT [23] = '{
+  parameter logic [3:0] CHESHIRE_PERMIT [24] = '{
     4'b 1111, // index[ 0] CHESHIRE_SCRATCH_0
     4'b 1111, // index[ 1] CHESHIRE_SCRATCH_1
     4'b 1111, // index[ 2] CHESHIRE_SCRATCH_2
@@ -186,7 +220,8 @@ package cheshire_reg_pkg;
     4'b 1111, // index[19] CHESHIRE_NUM_INT_HARTS
     4'b 0011, // index[20] CHESHIRE_HW_FEATURES
     4'b 1111, // index[21] CHESHIRE_LLC_SIZE
-    4'b 0111  // index[22] CHESHIRE_VGA_PARAMS
+    4'b 0111, // index[22] CHESHIRE_VGA_PARAMS
+    4'b 1111  // index[23] CHESHIRE_CLK_GATE_EN_PERIPHERALS
   };
 
 endpackage

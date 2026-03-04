@@ -92,6 +92,8 @@ package cheshire_pkg;
     dw_bt   AxiDataWidth;
     dw_bt   AxiUserWidth;
     aw_bt   AxiMstIdWidth;
+    aw_bt   TFLenWidth;
+    aw_bt   AxiSlvIdWidth;
     dw_bt   AxiMaxMstTrans;
     dw_bt   AxiMaxSlvTrans;
     // User signals identify atomics masters.
@@ -114,6 +116,9 @@ package cheshire_pkg;
     byte_bt [2**MaxExtAxiSlvWidth-1:0]  AxiExtRegionIdx;
     doub_bt [2**MaxExtAxiSlvWidth-1:0]  AxiExtRegionStart;
     doub_bt [2**MaxExtAxiSlvWidth-1:0]  AxiExtRegionEnd;
+    // External Wide AXI ports (limited number of ports and rules)
+    bit [MaxExtAxiMstWidth-1:0] AxiExtNumWideMst;
+    bit [MaxExtAxiSlvWidth-1:0] AxiExtNumWideSlv;
     // External reg slaves (limited number of ports and rules)
     bit     [MaxExtRegSlvWidth-1:0]     RegExtNumSlv;
     bit     [MaxExtRegSlvWidth-1:0]     RegExtNumRules;
@@ -560,6 +565,8 @@ package cheshire_pkg;
     AxiDataWidth      : 64,
     AxiUserWidth      : 2,  // AMO(2)
     AxiMstIdWidth     : 2,
+    TFLenWidth        : 32,
+    AxiSlvIdWidth     : 3,
     AxiMaxMstTrans    : 24,
     AxiMaxSlvTrans    : 24,
     AxiUserAmoMsb     : 1, // Convention: lower AMO bits for cores, MSB for serial link

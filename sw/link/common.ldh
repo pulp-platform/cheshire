@@ -49,4 +49,5 @@ SECTIONS {
   __base_clic     = 0x08000000;
   __base_spm      = ORIGIN(spm);
   __base_dram     = ORIGIN(dram);
+  __stack_start   = ORIGIN(spm) + LENGTH(spm);
 }

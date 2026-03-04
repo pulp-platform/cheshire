@@ -17,6 +17,7 @@ module cheshire_reg_top #(
   input  reg_req_t reg_req_i,
   output reg_rsp_t reg_rsp_o,
   // To HW
+  output cheshire_reg_pkg::cheshire_reg2hw_t reg2hw, // Write
   input  cheshire_reg_pkg::cheshire_hw2reg_t hw2reg, // Read
 
 
@@ -159,6 +160,27 @@ module cheshire_reg_top #(
   logic vga_params_green_width_re;
   logic [7:0] vga_params_blue_width_qs;
   logic vga_params_blue_width_re;
+  logic clk_gate_en_peripherals_clk_gate_en_uart_qs;
+  logic clk_gate_en_peripherals_clk_gate_en_uart_wd;
+  logic clk_gate_en_peripherals_clk_gate_en_uart_we;
+  logic clk_gate_en_peripherals_clk_gate_en_i2c_qs;
+  logic clk_gate_en_peripherals_clk_gate_en_i2c_wd;
+  logic clk_gate_en_peripherals_clk_gate_en_i2c_we;
+  logic clk_gate_en_peripherals_clk_gate_en_spih_qs;
+  logic clk_gate_en_peripherals_clk_gate_en_spih_wd;
+  logic clk_gate_en_peripherals_clk_gate_en_spih_we;
+  logic clk_gate_en_peripherals_clk_gate_en_slink_qs;
+  logic clk_gate_en_peripherals_clk_gate_en_slink_wd;
+  logic clk_gate_en_peripherals_clk_gate_en_slink_we;
+  logic clk_gate_en_peripherals_clk_gate_en_gpio_qs;
+  logic clk_gate_en_peripherals_clk_gate_en_gpio_wd;
+  logic clk_gate_en_peripherals_clk_gate_en_gpio_we;
+  logic clk_gate_en_peripherals_clk_gate_en_vga_qs;
+  logic clk_gate_en_peripherals_clk_gate_en_vga_wd;
+  logic clk_gate_en_peripherals_clk_gate_en_vga_we;
+  logic clk_gate_en_peripherals_clk_gate_en_usb_qs;
+  logic clk_gate_en_peripherals_clk_gate_en_usb_wd;
+  logic clk_gate_en_peripherals_clk_gate_en_usb_we;
 
   // Register instances
 
@@ -934,9 +956,217 @@ module cheshire_reg_top #(
   );
 
 
+  // R[clk_gate_en_peripherals]: V(False)
+
+  //   F[clk_gate_en_uart]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_clk_gate_en_peripherals_clk_gate_en_uart (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (clk_gate_en_peripherals_clk_gate_en_uart_we),
+    .wd     (clk_gate_en_peripherals_clk_gate_en_uart_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_gate_en_peripherals.clk_gate_en_uart.q ),
+
+    // to register interface (read)
+    .qs     (clk_gate_en_peripherals_clk_gate_en_uart_qs)
+  );
 
 
-  logic [22:0] addr_hit;
+  //   F[clk_gate_en_i2c]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_clk_gate_en_peripherals_clk_gate_en_i2c (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (clk_gate_en_peripherals_clk_gate_en_i2c_we),
+    .wd     (clk_gate_en_peripherals_clk_gate_en_i2c_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_gate_en_peripherals.clk_gate_en_i2c.q ),
+
+    // to register interface (read)
+    .qs     (clk_gate_en_peripherals_clk_gate_en_i2c_qs)
+  );
+
+
+  //   F[clk_gate_en_spih]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_clk_gate_en_peripherals_clk_gate_en_spih (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (clk_gate_en_peripherals_clk_gate_en_spih_we),
+    .wd     (clk_gate_en_peripherals_clk_gate_en_spih_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_gate_en_peripherals.clk_gate_en_spih.q ),
+
+    // to register interface (read)
+    .qs     (clk_gate_en_peripherals_clk_gate_en_spih_qs)
+  );
+
+
+  //   F[clk_gate_en_slink]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_clk_gate_en_peripherals_clk_gate_en_slink (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (clk_gate_en_peripherals_clk_gate_en_slink_we),
+    .wd     (clk_gate_en_peripherals_clk_gate_en_slink_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_gate_en_peripherals.clk_gate_en_slink.q ),
+
+    // to register interface (read)
+    .qs     (clk_gate_en_peripherals_clk_gate_en_slink_qs)
+  );
+
+
+  //   F[clk_gate_en_gpio]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_clk_gate_en_peripherals_clk_gate_en_gpio (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (clk_gate_en_peripherals_clk_gate_en_gpio_we),
+    .wd     (clk_gate_en_peripherals_clk_gate_en_gpio_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_gate_en_peripherals.clk_gate_en_gpio.q ),
+
+    // to register interface (read)
+    .qs     (clk_gate_en_peripherals_clk_gate_en_gpio_qs)
+  );
+
+
+  //   F[clk_gate_en_vga]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_clk_gate_en_peripherals_clk_gate_en_vga (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (clk_gate_en_peripherals_clk_gate_en_vga_we),
+    .wd     (clk_gate_en_peripherals_clk_gate_en_vga_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_gate_en_peripherals.clk_gate_en_vga.q ),
+
+    // to register interface (read)
+    .qs     (clk_gate_en_peripherals_clk_gate_en_vga_qs)
+  );
+
+
+  //   F[clk_gate_en_usb]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_clk_gate_en_peripherals_clk_gate_en_usb (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (clk_gate_en_peripherals_clk_gate_en_usb_we),
+    .wd     (clk_gate_en_peripherals_clk_gate_en_usb_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_gate_en_peripherals.clk_gate_en_usb.q ),
+
+    // to register interface (read)
+    .qs     (clk_gate_en_peripherals_clk_gate_en_usb_qs)
+  );
+
+
+  //   F[reserved]: 31:7
+  prim_subreg #(
+    .DW      (25),
+    .SWACCESS("NONE"),
+    .RESVAL  (25'h0)
+  ) u_clk_gate_en_peripherals_reserved (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_gate_en_peripherals.reserved.q ),
+
+    .qs     ()
+  );
+
+
+
+
+  logic [23:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CHESHIRE_SCRATCH_0_OFFSET);
@@ -962,6 +1192,7 @@ module cheshire_reg_top #(
     addr_hit[20] = (reg_addr == CHESHIRE_HW_FEATURES_OFFSET);
     addr_hit[21] = (reg_addr == CHESHIRE_LLC_SIZE_OFFSET);
     addr_hit[22] = (reg_addr == CHESHIRE_VGA_PARAMS_OFFSET);
+    addr_hit[23] = (reg_addr == CHESHIRE_CLK_GATE_EN_PERIPHERALS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -991,7 +1222,8 @@ module cheshire_reg_top #(
                (addr_hit[19] & (|(CHESHIRE_PERMIT[19] & ~reg_be))) |
                (addr_hit[20] & (|(CHESHIRE_PERMIT[20] & ~reg_be))) |
                (addr_hit[21] & (|(CHESHIRE_PERMIT[21] & ~reg_be))) |
-               (addr_hit[22] & (|(CHESHIRE_PERMIT[22] & ~reg_be)))));
+               (addr_hit[22] & (|(CHESHIRE_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(CHESHIRE_PERMIT[23] & ~reg_be)))));
   end
 
   assign scratch_0_we = addr_hit[0] & reg_we & !reg_error;
@@ -1085,6 +1317,27 @@ module cheshire_reg_top #(
   assign vga_params_green_width_re = addr_hit[22] & reg_re & !reg_error;
 
   assign vga_params_blue_width_re = addr_hit[22] & reg_re & !reg_error;
+
+  assign clk_gate_en_peripherals_clk_gate_en_uart_we = addr_hit[23] & reg_we & !reg_error;
+  assign clk_gate_en_peripherals_clk_gate_en_uart_wd = reg_wdata[0];
+
+  assign clk_gate_en_peripherals_clk_gate_en_i2c_we = addr_hit[23] & reg_we & !reg_error;
+  assign clk_gate_en_peripherals_clk_gate_en_i2c_wd = reg_wdata[1];
+
+  assign clk_gate_en_peripherals_clk_gate_en_spih_we = addr_hit[23] & reg_we & !reg_error;
+  assign clk_gate_en_peripherals_clk_gate_en_spih_wd = reg_wdata[2];
+
+  assign clk_gate_en_peripherals_clk_gate_en_slink_we = addr_hit[23] & reg_we & !reg_error;
+  assign clk_gate_en_peripherals_clk_gate_en_slink_wd = reg_wdata[3];
+
+  assign clk_gate_en_peripherals_clk_gate_en_gpio_we = addr_hit[23] & reg_we & !reg_error;
+  assign clk_gate_en_peripherals_clk_gate_en_gpio_wd = reg_wdata[4];
+
+  assign clk_gate_en_peripherals_clk_gate_en_vga_we = addr_hit[23] & reg_we & !reg_error;
+  assign clk_gate_en_peripherals_clk_gate_en_vga_wd = reg_wdata[5];
+
+  assign clk_gate_en_peripherals_clk_gate_en_usb_we = addr_hit[23] & reg_we & !reg_error;
+  assign clk_gate_en_peripherals_clk_gate_en_usb_wd = reg_wdata[6];
 
   // Read data return
   always_comb begin
@@ -1197,6 +1450,17 @@ module cheshire_reg_top #(
         reg_rdata_next[23:16] = vga_params_blue_width_qs;
       end
 
+      addr_hit[23]: begin
+        reg_rdata_next[0] = clk_gate_en_peripherals_clk_gate_en_uart_qs;
+        reg_rdata_next[1] = clk_gate_en_peripherals_clk_gate_en_i2c_qs;
+        reg_rdata_next[2] = clk_gate_en_peripherals_clk_gate_en_spih_qs;
+        reg_rdata_next[3] = clk_gate_en_peripherals_clk_gate_en_slink_qs;
+        reg_rdata_next[4] = clk_gate_en_peripherals_clk_gate_en_gpio_qs;
+        reg_rdata_next[5] = clk_gate_en_peripherals_clk_gate_en_vga_qs;
+        reg_rdata_next[6] = clk_gate_en_peripherals_clk_gate_en_usb_qs;
+        reg_rdata_next[31:7] = '0;
+      end
+
       default: begin
         reg_rdata_next = '1;
       end
@@ -1226,6 +1490,7 @@ module cheshire_reg_top_intf
   input logic rst_ni,
   REG_BUS.in  regbus_slave,
   // To HW
+  output cheshire_reg_pkg::cheshire_reg2hw_t reg2hw, // Write
   input  cheshire_reg_pkg::cheshire_hw2reg_t hw2reg, // Read
   // Config
   input devmode_i // If 1, explicit error return for unmapped register access
@@ -1259,6 +1524,7 @@ module cheshire_reg_top_intf
     .rst_ni,
     .reg_req_i(s_reg_req),
     .reg_rsp_o(s_reg_rsp),
+    .reg2hw, // Write
     .hw2reg, // Read
     .devmode_i
   );

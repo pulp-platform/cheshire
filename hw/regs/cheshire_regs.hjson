@@ -132,5 +132,23 @@
       ]
     }
 
+    { name:     "clk_gate_en_peripherals"
+      desc:     "Enable clk gate for peripherals"
+      swaccess: "rw"
+      hwaccess: "hro"
+      resval: "0"
+      hwqe: "0"
+      fields: [
+        { bits: "0",     name: "clk_gate_en_uart",   desc: "Clock gate enable for UART"  }
+        { bits: "1",     name: "clk_gate_en_i2c",    desc: "Clock gate enable for I2C"  }
+        { bits: "2",     name: "clk_gate_en_spih",    desc: "Clock gate enable for SPI"  }
+        { bits: "3",     name: "clk_gate_en_slink",  desc: "Clock gate enable for SLINK"  }
+        { bits: "4",     name: "clk_gate_en_gpio",   desc: "Clock gate enable for GPIO"  }
+        { bits: "5",     name: "clk_gate_en_vga",    desc: "Clock gate enable for VGA"  }
+        { bits: "6",     name: "clk_gate_en_usb",    desc: "Clock gate enable for USB"  }
+        { bits: "31:7",  name: "reserved",           desc: "reserved fields for future peripherals", swaccess:"none"  }
+      ]
+    }
+
   ]
 }
