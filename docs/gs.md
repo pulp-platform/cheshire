@@ -32,7 +32,7 @@ We use [Bender](https://github.com/pulp-platform/bender) for hardware IP and dep
 cargo install bender
 ```
 
-For Python dependencies, we recommend [uv](https://docs.astral.sh/uv/) for fast, reproducible installs. But `pip` is also supported. To install dependencies, run the following commands:
+For Python dependencies, we recommend [uv](https://docs.astral.sh/uv/) for fast, reproducible installs, but `pip` is also supported. To install the dependencies, run the following commands:
 
 === "uv"
 
