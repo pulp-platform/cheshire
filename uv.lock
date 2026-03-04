@@ -3,6 +3,15 @@ revision = 3
 requires-python = ">=3.11"
 
 [[package]]
+name = "antlr4-python3-runtime"
+version = "4.13.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/33/5f/2cdf6f7aca3b20d3f316e9f505292e1f256a32089bd702034c29ebde6242/antlr4_python3_runtime-4.13.2.tar.gz", hash = "sha256:909b647e1d2fc2b70180ac586df3933e38919c85f98ccc656a96cd3f25ef3916", size = 117467, upload-time = "2024-08-03T19:00:12.757Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/89/03/a851e84fcbb85214dc637b6378121ef9a0dd61b4c65264675d8a5c9b1ae7/antlr4_python3_runtime-4.13.2-py3-none-any.whl", hash = "sha256:fe3835eb8d33daece0e799090eda89719dbccee7aa39ef94eed3818cafa5a7e8", size = 144462, upload-time = "2024-08-03T19:00:11.134Z" },
+]
+
+[[package]]
 name = "babel"
 version = "2.18.0"
 source = { registry = "https://pypi.org/simple" }
@@ -118,6 +127,7 @@ dependencies = [
     { name = "markdown-grid-tables" },
     { name = "mkdocs" },
     { name = "mkdocs-material" },
+    { name = "peakrdl" },
     { name = "pyyaml" },
     { name = "requests" },
     { name = "setuptools" },
@@ -134,6 +144,7 @@ requires-dist = [
     { name = "markdown-grid-tables" },
     { name = "mkdocs" },
     { name = "mkdocs-material" },
+    { name = "peakrdl", specifier = ">=1.5.0" },
     { name = "pyyaml" },
     { name = "requests" },
     { name = "setuptools", specifier = "<81" },
@@ -191,6 +202,42 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/d9/29/d40217cbe2f6b1359e00c6c307bb3fc876ba74068cbab3dde77f03ca0dc4/ghp-import-2.1.0.tar.gz", hash = "sha256:9c535c4c61193c2df8871222567d7fd7e5014d835f97dc7b7439069e2413d343", size = 10943, upload-time = "2022-05-02T15:47:16.11Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f7/ec/67fbef5d497f86283db54c22eec6f6140243aae73265799baaaa19cd17fb/ghp_import-2.1.0-py3-none-any.whl", hash = "sha256:8337dd7b50877f163d4c0289bc1f1c7f127550241988d568c1db512c4324a619", size = 11034, upload-time = "2022-05-02T15:47:14.552Z" },
+]
+
+[[package]]
+name = "git-me-the-url"
+version = "2.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "gitpython" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/69/36/e58975894d84387432ca9c5f221d4f05f1f07296c5488c1115a964bdef62/git_me_the_url-2.2.0.tar.gz", hash = "sha256:fc000b2c67171f45da263760a75dbce21a08aeb428ee5021cd8ab29330297dc3", size = 423769, upload-time = "2025-11-21T03:15:50.167Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c5/a8/16ff25e716248b4433a81c429a51996eb2c263199c1777ea1d5424b5c673/git_me_the_url-2.2.0-py3-none-any.whl", hash = "sha256:bd759ddde7d21ebe1d85558f00d6822b74b7e5907adcaeb9fc4d72203a34264b", size = 12945, upload-time = "2025-11-21T03:15:48.831Z" },
+]
+
+[[package]]
+name = "gitdb"
+version = "4.0.12"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "smmap" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/72/94/63b0fc47eb32792c7ba1fe1b694daec9a63620db1e313033d18140c2320a/gitdb-4.0.12.tar.gz", hash = "sha256:5ef71f855d191a3326fcfbc0d5da835f26b13fbcba60c32c21091c349ffdb571", size = 394684, upload-time = "2025-01-02T07:20:46.413Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a0/61/5c78b91c3143ed5c14207f463aecfc8f9dbb5092fb2869baf37c273b2705/gitdb-4.0.12-py3-none-any.whl", hash = "sha256:67073e15955400952c6565cc3e707c554a4eea2e428946f7a4c162fab9bd9bcf", size = 62794, upload-time = "2025-01-02T07:20:43.624Z" },
+]
+
+[[package]]
+name = "gitpython"
+version = "3.1.46"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "gitdb" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/df/b5/59d16470a1f0dfe8c793f9ef56fd3826093fc52b3bd96d6b9d6c26c7e27b/gitpython-3.1.46.tar.gz", hash = "sha256:400124c7d0ef4ea03f7310ac2fbf7151e09ff97f2a3288d64a440c584a29c37f", size = 215371, upload-time = "2026-01-01T15:37:32.073Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6a/09/e21df6aef1e1ffc0c816f0522ddc3f6dcded766c3261813131c78a704470/gitpython-3.1.46-py3-none-any.whl", hash = "sha256:79812ed143d9d25b6d176a10bb511de0f9c67b1fa641d82097b0ab90398a2058", size = 208620, upload-time = "2026-01-01T15:37:30.574Z" },
 ]
 
 [[package]]
@@ -447,6 +494,115 @@ wheels = [
 ]
 
 [[package]]
+name = "peakrdl"
+version = "1.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "peakrdl-cheader" },
+    { name = "peakrdl-cli" },
+    { name = "peakrdl-html" },
+    { name = "peakrdl-ipxact" },
+    { name = "peakrdl-regblock" },
+    { name = "peakrdl-systemrdl" },
+    { name = "peakrdl-uvm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5f/dd/c329e3f50e0129180d2b6dffcf13e3140277ab2e929ab774d91ea84ae85c/peakrdl-1.5.0.tar.gz", hash = "sha256:7aa5abce889fd75083f860727bbf69aacb969ec3d204250e808576237ced0dec", size = 5052, upload-time = "2025-10-03T04:17:09.521Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/35/2a/1d7c2cf934e779caeddb72b7f22f74a86ad815a1cb48bdfa46c7b3af6110/peakrdl-1.5.0-py3-none-any.whl", hash = "sha256:819ae8fb445969d125329c9b6fc1c164a1e9bef02f0594698db5bce2aa0a0277", size = 5186, upload-time = "2025-10-03T04:17:08.255Z" },
+]
+
+[[package]]
+name = "peakrdl-cheader"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jinja2" },
+    { name = "systemrdl-compiler" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d1/db/ccaa561509f7df5970e2364188ea8b49bf77e510db5eb04701ab8adf943e/peakrdl-cheader-1.0.0.tar.gz", hash = "sha256:c0a27950f30bbe53701b59963802def14ae876eda4415278ad358411a563e4c8", size = 64311, upload-time = "2023-10-17T03:45:23.226Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9d/e9/3a1c6075a6146b4506937bbbd2719567266c8f01cf6f5a84499f9f610eb4/peakrdl_cheader-1.0.0-py3-none-any.whl", hash = "sha256:8a5da6f29fde7e999cfb9ef530a483ce81499280a1d08273c223449d90b55221", size = 41283, upload-time = "2023-10-17T03:45:21.579Z" },
+]
+
+[[package]]
+name = "peakrdl-cli"
+version = "1.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "systemrdl-compiler" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/12/c8/85baad7853c8995407ce04e98aaff713bc0d82de1f38721679f033c53d0b/peakrdl_cli-1.5.0.tar.gz", hash = "sha256:fb11961bc4d5636239e02b3392072025e7310afaceba34d834adbb279c770f65", size = 17559, upload-time = "2025-10-03T04:17:04.251Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cc/0d/8b3023ad5fe1b8fdaeb15a8a1f54dc9de384e398ebd374e234f783b4c100/peakrdl_cli-1.5.0-py3-none-any.whl", hash = "sha256:e6d86a41f8e8cdf09021e0abfdad604f6213f8d3aaf7ea6579ccbb6f047c81ca", size = 22772, upload-time = "2025-10-03T04:17:02.821Z" },
+]
+
+[[package]]
+name = "peakrdl-html"
+version = "2.12.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "git-me-the-url" },
+    { name = "jinja2" },
+    { name = "markdown" },
+    { name = "python-markdown-math" },
+    { name = "systemrdl-compiler" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/62/44/2bf8f303920aa37d74c6dde4602f221bfe0e5a205b8f9e62057048c66ffc/peakrdl_html-2.12.1.tar.gz", hash = "sha256:3de6193961ad44fde4e95d197dd2c2b1a5349d2bea361a0ac4bf04715ae5e0f7", size = 11255510, upload-time = "2026-01-16T04:53:45.202Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/99/47/bb735d6af6f046cfe66f2ea69683075a399c7228d4830b635e25ded7d42c/peakrdl_html-2.12.1-py3-none-any.whl", hash = "sha256:2b1c2f570649b9572f10c77635f78e9998af81785ce0a33028b6edcb45707fbc", size = 5582845, upload-time = "2026-01-16T04:53:43.005Z" },
+]
+
+[[package]]
+name = "peakrdl-ipxact"
+version = "3.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "systemrdl-compiler" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a0/f6/af8f79d853081ce9258c60863606291ad5aab9e12eccd050f2e3e8a3a051/peakrdl_ipxact-3.5.0.tar.gz", hash = "sha256:183b9e5412cad7734c25c710ca3722f75f8776b8c20ed38c1d4b83ac409d92d8", size = 71628, upload-time = "2024-10-15T04:45:01.901Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/70/81/778784087d63d004d8db431212153e635d89bd43fd05f61391090211d6f5/peakrdl_ipxact-3.5.0-py3-none-any.whl", hash = "sha256:930460f2b95cf5be52d7fadad416f040b68defbc17c372a58c581ee7195be364", size = 40804, upload-time = "2024-10-15T04:45:00.346Z" },
+]
+
+[[package]]
+name = "peakrdl-regblock"
+version = "1.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jinja2" },
+    { name = "systemrdl-compiler" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/41/23/1c203a88dc80e87a96dab5eceec535811c76890c95ac495e3570e7b74ae0/peakrdl_regblock-1.2.0.tar.gz", hash = "sha256:8952cbbdbf4052c3e68b2e1d43de97ab2cf9a27e52ca726840b10bd9d3eeab0b", size = 581616, upload-time = "2025-11-05T05:44:01.269Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ec/cd/ad8d41f8b1a7404bdffafc4cbd2ddbdf0edf6e903cbc63a529d1d36de0df/peakrdl_regblock-1.2.0-py3-none-any.whl", hash = "sha256:a7600ab6b24b9e014bab9c8818ebb559a4ded5601a1afe6e2bb12498a563d334", size = 80501, upload-time = "2025-11-05T05:43:59.817Z" },
+]
+
+[[package]]
+name = "peakrdl-systemrdl"
+version = "1.0.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "systemrdl-compiler" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7d/3e/bc15ce1445c7b80717d4babc6d1de92f857e1ff00cd8eefeb9505c9c19f2/peakrdl_systemrdl-1.0.1.tar.gz", hash = "sha256:77fe097d01d252b365f9d603e2712a85b3cf65f32c7ad52aadd1a8dea9635a5e", size = 16359, upload-time = "2025-11-07T03:30:55.24Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dc/b0/1ac2934d117e3e8cb59afc7f658b1dc5b2a34ede0718952ab6993990b5ca/peakrdl_systemrdl-1.0.1-py3-none-any.whl", hash = "sha256:17d72641ade637e5650a20589977a3452316ecb630f500907f4c579c0a8f7ebd", size = 10208, upload-time = "2025-11-07T03:30:53.546Z" },
+]
+
+[[package]]
+name = "peakrdl-uvm"
+version = "2.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jinja2" },
+    { name = "systemrdl-compiler" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5a/d4/de4c1e44ba589aaae7fa230266516ba67608e7dca425ccf3a7b21bb062ab/peakrdl_uvm-2.4.0.tar.gz", hash = "sha256:bebbec7ea84c76137e3e61442565d1de9a225eaf01774c65de3d10dd7096ad78", size = 15293, upload-time = "2025-11-25T01:59:54.771Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/45/f0/cc6f81291ce62422ca6b73efe2e032d86689dadd91a04356e199f0b915e1/peakrdl_uvm-2.4.0-py3-none-any.whl", hash = "sha256:2ec87aaac25f6597a0a0b173edae8cd81d1dd05957591013f1e6b93957de0d87", size = 16945, upload-time = "2025-11-25T01:59:53.029Z" },
+]
+
+[[package]]
 name = "platformdirs"
 version = "4.9.2"
 source = { registry = "https://pypi.org/simple" }
@@ -496,6 +652,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/66/c0/0c8b6ad9f17a802ee498c46e004a0eb49bc148f2fd230864601a86dcf6db/python-dateutil-2.9.0.post0.tar.gz", hash = "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3", size = 342432, upload-time = "2024-03-01T18:36:20.211Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543cee77261f3651ca9da0c93f5c1221264b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl", hash = "sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427", size = 229892, upload-time = "2024-03-01T18:36:18.57Z" },
+]
+
+[[package]]
+name = "python-markdown-math"
+version = "0.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "markdown" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4c/68/fbea05ec6fb318bdcf56ea47596605614554f51d77bfd14f6fb481139ad8/python_markdown_math-0.9.tar.gz", hash = "sha256:567395553dc4941e79b3789a1096dcabb3fda9539d150d558ef3507948b264a3", size = 8680, upload-time = "2025-04-10T10:10:31.84Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/eb/68/ecf3535c40845de2efd8ac2d092dd5fca0868219fa3684d9e58ef7abeece/python_markdown_math-0.9-py3-none-any.whl", hash = "sha256:ac9932df517a5c0f6d01c56e7a44d065eca4a420893ac45f7a6937c67cb41e86", size = 6046, upload-time = "2025-04-10T10:10:30.318Z" },
 ]
 
 [[package]]
@@ -611,6 +779,39 @@ wheels = [
 ]
 
 [[package]]
+name = "smmap"
+version = "5.0.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/44/cd/a040c4b3119bbe532e5b0732286f805445375489fceaec1f48306068ee3b/smmap-5.0.2.tar.gz", hash = "sha256:26ea65a03958fa0c8a1c7e8c7a58fdc77221b8910f6be2131affade476898ad5", size = 22329, upload-time = "2025-01-02T07:14:40.909Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/04/be/d09147ad1ec7934636ad912901c5fd7667e1c858e19d355237db0d0cd5e4/smmap-5.0.2-py3-none-any.whl", hash = "sha256:b30115f0def7d7531d22a0fb6502488d879e75b260a9db4d0819cfb25403af5e", size = 24303, upload-time = "2025-01-02T07:14:38.724Z" },
+]
+
+[[package]]
+name = "systemrdl-compiler"
+version = "1.32.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "antlr4-python3-runtime" },
+    { name = "colorama" },
+    { name = "markdown" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/03/ac/2088114d65e191e2a057313036254fb3df6ec64aaa744929a50b1e5202cb/systemrdl_compiler-1.32.2.tar.gz", hash = "sha256:3308f5ba2db23f035c25391022c70dbaba8980fdbfdf652bd2ad79fd33aba1f2", size = 484930, upload-time = "2026-02-27T05:54:23.244Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5a/18/d76dc65c7a2cffb5524c018c9edd69397d94f4cd708b52fad2c8cc3f8c99/systemrdl_compiler-1.32.2-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:4870074e9d1f720f577966e107f7096e0c464772456ecd9e772fd2055216d6a4", size = 1145125, upload-time = "2026-02-27T05:54:04.031Z" },
+    { url = "https://files.pythonhosted.org/packages/d8/c7/ca0aa3d315e606c584841f1929b0b9bd7d9a6f1b1c76f09164cfd3f0ee2f/systemrdl_compiler-1.32.2-cp37-abi3-macosx_11_0_x86_64.whl", hash = "sha256:69e8ce07e5435cd61dc126113734b0f5e26271f193e08c9f31326a429d857fd9", size = 1172296, upload-time = "2026-02-27T05:54:05.948Z" },
+    { url = "https://files.pythonhosted.org/packages/06/18/7abeafa5b642cc9e89ed534a7a73416b77540e7234bea08cc3138e790844/systemrdl_compiler-1.32.2-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c2777441b26f8ac880ba402c300bb2fd92d6b155aa50261715d9519a3a6e780a", size = 10973073, upload-time = "2026-02-27T05:54:07.25Z" },
+    { url = "https://files.pythonhosted.org/packages/f2/97/04dc3272980a212674c9737f3c2928e49d862879843135c86da90b0c23fc/systemrdl_compiler-1.32.2-cp37-abi3-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:be36bb56fdcb218e266ec7c1ae950492c6c0d9327c0c4d85912583ac6e26347b", size = 10845166, upload-time = "2026-02-27T05:54:09.59Z" },
+    { url = "https://files.pythonhosted.org/packages/55/43/2ffd2c7753789e02bac7d902e847738af81f9a32098233464067a85ba92a/systemrdl_compiler-1.32.2-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c9707da961e8b8b28c43ebf542b2863e2dc581d194f5c4ceb0315a45ad8883e0", size = 11020140, upload-time = "2026-02-27T05:54:11.992Z" },
+    { url = "https://files.pythonhosted.org/packages/94/7b/f94162860a1a5e2ccaa707c9c4c4c5031d98f3f00251b03a75ee9147b4da/systemrdl_compiler-1.32.2-cp37-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:56f37930d5948da9ca77b70702d11b5b19bb9755e5fab97444aa65ce9be8d37e", size = 11049533, upload-time = "2026-02-27T05:54:14.107Z" },
+    { url = "https://files.pythonhosted.org/packages/dc/3e/3596309bc436ca1ca6a8e20aee3af8b4924038fbeb422514f9b0756fbaa5/systemrdl_compiler-1.32.2-cp37-abi3-musllinux_1_2_i686.whl", hash = "sha256:8477c6d9fab1458c6dbd95f3d38bdb5c2a40998601a467e8e6c230cc82880b46", size = 11261692, upload-time = "2026-02-27T05:54:16.125Z" },
+    { url = "https://files.pythonhosted.org/packages/28/84/4a0369f39c5a6a960382a2a9db0b8d7f511e1941c6ef21a9fb5401ce76c4/systemrdl_compiler-1.32.2-cp37-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:a05dd1bcd8e7c29d2fe67fb46149f503f39173e462b4bf63fbd375fc0efd3cd1", size = 11301976, upload-time = "2026-02-27T05:54:18.141Z" },
+    { url = "https://files.pythonhosted.org/packages/74/a2/91435c5c8b13dc065dd28dd6e7ca4122de566157f0282126add9025e74e5/systemrdl_compiler-1.32.2-cp37-abi3-win32.whl", hash = "sha256:402620a125e11086da3e1b609a3c8bd82d207c71691f6547242a3df237eb3b30", size = 923159, upload-time = "2026-02-27T05:54:20.104Z" },
+    { url = "https://files.pythonhosted.org/packages/69/43/6794d66c9aa5394376ca1ef18343ebf146f25c75ba0d4240707e6198e47c/systemrdl_compiler-1.32.2-cp37-abi3-win_amd64.whl", hash = "sha256:06d6221257251adc0ee422da2dae9748a88239d72dd6e9b6ee21788396d6c2d0", size = 955604, upload-time = "2026-02-27T05:54:21.419Z" },
+]
+
+[[package]]
 name = "tabulate"
 version = "0.9.0"
 source = { registry = "https://pypi.org/simple" }
@@ -632,6 +833,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c0/88/1c7a191cd487f73ead49f447ec7963866ef093e47382d51cc54b60e89c6d/tclint-0.4.2.tar.gz", hash = "sha256:27dc43f6804a560f0813bd0bca3b617369f9909e9db8d609906660b367ef1583", size = 70559, upload-time = "2024-10-08T02:45:28.603Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/cc/b5/51832e9a286e65a17a4846ab4d634a6eee44692874cf298bf82c807e5495/tclint-0.4.2-py3-none-any.whl", hash = "sha256:9be008df348ad9558e07f21bc02e3b385be4444c448f4aed982ef6be40698309", size = 52481, upload-time = "2024-10-08T02:45:27.508Z" },
+]
+
+[[package]]
+name = "typing-extensions"
+version = "4.15.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/72/94/1a15dd82efb362ac84269196e94cf00f187f7ed21c242792a923cdb1c61f/typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466", size = 109391, upload-time = "2025-08-25T13:49:26.313Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548", size = 44614, upload-time = "2025-08-25T13:49:24.86Z" },
 ]
 
 [[package]]
