@@ -24,7 +24,7 @@ payload2(volatile int *volatile ret) {
 
 int main(void) {
     // Immediately return an error if DMA is not present
-    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_HW_FEATURES_DMA_BIT));
+    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_REGS__HW_FEATURES__DMA_bp));
 
     // Execute payload1; this should cache it.
     volatile int outcome1;
