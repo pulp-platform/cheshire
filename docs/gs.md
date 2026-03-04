@@ -21,9 +21,10 @@ To *build* Cheshire, you will need:
 
 - GNU Make `>= 3.82`
 - CMake `>=3.24.0`
-- Python `>= 3.11` with packages listed in `pyproject.toml`
+- Python `>= 3.11`
 - Bender `>= 0.27.1`
 - RISCV GCC `>= 11.2.0`
+- Python packages in `pyproject.toml` (see below)
 
 We use [Bender](https://github.com/pulp-platform/bender) for hardware IP and dependency management; for more information on using Bender, please see its documentation. You can install Bender directly through the Rust package manager Cargo:
 
@@ -31,18 +32,28 @@ We use [Bender](https://github.com/pulp-platform/bender) for hardware IP and dep
 cargo install bender
 ```
 
-For Python dependencies, we recommend [uv](https://docs.astral.sh/uv/) for fast, reproducible installs:
+For Python dependencies, we recommend [uv](https://docs.astral.sh/uv/) for fast, reproducible installs. But `pip` is also supported. To install dependencies, run the following commands:
 
-```
-uv sync
-source .venv/bin/activate
-```
+=== "uv"
 
-Alternatively, you can install the packages directly using pip:
+    ```bash
+    # Create .venv/ and install all pinned dependencies from uv.lock
+    uv sync
 
-```
-pip install .
-```
+    # Activate the virtual environment
+    source .venv/bin/activate
+    ```
+
+=== "pip"
+
+    ```bash
+    # (Optional) create and activate a virtual environment first
+    python3 -m venv .venv
+    source .venv/bin/activate
+
+    # Install all dependencies declared in pyproject.toml
+    pip install .
+    ```
 
 Depending on your desired target, additional dependencies may be needed.
 

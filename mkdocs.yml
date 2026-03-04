@@ -18,6 +18,9 @@ markdown_extensions:
   - markdown_grid_tables:
   - toc:
       toc_depth: 3
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.superfences
 
 repo_url: https://github.com/pulp-platform/cheshire
 repo_name: pulp-platform/cheshire
