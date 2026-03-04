@@ -22,14 +22,10 @@ jobs:
         with:
           submodules: recursive
       -
-        name: Install Python
-        uses: actions/setup-python@v5
+        name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: 3.9
-          cache: pip
-      -
-        name: Install Python requirements
-        run: pip install -r requirements.txt
+          python-version: "3.11"
       -
         name: Deploy Documentation
-        run: mkdocs gh-deploy --force
+        run: uv run --locked mkdocs gh-deploy --force

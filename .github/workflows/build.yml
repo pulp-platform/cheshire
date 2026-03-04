@@ -23,14 +23,10 @@ jobs:
         with:
           submodules: recursive
       -
-        name: Install Python
-        uses: actions/setup-python@v5
+        name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: 3.9
-          cache: pip
-      -
-        name: Install Python requirements
-        run: pip install -r requirements.txt
+          python-version: "3.11"
       -
         name: Install RISC-V GCC toolchain
         uses: pulp-platform/pulp-actions/riscv-gcc-install@v2.4.1
@@ -45,7 +41,7 @@ jobs:
           version: 0.27.1
       -
         name: Build target
-        run: make ${{ matrix.target }}-all
+        run: uv run --locked make ${{ matrix.target }}-all
       -
         name: Check whether clean
         run: git status && test -z "$(git status --porcelain --ignore-submodules)"
