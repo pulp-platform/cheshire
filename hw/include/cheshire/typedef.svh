@@ -9,6 +9,7 @@
 
 `include "axi/typedef.svh"
 `include "register_interface/typedef.svh"
+`include "apb/typedef.svh"
 
 `define CHESHIRE_TYPEDEF_AXI_CT(__name, __addr_t, __id_t, __data_t, __strb_t, __user_t) \
   `AXI_TYPEDEF_ALL_CT(__name, __name``_req_t, __name``_rsp_t, \
@@ -33,10 +34,14 @@
 `define CHESHIRE_TYPEDEF_REG(__name, __addr_t) \
   `REG_BUS_TYPEDEF_ALL(__name, __addr_t, logic [31:0], logic [3:0])
 
+`define CHESHIRE_TYPEDEF_APB(__name, __addr_t) \
+  `APB_TYPEDEF_ALL(__name, __addr_t, logic [31:0], logic [3:0])
+
 // Note that the prefix does *not* include a leading underscore.
 `define CHESHIRE_TYPEDEF_ALL(__prefix, __cfg) \
   localparam type __prefix``addr_t = logic [__cfg.AddrWidth-1:0]; \
   `CHESHIRE_TYPEDEF_AXI(__prefix``axi, __prefix``axi_llc, __prefix``addr_t, __cfg) \
-  `CHESHIRE_TYPEDEF_REG(__prefix``reg, __prefix``addr_t)
+  `CHESHIRE_TYPEDEF_REG(__prefix``reg, __prefix``addr_t) \
+  `CHESHIRE_TYPEDEF_APB(__prefix``apb, __prefix``addr_t)
 
 `endif
