@@ -13,8 +13,8 @@
 
 int main(void) {
     // Immediately return an error if DMA or Serial Link are not present
-    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_HW_FEATURES_DMA_BIT));
-    CHECK_ASSERT(-2, chs_hw_feature_present(CHESHIRE_HW_FEATURES_SERIAL_LINK_BIT));
+    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_REGS__HW_FEATURES__DMA_bp));
+    CHECK_ASSERT(-2, chs_hw_feature_present(CHESHIRE_REGS__HW_FEATURES__SERIAL_LINK_bp));
 
     volatile char src_cached[] = "This is a DMA test";
     volatile char gold[] = "This is a DMA test!";
