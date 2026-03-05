@@ -12,7 +12,7 @@
 
 int main(void) {
     // Immediately return an error if DMA is not present
-    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_REGS__HW_FEATURES__DMA_bp));
+    CHECK_ASSERT(-1, CHS_REGS->hw_features.f.dma);
 
     volatile char src_cached[] = "This is a DMA test";
     volatile char gold[] = "This is a DMA test!";

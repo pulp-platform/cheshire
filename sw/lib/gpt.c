@@ -82,7 +82,7 @@ int gpt_boot_part_else_raw(gpt_read_t read, void *priv, void *code_buf, uint64_t
     uint64_t len = 0x200 * (lba_end - lba_begin + 1);
     CHECK_CALL(read(priv, code_buf, addr, len));
     // Write pointers for used read function to scratch registers for use in following stages
-    volatile cheshire_regs_t *regs = (volatile cheshire_regs_t *)(&__base_regs);
+    volatile cheshire_regs_t *regs = CHS_REGS;
     regs->scratch[0].w = (uintptr_t)((void *)read) | 1;
     regs->scratch[1].w = (uintptr_t)priv;
     regs->scratch[3].w = (uintptr_t)gprw(0);
