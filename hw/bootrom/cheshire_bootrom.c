@@ -24,13 +24,14 @@ int boot_passive(uint64_t core_freq) {
     // Initialize UART with debug settings
     uart_debug_init(&__base_uart, core_freq);
     // scratch[0] provides an entry point, scratch[1] a start signal
-    volatile uint32_t *scratch = reg32(&__base_regs, CHESHIRE_SCRATCH_0_REG_OFFSET);
+    volatile cheshire_regs_t *regs = CHS_REGS;
     // While we poll bit 2 of scratch[2], check for incoming UART debug requests
-    while (!(scratch[2] & 2))
+    while (!(regs->scratch[2].w & 2))
         if (uart_debug_check(&__base_uart)) return uart_debug_serve(&__base_uart);
     // No UART (or JTAG) requests came in, but scratch[2][2] was set --> run code at scratch[1:0]
-    scratch[2] = 0;
-    return boot_next_stage((void *)(uintptr_t)(((uint64_t)scratch[1] << 32) | scratch[0]));
+    regs->scratch[2].w = 0;
+    return boot_next_stage(
+        (void *)(uintptr_t)(((uint64_t)regs->scratch[1].w << 32) | regs->scratch[0].w));
 }
 
 int boot_spi_sdcard(uint64_t core_freq, uint64_t rtc_freq) {
@@ -69,8 +70,8 @@ int boot_i2c_24fc1025(uint64_t core_freq) {
 
 int main() {
     // Read boot mode and reference frequency
-    uint32_t bootmode = *reg32(&__base_regs, CHESHIRE_BOOT_MODE_REG_OFFSET);
-    uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
+    uint32_t bootmode = CHS_REGS->boot_mode.f.boot_mode;
+    uint32_t rtc_freq = CHS_REGS->rtc_freq.f.ref_freq;
     // Compute the boot core frequency using the reference clock
     uint64_t core_freq = clint_get_core_freq(rtc_freq, 2500);
     // In case of reentry, store return in scratch0 as is convention
