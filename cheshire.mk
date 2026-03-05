@@ -92,6 +92,10 @@ $(CHS_ROOT)/hw/regs/cheshire_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_regs.sv: \
 	@sed -i '1i// Copyright 2025 ETH Zurich and University of Bologna.\n// Solderpad Hardware License, Version 0.51, see LICENSE for details.\n// SPDX-License-Identifier: SHL-0.51\n' \
 	    $(CHS_ROOT)/hw/regs/cheshire_regs.sv $(CHS_ROOT)/hw/regs/cheshire_regs_pkg.sv
 
+$(CHS_ROOT)/hw/regs/cheshire_regs_addrmap_pkg.sv: $(CHS_ROOT)/hw/regs/cheshire_regs.rdl
+	$(PEAKRDL) raw-header $< --format svpkg -o $@
+	@sed -i '1i// Copyright 2025 ETH Zurich and University of Bologna.\n// Solderpad Hardware License, Version 0.51, see LICENSE for details.\n// SPDX-License-Identifier: SHL-0.51\n' $@
+
 # CLINT
 CLINTCORES ?= 1
 include $(CLINTROOT)/clint.mk
@@ -124,6 +128,7 @@ $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 include $(IDMA_ROOT)/idma.mk
 
 CHS_HW_ALL += $(IDMA_FULL_RTL)
+CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_regs_addrmap_pkg.sv
 CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_regs.sv
 CHS_HW_ALL += $(CLINTROOT)/.generated
 CHS_HW_ALL += $(OTPROOT)/.generated
