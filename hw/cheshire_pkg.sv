@@ -407,6 +407,7 @@ package cheshire_pkg;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
+    bit [2**$bits(aw_bt)-1:0] apb_mask;  // Bit i set iff reg-bus port i uses APB
     arul_t [aw_bt'(-1):0] map;
   } reg_out_t;
 
@@ -443,6 +444,9 @@ package cheshire_pkg;
           cfg.RegExtRegionStart[k], cfg.RegExtRegionEnd[k]};
       r++;
       end
+    // Set APB mask for all reg-bus ports whose IP uses an APB4-flat interface
+    ret.apb_mask = '0;
+    ret.apb_mask[ret.regs] = 1'b1;
     return ret;
   endfunction
 
