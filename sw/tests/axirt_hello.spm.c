@@ -17,16 +17,17 @@
 #include "util.h"
 
 int main(void) {
+    volatile cheshire_regs_t *regs = CHS_REGS;
+
     // Immediately return an error if AXI_REALM, DMA, or UART are not present
-    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_REGS__HW_FEATURES__AXIRT_bp));
-    CHECK_ASSERT(-2, chs_hw_feature_present(CHESHIRE_REGS__HW_FEATURES__DMA_bp));
-    CHECK_ASSERT(-3, chs_hw_feature_present(CHESHIRE_REGS__HW_FEATURES__UART_bp));
+    CHECK_ASSERT(-1, regs->hw_features.f.axirt);
+    CHECK_ASSERT(-2, regs->hw_features.f.dma);
+    CHECK_ASSERT(-3, regs->hw_features.f.uart);
 
     // This test requires at least two subordinate regions
     CHECK_ASSERT(-4, AXI_RT_PARAM_NUM_SUB >= 2);
 
     char str[] = "Hello AXI-RT!\r\n";
-    volatile cheshire_regs_t *regs = (volatile cheshire_regs_t *)(&__base_regs);
     uint32_t rtc_freq = regs->rtc_freq.f.ref_freq;
     uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
 

@@ -52,7 +52,7 @@ static inline void load_part_or_spin(void *priv, const uint64_t *pguid, void *co
 
 int main(void) {
     // Get system parameters
-    volatile cheshire_regs_t *regs = (volatile cheshire_regs_t *)(&__base_regs);
+    volatile cheshire_regs_t *regs = CHS_REGS;
     uint32_t bootmode = regs->boot_mode.f.boot_mode;
     uint32_t rtc_freq = regs->rtc_freq.f.ref_freq;
     uint64_t core_freq = clint_get_core_freq(rtc_freq, 2500);

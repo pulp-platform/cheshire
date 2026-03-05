@@ -10,6 +10,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
 #include "regs/cheshire.h"
 #include "params.h"
 
@@ -88,8 +89,5 @@ static inline void *gprw(void *gp) {
 #define BIT(n) (1UL << (n))
 #define BIT_MASK(n) (BIT(n) - 1)
 
-// Check if a hardware feature is present from software
-static inline uint32_t chs_hw_feature_present(uint32_t bit) {
-    volatile cheshire_regs_t *regs = (volatile cheshire_regs_t *)(&__base_regs);
-    return (regs->hw_features.w >> bit) & 1;
-}
+// Typed pointer to the Cheshire SoC register file
+#define CHS_REGS ((volatile cheshire_regs_t *)offsetof(cheshire_t, cheshire_regs))
