@@ -1,0 +1,22 @@
+# Copyright 2026 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[project]
+name = "cheshire"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "requests",
+    "hjson",
+    "mako",
+    "pyyaml",
+    "tabulate",
+    "yapf",
+    "mkdocs",
+    "mkdocs-material",
+    "markdown-grid-tables",
+    "tclint==0.4.2",
+    "flatdict>=4.1.0",
+    "setuptools<81", # Required by old `regtool`
+]

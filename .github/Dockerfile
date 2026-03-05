@@ -17,7 +17,7 @@ RUN curl -Ls -o riscv-gcc.tar.gz https://static.dev.sifive.com/dev-tools/riscv64
 ENV PATH="${PATH}:/tools/riscv/bin"
 
 # bender
-ARG BENDER_VERSION=0.27.1
+ARG BENDER_VERSION=0.31.0
 RUN mkdir -p /tools/bender && chmod 777 /tools/bender && \
     cd /tools/bender && curl --proto '=https' --tlsv1.2 -sSf https://pulp-platform.github.io/bender/init | bash -s -- ${BENDER_VERSION}
 

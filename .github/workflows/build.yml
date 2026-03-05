@@ -23,29 +23,25 @@ jobs:
         with:
           submodules: recursive
       -
-        name: Install Python
-        uses: actions/setup-python@v5
+        name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: 3.9
-          cache: pip
-      -
-        name: Install Python requirements
-        run: pip install -r requirements.txt
+          python-version: "3.11"
       -
         name: Install RISC-V GCC toolchain
-        uses: pulp-platform/pulp-actions/riscv-gcc-install@v2.4.1
+        uses: pulp-platform/pulp-actions/riscv-gcc-install@v2.4.4
         with:
           distro: ubuntu-22.04
           nightly-date: '2023.03.14'
           target: riscv64-elf
       -
         name: Install Bender
-        uses: pulp-platform/pulp-actions/bender-install@v2.4.1
+        uses: pulp-platform/pulp-actions/bender-install@v2.4.4
         with:
-          version: 0.27.1
+          version: 0.31.0
       -
         name: Build target
-        run: make ${{ matrix.target }}-all
+        run: uv run --locked make ${{ matrix.target }}-all
       -
         name: Check whether clean
         run: git status && test -z "$(git status --porcelain --ignore-submodules)"
