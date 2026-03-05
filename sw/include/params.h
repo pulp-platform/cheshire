@@ -14,7 +14,6 @@
 
 // Base addresses provided at link time
 extern void *__base_bootrom;
-extern void *__base_regs;
 extern void *__base_llc;
 extern void *__base_uart;
 extern void *__base_i2c;

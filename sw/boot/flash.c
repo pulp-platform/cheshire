@@ -59,7 +59,7 @@ int flash_i2c_24fc1025(uint64_t core_freq, void *img_base) {
 int main() {
     int ret;
     // Read reference frequency and compute core frequency
-    volatile cheshire_regs_t *regs = (volatile cheshire_regs_t *)(&__base_regs);
+    volatile cheshire_regs_t *regs = CHS_REGS;
     uint32_t rtc_freq = regs->rtc_freq.f.ref_freq;
     uint64_t core_freq = clint_get_core_freq(rtc_freq, 2500);
     // Get arguments from scratch registers
