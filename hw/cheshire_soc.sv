@@ -109,7 +109,6 @@ module cheshire_soc import cheshire_pkg::*; #(
 );
 
   `include "axi/typedef.svh"
-  `include "apb/typedef.svh"
   `include "common_cells/registers.svh"
   `include "common_cells/assertions.svh"
   `include "cheshire/typedef.svh"
@@ -430,6 +429,29 @@ module cheshire_soc import cheshire_pkg::*; #(
     .req_i  ( reg_out_req[RegOut.err] ),
     .rsp_o  ( reg_out_rsp[RegOut.err] )
   );
+
+  // APB request/response arrays, indexed by reg-bus port index (same as reg_out_req/rsp)
+  apb_req_t  reg_apb_req [RegOut.num_out];
+  apb_resp_t reg_apb_rsp [RegOut.num_out];
+
+  // Generate reg_to_apb bridges for all ports flagged in apb_mask
+  for (genvar i = 0; i < RegOut.num_out; i++) begin : gen_reg_to_apb
+    if (RegOut.apb_mask[i]) begin : gen_converter
+      reg_to_apb #(
+        .reg_req_t ( reg_req_t  ),
+        .reg_rsp_t ( reg_rsp_t  ),
+        .apb_req_t ( apb_req_t  ),
+        .apb_rsp_t ( apb_resp_t )
+      ) i_reg_to_apb (
+        .clk_i,
+        .rst_ni,
+        .reg_req_i ( reg_out_req[i] ),
+        .reg_rsp_o ( reg_out_rsp[i] ),
+        .apb_req_o ( reg_apb_req[i] ),
+        .apb_rsp_i ( reg_apb_rsp[i] )
+      );
+    end
+  end
 
   // Connect external slaves
   if (Cfg.RegExtNumSlv > 0) begin : gen_ext_reg_slv
@@ -1070,23 +1092,6 @@ module cheshire_soc import cheshire_pkg::*; #(
     }
   };
 
-  chs_regs_apb_req_t  chs_regs_apb_req;
-  chs_regs_apb_resp_t chs_regs_apb_rsp;
-
-  reg_to_apb #(
-    .reg_req_t ( reg_req_t           ),
-    .reg_rsp_t ( reg_rsp_t           ),
-    .apb_req_t ( chs_regs_apb_req_t  ),
-    .apb_rsp_t ( chs_regs_apb_resp_t )
-  ) chs_regs_reg_to_apb (
-    .clk_i,
-    .rst_ni,
-    .reg_req_i ( reg_out_req[RegOut.regs] ),
-    .reg_rsp_o ( reg_out_rsp[RegOut.regs] ),
-    .apb_req_o ( chs_regs_apb_req ),
-    .apb_rsp_i ( chs_regs_apb_rsp )
-  );
-
   cheshire_regs i_regs (
     .clk    ( clk_i  ),
     .arst_n ( rst_ni ),
@@ -1097,9 +1102,9 @@ module cheshire_soc import cheshire_pkg::*; #(
     .s_apb_paddr   ( reg_aw_bt'(reg_apb_req[RegOut.regs].paddr) ),
     .s_apb_pwdata  ( reg_apb_req[RegOut.regs].pwdata  ),
     .s_apb_pstrb   ( reg_apb_req[RegOut.regs].pstrb   ),
-    .s_apb_pready  ( reg_apb_resp[RegOut.regs].pready  ),
-    .s_apb_prdata  ( reg_apb_resp[RegOut.regs].prdata  ),
-    .s_apb_pslverr ( reg_apb_resp[RegOut.regs].pslverr ),
+    .s_apb_pready  ( reg_apb_rsp[RegOut.regs].pready  ),
+    .s_apb_prdata  ( reg_apb_rsp[RegOut.regs].prdata  ),
+    .s_apb_pslverr ( reg_apb_rsp[RegOut.regs].pslverr ),
     .hwif_in       ( reg_hw2reg ),
     .hwif_out      ( reg_reg2hw )
   );
