@@ -1025,72 +1025,41 @@ module cheshire_soc import cheshire_pkg::*; #(
   cheshire_regs_pkg::cheshire_regs__in_t  reg_hw2reg;
   cheshire_regs_pkg::cheshire_regs__out_t reg_reg2hw;
 
+  // Shorthand for external (read-only) register hw-interface assignments
+  `define CHS_HWREG(name, data) name: '{ rd_ack: reg_reg2hw.name.req & ~reg_reg2hw.name.req_is_wr, rd_data: data }
+
   assign reg_hw2reg = '{
-    boot_mode     : '{
-      rd_ack: 1'b1,
-      rd_data: '{
-        boot_mode: boot_mode_i,
+    `CHS_HWREG(boot_mode,     '{ boot_mode:    boot_mode_i,       default: '0 }),
+    `CHS_HWREG(rtc_freq,      '{ ref_freq:     Cfg.RtcFreq,       default: '0 }),
+    `CHS_HWREG(platform_rom,  '{ platform_rom: Cfg.PlatformRom,   default: '0 }),
+    `CHS_HWREG(num_int_harts, '{ num_harts:    NumIntHarts,       default: '0 }),
+    `CHS_HWREG(llc_size,      '{ llc_size:     get_llc_size(Cfg), default: '0 }),
+    `CHS_HWREG(hw_features,   '{
+        bootrom:     Cfg.Bootrom,
+        llc:         Cfg.LlcNotBypass,
+        uart:        Cfg.Uart,
+        i2c:         Cfg.I2c,
+        gpio:        Cfg.Gpio,
+        spi_host:    Cfg.SpiHost,
+        dma:         Cfg.Dma,
+        serial_link: Cfg.SerialLink,
+        vga:         Cfg.Vga,
+        usb:         Cfg.Usb,
+        axirt:       Cfg.AxiRt,
+        clic:        Cfg.Clic,
+        irq_router:  Cfg.IrqRouter,
+        bus_err:     Cfg.BusErr,
         default: '0
-      }
-    },
-    rtc_freq      : '{
-      rd_ack: 1'b1,
-      rd_data: '{
-        ref_freq: Cfg.RtcFreq,
-        default: '0
-      }
-    },
-    platform_rom  : '{
-      rd_ack: 1'b1,
-      rd_data: '{
-        platform_rom: Cfg.PlatformRom,
-        default: '0
-      }
-    },
-    num_int_harts : '{
-      rd_ack: 1'b1,
-      rd_data: '{
-        num_harts: NumIntHarts,
-        default: '0
-      }
-    },
-    hw_features   : '{
-      rd_ack: 1'b1,
-      rd_data: '{
-        bootrom     : Cfg.Bootrom,
-        llc         : Cfg.LlcNotBypass,
-        uart        : Cfg.Uart,
-        i2c         : Cfg.I2c,
-        gpio        : Cfg.Gpio,
-        spi_host    : Cfg.SpiHost,
-        dma         : Cfg.Dma,
-        serial_link : Cfg.SerialLink,
-        vga         : Cfg.Vga,
-        usb         : Cfg.Usb,
-        axirt       : Cfg.AxiRt,
-        clic        : Cfg.Clic,
-        irq_router  : Cfg.IrqRouter,
-        bus_err     : Cfg.BusErr,
-        default: '0
-      }
-    },
-    llc_size      : '{
-      rd_ack: 1'b1,
-      rd_data: '{
-        llc_size: get_llc_size(Cfg),
-        default: '0
-      }
-    },
-    vga_params    : '{
-      rd_ack: 1'b1,
-      rd_data: '{
-        red_width   : Cfg.VgaRedWidth,
-        green_width : Cfg.VgaGreenWidth,
-        blue_width  : Cfg.VgaBlueWidth,
-        default: '0
-      }
-    }
+    }),
+    `CHS_HWREG(vga_params,    '{
+      red_width:    Cfg.VgaRedWidth,
+      green_width:  Cfg.VgaGreenWidth,
+      blue_width:   Cfg.VgaBlueWidth,
+      default: '0
+    })
   };
+
+  `undef CHS_HWREG
 
   cheshire_regs i_regs (
     .clk    ( clk_i  ),
