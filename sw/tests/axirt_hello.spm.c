@@ -56,8 +56,8 @@ int main(void) {
     __axirt_enable(0x5);
 
     // Configure UART and write message
-    uart_init(&__base_uart, reset_freq, __BOOT_BAUDRATE);
-    uart_write_str(&__base_uart, str, sizeof(str) - 1);
-    uart_write_flush(&__base_uart);
+    uart_init(&__chs_uart_base_addr__, reset_freq, __BOOT_BAUDRATE);
+    uart_write_str(&__chs_uart_base_addr__, str, sizeof(str) - 1);
+    uart_write_flush(&__chs_uart_base_addr__);
     return 0;
 }

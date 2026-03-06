@@ -87,12 +87,12 @@ include $(CHS_ROOT)/sw/sw.mk
 
 # SoC registers
 $(CHS_ROOT)/hw/regs/cheshire_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_regs.sv: \
-    $(CHS_ROOT)/hw/regs/cheshire_regs.rdl
+    $(CHS_ROOT)/hw/regs/regs.rdl
 	$(PEAKRDL) regblock $< -o $(CHS_ROOT)/hw/regs/ --cpuif apb4-flat --default-reset arst_n
 	@sed -i '1i// Copyright 2025 ETH Zurich and University of Bologna.\n// Solderpad Hardware License, Version 0.51, see LICENSE for details.\n// SPDX-License-Identifier: SHL-0.51\n' \
 	    $(CHS_ROOT)/hw/regs/cheshire_regs.sv $(CHS_ROOT)/hw/regs/cheshire_regs_pkg.sv
 
-$(CHS_ROOT)/hw/regs/cheshire_regs_addrmap_pkg.sv: $(CHS_ROOT)/hw/regs/cheshire_regs.rdl
+$(CHS_ROOT)/hw/regs/cheshire_regs_addrmap_pkg.sv: $(CHS_ROOT)/hw/regs/regs.rdl
 	$(PEAKRDL) raw-header $< --format svpkg -o $@
 	@sed -i '1i// Copyright 2025 ETH Zurich and University of Bologna.\n// Solderpad Hardware License, Version 0.51, see LICENSE for details.\n// SPDX-License-Identifier: SHL-0.51\n' $@
 
@@ -146,7 +146,7 @@ CHS_HW_ALL += $(CHS_SLINK_DIR)/.generated
 CHS_BROM_SRCS = $(wildcard $(CHS_ROOT)/hw/bootrom/*.S $(CHS_ROOT)/hw/bootrom/*.c) $(CHS_SW_LIBS)
 CHS_BROM_FLAGS = $(CHS_SW_LDFLAGS) -Os -fno-zero-initialized-in-bss -flto -fwhole-program
 
-$(CHS_ROOT)/hw/bootrom/cheshire_bootrom.elf: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.ld $(CHS_BROM_SRCS)
+$(CHS_ROOT)/hw/bootrom/cheshire_bootrom.elf: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.ld $(CHS_BROM_SRCS) $(CHS_SW_ADDRS_LDH)
 	$(CHS_SW_CC) $(CHS_SW_INCLUDES) -T$< $(CHS_BROM_FLAGS) -o $@ $(CHS_BROM_SRCS)
 
 $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.bin $(CHS_ROOT)/util/gen_bootrom.py

@@ -18,8 +18,8 @@
     bne reg1, reg2, 2f
 
 #define smp_resume(reg1, reg2, reg3) \
-    la reg1, __base_clint; \
-    la reg3, __base_regs; \
+    la reg1, __chs_clint_base_addr__; \
+    la reg3, __chs_regs_base_addr__; \
     lw reg3, 76(reg3); /* regs.NUM_INT_HARTS */ \
     slli reg3, reg3, 2; \
     add reg3, reg1, reg3; \
@@ -33,12 +33,12 @@
     csrr reg2, mip; \
     andi reg2, reg2, 0x8; \
     beqz reg2, 2b; \
-    la reg1, __base_clint; \
+    la reg1, __chs_clint_base_addr__; \
     csrr reg2, mhartid; \
     slli reg2, reg2, 2; \
     add reg2, reg2, reg1; \
     sw zero, 0(reg2); \
-    la reg3, __base_regs; \
+    la reg3, __chs_regs_base_addr__; \
     lw reg3, 76(reg3); /* regs.NUM_INT_HARTS */ \
     slli reg3, reg3, 2; \
     add reg3, reg1, reg3; \
