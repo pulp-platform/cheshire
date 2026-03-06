@@ -9,13 +9,13 @@
 INCLUDE common.ldh
 
 SECTIONS {
-  __stack_pointer$  = ORIGIN(dram) + LENGTH(dram) - 8;
+  __stack_pointer$  = ORIGIN(chs_dram) + LENGTH(chs_dram) - 8;
 
   .text : {
     *(.text._start)
     *(.text)
     *(.text.*)
-  } > dram
+  } > chs_dram
 
   .misc : ALIGN(16) {
     *(.rodata)
@@ -26,7 +26,7 @@ SECTIONS {
     *(.srodata.*)
     *(.sdata)
     *(.sdata.*)
-  } > dram
+  } > chs_dram
 
   .bss : ALIGN(16) {
     __bss_start = .;
@@ -35,10 +35,10 @@ SECTIONS {
     *(.sbss)
     *(.sbss.*)
     __bss_end = .;
-  } > dram
+  } > chs_dram
 
   .bulk : ALIGN(16) {
     *(.bulk)
     *(.bulk.*)
-  } > dram
+  } > chs_dram
 }

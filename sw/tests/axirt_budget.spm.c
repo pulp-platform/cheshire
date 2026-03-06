@@ -96,11 +96,11 @@ int main(void) {
 
     // Read budget registers for dma and compare
     int dma_read_budget_left =
-        *reg32(&__base_axirt, AXI_RT_READ_BUDGET_LEFT_0_REG_OFFSET +
-                                  AXI_RT_PARAM_NUM_SUB * chs_dma_id * sizeof(uint32_t));
+        *reg32(&__chs_axirt_base_addr__, AXI_RT_READ_BUDGET_LEFT_0_REG_OFFSET +
+                                             AXI_RT_PARAM_NUM_SUB * chs_dma_id * sizeof(uint32_t));
     int dma_write_budget_left =
-        *reg32(&__base_axirt, AXI_RT_WRITE_BUDGET_LEFT_0_REG_OFFSET +
-                                  AXI_RT_PARAM_NUM_SUB * chs_dma_id * sizeof(uint32_t));
+        *reg32(&__chs_axirt_base_addr__, AXI_RT_WRITE_BUDGET_LEFT_0_REG_OFFSET +
+                                             AXI_RT_PARAM_NUM_SUB * chs_dma_id * sizeof(uint32_t));
 
     // Check budget: return 0 if (initial budget - final budget) matches the
     // number of transferred bytes, otherwise return 1
