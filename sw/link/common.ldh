@@ -10,15 +10,8 @@
 
 ENTRY(_start)
 
-MEMORY {
-  bootrom (rx)  : ORIGIN = 0x02000000, LENGTH = 16K
-  /* We assume at least 64 KiB SPM, same minus stack for ROMs. */
-  /* If more SPM is available, CRT0 repoints the stack. */
-  extrom (rx)   : ORIGIN = 0x00000000, LENGTH = 48K
-  spm (rwx)     : ORIGIN = 0x10000000, LENGTH = 64K
-  /* We  assume at least 8 MiB of DRAM (minimum for Linux). */
-  dram (rwx)    : ORIGIN = 0x80000000, LENGTH = 8M
-}
+/* Memory regions and peripheral base addresses are auto-generated from cheshire.rdl */
+INCLUDE cheshire_addrs.ldh
 
 SECTIONS {
   /* Keep binaries lean */
@@ -29,24 +22,6 @@ SECTIONS {
   __global_pointer$ = ADDR(.misc) + SIZEOF(.misc) / 2;
   __stack_pointer$  = 0;
 
-  /* Further addresses */
-  __base_dma      = 0x01000000;
-  __base_bootrom  = 0x02000000;
-  __base_clint    = 0x02040000;
-  __base_axirt    = 0x020C0000;
-  __base_axirtgrd = 0x020C1ffc;
-  __base_regs     = 0x03000000;
-  __base_llc      = 0x03001000;
-  __base_uart     = 0x03002000;
-  __base_i2c      = 0x03003000;
-  __base_spih     = 0x03004000;
-  __base_gpio     = 0x03005000;
-  __base_slink    = 0x03006000;
-  __base_vga      = 0x03007000;
-  __base_usb      = 0x03008000;
-  __base_bus_err  = 0x03009000;
-  __base_plic     = 0x04000000;
-  __base_clic     = 0x08000000;
-  __base_spm      = ORIGIN(spm);
-  __base_dram     = ORIGIN(dram);
+  /* AXI-RT guard register (specific offset within AXI-RT region, not a named block) */
+  __chs_axirtgrd_base_addr__ = 0x020C1ffc;
 }

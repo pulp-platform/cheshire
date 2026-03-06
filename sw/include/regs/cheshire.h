@@ -15,6 +15,33 @@ extern "C" {
 #include <stdint.h>
 #include <assert.h>
 
+// Mem - cheshire::extrom
+typedef struct __attribute__ ((__packed__)) {
+    uint32_t mem[12288];
+} cheshire__extrom_t;
+
+// Reg - periph_stub_t::status
+#define PERIPH_STUB_T__STATUS__STATUS_bm 0xffffffff
+#define PERIPH_STUB_T__STATUS__STATUS_bp 0
+#define PERIPH_STUB_T__STATUS__STATUS_bw 32
+#define PERIPH_STUB_T__STATUS__STATUS_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t status :32;
+    } f;
+    uint32_t w;
+} periph_stub_t__status_t;
+
+// Addrmap - periph_stub_t
+typedef struct __attribute__ ((__packed__)) {
+    periph_stub_t__status_t status;
+} periph_stub_t_t;
+
+// Mem - cheshire::bootrom
+typedef struct __attribute__ ((__packed__)) {
+    uint32_t mem[4096];
+} cheshire__bootrom_t;
+
 // Reg - cheshire_regs::scratch
 #define CHESHIRE_REGS__SCRATCH__SCRATCH_bm 0xffffffff
 #define CHESHIRE_REGS__SCRATCH__SCRATCH_bp 0
@@ -179,14 +206,59 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire_regs__vga_params_t vga_params;
 } cheshire_regs_t;
 
+// Mem - cheshire::spm
+typedef struct __attribute__ ((__packed__)) {
+    uint32_t mem[16384];
+} cheshire__spm_t;
+
+// Mem - cheshire::dram
+typedef struct __attribute__ ((__packed__)) {
+    uint32_t mem[2097152];
+} cheshire__dram_t;
+
 // Addrmap - cheshire
 typedef struct __attribute__ ((__packed__)) {
-    uint8_t RESERVED_0_2ffffff[0x3000000];
-    cheshire_regs_t cheshire_regs;
+    cheshire__extrom_t extrom;
+    uint8_t RESERVED_c000_ffffff[0xff4000];
+    periph_stub_t_t dma;
+    uint8_t RESERVED_1000004_1ffffff[0xfffffc];
+    cheshire__bootrom_t bootrom;
+    uint8_t RESERVED_2004000_203ffff[0x3c000];
+    periph_stub_t_t clint;
+    uint8_t RESERVED_2040004_20bffff[0x7fffc];
+    periph_stub_t_t axirt;
+    uint8_t RESERVED_20c0004_2ffffff[0xf3fffc];
+    cheshire_regs_t regs;
+    uint8_t RESERVED_300005c_3000fff[0xfa4];
+    periph_stub_t_t llc;
+    uint8_t RESERVED_3001004_3001fff[0xffc];
+    periph_stub_t_t uart;
+    uint8_t RESERVED_3002004_3002fff[0xffc];
+    periph_stub_t_t i2c;
+    uint8_t RESERVED_3003004_3003fff[0xffc];
+    periph_stub_t_t spih;
+    uint8_t RESERVED_3004004_3004fff[0xffc];
+    periph_stub_t_t gpio;
+    uint8_t RESERVED_3005004_3005fff[0xffc];
+    periph_stub_t_t slink;
+    uint8_t RESERVED_3006004_3006fff[0xffc];
+    periph_stub_t_t vga;
+    uint8_t RESERVED_3007004_3007fff[0xffc];
+    periph_stub_t_t usb;
+    uint8_t RESERVED_3008004_3008fff[0xffc];
+    periph_stub_t_t bus_err;
+    uint8_t RESERVED_3009004_3ffffff[0xff6ffc];
+    periph_stub_t_t plic;
+    uint8_t RESERVED_4000004_7ffffff[0x3fffffc];
+    periph_stub_t_t clic;
+    uint8_t RESERVED_8000004_fffffff[0x7fffffc];
+    cheshire__spm_t spm;
+    uint8_t RESERVED_10010000_7fffffff[0x6fff0000];
+    cheshire__dram_t dram;
 } cheshire_t;
 
 
-static_assert(sizeof(cheshire_t) == 0x300005c, "Packing error");
+static_assert(sizeof(cheshire_t) == 0x80800000, "Packing error");
 
 #ifdef __cplusplus
 }

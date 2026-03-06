@@ -17,7 +17,7 @@ int i2c_24fc1025_init(dif_i2c_t *i2c, uint64_t core_freq) {
     CHECK_ASSERT(0x11, i2c != 0);
     CHECK_ASSERT(0x12, core_freq != 0);
     // Initialize handle
-    mmio_region_t i2c_base = (mmio_region_t){.base = (void *)&__base_i2c};
+    mmio_region_t i2c_base = (mmio_region_t){.base = (void *)&__chs_i2c_base_addr__};
     CHECK_CALL(dif_i2c_init(i2c_base, i2c))
     // Disable I2C in case enabled and reset FIFOs
     CHECK_CALL(dif_i2c_host_set_enabled(i2c, kDifToggleDisabled))

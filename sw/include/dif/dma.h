@@ -104,6 +104,6 @@
         return *(NAME##_dma_status_ptr()); \
     }
 
-X(sys, &__base_dma)
+X(sys, &__chs_dma_base_addr__)
 
 #undef X
