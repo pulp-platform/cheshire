@@ -23,5 +23,5 @@ SECTIONS {
   __stack_pointer$  = 0;
 
   /* AXI-RT guard register (specific offset within AXI-RT region, not a named block) */
-  __chs_axirtgrd_base_addr__ = 0x020C1ffc;
+  __axirtgrd_base_addr__ = 0x020C1ffc;
 }

@@ -58,11 +58,11 @@ _start:
     .option pop
 
     // If LLC present: Wait for end of BIST, then extend stack and set to all SPM
-    la t0, __chs_regs_base_addr__
+    la t0, __regs_base_addr__
     lw t0, 80(t0)   // regs.HW_FEATURES
     andi t0, t0, 2  // regs.HW_FEATURES.llc
     beqz t0, _prom_check_run
-    la t0, __chs_llc_base_addr__
+    la t0, __llc_base_addr__
 _wait_llc_bist:
     lw t1, 72(t0)   // llc.BIST_STATUS_DONE_BIT
     beqz t1, _wait_llc_bist
@@ -72,8 +72,8 @@ _wait_llc_bist:
     li t1, 1
     sw t1, 16(t0)   // llc.CFG_COMMIT
     // Correct stack to start at end of SPM
-    la t0, __chs_regs_base_addr__
-    la sp, __chs_spm_base_addr__
+    la t0, __regs_base_addr__
+    la sp, __spm_base_addr__
     lw t0, 84(t0)   // regs.LLC_SIZE
     add sp, sp, t0
     addi sp, sp, -8
@@ -81,7 +81,7 @@ _wait_llc_bist:
 // Enter Platform ROM if present.
 _prom_check_run:
     // Note that we have internal access to SPM here *if and only if* there is an LLC.
-    la t0, __chs_regs_base_addr__
+    la t0, __regs_base_addr__
     lw t0, 72(t0)   // regs.PLATFORM_ROM
     beqz t0, _boot
     jalr t0
@@ -101,7 +101,7 @@ _exit:
     // Save the return value to scratch register 2, try `ebreak`, then wait forever
     slli a0, a0, 1
     ori  a0, a0, 1
-    la t0, __chs_regs_base_addr__
+    la t0, __regs_base_addr__
     sw a0, 8(t0)     // regs.SCRATCH[2]
     ebreak
 1:  wfi
@@ -111,7 +111,7 @@ _exit:
 .align 4
 boot_next_stage:
     // Non-SMP hart: Write boot address into global scratch registers
-    la t0, __chs_regs_base_addr__
+    la t0, __regs_base_addr__
     sw a0, 16(t0)   // regs.SCRATCH[4]
     srli a0, a0, 32
     sw a0, 20(t0)   // regs.SCRATCH[5]
@@ -119,7 +119,7 @@ boot_next_stage:
     // Resume SMP harts
     smp_resume(t0, t1, t2)
     // Load boot address from global scratch registers
-    la t0, __chs_regs_base_addr__
+    la t0, __regs_base_addr__
     lwu t1, 20(t0)  // regs.SCRATCH[5]
     slli t1, t1, 32
     lwu t0, 16(t0)  // regs.SCRATCH[4]

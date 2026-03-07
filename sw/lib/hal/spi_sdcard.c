@@ -193,7 +193,7 @@ int spi_sdcard_init(spi_sdcard_t *handle, uint64_t core_freq) {
     CHECK_ASSERT(0x18, handle->spi_freq <= core_freq)
 
     // Initialize handle
-    mmio_region_t spi_host_base = (mmio_region_t){.base = (void *)&__chs_spih_base_addr__};
+    mmio_region_t spi_host_base = (mmio_region_t){.base = (void *)&__spih_base_addr__};
     CHECK_CALL(dif_spi_host_init(spi_host_base, &handle->spi_host))
     // Reset SPI host
     dif_spi_host_reset(&handle->spi_host);
