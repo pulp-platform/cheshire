@@ -102,7 +102,7 @@ CHS_SW_ADDRS_LDH := $(CHS_SW_LD_DIR)/cheshire_addrs.ldh
 CHS_SW_ALL += $(CHS_SW_ADDRS_LDH)
 
 $(CHS_SW_ADDRS_LDH): $(CHS_ROOT)/hw/cheshire.rdl
-	$(PEAKRDL) raw-header $< --format ldh $(PEAKRDL_INCLUDES) --rename chs --license_str $$'$(CHS_LIC_APV2)' -o $@
+	$(PEAKRDL) raw-header $< --format ldh $(PEAKRDL_INCLUDES) --no-prefix --license_str $$'$(CHS_LIC_APV2)' -o $@
 
 ###############
 # Compilation #

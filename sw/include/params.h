@@ -12,29 +12,31 @@
 
 #pragma once
 
+#include <stdint.h>
+
 // Base addresses provided at link time
-extern void *__chs_bootrom_base_addr__;
-extern void *__chs_llc_base_addr__;
-extern void *__chs_uart_base_addr__;
-extern void *__chs_i2c_base_addr__;
-extern void *__chs_spih_base_addr__;
-extern void *__chs_gpio_base_addr__;
-extern void *__chs_slink_base_addr__;
-extern void *__chs_vga_base_addr__;
-extern void *__chs_clint_base_addr__;
-extern void *__chs_plic_base_addr__;
-extern void *__chs_dma_base_addr__;
-extern void *__chs_axirt_base_addr__;
-extern void *__chs_axirtgrd_base_addr__;
-extern void *__chs_bus_err_base_addr__;
-extern void *__chs_clic_base_addr__;
-extern void *__chs_usb_base_addr__;
-extern void *__chs_spm_base_addr__;
-extern void *__chs_dram_base_addr__;
+extern void *__bootrom_base_addr__;
+extern void *__llc_base_addr__;
+extern void *__uart_base_addr__;
+extern void *__i2c_base_addr__;
+extern void *__spih_base_addr__;
+extern void *__gpio_base_addr__;
+extern void *__slink_base_addr__;
+extern void *__vga_base_addr__;
+extern void *__clint_base_addr__;
+extern void *__plic_base_addr__;
+extern void *__dma_base_addr__;
+extern void *__axirt_base_addr__;
+extern void *__axirtgrd_base_addr__;
+extern void *__bus_err_base_addr__;
+extern void *__clic_base_addr__;
+extern void *__usb_base_addr__;
+extern void *__spm_base_addr__;
+extern void *__dram_base_addr__;
 
 // Aliases for external dependencies using legacy __base_* naming
-#define __base_axirt __chs_axirt_base_addr__
-#define __base_axirtgrd __chs_axirtgrd_base_addr__
+#define __base_axirt __axirt_base_addr__
+#define __base_axirtgrd __axirtgrd_base_addr__
 
 // Default boot baudrate
 static const uint32_t __BOOT_BAUDRATE = 115200;

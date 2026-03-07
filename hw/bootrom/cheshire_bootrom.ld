@@ -9,13 +9,13 @@
 INCLUDE common.ldh
 
 SECTIONS {
-  __stack_pointer$  = ORIGIN(chs_spm) + LENGTH(chs_spm) - 8;
+  __stack_pointer$  = ORIGIN(spm) + LENGTH(spm) - 8;
 
   .text : {
     *(.text._start)
     *(.text)
     *(.text.*)
-  } > chs_bootrom
+  } > bootrom
 
   .misc : ALIGN(16) {
     *(.rodata)
@@ -26,7 +26,7 @@ SECTIONS {
     *(.srodata.*)
     *(.sdata)
     *(.sdata.*)
-  } > chs_bootrom
+  } > bootrom
 
   . = ALIGN(32);
   __bss_start = .;
@@ -35,12 +35,12 @@ SECTIONS {
     *(.bss.*)
     *(.sbss)
     *(.sbss.*)
-  } > chs_bootrom
+  } > bootrom
   . = ALIGN(32);
   __bss_end = .;
 
   .bulk : ALIGN(16) {
     *(.bulk)
     *(.bulk.*)
-  } > chs_bootrom
+  } > bootrom
 }

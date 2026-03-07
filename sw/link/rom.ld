@@ -24,7 +24,7 @@ SECTIONS {
     *(.sdata.*)
     *(.bulk)
     *(.bulk.*)
-  } > chs_spm AT>chs_extrom
+  } > spm AT>extrom
 
   /* BSS is not loaded, but initialized by CRT0 */
   .bss : ALIGN(16) {
@@ -34,5 +34,5 @@ SECTIONS {
     *(.sbss)
     *(.sbss.*)
     __bss_end = .;
-  } > chs_spm
+  } > spm
 }

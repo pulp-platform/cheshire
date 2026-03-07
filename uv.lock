@@ -569,7 +569,7 @@ wheels = [
 [[package]]
 name = "peakrdl-rawheader"
 version = "0.2.2"
-source = { git = "https://github.com/pulp-platform/PeakRDL-rawheader.git?branch=fischeti%2Fldh#3bf40659c1a57b492b7210319addcae8164ffc9d" }
+source = { git = "https://github.com/pulp-platform/PeakRDL-rawheader.git?branch=fischeti%2Fldh#c6efc02cd0691633a4f3a8c5580879573a440cf7" }
 dependencies = [
     { name = "mako" },
     { name = "systemrdl-compiler" },
