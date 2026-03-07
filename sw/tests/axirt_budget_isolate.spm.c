@@ -95,7 +95,7 @@ int main(void) {
     // Check isolate to check if AXI-REALM isolates the dma when the budget is
     // exceeded. Should return 1 if dma is isolated.
     int isolate_status =
-        (*reg32(&__chs_axirt_base_addr__, AXI_RT_ISOLATED_REG_OFFSET) >> chs_dma_id) & 1;
+        (*reg32(&__axirt_base_addr__, AXI_RT_ISOLATED_REG_OFFSET) >> chs_dma_id) & 1;
 
     // Return 0 if manager was correctly isolated
     return !isolate_status;

@@ -13,7 +13,7 @@ SECTIONS {
     *(.text._start)
     *(.text)
     *(.text.*)
-  } > chs_spm
+  } > spm
 
   .misc : ALIGN(16) {
     *(.rodata)
@@ -24,7 +24,7 @@ SECTIONS {
     *(.srodata.*)
     *(.sdata)
     *(.sdata.*)
-  } > chs_spm
+  } > spm
 
   .bss : ALIGN(16) {
     __bss_start = .;
@@ -33,10 +33,10 @@ SECTIONS {
     *(.sbss)
     *(.sbss.*)
     __bss_end = .;
-  } > chs_spm
+  } > spm
 
   .bulk : ALIGN(16) {
     *(.bulk)
     *(.bulk.*)
-  } > chs_spm
+  } > spm
 }

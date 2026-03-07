@@ -61,7 +61,7 @@ int main(void) {
     void *priv = (void *)(uintptr_t)regs->scratch[1].w;
 
     // Initialize UART
-    uart_init(&__chs_uart_base_addr__, core_freq, __BOOT_BAUDRATE);
+    uart_init(&__uart_base_addr__, core_freq, __BOOT_BAUDRATE);
 
     // Print boot-critical cat, and also parameters
     printf(" /\\___/\\       Boot mode:       %d\r\n"

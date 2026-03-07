@@ -22,13 +22,12 @@ extern int boot_next_stage(void *);
 
 int boot_passive(uint64_t core_freq) {
     // Initialize UART with debug settings
-    uart_debug_init(&__chs_uart_base_addr__, core_freq);
+    uart_debug_init(&__uart_base_addr__, core_freq);
     // scratch[0] provides an entry point, scratch[1] a start signal
     volatile cheshire_regs_t *regs = CHS_REGS;
     // While we poll bit 2 of scratch[2], check for incoming UART debug requests
     while (!(regs->scratch[2].w & 2))
-        if (uart_debug_check(&__chs_uart_base_addr__))
-            return uart_debug_serve(&__chs_uart_base_addr__);
+        if (uart_debug_check(&__uart_base_addr__)) return uart_debug_serve(&__uart_base_addr__);
     // No UART (or JTAG) requests came in, but scratch[2][2] was set --> run code at scratch[1:0]
     regs->scratch[2].w = 0;
     return boot_next_stage(
@@ -45,7 +44,7 @@ int boot_spi_sdcard(uint64_t core_freq, uint64_t rtc_freq) {
     CHECK_CALL(spi_sdcard_init(&device, core_freq))
     // Wait for device to be initialized (1ms, round up extra tick to be sure)
     clint_spin_until((1000 * rtc_freq) / (1000 * 1000) + 1);
-    return gpt_boot_part_else_raw(spi_sdcard_read_checkcrc, &device, &__chs_spm_base_addr__,
+    return gpt_boot_part_else_raw(spi_sdcard_read_checkcrc, &device, &__spm_base_addr__,
                                   __BOOT_SPM_MAX_LBAS, __BOOT_ZSL_TYPE_GUID, 0);
 }
 
@@ -57,7 +56,7 @@ int boot_spi_s25fs512s(uint64_t core_freq, uint64_t rtc_freq) {
     CHECK_CALL(spi_s25fs512s_init(&device, core_freq))
     // Wait for device to be initialized (t_PU = 300us, round up extra tick to be sure)
     clint_spin_until((350 * rtc_freq) / (1000 * 1000) + 1);
-    return gpt_boot_part_else_raw(spi_s25fs512s_single_read, &device, &__chs_spm_base_addr__,
+    return gpt_boot_part_else_raw(spi_s25fs512s_single_read, &device, &__spm_base_addr__,
                                   __BOOT_SPM_MAX_LBAS, __BOOT_ZSL_TYPE_GUID, 0);
 }
 
@@ -65,8 +64,8 @@ int boot_i2c_24fc1025(uint64_t core_freq) {
     // Initialize device handle
     dif_i2c_t i2c;
     CHECK_CALL(i2c_24fc1025_init(&i2c, core_freq))
-    return gpt_boot_part_else_raw(i2c_24fc1025_read, &i2c, &__chs_spm_base_addr__,
-                                  __BOOT_SPM_MAX_LBAS, __BOOT_ZSL_TYPE_GUID, 0);
+    return gpt_boot_part_else_raw(i2c_24fc1025_read, &i2c, &__spm_base_addr__, __BOOT_SPM_MAX_LBAS,
+                                  __BOOT_ZSL_TYPE_GUID, 0);
 }
 
 int main() {
