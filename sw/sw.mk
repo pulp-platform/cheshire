@@ -83,7 +83,7 @@ CHS_SW_GEN_HDRS += $$(CHS_SW_DIR)/include/regs/$(1).h
 $$(CHS_SW_DIR)/include/regs/$(1).h: $(2)
 	@mkdir -p $$(dir $$@)
 	$$(PEAKRDL) c-header $$< -o $$@ -b ltoh $$(PEAKRDL_INCLUDES)
-	@sed -i '1i// Copyright 2025 ETH Zurich and University of Bologna.\n// Licensed under the Apache License, Version 2.0, see LICENSE for details.\n// SPDX-License-Identifier: Apache-2.0\n' $$@
+	@sed -i '1i$(CHS_LIC_APV2_SED)' $$@
 endef
 
 $(eval $(call chs_sw_gen_hdr_rule,clint,$(CLINTROOT)/src/clint.hjson $(CLINTROOT)/.generated))
@@ -91,7 +91,7 @@ $(eval $(call chs_sw_gen_hdr_rule,serial_link,$(CHS_ROOT)/hw/serial_link.hjson $
 $(eval $(call chs_sw_gen_hdr_rule,axi_vga,$(AXI_VGA_ROOT)/data/axi_vga.hjson $(AXI_VGA_ROOT)/.generated))
 $(eval $(call chs_sw_gen_hdr_rule,idma,$(IDMA_ROOT)/target/rtl/idma_reg64_2d.hjson))
 $(eval $(call chs_sw_gen_hdr_rule,axi_llc,$(CHS_LLC_DIR)/data/axi_llc_regs.hjson))
-$(eval $(call chs_sw_gen_hdr_rule_rdl,cheshire,$(CHS_ROOT)/hw/regs/cheshire.rdl))
+$(eval $(call chs_sw_gen_hdr_rule_rdl,cheshire,$(CHS_ROOT)/hw/cheshire.rdl))
 $(eval $(call chs_sw_gen_hdr_rule,axi_rt,$(AXIRTROOT)/src/regs/axi_rt.hjson $(AXIRTROOT)/.generated))
 
 # Generate headers for OT peripherals in the bendered repo itself
@@ -101,9 +101,8 @@ CHS_SW_GEN_HDRS += $(OTPROOT)/.generated
 CHS_SW_ADDRS_LDH := $(CHS_SW_LD_DIR)/cheshire_addrs.ldh
 CHS_SW_ALL += $(CHS_SW_ADDRS_LDH)
 
-$(CHS_SW_ADDRS_LDH): $(CHS_ROOT)/hw/regs/cheshire.rdl
-	$(PEAKRDL) raw-header $< --format ldh $(PEAKRDL_INCLUDES) --rename chs -o $@
-	@sed -i '1i/* Copyright 2025 ETH Zurich and University of Bologna. */\n/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */\n/* SPDX-License-Identifier: Apache-2.0 */\n' $@
+$(CHS_SW_ADDRS_LDH): $(CHS_ROOT)/hw/cheshire.rdl
+	$(PEAKRDL) raw-header $< --format ldh $(PEAKRDL_INCLUDES) --rename chs --license_str $$'$(CHS_LIC_APV2)' -o $@
 
 ###############
 # Compilation #

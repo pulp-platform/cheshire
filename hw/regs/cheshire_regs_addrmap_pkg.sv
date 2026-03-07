@@ -1,14 +1,10 @@
 // Copyright 2025 ETH Zurich and University of Bologna.
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
-
-
-
 package cheshire_regs_addrmap_pkg;
 
 localparam longint unsigned CHESHIRE_REGS_BASE_ADDR = 64'h0;
 localparam longint unsigned CHESHIRE_REGS_SIZE = 64'h5C;
-
 
 function automatic longint unsigned CHESHIRE_REGS_SCRATCH_BASE_ADDR(input int unsigned scratch_idx);
     return 64'h0 + (scratch_idx * 64'h4);
@@ -29,6 +25,5 @@ typedef enum logic [1:0] {
     SPI_S25FS512S = 2'd2,
     I2C_24XX1025 = 2'd3
 } BootMode_e;
-
 
 endpackage;

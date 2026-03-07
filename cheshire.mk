@@ -37,6 +37,13 @@ PEAKRDL ?= peakrdl
 
 PEAKRDL_INCLUDES  := -I $(CHS_ROOT)/hw/regs
 
+# License text for generated files (comment markers added by tool or sed)
+CHS_LIC_SHL      := Copyright 2025 ETH Zurich and University of Bologna.\nSolderpad Hardware License, Version 0.51, see LICENSE for details.\nSPDX-License-Identifier: SHL-0.51
+CHS_LIC_APV2     := Copyright 2025 ETH Zurich and University of Bologna.\nLicensed under the Apache License, Version 2.0, see LICENSE for details.\nSPDX-License-Identifier: Apache-2.0
+# Sed-ready versions for tools that do not support --license_str
+CHS_LIC_SHL_SED  := // Copyright 2025 ETH Zurich and University of Bologna.\n// Solderpad Hardware License, Version 0.51, see LICENSE for details.\n// SPDX-License-Identifier: SHL-0.51\n
+CHS_LIC_APV2_SED := // Copyright 2025 ETH Zurich and University of Bologna.\n// Licensed under the Apache License, Version 2.0, see LICENSE for details.\n// SPDX-License-Identifier: Apache-2.0\n
+
 ################
 # Dependencies #
 ################
@@ -89,12 +96,10 @@ include $(CHS_ROOT)/sw/sw.mk
 $(CHS_ROOT)/hw/regs/cheshire_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_regs.sv: \
     $(CHS_ROOT)/hw/regs/regs.rdl
 	$(PEAKRDL) regblock $< -o $(CHS_ROOT)/hw/regs/ --cpuif apb4-flat --default-reset arst_n
-	@sed -i '1i// Copyright 2025 ETH Zurich and University of Bologna.\n// Solderpad Hardware License, Version 0.51, see LICENSE for details.\n// SPDX-License-Identifier: SHL-0.51\n' \
-	    $(CHS_ROOT)/hw/regs/cheshire_regs.sv $(CHS_ROOT)/hw/regs/cheshire_regs_pkg.sv
+	@sed -i '1i$(CHS_LIC_SHL_SED)' $(CHS_ROOT)/hw/regs/cheshire_regs.sv $(CHS_ROOT)/hw/regs/cheshire_regs_pkg.sv
 
 $(CHS_ROOT)/hw/regs/cheshire_regs_addrmap_pkg.sv: $(CHS_ROOT)/hw/regs/regs.rdl
-	$(PEAKRDL) raw-header $< --format svpkg -o $@
-	@sed -i '1i// Copyright 2025 ETH Zurich and University of Bologna.\n// Solderpad Hardware License, Version 0.51, see LICENSE for details.\n// SPDX-License-Identifier: SHL-0.51\n' $@
+	$(PEAKRDL) raw-header $< --format svpkg --license_str $$'$(CHS_LIC_SHL)' -o $@
 
 # CLINT
 CLINTCORES ?= 1
