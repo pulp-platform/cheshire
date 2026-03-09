@@ -157,6 +157,8 @@ package cheshire_pkg;
     bit     LlcOutConnect;
     doub_bt LlcOutRegionStart;
     doub_bt LlcOutRegionEnd;
+    bit     LlcEnableUncAlias;
+    doub_bt LlcOutUncStart;
     // Parameters for VGA
     byte_bt VgaRedWidth;
     byte_bt VgaGreenWidth;
@@ -354,6 +356,11 @@ package cheshire_pkg;
     // own Xbar output with the specified region iff it is connected.
     if (cfg.LlcOutConnect) begin i++; r++; ret.llc = i;
         ret.map[r] = '{i, cfg.LlcOutRegionStart, cfg.LlcOutRegionEnd}; end
+    // Add an uncached alias of the LLC output if enabled.
+    // This bypasses all caches and can be used for uncached access to DRAM.
+    if (cfg.LlcEnableUncAlias) begin r++;
+        ret.map[r] = '{i, cfg.LlcOutUncStart, cfg.LlcOutUncStart + 
+            cfg.LlcOutRegionEnd - cfg.LlcOutRegionStart}; end
     // We can only internally map the SPM region if an LLC exists.
     // Otherwise, we assume external ports map and back the SPM region.
     // We map both the cached and uncached regions.
@@ -505,13 +512,18 @@ package cheshire_pkg;
     ret.NonIdempotentAddrBase = {64'h0000_0000, NoCieBase};
     ret.NOCType               = config_pkg::NOC_TYPE_AXI4_ATOP;
     ret.NonIdempotentLength   = {64'h1000_0000, 64'h6000_0000 - cfg.Cva6ExtCieLength};
-    ret.NrExecuteRegionRules  = 6;   // Debug, Bootrom, SPM, SPM Uncached, LLCOut, ExtCI;
-    ret.ExecuteRegionAddrBase = {AmDbg,     AmBrom,    AmSpm,   AmSpmUnc, cfg.LlcOutRegionStart, CieBase};
-    ret.ExecuteRegionLength   = {64'h40000, 64'h40000, SizeSpm, SizeSpm,  SizeLlcOut,            cfg.Cva6ExtCieLength};
+    ret.NrExecuteRegionRules  = 6 + cfg.LlcEnableUncAlias;  // (Uncached LLCOut), Debug, Bootrom, SPM, SPM Uncached, LLCOut, ExtCI;
+    ret.ExecuteRegionAddrBase [5:0] = {AmDbg,     AmBrom,    AmSpm,   AmSpmUnc, cfg.LlcOutRegionStart, CieBase};
+    ret.ExecuteRegionLength   [5:0] = {64'h40000, 64'h40000, SizeSpm, SizeSpm,  SizeLlcOut,            cfg.Cva6ExtCieLength};
+    if (cfg.LlcEnableUncAlias) begin
+      ret.ExecuteRegionAddrBase [6] = cfg.LlcOutUncStart;
+      ret.ExecuteRegionLength   [6] = SizeLlcOut;
+    end
     ret.NrCachedRegionRules   = 3;   // CachedSPM, LLCOut, ExtCI;
     ret.CachedRegionAddrBase  = {AmSpm,   cfg.LlcOutRegionStart,  CieBase};
     ret.CachedRegionLength    = {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength};
     ret.DebugEn               = 1;
+    ret.RVH                   = 1;
     ret.RVSCLIC               = cfg.Clic;
     ret.RVXHCLIC              = cfg.ClicVsclic;
     ret.CLICNumInterruptSrc   = NumCoreIrqs + NumIntIntrs + cfg.NumExtClicIntrs;
@@ -607,6 +619,8 @@ package cheshire_pkg;
     LlcOutConnect     : 1,
     LlcOutRegionStart : 'h8000_0000,
     LlcOutRegionEnd   : 64'h1_0000_0000,
+    LlcEnableUncAlias : 1,
+    LlcOutUncStart    : 64'h3_0000_0000,  // Behind default Slink region
     // VGA: RGB565
     VgaRedWidth       : 5,
     VgaGreenWidth     : 6,
