@@ -116,6 +116,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Declare interface types internally
   `CHESHIRE_TYPEDEF_ALL(, Cfg)
 
+  import cheshire_addrmap_pkg::*;
+
   //////////////////
   //  Interrupts  //
   //////////////////
@@ -527,10 +529,10 @@ module cheshire_soc import cheshire_pkg::*; #(
     // This is necessary for routing in the LLC-internal interconnect.
     always_comb begin
       axi_llc_remap_req = axi_llc_cut_req;
-      if ((axi_llc_cut_req.aw.addr & ~AmSpmRegionMask) == (AmSpmUnc & ~AmSpmRegionMask))
-        axi_llc_remap_req.aw.addr  = AmSpm | (AmSpmRegionMask & axi_llc_cut_req.aw.addr);
-      if ((axi_llc_cut_req.ar.addr & ~AmSpmRegionMask) == (AmSpmUnc & ~AmSpmRegionMask))
-        axi_llc_remap_req.ar.addr = AmSpm | (AmSpmRegionMask & axi_llc_cut_req.ar.addr);
+      if ((axi_llc_cut_req.aw.addr & ~AmSpmRegionMask) == (SPM_UNC_BASE_ADDR & ~AmSpmRegionMask))
+        axi_llc_remap_req.aw.addr  = SPM_BASE_ADDR | (AmSpmRegionMask & axi_llc_cut_req.aw.addr);
+      if ((axi_llc_cut_req.ar.addr & ~AmSpmRegionMask) == (SPM_UNC_BASE_ADDR & ~AmSpmRegionMask))
+        axi_llc_remap_req.ar.addr = SPM_BASE_ADDR | (AmSpmRegionMask & axi_llc_cut_req.ar.addr);
       axi_llc_cut_rsp = axi_llc_remap_rsp;
     end
 
@@ -561,7 +563,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .conf_resp_o         ( reg_out_rsp[RegOut.llc] ),
       .cached_start_addr_i ( addr_t'(Cfg.LlcOutRegionStart) ),
       .cached_end_addr_i   ( addr_t'(Cfg.LlcOutRegionEnd)   ),
-      .spm_start_addr_i    ( addr_t'(AmSpm) ),
+      .spm_start_addr_i    ( addr_t'(SPM_BASE_ADDR) ),
       .axi_llc_events_o    ( /* TODO: connect me to regs? */ )
     );
 
@@ -587,7 +589,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   localparam config_pkg::cva6_user_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
 
   // Boot from boot ROM only if available, otherwise from platform ROM
-  localparam logic [63:0] BootAddr = 64'(Cfg.Bootrom ? AmBrom : Cfg.PlatformRom);
+  localparam logic [63:0] BootAddr = 64'(Cfg.Bootrom ? BOOTROM_BASE_ADDR : Cfg.PlatformRom);
 
   // Debug interface for internal harts
   dm::hartinfo_t [NumIntHarts-1:0] dbg_int_info;
@@ -925,7 +927,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   dm_top #(
     .NrHarts        ( NumDbgHarts ),
     .BusWidth       ( Cfg.AxiDataWidth ),
-    .DmBaseAddress  ( AmDbg )
+    .DmBaseAddress  ( EXTROM_BASE_ADDR )
   ) i_dbg_dm_top (
     .clk_i,
     .rst_ni,

@@ -17,7 +17,7 @@ extern "C" {
 
 // Mem - cheshire::extrom
 typedef struct __attribute__ ((__packed__)) {
-    uint32_t mem[12288];
+    uint32_t mem[65536];
 } cheshire__extrom_t;
 
 // Reg - periph_stub_t::status
@@ -32,15 +32,60 @@ typedef union {
     uint32_t w;
 } periph_stub_t__status_t;
 
+// Reg - periph_stub_t::_end
+#define PERIPH_STUB_T___END___END_bm 0xffffffff
+#define PERIPH_STUB_T___END___END_bp 0
+#define PERIPH_STUB_T___END___END_bw 32
+#define PERIPH_STUB_T___END___END_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t _end :32;
+    } f;
+    uint32_t w;
+} periph_stub_t___end_t;
+
 // Addrmap - periph_stub_t
 typedef struct __attribute__ ((__packed__)) {
     periph_stub_t__status_t status;
+    uint8_t RESERVED_4_ffb[0xff8];
+    periph_stub_t___end_t _end;
 } periph_stub_t_t;
 
 // Mem - cheshire::bootrom
 typedef struct __attribute__ ((__packed__)) {
-    uint32_t mem[4096];
+    uint32_t mem[65536];
 } cheshire__bootrom_t;
+
+// Reg - periph_stub_t_Size_40000::status
+#define PERIPH_STUB_T_SIZE_40000__STATUS__STATUS_bm 0xffffffff
+#define PERIPH_STUB_T_SIZE_40000__STATUS__STATUS_bp 0
+#define PERIPH_STUB_T_SIZE_40000__STATUS__STATUS_bw 32
+#define PERIPH_STUB_T_SIZE_40000__STATUS__STATUS_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t status :32;
+    } f;
+    uint32_t w;
+} periph_stub_t_Size_40000__status_t;
+
+// Reg - periph_stub_t_Size_40000::_end
+#define PERIPH_STUB_T_SIZE_40000___END___END_bm 0xffffffff
+#define PERIPH_STUB_T_SIZE_40000___END___END_bp 0
+#define PERIPH_STUB_T_SIZE_40000___END___END_bw 32
+#define PERIPH_STUB_T_SIZE_40000___END___END_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t _end :32;
+    } f;
+    uint32_t w;
+} periph_stub_t_Size_40000___end_t;
+
+// Addrmap - periph_stub_t_Size_40000
+typedef struct __attribute__ ((__packed__)) {
+    periph_stub_t_Size_40000__status_t status;
+    uint8_t RESERVED_4_3fffb[0x3fff8];
+    periph_stub_t_Size_40000___end_t _end;
+} periph_stub_t_Size_40000_t;
 
 // Reg - cheshire_regs::scratch
 #define CHESHIRE_REGS__SCRATCH__SCRATCH_bm 0xffffffff
@@ -206,10 +251,77 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire_regs__vga_params_t vga_params;
 } cheshire_regs_t;
 
+// Reg - periph_stub_t_Size_40::status
+#define PERIPH_STUB_T_SIZE_40__STATUS__STATUS_bm 0xffffffff
+#define PERIPH_STUB_T_SIZE_40__STATUS__STATUS_bp 0
+#define PERIPH_STUB_T_SIZE_40__STATUS__STATUS_bw 32
+#define PERIPH_STUB_T_SIZE_40__STATUS__STATUS_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t status :32;
+    } f;
+    uint32_t w;
+} periph_stub_t_Size_40__status_t;
+
+// Reg - periph_stub_t_Size_40::_end
+#define PERIPH_STUB_T_SIZE_40___END___END_bm 0xffffffff
+#define PERIPH_STUB_T_SIZE_40___END___END_bp 0
+#define PERIPH_STUB_T_SIZE_40___END___END_bw 32
+#define PERIPH_STUB_T_SIZE_40___END___END_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t _end :32;
+    } f;
+    uint32_t w;
+} periph_stub_t_Size_40___end_t;
+
+// Addrmap - periph_stub_t_Size_40
+typedef struct __attribute__ ((__packed__)) {
+    periph_stub_t_Size_40__status_t status;
+    uint8_t RESERVED_4_3b[0x38];
+    periph_stub_t_Size_40___end_t _end;
+} periph_stub_t_Size_40_t;
+
+// Reg - periph_stub_t_Size_4000000::status
+#define PERIPH_STUB_T_SIZE_4000000__STATUS__STATUS_bm 0xffffffff
+#define PERIPH_STUB_T_SIZE_4000000__STATUS__STATUS_bp 0
+#define PERIPH_STUB_T_SIZE_4000000__STATUS__STATUS_bw 32
+#define PERIPH_STUB_T_SIZE_4000000__STATUS__STATUS_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t status :32;
+    } f;
+    uint32_t w;
+} periph_stub_t_Size_4000000__status_t;
+
+// Reg - periph_stub_t_Size_4000000::_end
+#define PERIPH_STUB_T_SIZE_4000000___END___END_bm 0xffffffff
+#define PERIPH_STUB_T_SIZE_4000000___END___END_bp 0
+#define PERIPH_STUB_T_SIZE_4000000___END___END_bw 32
+#define PERIPH_STUB_T_SIZE_4000000___END___END_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t _end :32;
+    } f;
+    uint32_t w;
+} periph_stub_t_Size_4000000___end_t;
+
+// Addrmap - periph_stub_t_Size_4000000
+typedef struct __attribute__ ((__packed__)) {
+    periph_stub_t_Size_4000000__status_t status;
+    uint8_t RESERVED_4_3fffffb[0x3fffff8];
+    periph_stub_t_Size_4000000___end_t _end;
+} periph_stub_t_Size_4000000_t;
+
 // Mem - cheshire::spm
 typedef struct __attribute__ ((__packed__)) {
     uint32_t mem[16384];
 } cheshire__spm_t;
+
+// Mem - cheshire::spm_unc
+typedef struct __attribute__ ((__packed__)) {
+    uint32_t mem[16777216];
+} cheshire__spm_unc_t;
 
 // Mem - cheshire::dram
 typedef struct __attribute__ ((__packed__)) {
@@ -219,41 +331,33 @@ typedef struct __attribute__ ((__packed__)) {
 // Addrmap - cheshire
 typedef struct __attribute__ ((__packed__)) {
     cheshire__extrom_t extrom;
-    uint8_t RESERVED_c000_ffffff[0xff4000];
+    uint8_t RESERVED_40000_ffffff[0xfc0000];
     periph_stub_t_t dma;
-    uint8_t RESERVED_1000004_1ffffff[0xfffffc];
+    uint8_t RESERVED_1001000_1ffffff[0xfff000];
     cheshire__bootrom_t bootrom;
-    uint8_t RESERVED_2004000_203ffff[0x3c000];
-    periph_stub_t_t clint;
-    uint8_t RESERVED_2040004_20bffff[0x7fffc];
-    periph_stub_t_t axirt;
-    uint8_t RESERVED_20c0004_2ffffff[0xf3fffc];
+    periph_stub_t_Size_40000_t clint;
+    periph_stub_t_Size_40000_t irq_router;
+    periph_stub_t_Size_40000_t axirt;
+    uint8_t RESERVED_2100000_2ffffff[0xf00000];
     cheshire_regs_t regs;
     uint8_t RESERVED_300005c_3000fff[0xfa4];
     periph_stub_t_t llc;
-    uint8_t RESERVED_3001004_3001fff[0xffc];
     periph_stub_t_t uart;
-    uint8_t RESERVED_3002004_3002fff[0xffc];
     periph_stub_t_t i2c;
-    uint8_t RESERVED_3003004_3003fff[0xffc];
     periph_stub_t_t spih;
-    uint8_t RESERVED_3004004_3004fff[0xffc];
     periph_stub_t_t gpio;
-    uint8_t RESERVED_3005004_3005fff[0xffc];
     periph_stub_t_t slink;
-    uint8_t RESERVED_3006004_3006fff[0xffc];
     periph_stub_t_t vga;
-    uint8_t RESERVED_3007004_3007fff[0xffc];
     periph_stub_t_t usb;
-    uint8_t RESERVED_3008004_3008fff[0xffc];
-    periph_stub_t_t bus_err;
-    uint8_t RESERVED_3009004_3ffffff[0xff6ffc];
-    periph_stub_t_t plic;
-    uint8_t RESERVED_4000004_7ffffff[0x3fffffc];
-    periph_stub_t_t clic;
-    uint8_t RESERVED_8000004_fffffff[0x7fffffc];
+    periph_stub_t_Size_40_t bus_err;
+    uint8_t RESERVED_3009040_3ffffff[0xff6fc0];
+    periph_stub_t_Size_4000000_t plic;
+    periph_stub_t_Size_40000_t clic;
+    uint8_t RESERVED_8040000_fffffff[0x7fc0000];
     cheshire__spm_t spm;
-    uint8_t RESERVED_10010000_7fffffff[0x6fff0000];
+    uint8_t RESERVED_10010000_13ffffff[0x3ff0000];
+    cheshire__spm_unc_t spm_unc;
+    uint8_t RESERVED_18000000_7fffffff[0x68000000];
     cheshire__dram_t dram;
 } cheshire_t;
 
