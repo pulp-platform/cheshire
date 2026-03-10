@@ -20,11 +20,5 @@ dependencies = [
     "flatdict>=4.1.0",
     "setuptools<81", # Required by old `regtool`
     "peakrdl>=1.5.0",
-    # TODO(fischeti): Remove the git dependency once the PR is merged and released.
-    # "peakrdl-rawheader>=0.2.2",
-    "peakrdl-rawheader",
+    "peakrdl-rawheader>=0.2.3",
 ]
-
-# TODO(fischeti): Remove the git dependency once the PR is merged and released.
-[tool.uv.sources]
-peakrdl-rawheader = { git = "https://github.com/pulp-platform/PeakRDL-rawheader.git", branch = "fischeti/ldh" }
