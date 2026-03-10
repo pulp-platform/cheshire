@@ -146,7 +146,7 @@ requires-dist = [
     { name = "mkdocs" },
     { name = "mkdocs-material" },
     { name = "peakrdl", specifier = ">=1.5.0" },
-    { name = "peakrdl-rawheader", git = "https://github.com/pulp-platform/PeakRDL-rawheader.git?branch=fischeti%2Fldh" },
+    { name = "peakrdl-rawheader", specifier = ">=0.2.3" },
     { name = "pyyaml" },
     { name = "requests" },
     { name = "setuptools", specifier = "<81" },
@@ -568,11 +568,15 @@ wheels = [
 
 [[package]]
 name = "peakrdl-rawheader"
-version = "0.2.2"
-source = { git = "https://github.com/pulp-platform/PeakRDL-rawheader.git?branch=fischeti%2Fldh#c6efc02cd0691633a4f3a8c5580879573a440cf7" }
+version = "0.2.4"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "mako" },
     { name = "systemrdl-compiler" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/26/89/690014be2a5986918522b4619cd3ed0499d8e6086361dd1bbd0b053b44f2/peakrdl_rawheader-0.2.4.tar.gz", hash = "sha256:c5954a474bfc3f6cfc250853b37472a483802d2bc7d5aacdc04be43e72e9acfb", size = 11233, upload-time = "2026-03-10T21:09:25.305Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ba/d7/729e1d724fdccec33ebd80f6240c0182a365377596713f2ed8d05973e271/peakrdl_rawheader-0.2.4-py3-none-any.whl", hash = "sha256:2350f36ba057a1179c6fee23c319f12ba929e79ed28c702c6787c1a4de569fea", size = 14422, upload-time = "2026-03-10T21:09:26.126Z" },
 ]
 
 [[package]]

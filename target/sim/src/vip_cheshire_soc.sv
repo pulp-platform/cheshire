@@ -80,6 +80,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   `CHESHIRE_TYPEDEF_ALL(, DutCfg)
 
+  import cheshire_addrmap_pkg::*;
+
   ///////////
   //  DPI  //
   ///////////
@@ -378,7 +380,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     if (DutCfg.LlcNotBypass) begin
       word_bt regval;
       $display("[JTAG] Wait for LLC configuration");
-      jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
+      jtag_poll_bit0(LLC_BASE_ADDR + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
     end
     // Halt hart 0
     jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, default: '0});
@@ -431,7 +433,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   // Wait for termination signal and get return code
   task automatic jtag_wait_for_eoc(output word_bt exit_code);
-    jtag_poll_bit0(AmRegs + cheshire_regs_addrmap_pkg::CHESHIRE_REGS_SCRATCH_BASE_ADDR(2), exit_code, 800);
+    jtag_poll_bit0(REGS_SCRATCH_BASE_ADDR(2), exit_code, 800);
     exit_code >>= 1;
     if (exit_code) $error("[JTAG] FAILED: return code %0d", exit_code);
     else $display("[JTAG] SUCCESS");
@@ -984,21 +986,21 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     if (DutCfg.LlcNotBypass) begin
       word_bt regval;
       $display("[SLINK] Wait for LLC configuration");
-      slink_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
+      slink_poll_bit0(LLC_BASE_ADDR + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
     end
     // Preload
     slink_elf_preload(binary, entry);
     // Write entry point
-    slink_write_32(AmRegs + cheshire_regs_addrmap_pkg::CHESHIRE_REGS_SCRATCH_BASE_ADDR(1), entry[63:32]);
-    slink_write_32(AmRegs + cheshire_regs_addrmap_pkg::CHESHIRE_REGS_SCRATCH_BASE_ADDR(0), entry[32:0]);
+    slink_write_32(REGS_SCRATCH_BASE_ADDR(1), entry[63:32]);
+    slink_write_32(REGS_SCRATCH_BASE_ADDR(0), entry[32:0]);
     // Resume hart 0
-    slink_write_32(AmRegs + cheshire_regs_addrmap_pkg::CHESHIRE_REGS_SCRATCH_BASE_ADDR(2), 2);
+    slink_write_32(REGS_SCRATCH_BASE_ADDR(2), 2);
     $display("[SLINK] Wrote launch signal and entry point 0x%h", entry);
   endtask
 
   // Wait for termination signal and get return code
   task automatic slink_wait_for_eoc(output word_bt exit_code);
-    slink_poll_bit0(AmRegs + cheshire_regs_addrmap_pkg::CHESHIRE_REGS_SCRATCH_BASE_ADDR(2), exit_code, 800);
+    slink_poll_bit0(REGS_SCRATCH_BASE_ADDR(2), exit_code, 800);
     exit_code >>= 1;
     if (exit_code) $error("[SLINK] FAILED: return code %0d", exit_code);
     else $display("[SLINK] SUCCESS");
