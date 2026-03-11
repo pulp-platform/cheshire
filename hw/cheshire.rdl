@@ -8,6 +8,7 @@
 `define CHESHIRE_RDL
 
 `include "cheshire_soc_regs.rdl"
+`include "slink_reg.rdl"
 
 // User-defined property for executable memory regions (used by ldh format)
 property executable {
@@ -101,7 +102,8 @@ addrmap cheshire {
     periph_stub_t #(.Size(0x0000_1000)) gpio    @0x0300_5000;
 
     // Serial link (4 KiB)
-    periph_stub_t #(.Size(0x0000_1000)) slink   @0x0300_6000;
+    // TODO(fischeti): Parametrize
+    slink_reg slink                             @0x0300_6000;
 
     // AXI VGA (4 KiB)
     periph_stub_t #(.Size(0x0000_1000)) vga     @0x0300_7000;
