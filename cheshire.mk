@@ -36,6 +36,7 @@ REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
 PEAKRDL ?= peakrdl
 
 PEAKRDL_INCLUDES  := -I $(CHS_ROOT)/hw/regs
+PEAKRDL_INCLUDES  += -I $(CLINTROOT)/rdl
 
 
 ################
