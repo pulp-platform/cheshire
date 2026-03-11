@@ -7,14 +7,13 @@
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 #include "dif/clint.h"
-#include "regs/clint.h"
 #include "util.h"
 #include "params.h"
 
-static volatile clint_t *const clint = (volatile clint_t *const)&__base_clint;
+#define CHS_CLINT ((volatile clint_t *)offsetof(cheshire_t, clint))
 
 uint64_t clint_get_mtime() {
-    return clint->mtime.w;
+    return CHS_CLINT->mtime.w;
 }
 
 void clint_spin_until(uint64_t tgt_mtime) {
@@ -45,7 +44,7 @@ uint64_t clint_get_core_freq(uint64_t ref_freq, uint64_t ref_time_inv) {
 }
 
 void clint_set_mtimecmpx(uint64_t timer_idx, uint64_t value) {
-    clint->mtimecmp[timer_idx].w = value;
+    CHS_CLINT->mtimecmp[timer_idx].w = value;
 }
 
 void clint_sleep_until(uint64_t timer_idx, uint64_t tgt_mtime) {

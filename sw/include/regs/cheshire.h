@@ -56,6 +56,66 @@ typedef struct __attribute__ ((__packed__)) {
     uint32_t mem[65536];
 } cheshire__bootrom_t;
 
+// Reg - clint::msip
+#define CLINT__MSIP__PENDING_bm 0x1
+#define CLINT__MSIP__PENDING_bp 0
+#define CLINT__MSIP__PENDING_bw 1
+#define CLINT__MSIP__PENDING_reset 0x0
+#define CLINT__MSIP__RSVD_bm 0xfffffffe
+#define CLINT__MSIP__RSVD_bp 1
+#define CLINT__MSIP__RSVD_bw 31
+#define CLINT__MSIP__RSVD_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t pending :1;
+        uint32_t rsvd :31;
+    } f;
+    uint32_t w;
+} clint__msip_t;
+
+// Reg - clint::mtimecmp
+#define CLINT__MTIMECMP__LOW_bm 0xffffffff
+#define CLINT__MTIMECMP__LOW_bp 0
+#define CLINT__MTIMECMP__LOW_bw 32
+#define CLINT__MTIMECMP__LOW_reset 0x0
+#define CLINT__MTIMECMP__HIGH_bm 0xffffffff00000000
+#define CLINT__MTIMECMP__HIGH_bp 32
+#define CLINT__MTIMECMP__HIGH_bw 32
+#define CLINT__MTIMECMP__HIGH_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint64_t low :32;
+        uint64_t high :32;
+    } f;
+    uint64_t w;
+} clint__mtimecmp_t;
+
+// Reg - clint::mtime
+#define CLINT__MTIME__LOW_bm 0xffffffff
+#define CLINT__MTIME__LOW_bp 0
+#define CLINT__MTIME__LOW_bw 32
+#define CLINT__MTIME__LOW_reset 0x0
+#define CLINT__MTIME__HIGH_bm 0xffffffff00000000
+#define CLINT__MTIME__HIGH_bp 32
+#define CLINT__MTIME__HIGH_bw 32
+#define CLINT__MTIME__HIGH_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint64_t low :32;
+        uint64_t high :32;
+    } f;
+    uint64_t w;
+} clint__mtime_t;
+
+// Addrmap - clint
+typedef struct __attribute__ ((__packed__)) {
+    clint__msip_t msip[2];
+    uint8_t RESERVED_8_3fff[0x3ff8];
+    clint__mtimecmp_t mtimecmp[2];
+    uint8_t RESERVED_4010_bff7[0x7fe8];
+    clint__mtime_t mtime;
+} clint_t;
+
 // Reg - periph_stub_t_Size_40000::status
 #define PERIPH_STUB_T_SIZE_40000__STATUS__STATUS_bm 0xffffffff
 #define PERIPH_STUB_T_SIZE_40000__STATUS__STATUS_bp 0
@@ -335,7 +395,8 @@ typedef struct __attribute__ ((__packed__)) {
     periph_stub_t_t dma;
     uint8_t RESERVED_1001000_1ffffff[0xfff000];
     cheshire__bootrom_t bootrom;
-    periph_stub_t_Size_40000_t clint;
+    clint_t clint;
+    uint8_t RESERVED_204c000_207ffff[0x34000];
     periph_stub_t_Size_40000_t irq_router;
     periph_stub_t_Size_40000_t axirt;
     uint8_t RESERVED_2100000_2ffffff[0xf00000];
