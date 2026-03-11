@@ -48,7 +48,7 @@ void clint_set_mtimecmpx(uint64_t timer_idx, uint64_t value) {
 }
 
 void clint_sleep_until(uint64_t timer_idx, uint64_t tgt_mtime) {
-    if (clint_get_mtime() < tgt_mtime) return;
+    if (clint_get_mtime() >= tgt_mtime) return;
     // Set comparison register `ticks` from now
     clint_set_mtimecmpx(timer_idx, tgt_mtime);
     fence();
