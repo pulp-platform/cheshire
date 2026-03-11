@@ -14,7 +14,7 @@ package:
 dependencies:
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.3  }
   axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.8 }
-  ace:                      { git: "https://github.com/pulp-platform/ace.git",                    rev: 083073e    } # branch: multicore/main
+  ace:                      { git: "https://github.com/pulp-platform/ace.git",                    rev: 3a35e89    }
   axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",                version: 0.2.1  }
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      rev: dcd1f6a    } # branch: rt/common-cells-1.39.0-bump
   axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: 0.0.0-alpha.10 }
@@ -23,7 +23,7 @@ dependencies:
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                  version: 0.2.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           version: 1.38.0 }
   common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.3  }
-  cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: fb7fba463  }
+  cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: cecea39f6  }
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.6.4  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }

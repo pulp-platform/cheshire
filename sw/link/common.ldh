@@ -38,6 +38,7 @@ SECTIONS {
   __base_bootrom  = 0x02000000;
   __base_clint    = 0x02040000;
   __base_axirt    = 0x020C0000;
+  __base_ccu      = 0x02100000;
   __base_axirtgrd = 0x020C1ffc;
   __base_regs     = 0x03000000;
   __base_llc      = 0x03001000;
