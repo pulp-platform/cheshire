@@ -27,7 +27,7 @@ PROVIDE(__bootrom_base_addr__ = 0x02000000);
 PROVIDE(__bootrom_size__ = 0x00040000);
 
 PROVIDE(__clint_base_addr__ = 0x02040000);
-PROVIDE(__clint_size__ = 0x00040000);
+PROVIDE(__clint_size__ = 0x0000C000);
 
 PROVIDE(__irq_router_base_addr__ = 0x02080000);
 PROVIDE(__irq_router_size__ = 0x00040000);
@@ -85,9 +85,17 @@ PROVIDE(__dma_status_base_addr__ = 0x01000000);
 
 PROVIDE(__dma__end_base_addr__ = 0x01000FFC);
 
-PROVIDE(__clint_status_base_addr__ = 0x02040000);
+PROVIDE(__clint_msip_0_base_addr__ = 0x02040000);
+PROVIDE(__clint_msip_1_base_addr__ = 0x02040004);
+PROVIDE(__clint_msip_num__ = 0x00000002);
+PROVIDE(__clint_msip_stride__ = 0x00000004);
 
-PROVIDE(__clint__end_base_addr__ = 0x0207FFFC);
+PROVIDE(__clint_mtimecmp_0_base_addr__ = 0x02044000);
+PROVIDE(__clint_mtimecmp_1_base_addr__ = 0x02044008);
+PROVIDE(__clint_mtimecmp_num__ = 0x00000002);
+PROVIDE(__clint_mtimecmp_stride__ = 0x00000008);
+
+PROVIDE(__clint_mtime_base_addr__ = 0x0204BFF8);
 
 PROVIDE(__irq_router_status_base_addr__ = 0x02080000);
 

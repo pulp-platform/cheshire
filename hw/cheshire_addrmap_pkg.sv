@@ -18,7 +18,7 @@ localparam longint unsigned BOOTROM_BASE_ADDR = 64'h2000000;
 localparam longint unsigned BOOTROM_SIZE = 64'h40000;
 
 localparam longint unsigned CLINT_BASE_ADDR = 64'h2040000;
-localparam longint unsigned CLINT_SIZE = 64'h40000;
+localparam longint unsigned CLINT_SIZE = 64'hC000;
 
 localparam longint unsigned IRQ_ROUTER_BASE_ADDR = 64'h2080000;
 localparam longint unsigned IRQ_ROUTER_SIZE = 64'h40000;
@@ -73,8 +73,15 @@ localparam longint unsigned DRAM_SIZE = 64'h800000;
 
 localparam longint unsigned DMA_STATUS_BASE_ADDR = 64'h1000000;
 localparam longint unsigned DMA__END_BASE_ADDR = 64'h1000FFC;
-localparam longint unsigned CLINT_STATUS_BASE_ADDR = 64'h2040000;
-localparam longint unsigned CLINT__END_BASE_ADDR = 64'h207FFFC;
+function automatic longint unsigned CLINT_MSIP_BASE_ADDR(input int unsigned msip_idx);
+    return 64'h2040000 + (msip_idx * 64'h4);
+endfunction
+localparam longint unsigned CLINT_MSIP_NUM = 64'h2;
+function automatic longint unsigned CLINT_MTIMECMP_BASE_ADDR(input int unsigned mtimecmp_idx);
+    return 64'h2044000 + (mtimecmp_idx * 64'h8);
+endfunction
+localparam longint unsigned CLINT_MTIMECMP_NUM = 64'h2;
+localparam longint unsigned CLINT_MTIME_BASE_ADDR = 64'h204BFF8;
 localparam longint unsigned IRQ_ROUTER_STATUS_BASE_ADDR = 64'h2080000;
 localparam longint unsigned IRQ_ROUTER__END_BASE_ADDR = 64'h20BFFFC;
 localparam longint unsigned AXIRT_STATUS_BASE_ADDR = 64'h20C0000;

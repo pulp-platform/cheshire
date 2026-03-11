@@ -35,6 +35,9 @@ DRAM_RTL_SIM_ROOT := $(shell $(BENDER) path dram_rtl_sim)
 REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
 PEAKRDL ?= peakrdl
 
+PEAKRDL_INCLUDES  := -I $(CHS_ROOT)/hw/regs
+PEAKRDL_INCLUDES  += -I $(CLINTROOT)/rdl
+
 
 ################
 # Dependencies #
