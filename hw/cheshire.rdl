@@ -24,7 +24,7 @@ addrmap periph_stub_t #(longint unsigned Size = 0x1000) {
     external reg { field {} _end[31:0]   = 0; } _end   @(Size - 4);
 };
 
-addrmap cheshire {
+addrmap cheshire #(longint unsigned SlinkNumLanes = 4) {
     desc = "Cheshire SoC system address map";
 
     ////////////////////
@@ -101,9 +101,8 @@ addrmap cheshire {
     // GPIO (4 KiB)
     periph_stub_t #(.Size(0x0000_1000)) gpio    @0x0300_5000;
 
-    // Serial link (4 KiB)
-    // TODO(fischeti): Parametrize
-    slink_reg slink                             @0x0300_6000;
+    // Serial link registers
+    slink_reg #(.NumLanes(SlinkNumLanes)) slink @0x0300_6000;
 
     // AXI VGA (4 KiB)
     periph_stub_t #(.Size(0x0000_1000)) vga     @0x0300_7000;
