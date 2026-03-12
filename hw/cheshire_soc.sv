@@ -1024,11 +1024,14 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  Register File  //
   /////////////////////
 
-  cheshire_regs_pkg::cheshire_regs__in_t  reg_hw2reg;
-  cheshire_regs_pkg::cheshire_regs__out_t reg_reg2hw;
+  cheshire_soc_regs_pkg::soc_regs__in_t  reg_hw2reg;
+  cheshire_soc_regs_pkg::soc_regs__out_t reg_reg2hw;
 
   // Shorthand for external (read-only) register hw-interface assignments
-  `define CHS_HWREG(name, data) name: '{ rd_ack: reg_reg2hw.name.req & ~reg_reg2hw.name.req_is_wr, rd_data: data }
+  `define CHS_HWREG(name, data) name: '{ \
+    rd_ack: reg_reg2hw.name.req & ~reg_reg2hw.name.req_is_wr, \
+    rd_data: data \
+  }
 
   assign reg_hw2reg = '{
     `CHS_HWREG(boot_mode,     '{ boot_mode:    boot_mode_i,       default: '0 }),
@@ -1063,7 +1066,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   `undef CHS_HWREG
 
-  cheshire_regs i_regs (
+  cheshire_soc_regs i_regs (
     .clk    ( clk_i  ),
     .arst_n ( rst_ni ),
     .s_apb_psel    ( reg_apb_req[RegOut.regs].psel    ),

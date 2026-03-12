@@ -87,106 +87,106 @@ typedef struct __attribute__ ((__packed__)) {
     periph_stub_t_Size_40000___end_t _end;
 } periph_stub_t_Size_40000_t;
 
-// Reg - cheshire_regs::scratch
-#define CHESHIRE_REGS__SCRATCH__SCRATCH_bm 0xffffffff
-#define CHESHIRE_REGS__SCRATCH__SCRATCH_bp 0
-#define CHESHIRE_REGS__SCRATCH__SCRATCH_bw 32
-#define CHESHIRE_REGS__SCRATCH__SCRATCH_reset 0x0
+// Reg - soc_regs::scratch
+#define SOC_REGS__SCRATCH__SCRATCH_bm 0xffffffff
+#define SOC_REGS__SCRATCH__SCRATCH_bp 0
+#define SOC_REGS__SCRATCH__SCRATCH_bw 32
+#define SOC_REGS__SCRATCH__SCRATCH_reset 0x0
 typedef union {
     struct __attribute__ ((__packed__)) {
         uint32_t scratch :32;
     } f;
     uint32_t w;
-} cheshire_regs__scratch_t;
+} soc_regs__scratch_t;
 
-// Reg - cheshire_regs::boot_mode
-#define CHESHIRE_REGS__BOOT_MODE__BOOT_MODE_bm 0x3
-#define CHESHIRE_REGS__BOOT_MODE__BOOT_MODE_bp 0
-#define CHESHIRE_REGS__BOOT_MODE__BOOT_MODE_bw 2
+// Reg - soc_regs::boot_mode
+#define SOC_REGS__BOOT_MODE__BOOT_MODE_bm 0x3
+#define SOC_REGS__BOOT_MODE__BOOT_MODE_bp 0
+#define SOC_REGS__BOOT_MODE__BOOT_MODE_bw 2
 typedef union {
     struct __attribute__ ((__packed__)) {
         uint32_t boot_mode :2;
         uint32_t :30;
     } f;
     uint32_t w;
-} cheshire_regs__boot_mode_t;
+} soc_regs__boot_mode_t;
 
-// Reg - cheshire_regs::rtc_freq
-#define CHESHIRE_REGS__RTC_FREQ__REF_FREQ_bm 0xffffffff
-#define CHESHIRE_REGS__RTC_FREQ__REF_FREQ_bp 0
-#define CHESHIRE_REGS__RTC_FREQ__REF_FREQ_bw 32
+// Reg - soc_regs::rtc_freq
+#define SOC_REGS__RTC_FREQ__REF_FREQ_bm 0xffffffff
+#define SOC_REGS__RTC_FREQ__REF_FREQ_bp 0
+#define SOC_REGS__RTC_FREQ__REF_FREQ_bw 32
 typedef union {
     struct __attribute__ ((__packed__)) {
         uint32_t ref_freq :32;
     } f;
     uint32_t w;
-} cheshire_regs__rtc_freq_t;
+} soc_regs__rtc_freq_t;
 
-// Reg - cheshire_regs::platform_rom
-#define CHESHIRE_REGS__PLATFORM_ROM__PLATFORM_ROM_bm 0xffffffff
-#define CHESHIRE_REGS__PLATFORM_ROM__PLATFORM_ROM_bp 0
-#define CHESHIRE_REGS__PLATFORM_ROM__PLATFORM_ROM_bw 32
+// Reg - soc_regs::platform_rom
+#define SOC_REGS__PLATFORM_ROM__PLATFORM_ROM_bm 0xffffffff
+#define SOC_REGS__PLATFORM_ROM__PLATFORM_ROM_bp 0
+#define SOC_REGS__PLATFORM_ROM__PLATFORM_ROM_bw 32
 typedef union {
     struct __attribute__ ((__packed__)) {
         uint32_t platform_rom :32;
     } f;
     uint32_t w;
-} cheshire_regs__platform_rom_t;
+} soc_regs__platform_rom_t;
 
-// Reg - cheshire_regs::num_int_harts
-#define CHESHIRE_REGS__NUM_INT_HARTS__NUM_HARTS_bm 0xffffffff
-#define CHESHIRE_REGS__NUM_INT_HARTS__NUM_HARTS_bp 0
-#define CHESHIRE_REGS__NUM_INT_HARTS__NUM_HARTS_bw 32
+// Reg - soc_regs::num_int_harts
+#define SOC_REGS__NUM_INT_HARTS__NUM_HARTS_bm 0xffffffff
+#define SOC_REGS__NUM_INT_HARTS__NUM_HARTS_bp 0
+#define SOC_REGS__NUM_INT_HARTS__NUM_HARTS_bw 32
 typedef union {
     struct __attribute__ ((__packed__)) {
         uint32_t num_harts :32;
     } f;
     uint32_t w;
-} cheshire_regs__num_int_harts_t;
+} soc_regs__num_int_harts_t;
 
-// Reg - cheshire_regs::hw_features
-#define CHESHIRE_REGS__HW_FEATURES__BOOTROM_bm 0x1
-#define CHESHIRE_REGS__HW_FEATURES__BOOTROM_bp 0
-#define CHESHIRE_REGS__HW_FEATURES__BOOTROM_bw 1
-#define CHESHIRE_REGS__HW_FEATURES__LLC_bm 0x2
-#define CHESHIRE_REGS__HW_FEATURES__LLC_bp 1
-#define CHESHIRE_REGS__HW_FEATURES__LLC_bw 1
-#define CHESHIRE_REGS__HW_FEATURES__UART_bm 0x4
-#define CHESHIRE_REGS__HW_FEATURES__UART_bp 2
-#define CHESHIRE_REGS__HW_FEATURES__UART_bw 1
-#define CHESHIRE_REGS__HW_FEATURES__SPI_HOST_bm 0x8
-#define CHESHIRE_REGS__HW_FEATURES__SPI_HOST_bp 3
-#define CHESHIRE_REGS__HW_FEATURES__SPI_HOST_bw 1
-#define CHESHIRE_REGS__HW_FEATURES__I2C_bm 0x10
-#define CHESHIRE_REGS__HW_FEATURES__I2C_bp 4
-#define CHESHIRE_REGS__HW_FEATURES__I2C_bw 1
-#define CHESHIRE_REGS__HW_FEATURES__GPIO_bm 0x20
-#define CHESHIRE_REGS__HW_FEATURES__GPIO_bp 5
-#define CHESHIRE_REGS__HW_FEATURES__GPIO_bw 1
-#define CHESHIRE_REGS__HW_FEATURES__DMA_bm 0x40
-#define CHESHIRE_REGS__HW_FEATURES__DMA_bp 6
-#define CHESHIRE_REGS__HW_FEATURES__DMA_bw 1
-#define CHESHIRE_REGS__HW_FEATURES__SERIAL_LINK_bm 0x80
-#define CHESHIRE_REGS__HW_FEATURES__SERIAL_LINK_bp 7
-#define CHESHIRE_REGS__HW_FEATURES__SERIAL_LINK_bw 1
-#define CHESHIRE_REGS__HW_FEATURES__VGA_bm 0x100
-#define CHESHIRE_REGS__HW_FEATURES__VGA_bp 8
-#define CHESHIRE_REGS__HW_FEATURES__VGA_bw 1
-#define CHESHIRE_REGS__HW_FEATURES__USB_bm 0x200
-#define CHESHIRE_REGS__HW_FEATURES__USB_bp 9
-#define CHESHIRE_REGS__HW_FEATURES__USB_bw 1
-#define CHESHIRE_REGS__HW_FEATURES__AXIRT_bm 0x400
-#define CHESHIRE_REGS__HW_FEATURES__AXIRT_bp 10
-#define CHESHIRE_REGS__HW_FEATURES__AXIRT_bw 1
-#define CHESHIRE_REGS__HW_FEATURES__CLIC_bm 0x800
-#define CHESHIRE_REGS__HW_FEATURES__CLIC_bp 11
-#define CHESHIRE_REGS__HW_FEATURES__CLIC_bw 1
-#define CHESHIRE_REGS__HW_FEATURES__IRQ_ROUTER_bm 0x1000
-#define CHESHIRE_REGS__HW_FEATURES__IRQ_ROUTER_bp 12
-#define CHESHIRE_REGS__HW_FEATURES__IRQ_ROUTER_bw 1
-#define CHESHIRE_REGS__HW_FEATURES__BUS_ERR_bm 0x2000
-#define CHESHIRE_REGS__HW_FEATURES__BUS_ERR_bp 13
-#define CHESHIRE_REGS__HW_FEATURES__BUS_ERR_bw 1
+// Reg - soc_regs::hw_features
+#define SOC_REGS__HW_FEATURES__BOOTROM_bm 0x1
+#define SOC_REGS__HW_FEATURES__BOOTROM_bp 0
+#define SOC_REGS__HW_FEATURES__BOOTROM_bw 1
+#define SOC_REGS__HW_FEATURES__LLC_bm 0x2
+#define SOC_REGS__HW_FEATURES__LLC_bp 1
+#define SOC_REGS__HW_FEATURES__LLC_bw 1
+#define SOC_REGS__HW_FEATURES__UART_bm 0x4
+#define SOC_REGS__HW_FEATURES__UART_bp 2
+#define SOC_REGS__HW_FEATURES__UART_bw 1
+#define SOC_REGS__HW_FEATURES__SPI_HOST_bm 0x8
+#define SOC_REGS__HW_FEATURES__SPI_HOST_bp 3
+#define SOC_REGS__HW_FEATURES__SPI_HOST_bw 1
+#define SOC_REGS__HW_FEATURES__I2C_bm 0x10
+#define SOC_REGS__HW_FEATURES__I2C_bp 4
+#define SOC_REGS__HW_FEATURES__I2C_bw 1
+#define SOC_REGS__HW_FEATURES__GPIO_bm 0x20
+#define SOC_REGS__HW_FEATURES__GPIO_bp 5
+#define SOC_REGS__HW_FEATURES__GPIO_bw 1
+#define SOC_REGS__HW_FEATURES__DMA_bm 0x40
+#define SOC_REGS__HW_FEATURES__DMA_bp 6
+#define SOC_REGS__HW_FEATURES__DMA_bw 1
+#define SOC_REGS__HW_FEATURES__SERIAL_LINK_bm 0x80
+#define SOC_REGS__HW_FEATURES__SERIAL_LINK_bp 7
+#define SOC_REGS__HW_FEATURES__SERIAL_LINK_bw 1
+#define SOC_REGS__HW_FEATURES__VGA_bm 0x100
+#define SOC_REGS__HW_FEATURES__VGA_bp 8
+#define SOC_REGS__HW_FEATURES__VGA_bw 1
+#define SOC_REGS__HW_FEATURES__USB_bm 0x200
+#define SOC_REGS__HW_FEATURES__USB_bp 9
+#define SOC_REGS__HW_FEATURES__USB_bw 1
+#define SOC_REGS__HW_FEATURES__AXIRT_bm 0x400
+#define SOC_REGS__HW_FEATURES__AXIRT_bp 10
+#define SOC_REGS__HW_FEATURES__AXIRT_bw 1
+#define SOC_REGS__HW_FEATURES__CLIC_bm 0x800
+#define SOC_REGS__HW_FEATURES__CLIC_bp 11
+#define SOC_REGS__HW_FEATURES__CLIC_bw 1
+#define SOC_REGS__HW_FEATURES__IRQ_ROUTER_bm 0x1000
+#define SOC_REGS__HW_FEATURES__IRQ_ROUTER_bp 12
+#define SOC_REGS__HW_FEATURES__IRQ_ROUTER_bw 1
+#define SOC_REGS__HW_FEATURES__BUS_ERR_bm 0x2000
+#define SOC_REGS__HW_FEATURES__BUS_ERR_bp 13
+#define SOC_REGS__HW_FEATURES__BUS_ERR_bw 1
 typedef union {
     struct __attribute__ ((__packed__)) {
         uint32_t bootrom :1;
@@ -206,29 +206,29 @@ typedef union {
         uint32_t :18;
     } f;
     uint32_t w;
-} cheshire_regs__hw_features_t;
+} soc_regs__hw_features_t;
 
-// Reg - cheshire_regs::llc_size
-#define CHESHIRE_REGS__LLC_SIZE__LLC_SIZE_bm 0xffffffff
-#define CHESHIRE_REGS__LLC_SIZE__LLC_SIZE_bp 0
-#define CHESHIRE_REGS__LLC_SIZE__LLC_SIZE_bw 32
+// Reg - soc_regs::llc_size
+#define SOC_REGS__LLC_SIZE__LLC_SIZE_bm 0xffffffff
+#define SOC_REGS__LLC_SIZE__LLC_SIZE_bp 0
+#define SOC_REGS__LLC_SIZE__LLC_SIZE_bw 32
 typedef union {
     struct __attribute__ ((__packed__)) {
         uint32_t llc_size :32;
     } f;
     uint32_t w;
-} cheshire_regs__llc_size_t;
+} soc_regs__llc_size_t;
 
-// Reg - cheshire_regs::vga_params
-#define CHESHIRE_REGS__VGA_PARAMS__RED_WIDTH_bm 0xff
-#define CHESHIRE_REGS__VGA_PARAMS__RED_WIDTH_bp 0
-#define CHESHIRE_REGS__VGA_PARAMS__RED_WIDTH_bw 8
-#define CHESHIRE_REGS__VGA_PARAMS__GREEN_WIDTH_bm 0xff00
-#define CHESHIRE_REGS__VGA_PARAMS__GREEN_WIDTH_bp 8
-#define CHESHIRE_REGS__VGA_PARAMS__GREEN_WIDTH_bw 8
-#define CHESHIRE_REGS__VGA_PARAMS__BLUE_WIDTH_bm 0xff0000
-#define CHESHIRE_REGS__VGA_PARAMS__BLUE_WIDTH_bp 16
-#define CHESHIRE_REGS__VGA_PARAMS__BLUE_WIDTH_bw 8
+// Reg - soc_regs::vga_params
+#define SOC_REGS__VGA_PARAMS__RED_WIDTH_bm 0xff
+#define SOC_REGS__VGA_PARAMS__RED_WIDTH_bp 0
+#define SOC_REGS__VGA_PARAMS__RED_WIDTH_bw 8
+#define SOC_REGS__VGA_PARAMS__GREEN_WIDTH_bm 0xff00
+#define SOC_REGS__VGA_PARAMS__GREEN_WIDTH_bp 8
+#define SOC_REGS__VGA_PARAMS__GREEN_WIDTH_bw 8
+#define SOC_REGS__VGA_PARAMS__BLUE_WIDTH_bm 0xff0000
+#define SOC_REGS__VGA_PARAMS__BLUE_WIDTH_bp 16
+#define SOC_REGS__VGA_PARAMS__BLUE_WIDTH_bw 8
 typedef union {
     struct __attribute__ ((__packed__)) {
         uint32_t red_width :8;
@@ -237,19 +237,19 @@ typedef union {
         uint32_t :8;
     } f;
     uint32_t w;
-} cheshire_regs__vga_params_t;
+} soc_regs__vga_params_t;
 
-// Addrmap - cheshire_regs
+// Addrmap - soc_regs
 typedef struct __attribute__ ((__packed__)) {
-    cheshire_regs__scratch_t scratch[16];
-    cheshire_regs__boot_mode_t boot_mode;
-    cheshire_regs__rtc_freq_t rtc_freq;
-    cheshire_regs__platform_rom_t platform_rom;
-    cheshire_regs__num_int_harts_t num_int_harts;
-    cheshire_regs__hw_features_t hw_features;
-    cheshire_regs__llc_size_t llc_size;
-    cheshire_regs__vga_params_t vga_params;
-} cheshire_regs_t;
+    soc_regs__scratch_t scratch[16];
+    soc_regs__boot_mode_t boot_mode;
+    soc_regs__rtc_freq_t rtc_freq;
+    soc_regs__platform_rom_t platform_rom;
+    soc_regs__num_int_harts_t num_int_harts;
+    soc_regs__hw_features_t hw_features;
+    soc_regs__llc_size_t llc_size;
+    soc_regs__vga_params_t vga_params;
+} soc_regs_t;
 
 // Reg - periph_stub_t_Size_40::status
 #define PERIPH_STUB_T_SIZE_40__STATUS__STATUS_bm 0xffffffff
@@ -339,7 +339,7 @@ typedef struct __attribute__ ((__packed__)) {
     periph_stub_t_Size_40000_t irq_router;
     periph_stub_t_Size_40000_t axirt;
     uint8_t RESERVED_2100000_2ffffff[0xf00000];
-    cheshire_regs_t regs;
+    soc_regs_t regs;
     uint8_t RESERVED_300005c_3000fff[0xfa4];
     periph_stub_t_t llc;
     periph_stub_t_t uart;

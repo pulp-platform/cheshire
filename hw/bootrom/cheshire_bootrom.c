@@ -24,14 +24,13 @@ int boot_passive(uint64_t core_freq) {
     // Initialize UART with debug settings
     uart_debug_init(&__uart_base_addr__, core_freq);
     // scratch[0] provides an entry point, scratch[1] a start signal
-    volatile cheshire_regs_t *regs = CHS_REGS;
     // While we poll bit 2 of scratch[2], check for incoming UART debug requests
-    while (!(regs->scratch[2].w & 2))
+    while (!(CHS_REGS->scratch[2].w & 2))
         if (uart_debug_check(&__uart_base_addr__)) return uart_debug_serve(&__uart_base_addr__);
     // No UART (or JTAG) requests came in, but scratch[2][2] was set --> run code at scratch[1:0]
-    regs->scratch[2].w = 0;
+    CHS_REGS->scratch[2].w = 0;
     return boot_next_stage(
-        (void *)(uintptr_t)(((uint64_t)regs->scratch[1].w << 32) | regs->scratch[0].w));
+        (void *)(uintptr_t)(((uint64_t)CHS_REGS->scratch[1].w << 32) | CHS_REGS->scratch[0].w));
 }
 
 int boot_spi_sdcard(uint64_t core_freq, uint64_t rtc_freq) {

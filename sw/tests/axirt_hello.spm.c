@@ -17,18 +17,16 @@
 #include "util.h"
 
 int main(void) {
-    volatile cheshire_regs_t *regs = CHS_REGS;
-
     // Immediately return an error if AXI_REALM, DMA, or UART are not present
-    CHECK_ASSERT(-1, regs->hw_features.f.axirt);
-    CHECK_ASSERT(-2, regs->hw_features.f.dma);
-    CHECK_ASSERT(-3, regs->hw_features.f.uart);
+    CHECK_ASSERT(-1, CHS_REGS->hw_features.f.axirt);
+    CHECK_ASSERT(-2, CHS_REGS->hw_features.f.dma);
+    CHECK_ASSERT(-3, CHS_REGS->hw_features.f.uart);
 
     // This test requires at least two subordinate regions
     CHECK_ASSERT(-4, AXI_RT_PARAM_NUM_SUB >= 2);
 
     char str[] = "Hello AXI-RT!\r\n";
-    uint32_t rtc_freq = regs->rtc_freq.f.ref_freq;
+    uint32_t rtc_freq = CHS_REGS->rtc_freq.f.ref_freq;
     uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
 
     // Enable and configure AXI REALM
@@ -44,7 +42,7 @@ int main(void) {
     __axirt_set_period(100, 1, 0);
 
     // Configure DMA
-    int chs_dma_id = (int)regs->num_int_harts.f.num_harts + 1;
+    int chs_dma_id = (int)CHS_REGS->num_int_harts.f.num_harts + 1;
     __axirt_set_region(0, 0xffffffff, 0, chs_dma_id);
     __axirt_set_region(0x100000000, 0xffffffffffffffff, 1, chs_dma_id);
     __axirt_set_budget(0x10000000, 0, chs_dma_id);
