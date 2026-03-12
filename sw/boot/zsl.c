@@ -52,13 +52,12 @@ static inline void load_part_or_spin(void *priv, const uint64_t *pguid, void *co
 
 int main(void) {
     // Get system parameters
-    volatile cheshire_regs_t *regs = CHS_REGS;
-    uint32_t bootmode = regs->boot_mode.f.boot_mode;
-    uint32_t rtc_freq = regs->rtc_freq.f.ref_freq;
+    uint32_t bootmode = CHS_REGS->boot_mode.f.boot_mode;
+    uint32_t rtc_freq = CHS_REGS->rtc_freq.f.ref_freq;
     uint64_t core_freq = clint_get_core_freq(rtc_freq, 2500);
-    rgp = (void *)(uintptr_t)regs->scratch[3].w;
-    uint32_t read = regs->scratch[0].w;
-    void *priv = (void *)(uintptr_t)regs->scratch[1].w;
+    rgp = (void *)(uintptr_t)CHS_REGS->scratch[3].w;
+    uint32_t read = CHS_REGS->scratch[0].w;
+    void *priv = (void *)(uintptr_t)CHS_REGS->scratch[1].w;
 
     // Initialize UART
     uart_init(&__uart_base_addr__, core_freq, __BOOT_BAUDRATE);

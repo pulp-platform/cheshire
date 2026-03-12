@@ -7,7 +7,7 @@
 `ifndef CHESHIRE_RDL
 `define CHESHIRE_RDL
 
-`include "regs.rdl"
+`include "cheshire_soc_regs.rdl"
 
 // User-defined property for executable memory regions (used by ldh format)
 property executable {
@@ -83,7 +83,7 @@ addrmap cheshire {
     periph_stub_t #(.Size(0x0004_0000)) clic    @0x0800_0000;
 
     // Cheshire SoC register file
-    cheshire_regs regs @0x0300_0000;
+    soc_regs regs @0x0300_0000;
 
     // LLC / SPM register interface (4 KiB)
     periph_stub_t #(.Size(0x0000_1000)) llc     @0x0300_1000;

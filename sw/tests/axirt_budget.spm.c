@@ -23,17 +23,15 @@
 #define FRAGMENTATION_SIZE_BEATS 0 // Max fragmentation applied to bursts
 
 int main(void) {
-    volatile cheshire_regs_t *regs = CHS_REGS;
-
     // Immediately return an error if AXI_REALM or DMA are not present
-    CHECK_ASSERT(-1, regs->hw_features.f.axirt);
-    CHECK_ASSERT(-2, regs->hw_features.f.dma);
+    CHECK_ASSERT(-1, CHS_REGS->hw_features.f.axirt);
+    CHECK_ASSERT(-2, CHS_REGS->hw_features.f.dma);
 
     // This test requires at least two subordinate regions
     CHECK_ASSERT(-3, AXI_RT_PARAM_NUM_SUB >= 2);
 
     // Get internal hart count
-    int num_int_harts = (int)regs->num_int_harts.f.num_harts;
+    int num_int_harts = (int)CHS_REGS->num_int_harts.f.num_harts;
 
     // Allocate DMA buffers
     volatile uint64_t dma_src_cached[DMA_NUM_BEATS];
