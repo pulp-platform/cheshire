@@ -8,6 +8,7 @@
 `define CHESHIRE_RDL
 
 `include "cheshire_soc_regs.rdl"
+`include "clint.rdl"
 
 // User-defined property for executable memory regions (used by ldh format)
 property executable {
@@ -68,7 +69,7 @@ addrmap cheshire {
     periph_stub_t #(.Size(0x0000_1000)) dma     @0x0100_0000;
 
     // CLINT (256 KiB)
-    periph_stub_t #(.Size(0x0004_0000)) clint   @0x0204_0000;
+    clint #(.NumCores(2)) clint                 @0x0204_0000;
 
     // IRQ router (256 KiB)
     periph_stub_t #(.Size(0x0004_0000)) irq_router @0x0208_0000;
