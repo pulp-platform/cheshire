@@ -2,15 +2,16 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 //
-// Michael Rogenmoser <michaero@iis.ee.ethz.ch>
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
+// Michael Rogenmoser <michaero@iis.ee.ethz.ch>
+// Tim Fischer <fischeti@iis.ee.ethz.ch>
 
-`ifndef CHESHIRE_REGS_RDL
-`define CHESHIRE_REGS_RDL
+`ifndef CHESHIRE_SOC_REGS_RDL
+`define CHESHIRE_SOC_REGS_RDL
 
-addrmap cheshire_regs #(
+addrmap soc_regs #(
     longint unsigned NumScratchRegs = 16
 ) {
     reg scratch {
@@ -176,4 +177,4 @@ addrmap cheshire_regs #(
     external vga_params      vga_params              @0x58;
 };
 
-`endif // CHESHIRE_REGS_RDL
+`endif // CHESHIRE_SOC_REGS_RDL
