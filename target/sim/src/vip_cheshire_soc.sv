@@ -68,6 +68,16 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   inout  wire                 spih_sck,
   inout  wire [SpihNumCs-1:0] spih_csb,
   inout  wire [ 3:0]          spih_sd,
+`ifdef FESVR_DTM
+  // DMI
+  output logic         dmi_rst_ni,
+  output dm::dmi_req_t dmi_req,
+  output logic         dmi_req_valid,
+  input  logic         dmi_req_ready,
+  input dm::dmi_resp_t dmi_resp,
+  output logic         dmi_resp_ready,
+  input  logic         dmi_resp_valid,
+`endif 
   // Serial link interface
   output logic [SlinkNumChan-1:0]                    slink_rcv_clk_i,
   input  logic [SlinkNumChan-1:0]                    slink_rcv_clk_o,
@@ -88,6 +98,25 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   import "DPI-C" function byte get_entry(output longint entry);
   import "DPI-C" function byte get_section(output longint address, output longint len);
   import "DPI-C" context function byte read_section(input longint address, inout byte buffer[], input longint len);
+`ifdef FESVR_DTM
+  import "DPI-C" function chandle debug_new_pk(input string pk_path, input string app_path);
+  import "DPI-C" function chandle debug_new(input string app_path);
+  import "DPI-C" function int debug_tick
+(
+  input chandle fesvr_dtm,
+
+  output bit debug_req_valid,
+  input  bit debug_req_ready,
+  output int debug_req_bits_addr,
+  output int debug_req_bits_op,
+  output int debug_req_bits_data,
+
+  input  bit debug_resp_valid,
+  output bit debug_resp_ready,
+  input  int debug_resp_bits_resp,
+  input  int debug_resp_bits_data
+);
+`endif
 
   ////////////
   //  DRAM  //
@@ -948,6 +977,24 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     $display("[SLINK] Wrote launch signal and entry point 0x%h", entry);
   endtask
 
+    // Preload a binary without running it -> prerun ?
+  task automatic slink_elf_prerun(input string binary);
+    doub_bt entry;
+    // Wait for bootrom to ungate Serial Link
+    if (DutCfg.LlcNotBypass) begin
+      word_bt regval;
+      $display("[SLINK] Wait for LLC configuration");
+      slink_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
+    end
+    // Preload
+    slink_elf_preload(binary, entry);
+    // Write entry point
+    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_1_OFFSET, entry[63:32]);
+    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_0_OFFSET, entry[32:0]);
+    // Not resuming hart 0, handled by fesvr's dtm
+    $display("[SLINK] Wrote entry point 0x%h", entry);
+  endtask
+
   // Wait for termination signal and get return code
   task automatic slink_wait_for_eoc(output word_bt exit_code);
     slink_poll_bit0(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, exit_code, 800);
@@ -955,6 +1002,88 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     if (exit_code) $error("[SLINK] FAILED: return code %0d", exit_code);
     else $display("[SLINK] SUCCESS");
   endtask
+
+`ifdef FESVR_DTM
+  //////////////
+  //  SimDTM  //
+  //////////////
+
+  /*---------------------------------
+  Mostly comming from SimDTM.sv
+---------------------------------*/
+
+  chandle fesvr_dtm;
+
+  logic [31:0] sim_exit; // TODO: wire this up in the testbench
+  logic [1:0] dmi_req_bits_op;
+  assign dmi_req.op = dm::dtm_op_e'(dmi_req_bits_op); // need to check if it's this variable, 
+
+  wire #0.1 __debug_req_ready = dmi_req_ready;
+  wire #0.1 __debug_resp_valid = dmi_resp_valid;
+  wire [31:0] #0.1 __debug_resp_bits_resp = {30'b0, dmi_resp.resp};
+  wire [31:0] #0.1 __debug_resp_bits_data = dmi_resp.data;
+
+  bit __debug_req_valid;
+  int __debug_req_bits_addr;
+  int __debug_req_bits_op;
+  int __debug_req_bits_data;
+  bit __debug_resp_ready;
+  int __exit;
+
+  assign #0.1 dmi_req_valid = __debug_req_valid;
+  assign #0.1 dmi_req.addr = __debug_req_bits_addr[6:0];
+  assign #0.1 dmi_req_bits_op = __debug_req_bits_op[1:0];
+  assign #0.1 dmi_req.data = __debug_req_bits_data[31:0];
+  assign #0.1 dmi_resp_ready = __debug_resp_ready;
+  assign #0.1 sim_exit = __exit;
+
+  always @(posedge clk)
+  begin
+    if(!(rst_n & dmi_rst_ni)) begin
+      __debug_req_valid = 0;
+      __debug_resp_ready = 0;
+      __exit = 0;
+    end else begin
+      __exit = debug_tick(
+        fesvr_dtm,
+        __debug_req_valid,
+        __debug_req_ready,
+        __debug_req_bits_addr,
+        __debug_req_bits_op,
+        __debug_req_bits_data,
+        __debug_resp_valid,
+        __debug_resp_ready,
+        __debug_resp_bits_resp,
+        __debug_resp_bits_data
+      );
+    end
+  end
+
+  task automatic fesvr_wait_for_exit(output word_bt exit_code);
+    while (!sim_exit[0]) begin
+        #(ClkPeriodSys * 100);
+    end 
+    exit_code = sim_exit >> 1;
+    if (exit_code == 0) $display("[FESVR] SUCCESS");
+    else $error("[FESVR] FAILED: return code %0d", exit_code);
+  endtask
+
+  task automatic fesvr_stop();
+    dmi_rst_ni = 0;
+  endtask
+
+  task automatic fesvr_start();
+    dmi_rst_ni = 1;
+  endtask
+
+  task automatic fesvr_set(input string binary);
+    fesvr_dtm = debug_new(binary);
+  endtask 
+
+  task automatic fesvr_set_pk(input string kernel, input string binary);
+    fesvr_dtm = debug_new_pk(kernel, binary);
+  endtask 
+`endif
 
 endmodule
 

@@ -16,11 +16,13 @@ module tb_cheshire_soc #(
     .UseDramSys   (UseDramSys)
   ) fix();
 
+  string      pk_path;
   string      preload_elf;
   string      boot_hex;
   logic [1:0] boot_mode;
   logic [1:0] preload_mode;
   bit [31:0]  exit_code;
+  logic       using_pk;
 
   initial begin
     // Fetch plusargs or use safe (fail-fast) defaults
@@ -28,6 +30,15 @@ module tb_cheshire_soc #(
     if (!$value$plusargs("PRELMODE=%d", preload_mode))  preload_mode  = 0;
     if (!$value$plusargs("BINARY=%s",   preload_elf))   preload_elf   = "";
     if (!$value$plusargs("IMAGE=%s",    boot_hex))      boot_hex      = "";
+    if (!$value$plusargs("PK=%s",       pk_path)) begin
+      pk_path  = "";
+      using_pk = 0;
+    end else using_pk = 1;
+
+`ifdef FESVR_DTM
+    // locking SimDTM
+    fix.vip.fesvr_stop();
+`endif
 
     // Set boot mode and preload boot image if there is one
     fix.vip.set_boot_mode(boot_mode);
@@ -37,8 +48,27 @@ module tb_cheshire_soc #(
     // Wait for reset
     fix.vip.wait_for_reset();
 
-    // Preload in idle mode or wait for completion in autonomous boot
     if (boot_mode == 0) begin
+`ifdef FESVR_DTM
+      // Idle boot: preload with the specified mode, only slink when fesvr
+      case (preload_mode)
+        // Preload done only using slink in this case cause it's the fastest way available
+        // !! fesvr_set before fesvr_start !!
+        1: begin  // Serial Link
+          if (using_pk) begin
+            fix.vip.slink_elf_prerun(pk_path); // preload with slink
+            fix.vip.fesvr_set_pk(pk_path, preload_elf); // creating a dtm class
+          end else begin
+            fix.vip.slink_elf_prerun(preload_elf); // preload with slink
+            fix.vip.fesvr_set(preload_elf); // creating a dtm class
+          end
+          fix.vip.fesvr_start(); // starting dtm tick 
+          fix.vip.fesvr_wait_for_exit(exit_code); //waiting on exit code to be zero
+        end default: begin
+          $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);
+        end
+      endcase
+`else
       // Idle boot: preload with the specified mode
       case (preload_mode)
         0: begin      // JTAG
@@ -54,6 +84,7 @@ module tb_cheshire_soc #(
           $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);
         end
       endcase
+`endif
     end else if (boot_mode == 1) begin
       $fatal(1, "Unsupported boot mode %d (SD Card)!", boot_mode);
     end else begin
@@ -67,5 +98,4 @@ module tb_cheshire_soc #(
 
     $finish;
   end
-
 endmodule

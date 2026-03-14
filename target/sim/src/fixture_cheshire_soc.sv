@@ -63,6 +63,17 @@ module fixture_cheshire_soc #(
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o;
 
+`ifdef FESVR_DTM
+  //DMI
+  logic          dmi_rst_ni;
+  dm::dmi_req_t  dmi_req;
+  logic          dmi_req_valid;
+  logic          dmi_req_ready;
+  dm::dmi_resp_t dmi_resp;
+  logic          dmi_resp_ready;
+  logic          dmi_resp_valid;
+`endif
+
   cheshire_soc #(
     .Cfg                ( DutCfg ),
     .ExtHartinfo        ( '0 ),
@@ -135,6 +146,15 @@ module fixture_cheshire_soc #(
     .vga_red_o          ( ),
     .vga_green_o        ( ),
     .vga_blue_o         ( ),
+  `ifdef FESVR_DTM
+    .dmi_rst_ni         ( dmi_rst_ni  ),
+    .dmi_req_valid_i    ( dmi_req_valid  ),
+    .dmi_req_ready_o    ( dmi_req_ready  ),
+    .dmi_req_i          ( dmi_req        ),
+    .dmi_resp_valid_o   ( dmi_resp_valid ),
+    .dmi_resp_ready_i   ( dmi_resp_ready ),
+    .dmi_resp_o         ( dmi_resp       ),
+  `endif
     .usb_clk_i          ( 1'b0 ),
     .usb_rst_ni         ( 1'b1 ),
     .usb_dm_i           ( '0 ),

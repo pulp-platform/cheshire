@@ -97,6 +97,17 @@ module cheshire_soc import cheshire_pkg::*; #(
   output logic [Cfg.VgaRedWidth  -1:0]  vga_red_o,
   output logic [Cfg.VgaGreenWidth-1:0]  vga_green_o,
   output logic [Cfg.VgaBlueWidth -1:0]  vga_blue_o,
+`ifdef FESVR_DTM
+  // DMI interface
+  input  logic         dmi_rst_ni,
+  input  dm::dmi_req_t dmi_req_i,
+  input  logic         dmi_req_valid_i,
+  output logic         dmi_req_ready_o,
+
+  output dm::dmi_resp_t dmi_resp_o,
+  input  logic          dmi_resp_ready_i,
+  output logic          dmi_resp_valid_o,
+`endif
   // USB interface
   input  logic                   usb_clk_i,
   input  logic                   usb_rst_ni,
@@ -802,7 +813,9 @@ module cheshire_soc import cheshire_pkg::*; #(
   logic       dbg_sba_err;
 
   // JTAG DMI to debug module
+  `ifndef FESVR_DTM
   logic           dbg_dmi_rst_n;
+  `endif
   dm::dmi_req_t   dbg_dmi_req;
   logic           dbg_dmi_req_ready, dbg_dmi_req_valid;
   dm::dmi_resp_t  dbg_dmi_rsp;
@@ -928,6 +941,15 @@ module cheshire_soc import cheshire_pkg::*; #(
     .master_r_rdata_i     ( dbg_sba_rdata     ),
     .master_r_err_i       ( dbg_sba_err       ),
     .master_r_other_err_i ( 1'b0 ),
+  `ifdef FESVR_DTM
+    .dmi_rst_ni           ( dmi_rst_ni     ), // not handled by SimDTM and his done like this in dmi_jtag
+    .dmi_req_valid_i      ( dmi_req_valid_i ),
+    .dmi_req_ready_o      ( dmi_req_ready_o ),
+    .dmi_req_i            ( dmi_req_i       ),
+    .dmi_resp_valid_o     ( dmi_resp_valid_o ),
+    .dmi_resp_ready_i     ( dmi_resp_ready_i ),
+    .dmi_resp_o           ( dmi_resp_o       )
+  `else
     .dmi_rst_ni           ( dbg_dmi_rst_n     ),
     .dmi_req_valid_i      ( dbg_dmi_req_valid ),
     .dmi_req_ready_o      ( dbg_dmi_req_ready ),
@@ -935,6 +957,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .dmi_resp_valid_o     ( dbg_dmi_rsp_valid ),
     .dmi_resp_ready_i     ( dbg_dmi_rsp_ready ),
     .dmi_resp_o           ( dbg_dmi_rsp       )
+  `endif
   );
 
   axi_mst_req_t axi_dbg_req;
