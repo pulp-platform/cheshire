@@ -44,11 +44,8 @@ $(CHS_XILINX_DIR)/build/%/out.xci: \
 		$$(wildcard $(CHS_XILINX_DIR)/src/ips/$$*.prj) \
 		| $(CHS_XILINX_DIR)/build/%/
 	@rm -f $(CHS_XILINX_DIR)/build/$(*)*.log $(CHS_XILINX_DIR)/build/$(*)*.jou
-	cd $| && { \
-		$(VIVADO) -mode batch -log ../$*.log -jou ../$*.jou \
-		-source $(call PLATFORM_PATH,$<) -tclargs $(BOARD_AND_IP); \
-		ln -s $(@D)/$(IP_XCI_PATH) $(@D)/out.xci; \
-	}
+	cd $| && $(VIVADO) -mode batch -log ../$*.log -jou ../$*.jou -source $(call PLATFORM_PATH,$<) -tclargs $(BOARD_AND_IP)
+	ln -s $(@D)/$(IP_XCI_PATH) $(@D)/out.xci
 
 ##############
 # Bitstreams #
