@@ -25,10 +25,12 @@
 
 #define MITIGATION          MITIGATION_DPLLC
 
-#define DATA_POINTS 1024
+#define DATA_POINTS 50000
 
 #define SPY_COLOUR      0
 #define TROJAN_COLOUR   1
+
+#define SHARED_DATA 1
 
 #define SECTION(name) __attribute__((__section__(name)))
 
@@ -68,19 +70,35 @@ _Static_assert(sizeof(line_t) * LLC_MAX_NUM_WAYS * LLC_WAY_NUM_LINES == 128 * 10
 #define TROJAN_LINES LLC_WAY_NUM_LINES
 #define SPY_LINES    LLC_WAY_NUM_LINES
 #else
+//#define DPLLC_PARTITION_0_LINES 56   /* common code/data */
+//#define DPLLC_PARTITION_1_LINES 96 /* spy */
+//#define DPLLC_PARTITION_2_LINES 96 /* trojan */
+//#define DPLLC_PARTITION_3_LINES 8   /* results */
 #define DPLLC_PARTITION_0_LINES 8   /* common code/data */
 #define DPLLC_PARTITION_1_LINES 120 /* spy */
 #define DPLLC_PARTITION_2_LINES 120 /* trojan */
 #define DPLLC_PARTITION_3_LINES 8   /* results */
 
+#ifdef SHARED_DATA
+#define SPY_LINES DPLLC_PARTITION_0_LINES
+#define TROJAN_LINES DPLLC_PARTITION_0_LINES
+#else
 #define SPY_LINES DPLLC_PARTITION_1_LINES
-#define TROJAN_LINES DPLLC_PARTITION_2_LINES
+#define TROJAN_LINES LLC_WAY_NUM_LINES
+#endif
 
 _Static_assert(DPLLC_PARTITION_0_LINES + DPLLC_PARTITION_1_LINES + DPLLC_PARTITION_2_LINES + DPLLC_PARTITION_3_LINES <= LLC_WAY_NUM_LINES);
 #endif
 
+#ifdef SHARED_DATA
+volatile line_t shared_data_probe[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".mybss.shared");
+volatile line_t shared_data_evict[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".mybss.shared");
+volatile line_t data_trojan[1][1] __attribute__((aligned(0x1000))) SECTION(".mybss.trojan");
+volatile line_t data_spy[1][1] __attribute__((aligned(0x1000))) SECTION(".mybss.spy");
+#else
 volatile line_t data_trojan[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".mybss.trojan");
 volatile line_t data_spy[LLC_ACTIVE_NUM_WAYS][LLC_WAY_NUM_LINES] __attribute__((aligned(0x1000))) SECTION(".mybss.spy");
+#endif
 
 struct result {
     uint32_t cycle_count;
@@ -158,8 +176,20 @@ for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
 #endif
 }
 
+
 void domain_switch(void) {
+
     fencet();
+
+    // Flush partition 0
+    //*reg32(&__base_llc, AXI_LLC_CFG_FLUSH_PARTITION_LOW_REG_OFFSET) = 0;
+    //*reg32(&__base_llc, AXI_LLC_CFG_FLUSH_PARTITION_HIGH_REG_OFFSET) = 0;
+
+    // This flushes the eviction register.
+    //*reg32(&__base_llc, AXI_LLC_COMMIT_CFG_REG_OFFSET) = BIT(AXI_LLC_COMMIT_CFG_COMMIT_BIT);
+
+    // Wait for flush to complete.
+    //while (*reg32(&__base_llc, AXI_LLC_CFG_FLUSH_PARTITION_LOW_REG_OFFSET) != 0xffffffff);
 
     // This should remove the channel.
     // evict_llc();
@@ -171,7 +201,11 @@ void trojan(void) {
 
     for (uint32_t line = 0; line < secret; line++)  {
         for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
+#ifdef SHARED_DATA
+            volatile void *v = &shared_data_probe[way][line];
+#else
             volatile void *v = &data_trojan[way][line];
+#endif
             volatile uint32_t rv;
 #if MITIGATION == MITIGATION_COLOUR
             if (page_colour((uintptr_t)v) != TROJAN_COLOUR) continue;
@@ -187,7 +221,12 @@ void spy(uint32_t round) {
     uint32_t before = rdcycle();
     for (uint32_t line = 0; line < SPY_LINES; line++)  {
         for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
+#ifdef SHARED_DATA
+            volatile void *v = &shared_data_probe[way][line];
+#else
             volatile void *v = &data_spy[way][line];
+#endif
+
             volatile uint32_t rv;
 #if MITIGATION == MITIGATION_COLOUR
             if (page_colour((uintptr_t)v) != SPY_COLOUR) continue;
@@ -201,6 +240,16 @@ void spy(uint32_t round) {
 
     results[round].cycle_count = delta;
     results[round].secret = current_secret;
+
+#ifdef SHARED_DATA
+    for (uint32_t line = 0; line < LLC_WAY_NUM_LINES; line++)  {
+        for (uint32_t way = 0; way < LLC_ACTIVE_NUM_WAYS; way++) {
+            volatile void *v = &shared_data_evict[way][line];
+            volatile uint32_t rv;
+            asm volatile("lw %0, 0(%1)": "=r" (rv): "r" (v): "memory");
+        }
+    }
+#endif
 }
 
 #if MITIGATION == MITIGATION_DPLLC
@@ -656,6 +705,7 @@ int main(void) {
     uart_init(&__base_uart, reset_freq, __BOOT_BAUDRATE);
     uart_write_str(&__base_uart, str, sizeof(str) - 1);
 
+    //printf("text: %p, shared data: %p, trojan data: %p, spy data %p\r\n", &main, &data_shared, &data_trojan, &data_spy);
     printf("text: %p, trojan data: %p, spy data %p\r\n", &main, &data_trojan, &data_spy);
 
     // IMPORTANT: cheshire starts with it all disabled.
@@ -720,9 +770,12 @@ int main(void) {
     spy(0);
 
     for (uint32_t round = 0; round < DATA_POINTS; round++) {
-        if (round % 1000 == 0) {
+        if (round % 10000 == 0) {
             printf("%d points done\r\n", round);
         }
+        //evict_llc();
+        //domain_switch();
+
         trojan();
         domain_switch();
 
