@@ -55,7 +55,7 @@ module cheshire_top_xilinx (
   output wire        eth_txck,
   output wire [3:0]  eth_txd,
   output wire        eth_txctl,
-  output wire        eth_rst_n, 
+  output wire        eth_rst_n,
   output wire        eth_mdc,
   inout  wire        eth_mdio,
 `endif
@@ -262,7 +262,7 @@ module cheshire_top_xilinx (
   logic eth_mdio_i;
   logic eth_mdio_o;
   logic eth_mdio_oe;
-  
+
   //`ifdef USE_ETHERNET
 
   IOBUF #(
@@ -496,7 +496,7 @@ module cheshire_top_xilinx (
     .eth_txck_o         ( eth_txck    ),
     .eth_txd_o          ( eth_txd     ),
     .eth_txctl_o        ( eth_txctl   ),
-    .eth_rstn_o         ( eth_rstn    ),  
+    .eth_rstn_o         ( eth_rstn    ),
     .eth_mdio_i         ( eth_mdio_i  ),
     .eth_mdio_o         ( eth_mdio_o  ),
     .eth_mdio_oe        ( eth_mdio_oe ),

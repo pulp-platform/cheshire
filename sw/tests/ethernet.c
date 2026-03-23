@@ -8,6 +8,8 @@
 
 #define MACLO_OFFSET                 0x0
 #define MACHI_OFFSET                 0x4
+#define ETH_MDIO_OFFSET              0x8
+#define ETH_IDMA_TX_BUSY_OFFSET      0xc
 #define ETH_IDMA_RSR_OFFSET          0x18
 #define IDMA_SRC_ADDR_OFFSET         0x1c
 #define IDMA_DST_ADDR_OFFSET         0x20
@@ -18,7 +20,9 @@
 #define IDMA_REQ_READY_OFFSET        0x48
 #define IDMA_RSP_READY_OFFSET        0x4c
 #define IDMA_RSP_VALID_OFFSET        0x50
-#define ETH_MDIO_OFFSET              0x8
+#define ETH_RX_END_CLR_OFFSET        0x54
+#define IDMA_RSP_VALID_CLR_OFFSET    0x58
+
 
 #define PLIC_BASE                    0x04000000
 #define RV_PLIC_PRIO19_REG_OFFSET    0x4c
@@ -31,7 +35,6 @@
 #define RV_PLIC_IP_0_OFFSET          0x1000
 
 #define DATA_CHUNK 8
-
 #define BYTE_SIZE 8
 
 #define TX_BASE 0x14000000
@@ -80,38 +83,69 @@ int main(void) {
   *reg32(ETH_BASE, IDMA_DST_PROTO_OFFSET) = 0x5;
 
   while(!(*reg32(ETH_BASE, IDMA_REQ_READY_OFFSET)));
+
   // Validate Request to DMA
   *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
   // DMA completes data moving
   while (!(*reg32(ETH_BASE, IDMA_RSP_VALID_OFFSET)));
+  // TX not busy anymore
+  while ((*reg32(ETH_BASE, ETH_IDMA_TX_BUSY_OFFSET)));
 
-  // configure ethernet
-  *reg32(ETH_BASE, MACLO_OFFSET)          = 0x89000123;
-  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00800207;
+
   // rx irq
   while (!((*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19) ));
-
-
-  uint32_t *rsr;
-  rsr = 0x0300c018;
-  printf("rsr value: 0x%08X\n", *rsr);
-
-  uint32_t *rx_length;
-  rx_length = 0x0300c024;
-  printf("rx length value: 0x%08X\n", *rx_length);
-
+    // configure ethernet
+  *reg32(ETH_BASE, MACLO_OFFSET)          = 0x89000123;
+  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00800207;
   *reg32(ETH_BASE, IDMA_SRC_ADDR_OFFSET)  = 0x0;
   *reg32(ETH_BASE, IDMA_DST_ADDR_OFFSET)  = RX_BASE;
   *reg32(ETH_BASE, IDMA_SRC_PROTO_OFFSET) = 0x5;
   *reg32(ETH_BASE, IDMA_DST_PROTO_OFFSET) = 0x0;
 
-  while(!(*reg32(ETH_BASE, IDMA_REQ_READY_OFFSET)));
   *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
-
+  // DMA completes data moving
   // wait until DMA moves all data
   while (!(*reg32(ETH_BASE, IDMA_RSP_VALID_OFFSET)));
 
-  *reg32(ETH_BASE, ETH_IDMA_RSR_OFFSET)  = 0x2;
+
+  // 2nd tx
+  *reg32(ETH_BASE, MACLO_OFFSET)          = 0x89000123;
+  // High 16 bit Mac Address
+  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00800207;
+  // DMA Source Address
+  *reg32(ETH_BASE, IDMA_SRC_ADDR_OFFSET)  = TX_BASE;
+  // DMA Destination Address
+  *reg32(ETH_BASE, IDMA_DST_ADDR_OFFSET)  = 0x0;
+  // Data length
+  *reg32(ETH_BASE, IDMA_LENGTH_OFFSET)    = 0x40;
+  // Source Protocol
+  *reg32(ETH_BASE, IDMA_SRC_PROTO_OFFSET) = 0x0;
+  // Destination Protocol
+  *reg32(ETH_BASE, IDMA_DST_PROTO_OFFSET) = 0x5;
+
+  while(!(*reg32(ETH_BASE, IDMA_REQ_READY_OFFSET)));
+
+  // Validate Request to DMA
+  *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
+  // DMA completes data moving
+  while (!(*reg32(ETH_BASE, IDMA_RSP_VALID_OFFSET)));
+  // TX not busy anymore
+  while ((*reg32(ETH_BASE, ETH_IDMA_TX_BUSY_OFFSET)));
+
+  // 2nd rx
+  while (!((*reg32(PLIC_BASE, RV_PLIC_IP_0_OFFSET)) & (1 << 19) ));
+    // configure ethernet
+  *reg32(ETH_BASE, MACLO_OFFSET)          = 0x89000123;
+  *reg32(ETH_BASE, MACHI_OFFSET)          = 0x00800207;
+  *reg32(ETH_BASE, IDMA_SRC_ADDR_OFFSET)  = 0x0;
+  *reg32(ETH_BASE, IDMA_DST_ADDR_OFFSET)  = RX_BASE;
+  *reg32(ETH_BASE, IDMA_SRC_PROTO_OFFSET) = 0x5;
+  *reg32(ETH_BASE, IDMA_DST_PROTO_OFFSET) = 0x0;
+
+  *reg32(ETH_BASE, IDMA_REQ_VALID_OFFSET) = 0x1;
+  // DMA completes data moving
+  // wait until DMA moves all data
+  while (!(*reg32(ETH_BASE, IDMA_RSP_VALID_OFFSET)));
 
   volatile uint32_t error = 0;
 

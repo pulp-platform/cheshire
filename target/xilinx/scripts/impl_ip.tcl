@@ -37,9 +37,10 @@ switch $proj {
                     CONFIG.MMCM_CLKFBOUT_MULT_F {5.000} \
                     CONFIG.MMCM_CLKIN1_PERIOD {5.000} \
                     CONFIG.MMCM_CLKIN2_PERIOD {10.0} \
-                    CONFIG.MMCM_CLKOUT1_DIVIDE {20} \
-                    CONFIG.MMCM_CLKOUT2_DIVIDE {50} \
-                    CONFIG.MMCM_CLKOUT3_DIVIDE {100} \
+                    CONFIG.MMCM_CLKOUT1_DIVIDE {5} \
+                    CONFIG.MMCM_CLKOUT2_DIVIDE {20} \
+                    CONFIG.MMCM_CLKOUT3_DIVIDE {10} \
+                    CONFIG.MMCM_CLKOUT4_DIVIDE {8} \
                     CONFIG.NUM_OUT_CLKS {4} \
                     CONFIG.CLKOUT1_JITTER {112.316} \
                     CONFIG.CLKOUT1_PHASE_ERROR {89.971} \

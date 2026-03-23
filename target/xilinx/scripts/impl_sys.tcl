@@ -61,7 +61,7 @@ gen_reports ${project_root}/reports.impl
 # Check timing constraints
 set trep [report_timing_summary -no_header -no_detailed_paths -return_string]
 if {![string match -nocase {*timing constraints are met*} $trep]} {
-    puts "Error: Timing constraints not met for ${proj} on ${board}."
+   puts "Error: Timing constraints not met for ${proj} on ${board}."
     return -code error
 }
 
