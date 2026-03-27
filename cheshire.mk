@@ -147,14 +147,6 @@ CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/boo
 # Simulation #
 ##############
 
-$(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: $(CHS_ROOT)/Bender.yml
-	$(BENDER) script vsim --top tb_cheshire_soc -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOG_ARGS)" > $@
-	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11" -cpppath "$(CXX_PATH)"' >> $@
-
-$(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh: $(CHS_ROOT)/Bender.yml
-	$(BENDER) script vcs --top tb_cheshire_soc -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOGAN_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
-	chmod +x $@
-
 .PRECIOUS: $(CHS_ROOT)/target/sim/models
 $(CHS_ROOT)/target/sim/models:
 	mkdir -p $@
@@ -170,8 +162,19 @@ $(CHS_ROOT)/target/sim/models/24FC1025.v: $(CHS_ROOT)/Bender.yml | $(CHS_ROOT)/t
 	unzip -p 24xx1025_Verilog_Model.zip 24FC1025.v > $@
 	rm 24xx1025_Verilog_Model.zip
 
-CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
-CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
+CHS_SIM_MODELS += $(CHS_ROOT)/target/sim/models/s25fs512s.v
+CHS_SIM_MODELS += $(CHS_ROOT)/target/sim/models/24FC1025.v
+
+# Bender --top filtering uses slang to prune unreachable files; all source files must exist first.
+$(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: $(CHS_ROOT)/Bender.yml | $(CHS_HW_ALL) $(CHS_SIM_MODELS)
+	$(BENDER) script vsim --top tb_cheshire_soc -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOG_ARGS)" > $@
+	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11" -cpppath "$(CXX_PATH)"' >> $@
+
+$(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh: $(CHS_ROOT)/Bender.yml | $(CHS_HW_ALL) $(CHS_SIM_MODELS)
+	$(BENDER) script vcs --top tb_cheshire_soc -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOGAN_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
+	chmod +x $@
+
+CHS_SIM_ALL += $(CHS_SIM_MODELS)
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh
 
