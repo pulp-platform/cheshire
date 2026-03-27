@@ -20,3 +20,6 @@ dependencies = [
     "flatdict>=4.1.0",
     "setuptools<81", # Required by old `regtool`
 ]
+
+[tool.uv]
+package = false
