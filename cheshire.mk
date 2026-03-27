@@ -63,7 +63,7 @@ chs-clean-deps:
 ######################
 
 CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-CHS_NONFREE_COMMIT ?= 95825e1
+CHS_NONFREE_COMMIT ?= 85c39c25f60ab2c9e7346fd762bd11bb206df59e
 
 CHS_PHONY += chs-nonfree-init
 chs-nonfree-init:
@@ -148,11 +148,11 @@ CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/boo
 ##############
 
 $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: $(CHS_ROOT)/Bender.yml
-	$(BENDER) script vsim -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOG_ARGS)" > $@
+	$(BENDER) script vsim --top tb_cheshire_soc -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11" -cpppath "$(CXX_PATH)"' >> $@
 
 $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh: $(CHS_ROOT)/Bender.yml
-	$(BENDER) script vcs -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOGAN_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
+	$(BENDER) script vcs --top tb_cheshire_soc -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOGAN_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
 	chmod +x $@
 
 .PRECIOUS: $(CHS_ROOT)/target/sim/models
