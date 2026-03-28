@@ -127,7 +127,7 @@ _exit:
     // Save the return value to scratch register 2 and wait forever.
     slli t0, a0, 1
     ori  t0, t0, 1
-    la t1, __base_regs
+    la t1, __regs_base_addr__
     sw t0, 8(t1)     // regs.SCRATCH[2]
     // Hand over to whatever called us, passing return
     ret

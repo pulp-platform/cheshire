@@ -52,15 +52,15 @@ static inline void load_part_or_spin(void *priv, const uint64_t *pguid, void *co
 
 int main(void) {
     // Get system parameters
-    uint32_t bootmode = *reg32(&__base_regs, CHESHIRE_BOOT_MODE_REG_OFFSET);
-    uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
+    uint32_t bootmode = CHS_REGS->boot_mode.f.boot_mode;
+    uint32_t rtc_freq = CHS_REGS->rtc_freq.f.ref_freq;
     uint64_t core_freq = clint_get_core_freq(rtc_freq, 2500);
-    rgp = (void *)(uintptr_t)*reg32(&__base_regs, CHESHIRE_SCRATCH_3_REG_OFFSET);
-    uint32_t read = *reg32(&__base_regs, CHESHIRE_SCRATCH_0_REG_OFFSET);
-    void *priv = (void *)(uintptr_t)*reg32(&__base_regs, CHESHIRE_SCRATCH_1_REG_OFFSET);
+    rgp = (void *)(uintptr_t)CHS_REGS->scratch[3].w;
+    uint32_t read = CHS_REGS->scratch[0].w;
+    void *priv = (void *)(uintptr_t)CHS_REGS->scratch[1].w;
 
     // Initialize UART
-    uart_init(&__base_uart, core_freq, __BOOT_BAUDRATE);
+    uart_init(&__uart_base_addr__, core_freq, __BOOT_BAUDRATE);
 
     // Print boot-critical cat, and also parameters
     printf(" /\\___/\\       Boot mode:       %d\r\n"

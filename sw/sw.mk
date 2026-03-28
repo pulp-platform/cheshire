@@ -81,11 +81,25 @@ $(eval $(call chs_sw_gen_hdr_rule,serial_link,$(CHS_ROOT)/hw/serial_link.hjson $
 $(eval $(call chs_sw_gen_hdr_rule,axi_vga,$(AXI_VGA_ROOT)/data/axi_vga.hjson $(AXI_VGA_ROOT)/.generated))
 $(eval $(call chs_sw_gen_hdr_rule,idma,$(IDMA_ROOT)/target/rtl/idma_reg64_2d.hjson))
 $(eval $(call chs_sw_gen_hdr_rule,axi_llc,$(CHS_LLC_DIR)/data/axi_llc_regs.hjson))
-$(eval $(call chs_sw_gen_hdr_rule,cheshire,$(CHS_ROOT)/hw/regs/cheshire_regs.hjson))
 $(eval $(call chs_sw_gen_hdr_rule,axi_rt,$(AXIRTROOT)/src/regs/axi_rt.hjson $(AXIRTROOT)/.generated))
+
+.PRECIOUS: $(CHS_SW_DIR)/include/regs/cheshire.h
+CHS_SW_GEN_HDRS += $(CHS_SW_DIR)/include/regs/cheshire.h
+
+$(CHS_SW_DIR)/include/regs/cheshire.h: $(CHS_ROOT)/hw/cheshire.rdl
+	@mkdir -p $(dir $@)
+	$(PEAKRDL) c-header $< -o $@ -b ltoh $(PEAKRDL_INCLUDES)
+	@sed -i '1i// Copyright 2025 ETH Zurich and University of Bologna.\n// Licensed under the Apache License, Version 2.0, see LICENSE for details.\n// SPDX-License-Identifier: Apache-2.0\n' $@
 
 # Generate headers for OT peripherals in the bendered repo itself
 CHS_SW_GEN_HDRS += $(OTPROOT)/.generated
+
+# Linker script address map header (generated from cheshire.rdl)
+CHS_SW_ADDRS_LDH := $(CHS_SW_LD_DIR)/cheshire_addrs.ldh
+CHS_SW_ALL += $(CHS_SW_ADDRS_LDH)
+
+$(CHS_SW_ADDRS_LDH): $(CHS_ROOT)/hw/cheshire.rdl
+	$(PEAKRDL) raw-header $< --format ldh $(PEAKRDL_INCLUDES) --no-prefix --license_str $$'Copyright 2025 ETH Zurich and University of Bologna.\nLicensed under the Apache License, Version 2.0, see LICENSE for details.\nSPDX-License-Identifier: Apache-2.0' -o $@
 
 ###############
 # Compilation #
@@ -105,10 +119,10 @@ CHS_SW_GEN_HDRS += $(OTPROOT)/.generated
 define chs_sw_ld_elf_rule
 .PRECIOUS: %.$(1).elf
 
-%.$(1).elf: $$(CHS_SW_LD_DIR)/$(1).ld %.o $$(CHS_SW_LIBS)
+%.$(1).elf: $$(CHS_SW_LD_DIR)/$(1).ld %.o $$(CHS_SW_LIBS) $$(CHS_SW_ADDRS_LDH)
 	$$(CHS_SW_CC) $$(CHS_SW_INCLUDES) -T$$< $$(CHS_SW_LDFLAGS) -o $$@ $$*.o $$(CHS_SW_LIBS)
 
-%.$(1).elf: $$(CHS_SW_LD_DIR)/$(1).ld %.$(1).o $$(CHS_SW_LIBS)
+%.$(1).elf: $$(CHS_SW_LD_DIR)/$(1).ld %.$(1).o $$(CHS_SW_LIBS) $$(CHS_SW_ADDRS_LDH)
 	$$(CHS_SW_CC) $$(CHS_SW_INCLUDES) -T$$< $$(CHS_SW_LDFLAGS) -o $$@ $$*.$(1).o $$(CHS_SW_LIBS)
 endef
 

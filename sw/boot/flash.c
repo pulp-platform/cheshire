@@ -59,14 +59,13 @@ int flash_i2c_24fc1025(uint64_t core_freq, void *img_base) {
 int main() {
     int ret;
     // Read reference frequency and compute core frequency
-    uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
+    uint32_t rtc_freq = CHS_REGS->rtc_freq.f.ref_freq;
     uint64_t core_freq = clint_get_core_freq(rtc_freq, 2500);
     // Get arguments from scratch registers
-    volatile uint32_t *scratch = reg32(&__base_regs, CHESHIRE_SCRATCH_0_REG_OFFSET);
-    uint64_t target = scratch[0];
-    void *img_base = (void *)(uintptr_t)scratch[1];
-    uint64_t sector = scratch[2];
-    uint64_t len = scratch[3];
+    uint64_t target = CHS_REGS->scratch[0].w;
+    void *img_base = (void *)(uintptr_t)CHS_REGS->scratch[1].w;
+    uint64_t sector = CHS_REGS->scratch[2].w;
+    uint64_t len = CHS_REGS->scratch[3].w;
     // Flash chosen disk
     printf("[FLASH] Write buffer at 0x%x of length %d to target %d, sector %d ... ", img_base, len,
            target, sector);

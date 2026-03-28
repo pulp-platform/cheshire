@@ -26,14 +26,14 @@
 
 int main(void) {
     // Immediately return an error if AXI_REALM or DMA are not present
-    CHECK_ASSERT(-1, chs_hw_feature_present(CHESHIRE_HW_FEATURES_AXIRT_BIT));
-    CHECK_ASSERT(-2, chs_hw_feature_present(CHESHIRE_HW_FEATURES_DMA_BIT));
+    CHECK_ASSERT(-1, CHS_REGS->hw_features.f.axirt);
+    CHECK_ASSERT(-2, CHS_REGS->hw_features.f.dma);
 
     // This test requires at least two subordinate regions
     CHECK_ASSERT(-3, AXI_RT_PARAM_NUM_SUB >= 2);
 
     // Get internal hart count
-    int num_int_harts = *reg32(&__base_regs, CHESHIRE_NUM_INT_HARTS_REG_OFFSET);
+    int num_int_harts = (int)CHS_REGS->num_int_harts.f.num_harts;
 
     // Allocate DMA buffers
     volatile uint64_t dma_src_cached[DMA_NUM_BEATS];
@@ -92,7 +92,8 @@ int main(void) {
 
     // Check isolate to check if AXI-REALM isolates the dma when the budget is
     // exceeded. Should return 1 if dma is isolated.
-    int isolate_status = (*reg32(&__base_axirt, AXI_RT_ISOLATED_REG_OFFSET) >> chs_dma_id) & 1;
+    int isolate_status =
+        (*reg32(&__axirt_base_addr__, AXI_RT_ISOLATED_REG_OFFSET) >> chs_dma_id) & 1;
 
     // Return 0 if manager was correctly isolated
     return !isolate_status;

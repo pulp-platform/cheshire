@@ -116,6 +116,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Declare interface types internally
   `CHESHIRE_TYPEDEF_ALL(, Cfg)
 
+  import cheshire_addrmap_pkg::*;
+
   //////////////////
   //  Interrupts  //
   //////////////////
@@ -430,6 +432,29 @@ module cheshire_soc import cheshire_pkg::*; #(
     .rsp_o  ( reg_out_rsp[RegOut.err] )
   );
 
+  // APB request/response arrays, indexed by reg-bus port index (same as reg_out_req/rsp)
+  apb_req_t  reg_apb_req [RegOut.num_out];
+  apb_resp_t reg_apb_rsp [RegOut.num_out];
+
+  // Generate reg_to_apb bridges for all ports flagged in apb_mask
+  for (genvar i = 0; i < RegOut.num_out; i++) begin : gen_reg_to_apb
+    if (RegOut.apb_mask[i]) begin : gen_converter
+      reg_to_apb #(
+        .reg_req_t ( reg_req_t  ),
+        .reg_rsp_t ( reg_rsp_t  ),
+        .apb_req_t ( apb_req_t  ),
+        .apb_rsp_t ( apb_resp_t )
+      ) i_reg_to_apb (
+        .clk_i,
+        .rst_ni,
+        .reg_req_i ( reg_out_req[i] ),
+        .reg_rsp_o ( reg_out_rsp[i] ),
+        .apb_req_o ( reg_apb_req[i] ),
+        .apb_rsp_i ( reg_apb_rsp[i] )
+      );
+    end
+  end
+
   // Connect external slaves
   if (Cfg.RegExtNumSlv > 0) begin : gen_ext_reg_slv
     assign reg_ext_slv_req_o = reg_out_req[RegOut.num_out-1:RegOut.ext_base];
@@ -504,10 +529,10 @@ module cheshire_soc import cheshire_pkg::*; #(
     // This is necessary for routing in the LLC-internal interconnect.
     always_comb begin
       axi_llc_remap_req = axi_llc_cut_req;
-      if ((axi_llc_cut_req.aw.addr & ~AmSpmRegionMask) == (AmSpmUnc & ~AmSpmRegionMask))
-        axi_llc_remap_req.aw.addr  = AmSpm | (AmSpmRegionMask & axi_llc_cut_req.aw.addr);
-      if ((axi_llc_cut_req.ar.addr & ~AmSpmRegionMask) == (AmSpmUnc & ~AmSpmRegionMask))
-        axi_llc_remap_req.ar.addr = AmSpm | (AmSpmRegionMask & axi_llc_cut_req.ar.addr);
+      if ((axi_llc_cut_req.aw.addr & ~AmSpmRegionMask) == (SPM_UNC_BASE_ADDR & ~AmSpmRegionMask))
+        axi_llc_remap_req.aw.addr  = SPM_BASE_ADDR | (AmSpmRegionMask & axi_llc_cut_req.aw.addr);
+      if ((axi_llc_cut_req.ar.addr & ~AmSpmRegionMask) == (SPM_UNC_BASE_ADDR & ~AmSpmRegionMask))
+        axi_llc_remap_req.ar.addr = SPM_BASE_ADDR | (AmSpmRegionMask & axi_llc_cut_req.ar.addr);
       axi_llc_cut_rsp = axi_llc_remap_rsp;
     end
 
@@ -538,7 +563,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .conf_resp_o         ( reg_out_rsp[RegOut.llc] ),
       .cached_start_addr_i ( addr_t'(Cfg.LlcOutRegionStart) ),
       .cached_end_addr_i   ( addr_t'(Cfg.LlcOutRegionEnd)   ),
-      .spm_start_addr_i    ( addr_t'(AmSpm) ),
+      .spm_start_addr_i    ( addr_t'(SPM_BASE_ADDR) ),
       .axi_llc_events_o    ( /* TODO: connect me to regs? */ )
     );
 
@@ -564,7 +589,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   localparam config_pkg::cva6_user_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
 
   // Boot from boot ROM only if available, otherwise from platform ROM
-  localparam logic [63:0] BootAddr = 64'(Cfg.Bootrom ? AmBrom : Cfg.PlatformRom);
+  localparam logic [63:0] BootAddr = 64'(Cfg.Bootrom ? BOOTROM_BASE_ADDR : Cfg.PlatformRom);
 
   // Debug interface for internal harts
   dm::hartinfo_t [NumIntHarts-1:0] dbg_int_info;
@@ -902,7 +927,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   dm_top #(
     .NrHarts        ( NumDbgHarts ),
     .BusWidth       ( Cfg.AxiDataWidth ),
-    .DmBaseAddress  ( AmDbg )
+    .DmBaseAddress  ( EXTROM_BASE_ADDR )
   ) i_dbg_dm_top (
     .clk_i,
     .rst_ni,
@@ -999,47 +1024,63 @@ module cheshire_soc import cheshire_pkg::*; #(
   //  Register File  //
   /////////////////////
 
-  cheshire_reg_pkg::cheshire_hw2reg_t reg_hw2reg;
+  cheshire_soc_regs_pkg::soc_regs__in_t  reg_hw2reg;
+  cheshire_soc_regs_pkg::soc_regs__out_t reg_reg2hw;
+
+  // Shorthand for external (read-only) register hw-interface assignments
+  `define CHS_HWREG(name, data) name: '{ \
+    rd_ack: reg_reg2hw.name.req & ~reg_reg2hw.name.req_is_wr, \
+    rd_data: data \
+  }
 
   assign reg_hw2reg = '{
-    boot_mode     : boot_mode_i,
-    rtc_freq      : Cfg.RtcFreq,
-    platform_rom  : Cfg.PlatformRom,
-    num_int_harts : NumIntHarts,
-    hw_features   : '{
-      bootrom     : Cfg.Bootrom,
-      llc         : Cfg.LlcNotBypass,
-      uart        : Cfg.Uart,
-      i2c         : Cfg.I2c,
-      gpio        : Cfg.Gpio,
-      spi_host    : Cfg.SpiHost,
-      dma         : Cfg.Dma,
-      serial_link : Cfg.SerialLink,
-      vga         : Cfg.Vga,
-      usb         : Cfg.Usb,
-      axirt       : Cfg.AxiRt,
-      clic        : Cfg.Clic,
-      irq_router  : Cfg.IrqRouter,
-      bus_err     : Cfg.BusErr
-    },
-    llc_size      : get_llc_size(Cfg),
-    vga_params    : '{
-      red_width   : Cfg.VgaRedWidth,
-      green_width : Cfg.VgaGreenWidth,
-      blue_width  : Cfg.VgaBlueWidth
-    }
+    `CHS_HWREG(boot_mode,     '{ boot_mode:    boot_mode_i,       default: '0 }),
+    `CHS_HWREG(rtc_freq,      '{ ref_freq:     Cfg.RtcFreq,       default: '0 }),
+    `CHS_HWREG(platform_rom,  '{ platform_rom: Cfg.PlatformRom,   default: '0 }),
+    `CHS_HWREG(num_int_harts, '{ num_harts:    NumIntHarts,       default: '0 }),
+    `CHS_HWREG(llc_size,      '{ llc_size:     get_llc_size(Cfg), default: '0 }),
+    `CHS_HWREG(hw_features,   '{
+        bootrom:     Cfg.Bootrom,
+        llc:         Cfg.LlcNotBypass,
+        uart:        Cfg.Uart,
+        i2c:         Cfg.I2c,
+        gpio:        Cfg.Gpio,
+        spi_host:    Cfg.SpiHost,
+        dma:         Cfg.Dma,
+        serial_link: Cfg.SerialLink,
+        vga:         Cfg.Vga,
+        usb:         Cfg.Usb,
+        axirt:       Cfg.AxiRt,
+        clic:        Cfg.Clic,
+        irq_router:  Cfg.IrqRouter,
+        bus_err:     Cfg.BusErr,
+        default: '0
+    }),
+    `CHS_HWREG(vga_params,    '{
+      red_width:    Cfg.VgaRedWidth,
+      green_width:  Cfg.VgaGreenWidth,
+      blue_width:   Cfg.VgaBlueWidth,
+      default: '0
+    })
   };
 
-  cheshire_reg_top #(
-    .reg_req_t  ( reg_req_t ),
-    .reg_rsp_t  ( reg_rsp_t )
-  ) i_regs (
-    .clk_i,
-    .rst_ni,
-    .reg_req_i  ( reg_out_req[RegOut.regs] ),
-    .reg_rsp_o  ( reg_out_rsp[RegOut.regs] ),
-    .hw2reg     ( reg_hw2reg ),
-    .devmode_i  ( 1'b1 )
+  `undef CHS_HWREG
+
+  cheshire_soc_regs i_regs (
+    .clk    ( clk_i  ),
+    .arst_n ( rst_ni ),
+    .s_apb_psel    ( reg_apb_req[RegOut.regs].psel    ),
+    .s_apb_penable ( reg_apb_req[RegOut.regs].penable ),
+    .s_apb_pwrite  ( reg_apb_req[RegOut.regs].pwrite  ),
+    .s_apb_pprot   ( reg_apb_req[RegOut.regs].pprot   ),
+    .s_apb_paddr   ( reg_aw_bt'(reg_apb_req[RegOut.regs].paddr) ),
+    .s_apb_pwdata  ( reg_apb_req[RegOut.regs].pwdata  ),
+    .s_apb_pstrb   ( reg_apb_req[RegOut.regs].pstrb   ),
+    .s_apb_pready  ( reg_apb_rsp[RegOut.regs].pready  ),
+    .s_apb_prdata  ( reg_apb_rsp[RegOut.regs].prdata  ),
+    .s_apb_pslverr ( reg_apb_rsp[RegOut.regs].pslverr ),
+    .hwif_in       ( reg_hw2reg ),
+    .hwif_out      ( reg_reg2hw )
   );
 
   ////////////////////////

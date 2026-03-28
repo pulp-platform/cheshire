@@ -14,10 +14,10 @@
 
 int main(void) {
     char str[] = "Hello World!\r\n";
-    uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
+    uint32_t rtc_freq = CHS_REGS->rtc_freq.f.ref_freq;
     uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
-    uart_init(&__base_uart, reset_freq, __BOOT_BAUDRATE);
-    uart_write_str(&__base_uart, str, sizeof(str) - 1);
-    uart_write_flush(&__base_uart);
+    uart_init(&__uart_base_addr__, reset_freq, __BOOT_BAUDRATE);
+    uart_write_str(&__uart_base_addr__, str, sizeof(str) - 1);
+    uart_write_flush(&__uart_base_addr__);
     return 0;
 }

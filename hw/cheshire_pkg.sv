@@ -10,6 +10,8 @@
 
 package cheshire_pkg;
 
+  import cheshire_addrmap_pkg::*;
+
   ///////////
   //  SoC  //
   ///////////
@@ -60,6 +62,7 @@ package cheshire_pkg;
   typedef bit [63:0] doub_bt;
   typedef bit [ 9:0] dw_bt;   // data widths
   typedef bit [ 5:0] aw_bt;   // address, ID widths or small buffers
+  typedef bit [cheshire_soc_regs_pkg::CHESHIRE_SOC_REGS_MIN_ADDR_WIDTH-1:0] reg_aw_bt; // Address widths for reg APB bus
 
   // Externally controllable parameters
   typedef struct packed {
@@ -277,17 +280,6 @@ package cheshire_pkg;
     return cfg.LlcSetAssoc * cfg.LlcNumLines * cfg.LlcNumBlocks * cfg.AxiDataWidth / 8;
   endfunction
 
-  // Static addresses (defined here only if multiply used)
-  localparam doub_bt AmDbg    = 'h0000_0000;  // Base of AXI peripherals
-  localparam doub_bt AmBrom   = 'h0200_0000;  // Base of reg peripherals
-  localparam doub_bt AmRegs   = 'h0300_0000;
-  localparam doub_bt AmLlc    = 'h0300_1000;
-  localparam doub_bt AmSlink  = 'h0300_6000;
-  localparam doub_bt AmBusErr = 'h0300_9000;
-  localparam doub_bt AmSpm    = 'h1000_0000;  // Cached region at bottom, uncached on top
-  localparam doub_bt AmSpmUnc = 'h1400_0000;
-  localparam doub_bt AmClic   = 'h0800_0000;
-
   // Static masks
   localparam doub_bt AmSpmRegionMask = 'h03FF_FFFF;
 
@@ -348,8 +340,8 @@ package cheshire_pkg;
     doub_bt SizeSpm = get_llc_size(cfg);
     axi_out_t ret = '{dbg: 0, reg_demux: 1, default: '0};
     int unsigned i = 1, r = 1;
-    ret.map[0] = '{0, AmDbg,   AmDbg + 'h40000};
-    ret.map[1] = '{1, 'h0200_0000, 'h0C00_0000};
+    ret.map[0] = '{0, EXTROM_BASE_ADDR,   EXTROM_BASE_ADDR   + EXTROM_SIZE};
+    ret.map[1] = '{1, BOOTROM_BASE_ADDR,  'h0C00_0000};
     // Whether we have an LLC or a bypass, the output port is has its
     // own Xbar output with the specified region iff it is connected.
     if (cfg.LlcOutConnect) begin i++; r++; ret.llc = i;
@@ -359,10 +351,10 @@ package cheshire_pkg;
     // We map both the cached and uncached regions.
     if (cfg.LlcNotBypass) begin
       ret.spm = i;
-      r++; ret.map[r] = '{i, AmSpm, AmSpm + SizeSpm};
-      r++; ret.map[r] = '{i, AmSpmUnc, AmSpmUnc + SizeSpm};
+      r++; ret.map[r] = '{i, SPM_BASE_ADDR,     SPM_BASE_ADDR     + SizeSpm};
+      r++; ret.map[r] = '{i, SPM_UNC_BASE_ADDR, SPM_UNC_BASE_ADDR + SizeSpm};
     end
-    if (cfg.Dma)          begin i++; r++; ret.dma = i; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
+    if (cfg.Dma)          begin i++; r++; ret.dma = i; ret.map[r] = '{i, DMA_BASE_ADDR, DMA_BASE_ADDR + DMA_SIZE}; end
     if (cfg.SerialLink)   begin i++; r++; ret.slink = i;
         ret.map[r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
     // External port indices start after internal ones
@@ -406,31 +398,32 @@ package cheshire_pkg;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
+    bit [2**$bits(aw_bt)-1:0] apb_mask;  // Bit i set iff reg-bus port i uses APB
     arul_t [aw_bt'(-1):0] map;
   } reg_out_t;
 
   function automatic reg_out_t gen_reg_out(cheshire_cfg_t cfg);
     reg_out_t ret = '{err: 0, clint: 1, plic: 2, regs: 3, default: '0};
     int unsigned i = 3, r = 2;
-    ret.map[0] = '{1, 'h0204_0000, 'h0208_0000};
-    ret.map[1] = '{2, 'h0400_0000, 'h0800_0000};
-    ret.map[2] = '{3, AmRegs,  AmRegs + 'h1000};
-    if (cfg.Bootrom)      begin i++; ret.bootrom    = i; r++; ret.map[r] = '{i, AmBrom, AmBrom + 'h40000}; end
-    if (cfg.LlcNotBypass) begin i++; ret.llc        = i; r++; ret.map[r] = '{i, AmLlc,    AmLlc + 'h1000}; end
-    if (cfg.Uart)         begin i++; ret.uart       = i; r++; ret.map[r] = '{i, 'h0300_2000, 'h0300_3000}; end
-    if (cfg.I2c)          begin i++; ret.i2c        = i; r++; ret.map[r] = '{i, 'h0300_3000, 'h0300_4000}; end
-    if (cfg.SpiHost)      begin i++; ret.spi_host   = i; r++; ret.map[r] = '{i, 'h0300_4000, 'h0300_5000}; end
-    if (cfg.Gpio)         begin i++; ret.gpio       = i; r++; ret.map[r] = '{i, 'h0300_5000, 'h0300_6000}; end
-    if (cfg.SerialLink)   begin i++; ret.slink      = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
-    if (cfg.Vga)          begin i++; ret.vga        = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
-    if (cfg.Usb)          begin i++; ret.usb        = i; r++; ret.map[r] = '{i, 'h0300_8000, 'h0300_9000}; end
-    if (cfg.IrqRouter)    begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
-    if (cfg.AxiRt)        begin i++; ret.axirt      = i; r++; ret.map[r] = '{i, 'h020c_0000, 'h0210_0000}; end
+    ret.map[0] = '{1, CLINT_BASE_ADDR, CLINT_BASE_ADDR + CLINT_SIZE};
+    ret.map[1] = '{2, PLIC_BASE_ADDR,  PLIC_BASE_ADDR  + PLIC_SIZE};
+    ret.map[2] = '{3, REGS_BASE_ADDR,  REGS_BASE_ADDR  + REGS_SIZE};
+    if (cfg.Bootrom)      begin i++; ret.bootrom    = i; r++; ret.map[r] = '{i, BOOTROM_BASE_ADDR,    BOOTROM_BASE_ADDR    + BOOTROM_SIZE }; end
+    if (cfg.LlcNotBypass) begin i++; ret.llc        = i; r++; ret.map[r] = '{i, LLC_BASE_ADDR,        LLC_BASE_ADDR        + LLC_SIZE}; end
+    if (cfg.Uart)         begin i++; ret.uart       = i; r++; ret.map[r] = '{i, UART_BASE_ADDR,       UART_BASE_ADDR       + UART_SIZE}; end
+    if (cfg.I2c)          begin i++; ret.i2c        = i; r++; ret.map[r] = '{i, I2C_BASE_ADDR,        I2C_BASE_ADDR        + I2C_SIZE}; end
+    if (cfg.SpiHost)      begin i++; ret.spi_host   = i; r++; ret.map[r] = '{i, SPIH_BASE_ADDR,       SPIH_BASE_ADDR       + SPIH_SIZE}; end
+    if (cfg.Gpio)         begin i++; ret.gpio       = i; r++; ret.map[r] = '{i, GPIO_BASE_ADDR,       GPIO_BASE_ADDR       + GPIO_SIZE}; end
+    if (cfg.SerialLink)   begin i++; ret.slink      = i; r++; ret.map[r] = '{i, SLINK_BASE_ADDR,      SLINK_BASE_ADDR      + SLINK_SIZE}; end
+    if (cfg.Vga)          begin i++; ret.vga        = i; r++; ret.map[r] = '{i, VGA_BASE_ADDR,        VGA_BASE_ADDR        + VGA_SIZE}; end
+    if (cfg.Usb)          begin i++; ret.usb        = i; r++; ret.map[r] = '{i, USB_BASE_ADDR,        USB_BASE_ADDR        + USB_SIZE}; end
+    if (cfg.IrqRouter)    begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, IRQ_ROUTER_BASE_ADDR, IRQ_ROUTER_BASE_ADDR + IRQ_ROUTER_SIZE}; end
+    if (cfg.AxiRt)        begin i++; ret.axirt      = i; r++; ret.map[r] = '{i, AXIRT_BASE_ADDR,      AXIRT_BASE_ADDR      + AXIRT_SIZE}; end
     if (cfg.Clic) for (int j = 0; j < cfg.NumCores; j++) begin
-      i++; ret.clic[j]    = i; r++; ret.map[r] = '{i, AmClic + j*'h40000, AmClic + (j+1)*'h40000};
+      i++; ret.clic[j]    = i; r++; ret.map[r] = '{i, CLIC_BASE_ADDR + j*CLIC_SIZE, CLIC_BASE_ADDR + (j+1)*CLIC_SIZE};
     end
     if (cfg.BusErr) for (int j = 0; j < 2 + cfg.NumCores; j++) begin
-      i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, AmBusErr + j*'h40,  AmBusErr + (j+1)*'h40};
+      i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, BUS_ERR_BASE_ADDR + j*BUS_ERR_SIZE, BUS_ERR_BASE_ADDR + (j+1)*BUS_ERR_SIZE};
     end
     i++; r++;
     ret.ext_base  = i;
@@ -442,6 +435,9 @@ package cheshire_pkg;
           cfg.RegExtRegionStart[k], cfg.RegExtRegionEnd[k]};
       r++;
       end
+    // Set APB mask for all reg-bus ports whose IP uses an APB4-flat interface
+    ret.apb_mask = '0;
+    ret.apb_mask[ret.regs] = 1'b1;
     return ret;
   endfunction
 
@@ -498,19 +494,19 @@ package cheshire_pkg;
     ret.AxiIdWidth            = Cva6IdWidth;
     ret.AxiUserWidth          = cfg.AxiUserWidth;
     ret.CvxifEn               = 0;
-    ret.DmBaseAddress         = AmDbg;
-    ret.HaltAddress           = 'h800; // Relative to AmDbg
-    ret.ExceptionAddress      = 'h810; // Relative to AmDbg
+    ret.DmBaseAddress         = EXTROM_BASE_ADDR;
+    ret.HaltAddress           = 'h800; // Relative to EXTROM_BASE_ADDR
+    ret.ExceptionAddress      = 'h810; // Relative to EXTROM_BASE_ADDR
     ret.NrNonIdempotentRules  = 2;   // Periphs, ExtNonCI;
-    ret.NonIdempotentAddrBase = {64'h0000_0000, NoCieBase};
+    ret.NonIdempotentAddrBase = {EXTROM_BASE_ADDR, NoCieBase};
     ret.NOCType               = config_pkg::NOC_TYPE_AXI4_ATOP;
-    ret.NonIdempotentLength   = {64'h1000_0000, 64'h6000_0000 - cfg.Cva6ExtCieLength};
+    ret.NonIdempotentLength   = {SPM_BASE_ADDR, 64'h6000_0000 - cfg.Cva6ExtCieLength};
     ret.NrExecuteRegionRules  = 6;   // Debug, Bootrom, SPM, SPM Uncached, LLCOut, ExtCI;
-    ret.ExecuteRegionAddrBase = {AmDbg,     AmBrom,    AmSpm,   AmSpmUnc, cfg.LlcOutRegionStart, CieBase};
-    ret.ExecuteRegionLength   = {64'h40000, 64'h40000, SizeSpm, SizeSpm,  SizeLlcOut,            cfg.Cva6ExtCieLength};
+    ret.ExecuteRegionAddrBase = {EXTROM_BASE_ADDR, BOOTROM_BASE_ADDR, SPM_BASE_ADDR, SPM_UNC_BASE_ADDR, cfg.LlcOutRegionStart, CieBase};
+    ret.ExecuteRegionLength   = {EXTROM_SIZE,      BOOTROM_SIZE     , SizeSpm      , SizeSpm          , SizeLlcOut           , cfg.Cva6ExtCieLength};
     ret.NrCachedRegionRules   = 3;   // CachedSPM, LLCOut, ExtCI;
-    ret.CachedRegionAddrBase  = {AmSpm,   cfg.LlcOutRegionStart,  CieBase};
-    ret.CachedRegionLength    = {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength};
+    ret.CachedRegionAddrBase  = {SPM_BASE_ADDR, cfg.LlcOutRegionStart,  CieBase};
+    ret.CachedRegionLength    = {SizeSpm,       SizeLlcOut,             cfg.Cva6ExtCieLength};
     ret.DebugEn               = 1;
     ret.RVSCLIC               = cfg.Clic;
     ret.RVXHCLIC              = cfg.ClicVsclic;

@@ -22,15 +22,15 @@ extern int boot_next_stage(void *);
 
 int boot_passive(uint64_t core_freq) {
     // Initialize UART with debug settings
-    uart_debug_init(&__base_uart, core_freq);
+    uart_debug_init(&__uart_base_addr__, core_freq);
     // scratch[0] provides an entry point, scratch[1] a start signal
-    volatile uint32_t *scratch = reg32(&__base_regs, CHESHIRE_SCRATCH_0_REG_OFFSET);
     // While we poll bit 2 of scratch[2], check for incoming UART debug requests
-    while (!(scratch[2] & 2))
-        if (uart_debug_check(&__base_uart)) return uart_debug_serve(&__base_uart);
+    while (!(CHS_REGS->scratch[2].w & 2))
+        if (uart_debug_check(&__uart_base_addr__)) return uart_debug_serve(&__uart_base_addr__);
     // No UART (or JTAG) requests came in, but scratch[2][2] was set --> run code at scratch[1:0]
-    scratch[2] = 0;
-    return boot_next_stage((void *)(uintptr_t)(((uint64_t)scratch[1] << 32) | scratch[0]));
+    CHS_REGS->scratch[2].w = 0;
+    return boot_next_stage(
+        (void *)(uintptr_t)(((uint64_t)CHS_REGS->scratch[1].w << 32) | CHS_REGS->scratch[0].w));
 }
 
 int boot_spi_sdcard(uint64_t core_freq, uint64_t rtc_freq) {
@@ -43,7 +43,7 @@ int boot_spi_sdcard(uint64_t core_freq, uint64_t rtc_freq) {
     CHECK_CALL(spi_sdcard_init(&device, core_freq))
     // Wait for device to be initialized (1ms, round up extra tick to be sure)
     clint_spin_until((1000 * rtc_freq) / (1000 * 1000) + 1);
-    return gpt_boot_part_else_raw(spi_sdcard_read_checkcrc, &device, &__base_spm,
+    return gpt_boot_part_else_raw(spi_sdcard_read_checkcrc, &device, &__spm_base_addr__,
                                   __BOOT_SPM_MAX_LBAS, __BOOT_ZSL_TYPE_GUID, 0);
 }
 
@@ -55,7 +55,7 @@ int boot_spi_s25fs512s(uint64_t core_freq, uint64_t rtc_freq) {
     CHECK_CALL(spi_s25fs512s_init(&device, core_freq))
     // Wait for device to be initialized (t_PU = 300us, round up extra tick to be sure)
     clint_spin_until((350 * rtc_freq) / (1000 * 1000) + 1);
-    return gpt_boot_part_else_raw(spi_s25fs512s_single_read, &device, &__base_spm,
+    return gpt_boot_part_else_raw(spi_s25fs512s_single_read, &device, &__spm_base_addr__,
                                   __BOOT_SPM_MAX_LBAS, __BOOT_ZSL_TYPE_GUID, 0);
 }
 
@@ -63,14 +63,14 @@ int boot_i2c_24fc1025(uint64_t core_freq) {
     // Initialize device handle
     dif_i2c_t i2c;
     CHECK_CALL(i2c_24fc1025_init(&i2c, core_freq))
-    return gpt_boot_part_else_raw(i2c_24fc1025_read, &i2c, &__base_spm, __BOOT_SPM_MAX_LBAS,
+    return gpt_boot_part_else_raw(i2c_24fc1025_read, &i2c, &__spm_base_addr__, __BOOT_SPM_MAX_LBAS,
                                   __BOOT_ZSL_TYPE_GUID, 0);
 }
 
 int main() {
     // Read boot mode and reference frequency
-    uint32_t bootmode = *reg32(&__base_regs, CHESHIRE_BOOT_MODE_REG_OFFSET);
-    uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
+    uint32_t bootmode = CHS_REGS->boot_mode.f.boot_mode;
+    uint32_t rtc_freq = CHS_REGS->rtc_freq.f.ref_freq;
     // Compute the boot core frequency using the reference clock
     uint64_t core_freq = clint_get_core_freq(rtc_freq, 2500);
     // In case of reentry, store return in scratch0 as is convention

@@ -65,9 +65,9 @@ void uart_read_str(void *uart_base, void *dst, uint64_t len) {
 
 // Default UART provides console
 void _putchar(char byte) {
-    uart_write(&__base_uart, byte);
+    uart_write(&__uart_base_addr__, byte);
 }
 
 char _getchar() {
-    return uart_read(&__base_uart);
+    return uart_read(&__uart_base_addr__);
 }

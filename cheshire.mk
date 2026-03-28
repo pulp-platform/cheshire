@@ -33,6 +33,10 @@ IDMA_ROOT         := $(shell $(BENDER) path idma)
 DRAM_RTL_SIM_ROOT := $(shell $(BENDER) path dram_rtl_sim)
 
 REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
+PEAKRDL ?= peakrdl
+
+PEAKRDL_INCLUDES  := -I $(CHS_ROOT)/hw/regs
+
 
 ################
 # Dependencies #
@@ -83,8 +87,12 @@ include $(CHS_ROOT)/sw/sw.mk
 ###############
 
 # SoC registers
-$(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv: $(CHS_ROOT)/hw/regs/cheshire_regs.hjson
-	$(REGTOOL) -r $< --outdir $(dir $@)
+$(CHS_ROOT)/hw/regs/cheshire_soc_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_soc_regs.sv: $(CHS_ROOT)/hw/regs/cheshire_soc_regs.rdl
+	$(PEAKRDL) regblock $< -o $(CHS_ROOT)/hw/regs/ --cpuif apb4-flat --default-reset arst_n --module-name cheshire_soc_regs
+	@sed -i '1i// Copyright 2025 ETH Zurich and University of Bologna.\n// Solderpad Hardware License, Version 0.51, see LICENSE for details.\n// SPDX-License-Identifier: SHL-0.51\n' $(CHS_ROOT)/hw/regs/cheshire_soc_regs.sv $(CHS_ROOT)/hw/regs/cheshire_soc_regs_pkg.sv
+
+$(CHS_ROOT)/hw/cheshire_addrmap_pkg.sv: $(CHS_ROOT)/hw/cheshire.rdl
+	$(PEAKRDL) raw-header $< --format svpkg --no-prefix $(PEAKRDL_INCLUDES) --license-str $$'Copyright 2025 ETH Zurich and University of Bologna.\nSolderpad Hardware License, Version 0.51, see LICENSE for details.\nSPDX-License-Identifier: SHL-0.51' -o $@
 
 # CLINT
 CLINTCORES ?= 1
@@ -118,7 +126,8 @@ $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
 include $(IDMA_ROOT)/idma.mk
 
 CHS_HW_ALL += $(IDMA_FULL_RTL)
-CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_reg_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_reg_top.sv
+CHS_HW_ALL += $(CHS_ROOT)/hw/cheshire_addrmap_pkg.sv
+CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_soc_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_soc_regs.sv
 CHS_HW_ALL += $(CLINTROOT)/.generated
 CHS_HW_ALL += $(OTPROOT)/.generated
 CHS_HW_ALL += $(AXIRTROOT)/.generated
@@ -135,7 +144,7 @@ CHS_HW_ALL += $(CHS_SLINK_DIR)/.generated
 CHS_BROM_SRCS = $(wildcard $(CHS_ROOT)/hw/bootrom/*.S $(CHS_ROOT)/hw/bootrom/*.c) $(CHS_SW_LIBS)
 CHS_BROM_FLAGS = $(CHS_SW_LDFLAGS) -Os -fno-zero-initialized-in-bss -flto -fwhole-program
 
-$(CHS_ROOT)/hw/bootrom/cheshire_bootrom.elf: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.ld $(CHS_BROM_SRCS)
+$(CHS_ROOT)/hw/bootrom/cheshire_bootrom.elf: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.ld $(CHS_BROM_SRCS) $(CHS_SW_ADDRS_LDH)
 	$(CHS_SW_CC) $(CHS_SW_INCLUDES) -T$< $(CHS_BROM_FLAGS) -o $@ $(CHS_BROM_SRCS)
 
 $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.bin $(CHS_ROOT)/util/gen_bootrom.py
@@ -147,11 +156,11 @@ CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/boo
 # Simulation #
 ##############
 
-$(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: $(CHS_ROOT)/Bender.yml
+$(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: $(CHS_ROOT)/Bender.yml $(CHS_ROOT)/Bender.lock
 	$(BENDER) script vsim -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11" -cpppath "$(CXX_PATH)"' >> $@
 
-$(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh: $(CHS_ROOT)/Bender.yml
+$(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh: $(CHS_ROOT)/Bender.yml $(CHS_ROOT)/Bender.lock
 	$(BENDER) script vcs -t sim -t test $(CHS_BENDER_RTL_FLAGS) --vlog-arg="$(VLOGAN_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
 	chmod +x $@
 

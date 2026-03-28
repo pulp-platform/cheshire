@@ -12,8 +12,8 @@
 #include "params.h"
 
 uint64_t clint_get_mtime() {
-    return (((uint64_t)*reg32(&__base_clint, CLINT_MTIME_HIGH_REG_OFFSET)) << 32) |
-           ((uint64_t)*reg32(&__base_clint, CLINT_MTIME_LOW_REG_OFFSET));
+    return (((uint64_t)*reg32(&__clint_base_addr__, CLINT_MTIME_HIGH_REG_OFFSET)) << 32) |
+           ((uint64_t)*reg32(&__clint_base_addr__, CLINT_MTIME_LOW_REG_OFFSET));
 }
 
 void clint_spin_until(uint64_t tgt_mtime) {
@@ -48,8 +48,8 @@ void clint_set_mtimecmpx(uint64_t timer_idx, uint64_t value) {
     uint32_t vhi = (uint32_t)(value >> 32);
     uint64_t mtimecmp_offs = timer_idx << 3;
     // Write high register first
-    *reg32(&__base_clint, CLINT_MTIMECMP_HIGH0_REG_OFFSET + mtimecmp_offs) = vhi;
-    *reg32(&__base_clint, CLINT_MTIMECMP_LOW0_REG_OFFSET + mtimecmp_offs) = vlo;
+    *reg32(&__clint_base_addr__, CLINT_MTIMECMP_HIGH0_REG_OFFSET + mtimecmp_offs) = vhi;
+    *reg32(&__clint_base_addr__, CLINT_MTIMECMP_LOW0_REG_OFFSET + mtimecmp_offs) = vlo;
 }
 
 void clint_sleep_until(uint64_t timer_idx, uint64_t tgt_mtime) {
