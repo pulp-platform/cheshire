@@ -93,6 +93,9 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   //  DRAM  //
   ////////////
 
+  axi_llc_req_t axi_sim_mem_mst_req;
+  axi_llc_rsp_t axi_sim_mem_mst_rsp;
+
   if (UseDramSys) begin : gen_dramsys
     dram_sim_engine #(
       .ClkPeriod  ( ClkPeriodSys )
@@ -121,39 +124,49 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
       .axi_req_i  ( axi_llc_mst_req ),
       .axi_resp_o ( axi_llc_mst_rsp )
     );
+
+    // Tie off the AXI sim mem
+    assign axi_sim_mem_mst_req = '0;
+
   end else begin : gen_no_dramsys
-    axi_sim_mem #(
-      .AddrWidth          ( DutCfg.AddrWidth    ),
-      .DataWidth          ( DutCfg.AxiDataWidth ),
-      .IdWidth            ( $bits(axi_llc_id_t) ),
-      .UserWidth          ( DutCfg.AxiUserWidth ),
-      .axi_req_t          ( axi_llc_req_t ),
-      .axi_rsp_t          ( axi_llc_rsp_t ),
-      .WarnUninitialized  ( 0 ),
-      .ClearErrOnAccess   ( 1 ),
-      .ApplDelay          ( ClkPeriodSys * TAppl ),
-      .AcqDelay           ( ClkPeriodSys * TTest )
-    ) i_dram_sim_mem (
-      .clk_i              ( clk   ),
-      .rst_ni             ( rst_n ),
-      .axi_req_i          ( axi_llc_mst_req ),
-      .axi_rsp_o          ( axi_llc_mst_rsp ),
-      .mon_w_valid_o      ( ),
-      .mon_w_addr_o       ( ),
-      .mon_w_data_o       ( ),
-      .mon_w_id_o         ( ),
-      .mon_w_user_o       ( ),
-      .mon_w_beat_count_o ( ),
-      .mon_w_last_o       ( ),
-      .mon_r_valid_o      ( ),
-      .mon_r_addr_o       ( ),
-      .mon_r_data_o       ( ),
-      .mon_r_id_o         ( ),
-      .mon_r_user_o       ( ),
-      .mon_r_beat_count_o ( ),
-      .mon_r_last_o       ( )
-    );
+
+    // Connect the AXI sim mem to the LLC
+    assign axi_sim_mem_mst_req = axi_llc_mst_req;
+    assign axi_llc_mst_rsp     = axi_sim_mem_mst_rsp;
+
   end
+
+  axi_sim_mem #(
+    .AddrWidth          ( DutCfg.AddrWidth    ),
+    .DataWidth          ( DutCfg.AxiDataWidth ),
+    .IdWidth            ( $bits(axi_llc_id_t) ),
+    .UserWidth          ( DutCfg.AxiUserWidth ),
+    .axi_req_t          ( axi_llc_req_t ),
+    .axi_rsp_t          ( axi_llc_rsp_t ),
+    .WarnUninitialized  ( 0 ),
+    .ClearErrOnAccess   ( 1 ),
+    .ApplDelay          ( ClkPeriodSys * TAppl ),
+    .AcqDelay           ( ClkPeriodSys * TTest )
+  ) i_dram_sim_mem (
+    .clk_i              ( clk   ),
+    .rst_ni             ( rst_n ),
+    .axi_req_i          ( axi_sim_mem_mst_req ),
+    .axi_rsp_o          ( axi_sim_mem_mst_rsp ),
+    .mon_w_valid_o      ( ),
+    .mon_w_addr_o       ( ),
+    .mon_w_data_o       ( ),
+    .mon_w_id_o         ( ),
+    .mon_w_user_o       ( ),
+    .mon_w_beat_count_o ( ),
+    .mon_w_last_o       ( ),
+    .mon_r_valid_o      ( ),
+    .mon_r_addr_o       ( ),
+    .mon_r_data_o       ( ),
+    .mon_r_id_o         ( ),
+    .mon_r_user_o       ( ),
+    .mon_r_beat_count_o ( ),
+    .mon_r_last_o       ( )
+  );
 
   ///////////////////////////////
   //  SoC Clock, Reset, Modes  //
@@ -350,8 +363,9 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     $display("[JTAG] Preload complete");
   endtask
 
-  // Halt the core and preload a binary
-  task automatic jtag_elf_halt_load(input string binary, output doub_bt entry);
+
+  // Waits for LLC config to finish and halts the core
+  task automatic jtag_wait_for_llc_config_halt();
     dm::dmstatus_t status;
     // Wait until bootrom initialized LLC
     if (DutCfg.LlcNotBypass) begin
@@ -364,6 +378,12 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
     while (~status.allhalted);
     $display("[JTAG] Halted hart 0");
+  endtask
+
+
+  // Halt the core and preload a binary
+  task automatic jtag_elf_halt_load(input string binary, output doub_bt entry);
+    jtag_wait_for_llc_config_halt();
     // Preload binary
     jtag_elf_preload(binary, entry);
   endtask
@@ -372,6 +392,27 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   task automatic jtag_elf_run(input string binary);
     doub_bt entry;
     jtag_elf_halt_load(binary, entry);
+    // Repoint execution
+    jtag_write(dm::Data1, entry[63:32]);
+    jtag_write(dm::Data0, entry[31:0]);
+    jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
+    // Resume hart 0
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
+    $display("[JTAG] Resumed hart 0 from 0x%h", entry);
+  endtask
+
+  // Run a binary that was preloaded with a different method
+  task automatic jtag_elf_run_no_preload(input string binary);
+    doub_bt entry;
+    void'(get_entry(entry));
+
+    if (entry == '0) begin
+      if (read_elf(binary))
+        $fatal(1, "[JTAG] Failed to open ELF: %s!", binary);
+      else
+        void'(get_entry(entry));
+    end
+
     // Repoint execution
     jtag_write(dm::Data1, entry[63:32]);
     jtag_write(dm::Data0, entry[31:0]);
@@ -954,6 +995,41 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     exit_code >>= 1;
     if (exit_code) $error("[SLINK] FAILED: return code %0d", exit_code);
     else $display("[SLINK] SUCCESS");
+  endtask
+
+
+  //////////////////////////
+  //  Direct mem preload  //
+  /////////////////////////
+
+  task automatic memh_elf_preload(input string binary);
+    longint sec_addr, sec_len;
+
+    $display("[MEMH] Preloading ELF binary: %s", binary);
+
+    if (read_elf(binary))
+      $fatal(1, "[MEMH] Failed to load ELF!");
+
+    while (get_section(sec_addr, sec_len)) begin
+      byte bf[] = new [sec_len];
+
+      $display("[MEMH] Preloading section at 0x%h (%0d bytes)", sec_addr, sec_len);
+      if (read_section(sec_addr, bf, sec_len)) $fatal(1, "[MEMH] Failed to read ELF section!");
+
+      // MEMH only supports sim-mem "DRAM" preload
+      if (DutCfg.LlcOutRegionStart <= sec_addr && (sec_addr + sec_len) <= DutCfg.LlcOutRegionEnd) begin
+        // We cannot preload if using DRAMSYS
+        if (UseDramSys) begin
+          $display("[MEMH] Cannot preload section at 0x%h (%0d bytes). Direct DRAMSYS preload is not supported!", sec_addr, sec_len);
+        end else begin
+          for (longint l = 0; l < sec_len; l++) begin
+            fix.vip.i_dram_sim_mem.mem[sec_addr + l] = bf[l];
+          end
+        end
+      end else begin
+        $display("[MEMH] Cannot preload section at 0x%h (%0d bytes). No direct preloadable memory known at this location!", sec_addr, sec_len);
+      end
+    end
   endtask
 
 endmodule
