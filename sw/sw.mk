@@ -194,3 +194,75 @@ CHS_SW_TESTS += $(CHS_SW_TEST_ROM_DUMP:.rom.dump=.rom.memh) $(CHS_SW_TEST_ROM_DU
 
 # Add all dumps to test build
 CHS_SW_TESTS += $(CHS_SW_TEST_DUMP)
+
+#########
+# FESVR #
+#########
+.PHONY: build-fesvr
+
+FESVR_DIR       := $(CHS_ROOT)/sw/deps/riscv-isa-sim
+FESVR_BUILD := $(FESVR_DIR)/build
+FESVR_INSTALL   := $(FESVR_DIR)/install
+FESVR_PREFIX    := $(shell realpath $(FESVR_INSTALL))
+
+FESVR_OBJS := $(patsubst ../%.cc,%.o,$(FESVR_SRCS))
+
+FESVR_LDFLAGS := -L. -Wl,--export-dynamic -L/usr/lib64 \
+    -Wl,-rpath,$(FESVR_PREFIX)/lib \
+    -shared
+
+FESVR_LIBS := -lpthread -ldl -lpthread
+
+FESVR_CXXFLAGS := -MMD -MP \
+	-DPREFIX=\"$(FESVR_PREFIX)/\" \
+	-Wall -Wno-nonportable-include-path \
+	-g -O2 -fPIC -std=c++2a \
+	-iquote . -I.. -iquote ../fesvr -iquote ../riscv -iquote ../softfloat
+
+# List of source files EXCLUDING context.cc
+FESVR_SRCS := \
+	../fesvr/elfloader.cc \
+	../fesvr/htif.cc \
+	../fesvr/memif.cc \
+	../fesvr/dtm.cc \
+	../fesvr/syscall.cc \
+	../fesvr/device.cc \
+	../fesvr/rfb.cc \
+	../fesvr/htif_pthread.cc \
+	../fesvr/htif_hexwriter.cc \
+	../fesvr/dummy.cc \
+	../fesvr/option_parser.cc \
+	../fesvr/term.cc \
+	../fesvr/tsi.cc \
+	../fesvr/context.cc
+
+build-fesvr:
+	@mkdir -p $(FESVR_BUILD) $(FESVR_INSTALL)/lib \
+		$(FESVR_INSTALL)/include/fesvr \
+		$(FESVR_INSTALL)/include/riscv \
+		$(FESVR_INSTALL)/include/softfloat
+	( cd $(FESVR_BUILD) && \
+		../configure --prefix=$(FESVR_PREFIX) --without-boost-regex && \
+		$(CXX) $(FESVR_CXXFLAGS) -c $(FESVR_SRCS) && \
+		$(CXX) $(FESVR_LDFLAGS) -o libfesvr.so *.o $(FESVR_LIBS) )
+	cp $(FESVR_BUILD)/libfesvr.so $(FESVR_INSTALL)/lib
+	cp $(FESVR_DIR)/fesvr/*.h $(FESVR_INSTALL)/include/fesvr
+	cp $(FESVR_DIR)/riscv/*.h $(FESVR_INSTALL)/include/riscv
+	cp $(FESVR_DIR)/softfloat/*.h $(FESVR_INSTALL)/include/softfloat
+
+.PHONY: build-pk
+
+PK_DIR       := sw/deps/riscv-pk
+PK_BUILD := $(PK_DIR)/build
+PK_INSTALL   := $(PK_DIR)/install
+PK_PREFIX    := $(shell realpath $(PK_INSTALL))
+
+build-pk:
+	@mkdir $(PK_BUILD) $(PK_INSTALL)
+	( cd $(PK_BUILD) && \
+		../configure --prefix=$(PK_PREFIX) --host=riscv64-unknown-elf --with-dts=$(CHS_SW_DIR)/boot/cheshire.dtsi && \
+		make && \
+		make install )
+
+.PHONY: build-deps
+build-deps: build-fesvr build-pk

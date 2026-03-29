@@ -9,6 +9,7 @@
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 
 #include <svdpi.h>
+#include <vpi_user.h>
 #include <cstring>
 #include <string>
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
@@ -30,6 +31,7 @@
 #include <map>
 #include <iostream>
 #include <stdint.h>
+#include <fesvr/dtm.h>
 
 #define IS_ELF(hdr) \
   ((hdr).e_ident[0] == 0x7f && (hdr).e_ident[1] == 'E' && \
@@ -155,11 +157,31 @@ std::map<uint64_t, std::vector<uint8_t>> mems;
 uint64_t entry = 0;
 int section_index = 0;
 
+// custom class for dtm
+class preload_aware_dtm_t : public dtm_t {
+  public:
+    preload_aware_dtm_t(int argc, char **argv) : dtm_t(argc, argv) {}
+    bool is_address_preloaded(addr_t taddr, size_t len) override { return true; }
+};
+
 extern "C" {
   char get_entry(long long *entry_ret);
   char get_section(long long *address_ret, long long *len_ret);
   char read_section(long long address, const svOpenArrayHandle buffer, long long len);
   char read_elf(const char *filename);
+  void* debug_new_pk(char *pk_path, char *app_path);
+  void* debug_new(char *app_path);
+  int debug_tick(
+  preload_aware_dtm_t*  dtm,
+  unsigned char* debug_req_valid,
+  unsigned char  debug_req_ready,
+  int*           debug_req_bits_addr,
+  int*           debug_req_bits_op,
+  int*           debug_req_bits_data,
+  unsigned char  debug_resp_valid,
+  unsigned char* debug_resp_ready,
+  int            debug_resp_bits_resp,
+  int            debug_resp_bits_data);
 }
 
 static void write (uint64_t address, uint64_t len, uint8_t *buf)
@@ -398,3 +420,69 @@ extern "C" char read_elf(const char *filename) {
   return 0;
 }
 #endif
+
+
+
+/*------------------------
+Inspired by SimDTM.cc
+------------------------*/
+
+extern "C" void* debug_new_pk(char *pk_path, char *app_path) {
+    int htif_argc = 3;
+    char* htif_argv[htif_argc];
+    htif_argv[0] = (char*)"htif";
+    htif_argv[1] = pk_path;
+    htif_argv[2] = app_path;
+
+    preload_aware_dtm_t *dtm = (preload_aware_dtm_t *) malloc(sizeof(preload_aware_dtm_t));
+    dtm = new preload_aware_dtm_t(htif_argc, htif_argv);
+
+    return (void *)dtm;
+}
+
+extern "C" void* debug_new(char *app_path) {
+    int htif_argc = 2;
+    char* htif_argv[htif_argc];
+    htif_argv[0] = (char*)"htif";
+    htif_argv[1] = app_path;
+
+    preload_aware_dtm_t *dtm = (preload_aware_dtm_t *) malloc(sizeof(preload_aware_dtm_t));
+    dtm = new preload_aware_dtm_t(htif_argc, htif_argv);
+
+    return (void *)dtm;
+}
+
+
+extern "C" int debug_tick
+(
+  preload_aware_dtm_t* dtm,
+  unsigned char* debug_req_valid,
+  unsigned char  debug_req_ready,
+  int*           debug_req_bits_addr,
+  int*           debug_req_bits_op,
+  int*           debug_req_bits_data,
+  unsigned char  debug_resp_valid,
+  unsigned char* debug_resp_ready,
+  int            debug_resp_bits_resp,
+  int            debug_resp_bits_data
+)
+{
+  dtm_t::resp resp_bits;
+  resp_bits.resp = debug_resp_bits_resp;
+  resp_bits.data = debug_resp_bits_data;
+
+  dtm->tick
+  (
+    debug_req_ready,
+    debug_resp_valid,
+    resp_bits
+  );
+
+  *debug_resp_ready = dtm->resp_ready();
+  *debug_req_valid = dtm->req_valid();
+  *debug_req_bits_addr = dtm->req_bits().addr;
+  *debug_req_bits_op = dtm->req_bits().op;
+  *debug_req_bits_data = dtm->req_bits().data;
+
+  return dtm->done() ? (dtm->exit_code() << 1 | 1) : 0;
+}

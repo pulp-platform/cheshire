@@ -35,6 +35,7 @@ pargs=""
 [[ -n "${PRELMODE}" ]] && pargs+="+PRELMODE=${PRELMODE} "
 [[ -n "${BINARY}" ]]   && pargs+="+BINARY=${BINARY} "
 [[ -n "${IMAGE}" ]]    && pargs+="+IMAGE=${IMAGE} "
+[[ -n "${PK}" ]]       && pargs+="+PK=${PK} "
 
 # DRAMSys
 if [ -n "${USE_DRAMSYS}" ]; then
@@ -50,7 +51,7 @@ fi
 COLOR_NC='\e[0m'
 COLOR_BLUE='\e[0;34m'
 
-${VCS_BIN} ${flags} ../src/elfloader.cpp ${TESTBENCH} | tee elaborate.log
+${VCS_BIN} ${flags} -CFLAGS "-std=c++17 -I../../../../sw/deps/riscv-isa-sim/install/include"  ../../../sw/deps/riscv-isa-sim/install/lib/libfesvr.so ../src/elfloader.cpp ${TESTBENCH} | tee elaborate.log
 
 # Start simulation
 printf ${COLOR_BLUE}"${VCS_VERSION} ${VERDI_VERSION} ./simv ${pargs}"${COLOR_NC}"\n"
