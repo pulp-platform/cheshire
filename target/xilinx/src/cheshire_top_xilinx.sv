@@ -145,6 +145,16 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
     ret.ClicNumVsctxts = 4;
     ret.ClicPrioWidth = 1;
   `endif
+    // !!!!!!!!!!!!!!!!!!!
+    // HARDCODED DUAL CORE
+    ret.NumCores = 2;
+    ret.AxiMstIdWidth = 4;
+    // !!!!!!!!!!!!!!!!!!!
+    ret.I2c = 0;
+    ret.SpiHost = 1;
+    ret.Dma = 0;
+    ret.Vga = 0;
+    ret.LlcNotBypass = 1;
     return ret;
   endfunction
 
