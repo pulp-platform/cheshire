@@ -46,8 +46,8 @@ packages:
     - register_interface
     - tech_cells_generic
   axi_riscv_atomics:
-    revision: dcd1f6ab2712b96d90c514ae2821dd109e400fbf
-    version: null
+    revision: 97a1dd2ac643c276880420a0cf8eea697f228aa9
+    version: 0.8.3
     source:
       Git: https://github.com/pulp-platform/axi_riscv_atomics.git
     dependencies:
@@ -110,7 +110,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: fb7fba463ff13b57adf9368b710448ddf1e79af9
+    revision: 8fadbb8a362e9639d1f466bb90c09d7635fc4e1e
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -128,10 +128,10 @@ packages:
     dependencies:
     - axi
   fpnew:
-    revision: e5aa6a01b5bbe1675c3aa8872e1203413ded83d1
+    revision: 58ca3c376beb914b2b80b811d4b270c063d4e6f7
     version: null
     source:
-      Git: https://github.com/pulp-platform/cvfpu.git
+      Git: https://github.com/openhwgroup/cvfpu.git
     dependencies:
     - common_cells
     - fpu_div_sqrt_mvp

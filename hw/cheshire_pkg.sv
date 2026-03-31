@@ -403,6 +403,7 @@ package cheshire_pkg;
     aw_bt irq_router;
     aw_bt [2**MaxCoresWidth-1:0] bus_err;
     aw_bt [2**MaxCoresWidth-1:0] clic;
+    aw_bt ccu;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
@@ -432,6 +433,7 @@ package cheshire_pkg;
     if (cfg.BusErr) for (int j = 0; j < 2 + cfg.NumCores; j++) begin
       i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, AmBusErr + j*'h40,  AmBusErr + (j+1)*'h40};
     end
+    i++; ret.ccu = i; r++; ret.map[r] = '{i, 'h210_0000, 'h0214_0000};
     i++; r++;
     ret.ext_base  = i;
     ret.num_out   = i + cfg.RegExtNumSlv;
@@ -512,9 +514,11 @@ package cheshire_pkg;
     ret.CachedRegionAddrBase  = {AmSpm,   cfg.LlcOutRegionStart,  CieBase};
     ret.CachedRegionLength    = {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength};
     ret.DebugEn               = 1;
+    `ifdef TARGET_PULP
     ret.RVSCLIC               = cfg.Clic;
     ret.RVXHCLIC              = cfg.ClicVsclic;
     ret.CLICNumInterruptSrc   = NumCoreIrqs + NumIntIntrs + cfg.NumExtClicIntrs;
+    `endif
     // TODO: Should some things be removed from the main config?
     // TODO: Should other things be added to the main config?
     // TODO: Tune missing parameters of interest (esp. cache and interconnect) properly
