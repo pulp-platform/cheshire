@@ -636,6 +636,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .ipi_i            ( msip[i] ),
       .time_irq_i       ( mtip[i] ),
       .debug_req_i      ( dbg_int_req[i] ),
+      `ifdef TARGET_PULP
       .clic_irq_valid_i ( clic_irq_valid ),
       .clic_irq_id_i    ( clic_irq_id    ),
       .clic_irq_level_i ( clic_irq_level ),
@@ -646,6 +647,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clic_irq_ready_o ( clic_irq_ready ),
       .clic_kill_req_i  ( clic_irq_kill_req ),
       .clic_kill_ack_o  ( clic_irq_kill_ack ),
+      `endif
       .rvfi_probes_o    ( ),
       .cvxif_req_o      ( ),
       .cvxif_resp_i     ( '0 ),
@@ -796,6 +798,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   localparam ccu_pkg::ccu_user_config_t ccuUserCfg = '{
     numSubordinates          : NumIntHarts,
     numShareableTransactions : 8,
+    enableReplay             : 0,
+    numReplayEntries         : NumIntHarts,
     numWriteTransactions     : 4,
     numSnoopTransactions     : 4,
     axiAddressWidth          : Cfg.AddrWidth,
@@ -803,8 +807,20 @@ module cheshire_soc import cheshire_pkg::*; #(
     axiUserWidth             : Cfg.AxiUserWidth,
     axiSubordinateIdWidth    : Cva6IdWidth,
     cachelineWidth           : Cva6Cfg.DcacheLineWidth,
+    // cacheNumSets             : Cva6Cfg.DcacheByteSize * 8 / (Cva6Cfg.DcacheSetAssoc * Cva6Cfg.DcacheLineWidth),
+    // cacheNumWays             : Cva6Cfg.DcacheSetAssoc,
+    // snoopFilterNumBins       : 64,
     addressCheckLsb          : 4,
-    addressCheckMsb          : 19
+    addressCheckMsb          : 19,
+    snoopReqFifoFallthrough  : 1,
+    snoopRespFifoFallthrough : 1,
+    mmioIntf                 : ccu_pkg::CCU_MMIO_REGBUS,
+    enableCSRs               : `ifdef TARGET_FPGA 1 `else `ifdef TARGET_SYNTHESIS 0 `else 1 `endif `endif,
+    frontendPipeAw           : 1,
+    frontendPipeW            : 1,
+    frontendPipeB            : 1,
+    frontendPipeAr           : 1,
+    frontendPipeR            : 1
   };
 
   localparam ccu_pkg::ccu_config_t ccuCfg = ccu_pkg::ccu_build_cfg(ccuUserCfg);
@@ -845,21 +861,24 @@ module cheshire_soc import cheshire_pkg::*; #(
     .ccu_snoop_cr_t             (cva6_noc_snoop_cr_chan_t),
     .ccu_snoop_cd_t             (cva6_noc_snoop_cd_chan_t),
     .ccu_snoop_req_t            (cva6_noc_snoop_req_t),
-    .ccu_snoop_resp_t           (cva6_noc_snoop_rsp_t)
+    .ccu_snoop_resp_t           (cva6_noc_snoop_rsp_t),
+    .mmio_req_t                 (reg_req_t),
+    .mmio_resp_t                (reg_rsp_t)
   ) i_ace_ccu (
     .clk_i,
     .rst_ni,
-    .domain_map_i       (domain_map),
-    .subordinate_req_i  (ccu_in_req),
-    .subordinate_resp_o (ccu_in_rsp),
-    .subordinate_rack_i (ccu_in_rack),
-    .subordinate_wack_i (ccu_in_wack),
-    .snoop_req_o        (ccu_out_snoop_req),
-    .snoop_resp_i       (ccu_out_snoop_rsp),
-    .manager_req_o      (ccu_out_req),
-    .manager_resp_i     (ccu_out_rsp)
+    .domain_map_i            (domain_map),
+    .subordinate_req_i       (ccu_in_req),
+    .subordinate_resp_o      (ccu_in_rsp),
+    .subordinate_rack_i      (ccu_in_rack),
+    .subordinate_wack_i      (ccu_in_wack),
+    .snoop_req_o             (ccu_out_snoop_req),
+    .snoop_resp_i            (ccu_out_snoop_rsp),
+    .manager_req_o           (ccu_out_req),
+    .manager_resp_i          (ccu_out_rsp),
+    .mmio_subordinate_req_i  (reg_out_req[RegOut.ccu]),
+    .mmio_subordinate_resp_o (reg_out_rsp[RegOut.ccu])
 );
-
 
   axi_iw_converter #(
   .AxiSlvPortIdWidth      (ccuCfg.axiManagerIdWidth),
