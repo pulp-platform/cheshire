@@ -18,7 +18,16 @@ if { ![info exists CXX_PATH] } {
             set CXX $::env(CXX)
         }
     }
-    set CXX_PATH [exec which $CXX]
+
+    # Cross-platform search g++, where '\' replaced with '/'
+    if {[string equal $tcl_platform(platform) "windows"]} {
+        set raw_path [exec cmd.exe /c "where $CXX"]
+        set lines [split $raw_path "\n"]
+        set first_line [string trim [lindex $lines 0]]
+        set CXX_PATH [string map {\\ /} $first_line]
+    } else {
+        set CXX_PATH [exec which $CXX]
+    }
 }
 
 # Set voptargs only if not already set to make overridable.
