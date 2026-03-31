@@ -36,11 +36,6 @@ switch $proj {
                     CONFIG.CLKOUT4_REQUESTED_OUT_FREQ {10.000} \
                     CONFIG.CLKIN1_JITTER_PS {50.0} \
                     CONFIG.MMCM_CLKFBOUT_MULT_F {6.000} \
-                    CONFIG.MMCM_CLKIN1_PERIOD {5.000} \
-                    CONFIG.MMCM_CLKOUT1_DIVIDE {24} \
-                    CONFIG.MMCM_CLKOUT2_DIVIDE {25} \
-                    CONFIG.MMCM_CLKOUT3_DIVIDE {60} \
-                    CONFIG.MMCM_CLKOUT4_DIVIDE {120} \
                     CONFIG.NUM_OUT_CLKS {4} \
                     CONFIG.CLKOUT1_JITTER {112.316} \
                     CONFIG.CLKOUT1_PHASE_ERROR {89.971} \
@@ -72,11 +67,6 @@ switch $proj {
                     CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {20.000} \
                     CONFIG.CLKOUT4_REQUESTED_OUT_FREQ {10.000} \
                     CONFIG.MMCM_CLKFBOUT_MULT_F {12.000} \
-                    CONFIG.MMCM_CLKIN1_PERIOD {5.000} \
-                    CONFIG.MMCM_CLKOUT1_DIVIDE {24} \
-                    CONFIG.MMCM_CLKOUT2_DIVIDE {25} \
-                    CONFIG.MMCM_CLKOUT3_DIVIDE {60} \
-                    CONFIG.MMCM_CLKOUT4_DIVIDE {120} \
                     CONFIG.NUM_OUT_CLKS {4} \
                     CONFIG.CLKOUT1_JITTER {112.316} \
                     CONFIG.CLKOUT1_PHASE_ERROR {89.971} \
@@ -182,44 +172,45 @@ switch $proj {
         switch $board {
             vcu128 {
                 set_property -dict [list \
-                    CONFIG.C0.DDR4_Clamshell {true} \
-                    CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram} \
                     CONFIG.System_Clock {No_Buffer} \
                     CONFIG.Reference_Clock {No_Buffer} \
+                    CONFIG.C0.DDR4_MemoryPart {MT40A512M16HA-075E} \
+                    CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram} \
                     CONFIG.C0.DDR4_InputClockPeriod {10000} \
                     CONFIG.C0.DDR4_CLKOUT0_DIVIDE {3} \
-                    CONFIG.C0.DDR4_MemoryPart {MT40A512M16HA-075E} \
-                    CONFIG.C0.DDR4_DataWidth {72} \
+                    CONFIG.C0.DDR4_DataWidth {64} \
                     CONFIG.C0.DDR4_DataMask {NO_DM_NO_DBI} \
-                    CONFIG.C0.DDR4_Ecc {true} \
                     CONFIG.C0.DDR4_AxiDataWidth {512} \
                     CONFIG.C0.DDR4_AxiAddressWidth {32} \
                     CONFIG.C0.DDR4_AxiIDWidth {8} \
-                    CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
                     CONFIG.C0.BANK_GROUP_WIDTH {1} \
-                    CONFIG.C0.CS_WIDTH {2} \
                     CONFIG.C0.DDR4_AxiSelection {true} \
+                    CONFIG.C0.DDR4_MCS_ECC {false} \
+                    CONFIG.C0.DDR4_Ecc {false} \
+                    CONFIG.C0.CS_WIDTH {2} \
+                    CONFIG.C0.DDR4_Clamshell {true} \
                     ] [get_ips $proj]
             }
             vcu118 {
                 set_property -dict [list \
                     CONFIG.System_Clock {No_Buffer} \
                     CONFIG.Reference_Clock {No_Buffer} \
+                    CONFIG.C0.DDR4_MemoryPart {MT40A256M16LY-062E} \
                     CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram_c1_062} \
                     CONFIG.C0.DDR4_InputClockPeriod {4000} \
                     CONFIG.C0.DDR4_CLKOUT0_DIVIDE {5} \
-                    CONFIG.C0.DDR4_MemoryPart {MT40A256M16LY-062E} \
-                    CONFIG.C0.DDR4_TimePeriod {833} \
                     CONFIG.C0.DDR4_DataWidth {64} \
                     CONFIG.C0.DDR4_DataMask {DM_NO_DBI} \
-                    CONFIG.C0.DDR4_MCS_ECC {false} \
-                    CONFIG.C0.DDR4_CasWriteLatency {12} \
-                    CONFIG.C0.DDR4_CasLatency {18} \
                     CONFIG.C0.DDR4_AxiDataWidth {512} \
                     CONFIG.C0.DDR4_AxiAddressWidth {31} \
                     CONFIG.C0.DDR4_AxiIDWidth {8} \
                     CONFIG.C0.BANK_GROUP_WIDTH {1} \
                     CONFIG.C0.DDR4_AxiSelection {true} \
+                    CONFIG.C0.DDR4_MCS_ECC {false} \
+                    CONFIG.C0.DDR4_Ecc {false} \
+                    CONFIG.C0.DDR4_CasWriteLatency {12} \
+                    CONFIG.C0.DDR4_CasLatency {18} \
+                    CONFIG.C0.DDR4_TimePeriod {833} \
                     ] [get_ips $proj]
             }
             default { nocfgexit $proj $board }
