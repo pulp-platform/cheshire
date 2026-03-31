@@ -5,6 +5,7 @@
 // Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 // Yvan Tortorella <yvan.tortorella@gmail.com>
+// Seyyid Hikmet Celik <seyyid4091@gmail.com>
 //
 // Resize AXI AW, IW, and DW before connecting to a Xilinx DRAM controller.
 
@@ -57,6 +58,19 @@ module dram_wrapper_xilinx #(
     integer MaxUniqIds;
     integer MaxTxns;
   } dram_cfg_t;
+
+`ifdef TARGET_VCU108
+  localparam dram_cfg_t cfg = '{
+    EnCdc         : 1,    // 300.12 MHz AXI (cf. CdcLogDepth)
+    CdcLogDepth   : 5,
+    IdWidth       : 8,
+    AddrWidth     : 31,
+    DataWidth     : 512,
+    StrobeWidth   : 64,
+    MaxUniqIds    : 8,    // TODO: suboptimal, but limited by CVA6/LLC
+    MaxTxns       : 24    // TODO: suboptimal, but limited by CVA6/LLC
+  };
+`endif
 
 `ifdef TARGET_VCU118
   localparam dram_cfg_t cfg = '{

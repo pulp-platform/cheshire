@@ -8,6 +8,7 @@
 // Yann Picod <ypicod@ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 // Yvan Tortorella <yvan.tortorella@gmail.com>
+// Seyyid Hikmet Celik <seyyid4091@gmail.com>
 
 `include "cheshire/typedef.svh"
 `include "phy_definitions.svh"
@@ -20,7 +21,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
   localparam int unsigned Ddr4DmDbiNWidth = 9,
   localparam int unsigned Ddr4DqWidth = 72,
   localparam int unsigned Ddr4DqsWidth = 9
-`else // Default to VCU118
+`else // Default to VCU108 and VCU118
   localparam int unsigned Ddr4CsNWidth = 1,
   localparam int unsigned Ddr4DmDbiNWidth = 8,
   localparam int unsigned Ddr4DqWidth = 64,
@@ -352,7 +353,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
   assign qspi_cs_b_ts = ~spi_cs_en;
   assign qspi_dqo_ts  = ~spi_sd_en;
 
-  // On VCU128/VCU118/ZCU102, SPI ports are not directly available
+  // On VCU128/VCU118/VCU108/ZCU102, SPI ports are not directly available
 `ifdef USE_STARTUPE3
   STARTUPE3 #(
     .PROG_USR("FALSE"),
