@@ -140,6 +140,7 @@ module cheshire_idma_wrap #(
     .axi_rsp_o  ( axi_slv_rsp_o ),
     .reg_req_o  ( dma_reg_req ),
     .reg_rsp_i  ( dma_reg_rsp ),
+    .reg_id_o   ( ),
     .busy_o     ( )
    );
 
