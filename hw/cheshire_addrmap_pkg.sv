@@ -45,7 +45,7 @@ localparam longint unsigned GPIO_BASE_ADDR = 64'h3005000;
 localparam longint unsigned GPIO_SIZE = 64'h1000;
 
 localparam longint unsigned SLINK_BASE_ADDR = 64'h3006000;
-localparam longint unsigned SLINK_SIZE = 64'h1000;
+localparam longint unsigned SLINK_SIZE = 64'h804;
 
 localparam longint unsigned VGA_BASE_ADDR = 64'h3007000;
 localparam longint unsigned VGA_SIZE = 64'h1000;
@@ -100,8 +100,47 @@ localparam longint unsigned SPIH_STATUS_BASE_ADDR = 64'h3004000;
 localparam longint unsigned SPIH__END_BASE_ADDR = 64'h3004FFC;
 localparam longint unsigned GPIO_STATUS_BASE_ADDR = 64'h3005000;
 localparam longint unsigned GPIO__END_BASE_ADDR = 64'h3005FFC;
-localparam longint unsigned SLINK_STATUS_BASE_ADDR = 64'h3006000;
-localparam longint unsigned SLINK__END_BASE_ADDR = 64'h3006FFC;
+localparam longint unsigned SLINK_CTRL_BASE_ADDR = 64'h3006000;
+localparam longint unsigned SLINK_ISOLATED_BASE_ADDR = 64'h3006004;
+localparam longint unsigned SLINK_RAW_MODE_EN_BASE_ADDR = 64'h3006008;
+localparam longint unsigned SLINK_RAW_MODE_IN_DATA_BASE_ADDR = 64'h300600C;
+localparam longint unsigned SLINK_RAW_MODE_IN_CH_SEL_BASE_ADDR = 64'h3006010;
+localparam longint unsigned SLINK_RAW_MODE_OUT_DATA_FIFO_BASE_ADDR = 64'h3006014;
+localparam longint unsigned SLINK_RAW_MODE_OUT_DATA_FIFO_CTRL_BASE_ADDR = 64'h3006018;
+localparam longint unsigned SLINK_RAW_MODE_OUT_EN_BASE_ADDR = 64'h300601C;
+localparam longint unsigned SLINK_FLOW_CONTROL_FIFO_CLEAR_BASE_ADDR = 64'h3006020;
+function automatic longint unsigned SLINK_RAW_MODE_IN_DATA_VALID_BASE_ADDR(input int unsigned raw_mode_in_data_valid_idx);
+    return 64'h3006100 + (raw_mode_in_data_valid_idx * 64'h4);
+endfunction
+localparam longint unsigned SLINK_RAW_MODE_IN_DATA_VALID_NUM = 64'h1;
+function automatic longint unsigned SLINK_RAW_MODE_OUT_CH_MASK_BASE_ADDR(input int unsigned raw_mode_out_ch_mask_idx);
+    return 64'h3006200 + (raw_mode_out_ch_mask_idx * 64'h4);
+endfunction
+localparam longint unsigned SLINK_RAW_MODE_OUT_CH_MASK_NUM = 64'h1;
+function automatic longint unsigned SLINK_TX_PHY_CLK_DIV_BASE_ADDR(input int unsigned tx_phy_clk_div_idx);
+    return 64'h3006300 + (tx_phy_clk_div_idx * 64'h4);
+endfunction
+localparam longint unsigned SLINK_TX_PHY_CLK_DIV_NUM = 64'h1;
+function automatic longint unsigned SLINK_TX_PHY_CLK_START_BASE_ADDR(input int unsigned tx_phy_clk_start_idx);
+    return 64'h3006400 + (tx_phy_clk_start_idx * 64'h4);
+endfunction
+localparam longint unsigned SLINK_TX_PHY_CLK_START_NUM = 64'h1;
+function automatic longint unsigned SLINK_TX_PHY_CLK_END_BASE_ADDR(input int unsigned tx_phy_clk_end_idx);
+    return 64'h3006500 + (tx_phy_clk_end_idx * 64'h4);
+endfunction
+localparam longint unsigned SLINK_TX_PHY_CLK_END_NUM = 64'h1;
+localparam longint unsigned SLINK_CHANNEL_ALLOC_TX_CFG_BASE_ADDR = 64'h3006600;
+localparam longint unsigned SLINK_CHANNEL_ALLOC_TX_CTRL_BASE_ADDR = 64'h3006604;
+localparam longint unsigned SLINK_CHANNEL_ALLOC_RX_CFG_BASE_ADDR = 64'h3006608;
+localparam longint unsigned SLINK_CHANNEL_ALLOC_RX_CTRL_BASE_ADDR = 64'h300660C;
+function automatic longint unsigned SLINK_CHANNEL_ALLOC_TX_CH_EN_BASE_ADDR(input int unsigned channel_alloc_tx_ch_en_idx);
+    return 64'h3006700 + (channel_alloc_tx_ch_en_idx * 64'h4);
+endfunction
+localparam longint unsigned SLINK_CHANNEL_ALLOC_TX_CH_EN_NUM = 64'h1;
+function automatic longint unsigned SLINK_CHANNEL_ALLOC_RX_CH_EN_BASE_ADDR(input int unsigned channel_alloc_rx_ch_en_idx);
+    return 64'h3006800 + (channel_alloc_rx_ch_en_idx * 64'h4);
+endfunction
+localparam longint unsigned SLINK_CHANNEL_ALLOC_RX_CH_EN_NUM = 64'h1;
 localparam longint unsigned VGA_STATUS_BASE_ADDR = 64'h3007000;
 localparam longint unsigned VGA__END_BASE_ADDR = 64'h3007FFC;
 localparam longint unsigned USB_STATUS_BASE_ADDR = 64'h3008000;

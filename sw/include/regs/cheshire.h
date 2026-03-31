@@ -251,6 +251,356 @@ typedef struct __attribute__ ((__packed__)) {
     soc_regs__vga_params_t vga_params;
 } soc_regs_t;
 
+// Reg - slink_reg_NumLanes_4::ctrl
+#define SLINK_REG_NUMLANES_4__CTRL__CLK_ENA_bm 0x1
+#define SLINK_REG_NUMLANES_4__CTRL__CLK_ENA_bp 0
+#define SLINK_REG_NUMLANES_4__CTRL__CLK_ENA_bw 1
+#define SLINK_REG_NUMLANES_4__CTRL__CLK_ENA_reset 0x0
+#define SLINK_REG_NUMLANES_4__CTRL__RESET_N_bm 0x2
+#define SLINK_REG_NUMLANES_4__CTRL__RESET_N_bp 1
+#define SLINK_REG_NUMLANES_4__CTRL__RESET_N_bw 1
+#define SLINK_REG_NUMLANES_4__CTRL__RESET_N_reset 0x1
+#define SLINK_REG_NUMLANES_4__CTRL__AXI_IN_ISOLATE_bm 0x100
+#define SLINK_REG_NUMLANES_4__CTRL__AXI_IN_ISOLATE_bp 8
+#define SLINK_REG_NUMLANES_4__CTRL__AXI_IN_ISOLATE_bw 1
+#define SLINK_REG_NUMLANES_4__CTRL__AXI_IN_ISOLATE_reset 0x1
+#define SLINK_REG_NUMLANES_4__CTRL__AXI_OUT_ISOLATE_bm 0x200
+#define SLINK_REG_NUMLANES_4__CTRL__AXI_OUT_ISOLATE_bp 9
+#define SLINK_REG_NUMLANES_4__CTRL__AXI_OUT_ISOLATE_bw 1
+#define SLINK_REG_NUMLANES_4__CTRL__AXI_OUT_ISOLATE_reset 0x1
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t clk_ena :1;
+        uint32_t reset_n :1;
+        uint32_t :6;
+        uint32_t axi_in_isolate :1;
+        uint32_t axi_out_isolate :1;
+        uint32_t :22;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__ctrl_t;
+
+// Reg - slink_reg_NumLanes_4::isolated
+#define SLINK_REG_NUMLANES_4__ISOLATED__AXI_IN_bm 0x1
+#define SLINK_REG_NUMLANES_4__ISOLATED__AXI_IN_bp 0
+#define SLINK_REG_NUMLANES_4__ISOLATED__AXI_IN_bw 1
+#define SLINK_REG_NUMLANES_4__ISOLATED__AXI_IN_reset 0x1
+#define SLINK_REG_NUMLANES_4__ISOLATED__AXI_OUT_bm 0x2
+#define SLINK_REG_NUMLANES_4__ISOLATED__AXI_OUT_bp 1
+#define SLINK_REG_NUMLANES_4__ISOLATED__AXI_OUT_bw 1
+#define SLINK_REG_NUMLANES_4__ISOLATED__AXI_OUT_reset 0x1
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t axi_in :1;
+        uint32_t axi_out :1;
+        uint32_t :30;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__isolated_t;
+
+// Reg - slink_reg_NumLanes_4::raw_mode_en
+#define SLINK_REG_NUMLANES_4__RAW_MODE_EN__RAW_MODE_EN_bm 0x1
+#define SLINK_REG_NUMLANES_4__RAW_MODE_EN__RAW_MODE_EN_bp 0
+#define SLINK_REG_NUMLANES_4__RAW_MODE_EN__RAW_MODE_EN_bw 1
+#define SLINK_REG_NUMLANES_4__RAW_MODE_EN__RAW_MODE_EN_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t raw_mode_en :1;
+        uint32_t :31;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__raw_mode_en_t;
+
+// Reg - slink_reg_NumLanes_4::raw_mode_in_data
+#define SLINK_REG_NUMLANES_4__RAW_MODE_IN_DATA__RAW_MODE_IN_DATA_bm 0xff
+#define SLINK_REG_NUMLANES_4__RAW_MODE_IN_DATA__RAW_MODE_IN_DATA_bp 0
+#define SLINK_REG_NUMLANES_4__RAW_MODE_IN_DATA__RAW_MODE_IN_DATA_bw 8
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t raw_mode_in_data :8;
+        uint32_t :24;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__raw_mode_in_data_t;
+
+// Reg - slink_reg_NumLanes_4::raw_mode_in_ch_sel
+#define SLINK_REG_NUMLANES_4__RAW_MODE_IN_CH_SEL__RAW_MODE_IN_CH_SEL_bm 0xff
+#define SLINK_REG_NUMLANES_4__RAW_MODE_IN_CH_SEL__RAW_MODE_IN_CH_SEL_bp 0
+#define SLINK_REG_NUMLANES_4__RAW_MODE_IN_CH_SEL__RAW_MODE_IN_CH_SEL_bw 8
+#define SLINK_REG_NUMLANES_4__RAW_MODE_IN_CH_SEL__RAW_MODE_IN_CH_SEL_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t raw_mode_in_ch_sel :8;
+        uint32_t :24;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__raw_mode_in_ch_sel_t;
+
+// Reg - slink_reg_NumLanes_4::raw_mode_out_data_fifo
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_bm 0xff
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_bp 0
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_bw 8
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t raw_mode_out_data_fifo :8;
+        uint32_t :24;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__raw_mode_out_data_fifo_t;
+
+// Reg - slink_reg_NumLanes_4::raw_mode_out_data_fifo_ctrl
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_DATA_FIFO_CTRL__CLEAR_bm 0x1
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_DATA_FIFO_CTRL__CLEAR_bp 0
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_DATA_FIFO_CTRL__CLEAR_bw 1
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_DATA_FIFO_CTRL__FILL_STATE_bm 0x700
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_DATA_FIFO_CTRL__FILL_STATE_bp 8
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_DATA_FIFO_CTRL__FILL_STATE_bw 3
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_DATA_FIFO_CTRL__FILL_STATE_reset 0x0
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_DATA_FIFO_CTRL__IS_FULL_bm 0x80000000
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_DATA_FIFO_CTRL__IS_FULL_bp 31
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_DATA_FIFO_CTRL__IS_FULL_bw 1
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_DATA_FIFO_CTRL__IS_FULL_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t clear :1;
+        uint32_t :7;
+        uint32_t fill_state :3;
+        uint32_t :20;
+        uint32_t is_full :1;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__raw_mode_out_data_fifo_ctrl_t;
+
+// Reg - slink_reg_NumLanes_4::raw_mode_out_en
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_EN__RAW_MODE_OUT_EN_bm 0x1
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_EN__RAW_MODE_OUT_EN_bp 0
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_EN__RAW_MODE_OUT_EN_bw 1
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_EN__RAW_MODE_OUT_EN_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t raw_mode_out_en :1;
+        uint32_t :31;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__raw_mode_out_en_t;
+
+// Reg - slink_reg_NumLanes_4::flow_control_fifo_clear
+#define SLINK_REG_NUMLANES_4__FLOW_CONTROL_FIFO_CLEAR__FLOW_CONTROL_FIFO_CLEAR_bm 0x1
+#define SLINK_REG_NUMLANES_4__FLOW_CONTROL_FIFO_CLEAR__FLOW_CONTROL_FIFO_CLEAR_bp 0
+#define SLINK_REG_NUMLANES_4__FLOW_CONTROL_FIFO_CLEAR__FLOW_CONTROL_FIFO_CLEAR_bw 1
+#define SLINK_REG_NUMLANES_4__FLOW_CONTROL_FIFO_CLEAR__FLOW_CONTROL_FIFO_CLEAR_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t flow_control_fifo_clear :1;
+        uint32_t :31;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__flow_control_fifo_clear_t;
+
+// Reg - slink_reg_NumLanes_4::raw_mode_in_data_valid
+#define SLINK_REG_NUMLANES_4__RAW_MODE_IN_DATA_VALID__RAW_MODE_IN_DATA_VALID_bm 0x1
+#define SLINK_REG_NUMLANES_4__RAW_MODE_IN_DATA_VALID__RAW_MODE_IN_DATA_VALID_bp 0
+#define SLINK_REG_NUMLANES_4__RAW_MODE_IN_DATA_VALID__RAW_MODE_IN_DATA_VALID_bw 1
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t raw_mode_in_data_valid :1;
+        uint32_t :31;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__raw_mode_in_data_valid_t;
+
+// Reg - slink_reg_NumLanes_4::raw_mode_out_ch_mask
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_CH_MASK__RAW_MODE_OUT_CH_MASK_bm 0x1
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_CH_MASK__RAW_MODE_OUT_CH_MASK_bp 0
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_CH_MASK__RAW_MODE_OUT_CH_MASK_bw 1
+#define SLINK_REG_NUMLANES_4__RAW_MODE_OUT_CH_MASK__RAW_MODE_OUT_CH_MASK_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t raw_mode_out_ch_mask :1;
+        uint32_t :31;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__raw_mode_out_ch_mask_t;
+
+// Reg - slink_reg_NumLanes_4::tx_phy_clk_div
+#define SLINK_REG_NUMLANES_4__TX_PHY_CLK_DIV__CLK_DIVS_bm 0x7ff
+#define SLINK_REG_NUMLANES_4__TX_PHY_CLK_DIV__CLK_DIVS_bp 0
+#define SLINK_REG_NUMLANES_4__TX_PHY_CLK_DIV__CLK_DIVS_bw 11
+#define SLINK_REG_NUMLANES_4__TX_PHY_CLK_DIV__CLK_DIVS_reset 0x8
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t clk_divs :11;
+        uint32_t :21;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__tx_phy_clk_div_t;
+
+// Reg - slink_reg_NumLanes_4::tx_phy_clk_start
+#define SLINK_REG_NUMLANES_4__TX_PHY_CLK_START__CLK_DIVS_bm 0x7ff
+#define SLINK_REG_NUMLANES_4__TX_PHY_CLK_START__CLK_DIVS_bp 0
+#define SLINK_REG_NUMLANES_4__TX_PHY_CLK_START__CLK_DIVS_bw 11
+#define SLINK_REG_NUMLANES_4__TX_PHY_CLK_START__CLK_DIVS_reset 0x2
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t clk_divs :11;
+        uint32_t :21;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__tx_phy_clk_start_t;
+
+// Reg - slink_reg_NumLanes_4::tx_phy_clk_end
+#define SLINK_REG_NUMLANES_4__TX_PHY_CLK_END__CLK_SHIFT_END_bm 0x7ff
+#define SLINK_REG_NUMLANES_4__TX_PHY_CLK_END__CLK_SHIFT_END_bp 0
+#define SLINK_REG_NUMLANES_4__TX_PHY_CLK_END__CLK_SHIFT_END_bw 11
+#define SLINK_REG_NUMLANES_4__TX_PHY_CLK_END__CLK_SHIFT_END_reset 0x6
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t clk_shift_end :11;
+        uint32_t :21;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__tx_phy_clk_end_t;
+
+// Reg - slink_reg_NumLanes_4::channel_alloc_tx_cfg
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CFG__BYPASS_EN_bm 0x1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CFG__BYPASS_EN_bp 0
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CFG__BYPASS_EN_bw 1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CFG__BYPASS_EN_reset 0x1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CFG__AUTO_FLUSH_EN_bm 0x2
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CFG__AUTO_FLUSH_EN_bp 1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CFG__AUTO_FLUSH_EN_bw 1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CFG__AUTO_FLUSH_EN_reset 0x1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CFG__AUTO_FLUSH_COUNT_bm 0xff00
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CFG__AUTO_FLUSH_COUNT_bp 8
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CFG__AUTO_FLUSH_COUNT_bw 8
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CFG__AUTO_FLUSH_COUNT_reset 0x2
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t bypass_en :1;
+        uint32_t auto_flush_en :1;
+        uint32_t :6;
+        uint32_t auto_flush_count :8;
+        uint32_t :16;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__channel_alloc_tx_cfg_t;
+
+// Reg - slink_reg_NumLanes_4::channel_alloc_tx_ctrl
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CTRL__CLEAR_bm 0x1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CTRL__CLEAR_bp 0
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CTRL__CLEAR_bw 1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CTRL__FLUSH_bm 0x2
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CTRL__FLUSH_bp 1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CTRL__FLUSH_bw 1
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t clear :1;
+        uint32_t flush :1;
+        uint32_t :30;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__channel_alloc_tx_ctrl_t;
+
+// Reg - slink_reg_NumLanes_4::channel_alloc_rx_cfg
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CFG__BYPASS_EN_bm 0x1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CFG__BYPASS_EN_bp 0
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CFG__BYPASS_EN_bw 1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CFG__BYPASS_EN_reset 0x1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CFG__AUTO_FLUSH_EN_bm 0x2
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CFG__AUTO_FLUSH_EN_bp 1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CFG__AUTO_FLUSH_EN_bw 1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CFG__AUTO_FLUSH_EN_reset 0x1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CFG__AUTO_FLUSH_COUNT_bm 0xff00
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CFG__AUTO_FLUSH_COUNT_bp 8
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CFG__AUTO_FLUSH_COUNT_bw 8
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CFG__AUTO_FLUSH_COUNT_reset 0x2
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CFG__SYNC_EN_bm 0x10000
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CFG__SYNC_EN_bp 16
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CFG__SYNC_EN_bw 1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CFG__SYNC_EN_reset 0x1
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t bypass_en :1;
+        uint32_t auto_flush_en :1;
+        uint32_t :6;
+        uint32_t auto_flush_count :8;
+        uint32_t sync_en :1;
+        uint32_t :15;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__channel_alloc_rx_cfg_t;
+
+// Reg - slink_reg_NumLanes_4::channel_alloc_rx_ctrl
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CTRL__CLEAR_bm 0x1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CTRL__CLEAR_bp 0
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CTRL__CLEAR_bw 1
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t clear :1;
+        uint32_t :31;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__channel_alloc_rx_ctrl_t;
+
+// Reg - slink_reg_NumLanes_4::channel_alloc_tx_ch_en
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CH_EN__CHANNEL_ALLOC_TX_CH_EN_bm 0x1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CH_EN__CHANNEL_ALLOC_TX_CH_EN_bp 0
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CH_EN__CHANNEL_ALLOC_TX_CH_EN_bw 1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_TX_CH_EN__CHANNEL_ALLOC_TX_CH_EN_reset 0x1
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t channel_alloc_tx_ch_en :1;
+        uint32_t :31;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__channel_alloc_tx_ch_en_t;
+
+// Reg - slink_reg_NumLanes_4::channel_alloc_rx_ch_en
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CH_EN__CHANNEL_ALLOC_RX_CH_EN_bm 0x1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CH_EN__CHANNEL_ALLOC_RX_CH_EN_bp 0
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CH_EN__CHANNEL_ALLOC_RX_CH_EN_bw 1
+#define SLINK_REG_NUMLANES_4__CHANNEL_ALLOC_RX_CH_EN__CHANNEL_ALLOC_RX_CH_EN_reset 0x1
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t channel_alloc_rx_ch_en :1;
+        uint32_t :31;
+    } f;
+    uint32_t w;
+} slink_reg_NumLanes_4__channel_alloc_rx_ch_en_t;
+
+// Addrmap - slink_reg_NumLanes_4
+typedef struct __attribute__ ((__packed__)) {
+    slink_reg_NumLanes_4__ctrl_t ctrl;
+    slink_reg_NumLanes_4__isolated_t isolated;
+    slink_reg_NumLanes_4__raw_mode_en_t raw_mode_en;
+    slink_reg_NumLanes_4__raw_mode_in_data_t raw_mode_in_data;
+    slink_reg_NumLanes_4__raw_mode_in_ch_sel_t raw_mode_in_ch_sel;
+    slink_reg_NumLanes_4__raw_mode_out_data_fifo_t raw_mode_out_data_fifo;
+    slink_reg_NumLanes_4__raw_mode_out_data_fifo_ctrl_t raw_mode_out_data_fifo_ctrl;
+    slink_reg_NumLanes_4__raw_mode_out_en_t raw_mode_out_en;
+    slink_reg_NumLanes_4__flow_control_fifo_clear_t flow_control_fifo_clear;
+    uint8_t RESERVED_24_ff[0xdc];
+    slink_reg_NumLanes_4__raw_mode_in_data_valid_t raw_mode_in_data_valid[1];
+    uint8_t RESERVED_104_1ff[0xfc];
+    slink_reg_NumLanes_4__raw_mode_out_ch_mask_t raw_mode_out_ch_mask[1];
+    uint8_t RESERVED_204_2ff[0xfc];
+    slink_reg_NumLanes_4__tx_phy_clk_div_t tx_phy_clk_div[1];
+    uint8_t RESERVED_304_3ff[0xfc];
+    slink_reg_NumLanes_4__tx_phy_clk_start_t tx_phy_clk_start[1];
+    uint8_t RESERVED_404_4ff[0xfc];
+    slink_reg_NumLanes_4__tx_phy_clk_end_t tx_phy_clk_end[1];
+    uint8_t RESERVED_504_5ff[0xfc];
+    slink_reg_NumLanes_4__channel_alloc_tx_cfg_t channel_alloc_tx_cfg;
+    slink_reg_NumLanes_4__channel_alloc_tx_ctrl_t channel_alloc_tx_ctrl;
+    slink_reg_NumLanes_4__channel_alloc_rx_cfg_t channel_alloc_rx_cfg;
+    slink_reg_NumLanes_4__channel_alloc_rx_ctrl_t channel_alloc_rx_ctrl;
+    uint8_t RESERVED_610_6ff[0xf0];
+    slink_reg_NumLanes_4__channel_alloc_tx_ch_en_t channel_alloc_tx_ch_en[1];
+    uint8_t RESERVED_704_7ff[0xfc];
+    slink_reg_NumLanes_4__channel_alloc_rx_ch_en_t channel_alloc_rx_ch_en[1];
+} slink_reg_NumLanes_4_t;
+
 // Reg - periph_stub_t_Size_40::status
 #define PERIPH_STUB_T_SIZE_40__STATUS__STATUS_bm 0xffffffff
 #define PERIPH_STUB_T_SIZE_40__STATUS__STATUS_bp 0
@@ -346,7 +696,8 @@ typedef struct __attribute__ ((__packed__)) {
     periph_stub_t_t i2c;
     periph_stub_t_t spih;
     periph_stub_t_t gpio;
-    periph_stub_t_t slink;
+    slink_reg_NumLanes_4_t slink;
+    uint8_t RESERVED_3006804_3006fff[0x7fc];
     periph_stub_t_t vga;
     periph_stub_t_t usb;
     periph_stub_t_Size_40_t bus_err;
