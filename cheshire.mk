@@ -35,8 +35,6 @@ DRAM_RTL_SIM_ROOT := $(shell $(BENDER) path dram_rtl_sim)
 REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
 PEAKRDL ?= peakrdl
 
-PEAKRDL_INCLUDES  := -I $(CHS_ROOT)/hw/regs
-
 
 ################
 # Dependencies #
@@ -76,6 +74,19 @@ chs-nonfree-init:
 
 -include $(CHS_ROOT)/nonfree/nonfree.mk
 
+########################
+# SystemRDL components #
+########################
+
+PEAKRDL_INCLUDES  := -I $(CHS_ROOT)/hw/regs
+
+# Serial Link
+SLINK_NUM_LANES ?= 4
+include $(CHS_SLINK_DIR)/slink.mk
+
+PEAKRDL_INCLUDES += -I $(CHS_SLINK_DIR)/src/regs
+PEAKRDL_PARAMS   += -P SlinkNumLanes=$(SLINK_NUM_LANES)
+
 ############
 # Build SW #
 ############
@@ -91,8 +102,8 @@ $(CHS_ROOT)/hw/regs/cheshire_soc_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_soc_re
 	$(PEAKRDL) regblock $< -o $(CHS_ROOT)/hw/regs/ --cpuif apb4-flat --default-reset arst_n --module-name cheshire_soc_regs
 	@sed -i '1i// Copyright 2025 ETH Zurich and University of Bologna.\n// Solderpad Hardware License, Version 0.51, see LICENSE for details.\n// SPDX-License-Identifier: SHL-0.51\n' $(CHS_ROOT)/hw/regs/cheshire_soc_regs.sv $(CHS_ROOT)/hw/regs/cheshire_soc_regs_pkg.sv
 
-$(CHS_ROOT)/hw/cheshire_addrmap_pkg.sv: $(CHS_ROOT)/hw/cheshire.rdl
-	$(PEAKRDL) raw-header $< --format svpkg --no-prefix $(PEAKRDL_INCLUDES) --license-str $$'Copyright 2025 ETH Zurich and University of Bologna.\nSolderpad Hardware License, Version 0.51, see LICENSE for details.\nSPDX-License-Identifier: SHL-0.51' -o $@
+$(CHS_ROOT)/hw/cheshire_addrmap_pkg.sv: $(CHS_ROOT)/hw/cheshire.rdl $(CHS_SLINK_DIR)/.generated
+	$(PEAKRDL) raw-header $< --format svpkg --no-prefix $(PEAKRDL_INCLUDES) $(PEAKRDL_PARAMS) --license-str $$'Copyright 2025 ETH Zurich and University of Bologna.\nSolderpad Hardware License, Version 0.51, see LICENSE for details.\nSPDX-License-Identifier: SHL-0.51' -o $@
 
 # CLINT
 CLINTCORES ?= 1
@@ -117,11 +128,6 @@ include $(AXI_VGA_ROOT)/axi_vga.mk
 $(AXI_VGA_ROOT)/.generated:
 	flock -x $@ $(MAKE) axi_vga && touch $@
 
-# Custom serial link
-$(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
-	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
-	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs BENDER="$(BENDER)" && touch $@
-
 # iDMA
 include $(IDMA_ROOT)/idma.mk
 
@@ -132,7 +138,7 @@ CHS_HW_ALL += $(CLINTROOT)/.generated
 CHS_HW_ALL += $(OTPROOT)/.generated
 CHS_HW_ALL += $(AXIRTROOT)/.generated
 CHS_HW_ALL += $(AXI_VGA_ROOT)/.generated
-CHS_HW_ALL += $(CHS_SLINK_DIR)/.generated
+CHS_HW_ALL += $(CHS_SLINK_DIR)/src/regs/slink_reg.sv
 
 #####################
 # Generate Boot ROM #

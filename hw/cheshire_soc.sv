@@ -1586,21 +1586,17 @@ module cheshire_soc import cheshire_pkg::*; #(
       .mst_resp_i ( slink_tx_idr_rsp )
     );
 
-    serial_link #(
+    slink #(
       .axi_req_t    ( axi_mst_req_t ),
       .axi_rsp_t    ( axi_mst_rsp_t ),
-      .cfg_req_t    ( reg_req_t ),
-      .cfg_rsp_t    ( reg_rsp_t ),
       .aw_chan_t    ( axi_mst_aw_chan_t ),
       .ar_chan_t    ( axi_mst_ar_chan_t ),
       .r_chan_t     ( axi_mst_r_chan_t  ),
       .w_chan_t     ( axi_mst_w_chan_t  ),
       .b_chan_t     ( axi_mst_b_chan_t  ),
-      .hw2reg_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t ),
-      .reg2hw_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t ),
-      .NumChannels  ( SlinkNumChan   ),
-      .NumLanes     ( SlinkNumLanes  ),
-      .MaxClkDiv    ( SlinkMaxClkDiv )
+      .apb_req_t    ( apb_req_t  ),
+      .apb_rsp_t    ( apb_resp_t ),
+      .NoRegCdc     ( 1'b1 ) // Since reg_clk_i is assigned to clk_i
     ) i_serial_link (
       .clk_i,
       .rst_ni,
@@ -1613,8 +1609,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_in_rsp_o   ( slink_tx_idr_rsp ),
       .axi_out_req_o  ( axi_in_req[AxiIn.slink]   ),
       .axi_out_rsp_i  ( axi_in_rsp[AxiIn.slink]   ),
-      .cfg_req_i      ( reg_out_req[RegOut.slink] ),
-      .cfg_rsp_o      ( reg_out_rsp[RegOut.slink] ),
+      .apb_req_i      ( reg_apb_req[RegOut.slink] ),
+      .apb_rsp_o      ( reg_apb_rsp[RegOut.slink] ),
       .ddr_rcv_clk_i  ( slink_rcv_clk_i ),
       .ddr_rcv_clk_o  ( slink_rcv_clk_o ),
       .ddr_i          ( slink_i ),
