@@ -4,6 +4,7 @@
 #
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 # Yvan Tortorella <yvan.tortorella@gmail.com>
+# Simone Manoni <s.manoni@unibo.it>
 
 # genesys2 board params
 set bpart(genesys2) "digilentinc.com:genesys2:part0:1.1"
@@ -22,6 +23,12 @@ set bpart(vcu118) "xilinx.com:vcu118:part0:2.4"
 set fpart(vcu118) "xcvu9p-flga2104-2L-e"
 set hwdev(vcu118) "xcvu9p_0"
 set cfgmp(vcu118) "mt25qu01g-spi-x1_x2_x4"
+
+# u280 board params
+set bpart(u280) "xilinx.com:au280:part0:1.3"
+set fpart(u280) "xcu280-fsvh2892-2L-e"
+set hwdev(u280) "xcu280_0"
+set cfgmp(u280) "mt25qu01g-spi-x1_x2_x4"
 
 
 # Initialize an implementation project

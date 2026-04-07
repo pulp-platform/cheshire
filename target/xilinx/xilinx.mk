@@ -8,6 +8,7 @@
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 # Yvan Tortorella <yvan.tortorella@gmail.com>
 # Mojtaba Rostami <m.rostami1989@gmail.com>
+# Simone Manoni <s.manoni@unibo.it>
 
 VIVADO ?= vitis-2022.1 vivado
 
@@ -47,11 +48,12 @@ $(CHS_XILINX_DIR)/build/%/out.xci: \
 # Bitstreams #
 ##############
 
-CHS_XILINX_BOARDS := genesys2 vcu128 vcu118
+CHS_XILINX_BOARDS := genesys2 vcu128 vcu118 u280
 
 CHS_XILINX_IPS_genesys2 := clkwiz vio mig7s
 CHS_XILINX_IPS_vcu128   := clkwiz vio ddr4
 CHS_XILINX_IPS_vcu118   := clkwiz vio ddr4
+CHS_XILINX_IPS_u280     := clkwiz vio ddr4
 
 $(CHS_XILINX_DIR)/scripts/add_sources.%.tcl: $(CHS_ROOT)/Bender.yml $(CHS_XILINX_HW)
 	$(BENDER) script vivado -t fpga -t $* $(CHS_BENDER_RTL_FLAGS) > $@

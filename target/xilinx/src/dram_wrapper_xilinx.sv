@@ -5,6 +5,7 @@
 // Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 // Yvan Tortorella <yvan.tortorella@gmail.com>
+// Simone Manoni <s.manoni@unibo.it>
 //
 // Resize AXI AW, IW, and DW before connecting to a Xilinx DRAM controller.
 
@@ -64,6 +65,19 @@ module dram_wrapper_xilinx #(
     CdcLogDepth   : 5,
     IdWidth       : 8,
     AddrWidth     : 31,
+    DataWidth     : 512,
+    StrobeWidth   : 64,
+    MaxUniqIds    : 8,    // TODO: suboptimal, but limited by CVA6/LLC
+    MaxTxns       : 24    // TODO: suboptimal, but limited by CVA6/LLC
+  };
+`endif
+
+`ifdef TARGET_U280
+  localparam dram_cfg_t cfg = '{
+    EnCdc         : 1,    // 333 MHz AXI (cf. CdcLogDepth)
+    CdcLogDepth   : 5,
+    IdWidth       : 8,
+    AddrWidth     : 34,
     DataWidth     : 512,
     StrobeWidth   : 64,
     MaxUniqIds    : 8,    // TODO: suboptimal, but limited by CVA6/LLC
@@ -307,6 +321,25 @@ module dram_wrapper_xilinx #(
       .c0_ddr4_s_axi_ctrl_rdata   ( ),
       .c0_ddr4_s_axi_ctrl_rresp   ( ),
       .c0_ddr4_interrupt          ( ),
+    `elsif TARGET_U280
+      .c0_ddr4_s_axi_ctrl_awvalid ( '0 ),
+      .c0_ddr4_s_axi_ctrl_awready ( ),
+      .c0_ddr4_s_axi_ctrl_awaddr  ( '0 ),
+      .c0_ddr4_s_axi_ctrl_wvalid  ( '0 ),
+      .c0_ddr4_s_axi_ctrl_wready  ( ),
+      .c0_ddr4_s_axi_ctrl_wdata   ( '0 ),
+      .c0_ddr4_s_axi_ctrl_bvalid  ( ),
+      .c0_ddr4_s_axi_ctrl_bready  ( '0 ),
+      .c0_ddr4_s_axi_ctrl_bresp   ( ),
+      .c0_ddr4_s_axi_ctrl_arvalid ( '0 ),
+      .c0_ddr4_s_axi_ctrl_arready ( ),
+      .c0_ddr4_s_axi_ctrl_araddr  ( '0 ),
+      .c0_ddr4_s_axi_ctrl_rvalid  ( ),
+      .c0_ddr4_s_axi_ctrl_rready  ( '0 ),
+      .c0_ddr4_s_axi_ctrl_rdata   ( ),
+      .c0_ddr4_s_axi_ctrl_rresp   ( ),
+      .c0_ddr4_interrupt          ( ),
+      //.c0_ddr4_parity             ( ),
     `endif
     // Others
     .c0_init_calib_complete     ( ),

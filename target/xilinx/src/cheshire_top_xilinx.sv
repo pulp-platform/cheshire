@@ -20,6 +20,11 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
   localparam int unsigned Ddr4DmDbiNWidth = 9,
   localparam int unsigned Ddr4DqWidth = 72,
   localparam int unsigned Ddr4DqsWidth = 9
+`elsif TARGET_U280
+  localparam int unsigned Ddr4CsNWidth = 1,
+  localparam int unsigned Ddr4DmDbiNWidth = 9,
+  localparam int unsigned Ddr4DqWidth = 72,
+  localparam int unsigned Ddr4DqsWidth = 18
 `else // Default to VCU118
   localparam int unsigned Ddr4CsNWidth = 1,
   localparam int unsigned Ddr4DmDbiNWidth = 8,
@@ -85,6 +90,12 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
   output logic [4:0]  vga_red_o,
   output logic [5:0]  vga_green_o,
   output logic [4:0]  vga_blue_o,
+`endif
+
+`ifdef TARGET_U280
+`ifndef USE_HBM
+  output logic        hbm_cattrip_o,
+`endif
 `endif
 
 `ifdef USE_QSPI
@@ -252,6 +263,11 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
 `ifndef USE_JTAG_TRSTN
   logic jtag_trst_ni;
   assign jtag_trst_ni = 1'b1;
+`endif
+
+`ifndef USE_HBM
+  // U280 requires HBM_CATTRIP to be held low unless real HBM thermal logic drives it.
+  assign hbm_cattrip_o = 1'b0;
 `endif
 
   //////////////////

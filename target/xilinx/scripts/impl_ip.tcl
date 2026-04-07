@@ -6,6 +6,7 @@
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 # Yvan Tortorella <yvan.tortorella@gmail.com>
+# Simone Manoni <s.manoni@unibo.it>
 
 # Initialize implementation
 set xilinx_root [file dirname [file dirname [file normalize [info script]]]]
@@ -52,7 +53,8 @@ switch $proj {
                     CONFIG.CLKOUT4_PHASE_ERROR {89.971} \
                     ] [get_ips $proj]
             }
-            vcu128 {
+            vcu128 -
+            u280 {
                 set_property -dict [list \
                     CONFIG.CLK_IN1_BOARD_INTERFACE {Custom} \
                     CONFIG.RESET_BOARD_INTERFACE {Custom} \
@@ -144,7 +146,8 @@ switch $proj {
                     ] [get_ips $proj]
             }
             vcu118 -
-            vcu128 {
+            vcu128 -
+            u280 {
                 set_property -dict [list \
                     CONFIG.C_NUM_PROBE_OUT {3} \
                     CONFIG.C_PROBE_OUT0_INIT_VAL {0x0} \
@@ -217,6 +220,27 @@ switch $proj {
                     CONFIG.C0.DDR4_CasLatency {18} \
                     CONFIG.C0.DDR4_AxiDataWidth {512} \
                     CONFIG.C0.DDR4_AxiAddressWidth {31} \
+                    CONFIG.C0.DDR4_AxiIDWidth {8} \
+                    CONFIG.C0.BANK_GROUP_WIDTH {1} \
+                    CONFIG.C0.DDR4_AxiSelection {true} \
+                    ] [get_ips $proj]
+            }
+            u280 {
+                set_property -dict [list \
+                    CONFIG.System_Clock {No_Buffer} \
+                    CONFIG.Reference_Clock {No_Buffer} \
+                    CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram_c1} \
+                    CONFIG.C0.DDR4_InputClockPeriod {4000} \
+                    CONFIG.C0.DDR4_CLKOUT0_DIVIDE {5} \
+                    CONFIG.C0.DDR4_MemoryPart {MT40A256M16LY-062E} \
+                    CONFIG.C0.DDR4_TimePeriod {833} \
+                    CONFIG.C0.DDR4_DataWidth {64} \
+                    CONFIG.C0.DDR4_DataMask {DM_NO_DBI} \
+                    CONFIG.C0.DDR4_MCS_ECC {false} \
+                    CONFIG.C0.DDR4_CASWRITELATENCY {14} \
+                    CONFIG.C0.DDR4_CASLATENCY {18} \
+                    CONFIG.C0.DDR4_AxiDataWidth {512} \
+                    CONFIG.C0.DDR4_AxiAddressWidth {34} \
                     CONFIG.C0.DDR4_AxiIDWidth {8} \
                     CONFIG.C0.BANK_GROUP_WIDTH {1} \
                     CONFIG.C0.DDR4_AxiSelection {true} \
