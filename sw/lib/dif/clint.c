@@ -44,7 +44,8 @@ uint64_t clint_get_core_freq(uint64_t ref_freq, uint64_t ref_time_inv) {
 }
 
 void clint_set_mtimecmpx(uint64_t timer_idx, uint64_t value) {
-    CHS_CLINT->mtimecmp[timer_idx].w = value;
+    CHS_CLINT->mtimecmp[timer_idx].f.high = (uint32_t)(value >> 32);
+    CHS_CLINT->mtimecmp[timer_idx].f.low = (uint32_t)value;
 }
 
 void clint_sleep_until(uint64_t timer_idx, uint64_t tgt_mtime) {
