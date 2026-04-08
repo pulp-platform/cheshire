@@ -76,50 +76,50 @@ typedef union {
         uint32_t rsvd :31;
     } f;
     uint32_t w;
-} clint__msip_t;
+} clint_NumCores_1__msip_t;
 
-// Reg - clint::mtimecmp
-#define CLINT__MTIMECMP__LOW_bm 0xffffffff
-#define CLINT__MTIMECMP__LOW_bp 0
-#define CLINT__MTIMECMP__LOW_bw 32
-#define CLINT__MTIMECMP__LOW_reset 0x0
-#define CLINT__MTIMECMP__HIGH_bm 0xffffffff00000000
-#define CLINT__MTIMECMP__HIGH_bp 32
-#define CLINT__MTIMECMP__HIGH_bw 32
-#define CLINT__MTIMECMP__HIGH_reset 0x0
+// Reg - clint_NumCores_1::mtimecmp
+#define CLINT_NUMCORES_1__MTIMECMP__LOW_bm 0xffffffff
+#define CLINT_NUMCORES_1__MTIMECMP__LOW_bp 0
+#define CLINT_NUMCORES_1__MTIMECMP__LOW_bw 32
+#define CLINT_NUMCORES_1__MTIMECMP__LOW_reset 0x0
+#define CLINT_NUMCORES_1__MTIMECMP__HIGH_bm 0xffffffff00000000
+#define CLINT_NUMCORES_1__MTIMECMP__HIGH_bp 32
+#define CLINT_NUMCORES_1__MTIMECMP__HIGH_bw 32
+#define CLINT_NUMCORES_1__MTIMECMP__HIGH_reset 0x0
 typedef union {
     struct __attribute__ ((__packed__)) {
         uint64_t low :32;
         uint64_t high :32;
     } f;
     uint64_t w;
-} clint__mtimecmp_t;
+} clint_NumCores_1__mtimecmp_t;
 
-// Reg - clint::mtime
-#define CLINT__MTIME__LOW_bm 0xffffffff
-#define CLINT__MTIME__LOW_bp 0
-#define CLINT__MTIME__LOW_bw 32
-#define CLINT__MTIME__LOW_reset 0x0
-#define CLINT__MTIME__HIGH_bm 0xffffffff00000000
-#define CLINT__MTIME__HIGH_bp 32
-#define CLINT__MTIME__HIGH_bw 32
-#define CLINT__MTIME__HIGH_reset 0x0
+// Reg - clint_NumCores_1::mtime
+#define CLINT_NUMCORES_1__MTIME__LOW_bm 0xffffffff
+#define CLINT_NUMCORES_1__MTIME__LOW_bp 0
+#define CLINT_NUMCORES_1__MTIME__LOW_bw 32
+#define CLINT_NUMCORES_1__MTIME__LOW_reset 0x0
+#define CLINT_NUMCORES_1__MTIME__HIGH_bm 0xffffffff00000000
+#define CLINT_NUMCORES_1__MTIME__HIGH_bp 32
+#define CLINT_NUMCORES_1__MTIME__HIGH_bw 32
+#define CLINT_NUMCORES_1__MTIME__HIGH_reset 0x0
 typedef union {
     struct __attribute__ ((__packed__)) {
         uint64_t low :32;
         uint64_t high :32;
     } f;
     uint64_t w;
-} clint__mtime_t;
+} clint_NumCores_1__mtime_t;
 
-// Addrmap - clint
+// Addrmap - clint_NumCores_1
 typedef struct __attribute__ ((__packed__)) {
-    clint__msip_t msip[2];
-    uint8_t RESERVED_8_3fff[0x3ff8];
-    clint__mtimecmp_t mtimecmp[2];
-    uint8_t RESERVED_4010_bff7[0x7fe8];
-    clint__mtime_t mtime;
-} clint_t;
+    clint_NumCores_1__msip_t msip[1];
+    uint8_t RESERVED_4_3fff[0x3ffc];
+    clint_NumCores_1__mtimecmp_t mtimecmp[1];
+    uint8_t RESERVED_4008_bff7[0x7ff0];
+    clint_NumCores_1__mtime_t mtime;
+} clint_NumCores_1_t;
 
 // Reg - periph_stub_t_Size_40000::status
 #define PERIPH_STUB_T_SIZE_40000__STATUS__STATUS_bm 0xffffffff
