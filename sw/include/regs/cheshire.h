@@ -76,56 +76,56 @@ typedef union {
         uint32_t rsvd :31;
     } f;
     uint32_t w;
-} clint_NumCores_1__msip_t;
+} cheshire__clint__msipx_t;
 
-// Reg - clint_NumCores_1::mtimecmp
-#define CLINT_NUMCORES_1__MTIMECMP__LOW_bm 0xffffffff
-#define CLINT_NUMCORES_1__MTIMECMP__LOW_bp 0
-#define CLINT_NUMCORES_1__MTIMECMP__LOW_bw 32
-#define CLINT_NUMCORES_1__MTIMECMP__LOW_reset 0x0
-#define CLINT_NUMCORES_1__MTIMECMP__HIGH_bm 0xffffffff00000000
-#define CLINT_NUMCORES_1__MTIMECMP__HIGH_bp 32
-#define CLINT_NUMCORES_1__MTIMECMP__HIGH_bw 32
-#define CLINT_NUMCORES_1__MTIMECMP__HIGH_reset 0x0
+// Reg - cheshire.clint.mtimecmp[]
+#define CHESHIRE__CLINT__MTIMECMPX__LOW_bm 0xffffffff
+#define CHESHIRE__CLINT__MTIMECMPX__LOW_bp 0
+#define CHESHIRE__CLINT__MTIMECMPX__LOW_bw 32
+#define CHESHIRE__CLINT__MTIMECMPX__LOW_reset 0x0
+#define CHESHIRE__CLINT__MTIMECMPX__HIGH_bm 0xffffffff00000000
+#define CHESHIRE__CLINT__MTIMECMPX__HIGH_bp 32
+#define CHESHIRE__CLINT__MTIMECMPX__HIGH_bw 32
+#define CHESHIRE__CLINT__MTIMECMPX__HIGH_reset 0x0
 typedef union {
     struct __attribute__ ((__packed__)) {
         uint64_t low :32;
         uint64_t high :32;
     } f;
     uint64_t w;
-} clint_NumCores_1__mtimecmp_t;
+} cheshire__clint__mtimecmpx_t;
 
-// Reg - clint_NumCores_1::mtime
-#define CLINT_NUMCORES_1__MTIME__LOW_bm 0xffffffff
-#define CLINT_NUMCORES_1__MTIME__LOW_bp 0
-#define CLINT_NUMCORES_1__MTIME__LOW_bw 32
-#define CLINT_NUMCORES_1__MTIME__LOW_reset 0x0
-#define CLINT_NUMCORES_1__MTIME__HIGH_bm 0xffffffff00000000
-#define CLINT_NUMCORES_1__MTIME__HIGH_bp 32
-#define CLINT_NUMCORES_1__MTIME__HIGH_bw 32
-#define CLINT_NUMCORES_1__MTIME__HIGH_reset 0x0
+// Reg - cheshire.clint.mtime
+#define CHESHIRE__CLINT__MTIME__LOW_bm 0xffffffff
+#define CHESHIRE__CLINT__MTIME__LOW_bp 0
+#define CHESHIRE__CLINT__MTIME__LOW_bw 32
+#define CHESHIRE__CLINT__MTIME__LOW_reset 0x0
+#define CHESHIRE__CLINT__MTIME__HIGH_bm 0xffffffff00000000
+#define CHESHIRE__CLINT__MTIME__HIGH_bp 32
+#define CHESHIRE__CLINT__MTIME__HIGH_bw 32
+#define CHESHIRE__CLINT__MTIME__HIGH_reset 0x0
 typedef union {
     struct __attribute__ ((__packed__)) {
         uint64_t low :32;
         uint64_t high :32;
     } f;
     uint64_t w;
-} clint_NumCores_1__mtime_t;
+} cheshire__clint__mtime_t;
 
-// Addrmap - clint_NumCores_1
+// Addrmap - cheshire.clint
 typedef struct __attribute__ ((__packed__)) {
-    clint_NumCores_1__msip_t msip[1];
+    cheshire__clint__msipx_t msip[1];
     uint8_t RESERVED_4_3fff[0x3ffc];
-    clint_NumCores_1__mtimecmp_t mtimecmp[1];
+    cheshire__clint__mtimecmpx_t mtimecmp[1];
     uint8_t RESERVED_4008_bff7[0x7ff0];
-    clint_NumCores_1__mtime_t mtime;
-} clint_NumCores_1_t;
+    cheshire__clint__mtime_t mtime;
+} cheshire__clint_t;
 
-// Reg - periph_stub_t_Size_40000::status
-#define PERIPH_STUB_T_SIZE_40000__STATUS__STATUS_bm 0xffffffff
-#define PERIPH_STUB_T_SIZE_40000__STATUS__STATUS_bp 0
-#define PERIPH_STUB_T_SIZE_40000__STATUS__STATUS_bw 32
-#define PERIPH_STUB_T_SIZE_40000__STATUS__STATUS_reset 0x0
+// Reg - cheshire.irq_router.status
+#define CHESHIRE__IRQ_ROUTER__STATUS__STATUS_bm 0xffffffff
+#define CHESHIRE__IRQ_ROUTER__STATUS__STATUS_bp 0
+#define CHESHIRE__IRQ_ROUTER__STATUS__STATUS_bw 32
+#define CHESHIRE__IRQ_ROUTER__STATUS__STATUS_reset 0x0
 typedef union {
     struct __attribute__ ((__packed__)) {
         uint32_t status :32;
