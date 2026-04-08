@@ -9,6 +9,7 @@
 
 `include "cheshire_soc_regs.rdl"
 `include "slink_reg.rdl"
+`include "clint.rdl"
 
 // User-defined property for executable memory regions (used by ldh format)
 property executable {
@@ -24,7 +25,10 @@ addrmap periph_stub_t #(longint unsigned Size = 0x1000) {
     external reg { field {} _end[31:0]   = 0; } _end   @(Size - 4);
 };
 
-addrmap cheshire #(longint unsigned SlinkNumLanes = 4) {
+addrmap cheshire #(
+    longint unsigned SlinkNumLanes = 4,
+    longint unsigned ClintNumCores = 1
+) {
     desc = "Cheshire SoC system address map";
 
     ////////////////////
@@ -69,7 +73,7 @@ addrmap cheshire #(longint unsigned SlinkNumLanes = 4) {
     periph_stub_t #(.Size(0x0000_1000)) dma     @0x0100_0000;
 
     // CLINT (256 KiB)
-    periph_stub_t #(.Size(0x0004_0000)) clint   @0x0204_0000;
+    clint #(.NumCores(ClintNumCores)) clint     @0x0204_0000;
 
     // IRQ router (256 KiB)
     periph_stub_t #(.Size(0x0004_0000)) irq_router @0x0208_0000;

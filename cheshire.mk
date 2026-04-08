@@ -35,6 +35,9 @@ DRAM_RTL_SIM_ROOT := $(shell $(BENDER) path dram_rtl_sim)
 REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
 PEAKRDL ?= peakrdl
 
+PEAKRDL_INCLUDES  := -I $(CHS_ROOT)/hw/regs
+PEAKRDL_INCLUDES  += -I $(CLINTROOT)/rdl
+
 
 ################
 # Dependencies #
@@ -87,6 +90,13 @@ include $(CHS_SLINK_DIR)/slink.mk
 PEAKRDL_INCLUDES += -I $(CHS_SLINK_DIR)/src/regs
 PEAKRDL_PARAMS   += -P SlinkNumLanes=$(SLINK_NUM_LANES)
 
+# CLINT
+CLINTCORES ?= 1
+include $(CLINTROOT)/clint.mk
+
+PEAKRDL_INCLUDES += -I $(CLINTROOT)/rdl
+PEAKRDL_PARAMS   += -P ClintNumCores=$(CLINTCORES)
+
 ############
 # Build SW #
 ############
@@ -105,11 +115,7 @@ $(CHS_ROOT)/hw/regs/cheshire_soc_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_soc_re
 $(CHS_ROOT)/hw/cheshire_addrmap_pkg.sv: $(CHS_ROOT)/hw/cheshire.rdl $(CHS_SLINK_DIR)/.generated
 	$(PEAKRDL) raw-header $< --format svpkg --no-prefix $(PEAKRDL_INCLUDES) $(PEAKRDL_PARAMS) --license-str $$'Copyright 2025 ETH Zurich and University of Bologna.\nSolderpad Hardware License, Version 0.51, see LICENSE for details.\nSPDX-License-Identifier: SHL-0.51' -o $@
 
-# CLINT
-CLINTCORES ?= 1
-include $(CLINTROOT)/clint.mk
-$(CLINTROOT)/.generated:
-	flock -x $@ $(MAKE) clint && touch $@
+
 
 # OpenTitan peripherals
 include $(OTPROOT)/otp.mk
@@ -134,7 +140,7 @@ include $(IDMA_ROOT)/idma.mk
 CHS_HW_ALL += $(IDMA_FULL_RTL)
 CHS_HW_ALL += $(CHS_ROOT)/hw/cheshire_addrmap_pkg.sv
 CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_soc_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_soc_regs.sv
-CHS_HW_ALL += $(CLINTROOT)/.generated
+CHS_HW_ALL += $(CLINTROOT)/src/clint_reg.sv
 CHS_HW_ALL += $(OTPROOT)/.generated
 CHS_HW_ALL += $(AXIRTROOT)/.generated
 CHS_HW_ALL += $(AXI_VGA_ROOT)/.generated

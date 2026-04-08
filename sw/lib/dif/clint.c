@@ -7,13 +7,13 @@
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 #include "dif/clint.h"
-#include "regs/clint.h"
 #include "util.h"
 #include "params.h"
 
+#define CHS_CLINT ((volatile cheshire__clint_t *)offsetof(cheshire_t, clint))
+
 uint64_t clint_get_mtime() {
-    return (((uint64_t)*reg32(&__clint_base_addr__, CLINT_MTIME_HIGH_REG_OFFSET)) << 32) |
-           ((uint64_t)*reg32(&__clint_base_addr__, CLINT_MTIME_LOW_REG_OFFSET));
+    return CHS_CLINT->mtime.w;
 }
 
 void clint_spin_until(uint64_t tgt_mtime) {
@@ -44,16 +44,12 @@ uint64_t clint_get_core_freq(uint64_t ref_freq, uint64_t ref_time_inv) {
 }
 
 void clint_set_mtimecmpx(uint64_t timer_idx, uint64_t value) {
-    uint32_t vlo = (uint32_t)(value);
-    uint32_t vhi = (uint32_t)(value >> 32);
-    uint64_t mtimecmp_offs = timer_idx << 3;
-    // Write high register first
-    *reg32(&__clint_base_addr__, CLINT_MTIMECMP_HIGH0_REG_OFFSET + mtimecmp_offs) = vhi;
-    *reg32(&__clint_base_addr__, CLINT_MTIMECMP_LOW0_REG_OFFSET + mtimecmp_offs) = vlo;
+    CHS_CLINT->mtimecmp[timer_idx].f.high = (uint32_t)(value >> 32);
+    CHS_CLINT->mtimecmp[timer_idx].f.low = (uint32_t)value;
 }
 
 void clint_sleep_until(uint64_t timer_idx, uint64_t tgt_mtime) {
-    if (clint_get_mtime() < tgt_mtime) return;
+    if (clint_get_mtime() >= tgt_mtime) return;
     // Set comparison register `ticks` from now
     clint_set_mtimecmpx(timer_idx, tgt_mtime);
     fence();
