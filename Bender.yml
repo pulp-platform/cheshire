@@ -31,7 +31,7 @@ dependencies:
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              version: 0.8.1  }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            version: 2.0.0  }
   unbent:                   { git: "https://github.com/pulp-platform/unbent.git",                 version: 0.1.6  }
-  dram_rtl_sim:             { git: "https://github.com/pulp-platform/dram_rtl_sim.git",           version: 0.1.1  }
+  dram_rtl_sim:             { git: "https://github.com/pulp-platform/dram_rtl_sim.git",           rev: sm/chs-fix  }
 
 export_include_dirs:
   - hw/include
