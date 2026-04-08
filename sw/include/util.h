@@ -90,4 +90,4 @@ static inline void *gprw(void *gp) {
 #define BIT_MASK(n) (BIT(n) - 1)
 
 // Typed pointer to the Cheshire SoC register file
-#define CHS_REGS ((volatile soc_regs_t *)offsetof(cheshire_t, regs))
+#define CHS_REGS ((volatile cheshire__regs_t *)offsetof(cheshire_t, regs))

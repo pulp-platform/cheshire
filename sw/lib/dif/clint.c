@@ -10,7 +10,7 @@
 #include "util.h"
 #include "params.h"
 
-#define CHS_CLINT ((volatile clint_t *)offsetof(cheshire_t, clint))
+#define CHS_CLINT ((volatile cheshire__clint_t *)offsetof(cheshire_t, clint))
 
 uint64_t clint_get_mtime() {
     return CHS_CLINT->mtime.w;
