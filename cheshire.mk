@@ -90,6 +90,13 @@ include $(CHS_SLINK_DIR)/slink.mk
 PEAKRDL_INCLUDES += -I $(CHS_SLINK_DIR)/src/regs
 PEAKRDL_PARAMS   += -P SlinkNumLanes=$(SLINK_NUM_LANES)
 
+# CLINT
+CLINTCORES ?= 1
+include $(CLINTROOT)/clint.mk
+
+PEAKRDL_INCLUDES += -I $(CLINTROOT)/rdl
+PEAKRDL_PARAMS   += -P ClintNumCores=$(CLINTCORES)
+
 ############
 # Build SW #
 ############
@@ -108,9 +115,7 @@ $(CHS_ROOT)/hw/regs/cheshire_soc_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_soc_re
 $(CHS_ROOT)/hw/cheshire_addrmap_pkg.sv: $(CHS_ROOT)/hw/cheshire.rdl $(CHS_SLINK_DIR)/.generated
 	$(PEAKRDL) raw-header $< --format svpkg --no-prefix $(PEAKRDL_INCLUDES) $(PEAKRDL_PARAMS) --license-str $$'Copyright 2025 ETH Zurich and University of Bologna.\nSolderpad Hardware License, Version 0.51, see LICENSE for details.\nSPDX-License-Identifier: SHL-0.51' -o $@
 
-# CLINT
-CLINTCORES ?= 1
-include $(CLINTROOT)/clint.mk
+
 
 # OpenTitan peripherals
 include $(OTPROOT)/otp.mk

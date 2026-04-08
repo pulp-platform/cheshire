@@ -76,11 +76,11 @@ localparam longint unsigned DMA__END_BASE_ADDR = 64'h1000FFC;
 function automatic longint unsigned CLINT_MSIP_BASE_ADDR(input int unsigned msip_idx);
     return 64'h2040000 + (msip_idx * 64'h4);
 endfunction
-localparam longint unsigned CLINT_MSIP_NUM = 64'h2;
+localparam longint unsigned CLINT_MSIP_NUM = 64'h1;
 function automatic longint unsigned CLINT_MTIMECMP_BASE_ADDR(input int unsigned mtimecmp_idx);
     return 64'h2044000 + (mtimecmp_idx * 64'h8);
 endfunction
-localparam longint unsigned CLINT_MTIMECMP_NUM = 64'h2;
+localparam longint unsigned CLINT_MTIMECMP_NUM = 64'h1;
 localparam longint unsigned CLINT_MTIME_BASE_ADDR = 64'h204BFF8;
 localparam longint unsigned IRQ_ROUTER_STATUS_BASE_ADDR = 64'h2080000;
 localparam longint unsigned IRQ_ROUTER__END_BASE_ADDR = 64'h20BFFFC;
