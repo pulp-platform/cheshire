@@ -777,17 +777,17 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   `AXI_ASSIGN_TO_RESP(slink_axi_slv_rsp, slink_slv)
 
   // Mirror instance of serial link, reflecting another chip
-    slink #(
-      .axi_req_t    ( axi_mst_req_t ),
-      .axi_rsp_t    ( axi_mst_rsp_t ),
-      .aw_chan_t    ( axi_mst_aw_chan_t ),
-      .ar_chan_t    ( axi_mst_ar_chan_t ),
-      .r_chan_t     ( axi_mst_r_chan_t  ),
-      .w_chan_t     ( axi_mst_w_chan_t  ),
-      .b_chan_t     ( axi_mst_b_chan_t  ),
-      .apb_req_t    ( apb_req_t ),
-      .apb_rsp_t    ( apb_resp_t ),
-      .NoRegCdc     ( 1'b1 ) // Since reg_clk_i is assigned to clk_i
+  slink #(
+    .axi_req_t    ( axi_mst_req_t ),
+    .axi_rsp_t    ( axi_mst_rsp_t ),
+    .aw_chan_t    ( axi_mst_aw_chan_t ),
+    .ar_chan_t    ( axi_mst_ar_chan_t ),
+    .r_chan_t     ( axi_mst_r_chan_t  ),
+    .w_chan_t     ( axi_mst_w_chan_t  ),
+    .b_chan_t     ( axi_mst_b_chan_t  ),
+    .apb_req_t    ( apb_req_t ),
+    .apb_rsp_t    ( apb_resp_t ),
+    .NoRegCdc     ( 1'b1 ) // Since reg_clk_i is assigned to clk_i
   ) i_serial_link (
     .clk_i          ( clk   ),
     .rst_ni         ( rst_n ),
