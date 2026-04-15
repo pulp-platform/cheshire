@@ -11,7 +11,8 @@
 // create an address map with empty addresses.
 // uSually the external DRAM should be set at the top level (chip-dependent)
 addrmap cheshire #(
-    longint unsigned SlinkNumLanes = 4
+    longint unsigned SlinkNumLanes = 4,
+    longint unsigned DramStart = 64'h8000_0000
 ) {
     desc = "Cheshire SoC external memory regions";
 
@@ -23,7 +24,7 @@ addrmap cheshire #(
     external mem {
         mementries = 2097152; memwidth = 32;
         sw = rw; executable = true;
-    } dram @0x8000_0000;
+    } dram @DramStart;
 };
 
 `endif // __CHESHIRE_RDL__

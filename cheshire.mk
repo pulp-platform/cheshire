@@ -78,6 +78,8 @@ chs-nonfree-init:
 # SystemRDL components #
 ########################
 
+# Dram start address in integer: 'h0x8000_0000
+CHS_DRAM_START := 2147483648
 CHS_PEAKRDL_INCLUDES  := -I $(CHS_ROOT)/hw/regs
 
 # Serial Link
@@ -87,6 +89,7 @@ include $(CHS_SLINK_DIR)/slink.mk
 CHS_PEAKRDL_INCLUDES += -I $(CHS_SLINK_DIR)/src/regs
 CHS_PEAKRDL_INCLUDES += -I $(CHS_ROOT)/hw/
 CHS_PEAKRDL_PARAMS   += -P SlinkNumLanes=$(SLINK_NUM_LANES)
+CHS_PEAKRDL_PARAMS   += -P DramStart=$(CHS_DRAM_START)
 
 ############
 # Build SW #
@@ -134,7 +137,6 @@ include $(IDMA_ROOT)/idma.mk
 
 CHS_HW_ALL += $(IDMA_FULL_RTL)
 CHS_HW_ALL += $(CHS_ROOT)/hw/cheshire_addrmap_pkg.sv
-CHS_HW_ALL += $(CHS_ROOT)/hw/cheshire_external_pkg.sv
 CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_soc_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_soc_regs.sv
 CHS_HW_ALL += $(CLINTROOT)/.generated
 CHS_HW_ALL += $(OTPROOT)/.generated
