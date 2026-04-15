@@ -10,12 +10,11 @@ MEMORY
   bootrom (rx) : ORIGIN = 0x02000000, LENGTH = 0x00040000
   spm (rwx) : ORIGIN = 0x10000000, LENGTH = 0x00010000
   spm_unc (rwx) : ORIGIN = 0x14000000, LENGTH = 0x04000000
-  dram (rwx) : ORIGIN = 0x80000000, LENGTH = 0x00800000
 }
 
 /* Blocks */
 PROVIDE(__base_addr__ = 0x00000000);
-PROVIDE(__size__ = 0x80800000);
+PROVIDE(__size__ = 0x18000000);
 
 PROVIDE(__extrom_base_addr__ = 0x00000000);
 PROVIDE(__extrom_size__ = 0x00040000);
@@ -76,9 +75,6 @@ PROVIDE(__spm_size__ = 0x00010000);
 
 PROVIDE(__spm_unc_base_addr__ = 0x14000000);
 PROVIDE(__spm_unc_size__ = 0x04000000);
-
-PROVIDE(__dram_base_addr__ = 0x80000000);
-PROVIDE(__dram_size__ = 0x00800000);
 
 /* Registers */
 PROVIDE(__dma_status_base_addr__ = 0x01000000);

@@ -6,7 +6,7 @@
 package cheshire_addrmap_pkg;
 
 localparam longint unsigned BASE_ADDR = 64'h0;
-localparam longint unsigned SIZE = 64'h80800000;
+localparam longint unsigned SIZE = 64'h18000000;
 
 localparam longint unsigned EXTROM_BASE_ADDR = 64'h0;
 localparam longint unsigned EXTROM_SIZE = 64'h40000;
@@ -67,9 +67,6 @@ localparam longint unsigned SPM_SIZE = 64'h10000;
 
 localparam longint unsigned SPM_UNC_BASE_ADDR = 64'h14000000;
 localparam longint unsigned SPM_UNC_SIZE = 64'h4000000;
-
-localparam longint unsigned DRAM_BASE_ADDR = 64'h80000000;
-localparam longint unsigned DRAM_SIZE = 64'h800000;
 
 localparam longint unsigned DMA_STATUS_BASE_ADDR = 64'h1000000;
 localparam longint unsigned DMA__END_BASE_ADDR = 64'h1000FFC;

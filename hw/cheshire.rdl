@@ -49,12 +49,6 @@ addrmap cheshire #(longint unsigned SlinkNumLanes = 4) {
         sw = rw; executable = true;
     } spm @0x1000_0000;
 
-    // DRAM; 8 MiB minimum (Linux requirement), read+write+exec
-    external mem {
-        mementries = 2097152; memwidth = 32;
-        sw = rw; executable = true;
-    } dram @0x8000_0000;
-
     // SPM uncached mirror (64 MiB reserved window; actual mapped size = LLC size), read+write+exec
     external mem {
         mementries = 16777216; memwidth = 32;
