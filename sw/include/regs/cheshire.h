@@ -673,6 +673,11 @@ typedef struct __attribute__ ((__packed__)) {
     uint32_t mem[16777216];
 } cheshire__spm_unc_t;
 
+// Mem - cheshire::dram
+typedef struct __attribute__ ((__packed__)) {
+    uint32_t mem[2097152];
+} cheshire__dram_t;
+
 // Addrmap - cheshire
 typedef struct __attribute__ ((__packed__)) {
     cheshire__extrom_t extrom;
@@ -703,10 +708,12 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__spm_t spm;
     uint8_t RESERVED_10010000_13ffffff[0x3ff0000];
     cheshire__spm_unc_t spm_unc;
+    uint8_t RESERVED_18000000_7fffffff[0x68000000];
+    cheshire__dram_t dram;
 } cheshire_t;
 
 
-static_assert(sizeof(cheshire_t) == 0x18000000, "Packing error");
+static_assert(sizeof(cheshire_t) == 0x80800000, "Packing error");
 
 #ifdef __cplusplus
 }
