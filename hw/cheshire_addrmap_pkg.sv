@@ -8,152 +8,149 @@ package cheshire_addrmap_pkg;
 localparam longint unsigned BASE_ADDR = 64'h0;
 localparam longint unsigned SIZE = 64'h80800000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_BASE_ADDR = 64'h0;
-localparam longint unsigned CHESHIRE_INTERNAL_SIZE = 64'h18000000;
+localparam longint unsigned EXTROM_BASE_ADDR = 64'h0;
+localparam longint unsigned EXTROM_SIZE = 64'h40000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_EXTROM_BASE_ADDR = 64'h0;
-localparam longint unsigned CHESHIRE_INTERNAL_EXTROM_SIZE = 64'h40000;
+localparam longint unsigned DMA_BASE_ADDR = 64'h1000000;
+localparam longint unsigned DMA_SIZE = 64'h1000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_DMA_BASE_ADDR = 64'h1000000;
-localparam longint unsigned CHESHIRE_INTERNAL_DMA_SIZE = 64'h1000;
+localparam longint unsigned BOOTROM_BASE_ADDR = 64'h2000000;
+localparam longint unsigned BOOTROM_SIZE = 64'h40000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_BOOTROM_BASE_ADDR = 64'h2000000;
-localparam longint unsigned CHESHIRE_INTERNAL_BOOTROM_SIZE = 64'h40000;
+localparam longint unsigned CLINT_BASE_ADDR = 64'h2040000;
+localparam longint unsigned CLINT_SIZE = 64'h40000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_CLINT_BASE_ADDR = 64'h2040000;
-localparam longint unsigned CHESHIRE_INTERNAL_CLINT_SIZE = 64'h40000;
+localparam longint unsigned IRQ_ROUTER_BASE_ADDR = 64'h2080000;
+localparam longint unsigned IRQ_ROUTER_SIZE = 64'h40000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_IRQ_ROUTER_BASE_ADDR = 64'h2080000;
-localparam longint unsigned CHESHIRE_INTERNAL_IRQ_ROUTER_SIZE = 64'h40000;
+localparam longint unsigned AXIRT_BASE_ADDR = 64'h20C0000;
+localparam longint unsigned AXIRT_SIZE = 64'h40000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_AXIRT_BASE_ADDR = 64'h20C0000;
-localparam longint unsigned CHESHIRE_INTERNAL_AXIRT_SIZE = 64'h40000;
+localparam longint unsigned REGS_BASE_ADDR = 64'h3000000;
+localparam longint unsigned REGS_SIZE = 64'h5C;
 
-localparam longint unsigned CHESHIRE_INTERNAL_REGS_BASE_ADDR = 64'h3000000;
-localparam longint unsigned CHESHIRE_INTERNAL_REGS_SIZE = 64'h5C;
+localparam longint unsigned LLC_BASE_ADDR = 64'h3001000;
+localparam longint unsigned LLC_SIZE = 64'h1000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_LLC_BASE_ADDR = 64'h3001000;
-localparam longint unsigned CHESHIRE_INTERNAL_LLC_SIZE = 64'h1000;
+localparam longint unsigned UART_BASE_ADDR = 64'h3002000;
+localparam longint unsigned UART_SIZE = 64'h1000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_UART_BASE_ADDR = 64'h3002000;
-localparam longint unsigned CHESHIRE_INTERNAL_UART_SIZE = 64'h1000;
+localparam longint unsigned I2C_BASE_ADDR = 64'h3003000;
+localparam longint unsigned I2C_SIZE = 64'h1000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_I2C_BASE_ADDR = 64'h3003000;
-localparam longint unsigned CHESHIRE_INTERNAL_I2C_SIZE = 64'h1000;
+localparam longint unsigned SPIH_BASE_ADDR = 64'h3004000;
+localparam longint unsigned SPIH_SIZE = 64'h1000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_SPIH_BASE_ADDR = 64'h3004000;
-localparam longint unsigned CHESHIRE_INTERNAL_SPIH_SIZE = 64'h1000;
+localparam longint unsigned GPIO_BASE_ADDR = 64'h3005000;
+localparam longint unsigned GPIO_SIZE = 64'h1000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_GPIO_BASE_ADDR = 64'h3005000;
-localparam longint unsigned CHESHIRE_INTERNAL_GPIO_SIZE = 64'h1000;
+localparam longint unsigned SLINK_BASE_ADDR = 64'h3006000;
+localparam longint unsigned SLINK_SIZE = 64'h804;
 
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_BASE_ADDR = 64'h3006000;
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_SIZE = 64'h804;
+localparam longint unsigned VGA_BASE_ADDR = 64'h3007000;
+localparam longint unsigned VGA_SIZE = 64'h1000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_VGA_BASE_ADDR = 64'h3007000;
-localparam longint unsigned CHESHIRE_INTERNAL_VGA_SIZE = 64'h1000;
+localparam longint unsigned USB_BASE_ADDR = 64'h3008000;
+localparam longint unsigned USB_SIZE = 64'h1000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_USB_BASE_ADDR = 64'h3008000;
-localparam longint unsigned CHESHIRE_INTERNAL_USB_SIZE = 64'h1000;
+localparam longint unsigned BUS_ERR_BASE_ADDR = 64'h3009000;
+localparam longint unsigned BUS_ERR_SIZE = 64'h40;
 
-localparam longint unsigned CHESHIRE_INTERNAL_BUS_ERR_BASE_ADDR = 64'h3009000;
-localparam longint unsigned CHESHIRE_INTERNAL_BUS_ERR_SIZE = 64'h40;
+localparam longint unsigned PLIC_BASE_ADDR = 64'h4000000;
+localparam longint unsigned PLIC_SIZE = 64'h4000000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_PLIC_BASE_ADDR = 64'h4000000;
-localparam longint unsigned CHESHIRE_INTERNAL_PLIC_SIZE = 64'h4000000;
+localparam longint unsigned CLIC_BASE_ADDR = 64'h8000000;
+localparam longint unsigned CLIC_SIZE = 64'h40000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_CLIC_BASE_ADDR = 64'h8000000;
-localparam longint unsigned CHESHIRE_INTERNAL_CLIC_SIZE = 64'h40000;
+localparam longint unsigned SPM_BASE_ADDR = 64'h10000000;
+localparam longint unsigned SPM_SIZE = 64'h10000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_SPM_BASE_ADDR = 64'h10000000;
-localparam longint unsigned CHESHIRE_INTERNAL_SPM_SIZE = 64'h10000;
-
-localparam longint unsigned CHESHIRE_INTERNAL_SPM_UNC_BASE_ADDR = 64'h14000000;
-localparam longint unsigned CHESHIRE_INTERNAL_SPM_UNC_SIZE = 64'h4000000;
+localparam longint unsigned SPM_UNC_BASE_ADDR = 64'h14000000;
+localparam longint unsigned SPM_UNC_SIZE = 64'h4000000;
 
 localparam longint unsigned DRAM_BASE_ADDR = 64'h80000000;
 localparam longint unsigned DRAM_SIZE = 64'h800000;
 
-localparam longint unsigned CHESHIRE_INTERNAL_DMA_STATUS_BASE_ADDR = 64'h1000000;
-localparam longint unsigned CHESHIRE_INTERNAL_DMA__END_BASE_ADDR = 64'h1000FFC;
-localparam longint unsigned CHESHIRE_INTERNAL_CLINT_STATUS_BASE_ADDR = 64'h2040000;
-localparam longint unsigned CHESHIRE_INTERNAL_CLINT__END_BASE_ADDR = 64'h207FFFC;
-localparam longint unsigned CHESHIRE_INTERNAL_IRQ_ROUTER_STATUS_BASE_ADDR = 64'h2080000;
-localparam longint unsigned CHESHIRE_INTERNAL_IRQ_ROUTER__END_BASE_ADDR = 64'h20BFFFC;
-localparam longint unsigned CHESHIRE_INTERNAL_AXIRT_STATUS_BASE_ADDR = 64'h20C0000;
-localparam longint unsigned CHESHIRE_INTERNAL_AXIRT__END_BASE_ADDR = 64'h20FFFFC;
-function automatic longint unsigned CHESHIRE_INTERNAL_REGS_SCRATCH_BASE_ADDR(input int unsigned scratch_idx);
+localparam longint unsigned DMA_STATUS_BASE_ADDR = 64'h1000000;
+localparam longint unsigned DMA__END_BASE_ADDR = 64'h1000FFC;
+localparam longint unsigned CLINT_STATUS_BASE_ADDR = 64'h2040000;
+localparam longint unsigned CLINT__END_BASE_ADDR = 64'h207FFFC;
+localparam longint unsigned IRQ_ROUTER_STATUS_BASE_ADDR = 64'h2080000;
+localparam longint unsigned IRQ_ROUTER__END_BASE_ADDR = 64'h20BFFFC;
+localparam longint unsigned AXIRT_STATUS_BASE_ADDR = 64'h20C0000;
+localparam longint unsigned AXIRT__END_BASE_ADDR = 64'h20FFFFC;
+function automatic longint unsigned REGS_SCRATCH_BASE_ADDR(input int unsigned scratch_idx);
     return 64'h3000000 + (scratch_idx * 64'h4);
 endfunction
-localparam longint unsigned CHESHIRE_INTERNAL_REGS_SCRATCH_NUM = 64'h10;
-localparam longint unsigned CHESHIRE_INTERNAL_REGS_BOOT_MODE_BASE_ADDR = 64'h3000040;
-localparam longint unsigned CHESHIRE_INTERNAL_REGS_RTC_FREQ_BASE_ADDR = 64'h3000044;
-localparam longint unsigned CHESHIRE_INTERNAL_REGS_PLATFORM_ROM_BASE_ADDR = 64'h3000048;
-localparam longint unsigned CHESHIRE_INTERNAL_REGS_NUM_INT_HARTS_BASE_ADDR = 64'h300004C;
-localparam longint unsigned CHESHIRE_INTERNAL_REGS_HW_FEATURES_BASE_ADDR = 64'h3000050;
-localparam longint unsigned CHESHIRE_INTERNAL_REGS_LLC_SIZE_BASE_ADDR = 64'h3000054;
-localparam longint unsigned CHESHIRE_INTERNAL_REGS_VGA_PARAMS_BASE_ADDR = 64'h3000058;
-localparam longint unsigned CHESHIRE_INTERNAL_LLC_STATUS_BASE_ADDR = 64'h3001000;
-localparam longint unsigned CHESHIRE_INTERNAL_LLC__END_BASE_ADDR = 64'h3001FFC;
-localparam longint unsigned CHESHIRE_INTERNAL_UART_STATUS_BASE_ADDR = 64'h3002000;
-localparam longint unsigned CHESHIRE_INTERNAL_UART__END_BASE_ADDR = 64'h3002FFC;
-localparam longint unsigned CHESHIRE_INTERNAL_I2C_STATUS_BASE_ADDR = 64'h3003000;
-localparam longint unsigned CHESHIRE_INTERNAL_I2C__END_BASE_ADDR = 64'h3003FFC;
-localparam longint unsigned CHESHIRE_INTERNAL_SPIH_STATUS_BASE_ADDR = 64'h3004000;
-localparam longint unsigned CHESHIRE_INTERNAL_SPIH__END_BASE_ADDR = 64'h3004FFC;
-localparam longint unsigned CHESHIRE_INTERNAL_GPIO_STATUS_BASE_ADDR = 64'h3005000;
-localparam longint unsigned CHESHIRE_INTERNAL_GPIO__END_BASE_ADDR = 64'h3005FFC;
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_CTRL_BASE_ADDR = 64'h3006000;
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_ISOLATED_BASE_ADDR = 64'h3006004;
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_RAW_MODE_EN_BASE_ADDR = 64'h3006008;
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_RAW_MODE_IN_DATA_BASE_ADDR = 64'h300600C;
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_RAW_MODE_IN_CH_SEL_BASE_ADDR = 64'h3006010;
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_RAW_MODE_OUT_DATA_FIFO_BASE_ADDR = 64'h3006014;
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_RAW_MODE_OUT_DATA_FIFO_CTRL_BASE_ADDR = 64'h3006018;
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_RAW_MODE_OUT_EN_BASE_ADDR = 64'h300601C;
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_FLOW_CONTROL_FIFO_CLEAR_BASE_ADDR = 64'h3006020;
-function automatic longint unsigned CHESHIRE_INTERNAL_SLINK_RAW_MODE_IN_DATA_VALID_BASE_ADDR(input int unsigned raw_mode_in_data_valid_idx);
+localparam longint unsigned REGS_SCRATCH_NUM = 64'h10;
+localparam longint unsigned REGS_BOOT_MODE_BASE_ADDR = 64'h3000040;
+localparam longint unsigned REGS_RTC_FREQ_BASE_ADDR = 64'h3000044;
+localparam longint unsigned REGS_PLATFORM_ROM_BASE_ADDR = 64'h3000048;
+localparam longint unsigned REGS_NUM_INT_HARTS_BASE_ADDR = 64'h300004C;
+localparam longint unsigned REGS_HW_FEATURES_BASE_ADDR = 64'h3000050;
+localparam longint unsigned REGS_LLC_SIZE_BASE_ADDR = 64'h3000054;
+localparam longint unsigned REGS_VGA_PARAMS_BASE_ADDR = 64'h3000058;
+localparam longint unsigned LLC_STATUS_BASE_ADDR = 64'h3001000;
+localparam longint unsigned LLC__END_BASE_ADDR = 64'h3001FFC;
+localparam longint unsigned UART_STATUS_BASE_ADDR = 64'h3002000;
+localparam longint unsigned UART__END_BASE_ADDR = 64'h3002FFC;
+localparam longint unsigned I2C_STATUS_BASE_ADDR = 64'h3003000;
+localparam longint unsigned I2C__END_BASE_ADDR = 64'h3003FFC;
+localparam longint unsigned SPIH_STATUS_BASE_ADDR = 64'h3004000;
+localparam longint unsigned SPIH__END_BASE_ADDR = 64'h3004FFC;
+localparam longint unsigned GPIO_STATUS_BASE_ADDR = 64'h3005000;
+localparam longint unsigned GPIO__END_BASE_ADDR = 64'h3005FFC;
+localparam longint unsigned SLINK_CTRL_BASE_ADDR = 64'h3006000;
+localparam longint unsigned SLINK_ISOLATED_BASE_ADDR = 64'h3006004;
+localparam longint unsigned SLINK_RAW_MODE_EN_BASE_ADDR = 64'h3006008;
+localparam longint unsigned SLINK_RAW_MODE_IN_DATA_BASE_ADDR = 64'h300600C;
+localparam longint unsigned SLINK_RAW_MODE_IN_CH_SEL_BASE_ADDR = 64'h3006010;
+localparam longint unsigned SLINK_RAW_MODE_OUT_DATA_FIFO_BASE_ADDR = 64'h3006014;
+localparam longint unsigned SLINK_RAW_MODE_OUT_DATA_FIFO_CTRL_BASE_ADDR = 64'h3006018;
+localparam longint unsigned SLINK_RAW_MODE_OUT_EN_BASE_ADDR = 64'h300601C;
+localparam longint unsigned SLINK_FLOW_CONTROL_FIFO_CLEAR_BASE_ADDR = 64'h3006020;
+function automatic longint unsigned SLINK_RAW_MODE_IN_DATA_VALID_BASE_ADDR(input int unsigned raw_mode_in_data_valid_idx);
     return 64'h3006100 + (raw_mode_in_data_valid_idx * 64'h4);
 endfunction
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_RAW_MODE_IN_DATA_VALID_NUM = 64'h1;
-function automatic longint unsigned CHESHIRE_INTERNAL_SLINK_RAW_MODE_OUT_CH_MASK_BASE_ADDR(input int unsigned raw_mode_out_ch_mask_idx);
+localparam longint unsigned SLINK_RAW_MODE_IN_DATA_VALID_NUM = 64'h1;
+function automatic longint unsigned SLINK_RAW_MODE_OUT_CH_MASK_BASE_ADDR(input int unsigned raw_mode_out_ch_mask_idx);
     return 64'h3006200 + (raw_mode_out_ch_mask_idx * 64'h4);
 endfunction
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_RAW_MODE_OUT_CH_MASK_NUM = 64'h1;
-function automatic longint unsigned CHESHIRE_INTERNAL_SLINK_TX_PHY_CLK_DIV_BASE_ADDR(input int unsigned tx_phy_clk_div_idx);
+localparam longint unsigned SLINK_RAW_MODE_OUT_CH_MASK_NUM = 64'h1;
+function automatic longint unsigned SLINK_TX_PHY_CLK_DIV_BASE_ADDR(input int unsigned tx_phy_clk_div_idx);
     return 64'h3006300 + (tx_phy_clk_div_idx * 64'h4);
 endfunction
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_TX_PHY_CLK_DIV_NUM = 64'h1;
-function automatic longint unsigned CHESHIRE_INTERNAL_SLINK_TX_PHY_CLK_START_BASE_ADDR(input int unsigned tx_phy_clk_start_idx);
+localparam longint unsigned SLINK_TX_PHY_CLK_DIV_NUM = 64'h1;
+function automatic longint unsigned SLINK_TX_PHY_CLK_START_BASE_ADDR(input int unsigned tx_phy_clk_start_idx);
     return 64'h3006400 + (tx_phy_clk_start_idx * 64'h4);
 endfunction
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_TX_PHY_CLK_START_NUM = 64'h1;
-function automatic longint unsigned CHESHIRE_INTERNAL_SLINK_TX_PHY_CLK_END_BASE_ADDR(input int unsigned tx_phy_clk_end_idx);
+localparam longint unsigned SLINK_TX_PHY_CLK_START_NUM = 64'h1;
+function automatic longint unsigned SLINK_TX_PHY_CLK_END_BASE_ADDR(input int unsigned tx_phy_clk_end_idx);
     return 64'h3006500 + (tx_phy_clk_end_idx * 64'h4);
 endfunction
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_TX_PHY_CLK_END_NUM = 64'h1;
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_CHANNEL_ALLOC_TX_CFG_BASE_ADDR = 64'h3006600;
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_CHANNEL_ALLOC_TX_CTRL_BASE_ADDR = 64'h3006604;
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_CHANNEL_ALLOC_RX_CFG_BASE_ADDR = 64'h3006608;
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_CHANNEL_ALLOC_RX_CTRL_BASE_ADDR = 64'h300660C;
-function automatic longint unsigned CHESHIRE_INTERNAL_SLINK_CHANNEL_ALLOC_TX_CH_EN_BASE_ADDR(input int unsigned channel_alloc_tx_ch_en_idx);
+localparam longint unsigned SLINK_TX_PHY_CLK_END_NUM = 64'h1;
+localparam longint unsigned SLINK_CHANNEL_ALLOC_TX_CFG_BASE_ADDR = 64'h3006600;
+localparam longint unsigned SLINK_CHANNEL_ALLOC_TX_CTRL_BASE_ADDR = 64'h3006604;
+localparam longint unsigned SLINK_CHANNEL_ALLOC_RX_CFG_BASE_ADDR = 64'h3006608;
+localparam longint unsigned SLINK_CHANNEL_ALLOC_RX_CTRL_BASE_ADDR = 64'h300660C;
+function automatic longint unsigned SLINK_CHANNEL_ALLOC_TX_CH_EN_BASE_ADDR(input int unsigned channel_alloc_tx_ch_en_idx);
     return 64'h3006700 + (channel_alloc_tx_ch_en_idx * 64'h4);
 endfunction
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_CHANNEL_ALLOC_TX_CH_EN_NUM = 64'h1;
-function automatic longint unsigned CHESHIRE_INTERNAL_SLINK_CHANNEL_ALLOC_RX_CH_EN_BASE_ADDR(input int unsigned channel_alloc_rx_ch_en_idx);
+localparam longint unsigned SLINK_CHANNEL_ALLOC_TX_CH_EN_NUM = 64'h1;
+function automatic longint unsigned SLINK_CHANNEL_ALLOC_RX_CH_EN_BASE_ADDR(input int unsigned channel_alloc_rx_ch_en_idx);
     return 64'h3006800 + (channel_alloc_rx_ch_en_idx * 64'h4);
 endfunction
-localparam longint unsigned CHESHIRE_INTERNAL_SLINK_CHANNEL_ALLOC_RX_CH_EN_NUM = 64'h1;
-localparam longint unsigned CHESHIRE_INTERNAL_VGA_STATUS_BASE_ADDR = 64'h3007000;
-localparam longint unsigned CHESHIRE_INTERNAL_VGA__END_BASE_ADDR = 64'h3007FFC;
-localparam longint unsigned CHESHIRE_INTERNAL_USB_STATUS_BASE_ADDR = 64'h3008000;
-localparam longint unsigned CHESHIRE_INTERNAL_USB__END_BASE_ADDR = 64'h3008FFC;
-localparam longint unsigned CHESHIRE_INTERNAL_BUS_ERR_STATUS_BASE_ADDR = 64'h3009000;
-localparam longint unsigned CHESHIRE_INTERNAL_BUS_ERR__END_BASE_ADDR = 64'h300903C;
-localparam longint unsigned CHESHIRE_INTERNAL_PLIC_STATUS_BASE_ADDR = 64'h4000000;
-localparam longint unsigned CHESHIRE_INTERNAL_PLIC__END_BASE_ADDR = 64'h7FFFFFC;
-localparam longint unsigned CHESHIRE_INTERNAL_CLIC_STATUS_BASE_ADDR = 64'h8000000;
-localparam longint unsigned CHESHIRE_INTERNAL_CLIC__END_BASE_ADDR = 64'h803FFFC;
+localparam longint unsigned SLINK_CHANNEL_ALLOC_RX_CH_EN_NUM = 64'h1;
+localparam longint unsigned VGA_STATUS_BASE_ADDR = 64'h3007000;
+localparam longint unsigned VGA__END_BASE_ADDR = 64'h3007FFC;
+localparam longint unsigned USB_STATUS_BASE_ADDR = 64'h3008000;
+localparam longint unsigned USB__END_BASE_ADDR = 64'h3008FFC;
+localparam longint unsigned BUS_ERR_STATUS_BASE_ADDR = 64'h3009000;
+localparam longint unsigned BUS_ERR__END_BASE_ADDR = 64'h300903C;
+localparam longint unsigned PLIC_STATUS_BASE_ADDR = 64'h4000000;
+localparam longint unsigned PLIC__END_BASE_ADDR = 64'h7FFFFFC;
+localparam longint unsigned CLIC_STATUS_BASE_ADDR = 64'h8000000;
+localparam longint unsigned CLIC__END_BASE_ADDR = 64'h803FFFC;
 
 
 typedef enum logic [1:0] {

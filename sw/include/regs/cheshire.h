@@ -15,10 +15,10 @@ extern "C" {
 #include <stdint.h>
 #include <assert.h>
 
-// Mem - cheshire_internal::extrom
+// Mem - cheshire::extrom
 typedef struct __attribute__ ((__packed__)) {
     uint32_t mem[65536];
-} cheshire_internal__extrom_t;
+} cheshire__extrom_t;
 
 // Reg - periph_stub_t::status
 #define PERIPH_STUB_T__STATUS__STATUS_bm 0xffffffff
@@ -51,10 +51,10 @@ typedef struct __attribute__ ((__packed__)) {
     periph_stub_t___end_t _end;
 } periph_stub_t_t;
 
-// Mem - cheshire_internal::bootrom
+// Mem - cheshire::bootrom
 typedef struct __attribute__ ((__packed__)) {
     uint32_t mem[65536];
-} cheshire_internal__bootrom_t;
+} cheshire__bootrom_t;
 
 // Reg - periph_stub_t_Size_40000::status
 #define PERIPH_STUB_T_SIZE_40000__STATUS__STATUS_bm 0xffffffff
@@ -663,23 +663,23 @@ typedef struct __attribute__ ((__packed__)) {
     periph_stub_t_Size_4000000___end_t _end;
 } periph_stub_t_Size_4000000_t;
 
-// Mem - cheshire_internal::spm
+// Mem - cheshire::spm
 typedef struct __attribute__ ((__packed__)) {
     uint32_t mem[16384];
-} cheshire_internal__spm_t;
+} cheshire__spm_t;
 
-// Mem - cheshire_internal::spm_unc
+// Mem - cheshire::spm_unc
 typedef struct __attribute__ ((__packed__)) {
     uint32_t mem[16777216];
-} cheshire_internal__spm_unc_t;
+} cheshire__spm_unc_t;
 
-// Addrmap - cheshire_internal
+// Addrmap - cheshire
 typedef struct __attribute__ ((__packed__)) {
-    cheshire_internal__extrom_t extrom;
+    cheshire__extrom_t extrom;
     uint8_t RESERVED_40000_ffffff[0xfc0000];
     periph_stub_t_t dma;
     uint8_t RESERVED_1001000_1ffffff[0xfff000];
-    cheshire_internal__bootrom_t bootrom;
+    cheshire__bootrom_t bootrom;
     periph_stub_t_Size_40000_t clint;
     periph_stub_t_Size_40000_t irq_router;
     periph_stub_t_Size_40000_t axirt;
@@ -700,25 +700,13 @@ typedef struct __attribute__ ((__packed__)) {
     periph_stub_t_Size_4000000_t plic;
     periph_stub_t_Size_40000_t clic;
     uint8_t RESERVED_8040000_fffffff[0x7fc0000];
-    cheshire_internal__spm_t spm;
+    cheshire__spm_t spm;
     uint8_t RESERVED_10010000_13ffffff[0x3ff0000];
-    cheshire_internal__spm_unc_t spm_unc;
-} cheshire_internal_t;
-
-// Mem - cheshire::dram
-typedef struct __attribute__ ((__packed__)) {
-    uint32_t mem[2097152];
-} cheshire__dram_t;
-
-// Addrmap - cheshire
-typedef struct __attribute__ ((__packed__)) {
-    cheshire_internal_t cheshire_internal;
-    uint8_t RESERVED_18000000_7fffffff[0x68000000];
-    cheshire__dram_t dram;
+    cheshire__spm_unc_t spm_unc;
 } cheshire_t;
 
 
-static_assert(sizeof(cheshire_t) == 0x80800000, "Packing error");
+static_assert(sizeof(cheshire_t) == 0x18000000, "Packing error");
 
 #ifdef __cplusplus
 }
