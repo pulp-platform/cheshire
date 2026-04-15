@@ -12,8 +12,6 @@ ENTRY(_start)
 
 /* Memory regions and peripheral base addresses are auto-generated from cheshire.rdl */
 INCLUDE cheshire_addrs.ldh
-/* External memory regions (DRAM) is generated from cheshire_external.rdl */
-INCLUDE cheshire_external_addrs.ldh
 
 SECTIONS {
   /* Keep binaries lean */

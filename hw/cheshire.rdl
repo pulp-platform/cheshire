@@ -1,111 +1,29 @@
 // Copyright 2025 ETH Zurich and University of Bologna.
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
-//
-// Tim Fischer <fischeti@iis.ee.ethz.ch>
 
-`ifndef CHESHIRE_RDL
-`define CHESHIRE_RDL
+`ifndef __CHESHIRE_RDL__
+`define __CHESHIRE_RDL__
 
-`include "cheshire_soc_regs.rdl"
-`include "slink_reg.rdl"
+`include "cheshire_internal.rdl"
 
-// User-defined property for executable memory regions (used by ldh format)
-property executable {
-  component = mem;
-  type = boolean;
-};
+// Cheshire RDL wrapper. Not necessary for SoC integration since it would
+// create an address map with empty addresses.
+// uSually the external DRAM should be set at the top level (chip-dependent)
+addrmap cheshire #(
+    longint unsigned SlinkNumLanes = 4
+) {
+    desc = "Cheshire SoC external memory regions";
 
-// Stub addrmap for peripherals whose full RDL is not yet available.
-// Size sets the correct address space; a sentinel register at Size-4 ensures
-// tools derive the right size without resorting to bloated register arrays.
-addrmap periph_stub_t #(longint unsigned Size = 0x1000) {
-    external reg { field {} status[31:0] = 0; } status @0x0;
-    external reg { field {} _end[31:0]   = 0; } _end   @(Size - 4);
-};
+    // Cheshire internal regsters
+    cheshire_internal #(.SlinkNumLanes(SlinkNumLanes)) cheshire_internal @0x0000_0000;
 
-addrmap cheshire #(longint unsigned SlinkNumLanes = 4) {
-    desc = "Cheshire SoC system address map";
-
-    ////////////////////
-    // Memory regions //
-    ////////////////////
-
-    // Debug module AXI block (256 KiB: debug ROM, program buffer, abstract command area)
+    // DRAM; 8 MiB minimum (Linux requirement), read+write+exec
+    // Reuse the executable property already defined in cheshire_internal.rdl
     external mem {
-        mementries = 65536; memwidth = 32;
-        sw = r; executable = true;
-    } extrom @0x0000_0000;
-
-    // Internal boot ROM; 256 KiB, read+exec
-    external mem {
-        mementries = 65536; memwidth = 32;
-        sw = r; executable = true;
-    } bootrom @0x0200_0000;
-
-    // Scratchpad memory (SPM / LLC); 64 KiB minimum, read+write+exec
-    external mem {
-        mementries = 16384; memwidth = 32;
+        mementries = 2097152; memwidth = 32;
         sw = rw; executable = true;
-    } spm @0x1000_0000;
-
-    // SPM uncached mirror (64 MiB reserved window; actual mapped size = LLC size), read+write+exec
-    external mem {
-        mementries = 16777216; memwidth = 32;
-        sw = rw; executable = true;
-    } spm_unc @0x1400_0000;
-
-    /////////////////
-    // Peripherals //
-    /////////////////
-
-    // iDMA engine (4 KiB)
-    periph_stub_t #(.Size(0x0000_1000)) dma     @0x0100_0000;
-
-    // CLINT (256 KiB)
-    periph_stub_t #(.Size(0x0004_0000)) clint   @0x0204_0000;
-
-    // IRQ router (256 KiB)
-    periph_stub_t #(.Size(0x0004_0000)) irq_router @0x0208_0000;
-
-    // AXI-RT traffic regulator (256 KiB)
-    periph_stub_t #(.Size(0x0004_0000)) axirt   @0x020C_0000;
-
-    // PLIC (64 MiB)
-    periph_stub_t #(.Size(0x0400_0000)) plic    @0x0400_0000;
-
-    // CLIC (256 KiB per hart; sized for 1 hart)
-    periph_stub_t #(.Size(0x0004_0000)) clic    @0x0800_0000;
-
-    // Cheshire SoC register file
-    soc_regs regs @0x0300_0000;
-
-    // LLC / SPM register interface (4 KiB)
-    periph_stub_t #(.Size(0x0000_1000)) llc     @0x0300_1000;
-
-    // UART (4 KiB)
-    periph_stub_t #(.Size(0x0000_1000)) uart    @0x0300_2000;
-
-    // I2C (4 KiB)
-    periph_stub_t #(.Size(0x0000_1000)) i2c     @0x0300_3000;
-
-    // SPI host (4 KiB)
-    periph_stub_t #(.Size(0x0000_1000)) spih    @0x0300_4000;
-
-    // GPIO (4 KiB)
-    periph_stub_t #(.Size(0x0000_1000)) gpio    @0x0300_5000;
-
-    // Serial link registers
-    slink_reg #(.NumLanes(SlinkNumLanes)) slink @0x0300_6000;
-
-    // AXI VGA (4 KiB)
-    periph_stub_t #(.Size(0x0000_1000)) vga     @0x0300_7000;
-
-    // USB (4 KiB)
-    periph_stub_t #(.Size(0x0000_1000)) usb     @0x0300_8000;
-
-    // Bus error unit (64 B per unit; sized for 1 unit)
-    periph_stub_t #(.Size(0x0000_0040)) bus_err @0x0300_9000;
+    } dram @0x8000_0000;
 };
 
-`endif // CHESHIRE_RDL
+`endif // __CHESHIRE_RDL__

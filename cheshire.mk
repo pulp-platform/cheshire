@@ -85,6 +85,7 @@ SLINK_NUM_LANES ?= 4
 include $(CHS_SLINK_DIR)/slink.mk
 
 CHS_PEAKRDL_INCLUDES += -I $(CHS_SLINK_DIR)/src/regs
+CHS_PEAKRDL_INCLUDES += -I $(CHS_ROOT)/hw/
 CHS_PEAKRDL_PARAMS   += -P SlinkNumLanes=$(SLINK_NUM_LANES)
 
 ############
@@ -102,11 +103,8 @@ $(CHS_ROOT)/hw/regs/cheshire_soc_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_soc_re
 	$(PEAKRDL) regblock $< -o $(CHS_ROOT)/hw/regs/ --cpuif apb4-flat --default-reset arst_n --module-name cheshire_soc_regs
 	@sed -i '1i// Copyright 2025 ETH Zurich and University of Bologna.\n// Solderpad Hardware License, Version 0.51, see LICENSE for details.\n// SPDX-License-Identifier: SHL-0.51\n' $(CHS_ROOT)/hw/regs/cheshire_soc_regs.sv $(CHS_ROOT)/hw/regs/cheshire_soc_regs_pkg.sv
 
-$(CHS_ROOT)/hw/cheshire_addrmap_pkg.sv: $(CHS_ROOT)/hw/cheshire.rdl $(CHS_SLINK_DIR)/.generated
+$(CHS_ROOT)/hw/cheshire_addrmap_pkg.sv: $(CHS_ROOT)/hw/cheshire.rdl $(CHS_ROOT)/hw/cheshire_internal.rdl $(CHS_SLINK_DIR)/.generated
 	$(PEAKRDL) raw-header $< --format svpkg --no-prefix $(CHS_PEAKRDL_INCLUDES) $(CHS_PEAKRDL_PARAMS) --license-str $$'Copyright 2025 ETH Zurich and University of Bologna.\nSolderpad Hardware License, Version 0.51, see LICENSE for details.\nSPDX-License-Identifier: SHL-0.51' -o $@
-
-$(CHS_ROOT)/hw/cheshire_external_pkg.sv: $(CHS_ROOT)/hw/cheshire_external.rdl
-	$(PEAKRDL) raw-header $< --format svpkg --no-prefix --license-str $$'Copyright 2025 ETH Zurich and University of Bologna.\nSolderpad Hardware License, Version 0.51, see LICENSE for details.\nSPDX-License-Identifier: SHL-0.51' -o $@
 
 # CLINT
 CLINTCORES ?= 1
