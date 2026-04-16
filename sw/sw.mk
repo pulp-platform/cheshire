@@ -87,7 +87,7 @@ CHS_SW_GEN_HDRS += $(CHS_SW_DIR)/include/regs/cheshire.h
 
 $(CHS_SW_DIR)/include/regs/cheshire.h: $(CHS_ROOT)/hw/cheshire.rdl $(CHS_SLINK_DIR)/.generated
 	@mkdir -p $(dir $@)
-	$(PEAKRDL) c-header $< -o $@ -b ltoh $(CHS_PEAKRDL_INCLUDES) $(CHS_PEAKRDL_PARAMS) $(CHS_PEAKRDL_DEFINES)
+	$(PEAKRDL) c-header $< -o $@ -b ltoh --type-style hier $(CHS_PEAKRDL_INCLUDES) $(CHS_PEAKRDL_PARAMS) $(CHS_PEAKRDL_DEFINES)
 	@sed -i '1i// Copyright 2025 ETH Zurich and University of Bologna.\n// Licensed under the Apache License, Version 2.0, see LICENSE for details.\n// SPDX-License-Identifier: Apache-2.0\n' $@
 
 # Generate headers for OT peripherals in the bendered repo itself

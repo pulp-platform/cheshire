@@ -21,6 +21,7 @@ dependencies = [
     "setuptools<81", # Required by old `regtool`
     "peakrdl>=1.5.0",
     "peakrdl-rawheader>=0.2.3",
+    "peakrdl-cheader>=1.0.0",
 ]
 
 [tool.uv]
