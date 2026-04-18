@@ -529,13 +529,13 @@ typedef union {
 } cheshire__slink__raw_mode_en_t;
 
 // Reg - cheshire.slink.raw_mode_in_data
-#define CHESHIRE__SLINK__RAW_MODE_IN_DATA__RAW_MODE_IN_DATA_bm 0xffff
+#define CHESHIRE__SLINK__RAW_MODE_IN_DATA__RAW_MODE_IN_DATA_bm 0xff
 #define CHESHIRE__SLINK__RAW_MODE_IN_DATA__RAW_MODE_IN_DATA_bp 0
-#define CHESHIRE__SLINK__RAW_MODE_IN_DATA__RAW_MODE_IN_DATA_bw 16
+#define CHESHIRE__SLINK__RAW_MODE_IN_DATA__RAW_MODE_IN_DATA_bw 8
 typedef union {
     struct __attribute__ ((__packed__)) {
-        uint32_t raw_mode_in_data :16;
-        uint32_t :16;
+        uint32_t raw_mode_in_data :8;
+        uint32_t :24;
     } f;
     uint32_t w;
 } cheshire__slink__raw_mode_in_data_t;
@@ -554,14 +554,14 @@ typedef union {
 } cheshire__slink__raw_mode_in_ch_sel_t;
 
 // Reg - cheshire.slink.raw_mode_out_data_fifo
-#define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_bm 0xffff
+#define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_bm 0xff
 #define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_bp 0
-#define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_bw 16
+#define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_bw 8
 #define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_reset 0x0
 typedef union {
     struct __attribute__ ((__packed__)) {
-        uint32_t raw_mode_out_data_fifo :16;
-        uint32_t :16;
+        uint32_t raw_mode_out_data_fifo :8;
+        uint32_t :24;
     } f;
     uint32_t w;
 } cheshire__slink__raw_mode_out_data_fifo_t;
