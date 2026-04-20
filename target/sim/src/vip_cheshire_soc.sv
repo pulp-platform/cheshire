@@ -18,9 +18,9 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter type          axi_ext_mst_req_t = logic,
   parameter type          axi_ext_mst_rsp_t = logic,
   // Timing
-  parameter time          ClkPeriodSys      = 5ns,
-  parameter time          ClkPeriodJtag     = 20ns,
-  parameter time          ClkPeriodRtc      = 30518ns,
+  parameter realtime      ClkPeriodSys      = 5ns,
+  parameter realtime      ClkPeriodJtag     = 20ns,
+  parameter realtime      ClkPeriodRtc      = 30518ns,
   parameter int unsigned  RstCycles         = 5,
   parameter real          TAppl             = 0.1,
   parameter real          TTest             = 0.9,
