@@ -433,8 +433,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   );
 
   // APB request/response arrays, indexed by reg-bus port index (same as reg_out_req/rsp)
-  apb_req_t  reg_apb_req [RegOut.num_out];
-  apb_resp_t reg_apb_rsp [RegOut.num_out];
+  apb_req_t  [RegOut.num_out-1:0] reg_apb_req;
+  apb_resp_t [RegOut.num_out-1:0] reg_apb_rsp;
 
   // Generate reg_to_apb bridges for all ports flagged in apb_mask
   for (genvar i = 0; i < RegOut.num_out; i++) begin : gen_reg_to_apb
@@ -1066,6 +1066,14 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   `undef CHS_HWREG
 
+
+  // Work around a SystemVerilog limitation, which does not allow
+  // individual member access into structs which are part of an array of structs
+  // See IEEE Std 1800-2023 6.5 Nets and Variables
+
+  apb_resp_t regs_apb_rsp;
+  assign reg_apb_rsp[RegOut.regs] = regs_apb_rsp;
+
   cheshire_soc_regs i_regs (
     .clk    ( clk_i  ),
     .arst_n ( rst_ni ),
@@ -1076,9 +1084,9 @@ module cheshire_soc import cheshire_pkg::*; #(
     .s_apb_paddr   ( reg_aw_bt'(reg_apb_req[RegOut.regs].paddr) ),
     .s_apb_pwdata  ( reg_apb_req[RegOut.regs].pwdata  ),
     .s_apb_pstrb   ( reg_apb_req[RegOut.regs].pstrb   ),
-    .s_apb_pready  ( reg_apb_rsp[RegOut.regs].pready  ),
-    .s_apb_prdata  ( reg_apb_rsp[RegOut.regs].prdata  ),
-    .s_apb_pslverr ( reg_apb_rsp[RegOut.regs].pslverr ),
+    .s_apb_pready  ( regs_apb_rsp.pready              ),
+    .s_apb_prdata  ( regs_apb_rsp.prdata              ),
+    .s_apb_pslverr ( regs_apb_rsp.pslverr             ),
     .hwif_in       ( reg_hw2reg ),
     .hwif_out      ( reg_reg2hw )
   );
