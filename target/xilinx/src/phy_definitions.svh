@@ -5,6 +5,16 @@
 // Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 // Yvan Tortorella <yvan.tortorella@gmail.com>
 // Mojtaba Rostami <m.rostami1989@gmail.com>
+// Seyyid Hikmet Celik <seyyid4091@gmail.com>
+
+`ifdef TARGET_VCU108
+  `define USE_RESET
+  `define USE_JTAG
+  `define USE_DDR4
+  `define USE_QSPI
+  `define USE_STARTUPE3
+  `define USE_VIO
+`endif
 
 `ifdef TARGET_VCU118
   `define USE_RESET
