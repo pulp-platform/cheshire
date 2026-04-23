@@ -35,3 +35,6 @@ target/sim/vsim/modelsim.ini
 target/sim/vsim/transcript
 target/sim/vsim/vsim.wlf
 target/sim/vsim/work/
+
+working_dir/
+Bender.local
