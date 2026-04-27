@@ -46,7 +46,7 @@
 `endif
 
 `ifdef TARGET_U280
-  `define USE_RESET
+  `define USE_RESETN
   `define USE_DDR4
   `define USE_VIO
 `endif
@@ -89,16 +89,14 @@
   output [16:0]                c0_ddr4_adr, \
   output [1:0]                 c0_ddr4_ba, \
   `ifdef TARGET_U280 \
-  output [1:0]                 c0_ddr4_bg, \
+    output [1:0]               c0_ddr4_bg, \
+    output                     c0_ddr4_parity, \
   `else \
-  output [0:0]                 c0_ddr4_bg, \
+    output [0:0]               c0_ddr4_bg, \
   `endif \
   output [0:0]                 c0_ddr4_cke, \
   output [0:0]                 c0_ddr4_odt, \
   output [Ddr4CsNWidth-1:0]    c0_ddr4_cs_n, \
-  `ifdef TARGET_U280 \
-  output                       c0_ddr4_parity, \
-  `endif \
   inout  [Ddr4DmDbiNWidth-1:0] c0_ddr4_dm_dbi_n, \
   inout  [Ddr4DqWidth-1:0]     c0_ddr4_dq, \
   inout  [Ddr4DqsWidth-1:0]    c0_ddr4_dqs_c, \

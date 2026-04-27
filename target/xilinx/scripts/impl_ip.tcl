@@ -229,19 +229,20 @@ switch $proj {
                 set_property -dict [list \
                     CONFIG.System_Clock {No_Buffer} \
                     CONFIG.Reference_Clock {No_Buffer} \
-                    CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram_c1} \
-                    CONFIG.C0.DDR4_InputClockPeriod {4000} \
-                    CONFIG.C0.DDR4_CLKOUT0_DIVIDE {5} \
-                    CONFIG.C0.DDR4_MemoryPart {MT40A256M16LY-062E} \
+                    CONFIG.C0_DDR4_BOARD_INTERFACE {custom} \
+                    CONFIG.C0.DDR4_InputClockPeriod {9996} \
                     CONFIG.C0.DDR4_TimePeriod {833} \
-                    CONFIG.C0.DDR4_DataWidth {64} \
-                    CONFIG.C0.DDR4_DataMask {DM_NO_DBI} \
-                    CONFIG.C0.DDR4_MCS_ECC {false} \
-                    CONFIG.C0.DDR4_CASWRITELATENCY {14} \
-                    CONFIG.C0.DDR4_CASLATENCY {18} \
+                    CONFIG.C0.DDR4_CLKOUT0_DIVIDE {4} \
+                    CONFIG.C0.DDR4_MemoryType {RDIMMs} \
+                    CONFIG.C0.DDR4_MemoryPart {MTA18ASF2G72PZ-2G3} \
+                    CONFIG.C0.DDR4_Ecc {false} \
+                    CONFIG.C0.DDR4_DataWidth {72} \
+                    CONFIG.C0.DDR4_DataMask {NO_DM_NO_DBI} \
                     CONFIG.C0.DDR4_AxiDataWidth {512} \
                     CONFIG.C0.DDR4_AxiAddressWidth {34} \
                     CONFIG.C0.DDR4_AxiIDWidth {8} \
+                    CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
+                    CONFIG.C0.CS_WIDTH {1} \
                     CONFIG.C0.BANK_GROUP_WIDTH {1} \
                     CONFIG.C0.DDR4_AxiSelection {true} \
                     ] [get_ips $proj]

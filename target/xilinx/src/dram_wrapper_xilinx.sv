@@ -339,7 +339,6 @@ module dram_wrapper_xilinx #(
       .c0_ddr4_s_axi_ctrl_rdata   ( ),
       .c0_ddr4_s_axi_ctrl_rresp   ( ),
       .c0_ddr4_interrupt          ( ),
-      //.c0_ddr4_parity             ( ),
     `endif
     // Others
     .c0_init_calib_complete     ( ),

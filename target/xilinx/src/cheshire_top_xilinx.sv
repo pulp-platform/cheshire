@@ -674,13 +674,19 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
     .slink_o            ( ),
 `ifdef USE_JTAG
     .jtag_tck_i,
-    .jtag_trst_ni,
     .jtag_tms_i,
     .jtag_tdi_i,
     .jtag_tdo_o,
     // TODO: connect to the tdo pad
     .jtag_tdo_oe_o      ( ),
+`else
+    .jtag_tck_i         ( 1'b0 ),
+    .jtag_tms_i         ( 1'b0 ),
+    .jtag_tdi_i         ( 1'b0 ),
+    .jtag_tdo_o         ( ),
+    .jtag_tdo_oe_o      ( ),
 `endif
+    .jtag_trst_ni,
     .i2c_sda_o          ( i2c_sda_soc_out ),
     .i2c_sda_i          ( i2c_sda_soc_in  ),
     .i2c_sda_en_o       ( i2c_sda_en      ),
