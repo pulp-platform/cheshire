@@ -183,6 +183,11 @@ package cheshire_pkg;
     bit     LlcOutConnect;
     doub_bt LlcOutRegionStart;
     doub_bt LlcOutRegionEnd;
+    bit     LlcCachePartition;
+    shrt_bt LlcMaxPartition;
+    axi_llc_pkg::algorithm_e LlcRemapHash;
+    dw_bt   LlcUserMsb;
+    dw_bt   LlcUserLsb;
     // Parameters for VGA
     byte_bt VgaRedWidth;
     byte_bt VgaGreenWidth;
@@ -419,6 +424,7 @@ package cheshire_pkg;
     aw_bt irq_router;
     aw_bt [2**MaxCoresWidth-1:0] bus_err;
     aw_bt [2**MaxCoresWidth-1:0] clic;
+    aw_bt tagger;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
@@ -449,6 +455,7 @@ package cheshire_pkg;
     if (cfg.BusErr) for (int j = 0; j < 2 + cfg.NumCores; j++) begin
       i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, BUS_ERR_BASE_ADDR + j*BUS_ERR_SIZE, BUS_ERR_BASE_ADDR + (j+1)*BUS_ERR_SIZE};
     end
+    if (cfg.LlcCachePartition) begin i++; ret.tagger = i; r++; ret.map[r] = '{i, TAGGER_BASE_ADDR,  TAGGER_BASE_ADDR + TAGGER_SIZE}; end
     i++; r++;
     ret.ext_base  = i;
     ret.num_out   = i + cfg.RegExtNumSlv;
@@ -625,7 +632,7 @@ package cheshire_pkg;
     // Interconnect
     AddrWidth         : 48,
     AxiDataWidth      : 64,
-    AxiUserWidth      : 2,  // AMO(2)
+    AxiUserWidth      : 6,  // AMO(2), LLC (4)
     AxiMstIdWidth     : 2,
     AxiMaxMstTrans    : 24,
     AxiMaxSlvTrans    : 24,
@@ -674,6 +681,11 @@ package cheshire_pkg;
     LlcOutConnect     : 1,
     LlcOutRegionStart : 'h8000_0000,
     LlcOutRegionEnd   : 64'h1_0000_0000,
+    LlcUserMsb        : 5,
+    LlcUserLsb        : 2,
+    LlcCachePartition : 0,
+    LlcMaxPartition   : 16,
+    LlcRemapHash      : axi_llc_pkg::Modulo,
     // VGA: RGB565
     VgaRedWidth       : 5,
     VgaGreenWidth     : 6,

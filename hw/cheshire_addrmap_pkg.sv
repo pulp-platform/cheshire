@@ -56,6 +56,9 @@ localparam longint unsigned USB_SIZE = 64'h1000;
 localparam longint unsigned BUS_ERR_BASE_ADDR = 64'h3009000;
 localparam longint unsigned BUS_ERR_SIZE = 64'h40;
 
+localparam longint unsigned TAGGER_BASE_ADDR = 64'h300A000;
+localparam longint unsigned TAGGER_SIZE = 64'h100;
+
 localparam longint unsigned PLIC_BASE_ADDR = 64'h4000000;
 localparam longint unsigned PLIC_SIZE = 64'h4000000;
 
@@ -147,6 +150,8 @@ localparam longint unsigned USB_STATUS_BASE_ADDR = 64'h3008000;
 localparam longint unsigned USB__END_BASE_ADDR = 64'h3008FFC;
 localparam longint unsigned BUS_ERR_STATUS_BASE_ADDR = 64'h3009000;
 localparam longint unsigned BUS_ERR__END_BASE_ADDR = 64'h300903C;
+localparam longint unsigned TAGGER_STATUS_BASE_ADDR = 64'h300A000;
+localparam longint unsigned TAGGER__END_BASE_ADDR = 64'h300A0FC;
 localparam longint unsigned PLIC_STATUS_BASE_ADDR = 64'h4000000;
 localparam longint unsigned PLIC__END_BASE_ADDR = 64'h7FFFFFC;
 localparam longint unsigned CLIC_STATUS_BASE_ADDR = 64'h8000000;
