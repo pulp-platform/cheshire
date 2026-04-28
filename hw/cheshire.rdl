@@ -115,6 +115,9 @@ addrmap cheshire #(longint unsigned SlinkNumLanes = 4) {
 
     // Bus error unit (64 B per unit; sized for 1 unit)
     periph_stub_t #(.Size(0x0000_0040)) bus_err @0x0300_9000;
+
+    // LLC tagger (256B)
+    periph_stub_t #(.Size(0x0000_0100)) tagger  @0x0300_A000;
 };
 
 `endif // CHESHIRE_RDL
