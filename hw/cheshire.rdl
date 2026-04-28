@@ -57,12 +57,23 @@ addrmap cheshire #(longint unsigned SlinkNumLanes = 4) {
     } dram @0x8000_0000;
 `endif
 
-
     // SPM uncached mirror (64 MiB reserved window; actual mapped size = LLC size), read+write+exec
     external mem {
         mementries = 16777216; memwidth = 32;
         sw = rw; executable = true;
     } spm_unc @0x1400_0000;
+
+    // L1 data cache scratchpad memory: 32 kiB, read+write+exec
+    external mem {
+        mementries = 8192; memwidth = 32;
+        sw = rw; executable = true;
+    } l1_dspm @0x0180_0000;
+
+    // L1 instruction cache scratchpad memory: 32 kiB, read+write+exec
+    external mem {
+        mementries = 8192; memwidth = 32;
+        sw = rw; executable = true;
+    } l1_ispm @0x01A0_0000;
 
     /////////////////
     // Peripherals //

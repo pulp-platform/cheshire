@@ -14,6 +14,12 @@ localparam longint unsigned EXTROM_SIZE = 64'h40000;
 localparam longint unsigned DMA_BASE_ADDR = 64'h1000000;
 localparam longint unsigned DMA_SIZE = 64'h1000;
 
+localparam longint unsigned L1_DSPM_BASE_ADDR = 64'h1800000;
+localparam longint unsigned L1_DSPM_SIZE = 64'h8000;
+
+localparam longint unsigned L1_ISPM_BASE_ADDR = 64'h1A00000;
+localparam longint unsigned L1_ISPM_SIZE = 64'h8000;
+
 localparam longint unsigned BOOTROM_BASE_ADDR = 64'h2000000;
 localparam longint unsigned BOOTROM_SIZE = 64'h40000;
 

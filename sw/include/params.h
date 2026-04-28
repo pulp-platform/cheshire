@@ -28,9 +28,12 @@ extern void *__plic_base_addr__;
 extern void *__dma_base_addr__;
 extern void *__axirt_base_addr__;
 extern void *__axirtgrd_base_addr__;
+extern void *__tagger_base_addr__;
 extern void *__bus_err_base_addr__;
 extern void *__clic_base_addr__;
 extern void *__usb_base_addr__;
+extern void *__l1_dspm_base_addr__;
+extern void *__l1_ispm_base_addr__;
 extern void *__spm_base_addr__;
 extern void *__dram_base_addr__;
 

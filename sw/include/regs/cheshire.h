@@ -51,6 +51,16 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__dma___end_t _end;
 } cheshire__dma_t;
 
+// Mem - cheshire.l1_dspm
+typedef struct __attribute__ ((__packed__)) {
+    uint32_t mem[8192];
+} cheshire__l1_dspm_t;
+
+// Mem - cheshire.l1_ispm
+typedef struct __attribute__ ((__packed__)) {
+    uint32_t mem[8192];
+} cheshire__l1_ispm_t;
+
 // Mem - cheshire.bootrom
 typedef struct __attribute__ ((__packed__)) {
     uint32_t mem[65536];
@@ -1024,7 +1034,11 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__extrom_t extrom;
     uint8_t RESERVED_40000_ffffff[0xfc0000];
     cheshire__dma_t dma;
-    uint8_t RESERVED_1001000_1ffffff[0xfff000];
+    uint8_t RESERVED_1001000_17fffff[0x7ff000];
+    cheshire__l1_dspm_t l1_dspm;
+    uint8_t RESERVED_1808000_19fffff[0x1f8000];
+    cheshire__l1_ispm_t l1_ispm;
+    uint8_t RESERVED_1a08000_1ffffff[0x5f8000];
     cheshire__bootrom_t bootrom;
     cheshire__clint_t clint;
     cheshire__irq_router_t irq_router;
