@@ -7,6 +7,8 @@
 MEMORY
 {
   extrom (rx) : ORIGIN = 0x00000000, LENGTH = 0x00040000
+  l1_dspm (rwx) : ORIGIN = 0x01800000, LENGTH = 0x00008000
+  l1_ispm (rwx) : ORIGIN = 0x01A00000, LENGTH = 0x00008000
   bootrom (rx) : ORIGIN = 0x02000000, LENGTH = 0x00040000
   spm (rwx) : ORIGIN = 0x10000000, LENGTH = 0x00010000
   spm_unc (rwx) : ORIGIN = 0x14000000, LENGTH = 0x04000000
@@ -22,6 +24,12 @@ PROVIDE(__extrom_size__ = 0x00040000);
 
 PROVIDE(__dma_base_addr__ = 0x01000000);
 PROVIDE(__dma_size__ = 0x00001000);
+
+PROVIDE(__l1_dspm_base_addr__ = 0x01800000);
+PROVIDE(__l1_dspm_size__ = 0x00008000);
+
+PROVIDE(__l1_ispm_base_addr__ = 0x01A00000);
+PROVIDE(__l1_ispm_size__ = 0x00008000);
 
 PROVIDE(__bootrom_base_addr__ = 0x02000000);
 PROVIDE(__bootrom_size__ = 0x00040000);
