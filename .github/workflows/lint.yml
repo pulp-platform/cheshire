@@ -57,16 +57,6 @@ jobs:
       with:
         extensions: 'c,h,cpp'
         clangFormatVersion: 14
-        style: >
-          {
-          IndentWidth: 4,
-          ColumnLimit: 100,
-          AlignEscapedNewlines: DontAlign,
-          SortIncludes: false,
-          AllowShortFunctionsOnASingleLine: None,
-          AllowShortIfStatementsOnASingleLine: true,
-          AllowShortLoopsOnASingleLine: true
-          }
         exclude: |
           ./sw/include/regs/*.h
           ./target/sim/src/elfloader.cpp
