@@ -111,8 +111,8 @@ packages:
     - fpnew
     - tech_cells_generic
   dram_rtl_sim:
-    revision: 2cac4a9e12a60537567276b539ab6c919c87b5dc
-    version: 0.1.1
+    revision: a764d5200a19cdd72a5237cbfb16985515a3058d
+    version: 0.1.2
     source:
       Git: https://github.com/pulp-platform/dram_rtl_sim.git
     dependencies:
