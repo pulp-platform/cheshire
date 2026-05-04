@@ -6,6 +6,15 @@
 
 # We initialize the nonfree repo, then spawn a sub-pipeline from it
 
+spec:
+  inputs:
+    cheshire_config:
+      description: "Cheshire configuration."
+      default: 'default'
+      options: ['default', 'hpdcache']
+
+---
+
 stages:
   - nonfree
 
@@ -22,4 +31,6 @@ subpipe:
     include:
       - artifact: nonfree/ci.yml
         job: init
+        inputs:
+          cheshire_config: $[[ inputs.cheshire_config ]]
     strategy: depend
