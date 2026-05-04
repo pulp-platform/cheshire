@@ -12,8 +12,26 @@ set xilinx_root [file dirname [file dirname [file normalize [info script]]]]
 source ${xilinx_root}/scripts/common.tcl
 init_impl $xilinx_root $argc $argv
 
+# Cross-platform Tcl implementation of the realpath utility.
+# Unlike a simple call to `normalize`, this function not only converts
+# a path to an absolute path, but also resolves symbolic links.
+proc realpath_tcl {path} {
+    set p [file normalize $path]
+
+    while {[file type $p] eq "link"} {
+        set p [file normalize [file readlink $p]]
+    }
+
+    return $p
+}
+
 # Addtional args provide IPs
-read_ip [exec realpath {*}[lrange $argv 2 end]]
+set ip_paths {}
+foreach arg [lrange $argv 2 end] {
+    lappend ip_paths [realpath_tcl $arg]
+}
+puts [list read_ip $ip_paths]
+read_ip $ip_paths
 
 # Load constraints
 import_files -fileset constrs_1 -norecurse ${xilinx_root}/constraints/${proj}.xdc
