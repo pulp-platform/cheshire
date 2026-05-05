@@ -10,7 +10,7 @@ BENDER ?= bender
 VLOGAN ?= vlogan
 
 # Caution: Questasim requires this to point to the *actual* compiler install path
-CXX_PATH := $(shell which $(CXX))
+CXX_PATH ?= $(shell which $(CXX))
 
 VLOG_ARGS   ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
 VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
@@ -65,7 +65,7 @@ chs-clean-deps:
 ######################
 
 CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-CHS_NONFREE_COMMIT ?= 95825e1
+CHS_NONFREE_COMMIT ?= e26bef353de1746d7eac0d84d98e39439c4f3e44
 
 CHS_PHONY += chs-nonfree-init
 chs-nonfree-init:
