@@ -4,6 +4,7 @@
 #
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 # Yvan Tortorella <yvan.tortorella@gmail.com>
+# Simone Manoni <s.manoni@unibo.it>
 
 # genesys2 board params
 set bpart(genesys2) "digilentinc.com:genesys2:part0:1.1"
@@ -22,6 +23,12 @@ set bpart(vcu118) "xilinx.com:vcu118:part0:2.4"
 set fpart(vcu118) "xcvu9p-flga2104-2L-e"
 set hwdev(vcu118) "xcvu9p_0"
 set cfgmp(vcu118) "mt25qu01g-spi-x1_x2_x4"
+
+# u280 board params
+set bpart(u280) "" ; # Skip board_part if unset: avoids overriding fpart with a different part variant.
+set fpart(u280) "xcvu37p-fsvh2892-2L-e"
+set hwdev(u280) "xcvu37p_0"
+set cfgmp(u280) "mt25qu02g-spi-x1_x2_x4"
 
 
 # Initialize an implementation project
@@ -52,7 +59,13 @@ proc init_impl {xilinx_root argc argv} {
     file delete -force [glob -nocomplain ${project_root}/*]
     # Create project
     create_project $proj $project_root -force -part $fpart($board)
-    set_property board_part $bpart($board) [current_project]
+    # Skip board_part for boards where the Vivado board definition may reference
+    # a different part variant than fpart (e.g. u280 ships with different chip
+    # revisions across board versions), which would silently override the
+    # explicitly selected part above.
+    if { [info exists bpart($board)] && $bpart($board) ne "" } {
+        set_property board_part $bpart($board) [current_project]
+    }
 }
 
 # Open a target device in the hardware manager

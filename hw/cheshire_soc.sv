@@ -924,7 +924,8 @@ module cheshire_soc import cheshire_pkg::*; #(
   `FF(dbg_slv_rvalid, dbg_slv_req, 1'b0, clk_i, rst_ni)
 
   // Debug Module
-  dm_top #(
+  // Mark with keep to ensure debug pipeline is not optimized away during BSCAN synthesis
+  (* keep = "true" *) dm_top #(
     .NrHarts        ( NumDbgHarts ),
     .BusWidth       ( Cfg.AxiDataWidth ),
     .DmBaseAddress  ( EXTROM_BASE_ADDR )
@@ -999,7 +1000,10 @@ module cheshire_soc import cheshire_pkg::*; #(
   );
 
   // Debug Transfer Module and JTAG interface
-  dmi_jtag #(
+  // For BSCAN targets, mark with (* keep *) to prevent the TAP control signals
+  // from being optimized away. In BSCAN mode, dmi_jtag_tap is replaced with dmi_bscane_tap
+  // which instantiates BSCANE2 primitives. These must stay connected to the TAP state machine.
+  (* keep = "true" *) dmi_jtag #(
     .IdcodeValue  ( Cfg.DbgIdCode )
   ) i_dbg_dmi_jtag (
     .clk_i,
