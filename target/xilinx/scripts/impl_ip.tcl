@@ -6,6 +6,7 @@
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 # Yvan Tortorella <yvan.tortorella@gmail.com>
+# Seyyid Hikmet Celik <seyyid4091@gmail.com>
 
 # Initialize implementation
 set xilinx_root [file dirname [file dirname [file normalize [info script]]]]
@@ -125,6 +126,41 @@ switch $proj {
                     CONFIG.CLKOUT4_PHASE_ERROR {154.678} \
                     ] [get_ips $proj]
             }
+            vcu108 {
+                set_property -dict [list \
+                    CONFIG.PRIM_IN_FREQ {300.120} \
+                    CONFIG.PRIM_SOURCE {No_buffer} \
+                    CONFIG.NUM_OUT_CLKS {4} \
+                    CONFIG.CLK_OUT1_PORT {clk_50} \
+                    CONFIG.CLK_OUT2_PORT {clk_48} \
+                    CONFIG.CLK_OUT3_PORT {clk_20} \
+                    CONFIG.CLK_OUT4_PORT {clk_10} \
+                    CONFIG.MMCM_DIVCLK_DIVIDE {1} \
+                    CONFIG.MMCM_CLKFBOUT_MULT_F {4.000} \
+                    CONFIG.MMCM_CLKIN1_PERIOD {3.332} \
+                    CONFIG.MMCM_CLKIN2_PERIOD {10.0} \
+                    CONFIG.MMCM_CLKOUT0_DIVIDE_F {24.000} \
+                    CONFIG.MMCM_CLKOUT1_DIVIDE {25} \
+                    CONFIG.MMCM_CLKOUT2_DIVIDE {60} \
+                    CONFIG.MMCM_CLKOUT3_DIVIDE {120} \
+                    CONFIG.CLKIN1_JITTER_PS {33.32} \
+                    CONFIG.CLKOUT1_JITTER {116.392} \
+                    CONFIG.CLKOUT1_PHASE_ERROR {77.820} \
+                    CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {50.000} \
+                    CONFIG.CLKOUT2_JITTER {117.345} \
+                    CONFIG.CLKOUT2_PHASE_ERROR {77.820} \
+                    CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {48.000} \
+                    CONFIG.CLKOUT2_USED {true} \
+                    CONFIG.CLKOUT3_JITTER {139.994} \
+                    CONFIG.CLKOUT3_PHASE_ERROR {77.820} \
+                    CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {20.000} \
+                    CONFIG.CLKOUT3_USED {true} \
+                    CONFIG.CLKOUT4_JITTER {160.538} \
+                    CONFIG.CLKOUT4_PHASE_ERROR {77.820} \
+                    CONFIG.CLKOUT4_REQUESTED_OUT_FREQ {10.000} \
+                    CONFIG.CLKOUT4_USED {true} \
+                    ] [get_ips $proj]
+            }
             default { nocfgexit $proj $board }
         }
     }
@@ -143,6 +179,7 @@ switch $proj {
                     CONFIG.C_NUM_PROBE_IN {0} \
                     ] [get_ips $proj]
             }
+            vcu108 -
             vcu118 -
             vcu128 {
                 set_property -dict [list \
@@ -220,6 +257,22 @@ switch $proj {
                     CONFIG.C0.DDR4_AxiIDWidth {8} \
                     CONFIG.C0.BANK_GROUP_WIDTH {1} \
                     CONFIG.C0.DDR4_AxiSelection {true} \
+                    ] [get_ips $proj]
+            }
+            vcu108 {
+                set_property -dict [list \
+                    CONFIG.System_Clock {No_Buffer} \
+                    CONFIG.C0.DDR4_InputClockPeriod {3332} \
+                    CONFIG.C0_CLOCK_BOARD_INTERFACE {default_sysclk1_300} \
+                    CONFIG.RESET_BOARD_INTERFACE {reset} \
+                    CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram_c1_DR} \
+                    CONFIG.C0.DDR4_MemoryPart {EDY4016AABG-DR-F} \
+                    CONFIG.C0.DDR4_AxiAddressWidth {31} \
+                    CONFIG.C0.DDR4_AxiDataWidth {512} \
+                    CONFIG.C0.DDR4_AxiIDWidth {8} \
+                    CONFIG.C0.DDR4_AxiSelection {true} \
+                    CONFIG.C0.DDR4_DataWidth {64} \
+                    CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
                     ] [get_ips $proj]
             }
             default { nocfgexit $proj $board }
