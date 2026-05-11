@@ -295,6 +295,130 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     $display("[JTAG] Initialization success");
   endtask
 
+  //YIZHEN
+  //////////////////////////
+  //  JTAG Debug Helpers  //
+  //////////////////////////
+
+  localparam logic [15:0] CsrDcsr    = 16'h7b0;
+  localparam logic [15:0] CsrDpc     = 16'h7b1;
+
+  localparam logic [2:0] DcsrCauseHaltreq  = 3'd3;
+  // localparam logic [2:0] DcsrCauseStep     = 3'd4;
+  // localparam logic [2:0] DcsrCauseResethalt = 3'd5;
+
+  // Access Register abstract command:
+  // cmdtype=0, aarsize=3 for RV64, transfer=1, write=wr, regno=CSR/GPR number.
+  function automatic word_bt jtag_abs_access_reg_cmd(
+    input bit          wr,
+    input logic [15:0] regno
+  );
+    return (word_bt'(3) << 20) |
+           (word_bt'(1) << 17) |
+           (word_bt'(wr) << 16) |
+           word_bt'(regno);
+  endfunction
+
+  task automatic jtag_read_csr64(
+    input  logic [15:0] csr,
+    output doub_bt      value
+  );
+    word_bt lo;
+    word_bt hi;
+
+    jtag_write(dm::Command, jtag_abs_access_reg_cmd(1'b0, csr), 1, 0);
+    jtag_dbg.read_dmi_exp_backoff(dm::Data0, lo);
+    jtag_dbg.read_dmi_exp_backoff(dm::Data1, hi);
+
+    value = {hi, lo};
+  endtask
+
+  task automatic jtag_write_csr64(
+    input logic [15:0] csr,
+    input doub_bt      value
+  );
+    jtag_write(dm::Data0, value[31:0]);
+    jtag_write(dm::Data1, value[63:32]);
+    jtag_write(dm::Command, jtag_abs_access_reg_cmd(1'b1, csr), 1, 0);
+  endtask
+
+  task automatic jtag_wait_allhalted();
+    dm::dmstatus_t status;
+
+    do begin
+      jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
+    end while (~status.allhalted);
+  endtask
+
+  task automatic jtag_wait_allresumeack();
+    dm::dmstatus_t status;
+
+    do begin
+      jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
+    end while (~status.allresumeack);
+  endtask
+
+  task automatic jtag_haltreq_debug_entry_test(input string binary);
+    // dm::dmstatus_t status;
+    doub_bt entry;
+    doub_bt dcsr;
+    doub_bt dpc;
+
+    if (DutCfg.LlcNotBypass) begin
+      word_bt regval;
+      $display("[JTAG-DBG] Wait for LLC configuration");
+      jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
+    end
+
+    $display("[JTAG-DBG] Haltreq debug entry test start");
+
+    // Halt hart 0
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1'b1, dmactive: 1'b1, default: '0});
+    jtag_wait_allhalted();
+    $display("[JTAG-DBG] Hart halted by haltreq");
+
+    // Clear haltreq before abstract CSR accesses
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{dmactive: 1'b1, default: '0});
+
+    // Load ELF while hart is halted
+    jtag_elf_preload(binary, entry);
+    $display("[JTAG-DBG] ELF entry = 0x%h", entry);
+
+    // Set dpc = entry
+    $display("[JTAG-DBG] Writing DPC");
+    jtag_write_csr64(CsrDpc, entry);
+    $display("[JTAG-DBG] DPC written");
+
+    // Check dcsr and dpc
+    jtag_read_csr64(CsrDcsr, dcsr);
+    jtag_read_csr64(CsrDpc,  dpc);
+
+    $display("[JTAG-DBG] dcsr = 0x%h", dcsr);
+    $display("[JTAG-DBG] dpc  = 0x%h", dpc);
+
+    if (dcsr[8:6] != DcsrCauseHaltreq) begin
+      $fatal(1,
+        "[JTAG-DBG] Wrong dcsr.cause. Expected haltreq cause=3, got %0d, dcsr=0x%h",
+        dcsr[8:6], dcsr);
+    end
+
+    if (dpc != entry) begin
+      $fatal(1,
+        "[JTAG-DBG] DPC mismatch. Expected 0x%h, got 0x%h",
+        entry, dpc);
+    end
+
+    $display("[JTAG-DBG] Haltreq debug entry test passed");
+
+    // Resume and let program run
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1'b1, dmactive: 1'b1, default: '0});
+    jtag_wait_allresumeack();
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{dmactive: 1'b1, default: '0});
+
+    $display("[JTAG-DBG] Resumed hart 0 from 0x%h", entry);
+  endtask
+  //YIZHEN
+
   // Load a binary
   task automatic jtag_elf_preload(input string binary, output doub_bt entry);
     longint sec_addr, sec_len;
@@ -341,6 +465,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     // Repoint execution
     jtag_write(dm::Data1, entry[63:32]);
     jtag_write(dm::Data0, entry[31:0]);
+    //TODO:check if it is 0,1 or 1,0 for the 3rd and 4th argument
     jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
     // Resume hart 0
     jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
