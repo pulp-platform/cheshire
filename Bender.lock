@@ -101,7 +101,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: c8d66b5f5a32e54fc663cc026acf0c6599c5a69e
+    revision: cf630690a8c5f017dbb3b96c3fdbe4eceb384b5d
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -111,7 +111,6 @@ packages:
     - clic
     - common_cells
     - common_verification
-    - fpnew
     - register_interface
     - tech_cells_generic
   dram_rtl_sim:
@@ -121,21 +120,6 @@ packages:
       Git: https://github.com/pulp-platform/dram_rtl_sim.git
     dependencies:
     - axi
-  fpnew:
-    revision: 58ca3c376beb914b2b80b811d4b270c063d4e6f7
-    version: null
-    source:
-      Git: https://github.com/openhwgroup/cvfpu.git
-    dependencies:
-    - common_cells
-    - fpu_div_sqrt_mvp
-  fpu_div_sqrt_mvp:
-    revision: 86e1f558b3c95e91577c41b2fc452c86b04e85ac
-    version: 1.0.4
-    source:
-      Git: https://github.com/pulp-platform/fpu_div_sqrt_mvp.git
-    dependencies:
-    - common_cells
   idma:
     revision: 28a36e5e07705549e59fc33db96ab681bc1ca88e
     version: 0.6.5
