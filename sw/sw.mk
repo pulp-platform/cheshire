@@ -159,8 +159,9 @@ $(foreach link,$(CHS_SW_LINK_MODES),$(eval $(call chs_sw_ld_elf_rule,$(link))))
 # Images from CVA6 SDK (built externally)
 CHS_CVA6_SDK_IMGS ?= $(addprefix $(CHS_SW_DIR)/deps/cva6-sdk/install64/,fw_payload.bin uImage)
 
-# Create full Linux disk image
-$(CHS_SW_DIR)/boot/linux.%.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CHS_SW_DIR)/boot/cheshire.%.dtb $(CHS_CVA6_SDK_IMGS)
+# Create full Linux disk image (DTB from FPGA flow: target/xilinx/out/cheshire.%.dtb)
+$(CHS_SW_DIR)/boot/linux.%.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin \
+		$(CHS_ROOT)/target/xilinx/out/cheshire.%.dtb $(CHS_CVA6_SDK_IMGS)
 	truncate -s $(CHS_SW_DISK_SIZE) $@
 	sgdisk --clear -g --set-alignment=1 \
 		--new=1:64:96 --typecode=1:$(CHS_SW_ZSL_TGUID) \
