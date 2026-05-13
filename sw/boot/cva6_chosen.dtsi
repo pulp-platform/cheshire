@@ -1,0 +1,9 @@
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+//
+// Selects which CVA6 CPU fragment is included (cva6.dtsi vs cva6_cmo.dtsi).
+// For FPGA bitstream builds, xilinx.mk stages DTS under target/xilinx/out/.dtb/<board>/ (see xilinx.mk)
+// and sets the /include/ from CHS_BENDER_RTL_FLAGS ("hpdcache" anywhere → cva6_cmo.dtsi, else cva6.dtsi).
+
+/include/ "cva6.dtsi"

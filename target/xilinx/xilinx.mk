@@ -49,6 +49,29 @@ $(CHS_XILINX_DIR)/build/%/out.xci: \
 
 CHS_XILINX_BOARDS := genesys2 vcu128 vcu118
 
+# Per-board DTB and decompiled DTS under out/ (like bitstreams). Staged copy under out/.dtb/<board>/
+# holds cheshire*.dts + cva6*.dtsi so dtc resolves /include/ there (dtc always searches the main .dts
+# directory before -i paths, so compiling from sw/boot would ignore the sed-adjusted cva6_chosen).
+# $$(if …) is expanded when the recipe runs so CLI CHS_BENDER_RTL_FLAGS is honored.
+# FORCE: DTB must track CHS_BENDER_RTL_FLAGS, which is not a file prerequisite.
+define chs_xilinx_fpga_dtb_rule
+$$(CHS_XILINX_DIR)/out/cheshire.$(1).dtb: $$(CHS_SW_DIR)/boot/cheshire.$(1).dts \
+		$$(CHS_SW_DIR)/boot/cheshire.dtsi $$(CHS_SW_DIR)/boot/cva6_chosen.dtsi \
+		$$(CHS_SW_DIR)/boot/cva6.dtsi $$(CHS_SW_DIR)/boot/cva6_cmo.dtsi
+	@mkdir -p $$(CHS_XILINX_DIR)/out $$(CHS_XILINX_DIR)/out/.dtb/$(1)
+	cp -f $$(CHS_SW_DIR)/boot/cheshire.$(1).dts $$(CHS_SW_DIR)/boot/cheshire.dtsi \
+		$$(CHS_SW_DIR)/boot/cva6.dtsi $$(CHS_SW_DIR)/boot/cva6_cmo.dtsi \
+		$$(CHS_XILINX_DIR)/out/.dtb/$(1)/
+	sed '/^\/include\// s|"[^"]*"|"$$(if $$(findstring hpdcache,$$(CHS_BENDER_RTL_FLAGS)),cva6_cmo.dtsi,cva6.dtsi)"|' \
+		$$(CHS_SW_DIR)/boot/cva6_chosen.dtsi > $$(CHS_XILINX_DIR)/out/.dtb/$(1)/cva6_chosen.dtsi
+	$$(CHS_SW_DTC) -I dts -O dtb -o $$@ \
+		-i $$(CHS_XILINX_DIR)/out/.dtb/$(1) \
+		$$(CHS_XILINX_DIR)/out/.dtb/$(1)/cheshire.$(1).dts
+	$$(CHS_SW_DTC) -I dtb -O dts -o $$(CHS_XILINX_DIR)/out/cheshire.$(1).from-dtb.dts $$@
+endef
+
+$(foreach board,$(CHS_XILINX_BOARDS),$(eval $(call chs_xilinx_fpga_dtb_rule,$(board))))
+
 CHS_XILINX_IPS_genesys2 := clkwiz vio mig7s
 CHS_XILINX_IPS_vcu128   := clkwiz vio ddr4
 CHS_XILINX_IPS_vcu118   := clkwiz vio ddr4
@@ -57,9 +80,16 @@ $(CHS_XILINX_DIR)/scripts/add_sources.%.tcl: $(CHS_ROOT)/Bender.yml $(CHS_XILINX
 	$(BENDER) script vivado -t fpga -t $* $(CHS_BENDER_RTL_FLAGS) > $@
 
 define chs_xilinx_bit_rule
+# Phony prereq of %.$(1).bit: remove stale DTB so dtc + sed see current CHS_BENDER_RTL_FLAGS.
+# _FPGA_DTB_$(1) is per-board (foreach+eval overwrites a bare _FPGA_DTB).
+_FPGA_DTB_$(1) := $$(CHS_XILINX_DIR)/out/cheshire.$(1).dtb
+CHS_PHONY += chs-xilinx-clean-artifact-$(1)
+chs-xilinx-clean-artifact-$(1):
+	@rm -f $$(_FPGA_DTB_$(1))
 $$(CHS_XILINX_DIR)/out/%.$(1).bit: \
 		$$(CHS_XILINX_DIR)/scripts/impl_sys.tcl \
 		$$(CHS_XILINX_DIR)/scripts/add_sources.$(1).tcl \
+		$$(_FPGA_DTB_$(1)) \
 		$$(CHS_XILINX_IPS_$(1):%=$(CHS_XILINX_DIR)/build/$(1).%/out.xci) \
 		$$(CHS_HW_ALL) \
 		| $$(CHS_XILINX_DIR)/build/$(1).%/
@@ -68,7 +98,7 @@ $$(CHS_XILINX_DIR)/out/%.$(1).bit: \
 		-tclargs $(1) $$* $$(CHS_XILINX_IPS_$(1):%=$$(CHS_XILINX_DIR)/build/$(1).%/out.xci)
 
 CHS_PHONY += chs-xilinx-$(1)
-chs-xilinx-$(1): $$(CHS_XILINX_DIR)/out/cheshire.$(1).bit
+chs-xilinx-$(1): chs-xilinx-clean-artifact-$(1) $$(CHS_XILINX_DIR)/out/cheshire.$(1).bit
 endef
 
 $(foreach board,$(CHS_XILINX_BOARDS),$(eval $(call chs_xilinx_bit_rule,$(board))))
