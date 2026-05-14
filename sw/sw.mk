@@ -157,7 +157,7 @@ $(foreach link,$(CHS_SW_LINK_MODES),$(eval $(call chs_sw_ld_elf_rule,$(link))))
 	$(CHS_SW_OBJCOPY) -I binary -O verilog $< $@
 
 # Images from CVA6 SDK (built externally)
-CHS_CVA6_SDK_IMGS ?= $(addprefix $(CHS_SW_DIR)/deps/cva6-sdk/install64/,fw_payload.bin uImage)
+CHS_CVA6_SDK_IMGS ?= $(addprefix $(CHS_SW_DIR)/deps/pulp-linux/output/cheshire-fence/images/,fw_payload.bin uImage)
 
 # Create full Linux disk image (DTB from FPGA flow: target/xilinx/out/cheshire.%.dtb)
 $(CHS_SW_DIR)/boot/linux.%.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin \
