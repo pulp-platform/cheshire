@@ -83,6 +83,7 @@ package cheshire_pkg;
     shrt_bt Cva6LockableTlbWays;
     bit     Cva6UseSharedTlb;
     shrt_bt Cva6SharedTlbDepth;
+    bit     Cva6DcacheFlushOnFence;
     // Hart parameters
     bit [MaxCoresWidth-1:0] NumCores;
     doub_bt NumExtIrqHarts;
@@ -541,7 +542,7 @@ package cheshire_pkg;
     ret.LockableTlbWays       = cfg.Cva6LockableTlbWays;
     ret.UseSharedTlb          = cfg.Cva6UseSharedTlb;
     ret.SharedTlbDepth        = cfg.Cva6SharedTlbDepth;
-    ret.DcacheFlushOnFence    = 1'b1;
+    ret.DcacheFlushOnFence    = cfg.Cva6DcacheFlushOnFence;
     // Return modified config
     return ret;
   endfunction
@@ -568,8 +569,9 @@ package cheshire_pkg;
     Cva6TlbColoring     : 0,
     Cva6NumTlbColors    : 1,
     Cva6LockableTlbWays : 0,
-    Cva6UseSharedTlb    : 1,
-    Cva6SharedTlbDepth  : 64,
+    Cva6UseSharedTlb       : 1,
+    Cva6SharedTlbDepth     : 64,
+    Cva6DcacheFlushOnFence : 1,
     // Harts
     NumCores          : 1,
     CoreMaxTxns       : 8,
