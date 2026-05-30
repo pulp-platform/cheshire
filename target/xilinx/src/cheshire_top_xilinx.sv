@@ -17,9 +17,9 @@
 module cheshire_top_xilinx import cheshire_pkg::*; #(
 `ifdef TARGET_VCU128
   localparam int unsigned Ddr4CsNWidth = 2,
-  localparam int unsigned Ddr4DmDbiNWidth = 9,
-  localparam int unsigned Ddr4DqWidth = 72,
-  localparam int unsigned Ddr4DqsWidth = 9
+  localparam int unsigned Ddr4DmDbiNWidth = 8,
+  localparam int unsigned Ddr4DqWidth = 64,
+  localparam int unsigned Ddr4DqsWidth = 8
 `else // Default to VCU118
   localparam int unsigned Ddr4CsNWidth = 1,
   localparam int unsigned Ddr4DmDbiNWidth = 8,

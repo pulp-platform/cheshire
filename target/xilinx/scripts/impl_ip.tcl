@@ -183,15 +183,15 @@ switch $proj {
             vcu128 {
                 set_property -dict [list \
                     CONFIG.C0.DDR4_Clamshell {true} \
-                    CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram} \
+                    CONFIG.C0_DDR4_BOARD_INTERFACE {Custom} \
                     CONFIG.System_Clock {No_Buffer} \
                     CONFIG.Reference_Clock {No_Buffer} \
                     CONFIG.C0.DDR4_InputClockPeriod {10000} \
                     CONFIG.C0.DDR4_CLKOUT0_DIVIDE {3} \
                     CONFIG.C0.DDR4_MemoryPart {MT40A512M16HA-075E} \
-                    CONFIG.C0.DDR4_DataWidth {72} \
-                    CONFIG.C0.DDR4_DataMask {NO_DM_NO_DBI} \
-                    CONFIG.C0.DDR4_Ecc {true} \
+                    CONFIG.C0.DDR4_DataWidth {64} \
+                    CONFIG.C0.DDR4_DataMask {DM_NO_DBI} \
+                    CONFIG.C0.DDR4_Ecc {false} \
                     CONFIG.C0.DDR4_AxiDataWidth {512} \
                     CONFIG.C0.DDR4_AxiAddressWidth {32} \
                     CONFIG.C0.DDR4_AxiIDWidth {8} \
