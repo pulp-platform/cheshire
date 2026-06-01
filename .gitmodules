@@ -2,10 +2,6 @@
 	path = sw/deps/printf
 	url = https://github.com/mpaland/printf
 	ignore = dirty
-[submodule "sw/deps/cva6-sdk"]
-	path = sw/deps/cva6-sdk
-	url = https://github.com/pulp-platform/cva6-sdk.git
-	ignore = dirty
 [submodule "sw/deps/pulp-linux"]
 	path = sw/deps/pulp-linux
 	url = git@github.com:pulp-platform/pulp-linux.git
