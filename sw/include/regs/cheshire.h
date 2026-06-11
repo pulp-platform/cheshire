@@ -56,20 +56,15 @@ typedef struct __attribute__ ((__packed__)) {
     uint32_t mem[65536];
 } cheshire__bootrom_t;
 
-// Reg - cheshire.clint.status
-#define CHESHIRE__CLINT__STATUS__STATUS_bm 0xffffffff
-#define CHESHIRE__CLINT__STATUS__STATUS_bp 0
-#define CHESHIRE__CLINT__STATUS__STATUS_bw 32
-#define CHESHIRE__CLINT__STATUS__STATUS_reset 0x0
-// Reg - clint::msip
-#define CLINT__MSIP__PENDING_bm 0x1
-#define CLINT__MSIP__PENDING_bp 0
-#define CLINT__MSIP__PENDING_bw 1
-#define CLINT__MSIP__PENDING_reset 0x0
-#define CLINT__MSIP__RSVD_bm 0xfffffffe
-#define CLINT__MSIP__RSVD_bp 1
-#define CLINT__MSIP__RSVD_bw 31
-#define CLINT__MSIP__RSVD_reset 0x0
+// Reg - cheshire.clint.msip[]
+#define CHESHIRE__CLINT__MSIPX__PENDING_bm 0x1
+#define CHESHIRE__CLINT__MSIPX__PENDING_bp 0
+#define CHESHIRE__CLINT__MSIPX__PENDING_bw 1
+#define CHESHIRE__CLINT__MSIPX__PENDING_reset 0x0
+#define CHESHIRE__CLINT__MSIPX__RSVD_bm 0xfffffffe
+#define CHESHIRE__CLINT__MSIPX__RSVD_bp 1
+#define CHESHIRE__CLINT__MSIPX__RSVD_bw 31
+#define CHESHIRE__CLINT__MSIPX__RSVD_reset 0x0
 typedef union {
     struct __attribute__ ((__packed__)) {
         uint32_t pending :1;
@@ -119,37 +114,6 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__clint__mtimecmpx_t mtimecmp[1];
     uint8_t RESERVED_4008_bff7[0x7ff0];
     cheshire__clint__mtime_t mtime;
-} cheshire__clint_t;
-
-// Reg - cheshire.irq_router.status
-#define CHESHIRE__IRQ_ROUTER__STATUS__STATUS_bm 0xffffffff
-#define CHESHIRE__IRQ_ROUTER__STATUS__STATUS_bp 0
-#define CHESHIRE__IRQ_ROUTER__STATUS__STATUS_bw 32
-#define CHESHIRE__IRQ_ROUTER__STATUS__STATUS_reset 0x0
-typedef union {
-    struct __attribute__ ((__packed__)) {
-        uint32_t status :32;
-    } f;
-    uint32_t w;
-} cheshire__clint__status_t;
-
-// Reg - cheshire.clint._end
-#define CHESHIRE__CLINT___END___END_bm 0xffffffff
-#define CHESHIRE__CLINT___END___END_bp 0
-#define CHESHIRE__CLINT___END___END_bw 32
-#define CHESHIRE__CLINT___END___END_reset 0x0
-typedef union {
-    struct __attribute__ ((__packed__)) {
-        uint32_t _end :32;
-    } f;
-    uint32_t w;
-} cheshire__clint___end_t;
-
-// Addrmap - cheshire.clint
-typedef struct __attribute__ ((__packed__)) {
-    cheshire__clint__status_t status;
-    uint8_t RESERVED_4_3fffb[0x3fff8];
-    cheshire__clint___end_t _end;
 } cheshire__clint_t;
 
 // Reg - cheshire.irq_router.status
@@ -1061,6 +1025,7 @@ typedef struct __attribute__ ((__packed__)) {
     uint8_t RESERVED_1001000_1ffffff[0xfff000];
     cheshire__bootrom_t bootrom;
     cheshire__clint_t clint;
+    uint8_t RESERVED_204c000_207ffff[0x34000];
     cheshire__irq_router_t irq_router;
     cheshire__axirt_t axirt;
     uint8_t RESERVED_2100000_2ffffff[0xf00000];
