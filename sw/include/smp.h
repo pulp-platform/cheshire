@@ -1,6 +1,9 @@
-// Copyright 2023 ETH Zurich and University of Bologna.
+// Copyright 2022 ETH Zurich and University of Bologna.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// Emanuele Parisi <emanuele.parisi@unibo.it>
+// Enrico Zelioli <ezelioli@iis.ee.ethz.ch>
 
 #pragma once
 
@@ -9,41 +12,20 @@
 #define NONSMP_HART 0
 #endif
 
-// Let non-SMP hart continue and all other harts jump (and loop) in smp_resume
-#define smp_pause(reg1, reg2) \
-    li reg2, 0x8; \
-    csrw mie, reg2; \
-    li reg1, NONSMP_HART; \
-    csrr reg2, mhartid; \
-    bne reg1, reg2, 2f
+#ifndef __ASSEMBLER__
 
-#define smp_resume(reg1, reg2, reg3) \
-    la reg1, __clint_base_addr__; \
-    la reg3, __regs_base_addr__; \
-    lw reg3, 76(reg3); /* regs.NUM_INT_HARTS */ \
-    slli reg3, reg3, 2; \
-    add reg3, reg1, reg3; \
-    1:; \
-    li reg2, 1; \
-    sw reg2, 0(reg1); \
-    addi reg1, reg1, 4; \
-    blt reg1, reg3, 1b; \
-    2:; \
-    wfi; \
-    csrr reg2, mip; \
-    andi reg2, reg2, 0x8; \
-    beqz reg2, 2b; \
-    la reg1, __clint_base_addr__; \
-    csrr reg2, mhartid; \
-    slli reg2, reg2, 2; \
-    add reg2, reg2, reg1; \
-    sw zero, 0(reg2); \
-    la reg3, __regs_base_addr__; \
-    lw reg3, 76(reg3); /* regs.NUM_INT_HARTS */ \
-    slli reg3, reg3, 2; \
-    add reg3, reg1, reg3; \
-    3:; \
-    lw reg2, 0(reg1); \
-    bnez reg2, 3b; \
-    addi reg1, reg1, 4; \
-    blt reg1, reg3, 3b
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "util.h"
+#include "params.h"
+
+// Resume all harts by sending them an IPI via the CLINT, then waiting for each
+// to acknowledge. Hart 0 is skipped (it is the caller).
+void smp_resume(void);
+
+void smp_barrier_init(void);
+void smp_barrier_up(uint64_t n_processes);
+void smp_barrier_down(void);
+
+#endif // __ASSEMBLER__
