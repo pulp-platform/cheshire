@@ -372,63 +372,65 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     $display("[JTAG] Preload complete");
   endtask
 
-
-  // Waits for LLC config to finish and halts the core
-  task automatic jtag_wait_for_llc_config_halt();
-    dm::dmstatus_t status;
-    // Wait until bootrom initialized LLC
+  // Wait until bootrom initialized LLC
+  task automatic jtag_wait_for_llc_config();
     if (DutCfg.LlcNotBypass) begin
       word_bt regval;
       $display("[JTAG] Wait for LLC configuration");
       jtag_poll_bit0(LLC_BASE_ADDR + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
     end
-    // Halt hart 0
-    jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, default: '0});
+  endtask
+
+  // Halt a hart
+  task automatic jtag_halt(input int unsigned hart_id, output dm::dmstatus_t status);
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, hartsello: hart_id, default: '0});
     do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
     while (~status.allhalted);
-    $display("[JTAG] Halted hart 0");
+    $display("[JTAG] Halted hart %0d", hart_id);
   endtask
 
-
-  // Halt the core and preload a binary
-  task automatic jtag_elf_halt_load(input string binary, output doub_bt entry);
-    jtag_wait_for_llc_config_halt();
-    // Preload binary
-    jtag_elf_preload(binary, entry);
+  // Halt all cores
+  task automatic jtag_halt_all_cores();
+    for (int unsigned i = 0; i < DutCfg.NumCores; i++) begin
+      dm::dmstatus_t status;
+      jtag_halt(i, status);
+    end
   endtask
 
-  // Run a binary
+  // Repoint all halted cores to entry and resume them
+  task automatic jtag_run_all_harts(input doub_bt entry);
+    for (int unsigned i = 0; i < DutCfg.NumCores; i++) begin
+      dm::dmstatus_t status;
+      // Select hart i, repoint execution, and resume
+      jtag_write(dm::DMControl, dm::dmcontrol_t'{dmactive: 1, hartsello: i, default: '0});
+      jtag_write(dm::Data1, entry[63:32]);
+      jtag_write(dm::Data0, entry[31:0]);
+      jtag_write(dm::Command, 32'h0033_07b1, 1, 1);
+      jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, hartsello: i, default: '0});
+      do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
+      while (~status.allresumeack);
+      jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 0, dmactive: 1, hartsello: i, default: '0});
+      $display("[JTAG] Resumed hart %0d from 0x%h", i, entry);
+    end
+  endtask
+
+  // Run a binary preloaded via JTAG
   task automatic jtag_elf_run(input string binary);
     doub_bt entry;
-    jtag_elf_halt_load(binary, entry);
-    // Repoint execution
-    jtag_write(dm::Data1, entry[63:32]);
-    jtag_write(dm::Data0, entry[31:0]);
-    jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
-    // Resume hart 0
-    jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
-    $display("[JTAG] Resumed hart 0 from 0x%h", entry);
+    jtag_wait_for_llc_config();
+    jtag_halt_all_cores();
+    jtag_elf_preload(binary, entry);
+    jtag_run_all_harts(entry);
   endtask
 
-  // Run a binary that was preloaded with a different method
-  task automatic jtag_elf_run_no_preload(input string binary);
+  // Run a binary preloaded via memory backdoor
+  task automatic jtag_memh_run(input string binary);
     doub_bt entry;
+    jtag_wait_for_llc_config();
+    jtag_halt_all_cores();
+    memh_elf_preload(binary);
     void'(get_entry(entry));
-
-    if (entry == '0) begin
-      if (read_elf(binary))
-        $fatal(1, "[JTAG] Failed to open ELF: %s!", binary);
-      else
-        void'(get_entry(entry));
-    end
-
-    // Repoint execution
-    jtag_write(dm::Data1, entry[63:32]);
-    jtag_write(dm::Data0, entry[31:0]);
-    jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
-    // Resume hart 0
-    jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
-    $display("[JTAG] Resumed hart 0 from 0x%h", entry);
+    jtag_run_all_harts(entry);
   endtask
 
   // Wait for termination signal and get return code

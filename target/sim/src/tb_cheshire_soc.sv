@@ -52,9 +52,7 @@ module tb_cheshire_soc #(
           fix.vip.uart_debug_elf_run_and_wait(preload_elf, exit_code);
         end 3: begin  // MEMH
           fix.vip.jtag_init();
-          fix.vip.jtag_wait_for_llc_config_halt();
-          fix.vip.memh_elf_preload(preload_elf);
-          fix.vip.jtag_elf_run_no_preload(preload_elf);
+          fix.vip.jtag_memh_run(preload_elf);
           fix.vip.jtag_wait_for_eoc(exit_code);
         end default: begin
           $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);
