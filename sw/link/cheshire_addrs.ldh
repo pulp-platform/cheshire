@@ -33,7 +33,7 @@ PROVIDE(__irq_router_base_addr__ = 0x02080000);
 PROVIDE(__irq_router_size__ = 0x00040000);
 
 PROVIDE(__axirt_base_addr__ = 0x020C0000);
-PROVIDE(__axirt_size__ = 0x00040000);
+PROVIDE(__axirt_size__ = 0x00000320);
 
 PROVIDE(__regs_base_addr__ = 0x03000000);
 PROVIDE(__regs_size__ = 0x0000005C);
@@ -93,9 +93,276 @@ PROVIDE(__irq_router_status_base_addr__ = 0x02080000);
 
 PROVIDE(__irq_router__end_base_addr__ = 0x020BFFFC);
 
-PROVIDE(__axirt_status_base_addr__ = 0x020C0000);
+PROVIDE(__axirt_major_version_base_addr__ = 0x020C0000);
 
-PROVIDE(__axirt__end_base_addr__ = 0x020FFFFC);
+PROVIDE(__axirt_minor_version_base_addr__ = 0x020C0004);
+
+PROVIDE(__axirt_patch_version_base_addr__ = 0x020C0008);
+
+PROVIDE(__axirt_rt_enable_0_base_addr__ = 0x020C000C);
+PROVIDE(__axirt_rt_enable_1_base_addr__ = 0x020C0010);
+PROVIDE(__axirt_rt_enable_2_base_addr__ = 0x020C0014);
+PROVIDE(__axirt_rt_enable_3_base_addr__ = 0x020C0018);
+PROVIDE(__axirt_rt_enable_4_base_addr__ = 0x020C001C);
+PROVIDE(__axirt_rt_enable_5_base_addr__ = 0x020C0020);
+PROVIDE(__axirt_rt_enable_num__ = 0x00000006);
+PROVIDE(__axirt_rt_enable_stride__ = 0x00000004);
+
+PROVIDE(__axirt_rt_bypassed_0_base_addr__ = 0x020C0024);
+PROVIDE(__axirt_rt_bypassed_1_base_addr__ = 0x020C0028);
+PROVIDE(__axirt_rt_bypassed_2_base_addr__ = 0x020C002C);
+PROVIDE(__axirt_rt_bypassed_3_base_addr__ = 0x020C0030);
+PROVIDE(__axirt_rt_bypassed_4_base_addr__ = 0x020C0034);
+PROVIDE(__axirt_rt_bypassed_5_base_addr__ = 0x020C0038);
+PROVIDE(__axirt_rt_bypassed_num__ = 0x00000006);
+PROVIDE(__axirt_rt_bypassed_stride__ = 0x00000004);
+
+PROVIDE(__axirt_len_limit_0_base_addr__ = 0x020C003C);
+PROVIDE(__axirt_len_limit_1_base_addr__ = 0x020C0040);
+PROVIDE(__axirt_len_limit_2_base_addr__ = 0x020C0044);
+PROVIDE(__axirt_len_limit_3_base_addr__ = 0x020C0048);
+PROVIDE(__axirt_len_limit_4_base_addr__ = 0x020C004C);
+PROVIDE(__axirt_len_limit_5_base_addr__ = 0x020C0050);
+PROVIDE(__axirt_len_limit_num__ = 0x00000006);
+PROVIDE(__axirt_len_limit_stride__ = 0x00000004);
+
+PROVIDE(__axirt_imtu_enable_0_base_addr__ = 0x020C0054);
+PROVIDE(__axirt_imtu_enable_1_base_addr__ = 0x020C0058);
+PROVIDE(__axirt_imtu_enable_2_base_addr__ = 0x020C005C);
+PROVIDE(__axirt_imtu_enable_3_base_addr__ = 0x020C0060);
+PROVIDE(__axirt_imtu_enable_4_base_addr__ = 0x020C0064);
+PROVIDE(__axirt_imtu_enable_5_base_addr__ = 0x020C0068);
+PROVIDE(__axirt_imtu_enable_num__ = 0x00000006);
+PROVIDE(__axirt_imtu_enable_stride__ = 0x00000004);
+
+PROVIDE(__axirt_imtu_abort_0_base_addr__ = 0x020C006C);
+PROVIDE(__axirt_imtu_abort_1_base_addr__ = 0x020C0070);
+PROVIDE(__axirt_imtu_abort_2_base_addr__ = 0x020C0074);
+PROVIDE(__axirt_imtu_abort_3_base_addr__ = 0x020C0078);
+PROVIDE(__axirt_imtu_abort_4_base_addr__ = 0x020C007C);
+PROVIDE(__axirt_imtu_abort_5_base_addr__ = 0x020C0080);
+PROVIDE(__axirt_imtu_abort_num__ = 0x00000006);
+PROVIDE(__axirt_imtu_abort_stride__ = 0x00000004);
+
+PROVIDE(__axirt_start_addr_sub_low_0_base_addr__ = 0x020C0084);
+PROVIDE(__axirt_start_addr_sub_low_1_base_addr__ = 0x020C0088);
+PROVIDE(__axirt_start_addr_sub_low_2_base_addr__ = 0x020C008C);
+PROVIDE(__axirt_start_addr_sub_low_3_base_addr__ = 0x020C0090);
+PROVIDE(__axirt_start_addr_sub_low_4_base_addr__ = 0x020C0094);
+PROVIDE(__axirt_start_addr_sub_low_5_base_addr__ = 0x020C0098);
+PROVIDE(__axirt_start_addr_sub_low_6_base_addr__ = 0x020C009C);
+PROVIDE(__axirt_start_addr_sub_low_7_base_addr__ = 0x020C00A0);
+PROVIDE(__axirt_start_addr_sub_low_8_base_addr__ = 0x020C00A4);
+PROVIDE(__axirt_start_addr_sub_low_9_base_addr__ = 0x020C00A8);
+PROVIDE(__axirt_start_addr_sub_low_10_base_addr__ = 0x020C00AC);
+PROVIDE(__axirt_start_addr_sub_low_11_base_addr__ = 0x020C00B0);
+PROVIDE(__axirt_start_addr_sub_low_num__ = 0x0000000C);
+PROVIDE(__axirt_start_addr_sub_low_stride__ = 0x00000004);
+
+PROVIDE(__axirt_start_addr_sub_high_0_base_addr__ = 0x020C00B4);
+PROVIDE(__axirt_start_addr_sub_high_1_base_addr__ = 0x020C00B8);
+PROVIDE(__axirt_start_addr_sub_high_2_base_addr__ = 0x020C00BC);
+PROVIDE(__axirt_start_addr_sub_high_3_base_addr__ = 0x020C00C0);
+PROVIDE(__axirt_start_addr_sub_high_4_base_addr__ = 0x020C00C4);
+PROVIDE(__axirt_start_addr_sub_high_5_base_addr__ = 0x020C00C8);
+PROVIDE(__axirt_start_addr_sub_high_6_base_addr__ = 0x020C00CC);
+PROVIDE(__axirt_start_addr_sub_high_7_base_addr__ = 0x020C00D0);
+PROVIDE(__axirt_start_addr_sub_high_8_base_addr__ = 0x020C00D4);
+PROVIDE(__axirt_start_addr_sub_high_9_base_addr__ = 0x020C00D8);
+PROVIDE(__axirt_start_addr_sub_high_10_base_addr__ = 0x020C00DC);
+PROVIDE(__axirt_start_addr_sub_high_11_base_addr__ = 0x020C00E0);
+PROVIDE(__axirt_start_addr_sub_high_num__ = 0x0000000C);
+PROVIDE(__axirt_start_addr_sub_high_stride__ = 0x00000004);
+
+PROVIDE(__axirt_end_addr_sub_low_0_base_addr__ = 0x020C00E4);
+PROVIDE(__axirt_end_addr_sub_low_1_base_addr__ = 0x020C00E8);
+PROVIDE(__axirt_end_addr_sub_low_2_base_addr__ = 0x020C00EC);
+PROVIDE(__axirt_end_addr_sub_low_3_base_addr__ = 0x020C00F0);
+PROVIDE(__axirt_end_addr_sub_low_4_base_addr__ = 0x020C00F4);
+PROVIDE(__axirt_end_addr_sub_low_5_base_addr__ = 0x020C00F8);
+PROVIDE(__axirt_end_addr_sub_low_6_base_addr__ = 0x020C00FC);
+PROVIDE(__axirt_end_addr_sub_low_7_base_addr__ = 0x020C0100);
+PROVIDE(__axirt_end_addr_sub_low_8_base_addr__ = 0x020C0104);
+PROVIDE(__axirt_end_addr_sub_low_9_base_addr__ = 0x020C0108);
+PROVIDE(__axirt_end_addr_sub_low_10_base_addr__ = 0x020C010C);
+PROVIDE(__axirt_end_addr_sub_low_11_base_addr__ = 0x020C0110);
+PROVIDE(__axirt_end_addr_sub_low_num__ = 0x0000000C);
+PROVIDE(__axirt_end_addr_sub_low_stride__ = 0x00000004);
+
+PROVIDE(__axirt_end_addr_sub_high_0_base_addr__ = 0x020C0114);
+PROVIDE(__axirt_end_addr_sub_high_1_base_addr__ = 0x020C0118);
+PROVIDE(__axirt_end_addr_sub_high_2_base_addr__ = 0x020C011C);
+PROVIDE(__axirt_end_addr_sub_high_3_base_addr__ = 0x020C0120);
+PROVIDE(__axirt_end_addr_sub_high_4_base_addr__ = 0x020C0124);
+PROVIDE(__axirt_end_addr_sub_high_5_base_addr__ = 0x020C0128);
+PROVIDE(__axirt_end_addr_sub_high_6_base_addr__ = 0x020C012C);
+PROVIDE(__axirt_end_addr_sub_high_7_base_addr__ = 0x020C0130);
+PROVIDE(__axirt_end_addr_sub_high_8_base_addr__ = 0x020C0134);
+PROVIDE(__axirt_end_addr_sub_high_9_base_addr__ = 0x020C0138);
+PROVIDE(__axirt_end_addr_sub_high_10_base_addr__ = 0x020C013C);
+PROVIDE(__axirt_end_addr_sub_high_11_base_addr__ = 0x020C0140);
+PROVIDE(__axirt_end_addr_sub_high_num__ = 0x0000000C);
+PROVIDE(__axirt_end_addr_sub_high_stride__ = 0x00000004);
+
+PROVIDE(__axirt_write_budget_0_base_addr__ = 0x020C0144);
+PROVIDE(__axirt_write_budget_1_base_addr__ = 0x020C0148);
+PROVIDE(__axirt_write_budget_2_base_addr__ = 0x020C014C);
+PROVIDE(__axirt_write_budget_3_base_addr__ = 0x020C0150);
+PROVIDE(__axirt_write_budget_4_base_addr__ = 0x020C0154);
+PROVIDE(__axirt_write_budget_5_base_addr__ = 0x020C0158);
+PROVIDE(__axirt_write_budget_6_base_addr__ = 0x020C015C);
+PROVIDE(__axirt_write_budget_7_base_addr__ = 0x020C0160);
+PROVIDE(__axirt_write_budget_8_base_addr__ = 0x020C0164);
+PROVIDE(__axirt_write_budget_9_base_addr__ = 0x020C0168);
+PROVIDE(__axirt_write_budget_10_base_addr__ = 0x020C016C);
+PROVIDE(__axirt_write_budget_11_base_addr__ = 0x020C0170);
+PROVIDE(__axirt_write_budget_num__ = 0x0000000C);
+PROVIDE(__axirt_write_budget_stride__ = 0x00000004);
+
+PROVIDE(__axirt_read_budget_0_base_addr__ = 0x020C0174);
+PROVIDE(__axirt_read_budget_1_base_addr__ = 0x020C0178);
+PROVIDE(__axirt_read_budget_2_base_addr__ = 0x020C017C);
+PROVIDE(__axirt_read_budget_3_base_addr__ = 0x020C0180);
+PROVIDE(__axirt_read_budget_4_base_addr__ = 0x020C0184);
+PROVIDE(__axirt_read_budget_5_base_addr__ = 0x020C0188);
+PROVIDE(__axirt_read_budget_6_base_addr__ = 0x020C018C);
+PROVIDE(__axirt_read_budget_7_base_addr__ = 0x020C0190);
+PROVIDE(__axirt_read_budget_8_base_addr__ = 0x020C0194);
+PROVIDE(__axirt_read_budget_9_base_addr__ = 0x020C0198);
+PROVIDE(__axirt_read_budget_10_base_addr__ = 0x020C019C);
+PROVIDE(__axirt_read_budget_11_base_addr__ = 0x020C01A0);
+PROVIDE(__axirt_read_budget_num__ = 0x0000000C);
+PROVIDE(__axirt_read_budget_stride__ = 0x00000004);
+
+PROVIDE(__axirt_write_period_0_base_addr__ = 0x020C01A4);
+PROVIDE(__axirt_write_period_1_base_addr__ = 0x020C01A8);
+PROVIDE(__axirt_write_period_2_base_addr__ = 0x020C01AC);
+PROVIDE(__axirt_write_period_3_base_addr__ = 0x020C01B0);
+PROVIDE(__axirt_write_period_4_base_addr__ = 0x020C01B4);
+PROVIDE(__axirt_write_period_5_base_addr__ = 0x020C01B8);
+PROVIDE(__axirt_write_period_6_base_addr__ = 0x020C01BC);
+PROVIDE(__axirt_write_period_7_base_addr__ = 0x020C01C0);
+PROVIDE(__axirt_write_period_8_base_addr__ = 0x020C01C4);
+PROVIDE(__axirt_write_period_9_base_addr__ = 0x020C01C8);
+PROVIDE(__axirt_write_period_10_base_addr__ = 0x020C01CC);
+PROVIDE(__axirt_write_period_11_base_addr__ = 0x020C01D0);
+PROVIDE(__axirt_write_period_num__ = 0x0000000C);
+PROVIDE(__axirt_write_period_stride__ = 0x00000004);
+
+PROVIDE(__axirt_read_period_0_base_addr__ = 0x020C01D4);
+PROVIDE(__axirt_read_period_1_base_addr__ = 0x020C01D8);
+PROVIDE(__axirt_read_period_2_base_addr__ = 0x020C01DC);
+PROVIDE(__axirt_read_period_3_base_addr__ = 0x020C01E0);
+PROVIDE(__axirt_read_period_4_base_addr__ = 0x020C01E4);
+PROVIDE(__axirt_read_period_5_base_addr__ = 0x020C01E8);
+PROVIDE(__axirt_read_period_6_base_addr__ = 0x020C01EC);
+PROVIDE(__axirt_read_period_7_base_addr__ = 0x020C01F0);
+PROVIDE(__axirt_read_period_8_base_addr__ = 0x020C01F4);
+PROVIDE(__axirt_read_period_9_base_addr__ = 0x020C01F8);
+PROVIDE(__axirt_read_period_10_base_addr__ = 0x020C01FC);
+PROVIDE(__axirt_read_period_11_base_addr__ = 0x020C0200);
+PROVIDE(__axirt_read_period_num__ = 0x0000000C);
+PROVIDE(__axirt_read_period_stride__ = 0x00000004);
+
+PROVIDE(__axirt_write_budget_left_0_base_addr__ = 0x020C0204);
+PROVIDE(__axirt_write_budget_left_1_base_addr__ = 0x020C0208);
+PROVIDE(__axirt_write_budget_left_2_base_addr__ = 0x020C020C);
+PROVIDE(__axirt_write_budget_left_3_base_addr__ = 0x020C0210);
+PROVIDE(__axirt_write_budget_left_4_base_addr__ = 0x020C0214);
+PROVIDE(__axirt_write_budget_left_5_base_addr__ = 0x020C0218);
+PROVIDE(__axirt_write_budget_left_6_base_addr__ = 0x020C021C);
+PROVIDE(__axirt_write_budget_left_7_base_addr__ = 0x020C0220);
+PROVIDE(__axirt_write_budget_left_8_base_addr__ = 0x020C0224);
+PROVIDE(__axirt_write_budget_left_9_base_addr__ = 0x020C0228);
+PROVIDE(__axirt_write_budget_left_10_base_addr__ = 0x020C022C);
+PROVIDE(__axirt_write_budget_left_11_base_addr__ = 0x020C0230);
+PROVIDE(__axirt_write_budget_left_num__ = 0x0000000C);
+PROVIDE(__axirt_write_budget_left_stride__ = 0x00000004);
+
+PROVIDE(__axirt_read_budget_left_0_base_addr__ = 0x020C0234);
+PROVIDE(__axirt_read_budget_left_1_base_addr__ = 0x020C0238);
+PROVIDE(__axirt_read_budget_left_2_base_addr__ = 0x020C023C);
+PROVIDE(__axirt_read_budget_left_3_base_addr__ = 0x020C0240);
+PROVIDE(__axirt_read_budget_left_4_base_addr__ = 0x020C0244);
+PROVIDE(__axirt_read_budget_left_5_base_addr__ = 0x020C0248);
+PROVIDE(__axirt_read_budget_left_6_base_addr__ = 0x020C024C);
+PROVIDE(__axirt_read_budget_left_7_base_addr__ = 0x020C0250);
+PROVIDE(__axirt_read_budget_left_8_base_addr__ = 0x020C0254);
+PROVIDE(__axirt_read_budget_left_9_base_addr__ = 0x020C0258);
+PROVIDE(__axirt_read_budget_left_10_base_addr__ = 0x020C025C);
+PROVIDE(__axirt_read_budget_left_11_base_addr__ = 0x020C0260);
+PROVIDE(__axirt_read_budget_left_num__ = 0x0000000C);
+PROVIDE(__axirt_read_budget_left_stride__ = 0x00000004);
+
+PROVIDE(__axirt_write_period_left_0_base_addr__ = 0x020C0264);
+PROVIDE(__axirt_write_period_left_1_base_addr__ = 0x020C0268);
+PROVIDE(__axirt_write_period_left_2_base_addr__ = 0x020C026C);
+PROVIDE(__axirt_write_period_left_3_base_addr__ = 0x020C0270);
+PROVIDE(__axirt_write_period_left_4_base_addr__ = 0x020C0274);
+PROVIDE(__axirt_write_period_left_5_base_addr__ = 0x020C0278);
+PROVIDE(__axirt_write_period_left_6_base_addr__ = 0x020C027C);
+PROVIDE(__axirt_write_period_left_7_base_addr__ = 0x020C0280);
+PROVIDE(__axirt_write_period_left_8_base_addr__ = 0x020C0284);
+PROVIDE(__axirt_write_period_left_9_base_addr__ = 0x020C0288);
+PROVIDE(__axirt_write_period_left_10_base_addr__ = 0x020C028C);
+PROVIDE(__axirt_write_period_left_11_base_addr__ = 0x020C0290);
+PROVIDE(__axirt_write_period_left_num__ = 0x0000000C);
+PROVIDE(__axirt_write_period_left_stride__ = 0x00000004);
+
+PROVIDE(__axirt_read_period_left_0_base_addr__ = 0x020C0294);
+PROVIDE(__axirt_read_period_left_1_base_addr__ = 0x020C0298);
+PROVIDE(__axirt_read_period_left_2_base_addr__ = 0x020C029C);
+PROVIDE(__axirt_read_period_left_3_base_addr__ = 0x020C02A0);
+PROVIDE(__axirt_read_period_left_4_base_addr__ = 0x020C02A4);
+PROVIDE(__axirt_read_period_left_5_base_addr__ = 0x020C02A8);
+PROVIDE(__axirt_read_period_left_6_base_addr__ = 0x020C02AC);
+PROVIDE(__axirt_read_period_left_7_base_addr__ = 0x020C02B0);
+PROVIDE(__axirt_read_period_left_8_base_addr__ = 0x020C02B4);
+PROVIDE(__axirt_read_period_left_9_base_addr__ = 0x020C02B8);
+PROVIDE(__axirt_read_period_left_10_base_addr__ = 0x020C02BC);
+PROVIDE(__axirt_read_period_left_11_base_addr__ = 0x020C02C0);
+PROVIDE(__axirt_read_period_left_num__ = 0x0000000C);
+PROVIDE(__axirt_read_period_left_stride__ = 0x00000004);
+
+PROVIDE(__axirt_isolate_0_base_addr__ = 0x020C02C4);
+PROVIDE(__axirt_isolate_1_base_addr__ = 0x020C02C8);
+PROVIDE(__axirt_isolate_2_base_addr__ = 0x020C02CC);
+PROVIDE(__axirt_isolate_3_base_addr__ = 0x020C02D0);
+PROVIDE(__axirt_isolate_4_base_addr__ = 0x020C02D4);
+PROVIDE(__axirt_isolate_5_base_addr__ = 0x020C02D8);
+PROVIDE(__axirt_isolate_num__ = 0x00000006);
+PROVIDE(__axirt_isolate_stride__ = 0x00000004);
+
+PROVIDE(__axirt_isolated_0_base_addr__ = 0x020C02DC);
+PROVIDE(__axirt_isolated_1_base_addr__ = 0x020C02E0);
+PROVIDE(__axirt_isolated_2_base_addr__ = 0x020C02E4);
+PROVIDE(__axirt_isolated_3_base_addr__ = 0x020C02E8);
+PROVIDE(__axirt_isolated_4_base_addr__ = 0x020C02EC);
+PROVIDE(__axirt_isolated_5_base_addr__ = 0x020C02F0);
+PROVIDE(__axirt_isolated_num__ = 0x00000006);
+PROVIDE(__axirt_isolated_stride__ = 0x00000004);
+
+PROVIDE(__axirt_num_managers_base_addr__ = 0x020C02F4);
+
+PROVIDE(__axirt_addr_width_base_addr__ = 0x020C02F8);
+
+PROVIDE(__axirt_data_width_base_addr__ = 0x020C02FC);
+
+PROVIDE(__axirt_id_width_base_addr__ = 0x020C0300);
+
+PROVIDE(__axirt_user_width_base_addr__ = 0x020C0304);
+
+PROVIDE(__axirt_num_pending_base_addr__ = 0x020C0308);
+
+PROVIDE(__axirt_w_buffer_depth_base_addr__ = 0x020C030C);
+
+PROVIDE(__axirt_num_addr_regions_base_addr__ = 0x020C0310);
+
+PROVIDE(__axirt_period_width_base_addr__ = 0x020C0314);
+
+PROVIDE(__axirt_budget_width_base_addr__ = 0x020C0318);
+
+PROVIDE(__axirt_max_num_managers_base_addr__ = 0x020C031C);
 
 PROVIDE(__regs_scratch_0_base_addr__ = 0x03000000);
 PROVIDE(__regs_scratch_1_base_addr__ = 0x03000004);

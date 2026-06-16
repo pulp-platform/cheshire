@@ -91,3 +91,18 @@ static inline void *gprw(void *gp) {
 
 // Typed pointer to the Cheshire SoC register file
 #define CHS_REGS ((volatile cheshire__regs_t *)offsetof(cheshire_t, regs))
+
+// Typed pointer to the AXI-RT register block, located in the system address map
+#define CHS_AXIRT ((volatile cheshire__axirt_t *)offsetof(cheshire_t, axirt))
+
+// Number of AXI-RT managers and subordinate regions per manager, derived from
+// the generated address map so they always track the hardware configuration.
+#define CHS_AXIRT_NUM_MGR (sizeof(CHS_AXIRT->rt_enable) / sizeof(cheshire__axirt__rt_enablex_t))
+#define CHS_AXIRT_NUM_SUB \
+    (sizeof(CHS_AXIRT->read_budget) / sizeof(cheshire__axirt__read_budgetx_t) / CHS_AXIRT_NUM_MGR)
+
+// Bind the AXI-RT driver (axi_rt dependency) to the register block in the system
+// address map, overriding its standalone defaults. AXIRT_GUARD points at the
+// access-guard claim register, the top word of the guard's 8 KiB window.
+#define AXIRT_REGS CHS_AXIRT
+#define AXIRT_GUARD ((void *)(offsetof(cheshire_t, axirt) + 0x1ffc))

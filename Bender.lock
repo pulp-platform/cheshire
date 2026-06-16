@@ -46,7 +46,7 @@ packages:
     - common_cells
     - common_verification
   axi_rt:
-    revision: 444b1f621f82a14bf159037c2948054cbd809893
+    revision: 16dc80c347f45536d081f9b4c43dbd0ef1332ce6
     version: null
     source:
       Git: https://github.com/pulp-platform/axi_rt.git

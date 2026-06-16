@@ -118,35 +118,427 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__irq_router___end_t _end;
 } cheshire__irq_router_t;
 
-// Reg - cheshire.axirt.status
-#define CHESHIRE__AXIRT__STATUS__STATUS_bm 0xffffffff
-#define CHESHIRE__AXIRT__STATUS__STATUS_bp 0
-#define CHESHIRE__AXIRT__STATUS__STATUS_bw 32
-#define CHESHIRE__AXIRT__STATUS__STATUS_reset 0x0
+// Reg - cheshire.axirt.major_version
+#define CHESHIRE__AXIRT__MAJOR_VERSION__MAJOR_VERSION_bm 0xffffffff
+#define CHESHIRE__AXIRT__MAJOR_VERSION__MAJOR_VERSION_bp 0
+#define CHESHIRE__AXIRT__MAJOR_VERSION__MAJOR_VERSION_bw 32
+#define CHESHIRE__AXIRT__MAJOR_VERSION__MAJOR_VERSION_reset 0x0
 typedef union {
     struct __attribute__ ((__packed__)) {
-        uint32_t status :32;
+        uint32_t major_version :32;
     } f;
     uint32_t w;
-} cheshire__axirt__status_t;
+} cheshire__axirt__major_version_t;
 
-// Reg - cheshire.axirt._end
-#define CHESHIRE__AXIRT___END___END_bm 0xffffffff
-#define CHESHIRE__AXIRT___END___END_bp 0
-#define CHESHIRE__AXIRT___END___END_bw 32
-#define CHESHIRE__AXIRT___END___END_reset 0x0
+// Reg - cheshire.axirt.minor_version
+#define CHESHIRE__AXIRT__MINOR_VERSION__MINOR_VERSION_bm 0xffffffff
+#define CHESHIRE__AXIRT__MINOR_VERSION__MINOR_VERSION_bp 0
+#define CHESHIRE__AXIRT__MINOR_VERSION__MINOR_VERSION_bw 32
+#define CHESHIRE__AXIRT__MINOR_VERSION__MINOR_VERSION_reset 0x0
 typedef union {
     struct __attribute__ ((__packed__)) {
-        uint32_t _end :32;
+        uint32_t minor_version :32;
     } f;
     uint32_t w;
-} cheshire__axirt___end_t;
+} cheshire__axirt__minor_version_t;
+
+// Reg - cheshire.axirt.patch_version
+#define CHESHIRE__AXIRT__PATCH_VERSION__PATCH_VERSION_bm 0xffffffff
+#define CHESHIRE__AXIRT__PATCH_VERSION__PATCH_VERSION_bp 0
+#define CHESHIRE__AXIRT__PATCH_VERSION__PATCH_VERSION_bw 32
+#define CHESHIRE__AXIRT__PATCH_VERSION__PATCH_VERSION_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t patch_version :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__patch_version_t;
+
+// Reg - cheshire.axirt.rt_enable[]
+#define CHESHIRE__AXIRT__RT_ENABLEX__ENABLE_bm 0x1
+#define CHESHIRE__AXIRT__RT_ENABLEX__ENABLE_bp 0
+#define CHESHIRE__AXIRT__RT_ENABLEX__ENABLE_bw 1
+#define CHESHIRE__AXIRT__RT_ENABLEX__ENABLE_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t enable :1;
+        uint32_t :31;
+    } f;
+    uint32_t w;
+} cheshire__axirt__rt_enablex_t;
+
+// Reg - cheshire.axirt.rt_bypassed[]
+#define CHESHIRE__AXIRT__RT_BYPASSEDX__BYPASSED_bm 0x1
+#define CHESHIRE__AXIRT__RT_BYPASSEDX__BYPASSED_bp 0
+#define CHESHIRE__AXIRT__RT_BYPASSEDX__BYPASSED_bw 1
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t bypassed :1;
+        uint32_t :31;
+    } f;
+    uint32_t w;
+} cheshire__axirt__rt_bypassedx_t;
+
+// Reg - cheshire.axirt.len_limit[]
+#define CHESHIRE__AXIRT__LEN_LIMITX__LEN_bm 0xff
+#define CHESHIRE__AXIRT__LEN_LIMITX__LEN_bp 0
+#define CHESHIRE__AXIRT__LEN_LIMITX__LEN_bw 8
+#define CHESHIRE__AXIRT__LEN_LIMITX__LEN_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t len :8;
+        uint32_t :24;
+    } f;
+    uint32_t w;
+} cheshire__axirt__len_limitx_t;
+
+// Reg - cheshire.axirt.imtu_enable[]
+#define CHESHIRE__AXIRT__IMTU_ENABLEX__ENABLE_bm 0x1
+#define CHESHIRE__AXIRT__IMTU_ENABLEX__ENABLE_bp 0
+#define CHESHIRE__AXIRT__IMTU_ENABLEX__ENABLE_bw 1
+#define CHESHIRE__AXIRT__IMTU_ENABLEX__ENABLE_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t enable :1;
+        uint32_t :31;
+    } f;
+    uint32_t w;
+} cheshire__axirt__imtu_enablex_t;
+
+// Reg - cheshire.axirt.imtu_abort[]
+#define CHESHIRE__AXIRT__IMTU_ABORTX__ABORT_bm 0x1
+#define CHESHIRE__AXIRT__IMTU_ABORTX__ABORT_bp 0
+#define CHESHIRE__AXIRT__IMTU_ABORTX__ABORT_bw 1
+#define CHESHIRE__AXIRT__IMTU_ABORTX__ABORT_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t abort :1;
+        uint32_t :31;
+    } f;
+    uint32_t w;
+} cheshire__axirt__imtu_abortx_t;
+
+// Reg - cheshire.axirt.start_addr_sub_low[]
+#define CHESHIRE__AXIRT__START_ADDR_SUB_LOWX__ADDR_bm 0xffffffff
+#define CHESHIRE__AXIRT__START_ADDR_SUB_LOWX__ADDR_bp 0
+#define CHESHIRE__AXIRT__START_ADDR_SUB_LOWX__ADDR_bw 32
+#define CHESHIRE__AXIRT__START_ADDR_SUB_LOWX__ADDR_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t addr :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__start_addr_sub_lowx_t;
+
+// Reg - cheshire.axirt.start_addr_sub_high[]
+#define CHESHIRE__AXIRT__START_ADDR_SUB_HIGHX__ADDR_bm 0xffffffff
+#define CHESHIRE__AXIRT__START_ADDR_SUB_HIGHX__ADDR_bp 0
+#define CHESHIRE__AXIRT__START_ADDR_SUB_HIGHX__ADDR_bw 32
+#define CHESHIRE__AXIRT__START_ADDR_SUB_HIGHX__ADDR_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t addr :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__start_addr_sub_highx_t;
+
+// Reg - cheshire.axirt.end_addr_sub_low[]
+#define CHESHIRE__AXIRT__END_ADDR_SUB_LOWX__ADDR_bm 0xffffffff
+#define CHESHIRE__AXIRT__END_ADDR_SUB_LOWX__ADDR_bp 0
+#define CHESHIRE__AXIRT__END_ADDR_SUB_LOWX__ADDR_bw 32
+#define CHESHIRE__AXIRT__END_ADDR_SUB_LOWX__ADDR_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t addr :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__end_addr_sub_lowx_t;
+
+// Reg - cheshire.axirt.end_addr_sub_high[]
+#define CHESHIRE__AXIRT__END_ADDR_SUB_HIGHX__ADDR_bm 0xffffffff
+#define CHESHIRE__AXIRT__END_ADDR_SUB_HIGHX__ADDR_bp 0
+#define CHESHIRE__AXIRT__END_ADDR_SUB_HIGHX__ADDR_bw 32
+#define CHESHIRE__AXIRT__END_ADDR_SUB_HIGHX__ADDR_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t addr :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__end_addr_sub_highx_t;
+
+// Reg - cheshire.axirt.write_budget[]
+#define CHESHIRE__AXIRT__WRITE_BUDGETX__BUDGET_bm 0xffffffff
+#define CHESHIRE__AXIRT__WRITE_BUDGETX__BUDGET_bp 0
+#define CHESHIRE__AXIRT__WRITE_BUDGETX__BUDGET_bw 32
+#define CHESHIRE__AXIRT__WRITE_BUDGETX__BUDGET_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t budget :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__write_budgetx_t;
+
+// Reg - cheshire.axirt.read_budget[]
+#define CHESHIRE__AXIRT__READ_BUDGETX__BUDGET_bm 0xffffffff
+#define CHESHIRE__AXIRT__READ_BUDGETX__BUDGET_bp 0
+#define CHESHIRE__AXIRT__READ_BUDGETX__BUDGET_bw 32
+#define CHESHIRE__AXIRT__READ_BUDGETX__BUDGET_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t budget :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__read_budgetx_t;
+
+// Reg - cheshire.axirt.write_period[]
+#define CHESHIRE__AXIRT__WRITE_PERIODX__PERIOD_bm 0xffffffff
+#define CHESHIRE__AXIRT__WRITE_PERIODX__PERIOD_bp 0
+#define CHESHIRE__AXIRT__WRITE_PERIODX__PERIOD_bw 32
+#define CHESHIRE__AXIRT__WRITE_PERIODX__PERIOD_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t period :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__write_periodx_t;
+
+// Reg - cheshire.axirt.read_period[]
+#define CHESHIRE__AXIRT__READ_PERIODX__PERIOD_bm 0xffffffff
+#define CHESHIRE__AXIRT__READ_PERIODX__PERIOD_bp 0
+#define CHESHIRE__AXIRT__READ_PERIODX__PERIOD_bw 32
+#define CHESHIRE__AXIRT__READ_PERIODX__PERIOD_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t period :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__read_periodx_t;
+
+// Reg - cheshire.axirt.write_budget_left[]
+#define CHESHIRE__AXIRT__WRITE_BUDGET_LEFTX__BUDGET_bm 0xffffffff
+#define CHESHIRE__AXIRT__WRITE_BUDGET_LEFTX__BUDGET_bp 0
+#define CHESHIRE__AXIRT__WRITE_BUDGET_LEFTX__BUDGET_bw 32
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t budget :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__write_budget_leftx_t;
+
+// Reg - cheshire.axirt.read_budget_left[]
+#define CHESHIRE__AXIRT__READ_BUDGET_LEFTX__BUDGET_bm 0xffffffff
+#define CHESHIRE__AXIRT__READ_BUDGET_LEFTX__BUDGET_bp 0
+#define CHESHIRE__AXIRT__READ_BUDGET_LEFTX__BUDGET_bw 32
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t budget :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__read_budget_leftx_t;
+
+// Reg - cheshire.axirt.write_period_left[]
+#define CHESHIRE__AXIRT__WRITE_PERIOD_LEFTX__PERIOD_bm 0xffffffff
+#define CHESHIRE__AXIRT__WRITE_PERIOD_LEFTX__PERIOD_bp 0
+#define CHESHIRE__AXIRT__WRITE_PERIOD_LEFTX__PERIOD_bw 32
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t period :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__write_period_leftx_t;
+
+// Reg - cheshire.axirt.read_period_left[]
+#define CHESHIRE__AXIRT__READ_PERIOD_LEFTX__PERIOD_bm 0xffffffff
+#define CHESHIRE__AXIRT__READ_PERIOD_LEFTX__PERIOD_bp 0
+#define CHESHIRE__AXIRT__READ_PERIOD_LEFTX__PERIOD_bw 32
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t period :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__read_period_leftx_t;
+
+// Reg - cheshire.axirt.isolate[]
+#define CHESHIRE__AXIRT__ISOLATEX__ISOLATE_bm 0x1
+#define CHESHIRE__AXIRT__ISOLATEX__ISOLATE_bp 0
+#define CHESHIRE__AXIRT__ISOLATEX__ISOLATE_bw 1
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t isolate :1;
+        uint32_t :31;
+    } f;
+    uint32_t w;
+} cheshire__axirt__isolatex_t;
+
+// Reg - cheshire.axirt.isolated[]
+#define CHESHIRE__AXIRT__ISOLATEDX__ISOLATED_bm 0x1
+#define CHESHIRE__AXIRT__ISOLATEDX__ISOLATED_bp 0
+#define CHESHIRE__AXIRT__ISOLATEDX__ISOLATED_bw 1
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t isolated :1;
+        uint32_t :31;
+    } f;
+    uint32_t w;
+} cheshire__axirt__isolatedx_t;
+
+// Reg - cheshire.axirt.num_managers
+#define CHESHIRE__AXIRT__NUM_MANAGERS__NUM_MANAGERS_bm 0xffffffff
+#define CHESHIRE__AXIRT__NUM_MANAGERS__NUM_MANAGERS_bp 0
+#define CHESHIRE__AXIRT__NUM_MANAGERS__NUM_MANAGERS_bw 32
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t num_managers :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__num_managers_t;
+
+// Reg - cheshire.axirt.addr_width
+#define CHESHIRE__AXIRT__ADDR_WIDTH__ADDR_WIDTH_bm 0xffffffff
+#define CHESHIRE__AXIRT__ADDR_WIDTH__ADDR_WIDTH_bp 0
+#define CHESHIRE__AXIRT__ADDR_WIDTH__ADDR_WIDTH_bw 32
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t addr_width :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__addr_width_t;
+
+// Reg - cheshire.axirt.data_width
+#define CHESHIRE__AXIRT__DATA_WIDTH__DATA_WIDTH_bm 0xffffffff
+#define CHESHIRE__AXIRT__DATA_WIDTH__DATA_WIDTH_bp 0
+#define CHESHIRE__AXIRT__DATA_WIDTH__DATA_WIDTH_bw 32
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t data_width :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__data_width_t;
+
+// Reg - cheshire.axirt.id_width
+#define CHESHIRE__AXIRT__ID_WIDTH__ID_WIDTH_bm 0xffffffff
+#define CHESHIRE__AXIRT__ID_WIDTH__ID_WIDTH_bp 0
+#define CHESHIRE__AXIRT__ID_WIDTH__ID_WIDTH_bw 32
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t id_width :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__id_width_t;
+
+// Reg - cheshire.axirt.user_width
+#define CHESHIRE__AXIRT__USER_WIDTH__USER_WIDTH_bm 0xffffffff
+#define CHESHIRE__AXIRT__USER_WIDTH__USER_WIDTH_bp 0
+#define CHESHIRE__AXIRT__USER_WIDTH__USER_WIDTH_bw 32
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t user_width :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__user_width_t;
+
+// Reg - cheshire.axirt.num_pending
+#define CHESHIRE__AXIRT__NUM_PENDING__NUM_PENDING_bm 0xffffffff
+#define CHESHIRE__AXIRT__NUM_PENDING__NUM_PENDING_bp 0
+#define CHESHIRE__AXIRT__NUM_PENDING__NUM_PENDING_bw 32
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t num_pending :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__num_pending_t;
+
+// Reg - cheshire.axirt.w_buffer_depth
+#define CHESHIRE__AXIRT__W_BUFFER_DEPTH__W_BUFFER_DEPTH_bm 0xffffffff
+#define CHESHIRE__AXIRT__W_BUFFER_DEPTH__W_BUFFER_DEPTH_bp 0
+#define CHESHIRE__AXIRT__W_BUFFER_DEPTH__W_BUFFER_DEPTH_bw 32
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t w_buffer_depth :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__w_buffer_depth_t;
+
+// Reg - cheshire.axirt.num_addr_regions
+#define CHESHIRE__AXIRT__NUM_ADDR_REGIONS__NUM_ADDR_REGIONS_bm 0xffffffff
+#define CHESHIRE__AXIRT__NUM_ADDR_REGIONS__NUM_ADDR_REGIONS_bp 0
+#define CHESHIRE__AXIRT__NUM_ADDR_REGIONS__NUM_ADDR_REGIONS_bw 32
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t num_addr_regions :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__num_addr_regions_t;
+
+// Reg - cheshire.axirt.period_width
+#define CHESHIRE__AXIRT__PERIOD_WIDTH__PERIOD_WIDTH_bm 0xffffffff
+#define CHESHIRE__AXIRT__PERIOD_WIDTH__PERIOD_WIDTH_bp 0
+#define CHESHIRE__AXIRT__PERIOD_WIDTH__PERIOD_WIDTH_bw 32
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t period_width :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__period_width_t;
+
+// Reg - cheshire.axirt.budget_width
+#define CHESHIRE__AXIRT__BUDGET_WIDTH__BUDGET_WIDTH_bm 0xffffffff
+#define CHESHIRE__AXIRT__BUDGET_WIDTH__BUDGET_WIDTH_bp 0
+#define CHESHIRE__AXIRT__BUDGET_WIDTH__BUDGET_WIDTH_bw 32
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t budget_width :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__budget_width_t;
+
+// Reg - cheshire.axirt.max_num_managers
+#define CHESHIRE__AXIRT__MAX_NUM_MANAGERS__MAX_NUM_MANAGERS_bm 0xffffffff
+#define CHESHIRE__AXIRT__MAX_NUM_MANAGERS__MAX_NUM_MANAGERS_bp 0
+#define CHESHIRE__AXIRT__MAX_NUM_MANAGERS__MAX_NUM_MANAGERS_bw 32
+#define CHESHIRE__AXIRT__MAX_NUM_MANAGERS__MAX_NUM_MANAGERS_reset 0x6
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t max_num_managers :32;
+    } f;
+    uint32_t w;
+} cheshire__axirt__max_num_managers_t;
 
 // Addrmap - cheshire.axirt
 typedef struct __attribute__ ((__packed__)) {
-    cheshire__axirt__status_t status;
-    uint8_t RESERVED_4_3fffb[0x3fff8];
-    cheshire__axirt___end_t _end;
+    cheshire__axirt__major_version_t major_version;
+    cheshire__axirt__minor_version_t minor_version;
+    cheshire__axirt__patch_version_t patch_version;
+    cheshire__axirt__rt_enablex_t rt_enable[6];
+    cheshire__axirt__rt_bypassedx_t rt_bypassed[6];
+    cheshire__axirt__len_limitx_t len_limit[6];
+    cheshire__axirt__imtu_enablex_t imtu_enable[6];
+    cheshire__axirt__imtu_abortx_t imtu_abort[6];
+    cheshire__axirt__start_addr_sub_lowx_t start_addr_sub_low[12];
+    cheshire__axirt__start_addr_sub_highx_t start_addr_sub_high[12];
+    cheshire__axirt__end_addr_sub_lowx_t end_addr_sub_low[12];
+    cheshire__axirt__end_addr_sub_highx_t end_addr_sub_high[12];
+    cheshire__axirt__write_budgetx_t write_budget[12];
+    cheshire__axirt__read_budgetx_t read_budget[12];
+    cheshire__axirt__write_periodx_t write_period[12];
+    cheshire__axirt__read_periodx_t read_period[12];
+    cheshire__axirt__write_budget_leftx_t write_budget_left[12];
+    cheshire__axirt__read_budget_leftx_t read_budget_left[12];
+    cheshire__axirt__write_period_leftx_t write_period_left[12];
+    cheshire__axirt__read_period_leftx_t read_period_left[12];
+    cheshire__axirt__isolatex_t isolate[6];
+    cheshire__axirt__isolatedx_t isolated[6];
+    cheshire__axirt__num_managers_t num_managers;
+    cheshire__axirt__addr_width_t addr_width;
+    cheshire__axirt__data_width_t data_width;
+    cheshire__axirt__id_width_t id_width;
+    cheshire__axirt__user_width_t user_width;
+    cheshire__axirt__num_pending_t num_pending;
+    cheshire__axirt__w_buffer_depth_t w_buffer_depth;
+    cheshire__axirt__num_addr_regions_t num_addr_regions;
+    cheshire__axirt__period_width_t period_width;
+    cheshire__axirt__budget_width_t budget_width;
+    cheshire__axirt__max_num_managers_t max_num_managers;
 } cheshire__axirt_t;
 
 // Reg - cheshire.regs.scratch[]
@@ -998,7 +1390,7 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__clint_t clint;
     cheshire__irq_router_t irq_router;
     cheshire__axirt_t axirt;
-    uint8_t RESERVED_2100000_2ffffff[0xf00000];
+    uint8_t RESERVED_20c0320_2ffffff[0xf3fce0];
     cheshire__regs_t regs;
     uint8_t RESERVED_300005c_3000fff[0xfa4];
     cheshire__llc_t llc;

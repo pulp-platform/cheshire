@@ -24,7 +24,7 @@ localparam longint unsigned IRQ_ROUTER_BASE_ADDR = 64'h2080000;
 localparam longint unsigned IRQ_ROUTER_SIZE = 64'h40000;
 
 localparam longint unsigned AXIRT_BASE_ADDR = 64'h20C0000;
-localparam longint unsigned AXIRT_SIZE = 64'h40000;
+localparam longint unsigned AXIRT_SIZE = 64'h320;
 
 localparam longint unsigned REGS_BASE_ADDR = 64'h3000000;
 localparam longint unsigned REGS_SIZE = 64'h5C;
@@ -77,8 +77,96 @@ localparam longint unsigned CLINT_STATUS_BASE_ADDR = 64'h2040000;
 localparam longint unsigned CLINT__END_BASE_ADDR = 64'h207FFFC;
 localparam longint unsigned IRQ_ROUTER_STATUS_BASE_ADDR = 64'h2080000;
 localparam longint unsigned IRQ_ROUTER__END_BASE_ADDR = 64'h20BFFFC;
-localparam longint unsigned AXIRT_STATUS_BASE_ADDR = 64'h20C0000;
-localparam longint unsigned AXIRT__END_BASE_ADDR = 64'h20FFFFC;
+localparam longint unsigned AXIRT_MAJOR_VERSION_BASE_ADDR = 64'h20C0000;
+localparam longint unsigned AXIRT_MINOR_VERSION_BASE_ADDR = 64'h20C0004;
+localparam longint unsigned AXIRT_PATCH_VERSION_BASE_ADDR = 64'h20C0008;
+function automatic longint unsigned AXIRT_RT_ENABLE_BASE_ADDR(input int unsigned rt_enable_idx);
+    return 64'h20C000C + (rt_enable_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_RT_ENABLE_NUM = 64'h6;
+function automatic longint unsigned AXIRT_RT_BYPASSED_BASE_ADDR(input int unsigned rt_bypassed_idx);
+    return 64'h20C0024 + (rt_bypassed_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_RT_BYPASSED_NUM = 64'h6;
+function automatic longint unsigned AXIRT_LEN_LIMIT_BASE_ADDR(input int unsigned len_limit_idx);
+    return 64'h20C003C + (len_limit_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_LEN_LIMIT_NUM = 64'h6;
+function automatic longint unsigned AXIRT_IMTU_ENABLE_BASE_ADDR(input int unsigned imtu_enable_idx);
+    return 64'h20C0054 + (imtu_enable_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_IMTU_ENABLE_NUM = 64'h6;
+function automatic longint unsigned AXIRT_IMTU_ABORT_BASE_ADDR(input int unsigned imtu_abort_idx);
+    return 64'h20C006C + (imtu_abort_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_IMTU_ABORT_NUM = 64'h6;
+function automatic longint unsigned AXIRT_START_ADDR_SUB_LOW_BASE_ADDR(input int unsigned start_addr_sub_low_idx);
+    return 64'h20C0084 + (start_addr_sub_low_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_START_ADDR_SUB_LOW_NUM = 64'hC;
+function automatic longint unsigned AXIRT_START_ADDR_SUB_HIGH_BASE_ADDR(input int unsigned start_addr_sub_high_idx);
+    return 64'h20C00B4 + (start_addr_sub_high_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_START_ADDR_SUB_HIGH_NUM = 64'hC;
+function automatic longint unsigned AXIRT_END_ADDR_SUB_LOW_BASE_ADDR(input int unsigned end_addr_sub_low_idx);
+    return 64'h20C00E4 + (end_addr_sub_low_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_END_ADDR_SUB_LOW_NUM = 64'hC;
+function automatic longint unsigned AXIRT_END_ADDR_SUB_HIGH_BASE_ADDR(input int unsigned end_addr_sub_high_idx);
+    return 64'h20C0114 + (end_addr_sub_high_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_END_ADDR_SUB_HIGH_NUM = 64'hC;
+function automatic longint unsigned AXIRT_WRITE_BUDGET_BASE_ADDR(input int unsigned write_budget_idx);
+    return 64'h20C0144 + (write_budget_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_WRITE_BUDGET_NUM = 64'hC;
+function automatic longint unsigned AXIRT_READ_BUDGET_BASE_ADDR(input int unsigned read_budget_idx);
+    return 64'h20C0174 + (read_budget_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_READ_BUDGET_NUM = 64'hC;
+function automatic longint unsigned AXIRT_WRITE_PERIOD_BASE_ADDR(input int unsigned write_period_idx);
+    return 64'h20C01A4 + (write_period_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_WRITE_PERIOD_NUM = 64'hC;
+function automatic longint unsigned AXIRT_READ_PERIOD_BASE_ADDR(input int unsigned read_period_idx);
+    return 64'h20C01D4 + (read_period_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_READ_PERIOD_NUM = 64'hC;
+function automatic longint unsigned AXIRT_WRITE_BUDGET_LEFT_BASE_ADDR(input int unsigned write_budget_left_idx);
+    return 64'h20C0204 + (write_budget_left_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_WRITE_BUDGET_LEFT_NUM = 64'hC;
+function automatic longint unsigned AXIRT_READ_BUDGET_LEFT_BASE_ADDR(input int unsigned read_budget_left_idx);
+    return 64'h20C0234 + (read_budget_left_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_READ_BUDGET_LEFT_NUM = 64'hC;
+function automatic longint unsigned AXIRT_WRITE_PERIOD_LEFT_BASE_ADDR(input int unsigned write_period_left_idx);
+    return 64'h20C0264 + (write_period_left_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_WRITE_PERIOD_LEFT_NUM = 64'hC;
+function automatic longint unsigned AXIRT_READ_PERIOD_LEFT_BASE_ADDR(input int unsigned read_period_left_idx);
+    return 64'h20C0294 + (read_period_left_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_READ_PERIOD_LEFT_NUM = 64'hC;
+function automatic longint unsigned AXIRT_ISOLATE_BASE_ADDR(input int unsigned isolate_idx);
+    return 64'h20C02C4 + (isolate_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_ISOLATE_NUM = 64'h6;
+function automatic longint unsigned AXIRT_ISOLATED_BASE_ADDR(input int unsigned isolated_idx);
+    return 64'h20C02DC + (isolated_idx * 64'h4);
+endfunction
+localparam longint unsigned AXIRT_ISOLATED_NUM = 64'h6;
+localparam longint unsigned AXIRT_NUM_MANAGERS_BASE_ADDR = 64'h20C02F4;
+localparam longint unsigned AXIRT_ADDR_WIDTH_BASE_ADDR = 64'h20C02F8;
+localparam longint unsigned AXIRT_DATA_WIDTH_BASE_ADDR = 64'h20C02FC;
+localparam longint unsigned AXIRT_ID_WIDTH_BASE_ADDR = 64'h20C0300;
+localparam longint unsigned AXIRT_USER_WIDTH_BASE_ADDR = 64'h20C0304;
+localparam longint unsigned AXIRT_NUM_PENDING_BASE_ADDR = 64'h20C0308;
+localparam longint unsigned AXIRT_W_BUFFER_DEPTH_BASE_ADDR = 64'h20C030C;
+localparam longint unsigned AXIRT_NUM_ADDR_REGIONS_BASE_ADDR = 64'h20C0310;
+localparam longint unsigned AXIRT_PERIOD_WIDTH_BASE_ADDR = 64'h20C0314;
+localparam longint unsigned AXIRT_BUDGET_WIDTH_BASE_ADDR = 64'h20C0318;
+localparam longint unsigned AXIRT_MAX_NUM_MANAGERS_BASE_ADDR = 64'h20C031C;
 function automatic longint unsigned REGS_SCRATCH_BASE_ADDR(input int unsigned scratch_idx);
     return 64'h3000000 + (scratch_idx * 64'h4);
 endfunction

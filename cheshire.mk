@@ -84,9 +84,15 @@ CHS_PEAKRDL_INCLUDES  := -I $(CHS_ROOT)/hw/regs
 SLINK_NUM_LANES ?= 4
 include $(CHS_SLINK_DIR)/slink.mk
 
+# AXI RT manager/region configuration (also consumed by axirt.mk below)
+AXIRT_NUM_MGRS ?= 6
+AXIRT_NUM_SUBS ?= 2
+
 CHS_PEAKRDL_INCLUDES += -I $(CHS_SLINK_DIR)/src/regs
+CHS_PEAKRDL_INCLUDES += -I $(AXIRTROOT)/src/regs
 CHS_PEAKRDL_INCLUDES += -I $(CHS_ROOT)/hw/
 CHS_PEAKRDL_PARAMS   += -P SlinkNumLanes=$(SLINK_NUM_LANES)
+CHS_PEAKRDL_PARAMS   += -P AxiRtNumMgrs=$(AXIRT_NUM_MGRS) -P AxiRtNumSubs=$(AXIRT_NUM_SUBS)
 CHS_PEAKRDL_DEFINES  := -D CHS_DRAM
 
 ############
@@ -119,8 +125,6 @@ $(OTPROOT)/.generated: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
 	flock -x $@ sh -c "cp $< $(dir $@)/src/rv_plic/; $(MAKE) -j1 otp" && touch $@
 
 # AXI RT
-AXIRT_NUM_MGRS ?= 6
-AXIRT_NUM_SUBS ?= 2
 include $(AXIRTROOT)/axirt.mk
 $(AXIRTROOT)/.generated:
 	flock -x $@ $(MAKE) -B axirt_regs && touch $@

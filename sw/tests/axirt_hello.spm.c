@@ -12,7 +12,6 @@
 #include "dif/clint.h"
 #include "dif/uart.h"
 #include "axirt.h"
-#include "regs/axi_rt.h"
 #include "params.h"
 #include "util.h"
 
@@ -23,7 +22,7 @@ int main(void) {
     CHECK_ASSERT(-3, CHS_REGS->hw_features.f.uart);
 
     // This test requires at least two subordinate regions
-    CHECK_ASSERT(-4, AXI_RT_PARAM_NUM_SUB >= 2);
+    CHECK_ASSERT(-4, CHS_AXIRT_NUM_SUB >= 2);
 
     char str[] = "Hello AXI-RT!\r\n";
     uint32_t rtc_freq = CHS_REGS->rtc_freq.f.ref_freq;

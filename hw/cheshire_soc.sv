@@ -1184,8 +1184,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .r_chan_t           ( axi_mst_r_chan_t  ),
       .axi_req_t          ( axi_mst_req_t ),
       .axi_resp_t         ( axi_mst_rsp_t ),
-      .req_req_t          ( reg_req_t ),
-      .req_rsp_t          ( reg_rsp_t )
+      .apb_req_t          ( apb_req_t  ),
+      .apb_resp_t         ( apb_resp_t )
     ) i_axi_rt_unit_top   (
       .clk_i,
       .rst_ni,
@@ -1193,8 +1193,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .slv_resp_o ( axi_in_rsp    ),
       .mst_req_o  ( axi_rt_in_req ),
       .mst_resp_i ( axi_rt_in_rsp ),
-      .reg_req_i  ( reg_out_req[RegOut.axirt] ),
-      .reg_rsp_o  ( reg_out_rsp[RegOut.axirt] ),
+      .apb_req_i  ( reg_apb_req[RegOut.axirt] ),
+      .apb_rsp_o  ( reg_apb_rsp[RegOut.axirt] ),
       .reg_id_i   ( reg_id )
     );
 

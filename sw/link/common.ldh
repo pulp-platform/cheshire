@@ -21,7 +21,4 @@ SECTIONS {
   /* By default, keep the calling context (boot ROM) stack pointer */
   __global_pointer$ = ADDR(.misc) + SIZEOF(.misc) / 2;
   __stack_pointer$  = 0;
-
-  /* AXI-RT guard register (specific offset within AXI-RT region, not a named block) */
-  __axirtgrd_base_addr__ = 0x020C1ffc;
 }

@@ -34,10 +34,6 @@ extern void *__usb_base_addr__;
 extern void *__spm_base_addr__;
 extern void *__dram_base_addr__;
 
-// Aliases for external dependencies using legacy __base_* naming
-#define __base_axirt __axirt_base_addr__
-#define __base_axirtgrd __axirtgrd_base_addr__
-
 // Default boot baudrate
 static const uint32_t __BOOT_BAUDRATE = 115200;
 
