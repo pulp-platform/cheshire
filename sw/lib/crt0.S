@@ -5,6 +5,8 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
+// Emanuele Parisi <emanuele.parisi@unibo.it>
+// Enrico Zelioli <ezelioli@iis.ee.ethz.ch>
 
 .section .text._start
 
@@ -15,28 +17,29 @@ _start:
     // Globally disable Machine and Supervisor interrupts
     csrrc x0, mstatus, 10
 
-    // Park SMP harts
-    csrr t0, mhartid
-    beqz t0, 2f
-1:
-    wfi
-    j 1b
-2:
-    // Init stack and global pointer iff linked as nonzero
-    mv t1, sp
-    la t0, __stack_pointer$
-    beqz t0, 1f
-    mv sp, t0
-1:  .option push
+_init_gp:
+    // Init global pointer iff linked as nonzero
+    .option push
     .option norelax
     la t0, __global_pointer$
-    beqz t0, 1f
+    beqz t0, _init_sp
     mv gp, t0
-1:  .option pop
+    .option pop
 
+_init_sp:
+    // Init per-hart stack pointer iff linked as nonzero
+    mv t0, sp
+    la t1, __stack_pointer$
+    beqz t1, _init_context
+    la t2, __stack_size$
+    csrr t3, mhartid
+    mul t3, t3, t2
+    sub sp, t1, t3
+
+_init_context:
     // Store existing stack, global, return pointers on new stack
     addi sp, sp, -24
-    sd t1, 0(sp)
+    sd t0, 0(sp)
     sd gp, 8(sp)
     sd ra, 16(sp)
 
@@ -44,7 +47,13 @@ _start:
     la t0, _trap_handler_wrap
     csrrw x0, mtvec, t0
 
-    // Zero the .bss section
+_smp_pause:
+    // Non-primary harts wait here until resumed via IPI
+    csrr t0, mhartid
+    bnez t0, _wait_for_ipi
+
+_zero_bss_init:
+    // Zero the .bss section (hart 0 only)
     la t0, __bss_start      // t0 = bss start address
     la t1, __bss_end        // t1 = bss end address
     sub t2, t1, t0          // t2 = #bytes to zero
@@ -52,7 +61,7 @@ _start:
 
 _zero_bss_loop:
     addi t4, t2, -32
-    blez t2, _fp_init           // t2 <= 0? => No bss to zero
+    blez t2, _entry              // t2 <= 0? => No bss to zero
     blt t4, x0, _zero_bss_rem   // t4 <  0? => Less than 4 words left
     sd a0, 0(t0)
     sd a0, 8(t0)
@@ -61,7 +70,7 @@ _zero_bss_loop:
     addi t2, t2, -32
     addi t0, t0, 32
     bgt t2, x0, _zero_bss_loop  // Still more to go
-    j _fp_init
+    j _entry
 
 _zero_bss_rem:
     sb a0, 0(t0)
@@ -69,6 +78,7 @@ _zero_bss_rem:
     addi t0, t0, 1
     bgt t2, x0, _zero_bss_rem
 
+_entry:
 _fp_init:
     // Set FS state to "Initial", enabling FP instructions
     li t1, 1
@@ -116,6 +126,7 @@ _fp_init:
     fence
     call main
 
+// All harts land here after main() returns
 // If main returns, we end up here
 .global _exit
 .align 4
@@ -131,6 +142,24 @@ _exit:
     sw t0, 8(t1)     // regs.SCRATCH[2]
     // Hand over to whatever called us, passing return
     ret
+
+// Non-primary harts park here until smp_resume() sends an IPI, then
+// re-enter main() with their own hart-local stack already set up above.
+_wait_for_ipi:
+    csrs mie, 0x8   // Enable M-mode software interrupts
+1:
+    wfi
+    csrr t0, mip
+    andi t0, t0, 0x8
+    beqz t0, 1b
+    // Clear pending bit and CLINT IPI register for this hart
+    csrc mip, 0x8
+    la   t0, __clint_base_addr__
+    csrr t1, mhartid
+    slli t1, t1, 2
+    add  t1, t1, t0
+    sw   zero, 0(t1)
+    j _entry
 
 // This wraps the C trap handler to save the (integer-only) caller-save
 // registers and perform a proper machine-mode exception return.

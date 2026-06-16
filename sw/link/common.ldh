@@ -22,6 +22,9 @@ SECTIONS {
   __global_pointer$ = ADDR(.misc) + SIZEOF(.misc) / 2;
   __stack_pointer$  = 0;
 
+  /* Default per-hart stack size */
+  __stack_size$     = 0x1000;
+
   /* AXI-RT guard register (specific offset within AXI-RT region, not a named block) */
   __axirtgrd_base_addr__ = 0x020C1ffc;
 }
