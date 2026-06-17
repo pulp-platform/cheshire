@@ -91,6 +91,11 @@ module cheshire_soc import cheshire_pkg::*; #(
   output logic [SlinkNumChan-1:0]                     slink_rcv_clk_o,
   input  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_i,
   output logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_o,
+  // IoT link interface
+  input  logic [SlinkNumChan-1:0]                     iotlink_rcv_clk_i,
+  output logic [SlinkNumChan-1:0]                     iotlink_rcv_clk_o,
+  input  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  iotlink_i,
+  output logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  iotlink_o,
   // VGA interface
   output logic                          vga_hsync_o,
   output logic                          vga_vsync_o,
@@ -109,6 +114,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 );
 
   `include "axi/typedef.svh"
+  `include "axi/assign.svh"
   `include "common_cells/registers.svh"
   `include "common_cells/assertions.svh"
   `include "cheshire/typedef.svh"
@@ -116,6 +122,16 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   // Declare interface types internally
   `CHESHIRE_TYPEDEF_ALL(, Cfg)
+
+  // ACP's AXI type
+  localparam ACPAddrWidth = 32;
+  localparam ACPIdWidth = 7;
+  localparam ACPDataWidth = 64;
+  localparam ACPStrbWidth = ACPDataWidth / 8;
+  localparam ACPUserWidth = 1;
+  `AXI_TYPEDEF_ALL(axi_acp_mstid, logic[ACPAddrWidth-1:0], axi_mst_id_t, logic[ACPDataWidth-1:0], logic[ACPStrbWidth-1:0], logic[ACPUserWidth-1:0])
+  `AXI_TYPEDEF_ALL(axi_acp_slvid, logic[ACPAddrWidth-1:0], axi_slv_id_t, logic[ACPDataWidth-1:0], logic[ACPStrbWidth-1:0], logic[ACPUserWidth-1:0])
+  `AXI_TYPEDEF_ALL(axi_acp, logic[ACPAddrWidth-1:0], logic[ACPIdWidth-1:0], logic[ACPDataWidth-1:0], logic[ACPStrbWidth-1:0], logic[ACPUserWidth-1:0])
 
   //////////////////
   //  Interrupts  //
@@ -1720,6 +1736,178 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     assign slink_rcv_clk_o  = 0;
     assign slink_o          = '0;
+
+  end
+
+  ///////////////
+  //  IoT Link  //
+  ///////////////
+
+  if(Cfg.IoTLink) begin : gen_iot_link
+
+    ////// TX (SoC AXI out -> IoT serial link input)
+
+    // Convert AXI payload widths (address/user), ID still at AxiSlvIdWidth.
+    axi_acp_slvid_req_t iotlink_tx_slvid_req;
+    axi_acp_slvid_resp_t iotlink_tx_slvid_rsp;
+
+    // Serial-link-facing TX port (ACP ID width).
+    axi_acp_req_t iotlink_tx_req;
+    axi_acp_resp_t iotlink_tx_rsp;
+
+    // TX path after address clamp/user tagging.
+    axi_slv_req_t iotlink_tx_clamp_req;
+    axi_slv_rsp_t iotlink_tx_clamp_rsp;
+
+    ////// RX (IoT serial link output -> SoC AXI in)
+
+    // Serial-link-facing RX port (ACP ID width).
+    axi_acp_req_t iotlink_rx_req;
+    axi_acp_resp_t iotlink_rx_rsp;
+
+    // Convert ACP ID back to internal AxiMstIdWidth.
+    axi_acp_mstid_req_t iotlink_rx_mstid_req;
+    axi_acp_mstid_resp_t iotlink_rx_mstid_rsp;
+
+    // TX stage 1: clamp address and set serial-link user bit.
+
+    always_comb begin
+      iotlink_tx_clamp_req          = axi_out_req[AxiOut.iotlink];
+      iotlink_tx_clamp_req.aw.addr  = (Cfg.IoTlinkTxAddrDomain      & ~Cfg.SlinkTxAddrMask) |
+                                      (iotlink_tx_clamp_req.aw.addr &  Cfg.SlinkTxAddrMask);
+      iotlink_tx_clamp_req.ar.addr  = (Cfg.IoTlinkTxAddrDomain      & ~Cfg.SlinkTxAddrMask) |
+                                      (iotlink_tx_clamp_req.ar.addr &  Cfg.SlinkTxAddrMask);
+      iotlink_tx_clamp_req.aw.user |= (addr_t'(1) << Cfg.SlinkUserAmoBit);
+      iotlink_tx_clamp_req.ar.user |= (addr_t'(1) << Cfg.SlinkUserAmoBit);
+      iotlink_tx_clamp_req.w.user  |= (addr_t'(1) << Cfg.SlinkUserAmoBit);
+    end
+
+    // TX stage 2: convert AXI payload widths to ACP widths (ID remains AxiSlvIdWidth).
+    always_comb begin
+      `AXI_SET_REQ_STRUCT(iotlink_tx_slvid_req, iotlink_tx_clamp_req)
+      iotlink_tx_slvid_req.aw.addr = iotlink_tx_clamp_req.aw.addr[ACPAddrWidth-1:0];
+      iotlink_tx_slvid_req.ar.addr = iotlink_tx_clamp_req.ar.addr[ACPAddrWidth-1:0];
+      iotlink_tx_slvid_req.aw.user = iotlink_tx_clamp_req.aw.user[ACPUserWidth-1:0];
+      iotlink_tx_slvid_req.w.user  = iotlink_tx_clamp_req.w.user[ACPUserWidth-1:0];
+      iotlink_tx_slvid_req.ar.user = iotlink_tx_clamp_req.ar.user[ACPUserWidth-1:0];
+    end
+
+    always_comb begin
+      `AXI_SET_RESP_STRUCT(iotlink_tx_clamp_rsp, iotlink_tx_slvid_rsp)
+      iotlink_tx_clamp_rsp.b.user = axi_user_t'(iotlink_tx_slvid_rsp.b.user);
+      iotlink_tx_clamp_rsp.r.user = axi_user_t'(iotlink_tx_slvid_rsp.r.user);
+    end
+
+    // TX response stage: unset serial-link user bit.
+    always_comb begin
+      axi_out_rsp[AxiOut.iotlink]         = iotlink_tx_clamp_rsp;
+      axi_out_rsp[AxiOut.iotlink].r.user &= ~(addr_t'(1) << Cfg.SlinkUserAmoBit);
+      axi_out_rsp[AxiOut.iotlink].b.user &= ~(addr_t'(1) << Cfg.SlinkUserAmoBit);
+    end
+
+    // TX stage 3: convert slave ID width to ACP serial-link ID width.
+    axi_iw_converter #(
+      .AxiSlvPortIdWidth       ( AxiSlvIdWidth         ),
+      .AxiMstPortIdWidth       ( ACPIdWidth            ),
+      .AxiSlvPortMaxUniqIds    ( Cfg.SlinkMaxUniqIds   ),
+      .AxiSlvPortMaxTxnsPerId  ( Cfg.SlinkMaxTxnsPerId ),
+      .AxiAddrWidth            ( ACPAddrWidth          ),
+      .AxiDataWidth            ( ACPDataWidth          ),
+      .AxiUserWidth            ( ACPUserWidth          ),
+      .slv_req_t               ( axi_acp_slvid_req_t ),
+      .slv_resp_t              ( axi_acp_slvid_resp_t ),
+      .mst_req_t               ( axi_acp_req_t ),
+      .mst_resp_t              ( axi_acp_resp_t )
+    ) i_iot_link_tx_iw_converter (
+      .clk_i,
+      .rst_ni,
+      .slv_req_i  ( iotlink_tx_slvid_req ),
+      .slv_resp_o ( iotlink_tx_slvid_rsp ),
+      .mst_req_o  ( iotlink_tx_req ),
+      .mst_resp_i ( iotlink_tx_rsp )
+    );
+
+    // RX stage 1: convert ACP serial-link ID width to internal master ID width.
+    axi_iw_converter #(
+      .AxiSlvPortIdWidth       ( ACPIdWidth            ),
+      .AxiMstPortIdWidth       ( Cfg.AxiMstIdWidth     ),
+      .AxiSlvPortMaxUniqIds    ( Cfg.SlinkMaxUniqIds   ),
+      .AxiSlvPortMaxTxnsPerId  ( Cfg.SlinkMaxTxnsPerId ),
+      .AxiAddrWidth            ( ACPAddrWidth          ),
+      .AxiDataWidth            ( ACPDataWidth          ),
+      .AxiUserWidth            ( ACPUserWidth          ),
+      .slv_req_t               ( axi_acp_req_t ),
+      .slv_resp_t              ( axi_acp_resp_t ),
+      .mst_req_t               ( axi_acp_mstid_req_t ),
+      .mst_resp_t              ( axi_acp_mstid_resp_t )
+    ) i_iot_link_rx_iw_converter (
+      .clk_i,
+      .rst_ni,
+      .slv_req_i  ( iotlink_rx_req ),
+      .slv_resp_o ( iotlink_rx_rsp ),
+      .mst_req_o  ( iotlink_rx_mstid_req ),
+      .mst_resp_i ( iotlink_rx_mstid_rsp )
+    );
+
+    // RX stage 2: convert ACP payload widths back to internal AXI widths.
+    always_comb begin
+      `AXI_SET_REQ_STRUCT(axi_in_req[AxiIn.iotlink], iotlink_rx_mstid_req)
+      axi_in_req[AxiIn.iotlink].aw.addr = addr_t'(iotlink_rx_mstid_req.aw.addr);
+      axi_in_req[AxiIn.iotlink].ar.addr = addr_t'(iotlink_rx_mstid_req.ar.addr);
+      axi_in_req[AxiIn.iotlink].aw.user = axi_user_t'(iotlink_rx_mstid_req.aw.user);
+      axi_in_req[AxiIn.iotlink].w.user  = axi_user_t'(iotlink_rx_mstid_req.w.user);
+      axi_in_req[AxiIn.iotlink].ar.user = axi_user_t'(iotlink_rx_mstid_req.ar.user);
+    end
+
+    always_comb begin
+      `AXI_SET_RESP_STRUCT(iotlink_rx_mstid_rsp, axi_in_rsp[AxiIn.iotlink])
+      iotlink_rx_mstid_rsp.b.user = axi_in_rsp[AxiIn.iotlink].b.user[ACPUserWidth-1:0];
+      iotlink_rx_mstid_rsp.r.user = axi_in_rsp[AxiIn.iotlink].r.user[ACPUserWidth-1:0];
+    end
+
+    serial_link #(
+      .axi_req_t    ( axi_acp_req_t ),
+      .axi_rsp_t    ( axi_acp_resp_t ),
+      .cfg_req_t    ( reg_req_t ),
+      .cfg_rsp_t    ( reg_rsp_t ),
+      .aw_chan_t    ( axi_acp_aw_chan_t ),
+      .ar_chan_t    ( axi_acp_ar_chan_t ),
+      .r_chan_t     ( axi_acp_r_chan_t  ),
+      .w_chan_t     ( axi_acp_w_chan_t  ),
+      .b_chan_t     ( axi_acp_b_chan_t  ),
+      .hw2reg_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t ),
+      .reg2hw_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t ),
+      .NumChannels  ( SlinkNumChan   ),
+      .NumLanes     ( SlinkNumLanes  ),
+      .MaxClkDiv    ( SlinkMaxClkDiv )
+    ) i_iot_link (
+      .clk_i,
+      .rst_ni,
+      .clk_sl_i       ( clk_i  ),
+      .rst_sl_ni      ( rst_ni ),
+      .clk_reg_i      ( clk_i  ),
+      .rst_reg_ni     ( rst_ni ),
+      .testmode_i     ( test_mode_i ),
+      .axi_in_req_i   ( iotlink_tx_req ),
+      .axi_in_rsp_o   ( iotlink_tx_rsp ),
+      .axi_out_req_o  ( iotlink_rx_req ),
+      .axi_out_rsp_i  ( iotlink_rx_rsp ),
+      .cfg_req_i      ( reg_out_req[RegOut.iotlink] ),
+      .cfg_rsp_o      ( reg_out_rsp[RegOut.iotlink] ),
+      .ddr_rcv_clk_i  ( iotlink_rcv_clk_i ),
+      .ddr_rcv_clk_o  ( iotlink_rcv_clk_o ),
+      .ddr_i          ( iotlink_i ),
+      .ddr_o          ( iotlink_o ),
+      .isolated_i     ( '0 ),
+      .isolate_o      ( ),
+      .clk_ena_o      ( ),
+      .reset_no       ( )
+    );
+
+  end else begin : gen_no_iot_link
+
+    assign iotlink_rcv_clk_o  = 0;
+    assign iotlink_o          = '0;
 
   end
 

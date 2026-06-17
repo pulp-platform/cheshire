@@ -132,6 +132,7 @@ package cheshire_pkg;
     bit     Gpio;
     bit     Dma;
     bit     SerialLink;
+    bit     IoTLink;
     bit     Vga;
     bit     Usb;
     bit     AxiRt;
@@ -175,6 +176,10 @@ package cheshire_pkg;
     doub_bt SlinkTxAddrMask;
     doub_bt SlinkTxAddrDomain;
     dw_bt   SlinkUserAmoBit;
+    // Parameters for IoT Link (reuses Serial Link channel/lane parameters)
+    doub_bt IoTlinkRegionStart;
+    doub_bt IoTlinkRegionEnd;
+    doub_bt IoTlinkTxAddrDomain;
     // Parameters for USB
     dw_bt   UsbDmaMaxReads;
     doub_bt UsbAddrMask;
@@ -281,8 +286,9 @@ package cheshire_pkg;
   localparam doub_bt AmBrom   = 'h0200_0000;  // Base of reg peripherals
   localparam doub_bt AmRegs   = 'h0300_0000;
   localparam doub_bt AmLlc    = 'h0300_1000;
-  localparam doub_bt AmSlink  = 'h0300_6000;
-  localparam doub_bt AmBusErr = 'h0300_9000;
+  localparam doub_bt AmSlink    = 'h0300_6000;
+  localparam doub_bt AmIoTlink  = 'h0300_A000;
+  localparam doub_bt AmBusErr   = 'h0300_9000;
   localparam doub_bt AmSpm    = 'h1000_0000;  // Cached region at bottom, uncached on top
   localparam doub_bt AmClic   = 'h0800_0000;
 
@@ -302,6 +308,7 @@ package cheshire_pkg;
     aw_bt ara;
     aw_bt dma;
     aw_bt slink;
+    aw_bt iotlink;
     aw_bt vga;
     aw_bt usb;
     aw_bt ext_base;
@@ -313,10 +320,11 @@ package cheshire_pkg;
     int unsigned i = 0;
     for (int j = 0; j < cfg.NumCores; j++) begin ret.cores[i] = i; i++; end
     ret.dbg = i;
-    if (cfg.Ara)        begin i++; ret.ara   = i; end
-    if (cfg.Dma)        begin i++; ret.dma   = i; end
-    if (cfg.SerialLink) begin i++; ret.slink = i; end
-    if (cfg.Vga)        begin i++; ret.vga   = i; end
+    if (cfg.Ara)        begin i++; ret.ara     = i; end
+    if (cfg.Dma)        begin i++; ret.dma     = i; end
+    if (cfg.SerialLink) begin i++; ret.slink   = i; end
+    if (cfg.IoTLink)    begin i++; ret.iotlink = i; end
+    if (cfg.Vga)        begin i++; ret.vga     = i; end
     if (cfg.Usb)        begin i++; ret.usb   = i; end
     i++;
     ret.ext_base = i;
@@ -339,6 +347,7 @@ package cheshire_pkg;
     aw_bt spm;
     aw_bt dma;
     aw_bt slink;
+    aw_bt iotlink;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
@@ -366,6 +375,8 @@ package cheshire_pkg;
     if (cfg.Dma)          begin i++; r++; ret.dma = i; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
     if (cfg.SerialLink)   begin i++; r++; ret.slink = i;
         ret.map[r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
+    if (cfg.IoTLink)      begin i++; r++; ret.iotlink = i;
+        ret.map[r] = '{i, cfg.IoTlinkRegionStart, cfg.IoTlinkRegionEnd}; end
     // External port indices start after internal ones
     i++; r++;
     ret.ext_base  = i;
@@ -398,6 +409,7 @@ package cheshire_pkg;
     aw_bt spi_host;
     aw_bt gpio;
     aw_bt slink;
+    aw_bt iotlink;
     aw_bt vga;
     aw_bt usb;
     aw_bt axirt;
@@ -422,7 +434,8 @@ package cheshire_pkg;
     if (cfg.I2c)          begin i++; ret.i2c        = i; r++; ret.map[r] = '{i, 'h0300_3000, 'h0300_4000}; end
     if (cfg.SpiHost)      begin i++; ret.spi_host   = i; r++; ret.map[r] = '{i, 'h0300_4000, 'h0300_5000}; end
     if (cfg.Gpio)         begin i++; ret.gpio       = i; r++; ret.map[r] = '{i, 'h0300_5000, 'h0300_6000}; end
-    if (cfg.SerialLink)   begin i++; ret.slink      = i; r++; ret.map[r] = '{i, AmSlink, AmSlink +'h1000}; end
+    if (cfg.SerialLink)   begin i++; ret.slink      = i; r++; ret.map[r] = '{i, AmSlink,   AmSlink   +'h1000}; end
+    if (cfg.IoTLink)      begin i++; ret.iotlink    = i; r++; ret.map[r] = '{i, AmIoTlink, AmIoTlink +'h1000}; end
     if (cfg.Vga)          begin i++; ret.vga        = i; r++; ret.map[r] = '{i, 'h0300_7000, 'h0300_8000}; end
     if (cfg.Usb)          begin i++; ret.usb        = i; r++; ret.map[r] = '{i, 'h0300_8000, 'h0300_9000}; end
     if (cfg.IrqRouter)    begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, 'h0208_0000, 'h020c_0000}; end
@@ -582,6 +595,7 @@ package cheshire_pkg;
     Gpio              : 1,
     Dma               : 1,
     SerialLink        : 1,
+    IoTLink           : 1,
     Vga               : 1,
     Usb               : 1,
     AxiRt             : 0,
@@ -625,6 +639,10 @@ package cheshire_pkg;
     SlinkTxAddrMask   : 'hFFFF_FFFF,
     SlinkTxAddrDomain : 'h0000_0000,
     SlinkUserAmoBit   : 1,  // Convention: lower AMO bits for cores, MSB for serial link
+    // IoT Link: map other chip's lower 32bit to 'h4_0000_0000
+    IoTlinkRegionStart  : 64'h4_0000_0000,
+    IoTlinkRegionEnd    : 64'h5_0000_0000,
+    IoTlinkTxAddrDomain : 'h0000_0000,
     // USB config
     UsbDmaMaxReads    : 16,
     UsbAddrMask       : 'hFFFF_FFFF,

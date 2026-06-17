@@ -63,6 +63,14 @@ module fixture_cheshire_soc #(
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o;
 
+  logic [SlinkNumChan-1:0]                    iotlink_rcv_clk_i;
+  logic [SlinkNumChan-1:0]                    iotlink_rcv_clk_o;
+  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] iotlink_i;
+  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] iotlink_o;
+
+  assign iotlink_rcv_clk_i = iotlink_rcv_clk_o;
+  assign iotlink_i         = iotlink_o;
+
   cheshire_soc #(
     .Cfg                ( DutCfg ),
     .ExtHartinfo        ( '0 ),
@@ -130,6 +138,10 @@ module fixture_cheshire_soc #(
     .slink_rcv_clk_o    ( slink_rcv_clk_o ),
     .slink_i            ( slink_i ),
     .slink_o            ( slink_o ),
+    .iotlink_rcv_clk_i  ( iotlink_rcv_clk_i ),
+    .iotlink_rcv_clk_o  ( iotlink_rcv_clk_o ),
+    .iotlink_i          ( iotlink_i ),
+    .iotlink_o          ( iotlink_o ),
     .vga_hsync_o        ( ),
     .vga_vsync_o        ( ),
     .vga_red_o          ( ),

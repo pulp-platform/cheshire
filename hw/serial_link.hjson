@@ -28,7 +28,7 @@
     { name: "NumBits",
       desc: "Number of bits transfered in one clock cycle (2 * NumLanes)",
       type: "int",
-      default: "8",
+      default: "4",
       local: "true"
     },
     { name: "Log2MaxClkDiv",

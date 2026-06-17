@@ -101,6 +101,10 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
   `DDR3_INTF
 `endif
 
+`ifdef USE_IOTLINK
+  `IOTLINK_INTF
+`endif
+
   output logic  uart_tx_o,
   input  logic  uart_rx_i,
 
@@ -117,6 +121,11 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
     cheshire_cfg_t ret  = DefaultCfg;
     ret.RtcFreq         = 1000000;
     ret.SerialLink      = 0;
+  `ifdef USE_IOTLINK
+    ret.IoTLink         = 1;
+  `else
+    ret.IoTLink         = 0;
+  `endif
   `ifdef USE_USB
     ret.Usb = 1;
   `else
@@ -509,8 +518,32 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
 `endif
 
   //////////////////
+  //  IoT Link    //
+  //////////////////
+
+`ifdef USE_IOTLINK
+  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] iotlink_o_soc, iotlink_i_soc;
+  logic [SlinkNumChan-1:0]                    iotlink_rcv_clk_o_soc, iotlink_rcv_clk_i_soc;
+
+  assign iotlink_o            = iotlink_o_soc[0][0];
+  assign iotlink_rcv_clk_o    = iotlink_rcv_clk_o_soc[0];
+
+  always_comb begin
+    iotlink_i_soc         = '0;
+    iotlink_rcv_clk_i_soc = '0;
+    iotlink_i_soc[0][0]         = iotlink_i;
+    iotlink_rcv_clk_i_soc[0]    = iotlink_rcv_clk_i;
+  end
+`endif
+
+  //////////////////
   // Cheshire SoC //
   //////////////////
+
+  `ila(iotlink_i_ila, iotlink_i)
+  `ila(iotlink_rcv_clk_i_ila, iotlink_rcv_clk_i)
+  `ila(iotlink_o_ila, iotlink_o)
+  `ila(iotlink_rcv_clk_o_ila, iotlink_rcv_clk_o)
 
   cheshire_soc #(
     .Cfg                ( FPGACfg ),
@@ -549,6 +582,17 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
     .slink_rcv_clk_o    ( ),
     .slink_i            ( '0 ),
     .slink_o            ( ),
+`ifdef USE_IOTLINK
+    .iotlink_rcv_clk_i  ( iotlink_rcv_clk_i_soc ),
+    .iotlink_rcv_clk_o  ( iotlink_rcv_clk_o_soc ),
+    .iotlink_i          ( iotlink_i_soc ),
+    .iotlink_o          ( iotlink_o_soc ),
+`else
+    .iotlink_rcv_clk_i  ( 1'b1 ),
+    .iotlink_rcv_clk_o  ( ),
+    .iotlink_i          ( '0 ),
+    .iotlink_o          ( ),
+`endif
 `ifdef USE_JTAG
     .jtag_tck_i,
     .jtag_trst_ni,

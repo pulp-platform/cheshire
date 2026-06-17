@@ -13,6 +13,7 @@
   `define USE_QSPI
   `define USE_STARTUPE3
   `define USE_VIO
+  `define USE_IOTLINK
 `endif
 
 `ifdef TARGET_VCU128
@@ -91,6 +92,16 @@
   output [0:0]  ddr3_cs_n, \
   output [3:0]  ddr3_dm, \
   output [0:0]  ddr3_odt,
+
+//////////////////////
+// IoT Link (PMOD)  //
+//////////////////////
+
+`define IOTLINK_INTF \
+  output        iotlink_o, \
+  input         iotlink_i, \
+  output        iotlink_rcv_clk_o, \
+  input         iotlink_rcv_clk_i,
 
 `define ila(__name, __signal)  \
   (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [$bits(__signal)-1:0] __name; \

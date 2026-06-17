@@ -71,6 +71,21 @@ set_property IOSTANDARD LVCMOS12 [get_ports jtag_tdo_o]
 # PMOD1_3, J53.7 -> TCK
 set_property PACKAGE_PIN P30     [get_ports jtag_tck_i]
 set_property IOSTANDARD LVCMOS12 [get_ports jtag_tck_i]
+# PMOD1_4, J53.2
+set_property PACKAGE_PIN P29     [get_ports iotlink_o]
+set_property IOSTANDARD LVCMOS12 [get_ports iotlink_o]
+# PMOD1_5, J53.4
+set_property PACKAGE_PIN L31     [get_ports iotlink_i]
+set_property IOSTANDARD LVCMOS12 [get_ports iotlink_i]
+# PMOD1_6, J53.6
+set_property PACKAGE_PIN M31     [get_ports iotlink_rcv_clk_o]
+set_property IOSTANDARD LVCMOS12 [get_ports iotlink_rcv_clk_o]
+# PMOD1_7, J53.8
+set_property PACKAGE_PIN R29     [get_ports iotlink_rcv_clk_i]
+set_property IOSTANDARD LVCMOS12 [get_ports iotlink_rcv_clk_i]
+
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets -of [get_ports iotlink_rcv_clk_i]]
+set_property CLOCK_BUFFER_TYPE NONE [get_nets -of [get_ports iotlink_rcv_clk_i]]
 
 # Active high reset
 set_property PACKAGE_PIN L19 [get_ports sys_reset]
