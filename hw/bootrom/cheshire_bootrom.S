@@ -116,10 +116,10 @@ _exit:
 .align 4
 boot_next_stage:
     // Write boot address into scratch registers before waking other harts
-    la   t0, __regs_base_addr__
-    sw   a0, 16(t0)   // regs.SCRATCH[4]
+    la t0, __regs_base_addr__
+    sw a0, 16(t0)   // regs.SCRATCH[4]
     srli a0, a0, 32
-    sw   a0, 20(t0)   // regs.SCRATCH[5]
+    sw a0, 20(t0)   // regs.SCRATCH[5]
     fence
     // Wake all other harts via IPI and wait for each to acknowledge
     call smp_resume
@@ -147,4 +147,5 @@ _boot_jump:
     or   t0, t0, t1
     csrr a0, mhartid
     jalr ra, 0(t0)
+    // We should never get here
     ret

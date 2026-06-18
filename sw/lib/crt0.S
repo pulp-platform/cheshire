@@ -61,7 +61,7 @@ _zero_bss_init:
 
 _zero_bss_loop:
     addi t4, t2, -32
-    blez t2, _entry              // t2 <= 0? => No bss to zero
+    blez t2, _fp_init              // t2 <= 0? => No bss to zero
     blt t4, x0, _zero_bss_rem   // t4 <  0? => Less than 4 words left
     sd a0, 0(t0)
     sd a0, 8(t0)
@@ -70,7 +70,7 @@ _zero_bss_loop:
     addi t2, t2, -32
     addi t0, t0, 32
     bgt t2, x0, _zero_bss_loop  // Still more to go
-    j _entry
+    j _fp_init
 
 _zero_bss_rem:
     sb a0, 0(t0)
@@ -78,7 +78,6 @@ _zero_bss_rem:
     addi t0, t0, 1
     bgt t2, x0, _zero_bss_rem
 
-_entry:
 _fp_init:
     // Set FS state to "Initial", enabling FP instructions
     li t1, 1
@@ -126,7 +125,6 @@ _fp_init:
     fence
     call main
 
-// All harts land here after main() returns
 // If main returns, we end up here
 .global _exit
 .align 4
@@ -159,7 +157,7 @@ _wait_for_ipi:
     slli t1, t1, 2
     add  t1, t1, t0
     sw   zero, 0(t1)
-    j _entry
+    j _fp_init
 
 // This wraps the C trap handler to save the (integer-only) caller-save
 // registers and perform a proper machine-mode exception return.
