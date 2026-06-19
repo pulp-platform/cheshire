@@ -17,22 +17,27 @@ void smp_resume(void) {
     }
 }
 
-static volatile uint64_t _barrier_target = 0;
+static volatile uint64_t _barrier_target_a = 0;
+static volatile uint64_t _barrier_target_b = 0;
 
 static void barrier_wait(volatile uint64_t *barrier, uint64_t incr, uint64_t reach) {
-    __atomic_fetch_add(barrier, incr, __ATOMIC_SEQ_CST);
-    while (__atomic_load_n(barrier, __ATOMIC_ACQUIRE) != reach)
+    __atomic_fetch_add(barrier, incr, __ATOMIC_RELEASE);
+    while (__atomic_load_n(barrier, __ATOMIC_RELAXED) != reach)
         ;
+    __atomic_thread_fence(__ATOMIC_ACQUIRE);
 }
 
 void smp_barrier_init(void) {
-    _barrier_target = 0;
+    _barrier_target_a = 0;
+    _barrier_target_b = 0;
 }
 
 void smp_barrier_up(uint64_t n_processes) {
-    barrier_wait(&_barrier_target, 1, n_processes);
+    barrier_wait(&_barrier_target_a, 1, n_processes);
+    barrier_wait(&_barrier_target_b, 1, n_processes);
 }
 
 void smp_barrier_down(void) {
-    barrier_wait(&_barrier_target, -1, 0);
+    barrier_wait(&_barrier_target_a, -1, 0);
+    barrier_wait(&_barrier_target_b, -1, 0);
 }
