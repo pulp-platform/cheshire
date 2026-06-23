@@ -33,11 +33,42 @@ module fixture_cheshire_soc #(
   axi_llc_req_t axi_llc_mst_req;
   axi_llc_rsp_t axi_llc_mst_rsp;
 
+  // JTAG signals connected to the DUT
   logic jtag_tck;
   logic jtag_trst_n;
   logic jtag_tms;
   logic jtag_tdi;
   logic jtag_tdo;
+  logic jtag_tdo_oe;
+
+  // JTAG signals driven by the existing SystemVerilog VIP
+  logic vip_jtag_tck;
+  logic vip_jtag_trst_n;
+  logic vip_jtag_tms;
+  logic vip_jtag_tdi;
+
+  // JTAG signals driven by SimJTAG / remote-bitbang
+  logic rbb_jtag_tck;
+  logic rbb_jtag_trst_n;
+  logic rbb_jtag_tms;
+  logic rbb_jtag_tdi;
+  logic [31:0] rbb_exit;
+
+  bit use_openocd;
+
+  initial begin
+    use_openocd = $test$plusargs("OPENOCD");
+
+    if (use_openocd) begin
+      $display("[SimJTAG] OpenOCD remote-bitbang mode enabled");
+    end
+  end
+
+  // Only one JTAG master may drive the DUT at a time.
+  assign jtag_tck    = use_openocd ? rbb_jtag_tck    : vip_jtag_tck;
+  assign jtag_trst_n = use_openocd ? rbb_jtag_trst_n : vip_jtag_trst_n;
+  assign jtag_tms    = use_openocd ? rbb_jtag_tms    : vip_jtag_tms;
+  assign jtag_tdi    = use_openocd ? rbb_jtag_tdi    : vip_jtag_tdi;
 
   logic uart_tx;
   logic uart_rx;
@@ -100,7 +131,7 @@ module fixture_cheshire_soc #(
     .jtag_tms_i         ( jtag_tms    ),
     .jtag_tdi_i         ( jtag_tdi    ),
     .jtag_tdo_o         ( jtag_tdo    ),
-    .jtag_tdo_oe_o      ( ),
+    .jtag_tdo_oe_o      ( jtag_tdo_oe ),
     .uart_tx_o          ( uart_tx ),
     .uart_rx_i          ( uart_rx ),
     .uart_rts_no        ( ),
@@ -149,6 +180,26 @@ module fixture_cheshire_soc #(
 
   vip_cheshire_soc_tristate vip_tristate (.*);
 
+  ////////////////////////////
+  // OpenOCD remote-bitbang //
+  ////////////////////////////
+
+  SimJTAG #(
+    .TICK_DELAY ( 1 )
+  ) i_sim_jtag (
+    .clock           ( clk             ),
+    .reset           ( ~rst_n          ),
+    .enable          ( use_openocd     ),
+    .init_done       ( rst_n           ),
+    .jtag_TCK        ( rbb_jtag_tck    ),
+    .jtag_TMS        ( rbb_jtag_tms    ),
+    .jtag_TDI        ( rbb_jtag_tdi    ),
+    .jtag_TRSTn      ( rbb_jtag_trst_n ),
+    .jtag_TDO_data   ( jtag_tdo        ),
+    .jtag_TDO_driven ( jtag_tdo_oe     ),
+    .exit            ( rbb_exit        )
+  );
+
   ///////////
   //  VIP  //
   ///////////
@@ -159,11 +210,18 @@ module fixture_cheshire_soc #(
   assign axi_slink_mst_req = '0;
 
   vip_cheshire_soc #(
-    .DutCfg            ( DutCfg ),
-    .axi_ext_llc_req_t ( axi_llc_req_t ),
-    .axi_ext_llc_rsp_t ( axi_llc_rsp_t ),
-    .axi_ext_mst_req_t ( axi_mst_req_t ),
-    .axi_ext_mst_rsp_t ( axi_mst_rsp_t )
-  ) vip (.*);
+  .DutCfg                ( DutCfg        ),
+  .axi_ext_llc_req_t     ( axi_llc_req_t ),
+  .axi_ext_llc_rsp_t     ( axi_llc_rsp_t ),
+  .axi_ext_mst_req_t     ( axi_mst_req_t ),
+  .axi_ext_mst_rsp_t     ( axi_mst_rsp_t )
+) vip (
+  .jtag_tck              ( vip_jtag_tck    ),
+  .jtag_trst_n           ( vip_jtag_trst_n ),
+  .jtag_tms              ( vip_jtag_tms    ),
+  .jtag_tdi              ( vip_jtag_tdi    ),
+  .jtag_tdo              ( jtag_tdo        ),
+  .*
+);
 
 endmodule
