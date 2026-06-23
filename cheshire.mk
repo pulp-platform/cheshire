@@ -135,15 +135,73 @@ CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/boo
 # Simulation #
 ##############
 
-$(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: Bender.yml
-	$(BENDER) script vsim -t sim -t cv64a6_imafdcsclic_sv39 -t test -t cva6 -t c910 -t rtl --vlog-arg="$(VLOG_ARGS)" > $@
+CXX ?= g++
+
+# CVA6 remote-bitbang simulation infrastructure
+CHS_CVA6_ROOT := $(shell $(BENDER) path cva6)
+
+CHS_SIMJTAG_SV := \
+	$(CHS_CVA6_ROOT)/corev_apu/tb/common/SimJTAG.sv
+
+CHS_SIMJTAG_DPI_DIR := $(CHS_ROOT)/target/sim/dpi
+
+CHS_SIMJTAG_CC := \
+	$(CHS_SIMJTAG_DPI_DIR)/SimJTAG.cc
+
+CHS_REMOTE_BITBANG_CC := \
+	$(CHS_SIMJTAG_DPI_DIR)/remote_bitbang.cc
+
+CHS_REMOTE_BITBANG_H := \
+	$(CHS_SIMJTAG_DPI_DIR)/remote_bitbang.h
+
+CHS_SIMJTAG_DPI_LIB := \
+	$(CHS_ROOT)/target/sim/vsim/simjtag_dpi.so
+
+
+# Build the remote-bitbang DPI shared library
+$(CHS_SIMJTAG_DPI_LIB): \
+		$(CHS_SIMJTAG_CC) \
+		$(CHS_REMOTE_BITBANG_CC) \
+		$(CHS_REMOTE_BITBANG_H)
+	@mkdir -p $(dir $@)
+	$(CXX) \
+		-std=c++11 \
+		-fPIC \
+		-shared \
+		-m64 \
+		-D_GLIBCXX_USE_CXX11_ABI=0 \
+		-I$(CHS_SIMJTAG_DPI_DIR) \
+		-o $@ \
+		$(CHS_SIMJTAG_CC) \
+		$(CHS_REMOTE_BITBANG_CC)
+
+
+# Generate the Questa compile script
+$(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: \
+		Bender.yml \
+		$(CHS_ROOT)/cheshire.mk \
+		$(CHS_SIMJTAG_SV)
+	@mkdir -p $(dir $@)
+	$(BENDER) script vsim \
+		-t sim \
+		-t cv64a6_imafdcsclic_sv39 \
+		-t test \
+		-t cva6 \
+		-t c910 \
+		-t rtl \
+		--vlog-arg="$(VLOG_ARGS)" > $@
+	# TODO: Add to Bender.yml
+	echo 'vlog "$(realpath $(CHS_SIMJTAG_SV))"' >> $@
+
 	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
+	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/dpi/SimJTAG.cc" -ccflags "-std=c++11"' >> $@
+	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/dpi/remote_bitbang.cc" -ccflags "-std=c++11"' >> $@
+
 
 $(CHS_ROOT)/target/sim/models:
 	mkdir -p $@
 
-# Download (partially non-free) simulation models from publically available sources;
-# by running these targets or targets depending on them, you accept this (see README.md).
+# Download simulation models
 $(CHS_ROOT)/target/sim/models/s25fs512s.v: Bender.yml | $(CHS_ROOT)/target/sim/models
 	wget --no-check-certificate https://freemodelfoundry.com/fmf_vlog_models/flash/s25fs512s.v -O $@
 	touch $@

@@ -12,13 +12,16 @@ module tb_cheshire_soc #(
 
   fixture_cheshire_soc #(.SelectedCfg(SelectedCfg)) fix();
 
-  string      preload_elf;
-  string      boot_hex;
-  logic [1:0] boot_mode;
-  logic [2:0] preload_mode; //0: JTAG, 1: Serial Link, 2: UART, 3: MEM (simulation debug), 4: JTAG execute trigger debug-mode entry test
-  bit [31:0]  exit_code;
+  string        preload_elf;
+  string        boot_hex;
+  logic [1:0]   boot_mode;
+  logic [2:0]   preload_mode; //0: JTAG, 1: Serial Link, 2: UART, 3: MEM (simulation debug), 4: JTAG execute trigger debug-mode entry test
+  bit   [31:0]  exit_code;
+  bit           openocd_mode;
 
   initial begin
+    openocd_mode = $test$plusargs("OPENOCD");
+
     // Fetch plusargs or use safe (fail-fast) defaults
     if (!$value$plusargs("BOOTMODE=%d", boot_mode))     boot_mode     = 0;
     if (!$value$plusargs("PRELMODE=%d", preload_mode))  preload_mode  = 0;
@@ -32,6 +35,15 @@ module tb_cheshire_soc #(
 
     // Wait for reset
     fix.vip.wait_for_reset();
+
+    if (openocd_mode) begin
+      $display("[TB] Waiting for OpenOCD connection");
+
+      // OpenOCD controls execution and simulation termination manually.
+      forever begin
+        @(posedge fix.clk);
+      end
+    end else
 
     // Preload in idle mode or wait for completion in autonomous boot
     if (boot_mode == 0) begin
