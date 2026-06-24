@@ -206,8 +206,10 @@ $(CHS_ROOT)/target/sim/models/24FC1025.v: $(CHS_ROOT)/Bender.yml | $(CHS_ROOT)/t
 	unzip -p 24xx1025_Verilog_Model.zip 24FC1025.v > $@
 	rm 24xx1025_Verilog_Model.zip
 
-CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
-CHS_SIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
+CHS_MODELS_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
+CHS_MODELS_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
+
+CHS_SIM_ALL += $(CHS_MODELS_ALL)
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh
 
