@@ -110,9 +110,13 @@ $(AXI_VGA_ROOT)/.generated:
 	flock -x $@ $(MAKE) axi_vga && touch $@
 
 # Custom serial link
-$(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
-	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
-	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs BENDER="$(BENDER)" && touch $@
+# $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
+# 	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
+# 	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs BENDER="$(BENDER)" && touch $@
+
+SLINK_NUM_LANES := 2
+include $(CHS_SLINK_DIR)/slink.mk
+
 
 # iDMA
 include $(IDMA_ROOT)/idma.mk
@@ -123,7 +127,7 @@ CHS_HW_ALL += $(CLINTROOT)/.generated
 CHS_HW_ALL += $(OTPROOT)/.generated
 CHS_HW_ALL += $(AXIRTROOT)/.generated
 CHS_HW_ALL += $(AXI_VGA_ROOT)/.generated
-CHS_HW_ALL += $(CHS_SLINK_DIR)/.generated
+CHS_HW_ALL += $(CHS_SLINK_DIR)/.generated slink-gen-regs
 
 #####################
 # Generate Boot ROM #
