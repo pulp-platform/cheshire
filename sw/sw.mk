@@ -78,9 +78,19 @@ endef
 
 $(eval $(call chs_sw_gen_hdr_rule,clint,$(CLINTROOT)/src/clint.hjson $(CLINTROOT)/.generated))
 $(eval $(call chs_sw_gen_hdr_rule,axi_vga,$(AXI_VGA_ROOT)/data/axi_vga.hjson $(AXI_VGA_ROOT)/.generated))
-$(eval $(call chs_sw_gen_hdr_rule,idma,$(IDMA_ROOT)/target/rtl/idma_reg64_2d.hjson))
 $(eval $(call chs_sw_gen_hdr_rule,axi_llc,$(CHS_LLC_DIR)/data/axi_llc_regs.hjson))
 $(eval $(call chs_sw_gen_hdr_rule,axi_rt,$(AXIRTROOT)/src/regs/axi_rt.hjson $(AXIRTROOT)/.generated))
+
+# iDMA ships SystemRDL: generate its C header with PeakRDL like Cheshire's own regs
+# (params select the reg64_2d frontend instantiated by Cheshire)
+.PRECIOUS: $(CHS_SW_DIR)/include/regs/idma.h
+CHS_SW_GEN_HDRS += $(CHS_SW_DIR)/include/regs/idma.h
+
+$(CHS_SW_DIR)/include/regs/idma.h: $(IDMA_ROOT)/src/frontend/reg/idma_reg.rdl
+	@mkdir -p $(dir $@)
+	$(PEAKRDL) c-header $< -o $@ -b ltoh --type-style hier --rename idma_reg64_2d \
+	  -P SysAddrWidth=64 -P NumDims=2 -P Log2NumDims=1
+	@sed -i '1i// Copyright 2026 ETH Zurich and University of Bologna.\n// Solderpad Hardware License, Version 0.51, see LICENSE for details.\n// SPDX-License-Identifier: SHL-0.51\n' $@
 
 .PRECIOUS: $(CHS_SW_DIR)/include/regs/cheshire.h
 CHS_SW_GEN_HDRS += $(CHS_SW_DIR)/include/regs/cheshire.h
