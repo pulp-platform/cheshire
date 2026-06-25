@@ -145,7 +145,7 @@ packages:
     - register_interface
     - tech_cells_generic
   pulp-c910:
-    revision: 88441a273988afcded88ae22c26a16b6fb32a8f8
+    revision: 0740dc981b0e10ac3e2d0e256362085cbc9a6e30
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:chency/theses/c910-debug-linqi/pulp-c910.git
