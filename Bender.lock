@@ -185,8 +185,8 @@ packages:
     - common_cells
     - tech_cells_generic
   serial_link:
-    revision: d4e513aebd368d77808c5e6629a1e2729c16eba0
-    version: 2.0.0
+    revision: bb06f8522c4b1f185fc09f0b9ef73fe9f19da391
+    version: 2.0.1
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:
