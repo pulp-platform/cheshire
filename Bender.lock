@@ -17,10 +17,10 @@ packages:
     - obi_peripherals
     - register_interface
   axi:
-    revision: a256a3b86394fedf19e361047fccfdd7f6ef83e4
-    version: 0.39.9
+    revision: 2a2d8c7e532a7e03b988dbb5b29ec0bd10d943f2
+    version: null
     source:
-      Git: https://github.com/pulp-platform/axi.git
+      Git: https://github.com/colluca/axi.git
     dependencies:
     - common_cells
     - common_verification
@@ -87,8 +87,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: 9ca8a7655f741e7dd5736669a20a301325194c28
-    version: 1.39.0
+    revision: 26d5de3ae4c51578e823952f12d0c2cea9fde241
+    version: null
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -101,7 +101,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 737c5837830d88dbe9a9493633ed8a01e6e681bd
+    revision: 382cdc74111dd255b442ccfe884ad01ccb3791f9
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -206,8 +206,8 @@ packages:
     - register_interface
     - tech_cells_generic
   tech_cells_generic:
-    revision: 7968dd6e6180df2c644636bc6d2908a49f2190cf
-    version: 0.2.13
+    revision: 3a3de73632a06826b1bd9c65a0a2e92b32016845
+    version: 0.2.14
     source:
       Git: https://github.com/pulp-platform/tech_cells_generic.git
     dependencies:

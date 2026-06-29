@@ -14,7 +14,7 @@ package:
 dependencies:
   apb:                      { git: "https://github.com/pulp-platform/apb.git",                    version: 0.2.4  }
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.3  }
-  axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.8 }
+  axi:                      { git: "https://github.com/colluca/axi.git",                          rev: multicast }
   axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",                rev: e4a855c    } # branch: gwaihir
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.8.2  }
   axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 version: 0.0.0-alpha.10 }
