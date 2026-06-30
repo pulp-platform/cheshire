@@ -16,7 +16,7 @@ VLOG_ARGS   ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
 VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
 
 # Common Bender flags for Cheshire RTL
-CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t cv64a6_imafdchsclic_sv39_wb
+CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t cv64a6_imafdc_sv39_hpdcache_wb -t openhw_cva6
 
 # Define used paths (prefixed to avoid name conflicts)
 CHS_ROOT      ?= $(shell $(BENDER) path cheshire)
@@ -65,7 +65,7 @@ chs-clean-deps:
 ######################
 
 CHS_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/cheshire-nonfree.git
-CHS_NONFREE_COMMIT ?= 68f8891d1c597e1f3efb219530b7bb06a9a767de
+CHS_NONFREE_COMMIT ?= ca97ea23dbb0135082d433db3820af20abb56777
 
 CHS_PHONY += chs-nonfree-init
 chs-nonfree-init:
