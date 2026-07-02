@@ -167,8 +167,8 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: d6e1d4cdaab7870f4faf3f88a1c788eaf5ac129d
-    version: 0.4.7
+    revision: f336ceb3ce305cdc187774dae80d4138534a58c1
+    version: null
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:

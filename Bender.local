@@ -1,4 +1,5 @@
 overrides:
+    register_interface: { git: "https://github.com/pulp-platform/register_interface.git", rev: common-cells-v2 }
     tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.14 }
     common_cells:       { git: "https://github.com/pulp-platform/common_cells.git", rev: v2-test }
     riscv-dbg:          { git: "https://github.com/pulp-platform/riscv-dbg.git", rev: common-cells-v2 }
