@@ -269,7 +269,6 @@ module cheshire_soc import cheshire_pkg::*; #(
   ) i_axi_xbar (
     .clk_i,
     .rst_ni,
-    .test_i                 ( test_mode_i ),
     .slv_ports_req_i        ( axi_rt_in_req ),
     .slv_ports_resp_o       ( axi_rt_in_rsp ),
     .mst_ports_req_o        ( axi_out_req ),
@@ -940,7 +939,6 @@ module cheshire_soc import cheshire_pkg::*; #(
   ) i_dbg_slv_axi_to_mem (
     .clk_i,
     .rst_ni,
-    .test_i       ( test_mode_i ),
     .busy_o       ( ),
     .axi_req_i    ( dbg_slv_axi_cut_req ),
     .axi_resp_o   ( dbg_slv_axi_cut_rsp ),

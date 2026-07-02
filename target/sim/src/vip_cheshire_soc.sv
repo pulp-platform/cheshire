@@ -733,7 +733,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   ) i_axi_mux_slink (
     .clk_i  ( clk ),
     .rst_ni ( rst_n ),
-    .test_i ( test_mode ),
     .slv    ( slink_slv_mux ),
     .mst    ( slink_mst_mux )
   );
