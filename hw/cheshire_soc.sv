@@ -968,6 +968,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .rst_ni,
     .testmode_i           ( test_mode_i ),
     .ndmreset_o           ( ),
+    .ndmreset_ack_i       ( 1'b0 ),
     .dmactive_o           ( dbg_active_o  ),
     .debug_req_o          ( dbg_req       ),
     .unavailable_i        ( dbg_unavail   ),
