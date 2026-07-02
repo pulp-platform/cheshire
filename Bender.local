@@ -1,8 +1,10 @@
 overrides:
+    axi_rt:             { git: "https://github.com/pulp-platform/axi_rt.git", rev: common-cells-v2 }
     axi_llc:            { git: "https://github.com/pulp-platform/axi_llc.git", rev: gwaihir-common-cells-v2 }
     apb:                { git: "https://github.com/pulp-platform/apb.git", rev: common-cells-v2 }
     register_interface: { git: "https://github.com/pulp-platform/register_interface.git", rev: common-cells-v2 }
     tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.14 }
-    common_cells:       { git: "https://github.com/pulp-platform/common_cells.git", rev: v2-test }
+    common_cells:       { git: "https://github.com/pulp-platform/common_cells.git", version: 2.0.0-beta }
     riscv-dbg:          { git: "https://github.com/pulp-platform/riscv-dbg.git", rev: common-cells-v2 }
     axi:                { git: "https://github.com/pulp-platform/axi.git", rev: rt/common-cells-v2 }
+    dram_rtl_sim:       { git: "https://github.com/pulp-platform/dram_rtl_sim.git", rev: common-cells-v2 }

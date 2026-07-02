@@ -1,6 +1,6 @@
 packages:
   apb:
-    revision: 2f654f38b8f6420301c8c3213aac212a0e44ccef
+    revision: 6a2bd0fe9f0822322104ac602fac5739fb063aa0
     version: null
     source:
       Git: https://github.com/pulp-platform/apb.git
@@ -17,7 +17,7 @@ packages:
     - obi_peripherals
     - register_interface
   axi:
-    revision: 4f9f5c5d58680cd53cc2a543c889dd827b67215b
+    revision: 3c406ae59484238679c37a40afe149fbd0d08300
     version: null
     source:
       Git: https://github.com/pulp-platform/axi.git
@@ -26,7 +26,7 @@ packages:
     - common_verification
     - tech_cells_generic
   axi_llc:
-    revision: 51acb1f6cc69638605eda33a90ce670d7cda21df
+    revision: 2803bf265780a26eb5034c322e624278735e42a2
     version: null
     source:
       Git: https://github.com/pulp-platform/axi_llc.git
@@ -46,8 +46,8 @@ packages:
     - common_cells
     - common_verification
   axi_rt:
-    revision: 50153a346b753dc2bc7723c446656a43db35d02d
-    version: 0.0.0-alpha.10
+    revision: 61ad4da4f5eae9387ebbab217c4554544562bb93
+    version: null
     source:
       Git: https://github.com/pulp-platform/axi_rt.git
     dependencies:
@@ -87,8 +87,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: ea92e1dacbfa10a53c57c4aada4f86ea921188f3
-    version: null
+    revision: 88e7f97210dfce5da38390bfb9d3c21eb998810c
+    version: 2.0.0-beta
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -114,8 +114,8 @@ packages:
     - register_interface
     - tech_cells_generic
   dram_rtl_sim:
-    revision: a764d5200a19cdd72a5237cbfb16985515a3058d
-    version: 0.1.2
+    revision: 655339b8002e4e162044b5175be1e83f909d7235
+    version: null
     source:
       Git: https://github.com/pulp-platform/dram_rtl_sim.git
     dependencies:
@@ -167,7 +167,7 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: f336ceb3ce305cdc187774dae80d4138534a58c1
+    revision: 856f7adc0f5ca2dc8ce2e3d7099afb4c87c13c22
     version: null
     source:
       Git: https://github.com/pulp-platform/register_interface.git
@@ -177,7 +177,7 @@ packages:
     - common_cells
     - common_verification
   riscv-dbg:
-    revision: 8f5d6f1c43fd96a445dbf7a1eb72979d552ab614
+    revision: 83bf60caf6a5180ec3837d67b0dcf6c21f87cab9
     version: null
     source:
       Git: https://github.com/pulp-platform/riscv-dbg.git
