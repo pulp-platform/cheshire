@@ -9,7 +9,7 @@
 # Yvan Tortorella <yvan.tortorella@gmail.com>
 # Mojtaba Rostami <m.rostami1989@gmail.com>
 
-VIVADO ?= vitis-2022.1 vivado
+VIVADO ?= vitis-2024.2 vivado
 
 CHS_XILINX_DIR ?= $(CHS_ROOT)/target/xilinx
 

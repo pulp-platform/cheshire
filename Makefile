@@ -9,6 +9,8 @@
 CHS_ROOT := $(shell realpath .)
 BENDER	 ?= bender -d $(CHS_ROOT)
 
+VIVADO ?= vitis-2024.2 vivado
+
 all:
 
 include cheshire.mk
