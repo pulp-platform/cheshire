@@ -1,4 +1,5 @@
 overrides:
+    serial_link:        { git: "https://github.com/pulp-platform/serial_link.git", rev: common-cells-v2 }
     axi_rt:             { git: "https://github.com/pulp-platform/axi_rt.git", rev: common-cells-v2 }
     axi_llc:            { git: "https://github.com/pulp-platform/axi_llc.git", rev: gwaihir-common-cells-v2 }
     apb:                { git: "https://github.com/pulp-platform/apb.git", rev: common-cells-v2 }
