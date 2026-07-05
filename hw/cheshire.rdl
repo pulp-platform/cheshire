@@ -54,7 +54,7 @@ addrmap cheshire #(longint unsigned SlinkNumLanes = 4) {
     external mem {
         mementries = 2097152; memwidth = 32;
         sw = rw; executable = true;
-    } dram @0x8000_0000;
+    } dram @0x9000_0000;
 `endif
 
     // SPM uncached mirror (64 MiB reserved window; actual mapped size = LLC size), read+write+exec
