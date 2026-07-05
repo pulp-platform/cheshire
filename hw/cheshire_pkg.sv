@@ -602,8 +602,8 @@ package cheshire_pkg;
     LlcAmoNumCuts     : 1,
     LlcAmoPostCut     : 1,
     LlcOutConnect     : 1,
-    LlcOutRegionStart : 'h8000_0000,
-    LlcOutRegionEnd   : 64'h1_0000_0000,
+    LlcOutRegionStart : 'h9000_0000,
+    LlcOutRegionEnd   : 64'h1_1000_0000,
     // VGA: RGB565
     VgaRedWidth       : 5,
     VgaGreenWidth     : 6,
@@ -616,8 +616,8 @@ package cheshire_pkg;
     SlinkMaxTxnsPerId : 4,
     SlinkMaxUniqIds   : 4,
     SlinkMaxClkDiv    : 1024,
-    SlinkRegionStart  : 64'h1_0000_0000,
-    SlinkRegionEnd    : 64'h2_0000_0000,
+    SlinkRegionStart  : 64'h1_1000_0000,
+    SlinkRegionEnd    : 64'h2_1000_0000,
     SlinkTxAddrMask   : 'hFFFF_FFFF,
     SlinkTxAddrDomain : 'h0000_0000,
     SlinkUserAmoBit   : 1,  // Convention: lower AMO bits for cores, MSB for serial link

@@ -1018,12 +1018,12 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__spm_t spm;
     uint8_t RESERVED_10010000_13ffffff[0x3ff0000];
     cheshire__spm_unc_t spm_unc;
-    uint8_t RESERVED_18000000_7fffffff[0x68000000];
+    uint8_t RESERVED_18000000_8fffffff[0x78000000];
     cheshire__dram_t dram;
 } cheshire_t;
 
 
-static_assert(sizeof(cheshire_t) == 0x80800000, "Packing error");
+static_assert(sizeof(cheshire_t) == 0x90800000, "Packing error");
 
 #ifdef __cplusplus
 }
