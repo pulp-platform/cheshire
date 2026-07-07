@@ -17,7 +17,7 @@ packages:
     - obi_peripherals
     - register_interface
   axi:
-    revision: 3c406ae59484238679c37a40afe149fbd0d08300
+    revision: 73f6a3a4eb3e0cfa05f8755c93be39f0d45aec04
     version: null
     source:
       Git: https://github.com/pulp-platform/axi.git
@@ -37,8 +37,8 @@ packages:
     - register_interface
     - tech_cells_generic
   axi_riscv_atomics:
-    revision: 97a1dd2ac643c276880420a0cf8eea697f228aa9
-    version: 0.8.3
+    revision: 399ce0aefe79792d11bef8cc706139281d82df08
+    version: null
     source:
       Git: https://github.com/pulp-platform/axi_riscv_atomics.git
     dependencies:

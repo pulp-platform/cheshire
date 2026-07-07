@@ -1,4 +1,5 @@
 overrides:
+    axi_riscv_atomics:  { git: "https://github.com/pulp-platform/axi_riscv_atomics.git", rev: common-cells-v2 }
     axi_vga:            { git: "https://github.com/pulp-platform/axi_vga.git", rev: common-cells-v2 }
     opentitan_peripherals: { git: "https://github.com/pulp-platform/opentitan_peripherals.git", rev: common-cells-v2 }
     serial_link:        { git: "https://github.com/pulp-platform/serial_link.git", rev: common-cells-v2 }
@@ -9,5 +10,5 @@ overrides:
     tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.14 }
     common_cells:       { git: "https://github.com/pulp-platform/common_cells.git", version: 2.0.0-beta }
     riscv-dbg:          { git: "https://github.com/pulp-platform/riscv-dbg.git", rev: common-cells-v2 }
-    axi:                { git: "https://github.com/pulp-platform/axi.git", rev: rt/common-cells-v2 }
+    axi:                { git: "https://github.com/pulp-platform/axi.git", rev: common-cells-v2 }
     dram_rtl_sim:       { git: "https://github.com/pulp-platform/dram_rtl_sim.git", rev: common-cells-v2 }
