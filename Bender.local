@@ -1,6 +1,5 @@
 overrides:
     axi_vga:            { git: "https://github.com/pulp-platform/axi_vga.git", rev: common-cells-v2 }
-    idma:               { git: "https://github.com/pulp-platform/iDMA.git", rev: __deploy__9785d30__common-cells-v2 }
     opentitan_peripherals: { git: "https://github.com/pulp-platform/opentitan_peripherals.git", rev: common-cells-v2 }
     serial_link:        { git: "https://github.com/pulp-platform/serial_link.git", rev: common-cells-v2 }
     axi_rt:             { git: "https://github.com/pulp-platform/axi_rt.git", rev: common-cells-v2 }

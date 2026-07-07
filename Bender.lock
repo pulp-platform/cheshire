@@ -121,12 +121,11 @@ packages:
     dependencies:
     - axi
   idma:
-    revision: 83260ebc146e848b4a13356db01414fc81c7a188
-    version: null
+    revision: 28a36e5e07705549e59fc33db96ab681bc1ca88e
+    version: 0.6.5
     source:
       Git: https://github.com/pulp-platform/iDMA.git
     dependencies:
-    - apb
     - axi
     - axi_stream
     - common_cells
