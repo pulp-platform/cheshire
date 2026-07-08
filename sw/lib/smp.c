@@ -19,9 +19,23 @@ void smp_resume(void) {
 
 static volatile uint64_t _barrier_target = 0;
 
+/*
+With hardware coherence the cleaner implementation would be:
+
 static void barrier_wait(volatile uint64_t *barrier, uint64_t incr, uint64_t reach) {
     __atomic_fetch_add(barrier, incr, __ATOMIC_SEQ_CST);
     while (__atomic_load_n(barrier, __ATOMIC_ACQUIRE) != reach)
+        ;
+}
+
+We have to force an AMO instruction to load the value since the vanilla HPDCache
+ensures coherence on such instructions. NOTE: this is implementation dependent!
+*/
+
+static void barrier_wait(volatile uint64_t *barrier, uint64_t incr, uint64_t reach) {
+    __atomic_fetch_add(barrier, incr, __ATOMIC_SEQ_CST);
+
+    while (__atomic_fetch_add(barrier, 0, __ATOMIC_ACQUIRE) != reach)
         ;
 }
 
