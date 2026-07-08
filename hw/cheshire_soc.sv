@@ -160,8 +160,8 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   // External interrupts must be synchronized to this domain
   for (genvar i = 0; i <= iomsb(Cfg.NumExtInIntrs); i++) begin : gen_ext_in_intr_syncs
-    sync #(
-      .STAGES     ( Cfg.NumExtIntrSyncs ),
+    tc_sync #(
+      .Stages     ( Cfg.NumExtIntrSyncs ),
       .ResetValue ( 1'b0 )
     ) i_ext_intr_sync (
       .clk_i,
@@ -312,7 +312,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   localparam addr_rule_t [RegOut.num_rules-1:0] RegMap = gen_reg_map();
 
-  logic [cf_math_pkg::idx_width(RegOut.num_out)-1:0] reg_select;
+  logic [cc_pkg::idx_width(RegOut.num_out)-1:0] reg_select;
 
   axi_slv_req_t axi_reg_amo_req, axi_reg_cut_req;
   axi_slv_rsp_t axi_reg_amo_rsp, axi_reg_cut_rsp;
@@ -392,7 +392,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   );
 
   // Non-matching addresses are directed to an error slave
-  addr_decode #(
+  cc_addr_decode #(
     .NoIndices  ( RegOut.num_out   ),
     .NoRules    ( RegOut.num_rules ),
     .addr_t     ( addr_t      ),
@@ -404,7 +404,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .dec_valid_o      ( ),
     .dec_error_o      ( ),
     .en_default_idx_i ( 1'b1 ),
-    .default_idx_i    ( (cf_math_pkg::idx_width(RegOut.num_out))'(RegOut.err) )
+    .default_idx_i    ( (cc_pkg::idx_width(RegOut.num_out))'(RegOut.err) )
   );
 
   reg_demux #(
