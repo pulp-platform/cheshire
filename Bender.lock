@@ -7,8 +7,8 @@ packages:
     dependencies:
     - common_cells
   apb_uart:
-    revision: 8182a85d234417db46fe833533f8536644d3bee3
-    version: 0.2.3
+    revision: 1dc41c4eae22c94c471adca7d11824624f4e68e8
+    version: null
     source:
       Git: https://github.com/pulp-platform/apb_uart.git
     dependencies:
@@ -17,7 +17,7 @@ packages:
     - obi_peripherals
     - register_interface
   axi:
-    revision: 73f6a3a4eb3e0cfa05f8755c93be39f0d45aec04
+    revision: 206bbba706d99528d1d5bff67538dd9ea3f6a32b
     version: null
     source:
       Git: https://github.com/pulp-platform/axi.git
@@ -71,8 +71,8 @@ packages:
     - common_cells
     - register_interface
   clic:
-    revision: 6515a71eb4ae3b143ab912d265e79832b3179a76
-    version: 3.0.0
+    revision: 65e70ec00d6e82c84a7ab45a2914775ecc7baa08
+    version: null
     source:
       Git: https://github.com/pulp-platform/clic.git
     dependencies:
@@ -101,7 +101,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 382cdc74111dd255b442ccfe884ad01ccb3791f9
+    revision: 3529f5d25cba6084e50952f3fe03a50ec895ede8
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -142,21 +142,22 @@ packages:
     - common_cells
     - register_interface
   obi:
-    revision: 0155fc34e900c7c884e081c0a1114a247937ff69
-    version: 0.1.7
+    revision: 3666d340cf612df407a83d919c2b9a7de5d2e696
+    version: null
     source:
       Git: https://github.com/pulp-platform/obi.git
     dependencies:
     - common_cells
     - common_verification
   obi_peripherals:
-    revision: 079894a6cbd4e544c477643d184a4c340bd4e391
-    version: 0.1.1
+    revision: 1f406194042d87211f286f265a65177ce0bbad97
+    version: null
     source:
       Git: https://github.com/pulp-platform/obi_peripherals.git
     dependencies:
     - common_cells
     - obi
+    - tech_cells_generic
   opentitan_peripherals:
     revision: 7a797ad07d6282280ea968f732ec8f5d5bb8e719
     version: null
@@ -213,8 +214,8 @@ packages:
     dependencies:
     - common_verification
   unbent:
-    revision: e9c9d5cfb635f2d4668c816ce9235798cfecb297
-    version: 0.1.6
+    revision: 578462b7cc851deda7078913c364b2dad4718650
+    version: null
     source:
       Git: https://github.com/pulp-platform/unbent.git
     dependencies:

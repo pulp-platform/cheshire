@@ -1,14 +1,20 @@
 overrides:
-    axi_riscv_atomics:  { git: "https://github.com/pulp-platform/axi_riscv_atomics.git", rev: common-cells-v2 }
-    axi_vga:            { git: "https://github.com/pulp-platform/axi_vga.git", rev: common-cells-v2 }
-    opentitan_peripherals: { git: "https://github.com/pulp-platform/opentitan_peripherals.git", rev: common-cells-v2 }
-    serial_link:        { git: "https://github.com/pulp-platform/serial_link.git", rev: common-cells-v2 }
-    axi_rt:             { git: "https://github.com/pulp-platform/axi_rt.git", rev: common-cells-v2 }
-    axi_llc:            { git: "https://github.com/pulp-platform/axi_llc.git", rev: gwaihir-common-cells-v2 }
     apb:                { git: "https://github.com/pulp-platform/apb.git", rev: common-cells-v2 }
-    register_interface: { git: "https://github.com/pulp-platform/register_interface.git", rev: common-cells-v2 }
-    tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.14 }
-    common_cells:       { git: "https://github.com/pulp-platform/common_cells.git", version: 2.0.0-beta }
-    riscv-dbg:          { git: "https://github.com/pulp-platform/riscv-dbg.git", rev: common-cells-v2 }
+    apb_uart:           { git: "https://github.com/pulp-platform/apb_uart.git", rev: common-cells-v2 }
     axi:                { git: "https://github.com/pulp-platform/axi.git", rev: common-cells-v2 }
+    axi_llc:            { git: "https://github.com/pulp-platform/axi_llc.git", rev: gwaihir-common-cells-v2 }
+    axi_riscv_atomics:  { git: "https://github.com/pulp-platform/axi_riscv_atomics.git", rev: common-cells-v2 }
+    axi_rt:             { git: "https://github.com/pulp-platform/axi_rt.git", rev: common-cells-v2 }
+    axi_vga:            { git: "https://github.com/pulp-platform/axi_vga.git", rev: common-cells-v2 }
+    clic:               { git: "https://github.com/pulp-platform/clic.git", rev: common-cells-v2 }
+    common_cells:       { git: "https://github.com/pulp-platform/common_cells.git", version: 2.0.0-beta }
+    cva6:               { git: "https://github.com/pulp-platform/cva6.git", rev: gwaihir-common-cells-v2 }
     dram_rtl_sim:       { git: "https://github.com/pulp-platform/dram_rtl_sim.git", rev: common-cells-v2 }
+    obi:                { git: "https://github.com/pulp-platform/obi.git", rev: common-cells-v2 }
+    obi_peripherals:    { git: "https://github.com/pulp-platform/obi_peripherals.git", rev: common-cells-v2 }
+    opentitan_peripherals: { git: "https://github.com/pulp-platform/opentitan_peripherals.git", rev: common-cells-v2 }
+    register_interface: { git: "https://github.com/pulp-platform/register_interface.git", rev: common-cells-v2 }
+    riscv-dbg:          { git: "https://github.com/pulp-platform/riscv-dbg.git", rev: common-cells-v2 }
+    serial_link:        { git: "https://github.com/pulp-platform/serial_link.git", rev: common-cells-v2 }
+    tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.14 }
+    unbent:             { git: "https://github.com/pulp-platform/unbent.git", rev: common-cells-v2 }
