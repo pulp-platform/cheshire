@@ -129,6 +129,9 @@ addrmap cheshire #(longint unsigned SlinkNumLanes = 4) {
 
     // LLC tagger (256B)
     periph_stub_t #(.Size(0x0000_0100)) tagger  @0x0300_A000;
+
+    // IOMMU (4 KiB)
+    periph_stub_t #(.Size(0x0000_1000)) iommu   @0x0300_B000;
 };
 
 `endif // CHESHIRE_RDL

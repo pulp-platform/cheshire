@@ -185,6 +185,15 @@ packages:
     dependencies:
     - common_cells
     - tech_cells_generic
+  riscv-iommu:
+    revision: bf00499c531ba40dd0cfb06962d64b4b9b2b594c
+    version: null
+    source:
+      Git: https://github.com/FondazioneChipsIt/riscv-iommu.git
+    dependencies:
+    - axi
+    - common_cells
+    - register_interface
   serial_link:
     revision: 5ae59af9c921542e117311cf5340c547c6386dd5
     version: null

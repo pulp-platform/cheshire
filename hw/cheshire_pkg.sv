@@ -149,6 +149,7 @@ package cheshire_pkg;
     bit     Clic;
     bit     IrqRouter;
     bit     BusErr;
+    bit     Iommu;
     // Parameters for Debug Module
     jtag_idcode_t DbgIdCode;
     dw_bt   DbgMaxReqs;
@@ -310,6 +311,7 @@ package cheshire_pkg;
     aw_bt slink;
     aw_bt vga;
     aw_bt usb;
+    aw_bt [1:0] iommu;
     aw_bt ext_base;
     aw_bt num_in;
   } axi_in_t;
@@ -323,6 +325,10 @@ package cheshire_pkg;
     if (cfg.SerialLink) begin i++; ret.slink = i; end
     if (cfg.Vga)        begin i++; ret.vga   = i; end
     if (cfg.Usb)        begin i++; ret.usb   = i; end
+    // if (cfg.Iommu)      begin i++; ret.iommu = i; end
+    if (cfg.Iommu) begin
+      for (int j = 0; j < 2; j++) begin i++; ret.iommu[j] = i; end
+    end
     i++;
     ret.ext_base = i;
     ret.num_in = i + cfg.AxiExtNumMst;
@@ -410,6 +416,7 @@ package cheshire_pkg;
     aw_bt [2**MaxCoresWidth-1:0] bus_err;
     aw_bt [2**MaxCoresWidth-1:0] clic;
     aw_bt tagger;
+    aw_bt iommu;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
@@ -441,6 +448,7 @@ package cheshire_pkg;
       i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, BUS_ERR_BASE_ADDR + j*BUS_ERR_SIZE, BUS_ERR_BASE_ADDR + (j+1)*BUS_ERR_SIZE};
     end
     if (cfg.LlcCachePartition) begin i++; ret.tagger = i; r++; ret.map[r] = '{i, TAGGER_BASE_ADDR,  TAGGER_BASE_ADDR + TAGGER_SIZE}; end
+    if (cfg.Iommu) begin i++; ret.iommu = i; ret.map[r] = '{i, IOMMU_BASE_ADDR, IOMMU_BASE_ADDR + IOMMU_SIZE}; end
     i++; r++;
     ret.ext_base  = i;
     ret.num_out   = i + cfg.RegExtNumSlv;
@@ -617,6 +625,7 @@ package cheshire_pkg;
     Clic              : 0,
     IrqRouter         : 0,
     BusErr            : 1,
+    Iommu             : 1,
     // Debug
     DbgIdCode         : CheshireIdCode,
     DbgMaxReqs        : 4,

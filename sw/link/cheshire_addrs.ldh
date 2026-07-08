@@ -76,6 +76,9 @@ PROVIDE(__bus_err_size__ = 0x00000040);
 PROVIDE(__tagger_base_addr__ = 0x0300A000);
 PROVIDE(__tagger_size__ = 0x00000100);
 
+PROVIDE(__iommu_base_addr__ = 0x0300B000);
+PROVIDE(__iommu_size__ = 0x00001000);
+
 PROVIDE(__plic_base_addr__ = 0x04000000);
 PROVIDE(__plic_size__ = 0x04000000);
 
@@ -230,6 +233,10 @@ PROVIDE(__bus_err__end_base_addr__ = 0x0300903C);
 PROVIDE(__tagger_status_base_addr__ = 0x0300A000);
 
 PROVIDE(__tagger__end_base_addr__ = 0x0300A0FC);
+
+PROVIDE(__iommu_status_base_addr__ = 0x0300B000);
+
+PROVIDE(__iommu__end_base_addr__ = 0x0300BFFC);
 
 PROVIDE(__plic_status_base_addr__ = 0x04000000);
 
