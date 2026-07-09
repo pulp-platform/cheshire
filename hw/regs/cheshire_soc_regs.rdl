@@ -167,14 +167,60 @@ addrmap soc_regs #(
         } blue_width[23:16];
     };
 
-             scratch         scratch[NumScratchRegs] @0x0;
-    external boot_mode       boot_mode               @0x40;
-    external rtc_freq        rtc_freq                @0x44;
-    external platform_rom    platform_rom            @0x48;
-    external num_int_harts   num_int_harts           @0x4C;
-    external hw_features     hw_features             @0x50;
-    external llc_size        llc_size                @0x54;
-    external vga_params      vga_params              @0x58;
+    reg clk_gate_en_peripherals {
+        field {
+            name = "clk_gate_en_uart";
+            desc = "Clock gate enable for UART";
+            sw   = rw;
+            hw   = r;
+        } clk_gate_en_uart[0:0];
+        field {
+            name = "clk_gate_en_i2c";
+            desc = "Clock gate enable for I2C";
+            sw   = rw;
+            hw   = r;
+        } clk_gate_en_i2c[1:1];
+        field {
+            name = "clk_gate_en_spih";
+            desc = "Clock gate enable for SPI";
+            sw   = rw;
+            hw   = r;
+        } clk_gate_en_spih[2:2];
+        field {
+            name = "clk_gate_en_slink";
+            desc = "Clock gate enable for SLINK";
+            sw   = rw;
+            hw   = r;
+        } clk_gate_en_slink[3:3];
+        field {
+            name = "clk_gate_en_gpio";
+            desc = "Clock gate enable for GPIO";
+            sw   = rw;
+            hw   = r;
+        } clk_gate_en_gpio[4:4];
+        field {
+            name = "clk_gate_en_vga";
+            desc = "Clock gate enable for VGA";
+            sw   = rw;
+            hw   = r;
+        } clk_gate_en_vga[5:5];
+        field {
+            name = "clk_gate_en_usb";
+            desc = "Clock gate enable for USB";
+            sw   = rw;
+            hw   = r;
+        } clk_gate_en_usb[6:6];
+    };
+
+             scratch                    scratch[NumScratchRegs]     @0x0;
+    external boot_mode                  boot_mode                   @0x40;
+    external rtc_freq                   rtc_freq                    @0x44;
+    external platform_rom               platform_rom                @0x48;
+    external num_int_harts              num_int_harts               @0x4C;
+    external hw_features                hw_features                 @0x50;
+    external llc_size                   llc_size                    @0x54;
+    external vga_params                 vga_params                  @0x58;
+             clk_gate_en_peripherals    clk_gate_en_peripherals     @0x5C;
 };
 
 `endif // CHESHIRE_SOC_REGS_RDL

@@ -27,7 +27,7 @@ localparam longint unsigned AXIRT_BASE_ADDR = 64'h20C0000;
 localparam longint unsigned AXIRT_SIZE = 64'h40000;
 
 localparam longint unsigned REGS_BASE_ADDR = 64'h3000000;
-localparam longint unsigned REGS_SIZE = 64'h5C;
+localparam longint unsigned REGS_SIZE = 64'h60;
 
 localparam longint unsigned LLC_BASE_ADDR = 64'h3001000;
 localparam longint unsigned LLC_SIZE = 64'h1000;
@@ -90,6 +90,7 @@ localparam longint unsigned REGS_NUM_INT_HARTS_BASE_ADDR = 64'h300004C;
 localparam longint unsigned REGS_HW_FEATURES_BASE_ADDR = 64'h3000050;
 localparam longint unsigned REGS_LLC_SIZE_BASE_ADDR = 64'h3000054;
 localparam longint unsigned REGS_VGA_PARAMS_BASE_ADDR = 64'h3000058;
+localparam longint unsigned REGS_CLK_GATE_EN_PERIPHERALS_BASE_ADDR = 64'h300005C;
 localparam longint unsigned LLC_STATUS_BASE_ADDR = 64'h3001000;
 localparam longint unsigned LLC__END_BASE_ADDR = 64'h3001FFC;
 localparam longint unsigned UART_STATUS_BASE_ADDR = 64'h3002000;

@@ -300,6 +300,42 @@ typedef union {
     uint32_t w;
 } cheshire__regs__vga_params_t;
 
+// reg - cheshire.regs.clk_gate_en_peripherals
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_UART_bm 0x1
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_UART_bp 0
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_UART_bw 1
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_I2C_bm 0x2
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_I2C_bp 1
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_I2C_bw 1
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_SPIH_bm 0x4
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_SPIH_bp 2
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_SPIH_bw 1
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_SLINK_bm 0x8
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_SLINK_bp 3
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_SLINK_bw 1
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_GPIO_bm 0x10
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_GPIO_bp 4
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_GPIO_bw 1
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_VGA_bm 0x20
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_VGA_bp 5
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_VGA_bw 1
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_USB_bm 0x40
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_USB_bp 6
+#define CHESHIRE__REGS__CLK_GATE_EN_PERIPHERALS__CLK_GATE_EN_USB_bw 1
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t clk_gate_en_uart :1;
+        uint32_t clk_gate_en_i2c :1;
+        uint32_t clk_gate_en_spih :1;
+        uint32_t clk_gate_en_slink :1;
+        uint32_t clk_gate_en_gpio :1;
+        uint32_t clk_gate_en_vga :1;
+        uint32_t clk_gate_en_usb :1;
+        uint32_t :25;
+    } f;
+    uint32_t w;
+} cheshire__regs__clk_gate_en_peripherals_t;
+
 // addrmap - cheshire.regs
 typedef struct __attribute__ ((__packed__)) {
     cheshire__regs__scratchx_t scratch[16];
@@ -310,6 +346,7 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__regs__hw_features_t hw_features;
     cheshire__regs__llc_size_t llc_size;
     cheshire__regs__vga_params_t vga_params;
+    cheshire__regs__clk_gate_en_peripherals_t clk_gate_en_peripherals;
 } cheshire__regs_t;
 
 // reg - cheshire.llc.status
@@ -999,7 +1036,7 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__axirt_t axirt;
     uint8_t RESERVED_2100000_2ffffff[0xf00000];
     cheshire__regs_t regs;
-    uint8_t RESERVED_300005c_3000fff[0xfa4];
+    uint8_t RESERVED_3000060_3000fff[0xfa0];
     cheshire__llc_t llc;
     cheshire__uart_t uart;
     cheshire__i2c_t i2c;

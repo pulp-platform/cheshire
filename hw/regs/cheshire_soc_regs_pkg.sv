@@ -9,7 +9,7 @@ package cheshire_soc_regs_pkg;
 
     localparam CHESHIRE_SOC_REGS_DATA_WIDTH = 32;
     localparam CHESHIRE_SOC_REGS_MIN_ADDR_WIDTH = 7;
-    localparam CHESHIRE_SOC_REGS_SIZE = 'h5c;
+    localparam CHESHIRE_SOC_REGS_SIZE = 'h60;
     localparam NumScratchRegs = 'h10;
 
     typedef struct packed {
@@ -139,6 +139,44 @@ package cheshire_soc_regs_pkg;
     } soc_regs__vga_params__external__out_t;
 
     typedef struct {
+        logic value;
+    } soc_regs__clk_gate_en_peripherals__clk_gate_en_uart__out_t;
+
+    typedef struct {
+        logic value;
+    } soc_regs__clk_gate_en_peripherals__clk_gate_en_i2c__out_t;
+
+    typedef struct {
+        logic value;
+    } soc_regs__clk_gate_en_peripherals__clk_gate_en_spih__out_t;
+
+    typedef struct {
+        logic value;
+    } soc_regs__clk_gate_en_peripherals__clk_gate_en_slink__out_t;
+
+    typedef struct {
+        logic value;
+    } soc_regs__clk_gate_en_peripherals__clk_gate_en_gpio__out_t;
+
+    typedef struct {
+        logic value;
+    } soc_regs__clk_gate_en_peripherals__clk_gate_en_vga__out_t;
+
+    typedef struct {
+        logic value;
+    } soc_regs__clk_gate_en_peripherals__clk_gate_en_usb__out_t;
+
+    typedef struct {
+        soc_regs__clk_gate_en_peripherals__clk_gate_en_uart__out_t clk_gate_en_uart;
+        soc_regs__clk_gate_en_peripherals__clk_gate_en_i2c__out_t clk_gate_en_i2c;
+        soc_regs__clk_gate_en_peripherals__clk_gate_en_spih__out_t clk_gate_en_spih;
+        soc_regs__clk_gate_en_peripherals__clk_gate_en_slink__out_t clk_gate_en_slink;
+        soc_regs__clk_gate_en_peripherals__clk_gate_en_gpio__out_t clk_gate_en_gpio;
+        soc_regs__clk_gate_en_peripherals__clk_gate_en_vga__out_t clk_gate_en_vga;
+        soc_regs__clk_gate_en_peripherals__clk_gate_en_usb__out_t clk_gate_en_usb;
+    } soc_regs__clk_gate_en_peripherals__out_t;
+
+    typedef struct {
         soc_regs__boot_mode__external__out_t boot_mode;
         soc_regs__rtc_freq__external__out_t rtc_freq;
         soc_regs__platform_rom__external__out_t platform_rom;
@@ -146,5 +184,6 @@ package cheshire_soc_regs_pkg;
         soc_regs__hw_features__external__out_t hw_features;
         soc_regs__llc_size__external__out_t llc_size;
         soc_regs__vga_params__external__out_t vga_params;
+        soc_regs__clk_gate_en_peripherals__out_t clk_gate_en_peripherals;
     } soc_regs__out_t;
 endpackage
