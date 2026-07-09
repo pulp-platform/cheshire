@@ -13,6 +13,9 @@ VIVADO ?= vitis-2022.1 vivado
 
 CHS_XILINX_DIR ?= $(CHS_ROOT)/target/xilinx
 
+NUM_CORES ?= 1
+COHERENCE ?= 0
+
 # Required to split stems
 .SECONDEXPANSION:
 
@@ -64,7 +67,7 @@ $$(CHS_XILINX_DIR)/out/%.$(1).bit: \
 		$$(CHS_HW_ALL) \
 		| $$(CHS_XILINX_DIR)/build/$(1).%/
 	@rm -f $$(CHS_XILINX_DIR)/build/$$*.$(1)*.log $$(CHS_XILINX_DIR)/build/$$*.$(1)*.jou
-	cd $$| && $$(VIVADO) -mode batch -log ../$$*.$(1).log -jou ../$$*.$(1).jou -source $$< \
+	cd $$| && NUM_CORES=$(NUM_CORES) COHERENCE=$(COHERENCE) $$(VIVADO) -mode batch -log ../$$*.$(1).log -jou ../$$*.$(1).jou -source $$< \
 		-tclargs $(1) $$* $$(CHS_XILINX_IPS_$(1):%=$$(CHS_XILINX_DIR)/build/$(1).%/out.xci)
 
 CHS_PHONY += chs-xilinx-$(1)

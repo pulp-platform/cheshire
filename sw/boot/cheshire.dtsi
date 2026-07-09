@@ -5,6 +5,9 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Axel Vanoni <axvanoni@student.ethz.ch>
+// Riccardo Tedeschi <riccardo.tedeschi6@unibo.it>
+//
+// AUTOMATICALLY GENERATED from cheshire.dtsi.tpl; edit the template instead.
 
 /dts-v1/;
 
