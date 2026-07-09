@@ -11,16 +11,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 #include <stdint.h>
 #include <assert.h>
 
-// Mem - cheshire.extrom
+// mem - cheshire.extrom
 typedef struct __attribute__ ((__packed__)) {
     uint32_t mem[65536];
 } cheshire__extrom_t;
 
-// Reg - cheshire.dma.status
+// reg - cheshire.dma.status
 #define CHESHIRE__DMA__STATUS__STATUS_bm 0xffffffff
 #define CHESHIRE__DMA__STATUS__STATUS_bp 0
 #define CHESHIRE__DMA__STATUS__STATUS_bw 32
@@ -32,7 +31,7 @@ typedef union {
     uint32_t w;
 } cheshire__dma__status_t;
 
-// Reg - cheshire.dma._end
+// reg - cheshire.dma._end
 #define CHESHIRE__DMA___END___END_bm 0xffffffff
 #define CHESHIRE__DMA___END___END_bp 0
 #define CHESHIRE__DMA___END___END_bw 32
@@ -44,19 +43,19 @@ typedef union {
     uint32_t w;
 } cheshire__dma___end_t;
 
-// Addrmap - cheshire.dma
+// addrmap - cheshire.dma
 typedef struct __attribute__ ((__packed__)) {
     cheshire__dma__status_t status;
     uint8_t RESERVED_4_ffb[0xff8];
     cheshire__dma___end_t _end;
 } cheshire__dma_t;
 
-// Mem - cheshire.bootrom
+// mem - cheshire.bootrom
 typedef struct __attribute__ ((__packed__)) {
     uint32_t mem[65536];
 } cheshire__bootrom_t;
 
-// Reg - cheshire.clint.status
+// reg - cheshire.clint.status
 #define CHESHIRE__CLINT__STATUS__STATUS_bm 0xffffffff
 #define CHESHIRE__CLINT__STATUS__STATUS_bp 0
 #define CHESHIRE__CLINT__STATUS__STATUS_bw 32
@@ -68,7 +67,7 @@ typedef union {
     uint32_t w;
 } cheshire__clint__status_t;
 
-// Reg - cheshire.clint._end
+// reg - cheshire.clint._end
 #define CHESHIRE__CLINT___END___END_bm 0xffffffff
 #define CHESHIRE__CLINT___END___END_bp 0
 #define CHESHIRE__CLINT___END___END_bw 32
@@ -80,14 +79,14 @@ typedef union {
     uint32_t w;
 } cheshire__clint___end_t;
 
-// Addrmap - cheshire.clint
+// addrmap - cheshire.clint
 typedef struct __attribute__ ((__packed__)) {
     cheshire__clint__status_t status;
     uint8_t RESERVED_4_3fffb[0x3fff8];
     cheshire__clint___end_t _end;
 } cheshire__clint_t;
 
-// Reg - cheshire.irq_router.status
+// reg - cheshire.irq_router.status
 #define CHESHIRE__IRQ_ROUTER__STATUS__STATUS_bm 0xffffffff
 #define CHESHIRE__IRQ_ROUTER__STATUS__STATUS_bp 0
 #define CHESHIRE__IRQ_ROUTER__STATUS__STATUS_bw 32
@@ -99,7 +98,7 @@ typedef union {
     uint32_t w;
 } cheshire__irq_router__status_t;
 
-// Reg - cheshire.irq_router._end
+// reg - cheshire.irq_router._end
 #define CHESHIRE__IRQ_ROUTER___END___END_bm 0xffffffff
 #define CHESHIRE__IRQ_ROUTER___END___END_bp 0
 #define CHESHIRE__IRQ_ROUTER___END___END_bw 32
@@ -111,14 +110,14 @@ typedef union {
     uint32_t w;
 } cheshire__irq_router___end_t;
 
-// Addrmap - cheshire.irq_router
+// addrmap - cheshire.irq_router
 typedef struct __attribute__ ((__packed__)) {
     cheshire__irq_router__status_t status;
     uint8_t RESERVED_4_3fffb[0x3fff8];
     cheshire__irq_router___end_t _end;
 } cheshire__irq_router_t;
 
-// Reg - cheshire.axirt.status
+// reg - cheshire.axirt.status
 #define CHESHIRE__AXIRT__STATUS__STATUS_bm 0xffffffff
 #define CHESHIRE__AXIRT__STATUS__STATUS_bp 0
 #define CHESHIRE__AXIRT__STATUS__STATUS_bw 32
@@ -130,7 +129,7 @@ typedef union {
     uint32_t w;
 } cheshire__axirt__status_t;
 
-// Reg - cheshire.axirt._end
+// reg - cheshire.axirt._end
 #define CHESHIRE__AXIRT___END___END_bm 0xffffffff
 #define CHESHIRE__AXIRT___END___END_bp 0
 #define CHESHIRE__AXIRT___END___END_bw 32
@@ -142,14 +141,14 @@ typedef union {
     uint32_t w;
 } cheshire__axirt___end_t;
 
-// Addrmap - cheshire.axirt
+// addrmap - cheshire.axirt
 typedef struct __attribute__ ((__packed__)) {
     cheshire__axirt__status_t status;
     uint8_t RESERVED_4_3fffb[0x3fff8];
     cheshire__axirt___end_t _end;
 } cheshire__axirt_t;
 
-// Reg - cheshire.regs.scratch[]
+// reg - cheshire.regs.scratch[]
 #define CHESHIRE__REGS__SCRATCHX__SCRATCH_bm 0xffffffff
 #define CHESHIRE__REGS__SCRATCHX__SCRATCH_bp 0
 #define CHESHIRE__REGS__SCRATCHX__SCRATCH_bw 32
@@ -161,7 +160,7 @@ typedef union {
     uint32_t w;
 } cheshire__regs__scratchx_t;
 
-// Reg - cheshire.regs.boot_mode
+// reg - cheshire.regs.boot_mode
 #define CHESHIRE__REGS__BOOT_MODE__BOOT_MODE_bm 0x3
 #define CHESHIRE__REGS__BOOT_MODE__BOOT_MODE_bp 0
 #define CHESHIRE__REGS__BOOT_MODE__BOOT_MODE_bw 2
@@ -173,7 +172,7 @@ typedef union {
     uint32_t w;
 } cheshire__regs__boot_mode_t;
 
-// Reg - cheshire.regs.rtc_freq
+// reg - cheshire.regs.rtc_freq
 #define CHESHIRE__REGS__RTC_FREQ__REF_FREQ_bm 0xffffffff
 #define CHESHIRE__REGS__RTC_FREQ__REF_FREQ_bp 0
 #define CHESHIRE__REGS__RTC_FREQ__REF_FREQ_bw 32
@@ -184,7 +183,7 @@ typedef union {
     uint32_t w;
 } cheshire__regs__rtc_freq_t;
 
-// Reg - cheshire.regs.platform_rom
+// reg - cheshire.regs.platform_rom
 #define CHESHIRE__REGS__PLATFORM_ROM__PLATFORM_ROM_bm 0xffffffff
 #define CHESHIRE__REGS__PLATFORM_ROM__PLATFORM_ROM_bp 0
 #define CHESHIRE__REGS__PLATFORM_ROM__PLATFORM_ROM_bw 32
@@ -195,7 +194,7 @@ typedef union {
     uint32_t w;
 } cheshire__regs__platform_rom_t;
 
-// Reg - cheshire.regs.num_int_harts
+// reg - cheshire.regs.num_int_harts
 #define CHESHIRE__REGS__NUM_INT_HARTS__NUM_HARTS_bm 0xffffffff
 #define CHESHIRE__REGS__NUM_INT_HARTS__NUM_HARTS_bp 0
 #define CHESHIRE__REGS__NUM_INT_HARTS__NUM_HARTS_bw 32
@@ -206,7 +205,7 @@ typedef union {
     uint32_t w;
 } cheshire__regs__num_int_harts_t;
 
-// Reg - cheshire.regs.hw_features
+// reg - cheshire.regs.hw_features
 #define CHESHIRE__REGS__HW_FEATURES__BOOTROM_bm 0x1
 #define CHESHIRE__REGS__HW_FEATURES__BOOTROM_bp 0
 #define CHESHIRE__REGS__HW_FEATURES__BOOTROM_bw 1
@@ -270,7 +269,7 @@ typedef union {
     uint32_t w;
 } cheshire__regs__hw_features_t;
 
-// Reg - cheshire.regs.llc_size
+// reg - cheshire.regs.llc_size
 #define CHESHIRE__REGS__LLC_SIZE__LLC_SIZE_bm 0xffffffff
 #define CHESHIRE__REGS__LLC_SIZE__LLC_SIZE_bp 0
 #define CHESHIRE__REGS__LLC_SIZE__LLC_SIZE_bw 32
@@ -281,7 +280,7 @@ typedef union {
     uint32_t w;
 } cheshire__regs__llc_size_t;
 
-// Reg - cheshire.regs.vga_params
+// reg - cheshire.regs.vga_params
 #define CHESHIRE__REGS__VGA_PARAMS__RED_WIDTH_bm 0xff
 #define CHESHIRE__REGS__VGA_PARAMS__RED_WIDTH_bp 0
 #define CHESHIRE__REGS__VGA_PARAMS__RED_WIDTH_bw 8
@@ -301,7 +300,7 @@ typedef union {
     uint32_t w;
 } cheshire__regs__vga_params_t;
 
-// Addrmap - cheshire.regs
+// addrmap - cheshire.regs
 typedef struct __attribute__ ((__packed__)) {
     cheshire__regs__scratchx_t scratch[16];
     cheshire__regs__boot_mode_t boot_mode;
@@ -313,7 +312,7 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__regs__vga_params_t vga_params;
 } cheshire__regs_t;
 
-// Reg - cheshire.llc.status
+// reg - cheshire.llc.status
 #define CHESHIRE__LLC__STATUS__STATUS_bm 0xffffffff
 #define CHESHIRE__LLC__STATUS__STATUS_bp 0
 #define CHESHIRE__LLC__STATUS__STATUS_bw 32
@@ -325,7 +324,7 @@ typedef union {
     uint32_t w;
 } cheshire__llc__status_t;
 
-// Reg - cheshire.llc._end
+// reg - cheshire.llc._end
 #define CHESHIRE__LLC___END___END_bm 0xffffffff
 #define CHESHIRE__LLC___END___END_bp 0
 #define CHESHIRE__LLC___END___END_bw 32
@@ -337,14 +336,14 @@ typedef union {
     uint32_t w;
 } cheshire__llc___end_t;
 
-// Addrmap - cheshire.llc
+// addrmap - cheshire.llc
 typedef struct __attribute__ ((__packed__)) {
     cheshire__llc__status_t status;
     uint8_t RESERVED_4_ffb[0xff8];
     cheshire__llc___end_t _end;
 } cheshire__llc_t;
 
-// Reg - cheshire.uart.status
+// reg - cheshire.uart.status
 #define CHESHIRE__UART__STATUS__STATUS_bm 0xffffffff
 #define CHESHIRE__UART__STATUS__STATUS_bp 0
 #define CHESHIRE__UART__STATUS__STATUS_bw 32
@@ -356,7 +355,7 @@ typedef union {
     uint32_t w;
 } cheshire__uart__status_t;
 
-// Reg - cheshire.uart._end
+// reg - cheshire.uart._end
 #define CHESHIRE__UART___END___END_bm 0xffffffff
 #define CHESHIRE__UART___END___END_bp 0
 #define CHESHIRE__UART___END___END_bw 32
@@ -368,14 +367,14 @@ typedef union {
     uint32_t w;
 } cheshire__uart___end_t;
 
-// Addrmap - cheshire.uart
+// addrmap - cheshire.uart
 typedef struct __attribute__ ((__packed__)) {
     cheshire__uart__status_t status;
     uint8_t RESERVED_4_ffb[0xff8];
     cheshire__uart___end_t _end;
 } cheshire__uart_t;
 
-// Reg - cheshire.i2c.status
+// reg - cheshire.i2c.status
 #define CHESHIRE__I2C__STATUS__STATUS_bm 0xffffffff
 #define CHESHIRE__I2C__STATUS__STATUS_bp 0
 #define CHESHIRE__I2C__STATUS__STATUS_bw 32
@@ -387,7 +386,7 @@ typedef union {
     uint32_t w;
 } cheshire__i2c__status_t;
 
-// Reg - cheshire.i2c._end
+// reg - cheshire.i2c._end
 #define CHESHIRE__I2C___END___END_bm 0xffffffff
 #define CHESHIRE__I2C___END___END_bp 0
 #define CHESHIRE__I2C___END___END_bw 32
@@ -399,14 +398,14 @@ typedef union {
     uint32_t w;
 } cheshire__i2c___end_t;
 
-// Addrmap - cheshire.i2c
+// addrmap - cheshire.i2c
 typedef struct __attribute__ ((__packed__)) {
     cheshire__i2c__status_t status;
     uint8_t RESERVED_4_ffb[0xff8];
     cheshire__i2c___end_t _end;
 } cheshire__i2c_t;
 
-// Reg - cheshire.spih.status
+// reg - cheshire.spih.status
 #define CHESHIRE__SPIH__STATUS__STATUS_bm 0xffffffff
 #define CHESHIRE__SPIH__STATUS__STATUS_bp 0
 #define CHESHIRE__SPIH__STATUS__STATUS_bw 32
@@ -418,7 +417,7 @@ typedef union {
     uint32_t w;
 } cheshire__spih__status_t;
 
-// Reg - cheshire.spih._end
+// reg - cheshire.spih._end
 #define CHESHIRE__SPIH___END___END_bm 0xffffffff
 #define CHESHIRE__SPIH___END___END_bp 0
 #define CHESHIRE__SPIH___END___END_bw 32
@@ -430,14 +429,14 @@ typedef union {
     uint32_t w;
 } cheshire__spih___end_t;
 
-// Addrmap - cheshire.spih
+// addrmap - cheshire.spih
 typedef struct __attribute__ ((__packed__)) {
     cheshire__spih__status_t status;
     uint8_t RESERVED_4_ffb[0xff8];
     cheshire__spih___end_t _end;
 } cheshire__spih_t;
 
-// Reg - cheshire.gpio.status
+// reg - cheshire.gpio.status
 #define CHESHIRE__GPIO__STATUS__STATUS_bm 0xffffffff
 #define CHESHIRE__GPIO__STATUS__STATUS_bp 0
 #define CHESHIRE__GPIO__STATUS__STATUS_bw 32
@@ -449,7 +448,7 @@ typedef union {
     uint32_t w;
 } cheshire__gpio__status_t;
 
-// Reg - cheshire.gpio._end
+// reg - cheshire.gpio._end
 #define CHESHIRE__GPIO___END___END_bm 0xffffffff
 #define CHESHIRE__GPIO___END___END_bp 0
 #define CHESHIRE__GPIO___END___END_bw 32
@@ -461,14 +460,14 @@ typedef union {
     uint32_t w;
 } cheshire__gpio___end_t;
 
-// Addrmap - cheshire.gpio
+// addrmap - cheshire.gpio
 typedef struct __attribute__ ((__packed__)) {
     cheshire__gpio__status_t status;
     uint8_t RESERVED_4_ffb[0xff8];
     cheshire__gpio___end_t _end;
 } cheshire__gpio_t;
 
-// Reg - cheshire.slink.ctrl
+// reg - cheshire.slink.ctrl
 #define CHESHIRE__SLINK__CTRL__CLK_ENA_bm 0x1
 #define CHESHIRE__SLINK__CTRL__CLK_ENA_bp 0
 #define CHESHIRE__SLINK__CTRL__CLK_ENA_bw 1
@@ -497,7 +496,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__ctrl_t;
 
-// Reg - cheshire.slink.isolated
+// reg - cheshire.slink.isolated
 #define CHESHIRE__SLINK__ISOLATED__AXI_IN_bm 0x1
 #define CHESHIRE__SLINK__ISOLATED__AXI_IN_bp 0
 #define CHESHIRE__SLINK__ISOLATED__AXI_IN_bw 1
@@ -515,7 +514,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__isolated_t;
 
-// Reg - cheshire.slink.raw_mode_en
+// reg - cheshire.slink.raw_mode_en
 #define CHESHIRE__SLINK__RAW_MODE_EN__RAW_MODE_EN_bm 0x1
 #define CHESHIRE__SLINK__RAW_MODE_EN__RAW_MODE_EN_bp 0
 #define CHESHIRE__SLINK__RAW_MODE_EN__RAW_MODE_EN_bw 1
@@ -528,7 +527,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__raw_mode_en_t;
 
-// Reg - cheshire.slink.raw_mode_in_data
+// reg - cheshire.slink.raw_mode_in_data
 #define CHESHIRE__SLINK__RAW_MODE_IN_DATA__RAW_MODE_IN_DATA_bm 0xff
 #define CHESHIRE__SLINK__RAW_MODE_IN_DATA__RAW_MODE_IN_DATA_bp 0
 #define CHESHIRE__SLINK__RAW_MODE_IN_DATA__RAW_MODE_IN_DATA_bw 8
@@ -540,7 +539,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__raw_mode_in_data_t;
 
-// Reg - cheshire.slink.raw_mode_in_ch_sel
+// reg - cheshire.slink.raw_mode_in_ch_sel
 #define CHESHIRE__SLINK__RAW_MODE_IN_CH_SEL__RAW_MODE_IN_CH_SEL_bm 0xff
 #define CHESHIRE__SLINK__RAW_MODE_IN_CH_SEL__RAW_MODE_IN_CH_SEL_bp 0
 #define CHESHIRE__SLINK__RAW_MODE_IN_CH_SEL__RAW_MODE_IN_CH_SEL_bw 8
@@ -553,7 +552,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__raw_mode_in_ch_sel_t;
 
-// Reg - cheshire.slink.raw_mode_out_data_fifo
+// reg - cheshire.slink.raw_mode_out_data_fifo
 #define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_bm 0xff
 #define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_bp 0
 #define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_bw 8
@@ -566,7 +565,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__raw_mode_out_data_fifo_t;
 
-// Reg - cheshire.slink.raw_mode_out_data_fifo_ctrl
+// reg - cheshire.slink.raw_mode_out_data_fifo_ctrl
 #define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO_CTRL__CLEAR_bm 0x1
 #define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO_CTRL__CLEAR_bp 0
 #define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO_CTRL__CLEAR_bw 1
@@ -589,7 +588,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__raw_mode_out_data_fifo_ctrl_t;
 
-// Reg - cheshire.slink.raw_mode_out_en
+// reg - cheshire.slink.raw_mode_out_en
 #define CHESHIRE__SLINK__RAW_MODE_OUT_EN__RAW_MODE_OUT_EN_bm 0x1
 #define CHESHIRE__SLINK__RAW_MODE_OUT_EN__RAW_MODE_OUT_EN_bp 0
 #define CHESHIRE__SLINK__RAW_MODE_OUT_EN__RAW_MODE_OUT_EN_bw 1
@@ -602,7 +601,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__raw_mode_out_en_t;
 
-// Reg - cheshire.slink.flow_control_fifo_clear
+// reg - cheshire.slink.flow_control_fifo_clear
 #define CHESHIRE__SLINK__FLOW_CONTROL_FIFO_CLEAR__FLOW_CONTROL_FIFO_CLEAR_bm 0x1
 #define CHESHIRE__SLINK__FLOW_CONTROL_FIFO_CLEAR__FLOW_CONTROL_FIFO_CLEAR_bp 0
 #define CHESHIRE__SLINK__FLOW_CONTROL_FIFO_CLEAR__FLOW_CONTROL_FIFO_CLEAR_bw 1
@@ -615,7 +614,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__flow_control_fifo_clear_t;
 
-// Reg - cheshire.slink.raw_mode_in_data_valid[]
+// reg - cheshire.slink.raw_mode_in_data_valid[]
 #define CHESHIRE__SLINK__RAW_MODE_IN_DATA_VALIDX__RAW_MODE_IN_DATA_VALID_bm 0x1
 #define CHESHIRE__SLINK__RAW_MODE_IN_DATA_VALIDX__RAW_MODE_IN_DATA_VALID_bp 0
 #define CHESHIRE__SLINK__RAW_MODE_IN_DATA_VALIDX__RAW_MODE_IN_DATA_VALID_bw 1
@@ -627,7 +626,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__raw_mode_in_data_validx_t;
 
-// Reg - cheshire.slink.raw_mode_out_ch_mask[]
+// reg - cheshire.slink.raw_mode_out_ch_mask[]
 #define CHESHIRE__SLINK__RAW_MODE_OUT_CH_MASKX__RAW_MODE_OUT_CH_MASK_bm 0x1
 #define CHESHIRE__SLINK__RAW_MODE_OUT_CH_MASKX__RAW_MODE_OUT_CH_MASK_bp 0
 #define CHESHIRE__SLINK__RAW_MODE_OUT_CH_MASKX__RAW_MODE_OUT_CH_MASK_bw 1
@@ -640,7 +639,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__raw_mode_out_ch_maskx_t;
 
-// Reg - cheshire.slink.tx_phy_clk_div[]
+// reg - cheshire.slink.tx_phy_clk_div[]
 #define CHESHIRE__SLINK__TX_PHY_CLK_DIVX__CLK_DIVS_bm 0x7ff
 #define CHESHIRE__SLINK__TX_PHY_CLK_DIVX__CLK_DIVS_bp 0
 #define CHESHIRE__SLINK__TX_PHY_CLK_DIVX__CLK_DIVS_bw 11
@@ -653,7 +652,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__tx_phy_clk_divx_t;
 
-// Reg - cheshire.slink.tx_phy_clk_start[]
+// reg - cheshire.slink.tx_phy_clk_start[]
 #define CHESHIRE__SLINK__TX_PHY_CLK_STARTX__CLK_DIVS_bm 0x7ff
 #define CHESHIRE__SLINK__TX_PHY_CLK_STARTX__CLK_DIVS_bp 0
 #define CHESHIRE__SLINK__TX_PHY_CLK_STARTX__CLK_DIVS_bw 11
@@ -666,7 +665,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__tx_phy_clk_startx_t;
 
-// Reg - cheshire.slink.tx_phy_clk_end[]
+// reg - cheshire.slink.tx_phy_clk_end[]
 #define CHESHIRE__SLINK__TX_PHY_CLK_ENDX__CLK_SHIFT_END_bm 0x7ff
 #define CHESHIRE__SLINK__TX_PHY_CLK_ENDX__CLK_SHIFT_END_bp 0
 #define CHESHIRE__SLINK__TX_PHY_CLK_ENDX__CLK_SHIFT_END_bw 11
@@ -679,7 +678,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__tx_phy_clk_endx_t;
 
-// Reg - cheshire.slink.channel_alloc_tx_cfg
+// reg - cheshire.slink.channel_alloc_tx_cfg
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_TX_CFG__BYPASS_EN_bm 0x1
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_TX_CFG__BYPASS_EN_bp 0
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_TX_CFG__BYPASS_EN_bw 1
@@ -703,7 +702,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__channel_alloc_tx_cfg_t;
 
-// Reg - cheshire.slink.channel_alloc_tx_ctrl
+// reg - cheshire.slink.channel_alloc_tx_ctrl
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_TX_CTRL__CLEAR_bm 0x1
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_TX_CTRL__CLEAR_bp 0
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_TX_CTRL__CLEAR_bw 1
@@ -719,7 +718,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__channel_alloc_tx_ctrl_t;
 
-// Reg - cheshire.slink.channel_alloc_rx_cfg
+// reg - cheshire.slink.channel_alloc_rx_cfg
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_RX_CFG__BYPASS_EN_bm 0x1
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_RX_CFG__BYPASS_EN_bp 0
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_RX_CFG__BYPASS_EN_bw 1
@@ -748,7 +747,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__channel_alloc_rx_cfg_t;
 
-// Reg - cheshire.slink.channel_alloc_rx_ctrl
+// reg - cheshire.slink.channel_alloc_rx_ctrl
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_RX_CTRL__CLEAR_bm 0x1
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_RX_CTRL__CLEAR_bp 0
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_RX_CTRL__CLEAR_bw 1
@@ -760,7 +759,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__channel_alloc_rx_ctrl_t;
 
-// Reg - cheshire.slink.channel_alloc_tx_ch_en[]
+// reg - cheshire.slink.channel_alloc_tx_ch_en[]
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_TX_CH_ENX__CHANNEL_ALLOC_TX_CH_EN_bm 0x1
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_TX_CH_ENX__CHANNEL_ALLOC_TX_CH_EN_bp 0
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_TX_CH_ENX__CHANNEL_ALLOC_TX_CH_EN_bw 1
@@ -773,7 +772,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__channel_alloc_tx_ch_enx_t;
 
-// Reg - cheshire.slink.channel_alloc_rx_ch_en[]
+// reg - cheshire.slink.channel_alloc_rx_ch_en[]
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_RX_CH_ENX__CHANNEL_ALLOC_RX_CH_EN_bm 0x1
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_RX_CH_ENX__CHANNEL_ALLOC_RX_CH_EN_bp 0
 #define CHESHIRE__SLINK__CHANNEL_ALLOC_RX_CH_ENX__CHANNEL_ALLOC_RX_CH_EN_bw 1
@@ -786,7 +785,7 @@ typedef union {
     uint32_t w;
 } cheshire__slink__channel_alloc_rx_ch_enx_t;
 
-// Addrmap - cheshire.slink
+// addrmap - cheshire.slink
 typedef struct __attribute__ ((__packed__)) {
     cheshire__slink__ctrl_t ctrl;
     cheshire__slink__isolated_t isolated;
@@ -818,7 +817,7 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__slink__channel_alloc_rx_ch_enx_t channel_alloc_rx_ch_en[1];
 } cheshire__slink_t;
 
-// Reg - cheshire.vga.status
+// reg - cheshire.vga.status
 #define CHESHIRE__VGA__STATUS__STATUS_bm 0xffffffff
 #define CHESHIRE__VGA__STATUS__STATUS_bp 0
 #define CHESHIRE__VGA__STATUS__STATUS_bw 32
@@ -830,7 +829,7 @@ typedef union {
     uint32_t w;
 } cheshire__vga__status_t;
 
-// Reg - cheshire.vga._end
+// reg - cheshire.vga._end
 #define CHESHIRE__VGA___END___END_bm 0xffffffff
 #define CHESHIRE__VGA___END___END_bp 0
 #define CHESHIRE__VGA___END___END_bw 32
@@ -842,14 +841,14 @@ typedef union {
     uint32_t w;
 } cheshire__vga___end_t;
 
-// Addrmap - cheshire.vga
+// addrmap - cheshire.vga
 typedef struct __attribute__ ((__packed__)) {
     cheshire__vga__status_t status;
     uint8_t RESERVED_4_ffb[0xff8];
     cheshire__vga___end_t _end;
 } cheshire__vga_t;
 
-// Reg - cheshire.usb.status
+// reg - cheshire.usb.status
 #define CHESHIRE__USB__STATUS__STATUS_bm 0xffffffff
 #define CHESHIRE__USB__STATUS__STATUS_bp 0
 #define CHESHIRE__USB__STATUS__STATUS_bw 32
@@ -861,7 +860,7 @@ typedef union {
     uint32_t w;
 } cheshire__usb__status_t;
 
-// Reg - cheshire.usb._end
+// reg - cheshire.usb._end
 #define CHESHIRE__USB___END___END_bm 0xffffffff
 #define CHESHIRE__USB___END___END_bp 0
 #define CHESHIRE__USB___END___END_bw 32
@@ -873,14 +872,14 @@ typedef union {
     uint32_t w;
 } cheshire__usb___end_t;
 
-// Addrmap - cheshire.usb
+// addrmap - cheshire.usb
 typedef struct __attribute__ ((__packed__)) {
     cheshire__usb__status_t status;
     uint8_t RESERVED_4_ffb[0xff8];
     cheshire__usb___end_t _end;
 } cheshire__usb_t;
 
-// Reg - cheshire.bus_err.status
+// reg - cheshire.bus_err.status
 #define CHESHIRE__BUS_ERR__STATUS__STATUS_bm 0xffffffff
 #define CHESHIRE__BUS_ERR__STATUS__STATUS_bp 0
 #define CHESHIRE__BUS_ERR__STATUS__STATUS_bw 32
@@ -892,7 +891,7 @@ typedef union {
     uint32_t w;
 } cheshire__bus_err__status_t;
 
-// Reg - cheshire.bus_err._end
+// reg - cheshire.bus_err._end
 #define CHESHIRE__BUS_ERR___END___END_bm 0xffffffff
 #define CHESHIRE__BUS_ERR___END___END_bp 0
 #define CHESHIRE__BUS_ERR___END___END_bw 32
@@ -904,14 +903,14 @@ typedef union {
     uint32_t w;
 } cheshire__bus_err___end_t;
 
-// Addrmap - cheshire.bus_err
+// addrmap - cheshire.bus_err
 typedef struct __attribute__ ((__packed__)) {
     cheshire__bus_err__status_t status;
     uint8_t RESERVED_4_3b[0x38];
     cheshire__bus_err___end_t _end;
 } cheshire__bus_err_t;
 
-// Reg - cheshire.plic.status
+// reg - cheshire.plic.status
 #define CHESHIRE__PLIC__STATUS__STATUS_bm 0xffffffff
 #define CHESHIRE__PLIC__STATUS__STATUS_bp 0
 #define CHESHIRE__PLIC__STATUS__STATUS_bw 32
@@ -923,7 +922,7 @@ typedef union {
     uint32_t w;
 } cheshire__plic__status_t;
 
-// Reg - cheshire.plic._end
+// reg - cheshire.plic._end
 #define CHESHIRE__PLIC___END___END_bm 0xffffffff
 #define CHESHIRE__PLIC___END___END_bp 0
 #define CHESHIRE__PLIC___END___END_bw 32
@@ -935,14 +934,14 @@ typedef union {
     uint32_t w;
 } cheshire__plic___end_t;
 
-// Addrmap - cheshire.plic
+// addrmap - cheshire.plic
 typedef struct __attribute__ ((__packed__)) {
     cheshire__plic__status_t status;
     uint8_t RESERVED_4_3fffffb[0x3fffff8];
     cheshire__plic___end_t _end;
 } cheshire__plic_t;
 
-// Reg - cheshire.clic.status
+// reg - cheshire.clic.status
 #define CHESHIRE__CLIC__STATUS__STATUS_bm 0xffffffff
 #define CHESHIRE__CLIC__STATUS__STATUS_bp 0
 #define CHESHIRE__CLIC__STATUS__STATUS_bw 32
@@ -954,7 +953,7 @@ typedef union {
     uint32_t w;
 } cheshire__clic__status_t;
 
-// Reg - cheshire.clic._end
+// reg - cheshire.clic._end
 #define CHESHIRE__CLIC___END___END_bm 0xffffffff
 #define CHESHIRE__CLIC___END___END_bp 0
 #define CHESHIRE__CLIC___END___END_bw 32
@@ -966,29 +965,29 @@ typedef union {
     uint32_t w;
 } cheshire__clic___end_t;
 
-// Addrmap - cheshire.clic
+// addrmap - cheshire.clic
 typedef struct __attribute__ ((__packed__)) {
     cheshire__clic__status_t status;
     uint8_t RESERVED_4_3fffb[0x3fff8];
     cheshire__clic___end_t _end;
 } cheshire__clic_t;
 
-// Mem - cheshire.spm
+// mem - cheshire.spm
 typedef struct __attribute__ ((__packed__)) {
     uint32_t mem[16384];
 } cheshire__spm_t;
 
-// Mem - cheshire.spm_unc
+// mem - cheshire.spm_unc
 typedef struct __attribute__ ((__packed__)) {
     uint32_t mem[16777216];
 } cheshire__spm_unc_t;
 
-// Mem - cheshire.dram
+// mem - cheshire.dram
 typedef struct __attribute__ ((__packed__)) {
     uint32_t mem[2097152];
 } cheshire__dram_t;
 
-// Addrmap - cheshire
+// addrmap - cheshire
 typedef struct __attribute__ ((__packed__)) {
     cheshire__extrom_t extrom;
     uint8_t RESERVED_40000_ffffff[0xfc0000];
