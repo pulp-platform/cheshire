@@ -101,7 +101,6 @@ module cheshire_soc_regs (
         logic hw_features;
         logic llc_size;
         logic vga_params;
-        logic clk_gate_en_peripherals;
     } decoded_reg_strb_t;
     decoded_reg_strb_t decoded_reg_strb;
     logic decoded_err;
@@ -137,7 +136,6 @@ module cheshire_soc_regs (
         is_external |= cpuif_req_masked & (cpuif_addr == 7'h54) & !cpuif_req_is_wr;
         decoded_reg_strb.vga_params = cpuif_req_masked & (cpuif_addr == 7'h58) & !cpuif_req_is_wr;
         is_external |= cpuif_req_masked & (cpuif_addr == 7'h58) & !cpuif_req_is_wr;
-        decoded_reg_strb.clk_gate_en_peripherals = cpuif_req_masked & (cpuif_addr == 7'h5c);
         decoded_err = '0;
         decoded_req_is_external = is_external;
     end
@@ -175,36 +173,6 @@ module cheshire_soc_regs (
                 logic load_next;
             } scratch;
         } scratch[16];
-        struct {
-            struct {
-                logic next;
-                logic load_next;
-            } clk_gate_en_uart;
-            struct {
-                logic next;
-                logic load_next;
-            } clk_gate_en_i2c;
-            struct {
-                logic next;
-                logic load_next;
-            } clk_gate_en_spih;
-            struct {
-                logic next;
-                logic load_next;
-            } clk_gate_en_slink;
-            struct {
-                logic next;
-                logic load_next;
-            } clk_gate_en_gpio;
-            struct {
-                logic next;
-                logic load_next;
-            } clk_gate_en_vga;
-            struct {
-                logic next;
-                logic load_next;
-            } clk_gate_en_usb;
-        } clk_gate_en_peripherals;
     } field_combo_t;
     field_combo_t field_combo;
 
@@ -214,29 +182,6 @@ module cheshire_soc_regs (
                 logic [31:0] value;
             } scratch;
         } scratch[16];
-        struct {
-            struct {
-                logic value;
-            } clk_gate_en_uart;
-            struct {
-                logic value;
-            } clk_gate_en_i2c;
-            struct {
-                logic value;
-            } clk_gate_en_spih;
-            struct {
-                logic value;
-            } clk_gate_en_slink;
-            struct {
-                logic value;
-            } clk_gate_en_gpio;
-            struct {
-                logic value;
-            } clk_gate_en_vga;
-            struct {
-                logic value;
-            } clk_gate_en_usb;
-        } clk_gate_en_peripherals;
     } field_storage_t;
     field_storage_t field_storage;
 
@@ -292,139 +237,6 @@ module cheshire_soc_regs (
 
     assign hwif_out.vga_params.req = !decoded_req_is_wr ? decoded_reg_strb.vga_params : '0;
     assign hwif_out.vga_params.req_is_wr = decoded_req_is_wr;
-    // Field: soc_regs.clk_gate_en_peripherals.clk_gate_en_uart
-    always_comb begin
-        automatic logic [0:0] next_c;
-        automatic logic load_next_c;
-        next_c = field_storage.clk_gate_en_peripherals.clk_gate_en_uart.value;
-        load_next_c = '0;
-        if(decoded_reg_strb.clk_gate_en_peripherals && decoded_req_is_wr) begin // SW write
-            next_c = (field_storage.clk_gate_en_peripherals.clk_gate_en_uart.value & ~decoded_wr_biten[0:0]) | (decoded_wr_data[0:0] & decoded_wr_biten[0:0]);
-            load_next_c = '1;
-        end
-        field_combo.clk_gate_en_peripherals.clk_gate_en_uart.next = next_c;
-        field_combo.clk_gate_en_peripherals.clk_gate_en_uart.load_next = load_next_c;
-    end
-    always_ff @(posedge clk) begin
-        if(field_combo.clk_gate_en_peripherals.clk_gate_en_uart.load_next) begin
-            field_storage.clk_gate_en_peripherals.clk_gate_en_uart.value <= field_combo.clk_gate_en_peripherals.clk_gate_en_uart.next;
-        end
-    end
-    assign hwif_out.clk_gate_en_peripherals.clk_gate_en_uart.value = field_storage.clk_gate_en_peripherals.clk_gate_en_uart.value;
-    // Field: soc_regs.clk_gate_en_peripherals.clk_gate_en_i2c
-    always_comb begin
-        automatic logic [0:0] next_c;
-        automatic logic load_next_c;
-        next_c = field_storage.clk_gate_en_peripherals.clk_gate_en_i2c.value;
-        load_next_c = '0;
-        if(decoded_reg_strb.clk_gate_en_peripherals && decoded_req_is_wr) begin // SW write
-            next_c = (field_storage.clk_gate_en_peripherals.clk_gate_en_i2c.value & ~decoded_wr_biten[1:1]) | (decoded_wr_data[1:1] & decoded_wr_biten[1:1]);
-            load_next_c = '1;
-        end
-        field_combo.clk_gate_en_peripherals.clk_gate_en_i2c.next = next_c;
-        field_combo.clk_gate_en_peripherals.clk_gate_en_i2c.load_next = load_next_c;
-    end
-    always_ff @(posedge clk) begin
-        if(field_combo.clk_gate_en_peripherals.clk_gate_en_i2c.load_next) begin
-            field_storage.clk_gate_en_peripherals.clk_gate_en_i2c.value <= field_combo.clk_gate_en_peripherals.clk_gate_en_i2c.next;
-        end
-    end
-    assign hwif_out.clk_gate_en_peripherals.clk_gate_en_i2c.value = field_storage.clk_gate_en_peripherals.clk_gate_en_i2c.value;
-    // Field: soc_regs.clk_gate_en_peripherals.clk_gate_en_spih
-    always_comb begin
-        automatic logic [0:0] next_c;
-        automatic logic load_next_c;
-        next_c = field_storage.clk_gate_en_peripherals.clk_gate_en_spih.value;
-        load_next_c = '0;
-        if(decoded_reg_strb.clk_gate_en_peripherals && decoded_req_is_wr) begin // SW write
-            next_c = (field_storage.clk_gate_en_peripherals.clk_gate_en_spih.value & ~decoded_wr_biten[2:2]) | (decoded_wr_data[2:2] & decoded_wr_biten[2:2]);
-            load_next_c = '1;
-        end
-        field_combo.clk_gate_en_peripherals.clk_gate_en_spih.next = next_c;
-        field_combo.clk_gate_en_peripherals.clk_gate_en_spih.load_next = load_next_c;
-    end
-    always_ff @(posedge clk) begin
-        if(field_combo.clk_gate_en_peripherals.clk_gate_en_spih.load_next) begin
-            field_storage.clk_gate_en_peripherals.clk_gate_en_spih.value <= field_combo.clk_gate_en_peripherals.clk_gate_en_spih.next;
-        end
-    end
-    assign hwif_out.clk_gate_en_peripherals.clk_gate_en_spih.value = field_storage.clk_gate_en_peripherals.clk_gate_en_spih.value;
-    // Field: soc_regs.clk_gate_en_peripherals.clk_gate_en_slink
-    always_comb begin
-        automatic logic [0:0] next_c;
-        automatic logic load_next_c;
-        next_c = field_storage.clk_gate_en_peripherals.clk_gate_en_slink.value;
-        load_next_c = '0;
-        if(decoded_reg_strb.clk_gate_en_peripherals && decoded_req_is_wr) begin // SW write
-            next_c = (field_storage.clk_gate_en_peripherals.clk_gate_en_slink.value & ~decoded_wr_biten[3:3]) | (decoded_wr_data[3:3] & decoded_wr_biten[3:3]);
-            load_next_c = '1;
-        end
-        field_combo.clk_gate_en_peripherals.clk_gate_en_slink.next = next_c;
-        field_combo.clk_gate_en_peripherals.clk_gate_en_slink.load_next = load_next_c;
-    end
-    always_ff @(posedge clk) begin
-        if(field_combo.clk_gate_en_peripherals.clk_gate_en_slink.load_next) begin
-            field_storage.clk_gate_en_peripherals.clk_gate_en_slink.value <= field_combo.clk_gate_en_peripherals.clk_gate_en_slink.next;
-        end
-    end
-    assign hwif_out.clk_gate_en_peripherals.clk_gate_en_slink.value = field_storage.clk_gate_en_peripherals.clk_gate_en_slink.value;
-    // Field: soc_regs.clk_gate_en_peripherals.clk_gate_en_gpio
-    always_comb begin
-        automatic logic [0:0] next_c;
-        automatic logic load_next_c;
-        next_c = field_storage.clk_gate_en_peripherals.clk_gate_en_gpio.value;
-        load_next_c = '0;
-        if(decoded_reg_strb.clk_gate_en_peripherals && decoded_req_is_wr) begin // SW write
-            next_c = (field_storage.clk_gate_en_peripherals.clk_gate_en_gpio.value & ~decoded_wr_biten[4:4]) | (decoded_wr_data[4:4] & decoded_wr_biten[4:4]);
-            load_next_c = '1;
-        end
-        field_combo.clk_gate_en_peripherals.clk_gate_en_gpio.next = next_c;
-        field_combo.clk_gate_en_peripherals.clk_gate_en_gpio.load_next = load_next_c;
-    end
-    always_ff @(posedge clk) begin
-        if(field_combo.clk_gate_en_peripherals.clk_gate_en_gpio.load_next) begin
-            field_storage.clk_gate_en_peripherals.clk_gate_en_gpio.value <= field_combo.clk_gate_en_peripherals.clk_gate_en_gpio.next;
-        end
-    end
-    assign hwif_out.clk_gate_en_peripherals.clk_gate_en_gpio.value = field_storage.clk_gate_en_peripherals.clk_gate_en_gpio.value;
-    // Field: soc_regs.clk_gate_en_peripherals.clk_gate_en_vga
-    always_comb begin
-        automatic logic [0:0] next_c;
-        automatic logic load_next_c;
-        next_c = field_storage.clk_gate_en_peripherals.clk_gate_en_vga.value;
-        load_next_c = '0;
-        if(decoded_reg_strb.clk_gate_en_peripherals && decoded_req_is_wr) begin // SW write
-            next_c = (field_storage.clk_gate_en_peripherals.clk_gate_en_vga.value & ~decoded_wr_biten[5:5]) | (decoded_wr_data[5:5] & decoded_wr_biten[5:5]);
-            load_next_c = '1;
-        end
-        field_combo.clk_gate_en_peripherals.clk_gate_en_vga.next = next_c;
-        field_combo.clk_gate_en_peripherals.clk_gate_en_vga.load_next = load_next_c;
-    end
-    always_ff @(posedge clk) begin
-        if(field_combo.clk_gate_en_peripherals.clk_gate_en_vga.load_next) begin
-            field_storage.clk_gate_en_peripherals.clk_gate_en_vga.value <= field_combo.clk_gate_en_peripherals.clk_gate_en_vga.next;
-        end
-    end
-    assign hwif_out.clk_gate_en_peripherals.clk_gate_en_vga.value = field_storage.clk_gate_en_peripherals.clk_gate_en_vga.value;
-    // Field: soc_regs.clk_gate_en_peripherals.clk_gate_en_usb
-    always_comb begin
-        automatic logic [0:0] next_c;
-        automatic logic load_next_c;
-        next_c = field_storage.clk_gate_en_peripherals.clk_gate_en_usb.value;
-        load_next_c = '0;
-        if(decoded_reg_strb.clk_gate_en_peripherals && decoded_req_is_wr) begin // SW write
-            next_c = (field_storage.clk_gate_en_peripherals.clk_gate_en_usb.value & ~decoded_wr_biten[6:6]) | (decoded_wr_data[6:6] & decoded_wr_biten[6:6]);
-            load_next_c = '1;
-        end
-        field_combo.clk_gate_en_peripherals.clk_gate_en_usb.next = next_c;
-        field_combo.clk_gate_en_peripherals.clk_gate_en_usb.load_next = load_next_c;
-    end
-    always_ff @(posedge clk) begin
-        if(field_combo.clk_gate_en_peripherals.clk_gate_en_usb.load_next) begin
-            field_storage.clk_gate_en_peripherals.clk_gate_en_usb.value <= field_combo.clk_gate_en_peripherals.clk_gate_en_usb.next;
-        end
-    end
-    assign hwif_out.clk_gate_en_peripherals.clk_gate_en_usb.value = field_storage.clk_gate_en_peripherals.clk_gate_en_usb.value;
 
     //--------------------------------------------------------------------------
     // Write response
@@ -503,15 +315,6 @@ module cheshire_soc_regs (
         end
         if(rd_mux_addr == 7'h58) begin
             readback_data_var = hwif_in.vga_params.rd_data;
-        end
-        if(rd_mux_addr == 7'h5c) begin
-            readback_data_var[0] = field_storage.clk_gate_en_peripherals.clk_gate_en_uart.value;
-            readback_data_var[1] = field_storage.clk_gate_en_peripherals.clk_gate_en_i2c.value;
-            readback_data_var[2] = field_storage.clk_gate_en_peripherals.clk_gate_en_spih.value;
-            readback_data_var[3] = field_storage.clk_gate_en_peripherals.clk_gate_en_slink.value;
-            readback_data_var[4] = field_storage.clk_gate_en_peripherals.clk_gate_en_gpio.value;
-            readback_data_var[5] = field_storage.clk_gate_en_peripherals.clk_gate_en_vga.value;
-            readback_data_var[6] = field_storage.clk_gate_en_peripherals.clk_gate_en_usb.value;
         end
         readback_data = readback_data_var;
         readback_done = decoded_req & ~decoded_req_is_wr & ~decoded_req_is_external;
