@@ -80,6 +80,9 @@ addrmap cheshire #(longint unsigned SlinkNumLanes = 4) {
     // AXI-RT traffic regulator (256 KiB)
     periph_stub_t #(.Size(0x0004_0000)) axirt   @0x020C_0000;
 
+    // Cache coherency unit (256 KiB)
+    periph_stub_t #(.Size(0x0004_0000)) ccu     @0x0210_0000;
+
     // PLIC (64 MiB)
     periph_stub_t #(.Size(0x0400_0000)) plic    @0x0400_0000;
 

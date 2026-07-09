@@ -78,6 +78,7 @@ package cheshire_pkg;
     bit     Cva6ExtCieOnTop;
     // Hart parameters
     bit [MaxCoresWidth-1:0] NumCores;
+    bit     Coherence;
     doub_bt NumExtIrqHarts;
     doub_bt NumExtDbgHarts;
     doub_bt CoreUserAmoOffs;
@@ -303,7 +304,8 @@ package cheshire_pkg;
   function automatic axi_in_t gen_axi_in(cheshire_cfg_t cfg);
     axi_in_t ret = '{default: '0};
     int unsigned i = 0;
-    for (int j = 0; j < cfg.NumCores; j++) begin ret.cores[i] = i; i++; end
+    // With coherence the CCU exposes a single manager port, so one master suffices
+    for (int j = 0; j < (cfg.Coherence ? 1 : cfg.NumCores); j++) begin ret.cores[i] = i; i++; end
     ret.dbg = i;
     if (cfg.Dma)        begin i++; ret.dma   = i; end
     if (cfg.SerialLink) begin i++; ret.slink = i; end
@@ -395,6 +397,7 @@ package cheshire_pkg;
     aw_bt irq_router;
     aw_bt [2**MaxCoresWidth-1:0] bus_err;
     aw_bt [2**MaxCoresWidth-1:0] clic;
+    aw_bt ccu;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
@@ -425,6 +428,7 @@ package cheshire_pkg;
     if (cfg.BusErr) for (int j = 0; j < 2 + cfg.NumCores; j++) begin
       i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, BUS_ERR_BASE_ADDR + j*BUS_ERR_SIZE, BUS_ERR_BASE_ADDR + (j+1)*BUS_ERR_SIZE};
     end
+    if (cfg.Coherence) begin i++; ret.ccu = i; r++; ret.map[r] = '{i, CCU_BASE_ADDR, CCU_BASE_ADDR + CCU_SIZE}; end
     i++; r++;
     ret.ext_base  = i;
     ret.num_out   = i + cfg.RegExtNumSlv;
@@ -509,6 +513,7 @@ package cheshire_pkg;
     ret.CachedRegionAddrBase  = {SPM_BASE_ADDR, cfg.LlcOutRegionStart,  CieBase};
     ret.CachedRegionLength    = {SizeSpm,       SizeLlcOut,             cfg.Cva6ExtCieLength};
     ret.DebugEn               = 1;
+    ret.DcacheCoherent        = cfg.Coherence;
     `ifndef TARGET_OPENHW_CVA6
     ret.RVSCLIC               = cfg.Clic;
     ret.RVXHCLIC              = cfg.ClicVsclic;

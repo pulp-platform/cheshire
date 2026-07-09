@@ -14,6 +14,7 @@ package:
 dependencies:
   apb:                      { git: "https://github.com/pulp-platform/apb.git",                    version: 0.2.4  }
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.3  }
+  ace:                      { git: "https://github.com/pulp-platform/ace.git",                    rev: 1d146361a347c42f2b0b5ff44d8c4f44756a9d6a }
   axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.8 }
   axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",                version: 0.2.1  }
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.8.2  }
@@ -23,7 +24,7 @@ dependencies:
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                  version: 0.2.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           version: 1.38.0 }
   common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.3  }
-  cva6:                     { git: "https://github.com/openhwgroup/cva6.git",                     rev: master     }
+  cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: 79f061a59ed85ab03e4a86a3d2d57c665f6d2891 }
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.6.4  }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
   opentitan_peripherals:    { git: "https://github.com/pulp-platform/opentitan_peripherals.git",  version: 0.4.0  }
@@ -45,6 +46,7 @@ sources:
   - hw/regs/cheshire_soc_regs.sv
   - hw/cheshire_idma_wrap.sv
   - hw/cheshire_pkg.sv
+  - hw/cheshire_core_region.sv
   - hw/cheshire_soc.sv
 
   - target: any(simulation, test)

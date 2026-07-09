@@ -149,6 +149,37 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__axirt___end_t _end;
 } cheshire__axirt_t;
 
+// Reg - cheshire.ccu.status
+#define CHESHIRE__CCU__STATUS__STATUS_bm 0xffffffff
+#define CHESHIRE__CCU__STATUS__STATUS_bp 0
+#define CHESHIRE__CCU__STATUS__STATUS_bw 32
+#define CHESHIRE__CCU__STATUS__STATUS_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t status :32;
+    } f;
+    uint32_t w;
+} cheshire__ccu__status_t;
+
+// Reg - cheshire.ccu._end
+#define CHESHIRE__CCU___END___END_bm 0xffffffff
+#define CHESHIRE__CCU___END___END_bp 0
+#define CHESHIRE__CCU___END___END_bw 32
+#define CHESHIRE__CCU___END___END_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t _end :32;
+    } f;
+    uint32_t w;
+} cheshire__ccu___end_t;
+
+// Addrmap - cheshire.ccu
+typedef struct __attribute__ ((__packed__)) {
+    cheshire__ccu__status_t status;
+    uint8_t RESERVED_4_3fffb[0x3fff8];
+    cheshire__ccu___end_t _end;
+} cheshire__ccu_t;
+
 // Reg - cheshire.regs.scratch[]
 #define CHESHIRE__REGS__SCRATCHX__SCRATCH_bm 0xffffffff
 #define CHESHIRE__REGS__SCRATCHX__SCRATCH_bp 0
@@ -998,7 +1029,8 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__clint_t clint;
     cheshire__irq_router_t irq_router;
     cheshire__axirt_t axirt;
-    uint8_t RESERVED_2100000_2ffffff[0xf00000];
+    cheshire__ccu_t ccu;
+    uint8_t RESERVED_2140000_2ffffff[0xec0000];
     cheshire__regs_t regs;
     uint8_t RESERVED_300005c_3000fff[0xfa4];
     cheshire__llc_t llc;

@@ -35,6 +35,9 @@ PROVIDE(__irq_router_size__ = 0x00040000);
 PROVIDE(__axirt_base_addr__ = 0x020C0000);
 PROVIDE(__axirt_size__ = 0x00040000);
 
+PROVIDE(__ccu_base_addr__ = 0x02100000);
+PROVIDE(__ccu_size__ = 0x00040000);
+
 PROVIDE(__regs_base_addr__ = 0x03000000);
 PROVIDE(__regs_size__ = 0x0000005C);
 
@@ -96,6 +99,10 @@ PROVIDE(__irq_router__end_base_addr__ = 0x020BFFFC);
 PROVIDE(__axirt_status_base_addr__ = 0x020C0000);
 
 PROVIDE(__axirt__end_base_addr__ = 0x020FFFFC);
+
+PROVIDE(__ccu_status_base_addr__ = 0x02100000);
+
+PROVIDE(__ccu__end_base_addr__ = 0x0213FFFC);
 
 PROVIDE(__regs_scratch_0_base_addr__ = 0x03000000);
 PROVIDE(__regs_scratch_1_base_addr__ = 0x03000004);

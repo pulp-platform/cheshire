@@ -26,6 +26,9 @@ localparam longint unsigned IRQ_ROUTER_SIZE = 64'h40000;
 localparam longint unsigned AXIRT_BASE_ADDR = 64'h20C0000;
 localparam longint unsigned AXIRT_SIZE = 64'h40000;
 
+localparam longint unsigned CCU_BASE_ADDR = 64'h2100000;
+localparam longint unsigned CCU_SIZE = 64'h40000;
+
 localparam longint unsigned REGS_BASE_ADDR = 64'h3000000;
 localparam longint unsigned REGS_SIZE = 64'h5C;
 
@@ -79,6 +82,8 @@ localparam longint unsigned IRQ_ROUTER_STATUS_BASE_ADDR = 64'h2080000;
 localparam longint unsigned IRQ_ROUTER__END_BASE_ADDR = 64'h20BFFFC;
 localparam longint unsigned AXIRT_STATUS_BASE_ADDR = 64'h20C0000;
 localparam longint unsigned AXIRT__END_BASE_ADDR = 64'h20FFFFC;
+localparam longint unsigned CCU_STATUS_BASE_ADDR = 64'h2100000;
+localparam longint unsigned CCU__END_BASE_ADDR = 64'h213FFFC;
 function automatic longint unsigned REGS_SCRATCH_BASE_ADDR(input int unsigned scratch_idx);
     return 64'h3000000 + (scratch_idx * 64'h4);
 endfunction

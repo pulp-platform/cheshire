@@ -584,212 +584,89 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   // TODO: Implement X interface support
 
-  `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
-
-  localparam config_pkg::cva6_user_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
-
   // Boot from boot ROM only if available, otherwise from platform ROM
   localparam logic [63:0] BootAddr = 64'(Cfg.Bootrom ? BOOTROM_BASE_ADDR : Cfg.PlatformRom);
+
+  // Number of core AXI manager ports (collapsed to the CCU when coherent)
+  localparam int unsigned NumCoreNocMst = Cfg.Coherence ? 1 : NumIntHarts;
 
   // Debug interface for internal harts
   dm::hartinfo_t [NumIntHarts-1:0] dbg_int_info;
   logic          [NumIntHarts-1:0] dbg_int_unavail;
   logic          [NumIntHarts-1:0] dbg_int_req;
 
-  // Core bus error interrupts
-  axi_err_intr_t [NumIntHarts-1:0] core_bus_err_intr;
+  // Combined core bus error interrupt
   axi_err_intr_t core_bus_err_intr_comb;
-
-  // All internal harts are CVA6 and always available
-  assign dbg_int_info     = {(NumIntHarts){ariane_pkg::DebugHartInfo}};
-  assign dbg_int_unavail  = '0;
-
-  // Combine the bus error interrupts of all cores. The error units record which
-  // core is responsible. This allows the cores to handle bus errors in a coordinated
-  // fashion and not aggravate the issue, e.g. by causing deadlocks.
-  always_comb begin
-    core_bus_err_intr_comb = '0;
-    for (int i = 0; i < Cfg.BusErr * NumIntHarts; i++)
-      core_bus_err_intr_comb |= core_bus_err_intr[i];
-  end
-
   assign intr.intn.bus_err.cores = core_bus_err_intr_comb;
 
-  for (genvar i = 0; i < NumIntHarts; i++) begin : gen_cva6_cores
-    axi_cva6_req_t core_out_req, core_ur_req;
-    axi_cva6_rsp_t core_out_rsp, core_ur_rsp;
-
-    // CLIC interface
-    logic clic_irq_valid, clic_irq_ready;
-    logic clic_irq_kill_req, clic_irq_kill_ack;
-    logic clic_irq_shv;
-    logic [$clog2(NumClicIntrs)-1:0] clic_irq_id;
-    logic [7:0]        clic_irq_level;
-    riscv::priv_lvl_t  clic_irq_priv;
-    logic              clic_irq_v;
-    logic [5:0]        clic_irq_vsid;
-
-    cva6 #(
-      .CVA6Cfg        ( build_config_pkg::build_config(Cva6Cfg) ),
-      .axi_ar_chan_t  ( axi_cva6_ar_chan_t ),
-      .axi_aw_chan_t  ( axi_cva6_aw_chan_t ),
-      .axi_w_chan_t   ( axi_cva6_w_chan_t  ),
-      .b_chan_t       ( axi_cva6_b_chan_t  ),
-      .r_chan_t       ( axi_cva6_r_chan_t  ),
-      .noc_req_t      ( axi_cva6_req_t ),
-      .noc_resp_t     ( axi_cva6_rsp_t )
-    ) i_core_cva6 (
-      .clk_i,
-      .rst_ni,
-      .boot_addr_i      ( BootAddr ),
-      .hart_id_i        ( 64'(i) ),
-      .irq_i            ( xeip[i] ),
-      .ipi_i            ( msip[i] ),
-      .time_irq_i       ( mtip[i] ),
-      .debug_req_i      ( dbg_int_req[i] ),
-      `ifndef TARGET_OPENHW_CVA6
-      .clic_irq_valid_i ( clic_irq_valid ),
-      .clic_irq_id_i    ( clic_irq_id    ),
-      .clic_irq_level_i ( clic_irq_level ),
-      .clic_irq_priv_i  ( clic_irq_priv  ),
-      .clic_irq_v_i     ( clic_irq_v     ),
-      .clic_irq_vsid_i  ( clic_irq_vsid  ),
-      .clic_irq_shv_i   ( clic_irq_shv   ),
-      .clic_irq_ready_o ( clic_irq_ready ),
-      .clic_kill_req_i  ( clic_irq_kill_req ),
-      .clic_kill_ack_o  ( clic_irq_kill_ack ),
-      `endif // TARGET_OPENHW_CVA6
-      .rvfi_probes_o    ( ),
-      .cvxif_req_o      ( ),
-      .cvxif_resp_i     ( '0 ),
-      .noc_req_o        ( core_out_req ),
-      .noc_resp_i       ( core_out_rsp )
-    );
-
-    if (Cfg.BusErr) begin : gen_cva6_bus_err
-      axi_err_unit_wrap #(
-        .AddrWidth          ( Cfg.AddrWidth ),
-        .IdWidth            ( Cva6IdWidth   ),
-        .UserErrBits        ( Cfg.AxiUserErrBits ),
-        .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
-        .NumOutstanding     ( Cfg.CoreMaxTxns ),
-        .NumStoredErrors    ( 4 ),
-        .DropOldest         ( 1'b0 ),
-        .axi_req_t          ( axi_cva6_req_t ),
-        .axi_rsp_t          ( axi_cva6_rsp_t ),
-        .reg_req_t          ( reg_req_t ),
-        .reg_rsp_t          ( reg_rsp_t )
-      ) i_cva6_bus_err (
-        .clk_i,
-        .rst_ni,
-        .testmode_i ( test_mode_i ),
-        .axi_req_i  ( core_out_req ),
-        .axi_rsp_i  ( core_out_rsp ),
-        .err_irq_o  ( core_bus_err_intr[i] ),
-        .reg_req_i  ( reg_out_req[RegOut.bus_err[RegBusErrCoresBase+i]] ),
-        .reg_rsp_o  ( reg_out_rsp[RegOut.bus_err[RegBusErrCoresBase+i]] )
-      );
-    end
-
-    // Generate CLIC for core if enabled
-    if (Cfg.Clic) begin : gen_clic
-
-      cheshire_intr_clic_t clic_intr;
-
-      // Connect interrupts to CLIC
-      assign clic_intr = '{
-        intr: intr_routed[IntrRtdCoreBase+i][NumClicSysIntrs-1:0],
-        core: '{
-          meip: xeip[i].m,
-          seip: xeip[i].s,
-          mtip: mtip[i],
-          msip: msip[i],
-          default: '0
-        }
-      };
-
-      clic #(
-        .N_SOURCE    ( NumClicIntrs ),
-        .INTCTLBITS  ( Cfg.ClicIntCtlBits ),
-        .reg_req_t   ( reg_req_t ),
-        .reg_rsp_t   ( reg_rsp_t ),
-        .SSCLIC      ( 1 ),
-        .USCLIC      ( 0 ),
-        .VSCLIC      ( Cfg.ClicVsclic ),
-        .N_VSCTXTS   ( Cfg.ClicNumVsctxts ),
-        .VSPRIO      ( Cfg.ClicVsprio ),
-        .VSPRIO_W    ( Cfg.ClicPrioWidth )
-      ) i_clic (
-        .clk_i,
-        .rst_ni,
-        .reg_req_i      ( reg_out_req[RegOut.clic[i]] ),
-        .reg_rsp_o      ( reg_out_rsp[RegOut.clic[i]] ),
-        .intr_src_i     ( clic_intr ),
-        .irq_valid_o    ( clic_irq_valid ),
-        .irq_ready_i    ( clic_irq_ready ),
-        .irq_id_o       ( clic_irq_id    ),
-        .irq_level_o    ( clic_irq_level ),
-        .irq_shv_o      ( clic_irq_shv   ),
-        .irq_priv_o     ( clic_irq_priv  ),
-        .irq_v_o        ( clic_irq_v     ),
-        .irq_vsid_o     ( clic_irq_vsid  ),
-        .irq_kill_req_o ( clic_irq_kill_req ),
-        .irq_kill_ack_i ( clic_irq_kill_ack )
-      );
-
-    end else begin : gen_no_clic
-
-      assign clic_irq_valid    = '0;
-      assign clic_irq_id       = '0;
-      assign clic_irq_level    = '0;
-      assign clic_irq_shv      = '0;
-      assign clic_irq_priv     = riscv::priv_lvl_t'(0);
-      assign clic_irq_v        = '0;
-      assign clic_irq_vsid     = '0;
-      assign clic_irq_kill_req = '0;
-
-    end
-
-    // Map user to AMO domain as we are an atomics-capable master.
-    // Within the provided AMO user range, we count up from the provided core AMO offset.
-    always_comb begin
-      core_ur_req         = core_out_req;
-      core_ur_req.aw.user = Cfg.AxiUserDefault;
-      core_ur_req.ar.user = Cfg.AxiUserDefault;
-      core_ur_req.w.user  = Cfg.AxiUserDefault;
-      core_ur_req.aw.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
-      core_ur_req.ar.user [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
-      core_ur_req.w.user  [Cfg.AxiUserAmoMsb:Cfg.AxiUserAmoLsb] = Cfg.CoreUserAmoOffs + i;
-      core_out_rsp        = core_ur_rsp;
-    end
-
-    // CVA6's ID encoding is wasteful; remap it statically pack into available bits
-    axi_id_serialize #(
-      .AxiSlvPortIdWidth      ( Cva6IdWidth     ),
-      .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
-      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth      ),
-      .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
-      .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId   ),
-      .AxiAddrWidth           ( Cfg.AddrWidth    ),
-      .AxiDataWidth           ( Cfg.AxiDataWidth ),
-      .AxiUserWidth           ( Cfg.AxiUserWidth ),
-      .AtopSupport            ( 1 ),
-      .slv_req_t              ( axi_cva6_req_t ),
-      .slv_resp_t             ( axi_cva6_rsp_t ),
-      .mst_req_t              ( axi_mst_req_t  ),
-      .mst_resp_t             ( axi_mst_rsp_t  ),
-      .MstIdBaseOffset        ( '0 ),
-      .IdMapNumEntries        ( Cva6IdsUsed ),
-      .IdMap                  ( gen_cva6_id_map(Cfg) )
-    ) i_axi_id_serialize (
-      .clk_i,
-      .rst_ni,
-      .slv_req_i  ( core_ur_req ),
-      .slv_resp_o ( core_ur_rsp ),
-      .mst_req_o  ( axi_in_req[AxiIn.cores[i]] ),
-      .mst_resp_i ( axi_in_rsp[AxiIn.cores[i]] )
-    );
+  // CLIC system-interrupt source vector per core
+  logic [NumIntHarts-1:0][NumClicSysIntrs-1:0] core_clic_intr;
+  for (genvar i = 0; i < NumIntHarts; i++) begin : gen_core_clic_intr
+    assign core_clic_intr[i] = intr_routed[IntrRtdCoreBase+i][NumClicSysIntrs-1:0];
   end
+
+  // Per-core register buses (CLIC and bus-error unit) and CCU register bus
+  reg_req_t [NumIntHarts-1:0] core_clic_reg_req, core_bus_err_reg_req;
+  reg_rsp_t [NumIntHarts-1:0] core_clic_reg_rsp, core_bus_err_reg_rsp;
+  reg_req_t core_ccu_reg_req;
+  reg_rsp_t core_ccu_reg_rsp;
+  for (genvar i = 0; i < NumIntHarts; i++) begin : gen_core_reg_bus
+    if (Cfg.Clic) begin : gen_clic_reg
+      assign core_clic_reg_req[i]        = reg_out_req[RegOut.clic[i]];
+      assign reg_out_rsp[RegOut.clic[i]] = core_clic_reg_rsp[i];
+    end else begin : gen_no_clic_reg
+      assign core_clic_reg_req[i]        = '0;
+    end
+    if (Cfg.BusErr) begin : gen_bus_err_reg
+      assign core_bus_err_reg_req[i]                           = reg_out_req[RegOut.bus_err[RegBusErrCoresBase+i]];
+      assign reg_out_rsp[RegOut.bus_err[RegBusErrCoresBase+i]] = core_bus_err_reg_rsp[i];
+    end else begin : gen_no_bus_err_reg
+      assign core_bus_err_reg_req[i]     = '0;
+    end
+  end
+  if (Cfg.Coherence) begin : gen_ccu_reg
+    assign core_ccu_reg_req         = reg_out_req[RegOut.ccu];
+    assign reg_out_rsp[RegOut.ccu]  = core_ccu_reg_rsp;
+  end else begin : gen_no_ccu_reg
+    assign core_ccu_reg_req         = '0;
+  end
+
+  // Core AXI manager ports into the crossbar
+  axi_mst_req_t [NumCoreNocMst-1:0] core_noc_req;
+  axi_mst_rsp_t [NumCoreNocMst-1:0] core_noc_rsp;
+  for (genvar i = 0; i < NumCoreNocMst; i++) begin : gen_core_noc_conn
+    assign axi_in_req[AxiIn.cores[i]] = core_noc_req[i];
+    assign core_noc_rsp[i]            = axi_in_rsp[AxiIn.cores[i]];
+  end
+
+  cheshire_core_region #(
+    .Cfg           ( Cfg ),
+    .BootAddr      ( BootAddr ),
+    .axi_mst_req_t ( axi_mst_req_t ),
+    .axi_mst_rsp_t ( axi_mst_rsp_t ),
+    .reg_req_t     ( reg_req_t ),
+    .reg_rsp_t     ( reg_rsp_t )
+  ) i_core_region (
+    .clk_i,
+    .rst_ni,
+    .test_mode_i,
+    .xeip_i               ( xeip [NumIntHarts-1:0] ),
+    .mtip_i               ( mtip [NumIntHarts-1:0] ),
+    .msip_i               ( msip [NumIntHarts-1:0] ),
+    .debug_req_i          ( dbg_int_req ),
+    .hartinfo_o           ( dbg_int_info ),
+    .unavail_o            ( dbg_int_unavail ),
+    .clic_intr_i          ( core_clic_intr ),
+    .core_bus_err_intr_o  ( core_bus_err_intr_comb ),
+    .clic_reg_req_i       ( core_clic_reg_req ),
+    .clic_reg_rsp_o       ( core_clic_reg_rsp ),
+    .bus_err_reg_req_i    ( core_bus_err_reg_req ),
+    .bus_err_reg_rsp_o    ( core_bus_err_reg_rsp ),
+    .ccu_reg_req_i        ( core_ccu_reg_req ),
+    .ccu_reg_rsp_o        ( core_ccu_reg_rsp ),
+    .noc_req_o            ( core_noc_req ),
+    .noc_rsp_i            ( core_noc_rsp )
+  );
 
   /////////////////////////
   //  JTAG Debug Module  //
@@ -1784,7 +1661,6 @@ module cheshire_soc import cheshire_pkg::*; #(
   // TODO: check that all interconnect params agree
   // TODO: check that params with min/max values are within legal range
   // TODO: check that CLINT and PLIC target counts are both `NumIntHarts + Cfg.NumExtHarts`
-  // TODO: check that (for now) `NumIntHarts == 1`
   // TODO: check that available user bits suffice to identify all masters
   // TODO: check that atomics user domain is nonzero
   // TODO: check that `ext` (IO) and internal types agree

@@ -1,3 +1,4 @@
+<% ncores = int(num_cores) %>\
 // Copyright 2022 ETH Zurich and University of Bologna.
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
@@ -34,7 +35,8 @@
     #address-cells = <1>;
     #size-cells = <0>;
     timebase-frequency = <1000000>; // 1 MHz
-    CPU0: cpu@0 {
+% for i in range(ncores):
+    CPU${i}: cpu@${i} {
       device_type = "cpu";
       status = "okay";
       compatible = "eth,ariane", "riscv";
@@ -42,14 +44,15 @@
       riscv,isa = "rv64imafdc";
       mmu-type = "riscv,sv39";
       tlb-split;
-      reg = <0>;
-      CPU0_intc: interrupt-controller {
+      reg = <${i}>;
+      CPU${i}_intc: interrupt-controller {
         #address-cells = <0>;
         #interrupt-cells = <1>;
         interrupt-controller;
         compatible = "riscv,cpu-intc";
       };
     };
+% endfor
   };
 
   soc: soc {
@@ -74,7 +77,7 @@
       compatible = "ns16550a";
       clock-frequency = <50000000>; // 50 MHz
       current-speed = <115200>;
-      interrupt-parent = <&PLIC0>;
+      interrupt-parent = ${'<'}&PLIC0>;
       interrupts = <1>;
       reg = <0x0 0x3002000 0x0 0x1000>;
       reg-shift = <2>; // regs are spaced on 32 bit boundary
@@ -82,13 +85,13 @@
     };
     i2c@3003000 {
       compatible = "eth,i2c";
-      interrupt-parent = <&PLIC0>;
+      interrupt-parent = ${'<'}&PLIC0>;
       interrupts = <2 3 4 5 6 7 8 9 10 11 12 13 14 15 16>;
       reg = <0x0 0x3003000 0x0 0x1000>;
     };
     spi: spi@3004000 {
       compatible = "opentitan,spi-host", "lowrisc,spi";
-      interrupt-parent = <&PLIC0>;
+      interrupt-parent = ${'<'}&PLIC0>;
       interrupts = <17 18>;
       reg = <0x0 0x3004000 0x0 0x1000>;
       num-cs = <2>;
@@ -103,7 +106,7 @@
     };
     clint@2040000 {
       compatible = "riscv,clint0";
-      interrupts-extended = <&CPU0_intc 3 &CPU0_intc 7>;
+      interrupts-extended = <${' '.join('&CPU%d_intc 3 &CPU%d_intc 7' % (i, i) for i in range(ncores))}>;
       reg-names = "control";
       reg = <0x0 0x2040000 0x0 0x040000>;
     };
@@ -112,7 +115,7 @@
       #address-cells = <0>;
       #interrupt-cells = <1>;
       interrupt-controller;
-      interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9>;
+      interrupts-extended = <${' '.join('&CPU%d_intc 11 &CPU%d_intc 9' % (i, i) for i in range(ncores))}>;
       riscv,max-priority = <7>;
       riscv,ndev = <51>;
       reg = <0x0 0x4000000 0x0 0x4000000>;

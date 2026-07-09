@@ -9,6 +9,7 @@
 # Override this as needed
 CHS_SW_GCC_BINROOT ?= $(dir $(shell which riscv64-unknown-elf-gcc))
 CHS_SW_DTC     ?= dtc
+CHS_SW_MAKO    ?= mako-render
 
 CHS_SW_AR      := $(CHS_SW_GCC_BINROOT)/riscv64-unknown-elf-ar
 CHS_SW_CC      := $(CHS_SW_GCC_BINROOT)/riscv64-unknown-elf-gcc
@@ -30,7 +31,7 @@ CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
 
 CHS_SW_ALL += $(CHS_SW_LIBS) $(CHS_SW_GEN_HDRS) $(CHS_SW_TESTS) $(CHS_SW_TOOLS)
 
-.PRECIOUS: %.elf %.dtb
+.PRECIOUS: %.elf %.dtb %.dtsi
 
 ################
 # Dependencies #
@@ -135,7 +136,10 @@ $(foreach link,$(CHS_SW_LINK_MODES),$(eval $(call chs_sw_ld_elf_rule,$(link))))
 %.bin: %.elf
 	$(CHS_SW_OBJCOPY) -O binary $< $@
 
-%.dtb: %.dts
+%.dtsi: %.dtsi.tpl
+	$(CHS_SW_MAKO) --var num_cores=$(NUM_CORES) $< > $@
+
+%.dtb: %.dts $(CHS_SW_DIR)/boot/cheshire.dtsi
 	$(CHS_SW_DTC) -I dts -O dtb -o $@ $<
 
 %.memh: %.elf

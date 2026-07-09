@@ -29,6 +29,12 @@ set_property source_mgmt_mode None [current_project]
 set_property top ${proj}_top_xilinx [current_fileset]
 update_compile_order -fileset sources_1
 
+set num_cores 1
+set coherence 0
+if {[info exists ::env(NUM_CORES)]} { set num_cores $::env(NUM_CORES) }
+if {[info exists ::env(COHERENCE)]} { set coherence $::env(COHERENCE) }
+set_property generic "NumCores=$num_cores Coherence=$coherence" [current_fileset]
+
 # Set synthesis properties
 # TODO: investigate resource-affordable retiming
 set_property XPM_LIBRARIES XPM_MEMORY [current_project]
