@@ -37,7 +37,7 @@ set_property generic "NumCores=$num_cores Coherence=$coherence" [current_fileset
 
 # Set synthesis properties
 # TODO: investigate resource-affordable retiming
-set_property XPM_LIBRARIES XPM_MEMORY [current_project]
+set_property XPM_LIBRARIES {XPM_MEMORY XPM_FIFO} [current_project]
 set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
 
 # Elaborate and open design to explore all clocks
