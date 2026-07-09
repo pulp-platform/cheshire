@@ -71,11 +71,8 @@ package cheshire_pkg;
     shrt_bt Cva6BTBEntries;
     shrt_bt Cva6BHTEntries;
     shrt_bt Cva6NrPMPEntries;
-    // To reduce parameterization entropy, the range [0x2.., 0x8..) is defined to contain exactly
-    // one cached, idempotent, and executable (CIE) and one non-CIE region. The parameters below
-    // control the CIE region's size and whether it abuts with the top or bottom of this range.
     doub_bt Cva6ExtCieLength;
-    bit     Cva6ExtCieOnTop;
+    doub_bt Cva6ExtCieBase;
     // Hart parameters
     bit [MaxCoresWidth-1:0] NumCores;
     doub_bt NumExtIrqHarts;
@@ -490,8 +487,7 @@ package cheshire_pkg;
   function automatic config_pkg::cva6_user_cfg_t gen_cva6_cfg(cheshire_cfg_t cfg);
     doub_bt SizeSpm = get_llc_size(cfg);
     doub_bt SizeLlcOut = cfg.LlcOutRegionEnd - cfg.LlcOutRegionStart;
-    doub_bt CieBase   = cfg.Cva6ExtCieOnTop ? 64'h8000_0000 - cfg.Cva6ExtCieLength : 64'h2000_0000;
-    doub_bt NoCieBase = cfg.Cva6ExtCieOnTop ? 64'h2000_0000 : 64'h2000_0000 + cfg.Cva6ExtCieLength;
+
     // Base our config on the upstream default for this variant
     config_pkg::cva6_user_cfg_t ret = cva6_config_pkg::cva6_cfg;
     // Modify what we need to
@@ -503,15 +499,15 @@ package cheshire_pkg;
     ret.DmBaseAddress         = EXTROM_BASE_ADDR;
     ret.HaltAddress           = 'h800; // Relative to EXTROM_BASE_ADDR
     ret.ExceptionAddress      = 'h810; // Relative to EXTROM_BASE_ADDR
-    ret.NrNonIdempotentRules  = 2;   // Periphs, ExtNonCI;
-    ret.NonIdempotentAddrBase = {EXTROM_BASE_ADDR, NoCieBase};
+    ret.NrNonIdempotentRules  = 2;   // Periphs and DMA regs;
+    ret.NonIdempotentAddrBase = {DMA_BASE_ADDR, CLINT_BASE_ADDR};
     ret.NOCType               = config_pkg::NOC_TYPE_AXI4_ATOP;
-    ret.NonIdempotentLength   = {SPM_BASE_ADDR, 64'h6000_0000 - cfg.Cva6ExtCieLength};
+    ret.NonIdempotentLength   = {DMA_SIZE, SPM_BASE_ADDR - CLINT_BASE_ADDR};
     ret.NrExecuteRegionRules  = 6;   // Debug, Bootrom, SPM, SPM Uncached, LLCOut, ExtCI;
-    ret.ExecuteRegionAddrBase = {EXTROM_BASE_ADDR, BOOTROM_BASE_ADDR, SPM_BASE_ADDR, SPM_UNC_BASE_ADDR, cfg.LlcOutRegionStart, CieBase};
+    ret.ExecuteRegionAddrBase = {EXTROM_BASE_ADDR, BOOTROM_BASE_ADDR, SPM_BASE_ADDR, SPM_UNC_BASE_ADDR, cfg.LlcOutRegionStart, cfg.Cva6ExtCieBase};
     ret.ExecuteRegionLength   = {EXTROM_SIZE,      BOOTROM_SIZE     , SizeSpm      , SizeSpm          , SizeLlcOut           , cfg.Cva6ExtCieLength};
     ret.NrCachedRegionRules   = 3;   // CachedSPM, LLCOut, ExtCI;
-    ret.CachedRegionAddrBase  = {SPM_BASE_ADDR, cfg.LlcOutRegionStart,  CieBase};
+    ret.CachedRegionAddrBase  = {SPM_BASE_ADDR, cfg.LlcOutRegionStart,  cfg.Cva6ExtCieBase};
     ret.CachedRegionLength    = {SizeSpm,       SizeLlcOut,             cfg.Cva6ExtCieLength};
     ret.DebugEn               = 1;
     ret.RVSCLIC               = cfg.Clic;
@@ -544,7 +540,7 @@ package cheshire_pkg;
     Cva6BHTEntries    : 128,
     Cva6NrPMPEntries  : 0,
     Cva6ExtCieLength  : 'h2000_0000,  // [0x2.., 0x4..) is CIE, [0x4.., 0x8..) is non-CIE
-    Cva6ExtCieOnTop   : 0,
+    Cva6ExtCieBase    : 'h4000_0000,
     // Harts
     NumCores          : 1,
     CoreMaxTxns       : 8,
