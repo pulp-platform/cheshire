@@ -429,7 +429,7 @@ package cheshire_pkg;
     if (cfg.BusErr) for (int j = 0; j < 2 + cfg.NumCores; j++) begin
       i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, BUS_ERR_BASE_ADDR + j*BUS_ERR_SIZE, BUS_ERR_BASE_ADDR + (j+1)*BUS_ERR_SIZE};
     end
-    if (cfg.Coherence) begin i++; ret.ccu = i; r++; ret.map[r] = '{i, CCU_BASE_ADDR, CCU_BASE_ADDR + CCU_SIZE}; end
+    if (cfg.Coherence) begin i++; ret.ccu = i; r++; ret.map[r] = '{i, CCU_BASE_ADDR, CCU_BASE_ADDR + CCU_SIZE}; ret.apb_mask[i] = 1'b1; end
     i++; r++;
     ret.ext_base  = i;
     ret.num_out   = i + cfg.RegExtNumSlv;

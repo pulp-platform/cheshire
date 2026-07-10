@@ -16,6 +16,8 @@ module cheshire_core_region import cheshire_pkg::*; #(
   parameter type           axi_mst_rsp_t = logic,
   parameter type           reg_req_t     = logic,
   parameter type           reg_rsp_t     = logic,
+  parameter type           apb_req_t     = logic,
+  parameter type           apb_rsp_t     = logic,
   // Derived
   localparam int unsigned  NumIntHarts     = Cfg.NumCores,
   localparam int unsigned  NumNocMst       = Cfg.Coherence ? 1 : NumIntHarts,
@@ -43,9 +45,9 @@ module cheshire_core_region import cheshire_pkg::*; #(
   // Per-core bus-error-unit register interface
   input  reg_req_t [NumIntHarts-1:0] bus_err_reg_req_i,
   output reg_rsp_t [NumIntHarts-1:0] bus_err_reg_rsp_o,
-  // CCU register interface (coherent mode only)
-  input  reg_req_t ccu_reg_req_i,
-  output reg_rsp_t ccu_reg_rsp_o,
+  // CCU APB interface (coherent mode only)
+  input  apb_req_t ccu_apb_req_i,
+  output apb_rsp_t ccu_apb_rsp_o,
   // AXI manager ports to the crossbar
   output axi_mst_req_t [NumNocMst-1:0] noc_req_o,
   input  axi_mst_rsp_t [NumNocMst-1:0] noc_rsp_i
@@ -57,6 +59,41 @@ module cheshire_core_region import cheshire_pkg::*; #(
   localparam type axi_data_t = logic [Cfg.AxiDataWidth-1:0];
   localparam type axi_strb_t = logic [Cfg.AxiDataWidth/8-1:0];
   localparam type axi_user_t = logic [Cfg.AxiUserWidth-1:0];
+
+  // Types are declared here as some tools reject complex types inside generate blocks
+  `CHESHIRE_TYPEDEF_ACE_CT(cva6_ace, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
+  `CHESHIRE_TYPEDEF_AXI_CT(cva6_axi, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
+
+  localparam ccu_pkg::ccu_user_config_t CcuUserCfg = '{
+    numSubordinates          : NumIntHarts,
+    numShareableTransactions : 8,
+    numWriteTransactions     : 4,
+    numSnoopTransactions     : 4,
+    numArFifos               : 8,
+    arFifoDepth              : NumIntHarts,
+    writeHashWidth           : 2,
+    axiAddressWidth          : Cfg.AddrWidth,
+    axiDataWidth             : Cfg.AxiDataWidth,
+    axiUserWidth             : Cfg.AxiUserWidth,
+    axiSubordinateIdWidth    : Cva6IdWidth,
+    cachelineWidth           : Cva6Cfg.DcacheLineWidth,
+    addressCheckLsb          : 4,
+    addressCheckMsb          : 19,
+    snoopReqFifoFallthrough  : 1,
+    snoopRespFifoFallthrough : 1,
+    enableCSRs               : 1,
+    frontendPipeAw           : 1,
+    frontendPipeW            : 1,
+    frontendPipeB            : 1,
+    frontendPipeAr           : 1,
+    frontendPipeR            : 1,
+    default                  : '0
+  };
+  localparam ccu_pkg::ccu_config_t CcuCfg = ccu_pkg::ccu_build_cfg(CcuUserCfg);
+
+  typedef logic [CcuCfg.axiManagerIdWidth-1:0] ccu_id_t;
+  `CHESHIRE_TYPEDEF_AXI_CT(ccu_axi, addr_t, ccu_id_t, axi_data_t, axi_strb_t, axi_user_t)
+  `ACE_TYPEDEF_DOMAIN_TYPEDEF_MAP_T(NumIntHarts, domain_map_t)
 
   typedef struct packed {
     logic [NumClicSysIntrs-1:0] intr;
@@ -139,34 +176,32 @@ module cheshire_core_region import cheshire_pkg::*; #(
 
   if (Cfg.Coherence) begin : gen_coherent
 
-    `CHESHIRE_TYPEDEF_ACE_CT(cva6_noc, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
-
-    cva6_noc_req_t       [NumIntHarts-1:0] ccu_in_req;
-    cva6_noc_rsp_t       [NumIntHarts-1:0] ccu_in_rsp;
-    cva6_noc_snoop_req_t [NumIntHarts-1:0] ccu_out_snoop_req;
-    cva6_noc_snoop_rsp_t [NumIntHarts-1:0] ccu_out_snoop_rsp;
+    cva6_ace_req_t       [NumIntHarts-1:0] ccu_in_req;
+    cva6_ace_rsp_t       [NumIntHarts-1:0] ccu_in_rsp;
+    cva6_ace_snoop_req_t [NumIntHarts-1:0] ccu_out_snoop_req;
+    cva6_ace_snoop_rsp_t [NumIntHarts-1:0] ccu_out_snoop_rsp;
     logic                [NumIntHarts-1:0] ccu_in_rack, ccu_in_wack;
 
     for (genvar i = 0; i < NumIntHarts; i++) begin : gen_cva6_cores
-      cva6_noc_req_t core_out_req, core_ur_req;
-      cva6_noc_rsp_t core_out_rsp, core_ur_rsp;
-      cva6_noc_snoop_req_t core_snoop_req;
-      cva6_noc_snoop_rsp_t core_snoop_rsp;
+      cva6_ace_req_t core_out_req, core_ur_req;
+      cva6_ace_rsp_t core_out_rsp, core_ur_rsp;
+      cva6_ace_snoop_req_t core_snoop_req;
+      cva6_ace_snoop_rsp_t core_snoop_rsp;
 
       cva6 #(
         .CVA6Cfg         ( build_config_pkg::build_config(Cva6Cfg) ),
-        .axi_ar_chan_t   ( cva6_noc_ar_chan_t ),
-        .axi_aw_chan_t   ( cva6_noc_aw_chan_t ),
-        .axi_w_chan_t    ( cva6_noc_w_chan_t  ),
-        .b_chan_t        ( cva6_noc_b_chan_t  ),
-        .r_chan_t        ( cva6_noc_r_chan_t  ),
-        .snoop_ac_chan_t ( cva6_noc_snoop_ac_chan_t ),
-        .snoop_cr_chan_t ( cva6_noc_snoop_cr_chan_t ),
-        .snoop_cd_chan_t ( cva6_noc_snoop_cd_chan_t ),
-        .snoop_req_t     ( cva6_noc_snoop_req_t ),
-        .snoop_resp_t    ( cva6_noc_snoop_rsp_t ),
-        .noc_req_t       ( cva6_noc_req_t ),
-        .noc_resp_t      ( cva6_noc_rsp_t )
+        .axi_ar_chan_t   ( cva6_ace_ar_chan_t ),
+        .axi_aw_chan_t   ( cva6_ace_aw_chan_t ),
+        .axi_w_chan_t    ( cva6_ace_w_chan_t  ),
+        .b_chan_t        ( cva6_ace_b_chan_t  ),
+        .r_chan_t        ( cva6_ace_r_chan_t  ),
+        .snoop_ac_chan_t ( cva6_ace_snoop_ac_chan_t ),
+        .snoop_cr_chan_t ( cva6_ace_snoop_cr_chan_t ),
+        .snoop_cd_chan_t ( cva6_ace_snoop_cd_chan_t ),
+        .snoop_req_t     ( cva6_ace_snoop_req_t ),
+        .snoop_resp_t    ( cva6_ace_snoop_rsp_t ),
+        .noc_req_t       ( cva6_ace_req_t ),
+        .noc_resp_t      ( cva6_ace_rsp_t )
       ) i_core_cva6 (
         .clk_i,
         .rst_ni,
@@ -208,8 +243,8 @@ module cheshire_core_region import cheshire_pkg::*; #(
           .NumOutstanding     ( Cfg.CoreMaxTxns ),
           .NumStoredErrors    ( 4 ),
           .DropOldest         ( 1'b0 ),
-          .axi_req_t          ( cva6_noc_req_t ),
-          .axi_rsp_t          ( cva6_noc_rsp_t ),
+          .axi_req_t          ( cva6_ace_req_t ),
+          .axi_rsp_t          ( cva6_ace_rsp_t ),
           .reg_req_t          ( reg_req_t ),
           .reg_rsp_t          ( reg_rsp_t )
         ) i_cva6_bus_err (
@@ -245,38 +280,6 @@ module cheshire_core_region import cheshire_pkg::*; #(
       `SNOOP_ASSIGN_RESP_STRUCT(ccu_out_snoop_rsp[i], core_snoop_rsp)
     end
 
-    localparam ccu_pkg::ccu_user_config_t CcuUserCfg = '{
-      numSubordinates          : NumIntHarts,
-      numShareableTransactions : 8,
-      numWriteTransactions     : 4,
-      numSnoopTransactions     : 4,
-      numArFifos               : 8,
-      arFifoDepth              : NumIntHarts,
-      writeHashWidth           : 2,
-      axiAddressWidth          : Cfg.AddrWidth,
-      axiDataWidth             : Cfg.AxiDataWidth,
-      axiUserWidth             : Cfg.AxiUserWidth,
-      axiSubordinateIdWidth    : Cva6IdWidth,
-      cachelineWidth           : Cva6Cfg.DcacheLineWidth,
-      addressCheckLsb          : 4,
-      addressCheckMsb          : 19,
-      snoopReqFifoFallthrough  : 1,
-      snoopRespFifoFallthrough : 1,
-      mmioIntf                 : ccu_pkg::CCU_MMIO_REGBUS,
-      enableCSRs               : 1,
-      frontendPipeAw           : 1,
-      frontendPipeW            : 1,
-      frontendPipeB            : 1,
-      frontendPipeAr           : 1,
-      frontendPipeR            : 1,
-      default                  : '0
-    };
-    localparam ccu_pkg::ccu_config_t CcuCfg = ccu_pkg::ccu_build_cfg(CcuUserCfg);
-
-    typedef logic [CcuCfg.axiManagerIdWidth-1:0] ccu_id_t;
-    `CHESHIRE_TYPEDEF_AXI_CT(ccu_axi, addr_t, ccu_id_t, axi_data_t, axi_strb_t, axi_user_t)
-    `ACE_TYPEDEF_DOMAIN_TYPEDEF_MAP_T(NumIntHarts, domain_map_t)
-
     ccu_axi_req_t ccu_out_req;
     ccu_axi_rsp_t ccu_out_rsp;
 
@@ -290,26 +293,26 @@ module cheshire_core_region import cheshire_pkg::*; #(
     ccu_top #(
       .ccuCfg                     ( CcuCfg ),
       .domain_map_t               ( domain_map_t ),
-      .ccu_ace_subordinate_ar_t   ( cva6_noc_ar_chan_t ),
-      .ccu_ace_subordinate_aw_t   ( cva6_noc_aw_chan_t ),
-      .ccu_w_t                    ( cva6_noc_w_chan_t ),
-      .ccu_ace_subordinate_r_t    ( cva6_noc_r_chan_t ),
-      .ccu_ace_subordinate_b_t    ( cva6_noc_b_chan_t ),
-      .ccu_ace_subordinate_req_t  ( cva6_noc_req_t ),
-      .ccu_ace_subordinate_resp_t ( cva6_noc_rsp_t ),
+      .ccu_ace_subordinate_ar_t   ( cva6_ace_ar_chan_t ),
+      .ccu_ace_subordinate_aw_t   ( cva6_ace_aw_chan_t ),
+      .ccu_w_t                    ( cva6_ace_w_chan_t ),
+      .ccu_ace_subordinate_r_t    ( cva6_ace_r_chan_t ),
+      .ccu_ace_subordinate_b_t    ( cva6_ace_b_chan_t ),
+      .ccu_ace_subordinate_req_t  ( cva6_ace_req_t ),
+      .ccu_ace_subordinate_resp_t ( cva6_ace_rsp_t ),
       .ccu_axi_manager_ar_t       ( ccu_axi_ar_chan_t ),
       .ccu_axi_manager_aw_t       ( ccu_axi_aw_chan_t ),
       .ccu_axi_manager_r_t        ( ccu_axi_r_chan_t ),
       .ccu_axi_manager_b_t        ( ccu_axi_b_chan_t ),
       .ccu_axi_manager_req_t      ( ccu_axi_req_t ),
       .ccu_axi_manager_resp_t     ( ccu_axi_rsp_t ),
-      .ccu_snoop_ac_t             ( cva6_noc_snoop_ac_chan_t ),
-      .ccu_snoop_cr_t             ( cva6_noc_snoop_cr_chan_t ),
-      .ccu_snoop_cd_t             ( cva6_noc_snoop_cd_chan_t ),
-      .ccu_snoop_req_t            ( cva6_noc_snoop_req_t ),
-      .ccu_snoop_resp_t           ( cva6_noc_snoop_rsp_t ),
-      .mmio_req_t                 ( reg_req_t ),
-      .mmio_resp_t                ( reg_rsp_t )
+      .ccu_snoop_ac_t             ( cva6_ace_snoop_ac_chan_t ),
+      .ccu_snoop_cr_t             ( cva6_ace_snoop_cr_chan_t ),
+      .ccu_snoop_cd_t             ( cva6_ace_snoop_cd_chan_t ),
+      .ccu_snoop_req_t            ( cva6_ace_snoop_req_t ),
+      .ccu_snoop_resp_t           ( cva6_ace_snoop_rsp_t ),
+      .apb_req_t                  ( apb_req_t ),
+      .apb_resp_t                 ( apb_rsp_t )
     ) i_ace_ccu (
       .clk_i,
       .rst_ni,
@@ -322,8 +325,8 @@ module cheshire_core_region import cheshire_pkg::*; #(
       .snoop_resp_i            ( ccu_out_snoop_rsp ),
       .manager_req_o           ( ccu_out_req ),
       .manager_resp_i          ( ccu_out_rsp ),
-      .mmio_subordinate_req_i  ( ccu_reg_req_i ),
-      .mmio_subordinate_resp_o ( ccu_reg_rsp_o )
+      .apb_subordinate_req_i   ( ccu_apb_req_i ),
+      .apb_subordinate_resp_o  ( ccu_apb_rsp_o )
     );
 
     axi_iw_converter #(
@@ -352,23 +355,21 @@ module cheshire_core_region import cheshire_pkg::*; #(
 
   end else begin : gen_noncoherent
 
-    `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
-
-    assign ccu_reg_rsp_o = '0;
+    assign ccu_apb_rsp_o = '0;
 
     for (genvar i = 0; i < NumIntHarts; i++) begin : gen_cva6_cores
-      axi_cva6_req_t core_out_req, core_ur_req;
-      axi_cva6_rsp_t core_out_rsp, core_ur_rsp;
+      cva6_axi_req_t core_out_req, core_ur_req;
+      cva6_axi_rsp_t core_out_rsp, core_ur_rsp;
 
       cva6 #(
         .CVA6Cfg        ( build_config_pkg::build_config(Cva6Cfg) ),
-        .axi_ar_chan_t  ( axi_cva6_ar_chan_t ),
-        .axi_aw_chan_t  ( axi_cva6_aw_chan_t ),
-        .axi_w_chan_t   ( axi_cva6_w_chan_t  ),
-        .b_chan_t       ( axi_cva6_b_chan_t  ),
-        .r_chan_t       ( axi_cva6_r_chan_t  ),
-        .noc_req_t      ( axi_cva6_req_t ),
-        .noc_resp_t     ( axi_cva6_rsp_t )
+        .axi_ar_chan_t  ( cva6_axi_ar_chan_t ),
+        .axi_aw_chan_t  ( cva6_axi_aw_chan_t ),
+        .axi_w_chan_t   ( cva6_axi_w_chan_t  ),
+        .b_chan_t       ( cva6_axi_b_chan_t  ),
+        .r_chan_t       ( cva6_axi_r_chan_t  ),
+        .noc_req_t      ( cva6_axi_req_t ),
+        .noc_resp_t     ( cva6_axi_rsp_t )
       ) i_core_cva6 (
         .clk_i,
         .rst_ni,
@@ -410,8 +411,8 @@ module cheshire_core_region import cheshire_pkg::*; #(
           .NumOutstanding     ( Cfg.CoreMaxTxns ),
           .NumStoredErrors    ( 4 ),
           .DropOldest         ( 1'b0 ),
-          .axi_req_t          ( axi_cva6_req_t ),
-          .axi_rsp_t          ( axi_cva6_rsp_t ),
+          .axi_req_t          ( cva6_axi_req_t ),
+          .axi_rsp_t          ( cva6_axi_rsp_t ),
           .reg_req_t          ( reg_req_t ),
           .reg_rsp_t          ( reg_rsp_t )
         ) i_cva6_bus_err (
@@ -452,8 +453,8 @@ module cheshire_core_region import cheshire_pkg::*; #(
         .AxiDataWidth           ( Cfg.AxiDataWidth ),
         .AxiUserWidth           ( Cfg.AxiUserWidth ),
         .AtopSupport            ( 1 ),
-        .slv_req_t              ( axi_cva6_req_t ),
-        .slv_resp_t             ( axi_cva6_rsp_t ),
+        .slv_req_t              ( cva6_axi_req_t ),
+        .slv_resp_t             ( cva6_axi_rsp_t ),
         .mst_req_t              ( axi_mst_req_t  ),
         .mst_resp_t             ( axi_mst_rsp_t  ),
         .MstIdBaseOffset        ( '0 ),
