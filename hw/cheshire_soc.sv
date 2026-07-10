@@ -605,11 +605,11 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign core_clic_intr[i] = intr_routed[IntrRtdCoreBase+i][NumClicSysIntrs-1:0];
   end
 
-  // Per-core register buses (CLIC and bus-error unit) and CCU register bus
+  // Per-core register buses (CLIC and bus-error unit) and CCU APB bus
   reg_req_t [NumIntHarts-1:0] core_clic_reg_req, core_bus_err_reg_req;
   reg_rsp_t [NumIntHarts-1:0] core_clic_reg_rsp, core_bus_err_reg_rsp;
-  reg_req_t core_ccu_reg_req;
-  reg_rsp_t core_ccu_reg_rsp;
+  apb_req_t  core_ccu_apb_req;
+  apb_resp_t core_ccu_apb_rsp;
   for (genvar i = 0; i < NumIntHarts; i++) begin : gen_core_reg_bus
     if (Cfg.Clic) begin : gen_clic_reg
       assign core_clic_reg_req[i]        = reg_out_req[RegOut.clic[i]];
@@ -625,10 +625,10 @@ module cheshire_soc import cheshire_pkg::*; #(
     end
   end
   if (Cfg.Coherence) begin : gen_ccu_reg
-    assign core_ccu_reg_req         = reg_out_req[RegOut.ccu];
-    assign reg_out_rsp[RegOut.ccu]  = core_ccu_reg_rsp;
+    assign core_ccu_apb_req         = reg_apb_req[RegOut.ccu];
+    assign reg_apb_rsp[RegOut.ccu]  = core_ccu_apb_rsp;
   end else begin : gen_no_ccu_reg
-    assign core_ccu_reg_req         = '0;
+    assign core_ccu_apb_req         = '0;
   end
 
   // Core AXI manager ports into the crossbar
@@ -645,7 +645,9 @@ module cheshire_soc import cheshire_pkg::*; #(
     .axi_mst_req_t ( axi_mst_req_t ),
     .axi_mst_rsp_t ( axi_mst_rsp_t ),
     .reg_req_t     ( reg_req_t ),
-    .reg_rsp_t     ( reg_rsp_t )
+    .reg_rsp_t     ( reg_rsp_t ),
+    .apb_req_t     ( apb_req_t ),
+    .apb_rsp_t     ( apb_resp_t )
   ) i_core_region (
     .clk_i,
     .rst_ni,
@@ -662,8 +664,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .clic_reg_rsp_o       ( core_clic_reg_rsp ),
     .bus_err_reg_req_i    ( core_bus_err_reg_req ),
     .bus_err_reg_rsp_o    ( core_bus_err_reg_rsp ),
-    .ccu_reg_req_i        ( core_ccu_reg_req ),
-    .ccu_reg_rsp_o        ( core_ccu_reg_rsp ),
+    .ccu_apb_req_i        ( core_ccu_apb_req ),
+    .ccu_apb_rsp_o        ( core_ccu_apb_rsp ),
     .noc_req_o            ( core_noc_req ),
     .noc_rsp_i            ( core_noc_rsp )
   );

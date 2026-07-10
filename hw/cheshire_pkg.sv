@@ -443,6 +443,7 @@ package cheshire_pkg;
     ret.apb_mask = '0;
     ret.apb_mask[ret.regs] = 1'b1;
     ret.apb_mask[ret.slink] = 1'b1;
+    if (cfg.Coherence) ret.apb_mask[ret.ccu] = 1'b1;
     return ret;
   endfunction
 
