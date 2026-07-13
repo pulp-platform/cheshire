@@ -38,7 +38,7 @@ jobs:
         name: Install Bender
         uses: pulp-platform/pulp-actions/bender-install@v2.5.1
         with:
-          version: 0.31.0
+          version: 0.32.1
       -
         name: Build target
         run: uv run --locked make ${{ matrix.target }}-all
