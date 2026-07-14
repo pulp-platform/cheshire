@@ -142,7 +142,7 @@ packages:
     - common_cells
     - register_interface
   obi:
-    revision: 3666d340cf612df407a83d919c2b9a7de5d2e696
+    revision: b69af4aa00630efd14b1c5cbf9bac977f23ce840
     version: null
     source:
       Git: https://github.com/pulp-platform/obi.git
