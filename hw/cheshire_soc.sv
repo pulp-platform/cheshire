@@ -279,11 +279,13 @@ module cheshire_soc import cheshire_pkg::*; #(
   );
 
   // Connect external masters
-  if (Cfg.AxiExtNumMst > 0) begin : gen_ext_axi_mst
-    assign axi_in_req[AxiIn.num_in-1:AxiIn.ext_base] = axi_ext_mst_req_i;
-    assign axi_ext_mst_rsp_o = axi_in_rsp[AxiIn.num_in-1:AxiIn.ext_base];
-  end else begin : gen_no_ext_axi_mst
-    assign axi_ext_mst_rsp_o = '0;
+  if (!Cfg.Iommu) begin
+    if (Cfg.AxiExtNumMst > 0) begin : gen_ext_axi_mst
+      assign axi_in_req[AxiIn.num_in-1:AxiIn.ext_base] = axi_ext_mst_req_i;
+      assign axi_ext_mst_rsp_o = axi_in_rsp[AxiIn.num_in-1:AxiIn.ext_base];
+    end else begin : gen_no_ext_axi_mst
+      assign axi_ext_mst_rsp_o = '0;
+    end
   end
 
   // Connect external slaves
@@ -1088,6 +1090,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         clic:        Cfg.Clic,
         irq_router:  Cfg.IrqRouter,
         bus_err:     Cfg.BusErr,
+        // iommu: Cfg.Iommu,
         default: '0
     }),
     `CHS_HWREG(vga_params,    '{
@@ -1826,6 +1829,107 @@ module cheshire_soc import cheshire_pkg::*; #(
     assign usb_dp_oe_o = '0;
 
     assign intr.intn.usb = 0;
+
+  end
+
+  /////////////
+  //  IOMMU  //
+  /////////////
+  if (Cfg.Iommu) begin: gen_riscv_iommu
+
+    axi_slv_req_t [1:0] iommu_req;
+    axi_slv_rsp_t [1:0] iommu_rsp;
+
+    riscv_iommu #(
+      // RISC-V core XLEN
+      .XLEN ( Cva6Cfg.XLEN ),
+      // RISC-V core VLEN
+      .VLEN ( Cva6Cfg.VLEN ),
+      // RISC-V has RVH enabled or not
+      .IS_RVH ( Cva6Cfg.RVH ),
+      // Use the AXI to REG bridge or not
+      .AXI_PROGRAM_INTERFACE ( 0 ),
+      // Number of IOTLB entries
+      .IOTLB_ENTRIES ( 4 ),
+      // Number of DDTC entries
+      .DDTC_ENTRIES ( 4 ),
+      // Number of PDTC entries
+      .PDTC_ENTRIES ( 4 ),
+      // Number of MRIF cache entries (if supported)
+      .MRIFC_ENTRIES ( 4 ),
+      // Include process_id support
+      .InclPC ( 0 ),
+      // Include AXI4 address boundary check
+      .InclBC ( 0 ),
+      // Include debug register interface
+      .InclDBG ( 0 ),
+      // MSI translation support
+      .MSITrans ( rv_iommu::MSI_DISABLED ),
+      // Interrupt Generation Support
+      .IGS ( rv_iommu::WSI_ONLY ),
+      // Number of interrupt vectors supported
+      .N_INT_VEC ( 16 ),
+      // Number of Performance monitoring event counters (set to zero to disable HPM)
+      .N_IOHPMCTR ( 0 ),     // max 31
+      /// AXI Bus Addr width.
+      .ADDR_WIDTH ( Cfg.AddrWidth ),
+      /// AXI Bus data width.
+      .DATA_WIDTH ( Cfg.AxiDataWidth ),
+      /// AXI ID width
+      .ID_WIDTH ( Cfg.AxiMstIdWidth ),
+      /// AXI ID width
+      .ID_SLV_WIDTH ( AxiSlvIdWidth ),
+      /// AXI user width
+      .USER_WIDTH ( Cfg.AxiUserWidth ),
+      /// AXI SMMU Stream ID Width
+      .AXI_HAS_STREAM_ID ( 0 ),
+      /// AXI SMMU Sub-Stream ID Width
+      .AXI_HAS_SUB_STREAM_ID ( 0 ),
+      /// AXI AW Channel struct type
+      .aw_chan_t ( axi_mst_aw_chan_t ),
+      /// AXI W Channel struct type
+      .w_chan_t  ( axi_mst_w_chan_t ),
+      /// AXI B Channel struct type
+      .b_chan_t  ( axi_mst_b_chan_t ),
+      /// AXI AR Channel struct type
+      .ar_chan_t ( axi_mst_ar_chan_t ),
+      /// AXI R Channel struct type
+      .r_chan_t ( axi_mst_r_chan_t ),
+      /// AXI Full request struct type
+      .axi_req_t ( axi_mst_req_t ),
+      /// AXI Full response struct type
+      .axi_rsp_t ( axi_mst_rsp_t ),
+      /// AXI Full Slave request struct type
+      .axi_req_slv_t ( logic ),
+      /// AXI Full Slave response struct type
+      .axi_rsp_slv_t ( logic ),
+      /// AXI Full request struct type w/ DVM extension for SMMU
+      .axi_translation_req_t ( axi_ext_mst_req_t ),
+      /// AXI Full response struct type
+      .axi_translation_rsp_t ( axi_ext_mst_rsp_t ),
+      /// Regbus request struct type.
+      .reg_req_t ( reg_req_t ),
+      /// Regbus response struct type.
+      .reg_rsp_t ( reg_rsp_t )
+    ) i_riscv_iommu (
+      .clk_i ( clk_i ),
+      .rst_ni ( rst_ni),
+      // Translation Request Interface (Slave)
+      .dev_tr_req_i ( axi_ext_mst_req_i ),
+      .dev_tr_resp_o ( axi_ext_mst_rsp_o ),
+      // Translation Completion Interface (Master)
+      .dev_comp_resp_i ( axi_in_rsp[AxiIn.iommu[0]] ),
+      .dev_comp_req_o ( axi_in_req[AxiIn.iommu[0]] ),
+      // Data Structures Interface (Master)
+      .ds_resp_i ( axi_in_rsp[AxiIn.iommu[1]] ),
+      .ds_req_o ( axi_in_req[AxiIn.iommu[1]] ),
+      // Programming Interface (Slave)
+      .axi_prog_req_i ( '0 ),
+      .axi_prog_resp_o ( ),
+      .reg_prog_req_i ( reg_out_req[RegOut.iommu] ),
+      .reg_prog_rsp_o ( reg_out_rsp[RegOut.iommu] ),
+      .wsi_wires_o ( )
+    );
 
   end
 

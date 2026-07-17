@@ -952,6 +952,37 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__tagger___end_t _end;
 } cheshire__tagger_t;
 
+// Reg - cheshire.iommu.status
+#define CHESHIRE__IOMMU__STATUS__STATUS_bm 0xffffffff
+#define CHESHIRE__IOMMU__STATUS__STATUS_bp 0
+#define CHESHIRE__IOMMU__STATUS__STATUS_bw 32
+#define CHESHIRE__IOMMU__STATUS__STATUS_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t status :32;
+    } f;
+    uint32_t w;
+} cheshire__iommu__status_t;
+
+// Reg - cheshire.iommu._end
+#define CHESHIRE__IOMMU___END___END_bm 0xffffffff
+#define CHESHIRE__IOMMU___END___END_bp 0
+#define CHESHIRE__IOMMU___END___END_bw 32
+#define CHESHIRE__IOMMU___END___END_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t _end :32;
+    } f;
+    uint32_t w;
+} cheshire__iommu___end_t;
+
+// Addrmap - cheshire.iommu
+typedef struct __attribute__ ((__packed__)) {
+    cheshire__iommu__status_t status;
+    uint8_t RESERVED_4_ffb[0xff8];
+    cheshire__iommu___end_t _end;
+} cheshire__iommu_t;
+
 // Reg - cheshire.plic.status
 #define CHESHIRE__PLIC__STATUS__STATUS_bm 0xffffffff
 #define CHESHIRE__PLIC__STATUS__STATUS_bp 0
@@ -1058,7 +1089,9 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__bus_err_t bus_err;
     uint8_t RESERVED_3009040_3009fff[0xfc0];
     cheshire__tagger_t tagger;
-    uint8_t RESERVED_300a100_3ffffff[0xff5f00];
+    uint8_t RESERVED_300a100_300afff[0xf00];
+    cheshire__iommu_t iommu;
+    uint8_t RESERVED_300c000_3ffffff[0xff4000];
     cheshire__plic_t plic;
     cheshire__clic_t clic;
     uint8_t RESERVED_8040000_fffffff[0x7fc0000];
