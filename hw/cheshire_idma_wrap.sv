@@ -9,20 +9,26 @@
 
 /// DMA core wrapper for the integration into Cheshire.
 module cheshire_idma_wrap #(
-  parameter int unsigned AxiAddrWidth     = 0,
-  parameter int unsigned AxiDataWidth     = 0,
-  parameter int unsigned AxiIdWidth       = 0,
-  parameter int unsigned AxiUserWidth     = 0,
-  parameter int unsigned AxiSlvIdWidth    = 0,
-  parameter int unsigned NumAxInFlight    = 0,
-  parameter int unsigned MemSysDepth      = 0,
-  parameter int unsigned JobFifoDepth     = 0,
-  parameter bit          RAWCouplingAvail = 0,
-  parameter bit          IsTwoD           = 0,
-  parameter type         axi_mst_req_t    = logic,
-  parameter type         axi_mst_rsp_t    = logic,
-  parameter type         axi_slv_req_t    = logic,
-  parameter type         axi_slv_rsp_t    = logic
+  parameter int unsigned AxiAddrWidth      = 0,
+  parameter int unsigned AxiDataWidth      = 0,
+  parameter int unsigned AxiIdWidth        = 0,
+  parameter int unsigned AxiUserWidth      = 0,
+  parameter int unsigned AxiSlvIdWidth     = 0,
+  parameter int unsigned NumAxInFlight     = 0,
+  parameter int unsigned MemSysDepth       = 0,
+  parameter int unsigned JobFifoDepth      = 0,
+  parameter bit          EnableAxiCut      = 1'b1,
+  parameter bit          RAWCouplingAvail  = 0,
+  parameter bit          IsTwoD            = 0,
+  parameter type         axi_mst_aw_chan_t = logic,
+  parameter type         axi_mst_ar_chan_t = logic,
+  parameter type         axi_mst_w_chan_t  = logic,
+  parameter type         axi_mst_r_chan_t  = logic,
+  parameter type         axi_mst_b_chan_t  = logic,
+  parameter type         axi_mst_req_t     = logic,
+  parameter type         axi_mst_rsp_t     = logic,
+  parameter type         axi_slv_req_t     = logic,
+  parameter type         axi_slv_rsp_t     = logic
 ) (
   input  logic          clk_i,
   input  logic          rst_ni,
@@ -119,8 +125,8 @@ module cheshire_idma_wrap #(
   logic me_busy;
 
   // Internal AXI channels
-  axi_mst_req_t axi_read_req, axi_write_req;
-  axi_mst_rsp_t axi_read_rsp, axi_write_rsp;
+  axi_mst_req_t axi_read_req, axi_write_req, axi_cut_req;
+  axi_mst_rsp_t axi_read_rsp, axi_write_rsp, axi_cut_rsp;
 
   axi_to_reg_v2 #(
     .AxiAddrWidth ( AxiAddrWidth  ),
@@ -338,8 +344,26 @@ module cheshire_idma_wrap #(
    .slv_read_resp_o   ( axi_read_rsp  ),
    .slv_write_req_i   ( axi_write_req ),
    .slv_write_resp_o  ( axi_write_rsp ),
-   .mst_req_o         ( axi_mst_req_o ),
-   .mst_resp_i        ( axi_mst_rsp_i )
+   .mst_req_o         ( axi_cut_req ),
+   .mst_resp_i        ( axi_cut_rsp )
+  );
+
+  axi_cut #(
+    .Bypass      ( ~EnableAxiCut ),
+    .aw_chan_t   ( axi_mst_aw_chan_t ),
+    .w_chan_t    ( axi_mst_w_chan_t  ),
+    .b_chan_t    ( axi_mst_b_chan_t  ),
+    .ar_chan_t   ( axi_mst_ar_chan_t ),
+    .r_chan_t    ( axi_mst_r_chan_t  ),
+    .axi_req_t   ( axi_mst_req_t ),
+    .axi_resp_t  ( axi_mst_rsp_t )
+  ) i_axi_cut (
+    .clk_i,
+    .rst_ni,
+    .slv_req_i   ( axi_cut_req ),
+    .slv_resp_o  ( axi_cut_rsp ),
+    .mst_req_o   ( axi_mst_req_o ),
+    .mst_resp_i  ( axi_mst_rsp_i )
   );
 
 endmodule
