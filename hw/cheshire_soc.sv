@@ -118,6 +118,9 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   import cheshire_addrmap_pkg::*;
 
+  localparam int unsigned RiscvWordWidth = riscv::XLEN;
+
+
   //////////////////
   //  Interrupts  //
   //////////////////
@@ -338,7 +341,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AxiUserAsId      ( 1 ),
     .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
     .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-    .RiscvWordWidth   ( 64 ),
+    .RiscvWordWidth   ( RiscvWordWidth ),
     .NAxiCuts         ( Cfg.RegAmoNumCuts ),
     .axi_req_t        ( axi_slv_req_t ),
     .axi_rsp_t        ( axi_slv_rsp_t )
@@ -487,7 +490,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AxiUserAsId      ( 1 ),
       .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
       .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-      .RiscvWordWidth   ( 64 ),
+      .RiscvWordWidth   ( RiscvWordWidth ),
       .NAxiCuts         ( Cfg.LlcAmoNumCuts ),
       .axi_req_t        ( axi_slv_req_t ),
       .axi_rsp_t        ( axi_slv_rsp_t )
@@ -641,8 +644,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     ) i_core_cva6 (
       .clk_i,
       .rst_ni,
-      .boot_addr_i      ( BootAddr ),
-      .hart_id_i        ( 64'(i) ),
+      .boot_addr_i      ( BootAddr[riscv::XLEN-1:0] ),
+      .hart_id_i        ( riscv::XLEN'(i) ),
       .irq_i            ( xeip[i] ),
       .ipi_i            ( msip[i] ),
       .time_irq_i       ( mtip[i] ),
@@ -862,7 +865,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AxiUserAsId      ( 1 ),
     .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
     .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-    .RiscvWordWidth   ( 64 ),
+    .RiscvWordWidth   ( RiscvWordWidth ),
     .NAxiCuts         ( Cfg.DbgAmoNumCuts ),
     .axi_req_t        ( axi_slv_req_t ),
     .axi_rsp_t        ( axi_slv_rsp_t )
@@ -1446,7 +1449,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AxiUserAsId      ( 1 ),
       .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
       .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-      .RiscvWordWidth   ( 64 ),
+      .RiscvWordWidth   ( RiscvWordWidth ),
       .NAxiCuts         ( Cfg.DmaConfAmoNumCuts ),
       .axi_req_t        ( axi_slv_req_t ),
       .axi_rsp_t        ( axi_slv_rsp_t )
@@ -1495,8 +1498,14 @@ module cheshire_soc import cheshire_pkg::*; #(
       .NumAxInFlight    ( Cfg.DmaNumAxInFlight    ),
       .MemSysDepth      ( Cfg.DmaMemSysDepth      ),
       .JobFifoDepth     ( Cfg.DmaJobFifoDepth     ),
+      .EnableAxiCut     ( 1'b1 ),
       .RAWCouplingAvail ( Cfg.DmaRAWCouplingAvail ),
       .IsTwoD           ( Cfg.DmaConfEnableTwoD   ),
+      .axi_mst_aw_chan_t( axi_mst_aw_chan_t  ),
+      .axi_mst_ar_chan_t( axi_mst_ar_chan_t  ),
+      .axi_mst_r_chan_t ( axi_mst_r_chan_t  ),
+      .axi_mst_w_chan_t ( axi_mst_w_chan_t  ),
+      .axi_mst_b_chan_t ( axi_mst_b_chan_t  ),
       .axi_mst_req_t    ( axi_mst_req_t ),
       .axi_mst_rsp_t    ( axi_mst_rsp_t ),
       .axi_slv_req_t    ( axi_slv_req_t ),

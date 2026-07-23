@@ -9,6 +9,18 @@ package tb_cheshire_pkg;
 
     import cheshire_pkg::*;
 
+    // An embedded 32 bit config
+    function automatic cheshire_cfg_t gen_cheshire_emb_cfg();
+      cheshire_cfg_t ret = DefaultCfg;
+      ret.Clic = 1;
+      ret.Vga = 0;
+      ret.SerialLink = 0;
+      ret.AxiDataWidth = 32;
+      ret.AddrWidth = 32;
+      ret.LlcOutRegionEnd = 'hFFFF_FFFF;
+      return ret;
+    endfunction : gen_cheshire_emb_cfg
+
     // A dedicated RT config
     function automatic cheshire_cfg_t gen_cheshire_rt_cfg();
       cheshire_cfg_t ret = DefaultCfg;
@@ -39,6 +51,7 @@ package tb_cheshire_pkg;
 
     // Assemble a configuration array indexed by a numeric parameter
     localparam cheshire_cfg_t [NumCheshireConfigs-1:0] TbCheshireConfigs = {
+        gen_cheshire_emb_cfg(),   // 4: Embedded configuration
         gen_cheshire_vclic_cfg(), // 3: vCLIC-enabled configuration
         gen_cheshire_clic_cfg(),  // 2: CLIC-enabled configuration
         gen_cheshire_rt_cfg(),    // 1: RT-enabled configuration
