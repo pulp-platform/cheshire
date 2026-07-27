@@ -140,9 +140,6 @@ CXX ?= g++
 # CVA6 remote-bitbang simulation infrastructure
 CHS_CVA6_ROOT := $(shell $(BENDER) path cva6)
 
-CHS_SIMJTAG_SV := \
-	$(CHS_CVA6_ROOT)/corev_apu/tb/common/SimJTAG.sv
-
 CHS_SIMJTAG_DPI_DIR := $(CHS_ROOT)/target/sim/dpi
 
 CHS_SIMJTAG_CC := \
@@ -179,8 +176,7 @@ $(CHS_SIMJTAG_DPI_LIB): \
 # Generate the Questa compile script
 $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: \
 		Bender.yml \
-		$(CHS_ROOT)/cheshire.mk \
-		$(CHS_SIMJTAG_SV)
+		$(CHS_ROOT)/cheshire.mk
 	@mkdir -p $(dir $@)
 	$(BENDER) script vsim \
 		-t sim \
@@ -190,8 +186,6 @@ $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl: \
 		-t c910 \
 		-t rtl \
 		--vlog-arg="$(VLOG_ARGS)" > $@
-	# TODO: Add to Bender.yml
-	echo 'vlog "$(realpath $(CHS_SIMJTAG_SV))"' >> $@
 
 	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/dpi/SimJTAG.cc" -ccflags "-std=c++11"' >> $@
