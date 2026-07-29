@@ -966,6 +966,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   ) i_dbg_dm_top (
     .clk_i,
     .rst_ni,
+    .next_dm_addr_i       ( '0 ),  // Only DM in the DMI chain; 0 terminates `nextdm`
     .testmode_i           ( test_mode_i ),
     .ndmreset_o           ( ),
     .ndmreset_ack_i       ( 1'b0 ),
