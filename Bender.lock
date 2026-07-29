@@ -17,7 +17,7 @@ packages:
     - obi_peripherals
     - register_interface
   axi:
-    revision: 206bbba706d99528d1d5bff67538dd9ea3f6a32b
+    revision: 0ccc838fe06aeeb857eb83c6be9a915c4bf99566
     version: null
     source:
       Git: https://github.com/pulp-platform/axi.git
@@ -87,8 +87,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: 88e7f97210dfce5da38390bfb9d3c21eb998810c
-    version: 2.0.0-beta
+    revision: 03d98106aa19952a10360d2230def85144a0008b
+    version: 2.0.0-beta.2
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
