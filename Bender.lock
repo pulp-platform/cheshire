@@ -87,8 +87,8 @@ packages:
     - common_cells
     - register_interface
   common_cells:
-    revision: 03d98106aa19952a10360d2230def85144a0008b
-    version: 2.0.0-beta.2
+    revision: 63b7c50d43e462b59506f69d341ff1e40202866d
+    version: 2.0.0-beta.3
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -188,8 +188,8 @@ packages:
     - common_cells
     - tech_cells_generic
   riscv-iommu:
-    revision: 425989609ef56b1496d2b244e699d54b54beeb93
-    version: null
+    revision: 7cf694581d2077d8dcc51386a48cd98ff2c31002
+    version: 0.0.0
     source:
       Git: https://github.com/FondazioneChipsIt/riscv-iommu.git
     dependencies:
