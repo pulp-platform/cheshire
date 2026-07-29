@@ -31,7 +31,7 @@ dependencies:
   register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",     rev: common-cells-v2 }
   riscv-dbg:                { git: "https://github.com/pulp-platform/riscv-dbg.git",              rev: common-cells-v2 }
   serial_link:              { git: "https://github.com/pulp-platform/serial_link.git",            rev: common-cells-v2 }
-  tagger:                   { git: "https://github.com/pulp-platform/transaction-tagger.git",     rev: 4969811    } # branch: main
+  tagger:                   { git: "https://github.com/pulp-platform/transaction-tagger.git",     rev: common-cells-v2 }
   unbent:                   { git: "https://github.com/pulp-platform/unbent.git",                 rev: common-cells-v2 }
   dram_rtl_sim:             { git: "https://github.com/pulp-platform/dram_rtl_sim.git",           rev: common-cells-v2 }
 
