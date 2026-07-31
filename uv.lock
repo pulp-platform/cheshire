@@ -124,17 +124,19 @@ dependencies = [
     { name = "flatdict" },
     { name = "hjson" },
     { name = "mako" },
-    { name = "markdown-grid-tables" },
-    { name = "mkdocs" },
-    { name = "mkdocs-material" },
     { name = "peakrdl" },
     { name = "peakrdl-rawheader" },
     { name = "pyyaml" },
-    { name = "requests" },
     { name = "setuptools" },
     { name = "tabulate" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "markdown-grid-tables" },
+    { name = "mkdocs" },
+    { name = "mkdocs-material" },
     { name = "tclint" },
-    { name = "yapf" },
 ]
 
 [package.metadata]
@@ -142,17 +144,19 @@ requires-dist = [
     { name = "flatdict", specifier = ">=4.1.0" },
     { name = "hjson" },
     { name = "mako" },
-    { name = "markdown-grid-tables" },
-    { name = "mkdocs" },
-    { name = "mkdocs-material" },
     { name = "peakrdl", specifier = ">=1.5.0" },
     { name = "peakrdl-rawheader", specifier = ">=0.2.3" },
     { name = "pyyaml" },
-    { name = "requests" },
     { name = "setuptools", specifier = "<81" },
     { name = "tabulate" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "markdown-grid-tables" },
+    { name = "mkdocs" },
+    { name = "mkdocs-material" },
     { name = "tclint", specifier = "==0.4.2" },
-    { name = "yapf" },
 ]
 
 [[package]]
@@ -893,18 +897,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/07/f6/d0e5b343768e8bcb4cda79f0f2f55051bf26177ecd5651f84c07567461cf/watchdog-6.0.0-py3-none-win32.whl", hash = "sha256:07df1fdd701c5d4c8e55ef6cf55b8f0120fe1aef7ef39a1c6fc6bc2e606d517a", size = 79065, upload-time = "2024-11-01T14:07:09.525Z" },
     { url = "https://files.pythonhosted.org/packages/db/d9/c495884c6e548fce18a8f40568ff120bc3a4b7b99813081c8ac0c936fa64/watchdog-6.0.0-py3-none-win_amd64.whl", hash = "sha256:cbafb470cf848d93b5d013e2ecb245d4aa1c8fd0504e863ccefa32445359d680", size = 79070, upload-time = "2024-11-01T14:07:10.686Z" },
     { url = "https://files.pythonhosted.org/packages/33/e8/e40370e6d74ddba47f002a32919d91310d6074130fe4e17dabcafc15cbf1/watchdog-6.0.0-py3-none-win_ia64.whl", hash = "sha256:a1914259fa9e1454315171103c6a30961236f508b9b623eae470268bbcc6a22f", size = 79067, upload-time = "2024-11-01T14:07:11.845Z" },
-]
-
-[[package]]
-name = "yapf"
-version = "0.43.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "platformdirs" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/23/97/b6f296d1e9cc1ec25c7604178b48532fa5901f721bcf1b8d8148b13e5588/yapf-0.43.0.tar.gz", hash = "sha256:00d3aa24bfedff9420b2e0d5d9f5ab6d9d4268e72afbf59bb3fa542781d5218e", size = 254907, upload-time = "2024-11-14T00:11:41.584Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/37/81/6acd6601f61e31cfb8729d3da6d5df966f80f374b78eff83760714487338/yapf-0.43.0-py3-none-any.whl", hash = "sha256:224faffbc39c428cb095818cf6ef5511fdab6f7430a10783fdfb292ccf2852ca", size = 256158, upload-time = "2024-11-14T00:11:39.37Z" },
 ]
 
 [[package]]
