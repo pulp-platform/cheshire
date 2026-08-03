@@ -24,7 +24,13 @@ addrmap periph_stub_t #(longint unsigned Size = 0x1000) {
     external reg { field {} _end[31:0]   = 0; } _end   @(Size - 4);
 };
 
-addrmap cheshire #(longint unsigned SlinkNumLanes = 4) {
+addrmap cheshire #(
+    longint unsigned SlinkNumLanes = 4,
+    longint unsigned LlcSetAssoc   = 8,
+    longint unsigned LlcNumLines   = 256,
+    longint unsigned LlcNumBlocks  = 8,
+    longint unsigned AxiDataWidth  = 64
+) {
     desc = "Cheshire SoC system address map";
 
     ////////////////////
@@ -43,9 +49,9 @@ addrmap cheshire #(longint unsigned SlinkNumLanes = 4) {
         sw = r; executable = true;
     } bootrom @0x0200_0000;
 
-    // Scratchpad memory (SPM / LLC); 64 KiB minimum, read+write+exec
+    // Scratchpad memory (SPM / LLC), read+write+exec
     external mem {
-        mementries = 16384; memwidth = 32;
+        mementries = LlcSetAssoc * LlcNumLines * LlcNumBlocks * AxiDataWidth / 8 / 4; memwidth = 32;
         sw = rw; executable = true;
     } spm @0x1000_0000;
 
