@@ -1667,14 +1667,14 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_req_t    ( axi_mst_req_t ),
       .axi_resp_t   ( axi_mst_rsp_t ),
       .axi_r_chan_t ( axi_mst_r_chan_t ),
-      .reg_req_t    ( reg_req_t ),
-      .reg_resp_t   ( reg_rsp_t )
+      .apb_req_t    ( apb_req_t  ),
+      .apb_resp_t   ( apb_resp_t )
     ) i_axi_vga (
       .clk_i,
       .rst_ni,
       .test_mode_en_i ( test_mode_i ),
-      .reg_req_i      ( reg_out_req[RegOut.vga] ),
-      .reg_rsp_o      ( reg_out_rsp[RegOut.vga] ),
+      .apb_req_i      ( reg_apb_req[RegOut.vga] ),
+      .apb_rsp_o      ( reg_apb_rsp[RegOut.vga] ),
       .axi_req_o      ( axi_vga_req           ),
       .axi_resp_i     ( axi_in_rsp[AxiIn.vga] ),
       .hsync_o        ( vga_hsync_o ),
