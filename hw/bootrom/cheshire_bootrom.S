@@ -5,6 +5,7 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
+// Enrico Zelioli <ezelioli@iis.ee.ethz.ch>
 
 // TODO: Avoid hardcoding in addresses and offsets
 
@@ -47,8 +48,12 @@ _start:
     li x30, 0
     li x31, 0
 
-    // Pause SMP harts
-    smp_pause(t0, t1)
+    // Pause SMP harts: enable SW interrupts, park non-primary harts at _wait_for_ipi
+    li   t1, 0x8
+    csrw mie, t1
+    li   t0, NONSMP_HART
+    csrr t1, mhartid
+    bne  t0, t1, _wait_for_ipi
 
     // Init stack and global pointer with safe, linked values
     la sp, __stack_pointer$
@@ -110,23 +115,37 @@ _exit:
 .global boot_next_stage
 .align 4
 boot_next_stage:
-    // Non-SMP hart: Write boot address into global scratch registers
+    // Write boot address into scratch registers before waking other harts
     la t0, __regs_base_addr__
     sw a0, 16(t0)   // regs.SCRATCH[4]
     srli a0, a0, 32
     sw a0, 20(t0)   // regs.SCRATCH[5]
     fence
-    // Resume SMP harts
-    smp_resume(t0, t1, t2)
-    // Load boot address from global scratch registers
-    la t0, __regs_base_addr__
-    lwu t1, 20(t0)  // regs.SCRATCH[5]
+    // Wake all other harts via IPI and wait for each to acknowledge
+    call smp_resume
+    j    _boot_jump
+
+// Non-primary harts park here until smp_resume() sends them an IPI
+_wait_for_ipi:
+    wfi
+    csrr t1, mip
+    andi t1, t1, 0x8
+    beqz t1, _wait_for_ipi
+    // Clear CLINT IPI register for this hart
+    la   t0, __clint_base_addr__
+    csrr t1, mhartid
+    slli t1, t1, 2
+    add  t1, t1, t0
+    sw   zero, 0(t1)
+
+// All harts jump to the boot address stored in scratch registers
+_boot_jump:
+    la   t0, __regs_base_addr__
+    lwu  t1, 20(t0)   // regs.SCRATCH[5]
     slli t1, t1, 32
-    lwu t0, 16(t0)  // regs.SCRATCH[4]
-    or t0, t0, t1
-    // Store hartid to a0
+    lwu  t0, 16(t0)   // regs.SCRATCH[4]
+    or   t0, t0, t1
     csrr a0, mhartid
-    // Jump to boot address
     jalr ra, 0(t0)
     // We should never get here
     ret
