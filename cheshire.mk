@@ -26,7 +26,7 @@ CHS_LLC_DIR   := $(shell $(BENDER) path axi_llc)
 
 # Define paths used in dependencies
 OTPROOT           := $(shell $(BENDER) path opentitan_peripherals)
-CLINTROOT         := $(shell $(BENDER) path clint)
+CLINT_ROOT        := $(shell $(BENDER) path clint)
 AXIRTROOT         := $(shell $(BENDER) path axi_rt)
 AXI_VGA_ROOT      := $(shell $(BENDER) path axi_vga)
 IDMA_ROOT         := $(shell $(BENDER) path idma)
@@ -34,6 +34,7 @@ DRAM_RTL_SIM_ROOT := $(shell $(BENDER) path dram_rtl_sim)
 
 REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
 PEAKRDL ?= peakrdl
+
 
 
 ################
@@ -89,6 +90,13 @@ CHS_PEAKRDL_INCLUDES += -I $(CHS_ROOT)/hw/
 CHS_PEAKRDL_PARAMS   += -P SlinkNumLanes=$(SLINK_NUM_LANES)
 CHS_PEAKRDL_DEFINES  := -D CHS_DRAM
 
+# CLINT
+CLINT_CORES ?= 1
+include $(CLINT_ROOT)/clint.mk
+
+CHS_PEAKRDL_INCLUDES += -I $(CLINT_ROOT)/rdl
+CHS_PEAKRDL_PARAMS   += -P ClintNumCores=$(CLINT_CORES)
+
 ############
 # Build SW #
 ############
@@ -107,11 +115,7 @@ $(CHS_ROOT)/hw/regs/cheshire_soc_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_soc_re
 $(CHS_ROOT)/hw/cheshire_addrmap_pkg.sv: $(CHS_ROOT)/hw/cheshire.rdl $(CHS_SLINK_DIR)/.generated
 	$(PEAKRDL) raw-header $< --format svpkg --no-prefix $(CHS_PEAKRDL_INCLUDES) $(CHS_PEAKRDL_PARAMS) $(CHS_PEAKRDL_DEFINES) --license-str $$'Copyright 2025 ETH Zurich and University of Bologna.\nSolderpad Hardware License, Version 0.51, see LICENSE for details.\nSPDX-License-Identifier: SHL-0.51' -o $@
 
-# CLINT
-CLINTCORES ?= 1
-include $(CLINTROOT)/clint.mk
-$(CLINTROOT)/.generated:
-	flock -x $@ $(MAKE) clint && touch $@
+
 
 # OpenTitan peripherals
 include $(OTPROOT)/otp.mk
@@ -136,7 +140,7 @@ include $(IDMA_ROOT)/idma.mk
 CHS_HW_ALL += $(IDMA_FULL_RTL)
 CHS_HW_ALL += $(CHS_ROOT)/hw/cheshire_addrmap_pkg.sv
 CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_soc_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_soc_regs.sv
-CHS_HW_ALL += $(CLINTROOT)/.generated
+CHS_HW_ALL += $(CLINT_ROOT)/src/clint_reg.sv
 CHS_HW_ALL += $(OTPROOT)/.generated
 CHS_HW_ALL += $(AXIRTROOT)/.generated
 CHS_HW_ALL += $(AXI_VGA_ROOT)/.generated
