@@ -707,10 +707,10 @@ module cheshire_soc import cheshire_pkg::*; #(
       };
 
       clic #(
+        .apb_req_t   ( apb_req_t  ),
+        .apb_rsp_t   ( apb_resp_t ),
         .N_SOURCE    ( NumClicIntrs ),
         .INTCTLBITS  ( Cfg.ClicIntCtlBits ),
-        .reg_req_t   ( reg_req_t ),
-        .reg_rsp_t   ( reg_rsp_t ),
         .SSCLIC      ( 1 ),
         .USCLIC      ( 0 ),
         .VSCLIC      ( Cfg.ClicVsclic ),
@@ -720,8 +720,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       ) i_clic (
         .clk_i,
         .rst_ni,
-        .reg_req_i      ( reg_out_req[RegOut.clic[i]] ),
-        .reg_rsp_o      ( reg_out_rsp[RegOut.clic[i]] ),
+        .apb_req_i      ( reg_apb_req[RegOut.clic[i]] ),
+        .apb_rsp_o      ( reg_apb_rsp[RegOut.clic[i]] ),
         .intr_src_i     ( clic_intr ),
         .irq_valid_o    ( clic_irq_valid ),
         .irq_ready_i    ( clic_irq_ready ),

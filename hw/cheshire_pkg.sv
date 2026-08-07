@@ -439,6 +439,7 @@ package cheshire_pkg;
     ret.apb_mask = '0;
     ret.apb_mask[ret.regs] = 1'b1;
     if (cfg.SerialLink) ret.apb_mask[ret.slink] = 1'b1;
+    if (cfg.Clic) for (int j = 0; j < cfg.NumCores; j++) ret.apb_mask[ret.clic[j]] = 1'b1;
     return ret;
   endfunction
 

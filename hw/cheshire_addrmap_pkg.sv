@@ -62,6 +62,20 @@ localparam longint unsigned PLIC_SIZE = 64'h4000000;
 localparam longint unsigned CLIC_BASE_ADDR = 64'h8000000;
 localparam longint unsigned CLIC_SIZE = 64'h40000;
 
+localparam longint unsigned CLIC_M_BASE_ADDR = 64'h8000000;
+localparam longint unsigned CLIC_M_SIZE = 64'h1400;
+
+localparam longint unsigned CLIC_S_BASE_ADDR = 64'h8008000;
+localparam longint unsigned CLIC_S_SIZE = 64'h6040;
+
+function automatic longint unsigned CLIC_VS_BASE_ADDR(input int unsigned vs_idx);
+    return 64'h8010000 + (vs_idx * 64'h8000);
+endfunction
+localparam longint unsigned CLIC_VS_NUM = 64'h4;
+localparam longint unsigned CLIC_VS_SIZE = 64'h1400;
+localparam longint unsigned CLIC_VS_STRIDE = 64'h8000;
+localparam longint unsigned CLIC_VS_TOTAL_SIZE = 64'h20000;
+
 localparam longint unsigned SPM_BASE_ADDR = 64'h10000000;
 localparam longint unsigned SPM_SIZE = 64'h10000;
 
@@ -149,7 +163,28 @@ localparam longint unsigned BUS_ERR_STATUS_BASE_ADDR = 64'h3009000;
 localparam longint unsigned BUS_ERR__END_BASE_ADDR = 64'h300903C;
 localparam longint unsigned PLIC_STATUS_BASE_ADDR = 64'h4000000;
 localparam longint unsigned PLIC__END_BASE_ADDR = 64'h7FFFFFC;
-localparam longint unsigned CLIC_STATUS_BASE_ADDR = 64'h8000000;
+localparam longint unsigned CLIC_M_CLICCFG_BASE_ADDR = 64'h8000000;
+function automatic longint unsigned CLIC_M_CLICINT_BASE_ADDR(input int unsigned clicint_idx);
+    return 64'h8001000 + (clicint_idx * 64'h4);
+endfunction
+localparam longint unsigned CLIC_M_CLICINT_NUM = 64'h100;
+localparam longint unsigned CLIC_S_CLICCFG_BASE_ADDR = 64'h8008000;
+function automatic longint unsigned CLIC_S_CLICINT_BASE_ADDR(input int unsigned clicint_idx);
+    return 64'h8009000 + (clicint_idx * 64'h4);
+endfunction
+localparam longint unsigned CLIC_S_CLICINT_NUM = 64'h100;
+function automatic longint unsigned CLIC_S_CLICINTV_BASE_ADDR(input int unsigned clicintv_idx);
+    return 64'h800D000 + (clicintv_idx * 64'h4);
+endfunction
+localparam longint unsigned CLIC_S_CLICINTV_NUM = 64'h40;
+function automatic longint unsigned CLIC_S_VSPRIO_BASE_ADDR(input int unsigned vsprio_idx);
+    return 64'h800E000 + (vsprio_idx * 64'h4);
+endfunction
+localparam longint unsigned CLIC_S_VSPRIO_NUM = 64'h10;
+function automatic longint unsigned CLIC_VS_CLICINT_BASE_ADDR(input int unsigned vs_idx, input int unsigned clicint_idx);
+    return 64'h8011000 + (vs_idx * 64'h8000) + (clicint_idx * 64'h4);
+endfunction
+localparam longint unsigned CLIC_VS_CLICINT_NUM = 64'h100;
 localparam longint unsigned CLIC__END_BASE_ADDR = 64'h803FFFC;
 
 

@@ -97,8 +97,8 @@ CHS_SW_GEN_HDRS += $(OTPROOT)/.generated
 CHS_SW_ADDRS_LDH := $(CHS_SW_LD_DIR)/cheshire_addrs.ldh
 CHS_SW_ALL += $(CHS_SW_ADDRS_LDH)
 
-$(CHS_SW_ADDRS_LDH): $(CHS_ROOT)/hw/cheshire.rdl $(CHS_SLINK_DIR)/.generated
-	$(PEAKRDL) raw-header $< --format ldh $(CHS_PEAKRDL_INCLUDES) $(CHS_PEAKRDL_PARAMS) $(CHS_PEAKRDL_DEFINES) --no-prefix --license_str $$'Copyright 2025 ETH Zurich and University of Bologna.\nLicensed under the Apache License, Version 2.0, see LICENSE for details.\nSPDX-License-Identifier: Apache-2.0' -o $@
+$(CHS_SW_ADDRS_LDH): $(CHS_ROOT)/hw/cheshire.rdl $(CHS_SLINK_DIR)/.generated $(CHS_ROOT)/sw/link/rawheader_ldh.mako
+	$(PEAKRDL) raw-header $< --format ldh --template $(CHS_ROOT)/sw/link/rawheader_ldh.mako $(CHS_PEAKRDL_INCLUDES) $(CHS_PEAKRDL_PARAMS) $(CHS_PEAKRDL_DEFINES) --no-prefix --license_str $$'Copyright 2025 ETH Zurich and University of Bologna.\nLicensed under the Apache License, Version 2.0, see LICENSE for details.\nSPDX-License-Identifier: Apache-2.0' -o $@
 
 ###############
 # Compilation #
