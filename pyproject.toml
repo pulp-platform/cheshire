@@ -25,3 +25,6 @@ dependencies = [
 
 [tool.uv]
 package = false
+
+[tool.setuptools]
+py-modules = []
