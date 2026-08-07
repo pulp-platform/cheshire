@@ -79,7 +79,7 @@ packages:
     - common_cells
     - register_interface
   clint:
-    revision: 5c06e3fee9d8a202653dc58b1048143d839dd11d
+    revision: 277a7a2a329ecb820de11c3394431e114e0fc0c4
     version: null
     source:
       Git: https://github.com/pulp-platform/clint.git
