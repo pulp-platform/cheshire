@@ -10,6 +10,7 @@ nonfree/
 
 # Dependency files
 .bender/
+Bender.local
 
 # Documentation site
 site/
