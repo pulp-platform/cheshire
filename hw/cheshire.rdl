@@ -9,6 +9,7 @@
 
 `include "cheshire_soc_regs.rdl"
 `include "slink_reg.rdl"
+`include "clic.rdl"
 
 // User-defined property for executable memory regions (used by ldh format)
 property executable {
@@ -24,7 +25,13 @@ addrmap periph_stub_t #(longint unsigned Size = 0x1000) {
     external reg { field {} _end[31:0]   = 0; } _end   @(Size - 4);
 };
 
-addrmap cheshire #(longint unsigned SlinkNumLanes = 4) {
+addrmap cheshire #(
+    longint unsigned SlinkNumLanes  = 4,
+    // Must match the CLIC parameters the SoC is instantiated with; see the CLIC
+    // instance below for why WindowSize is fixed rather than derived.
+    longint unsigned ClicNumSources = 256,
+    longint unsigned ClicNumVsctxts = 4
+) {
     desc = "Cheshire SoC system address map";
 
     ////////////////////
@@ -83,8 +90,18 @@ addrmap cheshire #(longint unsigned SlinkNumLanes = 4) {
     // PLIC (64 MiB)
     periph_stub_t #(.Size(0x0400_0000)) plic    @0x0400_0000;
 
-    // CLIC (256 KiB per hart; sized for 1 hart)
-    periph_stub_t #(.Size(0x0004_0000)) clic    @0x0800_0000;
+    // CLIC (256 KiB per hart; sized for 1 hart).
+    //
+    // WindowSize must stay 0x0004_0000: gen_reg_out() in cheshire_pkg.sv uses
+    // CLIC_SIZE as the per-hart stride, and the CLIC extracts its in-window
+    // offset by slicing paddr[ADDR_W-1:0], so the stride has to be a power of
+    // two of at least that width. The registers themselves only span
+    // (2 + NumVsCtxts) * 32KiB; the rest of the window reads as zero.
+    clic #(
+        .NumSources(ClicNumSources),
+        .NumVsCtxts(ClicNumVsctxts),
+        .WindowSize(0x0004_0000)
+    ) clic @0x0800_0000;
 
     // Cheshire SoC register file
     soc_regs regs @0x0300_0000;

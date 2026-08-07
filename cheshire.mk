@@ -27,6 +27,7 @@ CHS_LLC_DIR   := $(shell $(BENDER) path axi_llc)
 # Define paths used in dependencies
 OTPROOT           := $(shell $(BENDER) path opentitan_peripherals)
 CLINTROOT         := $(shell $(BENDER) path clint)
+CLIC_ROOT         := $(shell $(BENDER) path clic)
 AXIRTROOT         := $(shell $(BENDER) path axi_rt)
 AXI_VGA_ROOT      := $(shell $(BENDER) path axi_vga)
 IDMA_ROOT         := $(shell $(BENDER) path idma)
@@ -88,6 +89,14 @@ CHS_PEAKRDL_INCLUDES += -I $(CHS_SLINK_DIR)/src/regs
 CHS_PEAKRDL_INCLUDES += -I $(CHS_ROOT)/hw/
 CHS_PEAKRDL_PARAMS   += -P SlinkNumLanes=$(SLINK_NUM_LANES)
 CHS_PEAKRDL_DEFINES  := -D CHS_DRAM
+
+# CLIC
+CHS_CLIC_NUM_SOURCES ?= 256
+CHS_CLIC_NUM_VSCTXTS ?= 4
+CHS_PEAKRDL_INCLUDES += -I $(CLIC_ROOT)/rdl
+CHS_PEAKRDL_PARAMS   += -P ClicNumSources=$(CHS_CLIC_NUM_SOURCES)
+CHS_PEAKRDL_PARAMS   += -P ClicNumVsctxts=$(CHS_CLIC_NUM_VSCTXTS)
+CHS_PEAKRDL_DEFINES  += -D CLIC_VSCLIC
 
 ############
 # Build SW #

@@ -942,17 +942,292 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__plic___end_t _end;
 } cheshire__plic_t;
 
-// Reg - cheshire.clic.status
-#define CHESHIRE__CLIC__STATUS__STATUS_bm 0xffffffff
-#define CHESHIRE__CLIC__STATUS__STATUS_bp 0
-#define CHESHIRE__CLIC__STATUS__STATUS_bw 32
-#define CHESHIRE__CLIC__STATUS__STATUS_reset 0x0
+// Reg - cheshire.clic.m.cliccfg
+#define CHESHIRE__CLIC__M__CLICCFG__MNLBITS_bm 0xf
+#define CHESHIRE__CLIC__M__CLICCFG__MNLBITS_bp 0
+#define CHESHIRE__CLIC__M__CLICCFG__MNLBITS_bw 4
+#define CHESHIRE__CLIC__M__CLICCFG__MNLBITS_reset 0x0
+#define CHESHIRE__CLIC__M__CLICCFG__NMBITS_bm 0x30
+#define CHESHIRE__CLIC__M__CLICCFG__NMBITS_bp 4
+#define CHESHIRE__CLIC__M__CLICCFG__NMBITS_bw 2
+#define CHESHIRE__CLIC__M__CLICCFG__NMBITS_reset 0x0
+#define CHESHIRE__CLIC__M__CLICCFG__SNLBITS_bm 0xf0000
+#define CHESHIRE__CLIC__M__CLICCFG__SNLBITS_bp 16
+#define CHESHIRE__CLIC__M__CLICCFG__SNLBITS_bw 4
+#define CHESHIRE__CLIC__M__CLICCFG__SNLBITS_reset 0x0
+#define CHESHIRE__CLIC__M__CLICCFG__UNLBITS_bm 0xf000000
+#define CHESHIRE__CLIC__M__CLICCFG__UNLBITS_bp 24
+#define CHESHIRE__CLIC__M__CLICCFG__UNLBITS_bw 4
+#define CHESHIRE__CLIC__M__CLICCFG__UNLBITS_reset 0x0
 typedef union {
     struct __attribute__ ((__packed__)) {
-        uint32_t status :32;
+        uint32_t mnlbits :4;
+        uint32_t nmbits :2;
+        uint32_t :10;
+        uint32_t snlbits :4;
+        uint32_t :4;
+        uint32_t unlbits :4;
+        uint32_t :4;
     } f;
     uint32_t w;
-} cheshire__clic__status_t;
+} cheshire__clic__m__cliccfg_t;
+
+// Reg - cheshire.clic.m.clicint[]
+#define CHESHIRE__CLIC__M__CLICINTX__IP_bm 0x1
+#define CHESHIRE__CLIC__M__CLICINTX__IP_bp 0
+#define CHESHIRE__CLIC__M__CLICINTX__IP_bw 1
+#define CHESHIRE__CLIC__M__CLICINTX__IP_reset 0x0
+#define CHESHIRE__CLIC__M__CLICINTX__IE_bm 0x100
+#define CHESHIRE__CLIC__M__CLICINTX__IE_bp 8
+#define CHESHIRE__CLIC__M__CLICINTX__IE_bw 1
+#define CHESHIRE__CLIC__M__CLICINTX__IE_reset 0x0
+#define CHESHIRE__CLIC__M__CLICINTX__ATTR_SHV_bm 0x10000
+#define CHESHIRE__CLIC__M__CLICINTX__ATTR_SHV_bp 16
+#define CHESHIRE__CLIC__M__CLICINTX__ATTR_SHV_bw 1
+#define CHESHIRE__CLIC__M__CLICINTX__ATTR_SHV_reset 0x0
+#define CHESHIRE__CLIC__M__CLICINTX__ATTR_TRIG_bm 0x60000
+#define CHESHIRE__CLIC__M__CLICINTX__ATTR_TRIG_bp 17
+#define CHESHIRE__CLIC__M__CLICINTX__ATTR_TRIG_bw 2
+#define CHESHIRE__CLIC__M__CLICINTX__ATTR_TRIG_reset 0x0
+#define CHESHIRE__CLIC__M__CLICINTX__ATTR_MODE_bm 0xc00000
+#define CHESHIRE__CLIC__M__CLICINTX__ATTR_MODE_bp 22
+#define CHESHIRE__CLIC__M__CLICINTX__ATTR_MODE_bw 2
+#define CHESHIRE__CLIC__M__CLICINTX__ATTR_MODE_reset 0x3
+#define CHESHIRE__CLIC__M__CLICINTX__CTL_bm 0xff000000
+#define CHESHIRE__CLIC__M__CLICINTX__CTL_bp 24
+#define CHESHIRE__CLIC__M__CLICINTX__CTL_bw 8
+#define CHESHIRE__CLIC__M__CLICINTX__CTL_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t ip :1;
+        uint32_t :7;
+        uint32_t ie :1;
+        uint32_t :7;
+        uint32_t attr_shv :1;
+        uint32_t attr_trig :2;
+        uint32_t :3;
+        uint32_t attr_mode :2;
+        uint32_t ctl :8;
+    } f;
+    uint32_t w;
+} cheshire__clic__m__clicintx_t;
+
+// Regfile - cheshire.clic.m
+typedef struct __attribute__ ((__packed__)) {
+    cheshire__clic__m__cliccfg_t cliccfg;
+    uint8_t RESERVED_4_fff[0xffc];
+    cheshire__clic__m__clicintx_t clicint[256];
+} cheshire__clic__m_t;
+
+// Reg - cheshire.clic.s.cliccfg
+#define CHESHIRE__CLIC__S__CLICCFG__MNLBITS_bm 0xf
+#define CHESHIRE__CLIC__S__CLICCFG__MNLBITS_bp 0
+#define CHESHIRE__CLIC__S__CLICCFG__MNLBITS_bw 4
+#define CHESHIRE__CLIC__S__CLICCFG__MNLBITS_reset 0x0
+#define CHESHIRE__CLIC__S__CLICCFG__NMBITS_bm 0x30
+#define CHESHIRE__CLIC__S__CLICCFG__NMBITS_bp 4
+#define CHESHIRE__CLIC__S__CLICCFG__NMBITS_bw 2
+#define CHESHIRE__CLIC__S__CLICCFG__NMBITS_reset 0x0
+#define CHESHIRE__CLIC__S__CLICCFG__SNLBITS_bm 0xf0000
+#define CHESHIRE__CLIC__S__CLICCFG__SNLBITS_bp 16
+#define CHESHIRE__CLIC__S__CLICCFG__SNLBITS_bw 4
+#define CHESHIRE__CLIC__S__CLICCFG__SNLBITS_reset 0x0
+#define CHESHIRE__CLIC__S__CLICCFG__UNLBITS_bm 0xf000000
+#define CHESHIRE__CLIC__S__CLICCFG__UNLBITS_bp 24
+#define CHESHIRE__CLIC__S__CLICCFG__UNLBITS_bw 4
+#define CHESHIRE__CLIC__S__CLICCFG__UNLBITS_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t mnlbits :4;
+        uint32_t nmbits :2;
+        uint32_t :10;
+        uint32_t snlbits :4;
+        uint32_t :4;
+        uint32_t unlbits :4;
+        uint32_t :4;
+    } f;
+    uint32_t w;
+} cheshire__clic__s__cliccfg_t;
+
+// Reg - cheshire.clic.s.clicint[]
+#define CHESHIRE__CLIC__S__CLICINTX__IP_bm 0x1
+#define CHESHIRE__CLIC__S__CLICINTX__IP_bp 0
+#define CHESHIRE__CLIC__S__CLICINTX__IP_bw 1
+#define CHESHIRE__CLIC__S__CLICINTX__IP_reset 0x0
+#define CHESHIRE__CLIC__S__CLICINTX__IE_bm 0x100
+#define CHESHIRE__CLIC__S__CLICINTX__IE_bp 8
+#define CHESHIRE__CLIC__S__CLICINTX__IE_bw 1
+#define CHESHIRE__CLIC__S__CLICINTX__IE_reset 0x0
+#define CHESHIRE__CLIC__S__CLICINTX__ATTR_SHV_bm 0x10000
+#define CHESHIRE__CLIC__S__CLICINTX__ATTR_SHV_bp 16
+#define CHESHIRE__CLIC__S__CLICINTX__ATTR_SHV_bw 1
+#define CHESHIRE__CLIC__S__CLICINTX__ATTR_SHV_reset 0x0
+#define CHESHIRE__CLIC__S__CLICINTX__ATTR_TRIG_bm 0x60000
+#define CHESHIRE__CLIC__S__CLICINTX__ATTR_TRIG_bp 17
+#define CHESHIRE__CLIC__S__CLICINTX__ATTR_TRIG_bw 2
+#define CHESHIRE__CLIC__S__CLICINTX__ATTR_TRIG_reset 0x0
+#define CHESHIRE__CLIC__S__CLICINTX__ATTR_MODE_bm 0xc00000
+#define CHESHIRE__CLIC__S__CLICINTX__ATTR_MODE_bp 22
+#define CHESHIRE__CLIC__S__CLICINTX__ATTR_MODE_bw 2
+#define CHESHIRE__CLIC__S__CLICINTX__ATTR_MODE_reset 0x3
+#define CHESHIRE__CLIC__S__CLICINTX__CTL_bm 0xff000000
+#define CHESHIRE__CLIC__S__CLICINTX__CTL_bp 24
+#define CHESHIRE__CLIC__S__CLICINTX__CTL_bw 8
+#define CHESHIRE__CLIC__S__CLICINTX__CTL_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t ip :1;
+        uint32_t :7;
+        uint32_t ie :1;
+        uint32_t :7;
+        uint32_t attr_shv :1;
+        uint32_t attr_trig :2;
+        uint32_t :3;
+        uint32_t attr_mode :2;
+        uint32_t ctl :8;
+    } f;
+    uint32_t w;
+} cheshire__clic__s__clicintx_t;
+
+// Reg - cheshire.clic.s.clicintv[]
+#define CHESHIRE__CLIC__S__CLICINTVX__V0_bm 0x1
+#define CHESHIRE__CLIC__S__CLICINTVX__V0_bp 0
+#define CHESHIRE__CLIC__S__CLICINTVX__V0_bw 1
+#define CHESHIRE__CLIC__S__CLICINTVX__V0_reset 0x0
+#define CHESHIRE__CLIC__S__CLICINTVX__VSID0_bm 0xfc
+#define CHESHIRE__CLIC__S__CLICINTVX__VSID0_bp 2
+#define CHESHIRE__CLIC__S__CLICINTVX__VSID0_bw 6
+#define CHESHIRE__CLIC__S__CLICINTVX__VSID0_reset 0x0
+#define CHESHIRE__CLIC__S__CLICINTVX__V1_bm 0x100
+#define CHESHIRE__CLIC__S__CLICINTVX__V1_bp 8
+#define CHESHIRE__CLIC__S__CLICINTVX__V1_bw 1
+#define CHESHIRE__CLIC__S__CLICINTVX__V1_reset 0x0
+#define CHESHIRE__CLIC__S__CLICINTVX__VSID1_bm 0xfc00
+#define CHESHIRE__CLIC__S__CLICINTVX__VSID1_bp 10
+#define CHESHIRE__CLIC__S__CLICINTVX__VSID1_bw 6
+#define CHESHIRE__CLIC__S__CLICINTVX__VSID1_reset 0x0
+#define CHESHIRE__CLIC__S__CLICINTVX__V2_bm 0x10000
+#define CHESHIRE__CLIC__S__CLICINTVX__V2_bp 16
+#define CHESHIRE__CLIC__S__CLICINTVX__V2_bw 1
+#define CHESHIRE__CLIC__S__CLICINTVX__V2_reset 0x0
+#define CHESHIRE__CLIC__S__CLICINTVX__VSID2_bm 0xfc0000
+#define CHESHIRE__CLIC__S__CLICINTVX__VSID2_bp 18
+#define CHESHIRE__CLIC__S__CLICINTVX__VSID2_bw 6
+#define CHESHIRE__CLIC__S__CLICINTVX__VSID2_reset 0x0
+#define CHESHIRE__CLIC__S__CLICINTVX__V3_bm 0x1000000
+#define CHESHIRE__CLIC__S__CLICINTVX__V3_bp 24
+#define CHESHIRE__CLIC__S__CLICINTVX__V3_bw 1
+#define CHESHIRE__CLIC__S__CLICINTVX__V3_reset 0x0
+#define CHESHIRE__CLIC__S__CLICINTVX__VSID3_bm 0xfc000000
+#define CHESHIRE__CLIC__S__CLICINTVX__VSID3_bp 26
+#define CHESHIRE__CLIC__S__CLICINTVX__VSID3_bw 6
+#define CHESHIRE__CLIC__S__CLICINTVX__VSID3_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t v0 :1;
+        uint32_t :1;
+        uint32_t vsid0 :6;
+        uint32_t v1 :1;
+        uint32_t :1;
+        uint32_t vsid1 :6;
+        uint32_t v2 :1;
+        uint32_t :1;
+        uint32_t vsid2 :6;
+        uint32_t v3 :1;
+        uint32_t :1;
+        uint32_t vsid3 :6;
+    } f;
+    uint32_t w;
+} cheshire__clic__s__clicintvx_t;
+
+// Reg - cheshire.clic.s.vsprio[]
+#define CHESHIRE__CLIC__S__VSPRIOX__PRIO0_bm 0x1
+#define CHESHIRE__CLIC__S__VSPRIOX__PRIO0_bp 0
+#define CHESHIRE__CLIC__S__VSPRIOX__PRIO0_bw 1
+#define CHESHIRE__CLIC__S__VSPRIOX__PRIO0_reset 0x0
+#define CHESHIRE__CLIC__S__VSPRIOX__PRIO1_bm 0x100
+#define CHESHIRE__CLIC__S__VSPRIOX__PRIO1_bp 8
+#define CHESHIRE__CLIC__S__VSPRIOX__PRIO1_bw 1
+#define CHESHIRE__CLIC__S__VSPRIOX__PRIO1_reset 0x0
+#define CHESHIRE__CLIC__S__VSPRIOX__PRIO2_bm 0x10000
+#define CHESHIRE__CLIC__S__VSPRIOX__PRIO2_bp 16
+#define CHESHIRE__CLIC__S__VSPRIOX__PRIO2_bw 1
+#define CHESHIRE__CLIC__S__VSPRIOX__PRIO2_reset 0x0
+#define CHESHIRE__CLIC__S__VSPRIOX__PRIO3_bm 0x1000000
+#define CHESHIRE__CLIC__S__VSPRIOX__PRIO3_bp 24
+#define CHESHIRE__CLIC__S__VSPRIOX__PRIO3_bw 1
+#define CHESHIRE__CLIC__S__VSPRIOX__PRIO3_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t prio0 :1;
+        uint32_t :7;
+        uint32_t prio1 :1;
+        uint32_t :7;
+        uint32_t prio2 :1;
+        uint32_t :7;
+        uint32_t prio3 :1;
+        uint32_t :7;
+    } f;
+    uint32_t w;
+} cheshire__clic__s__vspriox_t;
+
+// Regfile - cheshire.clic.s
+typedef struct __attribute__ ((__packed__)) {
+    cheshire__clic__s__cliccfg_t cliccfg;
+    uint8_t RESERVED_4_fff[0xffc];
+    cheshire__clic__s__clicintx_t clicint[256];
+    uint8_t RESERVED_1400_4fff[0x3c00];
+    cheshire__clic__s__clicintvx_t clicintv[64];
+    uint8_t RESERVED_5100_5fff[0xf00];
+    cheshire__clic__s__vspriox_t vsprio[16];
+} cheshire__clic__s_t;
+
+// Reg - cheshire.clic.vs[].clicint[]
+#define CHESHIRE__CLIC__VSX__CLICINTX__IP_bm 0x1
+#define CHESHIRE__CLIC__VSX__CLICINTX__IP_bp 0
+#define CHESHIRE__CLIC__VSX__CLICINTX__IP_bw 1
+#define CHESHIRE__CLIC__VSX__CLICINTX__IP_reset 0x0
+#define CHESHIRE__CLIC__VSX__CLICINTX__IE_bm 0x100
+#define CHESHIRE__CLIC__VSX__CLICINTX__IE_bp 8
+#define CHESHIRE__CLIC__VSX__CLICINTX__IE_bw 1
+#define CHESHIRE__CLIC__VSX__CLICINTX__IE_reset 0x0
+#define CHESHIRE__CLIC__VSX__CLICINTX__ATTR_SHV_bm 0x10000
+#define CHESHIRE__CLIC__VSX__CLICINTX__ATTR_SHV_bp 16
+#define CHESHIRE__CLIC__VSX__CLICINTX__ATTR_SHV_bw 1
+#define CHESHIRE__CLIC__VSX__CLICINTX__ATTR_SHV_reset 0x0
+#define CHESHIRE__CLIC__VSX__CLICINTX__ATTR_TRIG_bm 0x60000
+#define CHESHIRE__CLIC__VSX__CLICINTX__ATTR_TRIG_bp 17
+#define CHESHIRE__CLIC__VSX__CLICINTX__ATTR_TRIG_bw 2
+#define CHESHIRE__CLIC__VSX__CLICINTX__ATTR_TRIG_reset 0x0
+#define CHESHIRE__CLIC__VSX__CLICINTX__ATTR_MODE_bm 0xc00000
+#define CHESHIRE__CLIC__VSX__CLICINTX__ATTR_MODE_bp 22
+#define CHESHIRE__CLIC__VSX__CLICINTX__ATTR_MODE_bw 2
+#define CHESHIRE__CLIC__VSX__CLICINTX__ATTR_MODE_reset 0x3
+#define CHESHIRE__CLIC__VSX__CLICINTX__CTL_bm 0xff000000
+#define CHESHIRE__CLIC__VSX__CLICINTX__CTL_bp 24
+#define CHESHIRE__CLIC__VSX__CLICINTX__CTL_bw 8
+#define CHESHIRE__CLIC__VSX__CLICINTX__CTL_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t ip :1;
+        uint32_t :7;
+        uint32_t ie :1;
+        uint32_t :7;
+        uint32_t attr_shv :1;
+        uint32_t attr_trig :2;
+        uint32_t :3;
+        uint32_t attr_mode :2;
+        uint32_t ctl :8;
+    } f;
+    uint32_t w;
+} cheshire__clic__vsx__clicintx_t;
+
+// Regfile - cheshire.clic.vs[]
+typedef struct __attribute__ ((__packed__)) {
+    uint8_t RESERVED_0_fff[0x1000];
+    cheshire__clic__vsx__clicintx_t clicint[256];
+    uint8_t RESERVED_1400_7fff[0x6c00];
+} cheshire__clic__vsx__stride8000_t;
 
 // Reg - cheshire.clic._end
 #define CHESHIRE__CLIC___END___END_bm 0xffffffff
@@ -968,8 +1243,12 @@ typedef union {
 
 // Addrmap - cheshire.clic
 typedef struct __attribute__ ((__packed__)) {
-    cheshire__clic__status_t status;
-    uint8_t RESERVED_4_3fffb[0x3fff8];
+    cheshire__clic__m_t m;
+    uint8_t RESERVED_1400_7fff[0x6c00];
+    cheshire__clic__s_t s;
+    uint8_t RESERVED_e040_ffff[0x1fc0];
+    cheshire__clic__vsx__stride8000_t vs[4];
+    uint8_t RESERVED_30000_3fffb[0xfffc];
     cheshire__clic___end_t _end;
 } cheshire__clic_t;
 
