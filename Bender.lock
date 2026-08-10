@@ -1,6 +1,6 @@
 packages:
   apb:
-    revision: 6a2bd0fe9f0822322104ac602fac5739fb063aa0
+    revision: 6ae8bf8d5eab5dc70d032231c01ab95e1c5774b9
     version: null
     source:
       Git: https://github.com/pulp-platform/apb.git
@@ -101,7 +101,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 1701c8f5c1fc89248ad1ddb879ae9aab01705e40
+    revision: cbd8fd5ef7af1f941a3788516189e3f88cf42d14
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
