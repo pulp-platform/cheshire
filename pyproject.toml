@@ -25,3 +25,6 @@ dependencies = [
 
 [tool.uv]
 package = false
+
+[tool.uv.sources]
+peakrdl-rawheader = { git = "https://github.com/pulp-platform/PeakRDL-rawheader", branch = "fischeti/ldh-no-registers" }
