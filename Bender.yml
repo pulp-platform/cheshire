@@ -53,6 +53,7 @@ sources:
       - target/sim/models/24FC1025.v
       - target/sim/src/vip_cheshire_soc.sv
       - target/sim/src/tb_cheshire_pkg.sv
+      - target/sim/src/vga_capture.sv
       - target/sim/src/fixture_cheshire_soc.sv
       - target/sim/src/tb_cheshire_soc.sv
 

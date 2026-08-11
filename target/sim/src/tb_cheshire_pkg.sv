@@ -34,6 +34,19 @@ package tb_cheshire_pkg;
       return ret;
     endfunction
 
+    // VGA 640x480 simulation mode
+    localparam int unsigned VgaFrameWidth      = 32;
+    localparam int unsigned VgaFrameHeight     = 16;
+    localparam int unsigned VgaClkDiv          = 2;
+    localparam int unsigned VgaHoriFrontPorch  = 16;
+    localparam int unsigned VgaHoriSyncSize    = 96;
+    localparam int unsigned VgaHoriBackPorch   = 48;
+    localparam int unsigned VgaVertFrontPorch  = 10;
+    localparam int unsigned VgaVertSyncSize    = 2;
+    localparam int unsigned VgaVertBackPorch   = 33;
+    localparam bit VgaHsyncPol                 = 1'b1;
+    localparam bit VgaVsyncPol                 = 1'b1;
+
     // Number of Cheshire configurations
     localparam int unsigned NumCheshireConfigs = 32'd4;
 

@@ -1686,11 +1686,11 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     if (Cfg.BusErr) begin : gen_vga_bus_err
       axi_err_unit_wrap #(
-        .AddrWidth          ( Cfg.AddrWidth     ),
-        .IdWidth            ( Cfg.AxiMstIdWidth ),
-        .UserErrBits        ( Cfg.AxiUserErrBits ),
-        .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
-        .NumOutstanding     ( Cfg.CoreMaxTxns ),
+        .AddrWidth          ( Cfg.AddrWidth       ),
+        .IdWidth            ( Cfg.AxiMstIdWidth   ),
+        .UserErrBits        ( Cfg.AxiUserErrBits  ),
+        .UserErrBitsOffset  ( Cfg.AxiUserErrLsb   ),
+        .NumOutstanding     ( Cfg.VgaMaxReadTxns  ),
         .NumStoredErrors    ( 4 ),
         .DropOldest         ( 1'b0 ),
         .axi_req_t          ( axi_mst_req_t ),
@@ -1708,6 +1708,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .reg_rsp_o  ( reg_out_rsp[RegOut.bus_err[RegBusErrVga]] )
       );
     end
+
 
   end else begin : gen_no_vga
 

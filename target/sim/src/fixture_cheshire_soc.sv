@@ -63,6 +63,13 @@ module fixture_cheshire_soc #(
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o;
 
+  logic                         vga_hsync;
+  logic                         vga_vsync;
+
+  logic [DutCfg.VgaRedWidth-1:0]   vga_red;
+  logic [DutCfg.VgaGreenWidth-1:0] vga_green;
+  logic [DutCfg.VgaBlueWidth-1:0]  vga_blue;
+
   cheshire_soc #(
     .Cfg                ( DutCfg ),
     .ExtHartinfo        ( '0 ),
@@ -130,11 +137,11 @@ module fixture_cheshire_soc #(
     .slink_rcv_clk_o    ( slink_rcv_clk_o ),
     .slink_i            ( slink_i ),
     .slink_o            ( slink_o ),
-    .vga_hsync_o        ( ),
-    .vga_vsync_o        ( ),
-    .vga_red_o          ( ),
-    .vga_green_o        ( ),
-    .vga_blue_o         ( ),
+    .vga_hsync_o        ( vga_hsync ),
+    .vga_vsync_o        ( vga_vsync ),
+    .vga_red_o          ( vga_red   ),
+    .vga_green_o        ( vga_green ),
+    .vga_blue_o         ( vga_blue  ),
     .usb_clk_i          ( 1'b0 ),
     .usb_rst_ni         ( 1'b1 ),
     .usb_dm_i           ( '0 ),
@@ -143,6 +150,28 @@ module fixture_cheshire_soc #(
     .usb_dp_i           ( '0 ),
     .usb_dp_o           ( ),
     .usb_dp_oe_o        ( )
+  );
+
+
+  vga_capture #(
+    .RedWidth      ( DutCfg.VgaRedWidth        ),
+    .GreenWidth    ( DutCfg.VgaGreenWidth      ),
+    .BlueWidth     ( DutCfg.VgaBlueWidth       ),
+    .FrameWidth    ( VgaFrameWidth          ),
+    .FrameHeight   ( VgaFrameHeight         ),
+    .ClkDiv        ( VgaClkDiv              ),
+    .HoriBackPorch ( VgaHoriBackPorch       ),
+    .VertBackPorch ( VgaVertBackPorch       ),
+    .HsyncPol      ( VgaHsyncPol            ),
+    .VsyncPol      ( VgaVsyncPol            )
+  ) i_vga_capture (
+    .clk_i   ( clk       ),
+    .rst_ni  ( rst_n     ),
+    .hsync_i ( vga_hsync ),
+    .vsync_i ( vga_vsync ),
+    .red_i   ( vga_red   ),
+    .green_i ( vga_green ),
+    .blue_i  ( vga_blue  )
   );
 
   ////////////////////////
