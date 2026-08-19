@@ -133,6 +133,10 @@ $(AXI_VGA_ROOT)/.generated:
 
 # iDMA
 include $(IDMA_ROOT)/idma.mk
+# `idma.mk` lists the `desc64` register outputs as an ungrouped multi-target rule, which make
+# runs once per target; serialize generation so the copies cannot clobber each other.
+$(IDMA_ROOT)/.generated:
+	flock -x $@ $(MAKE) -j1 $(IDMA_FULL_RTL) && touch $@
 
 # LLC partitioning configuration
 # `CHS_LLC_PARTITION == 1` will generate LLC partitioning specific registers.
@@ -150,7 +154,7 @@ $(CHS_TAGGER_DIR)/.generated:
 	$(MAKE) -C $(CHS_TAGGER_DIR) REGWIDTH=32 MAXPARTITION=$(CHS_LLC_MAXPARTITIONS) PATID_LEN=5 regs
 	@touch $@
 
-CHS_HW_ALL += $(IDMA_FULL_RTL)
+CHS_HW_ALL += $(IDMA_ROOT)/.generated
 CHS_HW_ALL += $(CHS_ROOT)/hw/cheshire_addrmap_pkg.sv
 CHS_HW_ALL += $(CHS_ROOT)/hw/regs/cheshire_soc_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_soc_regs.sv
 CHS_HW_ALL += $(CLINTROOT)/.generated
