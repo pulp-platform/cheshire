@@ -48,14 +48,14 @@ void axi_vga_set_framebuffer(
 // -----------------------------------------------------------------------------
 
 void axi_vga_show_image(
-    volatile uint16_t *framebuffer,
+    volatile uint32_t *framebuffer,
     const uint16_t *image,
     uint32_t width,
     uint32_t height
 );
 
 void axi_vga_play_frames(
-    volatile uint16_t *framebuffer,
+    volatile uint32_t *framebuffer,
     const uint16_t *const images[],
     uint32_t number_of_images,
     uint32_t width,

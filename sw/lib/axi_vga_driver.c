@@ -127,7 +127,7 @@ void axi_vga_init(
 
 // Display one RGB565 image
 void axi_vga_show_image(
-    volatile uint16_t *framebuffer,
+    volatile uint32_t *framebuffer,   // <-- war uint16_t*
     const uint16_t *image,
     uint32_t width,
     uint32_t height
@@ -142,24 +142,20 @@ void axi_vga_show_image(
 
         uint64_t data = src[i];
 
-        framebuffer[i * 4 + 0] =
-            (uint16_t)(data >> 0);
+        // Pixel 0 (low 16 bit) + Pixel 1 (high 16 bit) -> ein 32-Bit-Write
+        framebuffer[i * 2 + 0] =
+            (uint32_t)(data & 0xFFFFFFFFu);
 
-        framebuffer[i * 4 + 1] =
-            (uint16_t)(data >> 16);
-
-        framebuffer[i * 4 + 2] =
-            (uint16_t)(data >> 32);
-
-        framebuffer[i * 4 + 3] =
-            (uint16_t)(data >> 48);
+        // Pixel 2 (low 16 bit) + Pixel 3 (high 16 bit) -> ein 32-Bit-Write
+        framebuffer[i * 2 + 1] =
+            (uint32_t)(data >> 32);
     }
 }
 
 
 // Display N RGB565 images sequentially
 void axi_vga_play_frames(
-    volatile uint16_t *framebuffer,
+    volatile uint32_t *framebuffer,   // <-- war uint16_t*
     const uint16_t *const images[],
     uint32_t number_of_images,
     uint32_t width,

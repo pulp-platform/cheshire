@@ -18,6 +18,7 @@
 
 // Put the framebuffer 16 KiB after the beginning of SPM.
 #define VGA_FB_SPM_OFFSET 0x4000
+#define VGA_FB_DRAM_OFFSET 0x400000UL
 //Use uncached SPM memory
 #define VGA_UNCACHED_SPM_BASE 0x14000000UL
 
@@ -67,8 +68,8 @@ int main(void)
         VGA_UNCACHED_SPM_BASE +
         VGA_FB_SPM_OFFSET;
 
-    volatile uint16_t *framebuffer =
-        (volatile uint16_t *)framebuffer_addr;
+    volatile uint32_t *framebuffer =
+        (volatile uint32_t *)framebuffer_addr;
 
 
     axi_vga_show_image(
@@ -98,7 +99,7 @@ int main(void)
             ETHZ_NUM_FRAMES,
             vga_config.width,
             vga_config.height,
-            100
+            3000
         );
     }
 

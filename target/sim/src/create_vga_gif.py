@@ -23,7 +23,7 @@ frames[0].save(
     "vga.gif",
     save_all=True,
     append_images=frames[1:],
-    duration=33,   # ca. 30 FPS
+    duration=100,   # ca. 30 FPS
     loop=0
 )
 
