@@ -81,8 +81,6 @@ $(eval $(call chs_sw_gen_hdr_rule,axi_vga,$(AXI_VGA_ROOT)/data/axi_vga.hjson $(A
 $(eval $(call chs_sw_gen_hdr_rule,axi_llc,$(CHS_LLC_DIR)/data/axi_llc_regs.hjson))
 $(eval $(call chs_sw_gen_hdr_rule,axi_rt,$(AXIRTROOT)/src/regs/axi_rt.hjson $(AXIRTROOT)/.generated))
 
-# iDMA ships SystemRDL: generate its C header with PeakRDL like Cheshire's own regs
-# (params select the reg64_2d frontend instantiated by Cheshire)
 .PRECIOUS: $(CHS_SW_DIR)/include/regs/idma.h
 CHS_SW_GEN_HDRS += $(CHS_SW_DIR)/include/regs/idma.h
 
