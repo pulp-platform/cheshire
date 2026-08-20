@@ -176,4 +176,4 @@ typedef enum logic [1:0] {
     I2C_24XX1025 = 2'd3
 } BootMode_e;
 
-endpackage;
+endpackage
