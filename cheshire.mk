@@ -133,8 +133,6 @@ $(AXI_VGA_ROOT)/.generated:
 
 # iDMA
 include $(IDMA_ROOT)/idma.mk
-# `idma.mk` lists the `desc64` register outputs as an ungrouped multi-target rule, which make
-# runs once per target; serialize generation so the copies cannot clobber each other.
 $(IDMA_ROOT)/.generated:
 	flock -x $@ $(MAKE) -j1 $(IDMA_FULL_RTL) && touch $@
 
