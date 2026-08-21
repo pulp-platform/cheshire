@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 // Number of cores
-#define CLINT_PARAM_NUM_CORES 19
+#define CLINT_PARAM_NUM_CORES 28
 
 // Register width
 #define CLINT_PARAM_REG_WIDTH 32
@@ -172,6 +172,78 @@ extern "C" {
 #define CLINT_MSIP_18_RSVD_18_FIELD \
   ((bitfield_field32_t) { .mask = CLINT_MSIP_18_RSVD_18_MASK, .index = CLINT_MSIP_18_RSVD_18_OFFSET })
 
+// Machine Software Interrupt Pending
+#define CLINT_MSIP_19_REG_OFFSET 0x4c
+#define CLINT_MSIP_19_P_19_BIT 0
+#define CLINT_MSIP_19_RSVD_19_MASK 0x7fffffff
+#define CLINT_MSIP_19_RSVD_19_OFFSET 1
+#define CLINT_MSIP_19_RSVD_19_FIELD \
+  ((bitfield_field32_t) { .mask = CLINT_MSIP_19_RSVD_19_MASK, .index = CLINT_MSIP_19_RSVD_19_OFFSET })
+
+// Machine Software Interrupt Pending
+#define CLINT_MSIP_20_REG_OFFSET 0x50
+#define CLINT_MSIP_20_P_20_BIT 0
+#define CLINT_MSIP_20_RSVD_20_MASK 0x7fffffff
+#define CLINT_MSIP_20_RSVD_20_OFFSET 1
+#define CLINT_MSIP_20_RSVD_20_FIELD \
+  ((bitfield_field32_t) { .mask = CLINT_MSIP_20_RSVD_20_MASK, .index = CLINT_MSIP_20_RSVD_20_OFFSET })
+
+// Machine Software Interrupt Pending
+#define CLINT_MSIP_21_REG_OFFSET 0x54
+#define CLINT_MSIP_21_P_21_BIT 0
+#define CLINT_MSIP_21_RSVD_21_MASK 0x7fffffff
+#define CLINT_MSIP_21_RSVD_21_OFFSET 1
+#define CLINT_MSIP_21_RSVD_21_FIELD \
+  ((bitfield_field32_t) { .mask = CLINT_MSIP_21_RSVD_21_MASK, .index = CLINT_MSIP_21_RSVD_21_OFFSET })
+
+// Machine Software Interrupt Pending
+#define CLINT_MSIP_22_REG_OFFSET 0x58
+#define CLINT_MSIP_22_P_22_BIT 0
+#define CLINT_MSIP_22_RSVD_22_MASK 0x7fffffff
+#define CLINT_MSIP_22_RSVD_22_OFFSET 1
+#define CLINT_MSIP_22_RSVD_22_FIELD \
+  ((bitfield_field32_t) { .mask = CLINT_MSIP_22_RSVD_22_MASK, .index = CLINT_MSIP_22_RSVD_22_OFFSET })
+
+// Machine Software Interrupt Pending
+#define CLINT_MSIP_23_REG_OFFSET 0x5c
+#define CLINT_MSIP_23_P_23_BIT 0
+#define CLINT_MSIP_23_RSVD_23_MASK 0x7fffffff
+#define CLINT_MSIP_23_RSVD_23_OFFSET 1
+#define CLINT_MSIP_23_RSVD_23_FIELD \
+  ((bitfield_field32_t) { .mask = CLINT_MSIP_23_RSVD_23_MASK, .index = CLINT_MSIP_23_RSVD_23_OFFSET })
+
+// Machine Software Interrupt Pending
+#define CLINT_MSIP_24_REG_OFFSET 0x60
+#define CLINT_MSIP_24_P_24_BIT 0
+#define CLINT_MSIP_24_RSVD_24_MASK 0x7fffffff
+#define CLINT_MSIP_24_RSVD_24_OFFSET 1
+#define CLINT_MSIP_24_RSVD_24_FIELD \
+  ((bitfield_field32_t) { .mask = CLINT_MSIP_24_RSVD_24_MASK, .index = CLINT_MSIP_24_RSVD_24_OFFSET })
+
+// Machine Software Interrupt Pending
+#define CLINT_MSIP_25_REG_OFFSET 0x64
+#define CLINT_MSIP_25_P_25_BIT 0
+#define CLINT_MSIP_25_RSVD_25_MASK 0x7fffffff
+#define CLINT_MSIP_25_RSVD_25_OFFSET 1
+#define CLINT_MSIP_25_RSVD_25_FIELD \
+  ((bitfield_field32_t) { .mask = CLINT_MSIP_25_RSVD_25_MASK, .index = CLINT_MSIP_25_RSVD_25_OFFSET })
+
+// Machine Software Interrupt Pending
+#define CLINT_MSIP_26_REG_OFFSET 0x68
+#define CLINT_MSIP_26_P_26_BIT 0
+#define CLINT_MSIP_26_RSVD_26_MASK 0x7fffffff
+#define CLINT_MSIP_26_RSVD_26_OFFSET 1
+#define CLINT_MSIP_26_RSVD_26_FIELD \
+  ((bitfield_field32_t) { .mask = CLINT_MSIP_26_RSVD_26_MASK, .index = CLINT_MSIP_26_RSVD_26_OFFSET })
+
+// Machine Software Interrupt Pending
+#define CLINT_MSIP_27_REG_OFFSET 0x6c
+#define CLINT_MSIP_27_P_27_BIT 0
+#define CLINT_MSIP_27_RSVD_27_MASK 0x7fffffff
+#define CLINT_MSIP_27_RSVD_27_OFFSET 1
+#define CLINT_MSIP_27_RSVD_27_FIELD \
+  ((bitfield_field32_t) { .mask = CLINT_MSIP_27_RSVD_27_MASK, .index = CLINT_MSIP_27_RSVD_27_OFFSET })
+
 // Machine Timer Compare
 #define CLINT_MTIMECMP_LOW0_REG_OFFSET 0x4000
 
@@ -285,6 +357,60 @@ extern "C" {
 
 // Machine Timer Compare
 #define CLINT_MTIMECMP_HIGH18_REG_OFFSET 0x4094
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_LOW19_REG_OFFSET 0x4098
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_HIGH19_REG_OFFSET 0x409c
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_LOW20_REG_OFFSET 0x40a0
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_HIGH20_REG_OFFSET 0x40a4
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_LOW21_REG_OFFSET 0x40a8
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_HIGH21_REG_OFFSET 0x40ac
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_LOW22_REG_OFFSET 0x40b0
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_HIGH22_REG_OFFSET 0x40b4
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_LOW23_REG_OFFSET 0x40b8
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_HIGH23_REG_OFFSET 0x40bc
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_LOW24_REG_OFFSET 0x40c0
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_HIGH24_REG_OFFSET 0x40c4
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_LOW25_REG_OFFSET 0x40c8
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_HIGH25_REG_OFFSET 0x40cc
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_LOW26_REG_OFFSET 0x40d0
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_HIGH26_REG_OFFSET 0x40d4
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_LOW27_REG_OFFSET 0x40d8
+
+// Machine Timer Compare
+#define CLINT_MTIMECMP_HIGH27_REG_OFFSET 0x40dc
 
 // Timer Register Low
 #define CLINT_MTIME_LOW_REG_OFFSET 0xbff8
