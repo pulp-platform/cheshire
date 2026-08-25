@@ -120,7 +120,6 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   localparam int unsigned RiscvWordWidth = riscv::XLEN;
 
-
   //////////////////
   //  Interrupts  //
   //////////////////

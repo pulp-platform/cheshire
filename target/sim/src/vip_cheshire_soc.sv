@@ -404,11 +404,16 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     // Repoint execution
     jtag_write(dm::Data1, entry[63:32]);
     jtag_write(dm::Data0, entry[31:0]);
-    if (riscv::XLEN == 64) begin
-      jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
-    end else begin
-      jtag_write(dm::Command, 32'h0023_07b1, 0, 1);
-    end
+    jtag_write(dm::Command, {
+      8'h0,                                     // cmdtype: access register
+      1'b0,                                     // reserved
+      (riscv::XLEN == 64 ? 3'h3 : 3'h2),        // aarsize: 64-bit or 32-bit
+      1'b0,                                     // aarpostincrement
+      1'b0,                                     // postexec
+      1'b1,                                     // transfer
+      1'b1,                                     // write
+      16'h07b1                                  // regno: dpc
+    }, 0, 1);
     // Resume hart 0
     jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
     $display("[JTAG] Resumed hart 0 from 0x%h", entry);
@@ -543,7 +548,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
         uart_boot_eoc = 1;
       end else begin
         uart_read_buf.push_back(bite);
-        $display("Read Byte: %s", bite);
       end
     end
   end
