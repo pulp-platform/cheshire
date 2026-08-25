@@ -7,72 +7,37 @@
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 # Override this as needed
-
 CHS_XLEN ?= 64
 
-ifeq (${CHS_XLEN}, 64)
-
-CHS_SW_64_GCC_BINROOT ?= $(dir $(shell which riscv64-unknown-elf-gcc))
-CHS_SW_64_DTC     ?= dtc
-
-CHS_SW_64_AR      := $(CHS_SW_64_GCC_BINROOT)/riscv64-unknown-elf-ar
-CHS_SW_64_CC      := $(CHS_SW_64_GCC_BINROOT)/riscv64-unknown-elf-gcc
-CHS_SW_64_OBJCOPY := $(CHS_SW_64_GCC_BINROOT)/riscv64-unknown-elf-objcopy
-CHS_SW_64_OBJDUMP := $(CHS_SW_64_GCC_BINROOT)/riscv64-unknown-elf-objdump
-CHS_SW_64_LTOPLUG := $(shell find $(shell dirname $(CHS_SW_64_GCC_BINROOT))/libexec/gcc/riscv64-unknown-elf/**/liblto_plugin.so)
-
-CHS_SW_64_FLAGS   ?= -DOT_PLATFORM_RV32 -march=rv64gc_zifencei -mabi=lp64d
-
-endif
-ifeq (${CHS_XLEN}, 32)
-
-CHS_SW_32_GCC_BINROOT ?= $(dir $(shell which riscv32-unknown-elf-gcc))
-CHS_SW_32_DTC     ?= dtc
-
-CHS_SW_32_AR      := $(CHS_SW_32_GCC_BINROOT)/riscv32-unknown-elf-ar
-CHS_SW_32_CC      := $(CHS_SW_32_GCC_BINROOT)/riscv32-unknown-elf-gcc
-CHS_SW_32_OBJCOPY := $(CHS_SW_32_GCC_BINROOT)/riscv32-unknown-elf-objcopy
-CHS_SW_32_OBJDUMP := $(CHS_SW_32_GCC_BINROOT)/riscv32-unknown-elf-objdump
-CHS_SW_32_LTOPLUG := $(shell find $(shell dirname $(CHS_SW_32_GCC_BINROOT))/libexec/gcc/riscv32-unknown-elf/**/liblto_plugin.so)
-
-CHS_SW_32_FLAGS ?= -DOT_PLATFORM_RV32 -march=rv32imc -mabi=ilp32
-
+# Toolchain triple and ISA/ABI for the selected XLEN. Set CHS_SW_GCC_TRIPLE to
+# riscv64-unknown-elf to build 32-bit SW with a multilib 64-bit toolchain.
+ifeq ($(CHS_XLEN),32)
+CHS_SW_GCC_TRIPLE ?= riscv32-unknown-elf
+CHS_SW_MARCH      ?= rv32imc_zicsr_zifencei
+CHS_SW_MABI       ?= ilp32
+else
+CHS_SW_GCC_TRIPLE ?= riscv64-unknown-elf
+CHS_SW_MARCH      ?= rv64gc_zifencei
+CHS_SW_MABI       ?= lp64d
 endif
 
-ifeq (${CHS_XLEN}, 64)
+CHS_SW_GCC_BINROOT ?= $(dir $(shell which $(CHS_SW_GCC_TRIPLE)-gcc))
+CHS_SW_DTC     ?= dtc
 
-CHS_SW_AR      := ${CHS_SW_64_AR}
-CHS_SW_CC      := ${CHS_SW_64_CC}
-CHS_SW_OBJCOPY := ${CHS_SW_64_OBJCOPY}
-CHS_SW_OBJDUMP := ${CHS_SW_64_OBJDUMP}
-CHS_SW_LTOPLUG := ${CHS_SW_64_LTOPLUG}
-
-CHS_SW_FLAGS := ${CHS_SW_64_FLAGS}
-
-endif
-
-ifeq (${CHS_XLEN}, 32)
-
-CHS_SW_AR      := ${CHS_SW_32_AR}
-CHS_SW_CC      := ${CHS_SW_32_CC}
-CHS_SW_OBJCOPY := ${CHS_SW_32_OBJCOPY}
-CHS_SW_OBJDUMP := ${CHS_SW_32_OBJDUMP}
-CHS_SW_LTOPLUG := ${CHS_SW_32_LTOPLUG}
-
-CHS_SW_FLAGS := ${CHS_SW_32_FLAGS}
-endif
+CHS_SW_AR      := $(CHS_SW_GCC_BINROOT)/$(CHS_SW_GCC_TRIPLE)-ar
+CHS_SW_CC      := $(CHS_SW_GCC_BINROOT)/$(CHS_SW_GCC_TRIPLE)-gcc
+CHS_SW_OBJCOPY := $(CHS_SW_GCC_BINROOT)/$(CHS_SW_GCC_TRIPLE)-objcopy
+CHS_SW_OBJDUMP := $(CHS_SW_GCC_BINROOT)/$(CHS_SW_GCC_TRIPLE)-objdump
+CHS_SW_LTOPLUG := $(shell find $(shell dirname $(CHS_SW_GCC_BINROOT))/libexec/gcc/$(CHS_SW_GCC_TRIPLE)/**/liblto_plugin.so)
 
 CHS_SW_DIR       ?= $(CHS_ROOT)/sw
-
 CHS_SW_LD_DIR    ?= $(CHS_SW_DIR)/link
-
 CHS_SW_ZSL_TGUID := 0269B26A-FD95-4CE4-98CF-941401412C62
 CHS_SW_DTB_TGUID := BA442F61-2AEF-42DE-9233-E4D75D3ACB9D
 CHS_SW_FW_TGUID  := 99EC86DA-3F5B-4B0D-8F4B-C4BACFA5F859
 CHS_SW_DISK_SIZE ?= 16M
 
-CHS_SW_FLAGS += -mstrict-align  -O2 -Wall -Wextra -static -ffunction-sections -fdata-sections -frandom-seed=cheshire -fuse-linker-plugin -flto -Wl,-flto
-
+CHS_SW_FLAGS   ?= -DOT_PLATFORM_RV32 -march=$(CHS_SW_MARCH) -mabi=$(CHS_SW_MABI) -mstrict-align -O2 -Wall -Wextra -static -ffunction-sections -fdata-sections -frandom-seed=cheshire -fuse-linker-plugin -flto -Wl,-flto
 CHS_SW_CCFLAGS ?= $(CHS_SW_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
 CHS_SW_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_SW_LD_DIR)
 CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
@@ -102,15 +67,7 @@ CHS_SW_DEPS_SRCS += $(wildcard $(OTPROOT)/sw/device/lib/dif/autogen/*.c)
 #############
 
 CHS_SW_INCLUDES   ?= -I$(CHS_SW_DIR)/include $(CHS_SW_DEPS_INCS)
-CHS_SW_LIB_SRCS_S  = $(wildcard $(CHS_SW_DIR)/lib/*.S)
-
-ifeq (${CHS_XLEN}, 64)
-CHS_SW_LIB_SRCS_S  += $(wildcard $(CHS_SW_DIR)/lib/64/*.S)
-endif
-ifeq (${CHS_XLEN}, 32)
-CHS_SW_LIB_SRCS_S  += $(wildcard $(CHS_SW_DIR)/lib/32/*.S)
-endif
-
+CHS_SW_LIB_SRCS_S  = $(wildcard $(CHS_SW_DIR)/lib/*.S $(CHS_SW_DIR)/lib/**/*.S)
 CHS_SW_LIB_SRCS_C  = $(wildcard $(CHS_SW_DIR)/lib/*.c $(CHS_SW_DIR)/lib/**/*.c)
 CHS_SW_LIB_SRCS_O  = $(CHS_SW_DEPS_SRCS:.c=.o) $(CHS_SW_LIB_SRCS_S:.S=.o) $(CHS_SW_LIB_SRCS_C:.c=.o)
 
