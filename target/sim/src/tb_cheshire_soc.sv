@@ -15,7 +15,7 @@ module tb_cheshire_soc #(
   string        preload_elf;
   string        boot_hex;
   logic [1:0]   boot_mode;
-  logic [2:0]   preload_mode; //0: JTAG, 1: Serial Link, 2: UART, 3: MEM (simulation debug), 4: JTAG execute trigger debug-mode entry test
+  logic [2:0]   preload_mode; // 0: JTAG, 1: Serial Link, 2: UART, 3: MEM, 4: haltreq debug entry, 5: WFI wake-up
   bit   [31:0]  exit_code;
   bit           openocd_mode;
 
@@ -61,13 +61,17 @@ module tb_cheshire_soc #(
         end 3 : begin // MEM for simulation debug
           fix.vip.memory_elf_run(preload_elf);
           fix.vip.slink_wait_for_eoc(exit_code);
-        //YIZHEN
         end 4: begin  // JTAG haltreq debug-mode entry test
           fix.vip.jtag_init();
           fix.vip.jtag_haltreq_debug_entry_test(preload_elf);
           fix.vip.jtag_wait_for_eoc(exit_code);
-        //YIZHEN
-        end default: begin
+        end 5: begin  // JTAG haltreq wakes hart waiting in WFI
+          fix.vip.jtag_init();
+          fix.vip.jtag_wfi_wakeup_test();
+          fix.vip.jtag_elf_run(preload_elf);
+          fix.vip.jtag_wait_for_eoc(exit_code);
+        end
+        default: begin
           $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);
         end
       endcase
