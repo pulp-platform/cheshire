@@ -175,8 +175,7 @@ $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv: $(CHS_ROOT)/hw/bootrom/cheshire_boot
 
 CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.dump
 
-.PHONY: chs_bootrom_clean
-
+CHS_PHONY += chs_bootrom_clean
 chs_bootrom_clean:
 	rm -f $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv
 	rm -f $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.elf
@@ -240,7 +239,7 @@ CHS_ALL += $(CHS_SW_ALL) $(CHS_HW_ALL) $(CHS_SIM_ALL)
 chs-all:         $(CHS_ALL)
 chs-sw-all:      $(CHS_SW_ALL)
 chs-hw-all:      $(CHS_HW_ALL)
-chs-bootrom-all: chs_bootrom_clean $(CHS_BOOTROM_ALL)
+chs-bootrom-all: $(CHS_BOOTROM_ALL)
 chs-sim-all:     $(CHS_SIM_ALL)
 chs-dramsys-all: $(CHS_DRAMSYS_ALL)
 chs-xilinx-all:  $(CHS_XILINX_ALL)

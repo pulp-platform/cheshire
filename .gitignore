@@ -54,9 +54,6 @@ target/xilinx/out
 target/xilinx/scripts/add_sources.*
 vivado*
 
-# Bender lock
-Bender.lock
-
 # Emacs undo-tree files
 *undo-tree*
 
