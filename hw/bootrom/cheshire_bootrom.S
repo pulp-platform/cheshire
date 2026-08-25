@@ -113,7 +113,7 @@ boot_next_stage:
     // Non-SMP hart: Write boot address into global scratch registers
     la t0, __regs_base_addr__
     sw a0, 16(t0)   // regs.SCRATCH[4]
-#if XLEN==64
+#if __riscv_xlen == 64
     srli a0, a0, 32
     sw a0, 20(t0)   // regs.SCRATCH[5]
 #endif
@@ -122,13 +122,13 @@ boot_next_stage:
     smp_resume(t0, t1, t2)
     // Load boot address from global scratch registers
     la t0, __regs_base_addr__
-#if XLEN==64
+#if __riscv_xlen == 64
     lwu t1, 20(t0)  // regs.SCRATCH[5]
     slli t1, t1, 32
-#endif
     lwu t0, 16(t0)  // regs.SCRATCH[4]
-#if XLEN==64
     or t0, t0, t1
+#else
+    lw t0, 16(t0)   // regs.SCRATCH[4]
 #endif
     // Store hartid to a0
     csrr a0, mhartid
