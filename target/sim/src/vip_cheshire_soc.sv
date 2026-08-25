@@ -295,7 +295,98 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     $display("[JTAG] Initialization success");
   endtask
 
-  //YIZHEN
+  // Perform 32-bit System Bus Access (SBA) transactions to the SoC address
+  // space.  Despite the historic "reg32" name, these tasks access a memory-
+  // mapped address, not a hart GPR or CSR.
+  task automatic jtag_read_sba(
+    input  doub_bt     addr,
+    output word_bt     data,
+    input  int unsigned idle_cycles = 20
+  );
+    automatic dm::sbcs_t sbcs = dm::sbcs_t'{sbreadonaddr: 1'b1, sbaccess: 3'd2, default: '0};
+
+    jtag_write(dm::SBCS, sbcs, 0, 1);
+    jtag_write(dm::SBAddress1, addr[63:32]);
+    jtag_write(dm::SBAddress0, addr[31:0]);
+    jtag_dbg.wait_idle(idle_cycles);
+    jtag_dbg.read_dmi_exp_backoff(dm::SBData0, data);
+    $display("[JTAG] Read 0x%h from 0x%h", data, addr);
+  endtask
+
+  task automatic jtag_write_sba(
+    input doub_bt     addr,
+    input word_bt     data,
+    input bit         check_write,
+    input int unsigned check_write_wait_cycles = 20
+  );
+    automatic dm::sbcs_t sbcs = dm::sbcs_t'{sbaccess: 3'd2, default: '0};
+
+    $display("[JTAG] Writing 0x%h to 0x%h", data, addr);
+    jtag_write(dm::SBCS, sbcs, 0, 1);
+    jtag_write(dm::SBAddress1, addr[63:32]);
+    jtag_write(dm::SBAddress0, addr[31:0]);
+    jtag_write(dm::SBData0, data, 0, 1);
+    jtag_dbg.wait_idle(check_write_wait_cycles);
+    if (check_write) begin
+      word_bt rdata;
+      jtag_read_sba(addr, rdata);
+      if (rdata != data) $fatal(1, "[JTAG] Read back incorrect data 0x%h!", rdata);
+      else $display("[JTAG] Read back correct data");
+    end
+  endtask
+
+  // Load a 64-bit-aligned ELF section through the JTAG System Bus Access port.
+  task automatic jtag_load_section(
+    input longint addr,
+    input byte     data[],
+    input longint len
+  );
+    jtag_write(dm::SBCS, JtagInitSbcs, 1, 1);
+    jtag_write(dm::SBAddress1, addr[63:32]);
+    jtag_write(dm::SBAddress0, addr[31:0]);
+    for (longint i = 0; i <= len; i += 8) begin
+      bit checkpoint = (i != 0 && i % 512 == 0);
+      if (checkpoint)
+        $display("[JTAG] - %0d/%0d bytes (%0d%%)", i, len, i*100/(len > 1 ? len-1 : 1));
+      jtag_write(dm::SBData1, {data[i+7], data[i+6], data[i+5], data[i+4]});
+      jtag_write(dm::SBData0, {data[i+3], data[i+2], data[i+1], data[i]}, checkpoint, checkpoint);
+    end
+  endtask
+
+  // Wait for boot-ROM LLC setup, then halt hart 0 for JTAG loading.
+  task automatic jtag_wait_for_llc_config_halt();
+    dm::dmstatus_t status;
+
+    if (DutCfg.LlcNotBypass) begin
+      word_bt regval;
+      $display("[JTAG] Wait for LLC configuration");
+      jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
+    end
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1'b1, dmactive: 1'b1, default: '0});
+    do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
+    while (~status.allhalted);
+    $display("[JTAG] Halted hart 0");
+  endtask
+
+  // Halt hart 0 and load an ELF, leaving the hart halted at return.
+  task automatic jtag_elf_halt_load(input string binary, output doub_bt entry);
+    jtag_wait_for_llc_config_halt();
+    jtag_elf_preload(binary, entry);
+  endtask
+
+  // Resume an ELF image already loaded by another mechanism.
+  task automatic jtag_elf_run_no_preload(input string binary);
+    doub_bt entry;
+
+    if (read_elf(binary)) $fatal(1, "[JTAG] Failed to open ELF: %s!", binary);
+    void'(get_entry(entry));
+    jtag_write(dm::Data1, entry[63:32]);
+    jtag_write(dm::Data0, entry[31:0]);
+    jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1'b1, dmactive: 1'b1, default: '0});
+    $display("[JTAG] Resumed hart 0 from 0x%h", entry);
+  endtask
+
   //////////////////////////
   //  JTAG Debug Helpers  //
   //////////////////////////
@@ -309,7 +400,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
   // Access Register abstract command:
   // cmdtype=0, aarsize=3 for RV64, transfer=1, write=wr, regno=CSR/GPR number.
-  function automatic word_bt jtag_abs_access_reg_cmd(
+  function automatic word_bt jtag_make_cmd(
     input bit          wr,
     input logic [15:0] regno
   );
@@ -319,27 +410,27 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
            word_bt'(regno);
   endfunction
 
-  task automatic jtag_read_csr64(
-    input  logic [15:0] csr,
+  task automatic jtag_read_reg64(
+    input  logic [15:0] regno,
     output doub_bt      value
   );
     word_bt lo;
     word_bt hi;
 
-    jtag_write(dm::Command, jtag_abs_access_reg_cmd(1'b0, csr), 1, 0);
+    jtag_write(dm::Command, jtag_make_cmd(1'b0, regno), 1, 0);
     jtag_dbg.read_dmi_exp_backoff(dm::Data0, lo);
     jtag_dbg.read_dmi_exp_backoff(dm::Data1, hi);
 
     value = {hi, lo};
   endtask
 
-  task automatic jtag_write_csr64(
-    input logic [15:0] csr,
+  task automatic jtag_write_reg64(
+    input logic [15:0] regno,
     input doub_bt      value
   );
     jtag_write(dm::Data0, value[31:0]);
     jtag_write(dm::Data1, value[63:32]);
-    jtag_write(dm::Command, jtag_abs_access_reg_cmd(1'b1, csr), 1, 0);
+    jtag_write(dm::Command, jtag_make_cmd(1'b1, regno), 1, 0);
   endtask
 
   task automatic jtag_wait_allhalted();
@@ -356,6 +447,55 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     do begin
       jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
     end while (~status.allresumeack);
+  endtask
+
+  // Verify that haltreq wakes a hart executing WFI and re-enters Debug Mode.
+  task automatic jtag_wfi_wakeup_test();
+    localparam word_bt WfiInsn             = 32'h1050_0073;
+    localparam word_bt JumpToWfiInsn       = 32'hffdff06f;
+    localparam int unsigned WfiEntryCycles = 32;
+
+    doub_bt wfi_addr;
+    doub_bt dcsr;
+    doub_bt dpc;
+
+    // Halt the boot hart before changing its DPC and test instructions.
+    jtag_wait_for_llc_config_halt();
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{dmactive: 1'b1, default: '0});
+
+    wfi_addr = DutCfg.LlcOutRegionStart;
+    $display("[JTAG-WFI] Install WFI loop at 0x%h", wfi_addr);
+    jtag_write_sba(wfi_addr,     WfiInsn,       1'b1);
+    jtag_write_sba(wfi_addr + 4, JumpToWfiInsn, 1'b1);
+
+    // Resume at the WFI loop. No interrupt is asserted in this test.
+    jtag_write_reg64(CsrDpc, wfi_addr);
+    jtag_read_reg64(CsrDpc, dpc);
+    if (dpc != wfi_addr) begin
+      $fatal(1, "[JTAG-WFI] DPC write failed. Expected 0x%h, got 0x%h", wfi_addr, dpc);
+    end
+    $display("[JTAG-WFI] DPC set to 0x%h", dpc);
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1'b1, dmactive: 1'b1, default: '0});
+    jtag_wait_allresumeack();
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{dmactive: 1'b1, default: '0});
+
+    // Allow the hart to retire dret and execute WFI before requesting halt.
+    repeat (WfiEntryCycles) @(posedge clk);
+
+    $display("[JTAG-WFI] Assert haltreq to wake WFI hart");
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1'b1, dmactive: 1'b1, default: '0});
+    jtag_wait_allhalted();
+    jtag_write(dm::DMControl, dm::dmcontrol_t'{dmactive: 1'b1, default: '0});
+    jtag_read_reg64(CsrDcsr, dcsr);
+    jtag_read_reg64(CsrDpc, dpc);
+    $display("[JTAG-WFI] Debug entry: dcsr=0x%h dpc=0x%h", dcsr, dpc);
+    if (dcsr[8:6] != DcsrCauseHaltreq) begin
+      $fatal(1,
+        "[JTAG-WFI] Wrong dcsr.cause after WFI wake-up. Expected haltreq cause=3, got %0d, dcsr=0x%h",
+        dcsr[8:6], dcsr);
+    end
+
+    $display("[JTAG-WFI] WFI wake-up test passed");
   endtask
 
   task automatic jtag_haltreq_debug_entry_test(input string binary);
@@ -386,12 +526,12 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
     // Set dpc = entry
     $display("[JTAG-DBG] Writing DPC");
-    jtag_write_csr64(CsrDpc, entry);
+    jtag_write_reg64(CsrDpc, entry);
     $display("[JTAG-DBG] DPC written");
 
     // Check dcsr and dpc
-    jtag_read_csr64(CsrDcsr, dcsr);
-    jtag_read_csr64(CsrDpc,  dpc);
+    jtag_read_reg64(CsrDcsr, dcsr);
+    jtag_read_reg64(CsrDpc,  dpc);
 
     $display("[JTAG-DBG] dcsr = 0x%h", dcsr);
     $display("[JTAG-DBG] dpc  = 0x%h", dpc);
@@ -417,7 +557,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
 
     $display("[JTAG-DBG] Resumed hart 0 from 0x%h", entry);
   endtask
-  //YIZHEN
+
 
   // Load a binary
   task automatic jtag_elf_preload(input string binary, output doub_bt entry);
