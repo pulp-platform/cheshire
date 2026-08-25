@@ -146,7 +146,7 @@ packages:
     - tech_cells_generic
   pulp-c910:
     revision: 36bb8d9921f4ac888e15bfa5bfe356717c76e8b3
-    version: null
+    version: 0.2.1
     source:
       Git: https://github.com/pulp-platform/pulp-c910.git
     dependencies:
