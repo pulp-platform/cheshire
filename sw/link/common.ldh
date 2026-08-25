@@ -24,4 +24,5 @@ SECTIONS {
 
   /* AXI-RT guard register (specific offset within AXI-RT region, not a named block) */
   __axirtgrd_base_addr__ = 0x020C1ffc;
+  __stack_start   = ORIGIN(spm) + LENGTH(spm);
 }
