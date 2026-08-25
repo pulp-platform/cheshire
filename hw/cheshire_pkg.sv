@@ -191,6 +191,7 @@ package cheshire_pkg;
     dw_bt   DmaMemSysDepth;
     aw_bt   DmaJobFifoDepth;
     bit     DmaRAWCouplingAvail;
+    bit     DmaEnableAxiCut;
     // Parameters for GPIO
     bit     GpioInputSyncs;
     // Parameters for AXI RT
@@ -635,6 +636,7 @@ package cheshire_pkg;
     DmaMemSysDepth      : 8,
     DmaJobFifoDepth     : 2,
     DmaRAWCouplingAvail : 1,
+    DmaEnableAxiCut     : 0,
     // GPIOs
     GpioInputSyncs    : 1,
     // AXI RT
