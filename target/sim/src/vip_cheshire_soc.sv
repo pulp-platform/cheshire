@@ -605,7 +605,6 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     // Repoint execution
     jtag_write(dm::Data1, entry[63:32]);
     jtag_write(dm::Data0, entry[31:0]);
-    //TODO:check if it is 0,1 or 1,0 for the 3rd and 4th argument
     jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
     // Resume hart 0
     jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
