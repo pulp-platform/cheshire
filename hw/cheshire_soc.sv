@@ -340,6 +340,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
     .RiscvWordWidth   ( 64 ),
     .NAxiCuts         ( Cfg.RegAmoNumCuts ),
+    .CutOupPopInpGnt  ( 1'b1 ),
     .axi_req_t        ( axi_slv_req_t ),
     .axi_rsp_t        ( axi_slv_rsp_t )
   ) i_reg_atomics (
