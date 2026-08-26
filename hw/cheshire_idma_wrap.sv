@@ -186,14 +186,14 @@ module cheshire_idma_wrap #(
       .midend_busy_i  ( 1'b0 )
     );
 
-    stream_fifo_optimal_wrap #(
+    cc_stream_fifo_optimal_wrap #(
       .Depth      ( JobFifoDepth ),
-      .type_t     ( idma_req_t   ),
+      .data_t     ( idma_req_t   ),
       .PrintInfo  ( 0 )
     ) i_stream_fifo_jobs_1d (
       .clk_i,
       .rst_ni,
-      .testmode_i,
+      .clr_i      ( 1'b0 ),
       .flush_i    ( 1'b0 ),
       .usage_o    ( ),
       .data_i     ( burst_req_d ),
@@ -242,14 +242,14 @@ module cheshire_idma_wrap #(
       .midend_busy_i  ( me_busy )
     );
 
-    stream_fifo_optimal_wrap #(
+    cc_stream_fifo_optimal_wrap #(
       .Depth      ( JobFifoDepth  ),
-      .type_t     ( idma_nd_req_t ),
+      .data_t     ( idma_nd_req_t ),
       .PrintInfo  ( 0 )
     ) i_stream_fifo_jobs_2d (
       .clk_i,
       .rst_ni,
-      .testmode_i,
+      .clr_i      ( 1'b0 ),
       .flush_i    ( 1'b0 ),
       .usage_o    ( ),
       .data_i     ( idma_nd_req_d       ),
