@@ -53,3 +53,10 @@ target/xilinx/build
 target/xilinx/out
 target/xilinx/scripts/add_sources.*
 vivado*
+
+# Emacs undo-tree files
+*undo-tree*
+
+# Temp files
+*~
+*#

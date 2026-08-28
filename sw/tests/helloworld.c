@@ -15,7 +15,7 @@
 int main(void) {
     char str[] = "Hello World!\r\n";
     uint32_t rtc_freq = CHS_REGS->rtc_freq.f.ref_freq;
-    uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
+    uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2048);
     uart_init(&__uart_base_addr__, reset_freq, __BOOT_BAUDRATE);
     uart_write_str(&__uart_base_addr__, str, sizeof(str) - 1);
     uart_write_flush(&__uart_base_addr__);
