@@ -398,23 +398,23 @@ package cheshire_pkg;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
-    bit [2**$bits(aw_bt)-1:0] apb_mask;  // Bit i set iff reg-bus port i uses APB
+    bit [2**$bits(aw_bt)-1:0] apb_mask;  // Bit i is set if reg-bus port i uses APB
     arul_t [aw_bt'(-1):0] map;
   } reg_out_t;
 
   function automatic reg_out_t gen_reg_out(cheshire_cfg_t cfg);
     reg_out_t ret = '{err: 0, clint: 1, plic: 2, regs: 3, default: '0};
     int unsigned i = 3, r = 2;
-    ret.map[0] = '{1, CLINT_BASE_ADDR, CLINT_BASE_ADDR + CLINT_SIZE};
+    ret.map[0] = '{1, CLINT_BASE_ADDR, CLINT_BASE_ADDR + CLINT_SIZE}; ret.apb_mask[1] = 1'b1;
     ret.map[1] = '{2, PLIC_BASE_ADDR,  PLIC_BASE_ADDR  + PLIC_SIZE};
-    ret.map[2] = '{3, REGS_BASE_ADDR,  REGS_BASE_ADDR  + REGS_SIZE};
+    ret.map[2] = '{3, REGS_BASE_ADDR,  REGS_BASE_ADDR  + REGS_SIZE}; ret.apb_mask[3] = 1'b1;
     if (cfg.Bootrom)      begin i++; ret.bootrom    = i; r++; ret.map[r] = '{i, BOOTROM_BASE_ADDR,    BOOTROM_BASE_ADDR    + BOOTROM_SIZE }; end
     if (cfg.LlcNotBypass) begin i++; ret.llc        = i; r++; ret.map[r] = '{i, LLC_BASE_ADDR,        LLC_BASE_ADDR        + LLC_SIZE}; end
     if (cfg.Uart)         begin i++; ret.uart       = i; r++; ret.map[r] = '{i, UART_BASE_ADDR,       UART_BASE_ADDR       + UART_SIZE}; end
     if (cfg.I2c)          begin i++; ret.i2c        = i; r++; ret.map[r] = '{i, I2C_BASE_ADDR,        I2C_BASE_ADDR        + I2C_SIZE}; end
     if (cfg.SpiHost)      begin i++; ret.spi_host   = i; r++; ret.map[r] = '{i, SPIH_BASE_ADDR,       SPIH_BASE_ADDR       + SPIH_SIZE}; end
     if (cfg.Gpio)         begin i++; ret.gpio       = i; r++; ret.map[r] = '{i, GPIO_BASE_ADDR,       GPIO_BASE_ADDR       + GPIO_SIZE}; end
-    if (cfg.SerialLink)   begin i++; ret.slink      = i; r++; ret.map[r] = '{i, SLINK_BASE_ADDR,      SLINK_BASE_ADDR      + SLINK_SIZE}; end
+    if (cfg.SerialLink)   begin i++; ret.slink      = i; r++; ret.map[r] = '{i, SLINK_BASE_ADDR,      SLINK_BASE_ADDR      + SLINK_SIZE}; ret.apb_mask[i] = 1'b1; end
     if (cfg.Vga)          begin i++; ret.vga        = i; r++; ret.map[r] = '{i, VGA_BASE_ADDR,        VGA_BASE_ADDR        + VGA_SIZE}; end
     if (cfg.Usb)          begin i++; ret.usb        = i; r++; ret.map[r] = '{i, USB_BASE_ADDR,        USB_BASE_ADDR        + USB_SIZE}; end
     if (cfg.IrqRouter)    begin i++; ret.irq_router = i; r++; ret.map[r] = '{i, IRQ_ROUTER_BASE_ADDR, IRQ_ROUTER_BASE_ADDR + IRQ_ROUTER_SIZE}; end
@@ -435,10 +435,6 @@ package cheshire_pkg;
           cfg.RegExtRegionStart[k], cfg.RegExtRegionEnd[k]};
       r++;
       end
-    // Set APB mask for all reg-bus ports whose IP uses an APB4-flat interface
-    ret.apb_mask[ret.regs] = 1'b1;
-    if (cfg.SerialLink) ret.apb_mask[ret.slink] = 1'b1;
-    ret.apb_mask[ret.clint] = 1'b1;
     return ret;
   endfunction
 
