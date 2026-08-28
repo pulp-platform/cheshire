@@ -26,11 +26,11 @@ int uart_read_ready(void *uart_base) {
     return *reg8(uart_base, UART_LINE_STATUS_REG_OFFSET) & (1 << UART_LINE_STATUS_DATA_READY_BIT);
 }
 
-static int __uart_write_ready(void *uart_base) {
+static inline int __uart_write_ready(void *uart_base) {
     return *reg8(uart_base, UART_LINE_STATUS_REG_OFFSET) & (1 << UART_LINE_STATUS_THR_EMPTY_BIT);
 }
 
-static int __uart_write_idle(void *uart_base) {
+static inline int __uart_write_idle(void *uart_base) {
     return __uart_write_ready(uart_base) &&
            *reg8(uart_base, UART_LINE_STATUS_REG_OFFSET) & (1 << UART_LINE_STATUS_TMIT_EMPTY_BIT);
 }
