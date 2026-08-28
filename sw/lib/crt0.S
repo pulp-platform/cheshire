@@ -57,7 +57,9 @@ _start:
 1:  .option pop
 
     // Store existing stack, global, return pointers on new stack
-    addi sp, sp, -(3*REGBYTES)
+    // Frame rounded up to a 16-byte multiple, as the RISC-V psABI requires
+    // sp to be 128-bit aligned on procedure entry (32B on RV64, 16B on RV32)
+    addi sp, sp, -(4*REGBYTES)
     SREG t1, 0*REGBYTES(sp)
     SREG gp, 1*REGBYTES(sp)
     SREG ra, 2*REGBYTES(sp)
