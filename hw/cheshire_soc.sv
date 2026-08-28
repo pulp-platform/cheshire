@@ -118,8 +118,6 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   import cheshire_addrmap_pkg::*;
 
-  localparam int unsigned RiscvWordWidth = riscv::XLEN;
-
   //////////////////
   //  Interrupts  //
   //////////////////
@@ -340,7 +338,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AxiUserAsId      ( 1 ),
     .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
     .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-    .RiscvWordWidth   ( RiscvWordWidth ),
+    .RiscvWordWidth   ( riscv::XLEN ),
     .NAxiCuts         ( Cfg.RegAmoNumCuts ),
     .axi_req_t        ( axi_slv_req_t ),
     .axi_rsp_t        ( axi_slv_rsp_t )
@@ -489,7 +487,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AxiUserAsId      ( 1 ),
       .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
       .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-      .RiscvWordWidth   ( RiscvWordWidth ),
+      .RiscvWordWidth   ( riscv::XLEN ),
       .NAxiCuts         ( Cfg.LlcAmoNumCuts ),
       .axi_req_t        ( axi_slv_req_t ),
       .axi_rsp_t        ( axi_slv_rsp_t )
@@ -864,7 +862,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AxiUserAsId      ( 1 ),
     .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
     .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-    .RiscvWordWidth   ( RiscvWordWidth ),
+    .RiscvWordWidth   ( riscv::XLEN ),
     .NAxiCuts         ( Cfg.DbgAmoNumCuts ),
     .axi_req_t        ( axi_slv_req_t ),
     .axi_rsp_t        ( axi_slv_rsp_t )
@@ -1448,7 +1446,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AxiUserAsId      ( 1 ),
       .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
       .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-      .RiscvWordWidth   ( RiscvWordWidth ),
+      .RiscvWordWidth   ( riscv::XLEN ),
       .NAxiCuts         ( Cfg.DmaConfAmoNumCuts ),
       .axi_req_t        ( axi_slv_req_t ),
       .axi_rsp_t        ( axi_slv_rsp_t )
