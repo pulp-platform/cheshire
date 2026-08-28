@@ -279,6 +279,7 @@ The [iDMA Engine](https://github.com/pulp-platform/iDMA) enables high-throughput
 | `DmaMemSysDepth`             | `dw_bt`      | The *approximate* depth of the memory system      |
 | `DmaJobFifoDepth`            | `aw_bt`      | The depth of the job FIFO                         |
 | `DmaRAWCouplingAvail`        | `bit`        | Whether the R-AW coupling feature is available    |
+| `DmaEnableAxiCut`            | `bit`        | Whether to insert a cut on the DMA's manager port |
 
 ### I2C, SPI, GPIOs
 
