@@ -15,10 +15,10 @@ jobs:
     steps:
     -
       name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6.0.3
     -
       name: Check license
-      uses: pulp-platform/pulp-actions/lint-license@v2.4.4
+      uses: pulp-platform/pulp-actions/lint-license@v2.5.1
       with:
         license: |
           Copyright (\d{4}(-\d{4})?\s)?(ETH Zurich and University of Bologna|lowRISC contributors).
@@ -33,7 +33,7 @@ jobs:
     steps:
     -
       name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6.0.3
     -
       name: Run Verible
       uses: chipsalliance/verible-linter-action@main
@@ -50,10 +50,10 @@ jobs:
     steps:
     -
       name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6.0.3
     -
       name: Run Clang-format
-      uses: DoozyX/clang-format-lint-action@v0.14
+      uses: DoozyX/clang-format-lint-action@v0.20
       with:
         extensions: 'c,h,cpp'
         clangFormatVersion: 14
@@ -66,10 +66,10 @@ jobs:
     steps:
     -
       name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6.0.3
     -
       name: Install uv
-      uses: astral-sh/setup-uv@v6
+      uses: astral-sh/setup-uv@v8.2.0
       with:
         python-version: "3.11"
     -
