@@ -59,3 +59,4 @@ vivado*
 
 # Editor files
 .vscode
+/verilator_filelist.f
