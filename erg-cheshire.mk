@@ -16,6 +16,7 @@ TOP_MODULE       := cheshire_soc
 VLT_FILE         := # path to a Verilator waiver file, or leave empty
 
 # --- Bender -> Verilator lint flow ---
+# Requires Verilator 5.052
 verilator_filelist.f: Bender.yml Bender.lock $(MAKEFILE_LIST)
 	$(BENDER) script verilator $(BENDER_TAGS_BASE) $(BENDER_TAGS_SIM) > $@
 
