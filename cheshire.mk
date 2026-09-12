@@ -16,8 +16,8 @@ VLOG_ARGS   ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
 VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
 
 # Common Bender flags for Cheshire RTL
-CHS_CVA6_CONFIG      ?= cv64a6_imafdchsclic_sv39_wb
-CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t $(CHS_CVA6_CONFIG)
+CHS_CVA6_CONFIG      ?= cv32a65x_noPMP_noSuperScalar_axi
+CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t $(CHS_CVA6_CONFIG) -t openhw -t exclude_first_pass_decoder
 
 # Infer the SW XLEN from the selected CVA6 configuration so that the RTL and the
 # SW build cannot disagree. Can still be overridden explicitly; defaults to 64
@@ -99,7 +99,8 @@ include $(CHS_SLINK_DIR)/slink.mk
 CHS_PEAKRDL_INCLUDES += -I $(CHS_SLINK_DIR)/src/regs
 CHS_PEAKRDL_INCLUDES += -I $(CHS_ROOT)/hw/
 CHS_PEAKRDL_PARAMS   += -P SlinkNumLanes=$(SLINK_NUM_LANES)
-CHS_PEAKRDL_DEFINES  := -D CHS_DRAM
+CHS_PEAKRDL_DEFINE_NAMES := CHS_DRAM
+CHS_PEAKRDL_DEFINES  := $(addprefix -D ,$(CHS_PEAKRDL_DEFINE_NAMES))
 
 # CLINT
 CLINT_CORES ?= 1

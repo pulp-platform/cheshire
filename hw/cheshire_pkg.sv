@@ -442,41 +442,10 @@ package cheshire_pkg;
   //  CVA6  //
   ////////////
 
-  // CVA6 imposes an ID width of 4, but only 7 of 16 IDs are ever used
-  localparam int unsigned Cva6IdWidth = 4;
-  localparam int unsigned Cva6IdsUsed = 7;
+  // CVA6 imposes an ID width of 5: the HPDcache derives its memory-interface ID width as
+  // AxiIdWidth-1, and needs at least `WtDcacheWbufDepth` (8) IDs for the write buffer.
+  localparam int unsigned Cva6IdWidth = 5;
   typedef logic [Cva6IdWidth-1:0] cva6_id_t;
-  typedef int unsigned cva6_id_map_t [Cva6IdsUsed-1:0][0:1];
-
-  // Symbols for used CVA6 IDs
-  typedef enum cva6_id_t {
-    Cva6IdBypMmu    = 'b1000,
-    Cva6IdBypLoad   = 'b1001,
-    Cva6IdBypAccel  = 'b1010,
-    Cva6IdBypStore  = 'b1011,
-    Cva6IdBypAmo    = 'b1100,
-    Cva6IdICache    = 'b0000,
-    Cva6IdDCache    = 'b0111
-  } cva6_id_e;
-
-  // Choose static colocation of IDs based on how heavily used and/or critical they are
-  function automatic cva6_id_map_t gen_cva6_id_map(cheshire_cfg_t cfg);
-    int unsigned DefaultMapEntry[2] = '{0, 0};
-    case (cfg.AxiMstIdWidth)
-      // Provide exclusive ID to I-cache to prevent fetch blocking
-      1: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 0}, '{Cva6IdBypAccel, 0}, '{Cva6IdBypStore, 0},
-                  '{Cva6IdBypAmo, 0}, '{Cva6IdICache,  1}, '{Cva6IdDCache,   0}};
-      // Colocate Load/Store and MMU/AMO bypasses, respectively
-      2: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 1}, '{Cva6IdBypAccel, 1}, '{Cva6IdBypStore, 1},
-                  '{Cva6IdBypAmo, 0}, '{Cva6IdICache,  2}, '{Cva6IdDCache,   3}};
-      // Compress output ID space without any serialization
-      3: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 1}, '{Cva6IdBypAccel, 6}, '{Cva6IdBypStore, 2},
-                  '{Cva6IdBypAmo, 3}, '{Cva6IdICache,  4}, '{Cva6IdDCache,   5}};
-      // With 4b of ID or more, no remapping is necessary; return redundant 0 -> 0 ID remaps.
-      // This leaves ID mapping unaltered only if `MstIdBaseOffset` in `axi_id_serialize` is 0.
-      default: return '{Cva6IdsUsed {DefaultMapEntry}};
-    endcase
-  endfunction
 
   function automatic config_pkg::cva6_user_cfg_t gen_cva6_cfg(cheshire_cfg_t cfg);
     doub_bt SizeSpm = get_llc_size(cfg);
@@ -505,9 +474,12 @@ package cheshire_pkg;
     ret.CachedRegionAddrBase  = {SPM_BASE_ADDR, cfg.LlcOutRegionStart,  CieBase};
     ret.CachedRegionLength    = {SizeSpm,       SizeLlcOut,             cfg.Cva6ExtCieLength};
     ret.DebugEn               = 1;
+    // These fields do not exist in the OpenHW CVA6 config, which has no CLIC support.
+    `ifndef TARGET_OPENHW
     ret.RVSCLIC               = cfg.Clic;
     ret.RVXHCLIC              = cfg.ClicVsclic;
     ret.CLICNumInterruptSrc   = NumCoreIrqs + NumIntIntrs + cfg.NumExtClicIntrs;
+    `endif
     // TODO: Should some things be removed from the main config?
     // TODO: Should other things be added to the main config?
     // TODO: Tune missing parameters of interest (esp. cache and interconnect) properly

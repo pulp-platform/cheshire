@@ -95,12 +95,16 @@ $(eval $(call chs_sw_gen_hdr_rule,idma,$(IDMA_ROOT)/target/rtl/idma_reg64_2d.hjs
 $(eval $(call chs_sw_gen_hdr_rule,axi_llc,$(CHS_LLC_DIR)/data/axi_llc_regs.hjson))
 $(eval $(call chs_sw_gen_hdr_rule,axi_rt,$(AXIRTROOT)/src/regs/axi_rt.hjson $(AXIRTROOT)/.generated))
 
+# Leave the DRAM region out of the C view.
+CHS_PEAKRDL_SW_DEFINE_NAMES := $(filter-out CHS_DRAM,$(CHS_PEAKRDL_DEFINE_NAMES))
+CHS_PEAKRDL_SW_DEFINES := $(addprefix -D ,$(CHS_PEAKRDL_SW_DEFINE_NAMES))
+
 .PRECIOUS: $(CHS_SW_DIR)/include/regs/cheshire.h
 CHS_SW_GEN_HDRS += $(CHS_SW_DIR)/include/regs/cheshire.h
 
 $(CHS_SW_DIR)/include/regs/cheshire.h: $(CHS_ROOT)/hw/cheshire.rdl $(CHS_SLINK_DIR)/.generated
 	@mkdir -p $(dir $@)
-	$(PEAKRDL) c-header $< -o $@ -b ltoh --type-style hier $(CHS_PEAKRDL_INCLUDES) $(CHS_PEAKRDL_PARAMS) $(CHS_PEAKRDL_DEFINES)
+	$(PEAKRDL) c-header $< -o $@ -b ltoh --type-style hier $(CHS_PEAKRDL_INCLUDES) $(CHS_PEAKRDL_PARAMS) $(CHS_PEAKRDL_SW_DEFINES)
 	@sed -i '1i// Copyright 2025 ETH Zurich and University of Bologna.\n// Licensed under the Apache License, Version 2.0, see LICENSE for details.\n// SPDX-License-Identifier: Apache-2.0\n' $@
 
 # Generate headers for OT peripherals in the bendered repo itself
