@@ -112,6 +112,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   `include "common_cells/registers.svh"
   `include "common_cells/assertions.svh"
   `include "cheshire/typedef.svh"
+  `include "rvfi_types.svh"
 
   // Declare interface types internally
   `CHESHIRE_TYPEDEF_ALL(, Cfg)
@@ -587,6 +588,16 @@ module cheshire_soc import cheshire_pkg::*; #(
   `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
 
   localparam config_pkg::cva6_user_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
+  localparam config_pkg::cva6_cfg_t Cva6BuildCfg = build_config_pkg::build_config(Cva6Cfg);
+
+  // CVA6 probes its RVFI signals unconditionally, so it needs a real struct type here even
+  // though we leave `rvfi_probes_o` open.
+  localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(Cva6BuildCfg);
+  localparam type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(Cva6BuildCfg);
+  localparam type rvfi_probes_t = struct packed {
+    rvfi_probes_csr_t   csr;
+    rvfi_probes_instr_t instr;
+  };
 
   // Boot from boot ROM only if available, otherwise from platform ROM
   localparam logic [63:0] BootAddr = 64'(Cfg.Bootrom ? BOOTROM_BASE_ADDR : Cfg.PlatformRom);
@@ -630,12 +641,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     logic [5:0]        clic_irq_vsid;
 
     cva6 #(
-      .CVA6Cfg        ( build_config_pkg::build_config(Cva6Cfg) ),
-      .axi_ar_chan_t  ( axi_cva6_ar_chan_t ),
-      .axi_aw_chan_t  ( axi_cva6_aw_chan_t ),
-      .axi_w_chan_t   ( axi_cva6_w_chan_t  ),
-      .b_chan_t       ( axi_cva6_b_chan_t  ),
-      .r_chan_t       ( axi_cva6_r_chan_t  ),
+      .CVA6Cfg        ( Cva6BuildCfg ),
+      .rvfi_probes_t  ( rvfi_probes_t ),
       .noc_req_t      ( axi_cva6_req_t ),
       .noc_resp_t     ( axi_cva6_rsp_t )
     ) i_core_cva6 (
@@ -647,6 +654,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .ipi_i            ( msip[i] ),
       .time_irq_i       ( mtip[i] ),
       .debug_req_i      ( dbg_int_req[i] ),
+      // The OpenHW CVA6 has no CLIC support and hence none of these ports.
+      `ifndef TARGET_OPENHW
       .clic_irq_valid_i ( clic_irq_valid ),
       .clic_irq_id_i    ( clic_irq_id    ),
       .clic_irq_level_i ( clic_irq_level ),
@@ -657,11 +666,15 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clic_irq_ready_o ( clic_irq_ready ),
       .clic_kill_req_i  ( clic_irq_kill_req ),
       .clic_kill_ack_o  ( clic_irq_kill_ack ),
+      `endif
       .rvfi_probes_o    ( ),
       .cvxif_req_o      ( ),
       .cvxif_resp_i     ( '0 ),
       .noc_req_o        ( core_out_req ),
-      .noc_resp_i       ( core_out_rsp )
+      .noc_resp_i       ( core_out_rsp ),
+      // DCLS (dual-core lockstep) is not used for now.
+      .dcls_from_common_i ( '0 ),
+      .dcls_to_common_o   (    )
     );
 
     if (Cfg.BusErr) begin : gen_cva6_bus_err
@@ -761,25 +774,23 @@ module cheshire_soc import cheshire_pkg::*; #(
       core_out_rsp        = core_ur_rsp;
     end
 
-    // CVA6's ID encoding is wasteful; remap it statically pack into available bits
-    axi_id_serialize #(
-      .AxiSlvPortIdWidth      ( Cva6IdWidth     ),
-      .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
+    // Adapt CVA6's ID width to the interconnect's.
+    axi_iw_converter #(
+      .AxiSlvPortIdWidth      ( Cva6IdWidth            ),
       .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth      ),
+      .AxiSlvPortMaxUniqIds   ( 2 ** Cva6IdWidth       ),
+      .AxiSlvPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId   ),
+      .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns        ),
       .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
       .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId   ),
       .AxiAddrWidth           ( Cfg.AddrWidth    ),
       .AxiDataWidth           ( Cfg.AxiDataWidth ),
       .AxiUserWidth           ( Cfg.AxiUserWidth ),
-      .AtopSupport            ( 1 ),
       .slv_req_t              ( axi_cva6_req_t ),
       .slv_resp_t             ( axi_cva6_rsp_t ),
       .mst_req_t              ( axi_mst_req_t  ),
-      .mst_resp_t             ( axi_mst_rsp_t  ),
-      .MstIdBaseOffset        ( '0 ),
-      .IdMapNumEntries        ( Cva6IdsUsed ),
-      .IdMap                  ( gen_cva6_id_map(Cfg) )
-    ) i_axi_id_serialize (
+      .mst_resp_t             ( axi_mst_rsp_t  )
+    ) i_cva6_iw_converter (
       .clk_i,
       .rst_ni,
       .slv_req_i  ( core_ur_req ),
