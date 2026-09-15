@@ -509,7 +509,8 @@ package cheshire_pkg;
   function automatic config_pkg::cva6_user_cfg_t gen_cva6_cfg(cheshire_cfg_t cfg);
     doub_bt SizeSpm = get_llc_size(cfg);
     doub_bt SizeLlcOut = cfg.LlcOutRegionEnd - cfg.LlcOutRegionStart;
-    doub_bt CieBase   = cfg.Cva6ExtCieOnTop ? 64'h8000_0000 - cfg.Cva6ExtCieLength : 64'h2000_0000;
+    // External on-chip region ends at LLC out
+    doub_bt CieBase   = cfg.Cva6ExtCieOnTop ? cfg.LlcOutRegionStart - cfg.Cva6ExtCieLength : 64'h2000_0000;
     doub_bt NoCieBase = cfg.Cva6ExtCieOnTop ? 64'h2000_0000 : 64'h2000_0000 + cfg.Cva6ExtCieLength;
     // Base our config on the upstream default for this variant
     config_pkg::cva6_user_cfg_t ret = cva6_config_pkg::cva6_cfg;
@@ -525,7 +526,7 @@ package cheshire_pkg;
     ret.NrNonIdempotentRules  = 2;   // Periphs, ExtNonCI;
     ret.NonIdempotentAddrBase = {EXTROM_BASE_ADDR, NoCieBase};
     ret.NOCType               = config_pkg::NOC_TYPE_AXI4_ATOP;
-    ret.NonIdempotentLength   = {SPM_BASE_ADDR, 64'h6000_0000 - cfg.Cva6ExtCieLength};
+    ret.NonIdempotentLength   = {SPM_BASE_ADDR, cfg.LlcOutRegionStart - 64'h2000_0000 - cfg.Cva6ExtCieLength};
     ret.NrExecuteRegionRules  = 7;   // Debug, Bootrom, SPM, SPM Uncached, LLCOut, ExtCI, L1 ICache SPM;
     ret.ExecuteRegionAddrBase = {EXTROM_BASE_ADDR, BOOTROM_BASE_ADDR, SPM_BASE_ADDR, SPM_UNC_BASE_ADDR, cfg.LlcOutRegionStart, CieBase, L1_ISPM_BASE_ADDR};
     ret.ExecuteRegionLength   = {EXTROM_SIZE,      BOOTROM_SIZE     , SizeSpm      , SizeSpm          , SizeLlcOut           , cfg.Cva6ExtCieLength, L1_ISPM_SIZE};
