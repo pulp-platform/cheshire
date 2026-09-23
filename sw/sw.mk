@@ -41,6 +41,7 @@ CHS_SW_DEPS_INCS += -I$(CHS_LLC_DIR)/sw/include
 CHS_SW_DEPS_INCS += -I$(AXIRTROOT)/sw/lib
 CHS_SW_DEPS_INCS += -I$(OTPROOT)
 CHS_SW_DEPS_INCS += -I$(OTPROOT)/sw/include
+CHS_SW_DEPS_INCS += -I$(IDMA_ROOT)/target/sw
 CHS_SW_DEPS_SRCS  = $(CHS_SW_DIR)/deps/printf/printf.c
 CHS_SW_DEPS_SRCS += $(CHS_LLC_DIR)/sw/lib/axi_llc_reg32.c
 CHS_SW_DEPS_SRCS += $(AXIRTROOT)/sw/lib/axirt.c
@@ -80,15 +81,6 @@ $(eval $(call chs_sw_gen_hdr_rule,clint,$(CLINTROOT)/src/clint.hjson $(CLINTROOT
 $(eval $(call chs_sw_gen_hdr_rule,axi_vga,$(AXI_VGA_ROOT)/data/axi_vga.hjson $(AXI_VGA_ROOT)/.generated))
 $(eval $(call chs_sw_gen_hdr_rule,axi_llc,$(CHS_LLC_DIR)/data/axi_llc_regs.hjson))
 $(eval $(call chs_sw_gen_hdr_rule,axi_rt,$(AXIRTROOT)/src/regs/axi_rt.hjson $(AXIRTROOT)/.generated))
-
-.PRECIOUS: $(CHS_SW_DIR)/include/regs/idma.h
-CHS_SW_GEN_HDRS += $(CHS_SW_DIR)/include/regs/idma.h
-
-$(CHS_SW_DIR)/include/regs/idma.h: $(IDMA_ROOT)/src/frontend/reg/idma_reg.rdl
-	@mkdir -p $(dir $@)
-	$(PEAKRDL) c-header $< -o $@ -b ltoh --type-style hier --rename idma_reg64_2d \
-	  -P SysAddrWidth=64 -P NumDims=2 -P Log2NumDims=1
-	@sed -i '1i// Copyright 2026 ETH Zurich and University of Bologna.\n// Solderpad Hardware License, Version 0.51, see LICENSE for details.\n// SPDX-License-Identifier: SHL-0.51\n' $@
 
 .PRECIOUS: $(CHS_SW_DIR)/include/regs/cheshire.h
 CHS_SW_GEN_HDRS += $(CHS_SW_DIR)/include/regs/cheshire.h

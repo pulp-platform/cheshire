@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include "regs/idma.h"
+#include "idma_reg64_2d_regs.h"
 #include "params.h"
 
 #define DMA_SRC_ADDR(BASE) (void *)((uint8_t *)BASE + offsetof(idma_reg64_2d_t, src_addr))
