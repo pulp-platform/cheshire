@@ -56,7 +56,7 @@ switch -- $board {
         set_property strategy Congestion_SSI_SpreadLogic_high [get_runs impl_1]
     }
     default {
-        set_property strategy Flow_PerfOptimized_high [get_runs impl_1]
+        set_property strategy Performance_ExtraTimingOpt [get_runs impl_1]
     }
 }
 
