@@ -53,10 +53,10 @@ insert_ilas {soc_clk}
 # Set implementation properties
 switch -- $board {
     "vcu128" - "vcu118" {
-        set_property strategy Congestion_SSI_SpreadLogic_high [get_runs synth_1]
+        set_property strategy Congestion_SSI_SpreadLogic_high [get_runs impl_1]
     }
     default {
-        set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
+        set_property strategy Flow_PerfOptimized_high [get_runs impl_1]
     }
 }
 
