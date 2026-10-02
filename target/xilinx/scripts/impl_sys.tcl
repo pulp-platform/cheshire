@@ -51,7 +51,16 @@ gen_reports ${project_root}/reports.synth
 insert_ilas {soc_clk}
 
 # Set implementation properties
-set_property strategy Performance_ExtraTimingOpt [get_runs impl_1]
+switch -- $board {
+    "vcu128" - "vcu118" {
+        set_property strategy Congestion_SSI_SpreadLogic_high [get_runs impl_1]
+    }
+    default {
+        set_property strategy Performance_ExtraTimingOpt [get_runs impl_1]
+    }
+}
+
+set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.IS_ENABLED true [get_runs impl_1]
 
 # Implementation
 launch_runs -jobs $num_jobs impl_1 -to_step write_bitstream
