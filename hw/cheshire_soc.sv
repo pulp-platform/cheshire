@@ -153,6 +153,20 @@ module cheshire_soc import cheshire_pkg::*; #(
   cheshire_xeip_t [NumIrqHarts-1:0] xeip;
   logic           [NumIrqHarts-1:0] mtip, msip;
 
+  // Non-debug module reset bus allowing reset from jtag
+  logic ndmreset, cheshire_reset_n;
+
+  rstgen_bypass #(
+    .NumRegs (4)
+  ) i_cheshire_reset_gen (
+    .clk_i,
+    .rst_ni,
+    .rst_test_mode_ni ( '0 ),
+    .test_mode_i ( ndmreset ),
+    .rst_no ( cheshire_reset_n ),
+    .init_no ( )
+  );
+
   // Interrupt 0 is hardwired to zero by convention.
   // Other internal interrupts are synchronous (for now) and need not be synced;
   // we wire them directly to internal synchronous devices.
@@ -165,7 +179,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .ResetValue ( 1'b0 )
     ) i_ext_intr_sync (
       .clk_i,
-      .rst_ni,
+      .rst_ni   ( cheshire_reset_n ),
       .serial_i ( intr_ext_i[i] ),
       .serial_o ( intr.ext[i]   )
     );
@@ -268,7 +282,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .rule_t         ( addr_rule_t )
   ) i_axi_xbar (
     .clk_i,
-    .rst_ni,
+    .rst_ni                 ( cheshire_reset_n ),
     .test_i                 ( test_mode_i ),
     .slv_ports_req_i        ( axi_rt_in_req ),
     .slv_ports_resp_o       ( axi_rt_in_rsp ),
@@ -344,7 +358,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .axi_rsp_t        ( axi_slv_rsp_t )
   ) i_reg_atomics (
     .clk_i,
-    .rst_ni,
+    .rst_ni        ( cheshire_reset_n ),
     .axi_slv_req_i ( axi_out_req[AxiOut.reg_demux] ),
     .axi_slv_rsp_o ( axi_out_rsp[AxiOut.reg_demux] ),
     .axi_mst_req_o ( axi_reg_amo_req ),
@@ -362,7 +376,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .axi_resp_t ( axi_slv_rsp_t )
   ) i_reg_atomics_cut (
     .clk_i,
-    .rst_ni,
+    .rst_ni     ( cheshire_reset_n ),
     .slv_req_i  ( axi_reg_amo_req ),
     .slv_resp_o ( axi_reg_amo_rsp ),
     .mst_req_o  ( axi_reg_cut_req ),
@@ -383,7 +397,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .reg_rsp_t    ( reg_rsp_t )
   ) i_axi_to_reg_v2 (
     .clk_i,
-    .rst_ni,
+    .rst_ni    ( cheshire_reset_n ),
     .axi_req_i ( axi_reg_cut_req ),
     .axi_rsp_o ( axi_reg_cut_rsp ),
     .reg_req_o ( reg_in_req ),
@@ -414,7 +428,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .rsp_t    ( reg_rsp_t )
   ) i_reg_demux (
     .clk_i,
-    .rst_ni,
+    .rst_ni       ( cheshire_reset_n ),
     .in_select_i  ( reg_select  ),
     .in_req_i     ( reg_in_req  ),
     .in_rsp_o     ( reg_in_rsp  ),
@@ -446,7 +460,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .apb_rsp_t ( apb_resp_t )
       ) i_reg_to_apb (
         .clk_i,
-        .rst_ni,
+        .rst_ni    ( cheshire_reset_n ),
         .reg_req_i ( reg_out_req[i] ),
         .reg_rsp_o ( reg_out_rsp[i] ),
         .apb_req_o ( reg_apb_req[i] ),
@@ -493,7 +507,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_rsp_t        ( axi_slv_rsp_t )
     ) i_llc_atomics (
       .clk_i,
-      .rst_ni,
+      .rst_ni        ( cheshire_reset_n ),
       .axi_slv_req_i ( axi_out_req[AxiOut.llc] ),
       .axi_slv_rsp_o ( axi_out_rsp[AxiOut.llc] ),
       .axi_mst_req_o ( axi_llc_amo_req ),
@@ -511,7 +525,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_resp_t ( axi_slv_rsp_t )
     ) i_llc_atomics_cut (
       .clk_i,
-      .rst_ni,
+      .rst_ni     ( cheshire_reset_n ),
       .slv_req_i  ( axi_llc_amo_req ),
       .slv_resp_o ( axi_llc_amo_rsp ),
       .mst_req_o  ( axi_llc_cut_req ),
@@ -553,7 +567,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .rule_full_t      ( addr_rule_t )
     ) i_llc (
       .clk_i,
-      .rst_ni,
+      .rst_ni              ( cheshire_reset_n ),
       .test_i              ( test_mode_i ),
       .slv_req_i           ( axi_llc_remap_req ),
       .slv_resp_o          ( axi_llc_remap_rsp ),
@@ -640,7 +654,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .noc_resp_t     ( axi_cva6_rsp_t )
     ) i_core_cva6 (
       .clk_i,
-      .rst_ni,
+      .rst_ni           ( cheshire_reset_n ),
       .boot_addr_i      ( BootAddr ),
       .hart_id_i        ( 64'(i) ),
       .irq_i            ( xeip[i] ),
@@ -679,7 +693,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .reg_rsp_t          ( reg_rsp_t )
       ) i_cva6_bus_err (
         .clk_i,
-        .rst_ni,
+        .rst_ni     ( cheshire_reset_n ),
         .testmode_i ( test_mode_i ),
         .axi_req_i  ( core_out_req ),
         .axi_rsp_i  ( core_out_rsp ),
@@ -719,7 +733,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .VSPRIO_W    ( Cfg.ClicPrioWidth )
       ) i_clic (
         .clk_i,
-        .rst_ni,
+        .rst_ni         ( cheshire_reset_n ),
         .reg_req_i      ( reg_out_req[RegOut.clic[i]] ),
         .reg_rsp_o      ( reg_out_rsp[RegOut.clic[i]] ),
         .intr_src_i     ( clic_intr ),
@@ -781,7 +795,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .IdMap                  ( gen_cva6_id_map(Cfg) )
     ) i_axi_id_serialize (
       .clk_i,
-      .rst_ni,
+      .rst_ni     ( cheshire_reset_n ),
       .slv_req_i  ( core_ur_req ),
       .slv_resp_o ( core_ur_rsp ),
       .mst_req_o  ( axi_in_req[AxiIn.cores[i]] ),
@@ -868,7 +882,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .axi_rsp_t        ( axi_slv_rsp_t )
   ) i_dbg_slv_axi_atomics (
     .clk_i,
-    .rst_ni,
+    .rst_ni        ( cheshire_reset_n ),
     .axi_slv_req_i ( axi_out_req[AxiOut.dbg] ),
     .axi_slv_rsp_o ( axi_out_rsp[AxiOut.dbg] ),
     .axi_mst_req_o ( dbg_slv_axi_amo_req ),
@@ -886,7 +900,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .axi_resp_t ( axi_slv_rsp_t )
   ) i_dbg_slv_axi_atomics_cut (
     .clk_i,
-    .rst_ni,
+    .rst_ni     ( cheshire_reset_n ),
     .slv_req_i  ( dbg_slv_axi_amo_req ),
     .slv_resp_o ( dbg_slv_axi_amo_rsp ),
     .mst_req_o  ( dbg_slv_axi_cut_req ),
@@ -904,7 +918,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .BufDepth   ( 4 )
   ) i_dbg_slv_axi_to_mem (
     .clk_i,
-    .rst_ni,
+    .rst_ni       ( cheshire_reset_n ),
     .test_i       ( test_mode_i ),
     .busy_o       ( ),
     .axi_req_i    ( dbg_slv_axi_cut_req ),
@@ -921,7 +935,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   );
 
   // Read response is valid one cycle after request
-  `FF(dbg_slv_rvalid, dbg_slv_req, 1'b0, clk_i, rst_ni)
+  `FF(dbg_slv_rvalid, dbg_slv_req, 1'b0, clk_i, cheshire_reset_n)
 
   // Debug Module
   dm_top #(
@@ -931,8 +945,10 @@ module cheshire_soc import cheshire_pkg::*; #(
   ) i_dbg_dm_top (
     .clk_i,
     .rst_ni,
+    .next_dm_addr_i       ( EXTROM_BASE_ADDR ),
     .testmode_i           ( test_mode_i ),
-    .ndmreset_o           ( ),
+    .ndmreset_o           ( ndmreset ),
+    .ndmreset_ack_i       ( ndmreset ),
     .dmactive_o           ( dbg_active_o  ),
     .debug_req_o          ( dbg_req       ),
     .unavailable_i        ( dbg_unavail   ),
@@ -982,7 +998,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .axi_rsp_t    ( axi_mst_rsp_t )
   ) i_dbg_sba_axi_from_mem (
     .clk_i,
-    .rst_ni,
+    .rst_ni          ( cheshire_reset_n ),
     .mem_req_i       ( dbg_sba_req    ),
     .mem_addr_i      ( dbg_sba_addr   ),
     .mem_we_i        ( dbg_sba_we     ),
@@ -1076,7 +1092,7 @@ module cheshire_soc import cheshire_pkg::*; #(
 
   cheshire_soc_regs i_regs (
     .clk    ( clk_i  ),
-    .arst_n ( rst_ni ),
+    .arst_n ( cheshire_reset_n ),
     .s_apb_psel    ( reg_apb_req[RegOut.regs].psel    ),
     .s_apb_penable ( reg_apb_req[RegOut.regs].penable ),
     .s_apb_pwrite  ( reg_apb_req[RegOut.regs].pwrite  ),
@@ -1104,7 +1120,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .NumIntrTargets ( NumRtdIntrTgts )
     ) i_irq_router (
       .clk_i,
-      .rst_ni,
+      .rst_ni             ( cheshire_reset_n ),
       .reg_req_i          ( reg_out_req[RegOut.irq_router] ),
       .reg_rsp_o          ( reg_out_rsp[RegOut.irq_router] ),
       .irqs_i             ( intr ),
@@ -1129,7 +1145,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .reg_rsp_t  ( reg_rsp_t )
   ) i_plic (
     .clk_i,
-    .rst_ni,
+    .rst_ni     ( cheshire_reset_n ),
     .reg_req_i  ( reg_out_req[RegOut.plic] ),
     .reg_rsp_o  ( reg_out_rsp[RegOut.plic] ),
     .intr_src_i ( intr_routed[IntrRtdPlic][rv_plic_reg_pkg::NumSrc-1:0] ),
@@ -1147,7 +1163,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .apb_rsp_t  ( apb_resp_t )
   ) i_clint (
     .clk_i,
-    .rst_ni,
+    .rst_ni       ( cheshire_reset_n ),
     .testmode_i   ( test_mode_i ),
     .apb_req_i    ( reg_apb_req[RegOut.clint] ),
     .apb_rsp_o    ( reg_apb_rsp[RegOut.clint] ),
@@ -1188,7 +1204,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .req_rsp_t          ( reg_rsp_t )
     ) i_axi_rt_unit_top   (
       .clk_i,
-      .rst_ni,
+      .rst_ni     ( cheshire_reset_n ),
       .slv_req_i  ( axi_in_req    ),
       .slv_resp_o ( axi_in_rsp    ),
       .mst_req_o  ( axi_rt_in_req ),
@@ -1217,9 +1233,9 @@ module cheshire_soc import cheshire_pkg::*; #(
     logic         bootrom_we,   bootrom_we_q;
 
     // Delay response by one cycle to fulfill mem protocol
-    `FF(bootrom_data_q, bootrom_data, '0, clk_i, rst_ni)
-    `FF(bootrom_req_q,  bootrom_req,  '0, clk_i, rst_ni)
-    `FF(bootrom_we_q,   bootrom_we,   '0, clk_i, rst_ni)
+    `FF(bootrom_data_q, bootrom_data, '0, clk_i, cheshire_reset_n)
+    `FF(bootrom_req_q,  bootrom_req,  '0, clk_i, cheshire_reset_n)
+    `FF(bootrom_we_q,   bootrom_we,   '0, clk_i, cheshire_reset_n)
 
     reg_to_mem #(
       .AW     ( 16 ),
@@ -1228,7 +1244,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .rsp_t  ( reg_rsp_t )
     ) i_reg_to_bootrom (
       .clk_i,
-      .rst_ni,
+      .rst_ni     ( cheshire_reset_n ),
       .reg_req_i  ( reg_out_req[RegOut.bootrom] ),
       .reg_rsp_o  ( reg_out_rsp[RegOut.bootrom] ),
       .req_o      ( bootrom_req  ),
@@ -1247,7 +1263,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .DataWidth  ( 32 )
     ) i_bootrom (
       .clk_i,
-      .rst_ni,
+      .rst_ni   ( cheshire_reset_n ),
       .req_i    ( bootrom_req  ),
       .addr_i   ( bootrom_addr ),
       .data_o   ( bootrom_data )
@@ -1267,7 +1283,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .reg_rsp_t  ( reg_rsp_t )
     ) i_uart (
       .clk_i,
-      .rst_ni,
+      .rst_ni     ( cheshire_reset_n ),
       .reg_req_i  ( reg_out_req[RegOut.uart] ),
       .reg_rsp_o  ( reg_out_rsp[RegOut.uart] ),
       .intr_o     ( intr.intn.uart ),
@@ -1304,7 +1320,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .reg_rsp_t  ( reg_rsp_t )
     ) i_i2c (
       .clk_i,
-      .rst_ni,
+      .rst_ni                   ( cheshire_reset_n ),
       .reg_req_i                ( reg_out_req[RegOut.i2c] ),
       .reg_rsp_o                ( reg_out_rsp[RegOut.i2c] ),
       .cio_scl_i                ( i2c_scl_i    ),
@@ -1369,7 +1385,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .reg_rsp_t  ( reg_rsp_t )
     ) i_spi_host (
       .clk_i,
-      .rst_ni,
+      .rst_ni           ( cheshire_reset_n ),
       .reg_req_i        ( reg_out_req[RegOut.spi_host] ),
       .reg_rsp_o        ( reg_out_rsp[RegOut.spi_host] ),
       .cio_sck_o        ( spih_sck_o    ),
@@ -1409,7 +1425,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .GpioAsyncOn ( Cfg.GpioInputSyncs )
     ) i_gpio (
       .clk_i,
-      .rst_ni,
+      .rst_ni        ( cheshire_reset_n ),
       .reg_req_i     ( reg_out_req[RegOut.gpio] ),
       .reg_rsp_o     ( reg_out_rsp[RegOut.gpio] ),
       .intr_gpio_o   ( intr.intn.gpio ),
@@ -1452,7 +1468,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_rsp_t        ( axi_slv_rsp_t )
     ) i_dma_conf_atomics (
       .clk_i,
-      .rst_ni,
+      .rst_ni        ( cheshire_reset_n ),
       .axi_slv_req_i ( axi_out_req[AxiOut.dma] ),
       .axi_slv_rsp_o ( axi_out_rsp[AxiOut.dma] ),
       .axi_mst_req_o ( dma_amo_req ),
@@ -1470,7 +1486,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_resp_t ( axi_slv_rsp_t )
     ) i_dma_conf_atomics_cut (
       .clk_i,
-      .rst_ni,
+      .rst_ni     ( cheshire_reset_n ),
       .slv_req_i  ( dma_amo_req ),
       .slv_resp_o ( dma_amo_rsp ),
       .mst_req_o  ( dma_cut_req ),
@@ -1503,7 +1519,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_slv_rsp_t    ( axi_slv_rsp_t )
     ) i_idma (
       .clk_i,
-      .rst_ni,
+      .rst_ni         ( cheshire_reset_n ),
       .testmode_i     ( test_mode_i ),
       .axi_mst_req_o  ( axi_dma_req           ),
       .axi_mst_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
@@ -1526,7 +1542,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .reg_rsp_t          ( reg_rsp_t )
       ) i_dma_bus_err (
         .clk_i,
-        .rst_ni,
+        .rst_ni     ( cheshire_reset_n ),
         .testmode_i ( test_mode_i ),
         .axi_req_i  ( axi_in_req[AxiIn.dma] ),
         .axi_rsp_i  ( axi_in_rsp[AxiIn.dma] ),
@@ -1587,7 +1603,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .mst_resp_t           ( axi_mst_rsp_t )
     ) i_serial_link_tx_id_remap (
       .clk_i,
-      .rst_ni,
+      .rst_ni     ( cheshire_reset_n ),
       .slv_req_i  ( slink_tx_uar_req ),
       .slv_resp_o ( slink_tx_uar_rsp ),
       .mst_req_o  ( slink_tx_idr_req ),
@@ -1607,11 +1623,11 @@ module cheshire_soc import cheshire_pkg::*; #(
       .NoRegCdc     ( 1'b1 ) // Since reg_clk_i is assigned to clk_i
     ) i_serial_link (
       .clk_i,
-      .rst_ni,
+      .rst_ni         ( cheshire_reset_n ),
       .clk_sl_i       ( clk_i  ),
-      .rst_sl_ni      ( rst_ni ),
+      .rst_sl_ni      ( cheshire_reset_n ),
       .clk_reg_i      ( clk_i  ),
-      .rst_reg_ni     ( rst_ni ),
+      .rst_reg_ni     ( cheshire_reset_n ),
       .testmode_i     ( test_mode_i ),
       .axi_in_req_i   ( slink_tx_idr_req ),
       .axi_in_rsp_o   ( slink_tx_idr_rsp ),
@@ -1671,7 +1687,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .reg_resp_t   ( reg_rsp_t )
     ) i_axi_vga (
       .clk_i,
-      .rst_ni,
+      .rst_ni         ( cheshire_reset_n ),
       .test_mode_en_i ( test_mode_i ),
       .reg_req_i      ( reg_out_req[RegOut.vga] ),
       .reg_rsp_o      ( reg_out_rsp[RegOut.vga] ),
@@ -1699,7 +1715,7 @@ module cheshire_soc import cheshire_pkg::*; #(
         .reg_rsp_t          ( reg_rsp_t )
       ) i_vga_bus_err (
         .clk_i,
-        .rst_ni,
+        .rst_ni     ( cheshire_reset_n ),
         .testmode_i ( test_mode_i ),
         .axi_req_i  ( axi_in_req[AxiIn.vga] ),
         .axi_rsp_i  ( axi_in_rsp[AxiIn.vga] ),
@@ -1747,7 +1763,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .axi_rsp_t      ( axi_mst_rsp_t )
     ) i_spinal_usb_ohci (
       .soc_clk_i    ( clk_i  ),
-      .soc_rst_ni   ( rst_ni ),
+      .soc_rst_ni   ( cheshire_reset_n ),
       .ctrl_req_i   ( reg_out_req[RegOut.usb] ),
       .ctrl_rsp_o   ( reg_out_rsp[RegOut.usb] ),
       .dma_req_o    ( axi_in_req[AxiIn.usb] ),

@@ -298,6 +298,16 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     jtag_write(dm::DMControl, dmcontrol);
     do jtag_dbg.read_dmi_exp_backoff(dm::DMControl, dmcontrol);
     while (~dmcontrol.dmactive);
+    // Issue one jtag_tck ndmreset cycle through the debug module
+    // Corresponding to ~190 clk cycles into Cheshire
+    dmcontrol = '{dmactive: 1, ndmreset: 1, default: '0};
+    jtag_write(dm::DMControl, dmcontrol);
+    repeat(1) @(posedge jtag_tck);
+    dmcontrol = '{dmactive: 1, default: '0};
+    jtag_write(dm::DMControl, dmcontrol);
+    // After the ndmreset issue we need to wait some time before
+    // activating the SBA in order for it to be ready
+    repeat(250) @(posedge jtag_tck);
     // Activate, wait for system bus
     jtag_write(dm::SBCS, JtagInitSbcs, 0, 1);
     $display("[JTAG] Initialization success");
