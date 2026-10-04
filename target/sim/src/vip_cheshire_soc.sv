@@ -18,7 +18,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   parameter type          axi_ext_mst_req_t = logic,
   parameter type          axi_ext_mst_rsp_t = logic,
   // Timing
-  parameter time          ClkPeriodSys      = 20ns,
+  parameter time          ClkPeriodSys      = 20ns,// 5ns
   parameter time          ClkPeriodJtag     = 20ns,
   parameter time          ClkPeriodRtc      = 30518ns,
   parameter time          ClkPeriodEth      = 8ns,
@@ -627,9 +627,10 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .clk_i(clk)
   );
 
+  logic r_complete;
   logic reg_error, eth_rx_irq;
-  logic dma_en;
   logic [REG_BUS_DW-1:0] rx_rsp_valid;
+  logic rx_comp;
 
   reg_bus_drv_t reg_drv_rx  = new(reg_bus_rx);
 
@@ -647,7 +648,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .AddrWidth           ( DutCfg.AddrWidth     ),
     .UserWidth           ( DutCfg.AxiUserWidth  ),
     .AxiIdWidth          ( DutCfg.AxiMstIdWidth ),
-    .NumAxInFlight       ( 32'd15               ),
+    .NumAxInFlight       ( 32'd10               ), //15
     .BufferDepth         ( 32'd2                ),
     .TFLenWidth          ( 32'd20               ),
     .MemSysDepth         ( 32'd0                ),
@@ -694,7 +695,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     .ClearErrOnAccess  ( 1'b1                 ),
     .ApplDelay         ( ClkPeriodSys * TAppl ),
     .AcqDelay          ( ClkPeriodSys * TTest ),
-    .UninitializedData ( "zeros" )
+    .UninitializedData ( "zeros"              )
   ) i_rx_axi_sim_mem (
     .clk_i              ( clk               ),
     .rst_ni             ( rst_n             ),
@@ -731,7 +732,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     reg_drv_rx.send_write( 'h0300c000, 32'h89000123, 'hf, reg_error); //lower 32bits of MAC address
     @(posedge clk);
 
-    reg_drv_rx.send_write( 'h0300c004, 32'h00800207, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+    reg_drv_rx.send_write( 'h0300c004, 32'h00800207, 'hf, reg_error); //upper 16bits of MAC address + irq enable
     @(posedge clk);
 
     @(posedge eth_rx_irq);
@@ -751,23 +752,18 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     reg_drv_rx.send_write( 'h0300c044, 'h1, 'hf , reg_error);   // req valid
     @(posedge clk);
 
-    reg_drv_rx.send_write( 'h0300c044, 'h0, 'hf , reg_error);   // req valid
-    @(posedge clk);
-
     //wait till all data written into rx_axi_sim_mem
     while(1) begin
+      //$display("looping for rsp_valid");
       reg_drv_rx.send_read( 'h0300c050, rx_rsp_valid, reg_error);
       if( rx_rsp_valid ) begin
         break;
       end
       @(posedge clk);
     end
-    repeat (300) @(posedge clk);
-
-    reg_drv_rx.send_write( 'h0300c018, 32'h2, 'hf, reg_error ); // to clear rx_complete, thus to clear rx_irq once all data is processed.
-    @(posedge clk)
 
 
+    //$display("clear written");
     // Tx test starts here: external back to core
     reg_drv_rx.send_write( 'h0300c000, 32'h89000123, 'hf, reg_error); //lower 32bits of MAC address
     @(posedge clk);
@@ -793,8 +789,83 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     reg_drv_rx.send_write( 'h0300c044, 'h1, 'hf , reg_error);   // req valid
     @(posedge clk);
 
-    reg_drv_rx.send_write( 'h0300c044, 'h0, 'hf , reg_error);   // req valid
+    while(1) begin
+      //$display("looping for rsp_valid");
+      reg_drv_rx.send_read( 'h0300c050, rx_rsp_valid, reg_error);
+      if( rx_rsp_valid ) begin
+        break;
+      end
+      @(posedge clk);
+    end
+
+    // 2nd rx
+    reg_drv_rx.send_write( 'h0300c000, 32'h89000123, 'hf, reg_error); //lower 32bits of MAC address
     @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c004, 32'h00800207, 'hf, reg_error); //upper 16bits of MAC address + irq enable
+    @(posedge clk);
+
+    @(posedge eth_rx_irq);
+
+    reg_drv_rx.send_write( 'h0300c01c, 32'h0, 'hf, reg_error ); // SRC_ADDR
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c020, 32'h0, 'hf, reg_error); // DST_ADDR
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c028, 32'h5,'hf , reg_error); // src protocol
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c02c, 32'h0,'hf , reg_error); // dst protocol
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c044, 'h1, 'hf , reg_error);   // req valid
+    @(posedge clk);
+
+    //wait till all data written into rx_axi_sim_mem
+    while(1) begin
+      //$display("looping for rsp_valid");
+      reg_drv_rx.send_read( 'h0300c050, rx_rsp_valid, reg_error);
+      if( rx_rsp_valid ) begin
+        break;
+      end
+      @(posedge clk);
+    end
+
+    // 2nd tx
+    reg_drv_rx.send_write( 'h0300c000, 32'h89000123, 'hf, reg_error); //lower 32bits of MAC address
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c004, 32'h00800207, 'hf, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c01c, 32'h0, 'hf, reg_error ); // SRC_ADDR
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c020, 32'h0, 'hf, reg_error); // DST_ADDR
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c024, 32'h40,'hf , reg_error); // Size in bytes
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c028, 32'h0,'hf , reg_error); // src protocol
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c02c, 32'h5,'hf , reg_error); // dst protocol
+    @(posedge clk);
+
+    reg_drv_rx.send_write( 'h0300c044, 'h1, 'hf , reg_error);   // req valid
+    @(posedge clk);
+
+    while(1) begin
+      //$display("looping for rsp_valid");
+      reg_drv_rx.send_read( 'h0300c050, rx_rsp_valid, reg_error);
+      if( rx_rsp_valid ) begin
+        break;
+      end
+      @(posedge clk);
+    end
+
   end
 
   ///////////////////
