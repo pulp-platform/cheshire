@@ -303,6 +303,19 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     $display("[JTAG] Initialization success");
   endtask
 
+  // Issue a remote reset through the debug module
+  task automatic jtag_reset;
+    // Issue one jtag_tck ndmreset cycle through the debug module
+    // Corresponding to ~190 clk cycles into Cheshire
+    dm::dmcontrol_t dmcontrol = '{dmactive: 1, ndmreset: 1, default: '0};
+    jtag_write(dm::DMControl, dmcontrol);
+    repeat(1) @(posedge jtag_tck);
+    dmcontrol = '{dmactive: 1, default: '0};
+    jtag_write(dm::DMControl, dmcontrol);
+    repeat(5) @(posedge jtag_tck);
+    $display("[JTAG] Issued remote reset");
+  endtask
+
   task automatic jtag_read_reg32(
     input doub_bt addr,
     output word_bt data,
@@ -435,6 +448,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   task automatic jtag_wait_for_eoc(output word_bt exit_code);
     jtag_poll_bit0(REGS_SCRATCH_BASE_ADDR(2), exit_code, 800);
     exit_code >>= 1;
+    jtag_reset();
     if (exit_code) $error("[JTAG] FAILED: return code %0d", exit_code);
     else $display("[JTAG] SUCCESS");
   endtask
