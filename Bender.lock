@@ -17,8 +17,8 @@ packages:
     - obi_peripherals
     - register_interface
   axi:
-    revision: 78831b6feba265d5ee2683bbf42b4150f8a35c43
-    version: 0.39.8
+    revision: 42ca270ebd8bbbc1c64ddc0ca712e722eb9e3f06
+    version: 0.39.11
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -87,8 +87,8 @@ packages:
     - apb
     - common_cells
   common_cells:
-    revision: 9afda9abb565971649c2aa0985639c096f351171
-    version: 1.38.0
+    revision: 1281545696eb3fcba50ec5b4275993476a3c710e
+    version: 1.40.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -101,14 +101,20 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 4c02b24fe7c04690f626776a92274da24f80d1da
+    revision: 54566b9464d4dec195bfff7045fced735ca5919c
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
     dependencies:
     - axi
+    - axi_riscv_atomics
+    - clic
+    - clint
     - common_cells
+    - common_verification
     - fpnew
+    - opentitan_peripherals
+    - register_interface
     - tech_cells_generic
   dram_rtl_sim:
     revision: a764d5200a19cdd72a5237cbfb16985515a3058d
@@ -118,10 +124,10 @@ packages:
     dependencies:
     - axi
   fpnew:
-    revision: e5aa6a01b5bbe1675c3aa8872e1203413ded83d1
+    revision: 3eb6afeab2cb33f7d8689222955d0171aeb3a801
     version: null
     source:
-      Git: https://github.com/pulp-platform/cvfpu.git
+      Git: https://github.com/openhwgroup/cvfpu.git
     dependencies:
     - common_cells
     - fpu_div_sqrt_mvp
@@ -207,8 +213,8 @@ packages:
     - axi_stream
     - common_cells
   tech_cells_generic:
-    revision: 7968dd6e6180df2c644636bc6d2908a49f2190cf
-    version: 0.2.13
+    revision: 3a3de73632a06826b1bd9c65a0a2e92b32016845
+    version: 0.2.14
     source:
       Git: https://github.com/pulp-platform/tech_cells_generic.git
     dependencies:
