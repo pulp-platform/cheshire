@@ -13,7 +13,9 @@
 // Plusargs (aligned with `tb_cheshire_soc` where applicable):
 //   +BINARY=<elf>      ELF binary to preload and run in passive boot mode
 //   +BOOTMODE=<n>      Boot mode (0: passive)
-//   +PRELMODE=<n>      Preload mode in passive boot (0: JTAG, 1: serial link, 2: UART)
+//   +PRELMODE=<n>      Preload mode in passive boot (0: JTAG, 1: serial link, 2: UART,
+//                      3: direct DRAM preload with JTAG fallback and control)
+//   +PRELOAD_BIN=<file>@<addr>[,...]  Write raw binaries directly into DRAM before simulation
 //   +UART_BAUD=<n>     UART baud rate used to decode output (default: 115200)
 //   +MAX_CYCLES=<n>    Abort with an error after this many system clock cycles (default: none)
 //   +TRACE=<file>      Dump a waveform (only if built with tracing)
@@ -28,6 +30,8 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <fstream>
+#include <iterator>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -440,6 +444,11 @@ class Sim {
             elf_preload("JTAG", binary, [&](uint64_t addr, const std::vector<uint8_t> &buf) {
                 jtag_load_section(addr, buf);
             });
+        jtag_resume(entry);
+    }
+
+    // Point the halted hart 0 to `entry` and resume it
+    void jtag_resume(uint64_t entry) {
         jtag_write(dm::Data1, uint32_t(entry >> 32));
         jtag_write(dm::Data0, uint32_t(entry));
         jtag_write(dm::Command, dm::CmdWriteDpc, true, false);
@@ -451,6 +460,46 @@ class Sim {
         uint32_t exit_code = jtag_poll_bit0(scratch_addr(2), PollIdleEoc) >> 1;
         report("JTAG", exit_code);
         return exit_code;
+    }
+
+    /////////////////////////
+    //  Direct Preloading  //
+    /////////////////////////
+
+    bool in_dram(uint64_t addr, uint64_t len) const {
+        return addr >= cfg_.dram_base && addr + len <= cfg_.dram_end;
+    }
+
+    // Write a raw binary file directly into DRAM; must happen before the SoC accesses that region
+    void dram_preload_bin(const std::string &file, uint64_t addr) {
+        std::ifstream f(file, std::ios::binary);
+        if (!f) throw SimAbort("Failed to open " + file);
+        std::vector<uint8_t> buf((std::istreambuf_iterator<char>(f)),
+                                 std::istreambuf_iterator<char>());
+        if (!in_dram(addr, buf.size()))
+            throw SimAbort("Binary " + file + " does not fit into DRAM at the requested address");
+        mems[MemDram].write(addr, buf.data(), buf.size());
+        printf("[MEMH] Preloaded %s (%zu bytes) at 0x%016" PRIx64 "\n", file.c_str(), buf.size(),
+               addr);
+    }
+
+    // Halt hart 0, write DRAM sections directly and others through JTAG, and resume, like
+    // `memh_elf_preload` and `jtag_elf_run_no_preload`. The hart is halted and no cache holds
+    // DRAM lines yet, so writing DRAM behind the SoC is coherent.
+    void memh_elf_run(const std::string &binary) {
+        jtag_wait_for_llc_config_halt();
+        uint64_t entry =
+            elf_preload("MEMH", binary, [&](uint64_t addr, const std::vector<uint8_t> &buf) {
+                if (in_dram(addr, buf.size())) {
+                    mems[MemDram].write(addr, buf.data(), buf.size());
+                } else {
+                    printf("[MEMH] Section at 0x%016" PRIx64
+                           " is not in DRAM, falling back to JTAG\n",
+                           addr);
+                    jtag_load_section(addr, buf);
+                }
+            });
+        jtag_resume(entry);
     }
 
     ////////////
@@ -624,6 +673,8 @@ int main(int argc, char **argv) {
     uint64_t max_cycles = plusarg_u64(ctx.get(), "MAX_CYCLES", 0);
     uint64_t progress = plusarg_u64(ctx.get(), "PROGRESS", 0);
     mem_debug = plusarg_u64(ctx.get(), "MEM_DEBUG", 0);
+    std::string preload_bins;
+    plusarg(ctx.get(), "PRELOAD_BIN", preload_bins);
 
     // Tracing must be enabled before the model is constructed
     bool trace = plusarg(ctx.get(), "TRACE", trace_file);
@@ -637,6 +688,16 @@ int main(int argc, char **argv) {
     uint32_t exit_code = 0;
 
     try {
+        // Raw binaries go into DRAM before anything can cache it
+        for (size_t pos = 0; pos < preload_bins.size();) {
+            size_t end = preload_bins.find(',', pos);
+            if (end == std::string::npos) end = preload_bins.size();
+            std::string item = preload_bins.substr(pos, end - pos);
+            size_t at = item.rfind('@');
+            if (at == std::string::npos) throw SimAbort("Expected <file>@<addr> in +PRELOAD_BIN");
+            sim.dram_preload_bin(item.substr(0, at), strtoull(item.c_str() + at + 1, nullptr, 0));
+            pos = end + 1;
+        }
         sim.reset(uint8_t(boot_mode));
         if (boot_mode != 0) throw SimAbort("Unsupported boot mode " + std::to_string(boot_mode));
         if (binary.empty()) throw SimAbort("No binary specified (+BINARY=<elf>)");
@@ -652,6 +713,11 @@ int main(int argc, char **argv) {
             break;
         case 2:
             exit_code = sim.uart_debug_elf_run_and_wait(binary);
+            break;
+        case 3:
+            sim.jtag_init();
+            sim.memh_elf_run(binary);
+            exit_code = sim.jtag_wait_for_eoc();
             break;
         default:
             throw SimAbort("Unsupported preload mode " + std::to_string(preload_mode));
