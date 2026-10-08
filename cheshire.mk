@@ -198,6 +198,12 @@ CHS_SIM_ALL += $(CHS_SIM_MODELS_ALL)
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh
 
+#############
+# Verilator #
+#############
+
+include $(CHS_ROOT)/target/sim/verilator/verilator.mk
+
 ###########
 # DRAMSys #
 ###########
@@ -225,8 +231,9 @@ chs-hw-all:      $(CHS_HW_ALL)
 chs-bootrom-all: $(CHS_BOOTROM_ALL)
 chs-sim-all:     $(CHS_SIM_ALL)
 chs-dramsys-all: $(CHS_DRAMSYS_ALL)
+chs-vlt-all:     $(CHS_VLT_ALL)
 chs-xilinx-all:  $(CHS_XILINX_ALL)
 
-CHS_PHONY += chs-all chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-dramsys-all chs-xilinx-all
+CHS_PHONY += chs-all chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-dramsys-all chs-vlt-all chs-xilinx-all
 
 .PHONY: $(CHS_PHONY)

@@ -47,14 +47,22 @@ sources:
   - hw/cheshire_pkg.sv
   - hw/cheshire_soc.sv
 
+  - target: any(simulation, test, verilator)
+    files:
+      - target/sim/src/tb_cheshire_pkg.sv
+
   - target: any(simulation, test)
     files:
       - target/sim/models/s25fs512s.v
       - target/sim/models/24FC1025.v
       - target/sim/src/vip_cheshire_soc.sv
-      - target/sim/src/tb_cheshire_pkg.sv
       - target/sim/src/fixture_cheshire_soc.sv
       - target/sim/src/tb_cheshire_soc.sv
+
+  - target: verilator
+    files:
+      - target/sim/verilator/src/cheshire_vlt_axi_mem.sv
+      - target/sim/verilator/src/cheshire_top_verilator.sv
 
   - target: all(fpga, xilinx)
     files:
