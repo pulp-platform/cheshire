@@ -90,6 +90,7 @@ The following additional targets are not invoked by the above, but also availabl
 - `nonfree-init`: Clones our internal repository with nonfree resources we cannot release, including our internal CI. *This is not necessary to use Cheshire*.
 - `clean-deps`: Removes checked-out bender dependencies and submodules. This is useful when references to dependencies are updated.
 - `dramsys-all`: Builds [DRAMSys-based DRAM Simulation](https://github.com/pulp-platform/dram_rtl_sim) for Cheshire's simulation targets; see [Testbench](tg/sim.md#DramSys).
+- `vlt-all`: Builds a Verilator simulation model; see [Verilator](tg/sim.md#verilator).
 
 ## Targets
 
