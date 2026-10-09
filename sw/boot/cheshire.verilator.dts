@@ -1,0 +1,39 @@
+// Copyright 2026 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+//
+// Enrico Zelioli <ezelioli@iis.ee.ethz.ch>
+//
+// Device tree for booting Linux on the Verilator simulation target. The model must be built
+// with `CHS_VLT_RTC_FREQ=1000000` to match the timebase in `cheshire.dtsi`.
+
+/include/ "cheshire.dtsi"
+
+&chosen {
+  // The console needs a standard baud rate: Linux falls back to 9600 baud when opening
+  // the console with a custom one. At 200 MHz, 4 Mbaud yields a divisor of 3 (4.17 Mbaud).
+  stdout-path = "/soc/serial@3002000:4000000";
+  // Shorten boot in simulation without changing the system:
+  // - `swiotlb=512`: a 1 MiB bounce buffer, which is quick to clear
+  // - `pty.legacy_count=0`: skip registering 512 unused legacy PTY devices
+  // - `initcall_blacklist=jent_mod_init`: skip the jitter entropy self-test
+  // - `sysctl.kernel.modprobe=/nonexistent`: fail module requests without running modprobe
+  bootargs = "earlycon console=ttyS0,4000000 swiotlb=512 retain_initrd pty.legacy_count=0 initcall_blacklist=jent_mod_init sysctl.kernel.modprobe=/nonexistent";
+};
+
+&CPU0 {
+  clock-frequency = <200000000>; // 200 MHz
+};
+
+/ {
+  // Less memory to initialize; plenty for the CVA6 SDK root filesystem
+  memory@80000000 {
+    reg = <0x0 0x80000000 0x0 0x10000000>; // 256 MiB
+  };
+  soc {
+    serial@3002000 {
+      clock-frequency = <200000000>; // 200 MHz
+      current-speed = <4000000>;
+    };
+  };
+};
