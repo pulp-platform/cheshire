@@ -24,6 +24,10 @@
 //   +MEM_DEBUG=<mask>  Log accesses to the simulated memories selected by `mask` (bit i: MemId i)
 //   +PROGRESS=<n>      Print simulation progress every n system clock cycles
 //   +PC_SAMPLE=<n>     Print the commit-stage PC of hart 0 every n system clock cycles
+//   +UART_INPUT=<text> Type text into the SoC UART (escapes: \n, \r, \t, \\)
+//   +UART_INPUT_AFTER=<text>  Only type once the UART output contains this text; a leading `^`
+//                             anchors it to the start of a line (e.g. `^# ` for a shell prompt)
+//   +UART_INPUT_GAP=<n>       Idle system clock cycles between typed characters (default: 20000)
 
 #include <algorithm>
 #include <chrono>
@@ -194,6 +198,17 @@ class Sim {
         slink_.set_debug(en);
     }
 
+    // Type `text` into the SoC UART once its output contains `after` (right away if empty),
+    // pausing `gap` cycles after each character so the receive FIFO does not overrun
+    void set_uart_input(const std::string &text, const std::string &after, uint64_t gap) {
+        uart_input_ = text;
+        uart_input_gap_ = gap;
+        if (after.empty())
+            send_uart_input();
+        else
+            uart_.expect(after);
+    }
+
     uint64_t cycles() const {
         return cycle_;
     }
@@ -248,6 +263,7 @@ class Sim {
         // Sample handshakes and outputs seen by the upcoming rising edge
         slink_.sample();
         uart_.sample(t, top_->uart_tx_o);
+        if (!uart_input_.empty() && uart_.take_match()) send_uart_input();
         ctx_->timeInc(ClkPeriodSys / 2);
         // Rising edge
         top_->clk_i = 1;
@@ -517,6 +533,13 @@ class Sim {
         uart_tx_.send(c);
     }
 
+    void send_uart_input() {
+        printf("[VLT] Typing UART input (cycle %" PRIu64 ")\n", cycle_);
+        uart_tx_.set_gap(uart_input_gap_ * ClkPeriodSys);
+        for (char c : uart_input_) uart_send(uint8_t(c));
+        uart_input_.clear();
+    }
+
     void uart_send_u64(uint64_t v) {
         for (unsigned i = 0; i < 8; ++i) uart_send(uint8_t(v >> (8 * i)));
     }
@@ -641,6 +664,8 @@ class Sim {
     uint64_t max_cycles_;
     uint64_t progress_;
     uint64_t pc_sample_;
+    std::string uart_input_;
+    uint64_t uart_input_gap_ = 0;
     std::chrono::steady_clock::time_point start_;
     uint64_t cycle_ = 0;
     uint64_t next_rtc_ = 0;
@@ -662,6 +687,31 @@ static bool plusarg(VerilatedContext *ctx, const char *name, std::string &value)
 static uint64_t plusarg_u64(VerilatedContext *ctx, const char *name, uint64_t dflt) {
     std::string value;
     return plusarg(ctx, name, value) ? strtoull(value.c_str(), nullptr, 0) : dflt;
+}
+
+// Resolve the escapes \n, \r, \t, and \\ in a plusarg string
+static std::string unescape(const std::string &s) {
+    std::string out;
+    for (size_t i = 0; i < s.size(); ++i) {
+        if (s[i] != '\\' || i + 1 == s.size()) {
+            out += s[i];
+            continue;
+        }
+        switch (s[++i]) {
+        case 'n':
+            out += '\n';
+            break;
+        case 'r':
+            out += '\r';
+            break;
+        case 't':
+            out += '\t';
+            break;
+        default:
+            out += s[i];
+        }
+    }
+    return out;
 }
 
 int main(int argc, char **argv) {
@@ -692,6 +742,12 @@ int main(int argc, char **argv) {
     Sim sim(ctx.get(), uart_baud, max_cycles, progress, plusarg_u64(ctx.get(), "PC_SAMPLE", 0));
     if (trace) sim.set_trace(trace_file, plusarg_u64(ctx.get(), "TRACE_START", 0));
     sim.set_slink_debug(ctx->commandArgsPlusMatch("SLINK_DEBUG")[0]);
+    std::string uart_input, uart_input_after;
+    if (plusarg(ctx.get(), "UART_INPUT", uart_input)) {
+        plusarg(ctx.get(), "UART_INPUT_AFTER", uart_input_after);
+        sim.set_uart_input(unescape(uart_input), unescape(uart_input_after),
+                           plusarg_u64(ctx.get(), "UART_INPUT_GAP", 20000));
+    }
 
     int ret = 0;
     uint32_t exit_code = 0;

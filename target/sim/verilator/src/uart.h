@@ -83,6 +83,20 @@ class UartRx {
         return eoc;
     }
 
+    // Watch the output for `text`, which may end a partial line (e.g. a shell prompt).
+    // A leading `^` anchors it to the start of the line.
+    void expect(const std::string &text) {
+        expect_ = text;
+        matched_ = false;
+    }
+
+    // Whether the expected text was received; clears the flag
+    bool take_match() {
+        bool m = matched_;
+        matched_ = false;
+        return m;
+    }
+
     // Print any partial line left in the buffer
     void flush() {
         if (!line_.empty()) print_line();
@@ -99,7 +113,17 @@ class UartRx {
             eoc_ = true;
         } else if (c != '\r') {
             line_.push_back(char(c));
+            if (!expect_.empty() && line_matches_expected()) {
+                matched_ = true;
+                expect_.clear();
+            }
         }
+    }
+
+    bool line_matches_expected() const {
+        if (expect_[0] == '^') return line_.compare(0, std::string::npos, expect_, 1) == 0;
+        return line_.size() >= expect_.size() &&
+               line_.compare(line_.size() - expect_.size(), expect_.size(), expect_) == 0;
     }
 
     void print_line() {
@@ -119,6 +143,8 @@ class UartRx {
     unsigned scoop_req_ = 0;
     std::deque<uint8_t> scooped_;
     bool eoc_ = false;
+    std::string expect_;
+    bool matched_ = false;
 };
 
 // Drives the SoC RX line with queued bytes.
@@ -131,6 +157,11 @@ class UartTx {
         queue_.push_back(c);
     }
 
+    // Idle time (ps) inserted after each frame, e.g. to pace typed input
+    void set_gap(uint64_t gap_ps) {
+        gap_ps_ = gap_ps;
+    }
+
     bool idle() const {
         return queue_.empty() && bit_ < 0;
     }
@@ -138,17 +169,19 @@ class UartTx {
     // Return the line level at time `t` (ps); call at least once per system clock cycle.
     bool line(uint64_t t) {
         if (bit_ < 0) {
-            if (queue_.empty()) return true;
+            if (queue_.empty() || t < next_) return true;
             frame_ = uint16_t(queue_.front()) << 1 | 0x200; // start bit, data, stop bit
             queue_.pop_front();
             bit_ = 0;
             next_ = t + bit_ps_;
         } else if (t >= next_) {
-            next_ += bit_ps_;
             if (++bit_ == 10) {
+                // The next frame may start right at the end of the stop bit, or after the gap
                 bit_ = -1;
+                next_ += gap_ps_;
                 return line(t);
             }
+            next_ += bit_ps_;
         }
         return (frame_ >> bit_) & 1;
     }
@@ -159,4 +192,5 @@ class UartTx {
     uint16_t frame_ = 0;
     int bit_ = -1;
     uint64_t next_ = 0;
+    uint64_t gap_ps_ = 0;
 };
