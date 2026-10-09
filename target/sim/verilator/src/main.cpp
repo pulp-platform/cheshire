@@ -23,6 +23,7 @@
 //   +SLINK_DEBUG       Log all serial link AXI transactions
 //   +MEM_DEBUG=<mask>  Log accesses to the simulated memories selected by `mask` (bit i: MemId i)
 //   +PROGRESS=<n>      Print simulation progress every n system clock cycles
+//   +PC_SAMPLE=<n>     Print the commit-stage PC of hart 0 every n system clock cycles
 
 #include <algorithm>
 #include <chrono>
@@ -151,12 +152,14 @@ extern "C" void chs_vlt_mem_write(unsigned int mem_id, unsigned long long addr,
 
 class Sim {
   public:
-    Sim(VerilatedContext *ctx, uint64_t uart_baud, uint64_t max_cycles, uint64_t progress)
+    Sim(VerilatedContext *ctx, uint64_t uart_baud, uint64_t max_cycles, uint64_t progress,
+        uint64_t pc_sample)
         : ctx_(ctx), top_(new Vcheshire_top_verilator(ctx, "TOP")), slink_(top_.get()),
           jtag_(
               top_.get(), [this] { tick(); }, [this] { return cycle_; }),
           uart_(uart_baud), uart_tx_(uart_baud), uart_bit_ps_(1000000000000ull / uart_baud),
-          max_cycles_(max_cycles), progress_(progress), start_(std::chrono::steady_clock::now()) {
+          max_cycles_(max_cycles), progress_(progress), pc_sample_(pc_sample),
+          start_(std::chrono::steady_clock::now()) {
         svSetScope(svGetScopeFromName("TOP.cheshire_top_verilator"));
         unsigned char llc_not_bypass;
         unsigned int idcode, rtc_freq;
@@ -253,6 +256,9 @@ class Sim {
         slink_.commit(cycle_);
         ++cycle_;
         if (progress_ && cycle_ % progress_ == 0) print_progress();
+        if (pc_sample_ && cycle_ % pc_sample_ == 0)
+            printf("[VLT] PC %9" PRIu64 ": 0x%016" PRIx64 "\n", cycle_,
+                   uint64_t(top_->dbg_pc_commit_o));
         if (ctx_->gotFinish()) throw SimAbort("$finish called");
         if (max_cycles_ && cycle_ >= max_cycles_)
             throw SimAbort("Reached cycle limit (" + std::to_string(max_cycles_) + ")");
@@ -634,6 +640,7 @@ class Sim {
     uint64_t uart_bit_ps_;
     uint64_t max_cycles_;
     uint64_t progress_;
+    uint64_t pc_sample_;
     std::chrono::steady_clock::time_point start_;
     uint64_t cycle_ = 0;
     uint64_t next_rtc_ = 0;
@@ -682,7 +689,7 @@ int main(int argc, char **argv) {
     bool trace = plusarg(ctx.get(), "TRACE", trace_file);
     if (trace) ctx->traceEverOn(true);
 
-    Sim sim(ctx.get(), uart_baud, max_cycles, progress);
+    Sim sim(ctx.get(), uart_baud, max_cycles, progress, plusarg_u64(ctx.get(), "PC_SAMPLE", 0));
     if (trace) sim.set_trace(trace_file, plusarg_u64(ctx.get(), "TRACE_START", 0));
     sim.set_slink_debug(ctx->commandArgsPlusMatch("SLINK_DEBUG")[0]);
 

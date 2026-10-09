@@ -54,7 +54,9 @@ module cheshire_top_verilator import cheshire_pkg::*; #(
   input  logic        slink_r_ready_i,
   output logic [63:0] slink_r_data_o,
   output logic [1:0]  slink_r_resp_o,
-  output logic        slink_r_last_o
+  output logic        slink_r_last_o,
+  // Debug: PC of the instruction at the commit stage of hart 0
+  output logic [63:0] dbg_pc_commit_o
 );
 
   `include "cheshire/typedef.svh"
@@ -199,6 +201,8 @@ module cheshire_top_verilator import cheshire_pkg::*; #(
     .usb_dp_o           ( ),
     .usb_dp_oe_o        ( )
   );
+
+  assign dbg_pc_commit_o = 64'(i_dut.gen_cva6_cores[0].i_core_cva6.pc_commit);
 
   ////////////
   //  DRAM  //
