@@ -18,6 +18,8 @@ CHS_VLT_PROFDATA  ?= llvm-profdata
 
 # Selected configuration from `tb_cheshire_pkg`; each configuration is a separate model
 CHS_VLT_SELCFG  ?= 0
+# RTC frequency in Hz overriding the configuration's (empty: keep it, i.e. 32768 Hz by default)
+CHS_VLT_RTC_FREQ ?=
 # Number of simulation threads; for good performance, pin them to CPUs sharing a last-level cache
 CHS_VLT_THREADS ?= 1
 # CPU list to pin simulations to with `taskset` (e.g. `16-19`), empty for no pinning
@@ -30,7 +32,8 @@ CHS_VLT_PGO      ?= 0
 CHS_VLT_PGO_BINS ?= $(CHS_ROOT)/sw/tests/helloworld.dram.elf $(CHS_ROOT)/sw/tests/dma_2d.spm.elf
 
 # Build variants use separate directories as build flags are not tracked by the generated makefiles
-CHS_VLT_VARIANT  = cfg$(CHS_VLT_SELCFG)$(if $(filter-out 1,$(CHS_VLT_THREADS)),-t$(CHS_VLT_THREADS))
+CHS_VLT_VARIANT  = cfg$(CHS_VLT_SELCFG)$(if $(CHS_VLT_RTC_FREQ),-rtc$(CHS_VLT_RTC_FREQ))
+CHS_VLT_VARIANT := $(CHS_VLT_VARIANT)$(if $(filter-out 1,$(CHS_VLT_THREADS)),-t$(CHS_VLT_THREADS))
 CHS_VLT_VARIANT := $(CHS_VLT_VARIANT)$(if $(filter gcc,$(CHS_VLT_COMPILER)),-gcc)
 CHS_VLT_VARIANT := $(CHS_VLT_VARIANT)$(if $(filter 1,$(CHS_VLT_PGO)),-pgo)
 CHS_VLT_VARIANT := $(CHS_VLT_VARIANT)$(if $(filter 1,$(CHS_VLT_TRACE)),-trace)
@@ -47,7 +50,7 @@ CHS_VLT_RUN_PREFIX = $(if $(CHS_VLT_CPUS),taskset -c $(CHS_VLT_CPUS)) $(CHS_VLT_
 CHS_VLT_ARGS ?=
 
 CHS_VLT_FLAGS  = --cc --exe --build -j 0 --top-module cheshire_top_verilator
-CHS_VLT_FLAGS += -GSelectedCfg=$(CHS_VLT_SELCFG) -timescale 1ns/1ps
+CHS_VLT_FLAGS += -GSelectedCfg=$(CHS_VLT_SELCFG) $(if $(CHS_VLT_RTC_FREQ),-GRtcFreq=$(CHS_VLT_RTC_FREQ)) -timescale 1ns/1ps
 CHS_VLT_FLAGS += -Wno-fatal -Wno-lint -Wno-style -Wno-MULTIDRIVEN -Wno-UNOPTFLAT
 CHS_VLT_FLAGS += $(CHS_VLT_DIR)/config.vlt
 # Build without assertions, including the common_cells assertion macros (`ASSERTS_OFF`)

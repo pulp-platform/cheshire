@@ -13,7 +13,10 @@
 
 module cheshire_top_verilator import cheshire_pkg::*; #(
   /// The selected simulation configuration from the `tb_cheshire_pkg`.
-  parameter int unsigned SelectedCfg = 32'd0
+  parameter int unsigned SelectedCfg = 32'd0,
+  /// RTC frequency in Hz overriding that of the selected configuration (0: keep it).
+  /// The harness generates `rtc_i` at the resulting frequency.
+  parameter int unsigned RtcFreq     = 32'd0
 ) (
   input  logic        clk_i,
   input  logic        rst_ni,
@@ -58,7 +61,13 @@ module cheshire_top_verilator import cheshire_pkg::*; #(
 
   import cheshire_addrmap_pkg::*;
 
-  localparam cheshire_cfg_t DutCfg = tb_cheshire_pkg::TbCheshireConfigs[SelectedCfg];
+  function automatic cheshire_cfg_t gen_dut_cfg();
+    cheshire_cfg_t ret = tb_cheshire_pkg::TbCheshireConfigs[SelectedCfg];
+    if (RtcFreq != 0) ret.RtcFreq = RtcFreq;
+    return ret;
+  endfunction
+
+  localparam cheshire_cfg_t DutCfg = gen_dut_cfg();
 
   `CHESHIRE_TYPEDEF_ALL(, DutCfg)
 
@@ -79,7 +88,8 @@ module cheshire_top_verilator import cheshire_pkg::*; #(
     output byte unsigned    llc_not_bypass,
     output longint unsigned dram_base,
     output longint unsigned dram_end,
-    output int unsigned     dbg_idcode
+    output int unsigned     dbg_idcode,
+    output int unsigned     rtc_freq
   );
     scratch_base     = REGS_SCRATCH_BASE_ADDR(0);
     llc_spm_cfg_addr = LLC_BASE_ADDR + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET;
@@ -87,6 +97,7 @@ module cheshire_top_verilator import cheshire_pkg::*; #(
     dram_base        = DutCfg.LlcOutRegionStart;
     dram_end         = DutCfg.LlcOutRegionEnd;
     dbg_idcode       = DutCfg.DbgIdCode;
+    rtc_freq         = DutCfg.RtcFreq;
   endfunction
 
   ///////////

@@ -56,7 +56,6 @@ using TraceFile = VerilatedVcdC;
 
 // Timing in ps, matching the defaults of `vip_cheshire_soc`
 static constexpr uint64_t ClkPeriodSys = 5000;
-static constexpr uint64_t ClkPeriodRtc = 30518000;
 static constexpr uint64_t RstCycles = 5;
 
 // Idle cycles between status polls, matching `vip_cheshire_soc`
@@ -160,11 +159,13 @@ class Sim {
           max_cycles_(max_cycles), progress_(progress), start_(std::chrono::steady_clock::now()) {
         svSetScope(svGetScopeFromName("TOP.cheshire_top_verilator"));
         unsigned char llc_not_bypass;
-        unsigned int idcode;
+        unsigned int idcode, rtc_freq;
         chs_vlt_get_cfg(&cfg_.scratch_base, &cfg_.llc_spm_cfg_addr, &llc_not_bypass,
-                        &cfg_.dram_base, &cfg_.dram_end, &idcode);
+                        &cfg_.dram_base, &cfg_.dram_end, &idcode, &rtc_freq);
         cfg_.llc_not_bypass = llc_not_bypass;
         cfg_.dbg_idcode = idcode;
+        // The RTC must match the frequency the SoC reports, as software calibrates against it
+        rtc_half_period_ = 500000000000ull / rtc_freq;
     }
 
     ~Sim() {
@@ -235,7 +236,7 @@ class Sim {
         top_->clk_i = 0;
         if (t >= next_rtc_) {
             top_->rtc_i = !top_->rtc_i;
-            next_rtc_ += ClkPeriodRtc / 2;
+            next_rtc_ += rtc_half_period_;
         }
         slink_.drive();
         jtag_.drive(cycle_);
@@ -636,6 +637,7 @@ class Sim {
     std::chrono::steady_clock::time_point start_;
     uint64_t cycle_ = 0;
     uint64_t next_rtc_ = 0;
+    uint64_t rtc_half_period_ = 0;
 };
 
 ////////////
