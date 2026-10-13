@@ -31,24 +31,26 @@
     #address-cells = <1>;
     #size-cells = <0>;
     timebase-frequency = <1000000>; // 1 MHz
-    CPU0: cpu@0 {
+% for i in range(int(num_cores)):
+    CPU${i}: cpu@${i} {
       device_type = "cpu";
       status = "okay";
       compatible = "eth,ariane", "riscv";
       clock-frequency = <50000000>; // 50 MHz
-      riscv,isa = "rv64imafdc";
+      riscv,isa = "${riscv_isa}";
       mmu-type = "riscv,sv39";
       tlb-split;
-      reg = <0>;
-      CPU0_intc: interrupt-controller {
+      reg = <${i}>;
+      CPU${i}_intc: interrupt-controller {
         #address-cells = <0>;
         #interrupt-cells = <1>;
         interrupt-controller;
         compatible = "riscv,cpu-intc";
       };
     };
+% endfor
   };
-
+<%text>
   soc: soc {
     #address-cells = <2>;
     #size-cells = <2>;
@@ -100,7 +102,9 @@
     };
     clint@2040000 {
       compatible = "riscv,clint0";
-      interrupts-extended = <&CPU0_intc 3 &CPU0_intc 7>;
+</%text>
+      interrupts-extended = ${'<' + ' '.join(f'&CPU{i}_intc 3 &CPU{i}_intc 7' for i in range(int(num_cores))) + '>'};
+<%text>
       reg-names = "control";
       reg = <0x0 0x2040000 0x0 0x040000>;
     };
@@ -109,7 +113,9 @@
       #address-cells = <0>;
       #interrupt-cells = <1>;
       interrupt-controller;
-      interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9>;
+</%text>
+      interrupts-extended = ${'<' + ' '.join(f'&CPU{i}_intc 11 &CPU{i}_intc 9' for i in range(int(num_cores))) + '>'};
+<%text>
       riscv,max-priority = <7>;
       riscv,ndev = <51>;
       reg = <0x0 0x4000000 0x0 0x4000000>;
@@ -117,3 +123,4 @@
   };
 
 };
+</%text>

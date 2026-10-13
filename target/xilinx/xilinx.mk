@@ -47,12 +47,56 @@ $(CHS_XILINX_DIR)/build/%/out.xci: \
 # Bitstreams #
 ##############
 
+ifneq ($(filter chs-xilinx-%,$(MAKECMDGOALS)),)
+# Generate cheshire.dtsi from its Mako template when add_sources or HW config changes
+$(CHS_XILINX_DIR)/build/%.dtb/cheshire.dtsi: \
+		$(CHS_SW_DIR)/boot/cheshire.dtsi.mako \
+		$(CHS_XILINX_DIR)/scripts/add_sources.%.tcl
+	@mkdir -p $(dir $@)
+	@# Find cva6 config from Bender script, then extract CMO enable from CVA6 config package
+	@# Extract number of cores from Cheshire config package
+	@# TODO: Use slang to extract all these after elaboration
+	@add_sources_tcl="$(CHS_XILINX_DIR)/scripts/add_sources.$*.tcl"; \
+	cva6_config_pkg=$$(grep -Po '\.bender/.*/cv[a-zA-Z0-9_-]*_config_pkg\.sv' "$$add_sources_tcl"); \
+	num_cores=$$(grep -Po 'NumCores *: *\K[0-9]+' $(CHS_ROOT)/hw/cheshire_pkg.sv); \
+	zicbom_en=$$(sed -n "s/.*RVZiCbom: bit'(\([0-9]\+\)).*/\1/p" "$$cva6_config_pkg"); \
+	riscv_isa="rv64imafdc"; \
+	[[ "$$zicbom_en" -eq 1 ]] && riscv_isa+="_zicbom"; \
+	$(MAKO) --var riscv_isa="$$riscv_isa" --var num_cores="$$num_cores" $< > $@
+.PRECIOUS: $(CHS_XILINX_DIR)/build/%.dtb/cheshire.dtsi
+else
+$(CHS_XILINX_DIR)/build/%.dtb/cheshire.dtsi:
+	@echo "A device-tree should be built with a bitstream to be synched"
+	@exit 1
+endif
+
+# Create a device-tree binary synched with the CVA6 configuration (CHS_BENDER_RTL_FLAGS) at
+# the time of bitstream generation. We stage all the device tree sources under out/.dtb/<board>/
+# and compiled the DTB from there.
+ifneq ($(filter chs-xilinx-%,$(MAKECMDGOALS)),)
+$(CHS_XILINX_DIR)/out/cheshire.%.dtb: \
+		$(CHS_SW_DIR)/boot/cheshire.%.dts \
+		$(wildcard $(CHS_SW_DIR)/boot/*.dtsi) \
+		$(CHS_XILINX_DIR)/build/%.dtb/cheshire.dtsi
+	@mkdir -p $(dir $@)
+	@# Stage the device tree sources from sw/boot dir (apart from generated fragments)
+	cp -f $(filter-out %cheshire.dtsi, $^) $(CHS_XILINX_DIR)/build/$*.dtb/
+	@# Compile the DTB
+	$(CHS_SW_DTC) -I dts -O dtb -o $@ -i $(CHS_XILINX_DIR)/build/$*.dtb/ $<
+else
+$(CHS_XILINX_DIR)/out/cheshire.%.dtb:
+	@echo "A device-tree should be built with a bitstream to be synched"
+	@exit 1
+endif
+.PRECIOUS: $(CHS_XILINX_DIR)/out/cheshire.%.dtb
+
 CHS_XILINX_BOARDS := genesys2 vcu128 vcu118
 
 CHS_XILINX_IPS_genesys2 := clkwiz vio mig7s
 CHS_XILINX_IPS_vcu128   := clkwiz vio ddr4
 CHS_XILINX_IPS_vcu118   := clkwiz vio ddr4
 
+# Bender Vivado source script synched with CHS_BENDER_RTL_FLAGS
 $(CHS_XILINX_DIR)/scripts/add_sources.%.tcl: $(CHS_ROOT)/Bender.yml $(CHS_XILINX_HW)
 	$(BENDER) script vivado -t fpga -t $* $(CHS_BENDER_RTL_FLAGS) > $@
 
@@ -60,6 +104,7 @@ define chs_xilinx_bit_rule
 $$(CHS_XILINX_DIR)/out/%.$(1).bit: \
 		$$(CHS_XILINX_DIR)/scripts/impl_sys.tcl \
 		$$(CHS_XILINX_DIR)/scripts/add_sources.$(1).tcl \
+		$$(CHS_XILINX_DIR)/out/cheshire.$(1).dtb \
 		$$(CHS_XILINX_IPS_$(1):%=$(CHS_XILINX_DIR)/build/$(1).%/out.xci) \
 		$$(CHS_HW_ALL) \
 		| $$(CHS_XILINX_DIR)/build/$(1).%/
