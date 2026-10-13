@@ -5,7 +5,7 @@
 Cheshire is highly configurable; available features and resources depend on its parameterization. The above block diagram depicts a fully-featured Cheshire SoC, which currently provides:
 
 - **Cores**:
-    - Up to 31 Linux-capable CVA6 cores with self-invalidation-based coherence
+    - Up to 31 Linux-capable CVA6 cores, with self-invalidation-based coherence when using CVA6's standard write-back data cache
     - A RISC-V debug module with JTAG transport
 
 - **Peripherals**:
@@ -120,7 +120,7 @@ The following global parameters control basic functionality and features and can
 
 ### CVA6 Cores
 
-Cheshire defaults on using CVA6 with hypervisor and CLIC support enabled; RV32 configurations are *not* supported. Most parameters for the CVA6 cores are derived from Cheshire's configuration or immutable. The available core parameters are listed below:
+Cheshire defaults on using CVA6 with hypervisor and CLIC support enabled and the HPDcache as its data cache; RV32 configurations are *not* supported. Most parameters for the CVA6 cores are derived from Cheshire's configuration or immutable. The available core parameters are listed below:
 
 | Parameter                    | Type / Range | Description                                     |
 | ---------------------------- | ------------ | ----------------------------------------------- |
@@ -133,7 +133,7 @@ Cheshire defaults on using CVA6 with hypervisor and CLIC support enabled; RV32 c
 | `CoreMaxTxnsPerId`           | `dw_bt`      | Maximum total AXI4 transactions per core and ID |
 | `CoreUserAmoOffs`            | `doub_bt`    | Base offset for core IDs within user AMO range  |
 
-Each CVA6 core is a standalone AXI4 manager at the crossbar. Coherence is maintained through a self-invalidation scheme and RISC-V atomics are handled through a custom, user-channel-based AXI4 extension. For the latter, we wrap the cores and other managers to give each a default user channel assignment and, for atomics-capable managers, a unique ID on a slice of user bits.
+Each CVA6 core is a standalone AXI4 manager at the crossbar. With CVA6's standard write-back data cache (e.g. the `cv64a6_imafdchxhclic_sv39_wb` target), coherence is maintained through a self-invalidation scheme. RISC-V atomics are handled through a custom, user-channel-based AXI4 extension. For the latter, we wrap the cores and other managers to give each a default user channel assignment and, for atomics-capable managers, a unique ID on a slice of user bits.
 
 ### Interconnect
 
@@ -243,7 +243,7 @@ The [VGA Controller](https://github.com/pulp-platform/axi_vga) enables the drawi
 
 ### USB 1.1 (OHCI) Controller
 
-The USB 1.1 (OHCI) Host Controller was generated from the [SpinalHDL](https://github.com/SpinalHDL/SpinalHDL) library and provides a fully digital root hub with four ports. Note that it currently only supports single-core CVA6 configurations with the default cache and can only access a 32-bit physical address subspaces. It exposes the following parameters:
+The USB 1.1 (OHCI) Host Controller was generated from the [SpinalHDL](https://github.com/SpinalHDL/SpinalHDL) library and provides a fully digital root hub with four ports. Note that it currently only supports single-core CVA6 configurations with CVA6's standard write-back data cache and can only access a 32-bit physical address subspaces. It exposes the following parameters:
 
 | Parameter                  | Type / Range | Description                                       |
 | -------------------------- | ------------ | ------------------------------------------------- |
