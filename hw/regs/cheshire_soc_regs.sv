@@ -79,24 +79,7 @@ module cheshire_soc_regs (
     assign s_apb_pslverr = cpuif_rd_err | cpuif_wr_err;
 
     logic cpuif_req_masked;
-    logic external_req;
     logic external_pending;
-    logic external_wr_ack;
-    logic external_rd_ack;
-    always_ff @(posedge clk or negedge arst_n) begin
-        if(~arst_n) begin
-            external_pending <= '0;
-        end else begin
-            if(external_req & ~external_wr_ack & ~external_rd_ack) external_pending <= '1;
-            else if(external_wr_ack | external_rd_ack) external_pending <= '0;
-            `ifndef SYNTHESIS
-                assert_bad_ext_wr_ack: assert(!external_wr_ack || (external_pending | external_req))
-                    else $error("An external wr_ack strobe was asserted when no external request was active");
-                assert_bad_ext_rd_ack: assert(!external_rd_ack || (external_pending | external_req))
-                    else $error("An external rd_ack strobe was asserted when no external request was active");
-            `endif
-        end
-    end
 
     // Read & write latencies are balanced. Stalls not required
     // except if external
@@ -121,8 +104,9 @@ module cheshire_soc_regs (
     } decoded_reg_strb_t;
     decoded_reg_strb_t decoded_reg_strb;
     logic decoded_err;
-    logic decoded_strb_is_external;
+    logic decoded_req_is_external;
 
+    logic [6:0] decoded_addr;
     logic decoded_req;
     logic decoded_req_is_wr;
     logic [31:0] decoded_wr_data;
@@ -130,11 +114,11 @@ module cheshire_soc_regs (
 
     always_comb begin
         automatic logic is_valid_addr;
-        automatic logic is_invalid_rw;
+        automatic logic is_valid_rw;
         automatic logic is_external;
         is_external = '0;
-        is_valid_addr = '1; // No error checking on valid address access
-        is_invalid_rw = '0;
+        is_valid_addr = '1; // No valid address check
+        is_valid_rw = '1; // No valid RW check
         for(int i0=0; i0<16; i0++) begin
             decoded_reg_strb.scratch[i0] = cpuif_req_masked & (cpuif_addr == 7'h0 + (7)'(i0) * 7'h4);
         end
@@ -152,12 +136,28 @@ module cheshire_soc_regs (
         is_external |= cpuif_req_masked & (cpuif_addr == 7'h54) & !cpuif_req_is_wr;
         decoded_reg_strb.vga_params = cpuif_req_masked & (cpuif_addr == 7'h58) & !cpuif_req_is_wr;
         is_external |= cpuif_req_masked & (cpuif_addr == 7'h58) & !cpuif_req_is_wr;
-        decoded_err = (~is_valid_addr | is_invalid_rw) & decoded_req;
-        decoded_strb_is_external = is_external;
-        external_req = is_external;
+        decoded_err = '0;
+        decoded_req_is_external = is_external;
+    end
+    logic external_wr_ack;
+    logic external_rd_ack;
+    always_ff @(posedge clk or negedge arst_n) begin
+        if(~arst_n) begin
+            external_pending <= '0;
+        end else begin
+            if(decoded_req_is_external & ~external_wr_ack & ~external_rd_ack) external_pending <= '1;
+            else if(external_wr_ack | external_rd_ack) external_pending <= '0;
+            `ifndef SYNTHESIS
+                assert_bad_ext_wr_ack: assert(!external_wr_ack || (external_pending | decoded_req_is_external))
+                    else $error("An external wr_ack strobe was asserted when no external request was active");
+                assert_bad_ext_rd_ack: assert(!external_rd_ack || (external_pending | decoded_req_is_external))
+                    else $error("An external rd_ack strobe was asserted when no external request was active");
+            `endif
+        end
     end
 
     // Pass down signals to next stage
+    assign decoded_addr = cpuif_addr;
     assign decoded_req = cpuif_req_masked;
     assign decoded_req_is_wr = cpuif_req_is_wr;
     assign decoded_wr_data = cpuif_wr_data;
@@ -247,7 +247,7 @@ module cheshire_soc_regs (
         
         external_wr_ack = wr_ack;
     end
-    assign cpuif_wr_ack = external_wr_ack | (decoded_req & decoded_req_is_wr & ~decoded_strb_is_external);
+    assign cpuif_wr_ack = external_wr_ack | (decoded_req & decoded_req_is_wr & ~decoded_req_is_external);
     // Writes are always granted with no error response
     assign cpuif_wr_err = '0;
 
@@ -272,31 +272,53 @@ module cheshire_soc_regs (
 
     assign readback_external_rd_ack = readback_external_rd_ack_c;
 
+    logic [6:0] rd_mux_addr;
+    logic [6:0] pending_rd_addr;
+    // Hold read mux address to guarantee it is stable throughout any external accesses
+    always_ff @(posedge clk or negedge arst_n) begin
+        if(~arst_n) begin
+            pending_rd_addr <= '0;
+        end else begin
+            if(decoded_req) pending_rd_addr <= decoded_addr;
+        end
+    end
+    assign rd_mux_addr = decoded_req ? decoded_addr : pending_rd_addr;
+
     logic readback_err;
     logic readback_done;
     logic [31:0] readback_data;
-
-    // Assign readback values to a flattened array
-    logic [31:0] readback_array[23];
-    for(genvar i0=0; i0<16; i0++) begin
-        assign readback_array[i0 * 1 + 0][31:0] = (decoded_reg_strb.scratch[i0] && !decoded_req_is_wr) ? field_storage.scratch[i0].scratch.value : '0;
-    end
-    assign readback_array[16] = hwif_in.boot_mode.rd_ack ? hwif_in.boot_mode.rd_data : '0;
-    assign readback_array[17] = hwif_in.rtc_freq.rd_ack ? hwif_in.rtc_freq.rd_data : '0;
-    assign readback_array[18] = hwif_in.platform_rom.rd_ack ? hwif_in.platform_rom.rd_data : '0;
-    assign readback_array[19] = hwif_in.num_int_harts.rd_ack ? hwif_in.num_int_harts.rd_data : '0;
-    assign readback_array[20] = hwif_in.hw_features.rd_ack ? hwif_in.hw_features.rd_data : '0;
-    assign readback_array[21] = hwif_in.llc_size.rd_ack ? hwif_in.llc_size.rd_data : '0;
-    assign readback_array[22] = hwif_in.vga_params.rd_ack ? hwif_in.vga_params.rd_data : '0;
-
-    // Reduce the array
     always_comb begin
         automatic logic [31:0] readback_data_var;
-        readback_done = decoded_req & ~decoded_req_is_wr & ~decoded_strb_is_external;
-        readback_err = '0;
         readback_data_var = '0;
-        for(int i=0; i<23; i++) readback_data_var |= readback_array[i];
+        for(int i0=0; i0<16; i0++) begin
+            if(rd_mux_addr == 7'h0 + (7)'(i0) * 7'h4) begin
+                readback_data_var[31:0] = field_storage.scratch[i0].scratch.value;
+            end
+        end
+        if(rd_mux_addr == 7'h40) begin
+            readback_data_var = hwif_in.boot_mode.rd_data;
+        end
+        if(rd_mux_addr == 7'h44) begin
+            readback_data_var = hwif_in.rtc_freq.rd_data;
+        end
+        if(rd_mux_addr == 7'h48) begin
+            readback_data_var = hwif_in.platform_rom.rd_data;
+        end
+        if(rd_mux_addr == 7'h4c) begin
+            readback_data_var = hwif_in.num_int_harts.rd_data;
+        end
+        if(rd_mux_addr == 7'h50) begin
+            readback_data_var = hwif_in.hw_features.rd_data;
+        end
+        if(rd_mux_addr == 7'h54) begin
+            readback_data_var = hwif_in.llc_size.rd_data;
+        end
+        if(rd_mux_addr == 7'h58) begin
+            readback_data_var = hwif_in.vga_params.rd_data;
+        end
         readback_data = readback_data_var;
+        readback_done = decoded_req & ~decoded_req_is_wr & ~decoded_req_is_external;
+        readback_err = '0;
     end
 
     assign external_rd_ack = readback_external_rd_ack;
