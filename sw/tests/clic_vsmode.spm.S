@@ -222,7 +222,7 @@ main:
   la   t0, hsmode_entry
   csrw mepc, t0
   // Set mstatus.MPP to 01 (HS-mode)
-  li   t0, 0x1000
+  li   t0, 0x800
   csrs mstatus, t0
   mret
 
