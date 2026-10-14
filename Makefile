@@ -8,6 +8,7 @@
 
 CHS_ROOT := $(shell realpath .)
 BENDER	 ?= bender -d $(CHS_ROOT)
+VIVADO   ?= vitis-2022.1 vivado
 
 all:
 
