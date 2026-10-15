@@ -15,8 +15,12 @@ CXX_PATH ?= $(shell which $(CXX))
 VLOG_ARGS   ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
 VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
 
+# CVA6 configuration: HPDcache (default) or the legacy write-back data cache
+# (CHS_CVA6_CFG=cv64a6_imafdchxhclic_sv39_wb)
+CHS_CVA6_CFG ?= cv64a6_imafdchxhclic_sv39_hpdcache_wb
+
 # Common Bender flags for Cheshire RTL
-CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t cv64a6_imafdchxhclic_sv39_hpdcache_wb
+CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t $(CHS_CVA6_CFG)
 
 # Define used paths (prefixed to avoid name conflicts)
 CHS_ROOT      ?= $(shell $(BENDER) path cheshire)
