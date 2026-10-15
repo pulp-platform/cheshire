@@ -217,6 +217,12 @@ CHS_DRAMSYS_ALL += $(DRAMSYS_ROOT)/build/lib/libsystemc.so
 
 include $(CHS_ROOT)/target/xilinx/xilinx.mk
 
+#############
+# ASIC Flow #
+#############
+
+include $(CHS_ROOT)/target/asic/asic.mk
+
 #################################
 # Phonies (KEEP AT END OF FILE) #
 #################################
