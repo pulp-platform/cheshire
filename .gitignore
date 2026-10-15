@@ -56,3 +56,4 @@ vivado*
 
 # ASIC generated files
 target/asic/build
+target/asic/gf22/nonfree

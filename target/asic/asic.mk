@@ -70,6 +70,8 @@ CHS_ASIC_NUM_SRAMS_CMD = python3 -c 'import json, sys; print(len(json.load(open(
 # Technologies #
 ################
 
+include $(CHS_ASIC_DIR)/gf22/gf22.mk
+
 # Read, link, and constrain the design without synthesizing it
 CHS_PHONY += chs-asic-elab
 chs-asic-elab: chs-asic-$(CHS_ASIC_TECH)-elab
