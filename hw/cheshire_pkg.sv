@@ -157,6 +157,7 @@ package cheshire_pkg;
     dw_bt   LlcMaxWriteTxns;
     aw_bt   LlcAmoNumCuts;
     bit     LlcAmoPostCut;
+    bit     LlcAmoCutOupPopInpGnt;
     bit     LlcOutConnect;
     doub_bt LlcOutRegionStart;
     doub_bt LlcOutRegionEnd;
@@ -607,6 +608,7 @@ package cheshire_pkg;
     LlcMaxWriteTxns   : 16,
     LlcAmoNumCuts     : 1,
     LlcAmoPostCut     : 1,
+    LlcAmoCutOupPopInpGnt : 0,
     LlcOutConnect     : 1,
     LlcOutRegionStart : 'h8000_0000,
     LlcOutRegionEnd   : 64'h1_0000_0000,
