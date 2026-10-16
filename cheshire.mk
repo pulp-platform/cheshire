@@ -16,7 +16,7 @@ VLOG_ARGS   ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
 VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
 
 # Common Bender flags for Cheshire RTL
-CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t cv64a6_imafdchsclic_sv39_wb
+CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t cv64a6_imafdchxhclic_sv39_hpdcache_wb
 
 # Define used paths (prefixed to avoid name conflicts)
 CHS_ROOT      ?= $(shell $(BENDER) path cheshire)
@@ -198,6 +198,12 @@ CHS_SIM_ALL += $(CHS_SIM_MODELS_ALL)
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh
 
+#############
+# Verilator #
+#############
+
+include $(CHS_ROOT)/target/sim/verilator/verilator.mk
+
 ###########
 # DRAMSys #
 ###########
@@ -225,8 +231,9 @@ chs-hw-all:      $(CHS_HW_ALL)
 chs-bootrom-all: $(CHS_BOOTROM_ALL)
 chs-sim-all:     $(CHS_SIM_ALL)
 chs-dramsys-all: $(CHS_DRAMSYS_ALL)
+chs-vlt-all:     $(CHS_VLT_ALL)
 chs-xilinx-all:  $(CHS_XILINX_ALL)
 
-CHS_PHONY += chs-all chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-dramsys-all chs-xilinx-all
+CHS_PHONY += chs-all chs-sw-all chs-hw-all chs-bootrom-all chs-sim-all chs-dramsys-all chs-vlt-all chs-xilinx-all
 
 .PHONY: $(CHS_PHONY)
