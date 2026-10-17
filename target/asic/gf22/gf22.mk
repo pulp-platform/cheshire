@@ -7,7 +7,7 @@
 # which is also the icdesign cockpit.
 
 CHS_ASIC_GF22_REMOTE ?= git@iis-git.ee.ethz.ch:ezelioli/cheshire-gf22.git
-CHS_ASIC_GF22_COMMIT ?= 97a3c6e9bd8511145e261af24ba511a4f0dacb7a
+CHS_ASIC_GF22_COMMIT ?= 122d7bd93c3272eeaa0f8462958dba6de4261dc4
 CHS_ASIC_GF22_DIR    ?= $(CHS_ASIC_DIR)/gf22/nonfree
 
 CHS_PHONY += chs-asic-gf22-init
