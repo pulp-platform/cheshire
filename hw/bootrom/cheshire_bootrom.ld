@@ -9,7 +9,7 @@
 INCLUDE common.ldh
 
 SECTIONS {
-  __stack_pointer$  = ORIGIN(spm) + LENGTH(spm) - 8;
+  __stack_pointer$  = ORIGIN(spm) + LENGTH(spm);
 
   .text : {
     *(.text._start)

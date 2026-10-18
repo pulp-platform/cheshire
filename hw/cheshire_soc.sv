@@ -338,7 +338,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AxiUserAsId      ( 1 ),
     .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
     .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-    .RiscvWordWidth   ( 64 ),
+    .RiscvWordWidth   ( riscv::XLEN ),
     .NAxiCuts         ( Cfg.RegAmoNumCuts ),
     .axi_req_t        ( axi_slv_req_t ),
     .axi_rsp_t        ( axi_slv_rsp_t )
@@ -487,7 +487,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AxiUserAsId      ( 1 ),
       .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
       .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-      .RiscvWordWidth   ( 64 ),
+      .RiscvWordWidth   ( riscv::XLEN ),
       .NAxiCuts         ( Cfg.LlcAmoNumCuts ),
       .axi_req_t        ( axi_slv_req_t ),
       .axi_rsp_t        ( axi_slv_rsp_t )
@@ -641,8 +641,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     ) i_core_cva6 (
       .clk_i,
       .rst_ni,
-      .boot_addr_i      ( BootAddr ),
-      .hart_id_i        ( 64'(i) ),
+      .boot_addr_i      ( BootAddr[riscv::XLEN-1:0] ),
+      .hart_id_i        ( riscv::XLEN'(i) ),
       .irq_i            ( xeip[i] ),
       .ipi_i            ( msip[i] ),
       .time_irq_i       ( mtip[i] ),
@@ -862,7 +862,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     .AxiUserAsId      ( 1 ),
     .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
     .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-    .RiscvWordWidth   ( 64 ),
+    .RiscvWordWidth   ( riscv::XLEN ),
     .NAxiCuts         ( Cfg.DbgAmoNumCuts ),
     .axi_req_t        ( axi_slv_req_t ),
     .axi_rsp_t        ( axi_slv_rsp_t )
@@ -1446,7 +1446,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .AxiUserAsId      ( 1 ),
       .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb ),
       .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb ),
-      .RiscvWordWidth   ( 64 ),
+      .RiscvWordWidth   ( riscv::XLEN ),
       .NAxiCuts         ( Cfg.DmaConfAmoNumCuts ),
       .axi_req_t        ( axi_slv_req_t ),
       .axi_rsp_t        ( axi_slv_rsp_t )

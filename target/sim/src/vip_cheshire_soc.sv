@@ -213,7 +213,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   ////////////
 
   localparam dm::sbcs_t JtagInitSbcs = dm::sbcs_t'{
-      sbautoincrement: 1'b1, sbreadondata: 1'b1, sbaccess: 3, default: '0};
+      sbautoincrement: 1'b1, sbreadondata: 1'b1, sbaccess: $clog2(riscv::XLEN / 8), default: '0};
 
   // Generate clock
   clk_rst_gen #(
@@ -345,7 +345,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     // Write address as 64-bit double
     jtag_write(dm::SBAddress1, addr[63:32]);
     jtag_write(dm::SBAddress0, addr[31:0]);
-    for (longint i = 0; i <= len ; i += 8) begin
+    for (longint i = 0; i <= len ; i += riscv::XLEN / 8) begin
       bit checkpoint = (i != 0 && i % 512 == 0);
       if (checkpoint)
         $display("[JTAG] - %0d/%0d bytes (%0d%%)", i, len, i*100/(len>1 ? len-1 : 1));
@@ -404,7 +404,16 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     // Repoint execution
     jtag_write(dm::Data1, entry[63:32]);
     jtag_write(dm::Data0, entry[31:0]);
-    jtag_write(dm::Command, 32'h0033_07b1, 0, 1);
+    jtag_write(dm::Command, {
+      8'h0,                                     // cmdtype: access register
+      1'b0,                                     // reserved
+      (riscv::XLEN == 64 ? 3'h3 : 3'h2),        // aarsize: 64-bit or 32-bit
+      1'b0,                                     // aarpostincrement
+      1'b0,                                     // postexec
+      1'b1,                                     // transfer
+      1'b1,                                     // write
+      16'h07b1                                  // regno: dpc
+    }, 0, 1);
     // Resume hart 0
     jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
     $display("[JTAG] Resumed hart 0 from 0x%h", entry);
