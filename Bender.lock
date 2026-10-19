@@ -37,7 +37,7 @@ packages:
     - register_interface
     - tech_cells_generic
   axi_riscv_atomics:
-    revision: 399ce0aefe79792d11bef8cc706139281d82df08
+    revision: 6dc05e0b6ac17cddbcd5cae7eb30ac44242fffb0
     version: null
     source:
       Git: https://github.com/pulp-platform/axi_riscv_atomics.git
