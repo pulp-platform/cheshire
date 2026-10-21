@@ -9,6 +9,9 @@
 BENDER ?= bender
 VLOGAN ?= vlogan
 
+VCS    :=  vcs
+FCM    :=  vc_fcm
+
 # Caution: Questasim requires this to point to the *actual* compiler install path
 CXX_PATH ?= $(shell which $(CXX))
 
@@ -215,6 +218,47 @@ CHS_SIM_MODELS_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
 CHS_SIM_ALL += $(CHS_SIM_MODELS_ALL)
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh
+
+##############
+# Z01X_RTL   #
+##############
+ZOIX_DIR  := $(CHS_ROOT)/target/zoix_rtl
+FAULTSIM_TB := tb_cheshire_soc
+
+NUM_FAULT_SIM := 100
+FAULT_START_CYCLE := 5000
+FAULT_END_CYCLE   := 2250725
+
+ZOIX_BINARY=$(CHS_ROOT)/sw/tests/helloworld.spm.elf
+ZOIX_BOOTMODE=0
+ZOIX_PRELMODE=1
+
+
+$(CHS_ROOT)/target/sim/vcs/compile_zoix.cheshire_soc.sh: $(CHS_ROOT)/Bender.yml $(CHS_ROOT)/Bender.lock
+	$(BENDER) script vcs -t sim -t test $(CHS_BENDER_RTL_FLAGS)   --vlog-arg="$(VLOGAN_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
+	chmod +x $@
+
+build-zoix: $(CHS_ROOT)/target/sim/vcs/compile_zoix.cheshire_soc.sh
+	cd $(ZOIX_DIR); $(CHS_ROOT)/target/sim/vcs/compile_zoix.cheshire_soc.sh; export ZOIX=1;	export CHS_ROOT=$(CHS_ROOT);				\
+	$(CHS_ROOT)/target/sim/vcs/start.cheshire_soc.sh;
+ 
+simulate:
+	cd $(ZOIX_DIR); \
+	./simv +fsdb+all=on  +BINARY=${ZOIX_BINARY} -l simulate.log
+
+faultsim: $(ZOIX_DIR)/tb_cheshire_soc.sff $(ZOIX_DIR)/simv $(ZOIX_DIR)/fcm.tcl $(ZOIX_DIR)/states.sff
+	cd $(ZOIX_DIR); export FAULTSIM_TB=$(FAULTSIM_TB); export NUM_FAULT_SIM=$(NUM_FAULT_SIM); export BINARY=$(ZOIX_BINARY); export BOOTMODE=$(ZOIX_BOOTMODE); export PRELMODE=$(ZOIX_PRELMODE); $(FCM) -connect -tcl_script fcm.tcl
+
+clean-zoix:
+	cd $(ZOIX_DIR); \
+	rm -rf AN.DB sim.* .envs .vcsCmd work.lib++ *.log ucli* csrc fdb* simv* *.rpt fcm_tsim_fsdb vc_hdrs.h fc1_report.sff fcm.dir *h
+
+tb_cheshire_soc.sff: $(ZOIX_DIR)/tb_cheshire_soc.sff
+$(ZOIX_DIR)/tb_cheshire_soc.sff: $(ZOIX_DIR)/fault.sff 
+	@cp -f $< $@
+#transient faults
+	sed -i "s|#faults|NA ~ (\"cycle1\" $(FAULT_START_CYCLE):$(FAULT_END_CYCLE)) { FLOP \"tb_cheshire_soc.fix.dut.gen_cva6_cores[0].i_core_cva6.i_cva6_pipeline.i_frontend.**\" }\n    #faults|" $@
+
 
 ###########
 # DRAMSys #

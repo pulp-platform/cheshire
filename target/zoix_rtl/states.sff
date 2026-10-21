@@ -1,0 +1,52 @@
+# Copyright 2025 ETH Zurich and University of Bologna.
+# Proprietary, not for release
+
+
+# Set the Status Definitions that will be used and reported from fault simulation
+StatusDefinitions
+{
+    # Redefinition of some built-in status definitions
+
+    # Creation of new functional safety definitions
+    OK "Masked";
+    FE "Faulty Exception";
+    FT "Faulty Timeout";
+    FR "Faulty Return";
+    CM "Catch HMR Main";
+    CA "Catch HMR AMO";
+    CF "Catch HMR Flush";
+    CD "Catch HMR Data Cache Request";
+    CI "Catch HMR Instruction Cache Request";
+    CE "Catch HMR Faulty Exception";
+
+    # Any fault created and not set by a system task will have this status
+    DefaultStatus (OK)
+
+    # Any fault of this status will be chosen by the simulation for injection
+    Selected (NA)
+
+    # Define the merging of faults when multiple tests are run
+    PromotionTable
+    {
+        StatusLabels (OK,FE,FT,FR,CM,CA,CF,CD,CI,CE)
+        #   OK  FE  FT  FR  CM  CA  CF  CD  CI  CE
+        [   -   |   |   |   |   |   |   |   |   |   ;  # OK
+            -   -   |   |   |   |   |   |   |   |   ;  # FE
+            -   -   -   |   |   |   |   |   |   |   ;  # FT
+            -   -   -   -   |   |   |   |   |   |   ;  # FR
+            -   -   -   -   -   |   |   |   |   |   ;  # CM
+            -   -   -   -   -   -   |   |   |   |   ;  # CA
+            -   -   -   -   -   -   -   |   |   |   ;  # CF
+            -   -   -   -   -   -   -   -   |   |   ;  # CD
+            -   -   -   -   -   -   -   -   -   |   ;  # CI
+            -   -   -   -   -   -   -   -   -   -   ;  # CE
+        ]
+    }
+
+    StatusGroups
+    {
+        MA "Masked" (NO, OK, NI);
+        PE "Program error" (FE, FT, FR);
+        CH "Error detected" (CM, CA, CF, CD, CI, CE);
+    }
+}

@@ -30,6 +30,10 @@ fi
 flags+="-cpp ${CXX_PATH} "
 [[ -n "${SELCFG}" ]]   && flags+="-pvalue+SelectedCfg=${SELCFG} "
 
+if [ -n "${ZOIX}" ]; then
+    flags+="-fsim=dut:${TESTBENCH}.fix.dut.gen_cva6_cores[0].i_core_cva6 -fsim=portfaults "
+fi
+
 pargs=""
 [[ -n "${BOOTMODE}" ]] && pargs+="+BOOTMODE=${BOOTMODE} "
 [[ -n "${PRELMODE}" ]] && pargs+="+PRELMODE=${PRELMODE} "
@@ -50,8 +54,14 @@ fi
 COLOR_NC='\e[0m'
 COLOR_BLUE='\e[0;34m'
 
-${VCS_BIN} ${flags} ../src/elfloader.cpp ${TESTBENCH} | tee elaborate.log
+if [ "${ZOIX:-0}" = "1" ]; then
+    # ZoiX flow: script runs from target/zoix_rtl, simv is launched by the Makefile
+    ${VCS_BIN} ${flags} ${CHS_ROOT}/target/sim/src/elfloader.cpp ${TESTBENCH} | tee elaborate.log
+else
+    # Basic RTL flow: script runs from target/sim/vcs, so run simv here too
+    ${VCS_BIN} ${flags} ../src/elfloader.cpp ${TESTBENCH} | tee elaborate.log
 
-# Start simulation
-printf ${COLOR_BLUE}"${VCS_VERSION} ${VERDI_VERSION} ./simv ${pargs}"${COLOR_NC}"\n"
-${VCS_VERSION} ${VERDI_VERSION} ./simv ${pargs} | tee simulate.log
+    # Start simulation
+    printf ${COLOR_BLUE}"${VCS_VERSION} ${VERDI_VERSION} ./simv ${pargs}"${COLOR_NC}"\n"
+    ${VCS_VERSION} ${VERDI_VERSION} ./simv ${pargs} | tee simulate.log
+fi

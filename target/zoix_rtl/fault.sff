@@ -1,0 +1,13 @@
+# Copyright 2025 ETH Zurich and University of Bologna.
+# Proprietary, not for release
+
+FaultGenerate
+{
+    # Set timing for frequency of transient fault insertion
+    Timing("cycle1", CycleTime 5ns, Offset 1ns)
+    UseTiming("cycle1")
+
+    # Create transient faults on all gate level flip-flops
+
+    #faults
+}
