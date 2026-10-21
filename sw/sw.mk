@@ -8,15 +8,14 @@
 
 # Override this as needed
 CHS_XLEN ?= 64
+CHS_SW_GCC_TRIPLE ?= riscv64-unknown-elf
 
 # Toolchain triple and ISA/ABI for the selected XLEN. Set CHS_SW_GCC_TRIPLE to
 # riscv64-unknown-elf to build 32-bit SW with a multilib 64-bit toolchain.
 ifeq ($(CHS_XLEN),32)
-CHS_SW_GCC_TRIPLE ?= riscv32-unknown-elf
 CHS_SW_MARCH      ?= rv32imc_zicsr_zifencei
 CHS_SW_MABI       ?= ilp32
 else
-CHS_SW_GCC_TRIPLE ?= riscv64-unknown-elf
 CHS_SW_MARCH      ?= rv64gc_zifencei
 CHS_SW_MABI       ?= lp64d
 endif

@@ -474,6 +474,7 @@ package cheshire_pkg;
     ret.CachedRegionAddrBase  = {SPM_BASE_ADDR, cfg.LlcOutRegionStart,  CieBase};
     ret.CachedRegionLength    = {SizeSpm,       SizeLlcOut,             cfg.Cva6ExtCieLength};
     ret.DebugEn               = 1;
+    ret.SoftwareInterruptEn   = 1;
     // These fields do not exist in the OpenHW CVA6 config, which has no CLIC support.
     `ifndef TARGET_OPENHW
     ret.RVSCLIC               = cfg.Clic;
