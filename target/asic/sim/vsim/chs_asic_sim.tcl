@@ -19,12 +19,17 @@
 #                       compile script uses)
 #   CHS_SIM_CLK_PERIOD  system clock period [ps]: the implemented one, so that
 #                       recorded activity has the implemented toggle rates
+#   CHS_SIM_SAIF        1: record the DUT's switching activity per workload phase
+#                       into saif/phase_<marker>.saif; a phase lasts while the
+#                       program holds a nonzero marker on the GPIO outputs
 
 if { [file isdirectory work] } { file delete -force work }
 vlib work
 source ${CHS_SIM_COMPILE}
 
-set voptargs "-O5 +acc=p+tb_cheshire_asic_top. -permissive"
+# Activity recording reads every net of the DUT
+if { ${CHS_SIM_SAIF} } { set acc np } else { set acc p }
+set voptargs "-O5 +acc=${acc}+tb_cheshire_asic_top. -permissive"
 set libargs ""
 if { ${CHS_SIM_NETLIST} ne "" } {
     # The netlist and the models form their own library, searched first, so it
@@ -55,5 +60,44 @@ vsim -c tb_cheshire_asic_top -t 1ps {*}${libargs} -voptargs=${voptargs} \
     -suppress 3009 -suppress 8386 -error 7 -cpppath ${CHS_SIM_CXX}
 set StdArithNoWarnings 1
 set NumericStdNoWarnings 1
+
+# Each change of the GPIO marker ends the running phase (writing its activity)
+# and, if the new marker is nonzero, starts the next one. Questa counts from
+# the first `power add` (the first phase) and restarts the counts with
+# `power reset -all`, but always writes the time since that first add as the
+# SAIF's DURATION: each file gets its phase's length instead.
+proc chs_saif_end { } {
+    set file saif/phase_${::chs_saif_phase}.saif
+    power report -all -bsaif ${file}
+    set fh [open ${file}]
+    set saif [read ${fh}]
+    close ${fh}
+    regsub {\(DURATION [0-9]+\)} ${saif} "(DURATION [expr { $::now - $::chs_saif_start }])" saif
+    set fh [open ${file} w]
+    puts -nonewline ${fh} ${saif}
+    close ${fh}
+    echo "\[SAIF\] Phase ${::chs_saif_phase} ends at $::now ps: ${file}"
+    set ::chs_saif_phase ""
+}
+if { ${CHS_SIM_SAIF} } {
+    file mkdir saif
+    set ::chs_saif_phase ""
+    set ::chs_saif_added 0
+    when -label chs_saif {/tb_cheshire_asic_top/fix/gpio_o'event} {
+        if { $::chs_saif_phase ne "" } { chs_saif_end }
+        set marker [examine -radix hex /tb_cheshire_asic_top/fix/gpio_o]
+        if { [regexp {^0*([1-9a-fA-F][0-9a-fA-F]*)$} $marker -> phase] } {
+            if { $::chs_saif_added } {
+                power reset -all
+            } else {
+                power add -nocellnet -r -in -out -inout -internal /tb_cheshire_asic_top/fix/dut/*
+                set ::chs_saif_added 1
+            }
+            set ::chs_saif_phase ${phase}
+            set ::chs_saif_start $::now
+            echo "\[SAIF\] Phase ${phase} starts at $::now ps"
+        }
+    }
+}
 run -all
 quit -f
