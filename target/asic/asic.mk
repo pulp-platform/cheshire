@@ -85,3 +85,49 @@ chs-asic-synth: chs-asic-$(CHS_ASIC_TECH)-synth
 # Place and route the synthesized design
 CHS_PHONY += chs-asic-pnr
 chs-asic-pnr: chs-asic-$(CHS_ASIC_TECH)-pnr
+
+##############
+# Simulation #
+##############
+
+# Simulation of cheshire_asic_top in Cheshire's VIP with Questa, without delays
+# (sim/vsim/chs_asic_sim.tcl; testbench in sim/src): the RTL top, or a netlist
+# of it (CHS_ASIC_SIM_NETLIST) with the technology's simulation models, compiled
+# into the library `gate` by a script of its makefile
+# (chs-asic-<tech>-sim-models writes $(CHS_ASIC_SIM_DIR)/models.tcl). The clock
+# runs at the implemented period, so that recorded activity has its toggle rates.
+CHS_ASIC_VSIM         ?= vsim
+CHS_ASIC_SIM_DIR      ?= $(CHS_ASIC_BUILD)/sim
+CHS_ASIC_SIM_NETLIST  ?=
+CHS_ASIC_SIM_BINARY   ?= $(CHS_ROOT)/sw/tests/helloworld.dram.elf
+CHS_ASIC_SIM_BOOTMODE ?= 0
+# memh: the program is written into the DRAM model directly, without simulated time
+CHS_ASIC_SIM_PRELMODE ?= 3
+# Time unit 1 ps: the VIP's clock generator takes its period in whole time
+# units, so the implemented period (CHS_ASIC_CLK_PERIOD, in ps) is exact
+CHS_ASIC_SIM_VLOG_ARGS ?= -suppress 2583 -suppress 13314 -timescale 1ps/1ps
+# File of further vopt arguments for netlists, if the technology needs any (its
+# makefile sets it; chs-asic-<tech>-sim-models writes the file)
+CHS_ASIC_SIM_GATE_VOPT ?=
+
+# Cheshire's RTL, VIP and testbench, with the generic technology cells
+$(CHS_ASIC_SIM_DIR)/compile.tcl: $(CHS_ROOT)/Bender.yml $(CHS_ROOT)/Bender.lock
+	mkdir -p $(@D)
+	$(BENDER) script vsim -t sim -t test -t chs_asic $(CHS_BENDER_RTL_FLAGS) \
+		-D CHS_ASIC_CFG=$(CHS_ASIC_CFG) --vlog-arg="$(CHS_ASIC_SIM_VLOG_ARGS)" > $@
+	echo 'vlog "$(realpath $(CHS_ROOT))/target/sim/src/elfloader.cpp" -ccflags "-std=c++11" -cpppath "$(CXX_PATH)"' >> $@
+
+CHS_PHONY += chs-asic-sim
+chs-asic-sim: $(CHS_ASIC_SIM_DIR)/compile.tcl \
+		$(if $(CHS_ASIC_SIM_NETLIST),chs-asic-$(CHS_ASIC_TECH)-sim-models)
+	cd $(CHS_ASIC_SIM_DIR) && $(CHS_ASIC_VSIM) -c -do " \
+		set CHS_SIM_COMPILE $(CHS_ASIC_SIM_DIR)/compile.tcl; \
+		set CHS_SIM_NETLIST {$(CHS_ASIC_SIM_NETLIST)}; \
+		set CHS_SIM_MODELS $(CHS_ASIC_SIM_DIR)/models.tcl; \
+		set CHS_SIM_GATE_VOPT {$(CHS_ASIC_SIM_GATE_VOPT)}; \
+		set CHS_SIM_BINARY $(CHS_ASIC_SIM_BINARY); \
+		set CHS_SIM_BOOTMODE $(CHS_ASIC_SIM_BOOTMODE); \
+		set CHS_SIM_PRELMODE $(CHS_ASIC_SIM_PRELMODE); \
+		set CHS_SIM_CXX $(CXX_PATH); \
+		set CHS_SIM_CLK_PERIOD $(CHS_ASIC_CLK_PERIOD); \
+		do $(CHS_ASIC_DIR)/sim/vsim/chs_asic_sim.tcl" 2>&1 | tee $(CHS_ASIC_SIM_DIR)/sim.log
