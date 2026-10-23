@@ -109,6 +109,8 @@ CHS_ASIC_SIM_VLOG_ARGS ?= -suppress 2583 -suppress 13314 -timescale 1ps/1ps
 # File of further vopt arguments for netlists, if the technology needs any (its
 # makefile sets it; chs-asic-<tech>-sim-models writes the file)
 CHS_ASIC_SIM_GATE_VOPT ?=
+# 1: record the switching activity of each workload phase (SAIF), see sim/vsim
+CHS_ASIC_SIM_SAIF ?= 0
 
 # Cheshire's RTL, VIP and testbench, with the generic technology cells
 $(CHS_ASIC_SIM_DIR)/compile.tcl: $(CHS_ROOT)/Bender.yml $(CHS_ROOT)/Bender.lock
@@ -130,4 +132,5 @@ chs-asic-sim: $(CHS_ASIC_SIM_DIR)/compile.tcl \
 		set CHS_SIM_PRELMODE $(CHS_ASIC_SIM_PRELMODE); \
 		set CHS_SIM_CXX $(CXX_PATH); \
 		set CHS_SIM_CLK_PERIOD $(CHS_ASIC_CLK_PERIOD); \
+		set CHS_SIM_SAIF $(CHS_ASIC_SIM_SAIF); \
 		do $(CHS_ASIC_DIR)/sim/vsim/chs_asic_sim.tcl" 2>&1 | tee $(CHS_ASIC_SIM_DIR)/sim.log
