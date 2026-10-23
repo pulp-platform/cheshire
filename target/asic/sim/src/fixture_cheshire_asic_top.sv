@@ -13,7 +13,11 @@ module fixture_cheshire_asic_top #(
   parameter bit      UseDramSys   = 1'b0,
   /// System clock period: the implemented one, so that activity recorded in
   /// simulation has the implemented toggle rates
-  parameter realtime ClkPeriodSys = 5ns
+  parameter realtime ClkPeriodSys = 5ns,
+  /// When the VIP changes the DUT's inputs, as a fraction of the clock period
+  /// after the clock edge: after the edge has reached the DUT's flip-flops
+  /// through its clock tree in a simulation with delays
+  parameter real     TAppl        = 0.1
 );
 
   `include "cheshire/typedef.svh"
@@ -46,6 +50,7 @@ module fixture_cheshire_asic_top #(
 
   logic jtag_tck;
   logic jtag_trst_n;
+  logic jtag_trst_n_dut;
   logic jtag_tms;
   logic jtag_tdi;
   logic jtag_tdo;
@@ -76,6 +81,11 @@ module fixture_cheshire_asic_top #(
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o;
 
+  // TRST is asserted from power-up until the VIP drives it, as a pull-down
+  // would hold it: the JTAG side of the debug module's clock domain crossing is
+  // in reset whenever the system side is
+  assign jtag_trst_n_dut = (jtag_trst_n === 1'bx) ? 1'b0 : jtag_trst_n;
+
   cheshire_asic_top dut (
     .clk_i              ( clk       ),
     .rst_ni             ( rst_n     ),
@@ -86,7 +96,7 @@ module fixture_cheshire_asic_top #(
     .axi_llc_mst_rsp_i  ( axi_llc_mst_rsp_vec ),
     .dbg_active_o       ( ),
     .jtag_tck_i         ( jtag_tck    ),
-    .jtag_trst_ni       ( jtag_trst_n ),
+    .jtag_trst_ni       ( jtag_trst_n_dut ),
     .jtag_tms_i         ( jtag_tms    ),
     .jtag_tdi_i         ( jtag_tdi    ),
     .jtag_tdo_o         ( jtag_tdo    ),
@@ -179,6 +189,7 @@ module fixture_cheshire_asic_top #(
     .DutCfg            ( DutCfg ),
     .UseDramSys        ( UseDramSys ),
     .ClkPeriodSys      ( ClkPeriodSys ),
+    .TAppl             ( TAppl ),
     .axi_ext_llc_req_t ( axi_llc_req_t ),
     .axi_ext_llc_rsp_t ( axi_llc_rsp_t ),
     .axi_ext_mst_req_t ( axi_mst_req_t ),

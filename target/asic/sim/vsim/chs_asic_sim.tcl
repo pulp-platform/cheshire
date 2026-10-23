@@ -4,8 +4,8 @@
 #
 # Questa simulation of `cheshire_asic_top` in Cheshire's VIP
 # (`tb_cheshire_asic_top`): the RTL top, or a netlist of it with the
-# technology's simulation models (library `gate`), without delays (zero-delay
-# functional simulation). Runs in the simulation directory; parameters (asic.mk):
+# technology's simulation models (library `gate`), without delays or with the
+# delays of an SDF. Runs in the simulation directory; parameters (asic.mk):
 #   CHS_SIM_COMPILE     Bender-generated compile script of Cheshire's RTL, VIP
 #                       and testbench
 #   CHS_SIM_NETLIST     netlist of cheshire_asic_top, or empty for the RTL top
@@ -19,16 +19,18 @@
 #                       compile script uses)
 #   CHS_SIM_CLK_PERIOD  system clock period [ps]: the implemented one, so that
 #                       recorded activity has the implemented toggle rates
+#   CHS_SIM_SDF         SDF of the netlist, or empty for a simulation without delays
 #   CHS_SIM_SAIF        1: record the DUT's switching activity per workload phase
 #                       into saif/phase_<marker>.saif; a phase lasts while the
-#                       program holds a nonzero marker on the GPIO outputs
+#                       program holds a nonzero marker on the GPIO outputs (as
+#                       the testbench samples them, gpio_marker)
 
 if { [file isdirectory work] } { file delete -force work }
 vlib work
 source ${CHS_SIM_COMPILE}
 
-# Activity recording reads every net of the DUT
-if { ${CHS_SIM_SAIF} } { set acc np } else { set acc p }
+# Activity recording reads every net of the DUT and the testbench's marker
+if { ${CHS_SIM_SAIF} } { set acc npr } else { set acc p }
 set voptargs "-O5 +acc=${acc}+tb_cheshire_asic_top. -permissive"
 set libargs ""
 if { ${CHS_SIM_NETLIST} ne "" } {
@@ -44,13 +46,26 @@ if { ${CHS_SIM_NETLIST} ne "" } {
         echo "Error: the netlist does not elaborate with the models alone"
         quit -f -code 1
     }
-    append voptargs " +nospecify +notimingchecks"
+    # With an SDF, cells and wires take its typical delays. Timing checks stay
+    # off: the synchronizers of the asynchronous clock domain crossings (serial
+    # link, JTAG) see setup and hold violations by design. The SDF's timing
+    # checks then have no counterpart in the models (vsim-SDF-3262, -12090).
+    # The VIP changes the DUT's inputs at mid-cycle, after the clock edge has
+    # reached the flip-flops through the clock tree.
+    if { ${CHS_SIM_SDF} ne "" } {
+        append voptargs " +notimingchecks"
+        append libargs " -GTAppl=0.5"
+        append libargs " -sdftyp /tb_cheshire_asic_top/fix/dut=${CHS_SIM_SDF} -v2k_int_delays"
+        append libargs " -suppress 3262,12090"
+    } else {
+        append voptargs " +nospecify +notimingchecks"
+    }
     if { ${CHS_SIM_GATE_VOPT} ne "" } {
         set fh [open ${CHS_SIM_GATE_VOPT}]
         append voptargs " [join [split [string trim [read $fh]]] { }]"
         close $fh
     }
-    set libargs "-Lf gate"
+    append libargs " -Lf gate"
 }
 
 # The testbench's time unit is 1 ps (asic.mk), so the period is passed as is
@@ -83,9 +98,9 @@ if { ${CHS_SIM_SAIF} } {
     file mkdir saif
     set ::chs_saif_phase ""
     set ::chs_saif_added 0
-    when -label chs_saif {/tb_cheshire_asic_top/fix/gpio_o'event} {
+    when -label chs_saif {/tb_cheshire_asic_top/gpio_marker'event} {
         if { $::chs_saif_phase ne "" } { chs_saif_end }
-        set marker [examine -radix hex /tb_cheshire_asic_top/fix/gpio_o]
+        set marker [examine -radix hex /tb_cheshire_asic_top/gpio_marker]
         if { [regexp {^0*([1-9a-fA-F][0-9a-fA-F]*)$} $marker -> phase] } {
             if { $::chs_saif_added } {
                 power reset -all

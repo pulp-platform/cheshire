@@ -90,12 +90,13 @@ chs-asic-pnr: chs-asic-$(CHS_ASIC_TECH)-pnr
 # Simulation #
 ##############
 
-# Simulation of cheshire_asic_top in Cheshire's VIP with Questa, without delays
+# Simulation of cheshire_asic_top in Cheshire's VIP with Questa
 # (sim/vsim/chs_asic_sim.tcl; testbench in sim/src): the RTL top, or a netlist
 # of it (CHS_ASIC_SIM_NETLIST) with the technology's simulation models, compiled
 # into the library `gate` by a script of its makefile
-# (chs-asic-<tech>-sim-models writes $(CHS_ASIC_SIM_DIR)/models.tcl). The clock
-# runs at the implemented period, so that recorded activity has its toggle rates.
+# (chs-asic-<tech>-sim-models writes $(CHS_ASIC_SIM_DIR)/models.tcl), without
+# delays or with those of an SDF (CHS_ASIC_SIM_SDF). The clock runs at the
+# implemented period, so that recorded activity has its toggle rates.
 CHS_ASIC_VSIM         ?= vsim
 CHS_ASIC_SIM_DIR      ?= $(CHS_ASIC_BUILD)/sim
 CHS_ASIC_SIM_NETLIST  ?=
@@ -111,6 +112,9 @@ CHS_ASIC_SIM_VLOG_ARGS ?= -suppress 2583 -suppress 13314 -timescale 1ps/1ps
 CHS_ASIC_SIM_GATE_VOPT ?=
 # 1: record the switching activity of each workload phase (SAIF), see sim/vsim
 CHS_ASIC_SIM_SAIF ?= 0
+# SDF of the netlist: the netlist then simulates with the cell and interconnect
+# delays of the SDF's typical field
+CHS_ASIC_SIM_SDF ?=
 
 # Cheshire's RTL, VIP and testbench, with the generic technology cells
 $(CHS_ASIC_SIM_DIR)/compile.tcl: $(CHS_ROOT)/Bender.yml $(CHS_ROOT)/Bender.lock
@@ -133,4 +137,5 @@ chs-asic-sim: $(CHS_ASIC_SIM_DIR)/compile.tcl \
 		set CHS_SIM_CXX $(CXX_PATH); \
 		set CHS_SIM_CLK_PERIOD $(CHS_ASIC_CLK_PERIOD); \
 		set CHS_SIM_SAIF $(CHS_ASIC_SIM_SAIF); \
+		set CHS_SIM_SDF {$(CHS_ASIC_SIM_SDF)}; \
 		do $(CHS_ASIC_DIR)/sim/vsim/chs_asic_sim.tcl" 2>&1 | tee $(CHS_ASIC_SIM_DIR)/sim.log

@@ -5,17 +5,20 @@
 // Testbench of `cheshire_asic_top` (RTL or netlist): the boot and preload
 // sequence of `tb_cheshire_soc` on `fixture_cheshire_asic_top`. Plusargs as
 // there: BOOTMODE, PRELMODE (0: JTAG, 1: serial link, 2: UART, 3: memh), BINARY,
-// IMAGE. Every change of the GPIO outputs is printed with its time: programs mark
-// the phases of a workload on them (e.g. for an activity window).
+// IMAGE. Every change of the GPIO outputs (sampled with the clock, gpio_marker) is
+// printed with its time: programs mark the phases of a workload on them (e.g.
+// for an activity window).
 
 module tb_cheshire_asic_top #(
   parameter bit      UseDramSys   = 1'b0,
-  parameter realtime ClkPeriodSys = 5ns
+  parameter realtime ClkPeriodSys = 5ns,
+  parameter real     TAppl        = 0.1
 );
 
   fixture_cheshire_asic_top #(
     .UseDramSys   ( UseDramSys ),
-    .ClkPeriodSys ( ClkPeriodSys )
+    .ClkPeriodSys ( ClkPeriodSys ),
+    .TAppl        ( TAppl )
   ) fix();
 
   string      preload_elf;
@@ -67,9 +70,14 @@ module tb_cheshire_asic_top #(
     $finish;
   end
 
-  // Workload phase markers on the GPIO outputs
-  always @(fix.gpio_o) begin
-    if (fix.rst_n === 1'b1) $display("[GPIO] %t: 0x%08h", $time, fix.gpio_o);
+  // Workload phase markers on the GPIO outputs, sampled with the clock: with
+  // delays, the outputs pass through intermediate values before they settle
+  logic [31:0] gpio_marker;
+
+  always @(posedge fix.clk) gpio_marker <= fix.gpio_o;
+
+  always @(gpio_marker) begin
+    if (fix.rst_n === 1'b1) $display("[GPIO] %t: 0x%08h", $time, gpio_marker);
   end
 
 endmodule
