@@ -61,6 +61,11 @@ sources:
       - target/asic/src/cheshire_asic_pkg.sv
       - target/asic/src/cheshire_asic_top.sv
 
+  - target: all(chs_asic, any(simulation, test))
+    files:
+      - target/asic/sim/src/fixture_cheshire_asic_top.sv
+      - target/asic/sim/src/tb_cheshire_asic_top.sv
+
   - target: all(fpga, xilinx)
     files:
       - target/xilinx/src/phy_definitions.svh
