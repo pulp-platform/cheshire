@@ -69,6 +69,8 @@ CHS_ASIC_NUM_SRAMS_CMD = python3 -c 'import json, sys; print(len(json.load(open(
 # Technologies #
 ################
 
+include $(CHS_ASIC_DIR)/gf22/gf22.mk
+
 # System clock period [ps] where the technology sets no default
 CHS_ASIC_CLK_PERIOD ?= 1500
 
