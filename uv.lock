@@ -129,6 +129,7 @@ dependencies = [
     { name = "mkdocs-material" },
     { name = "peakrdl" },
     { name = "peakrdl-rawheader" },
+    { name = "pyslang" },
     { name = "pyyaml" },
     { name = "requests" },
     { name = "setuptools" },
@@ -147,6 +148,7 @@ requires-dist = [
     { name = "mkdocs-material" },
     { name = "peakrdl", specifier = ">=1.5.0" },
     { name = "peakrdl-rawheader", specifier = ">=0.2.3" },
+    { name = "pyslang", specifier = ">=12.0.0" },
     { name = "pyyaml" },
     { name = "requests" },
     { name = "setuptools", specifier = "<81" },
@@ -469,6 +471,55 @@ wheels = [
 ]
 
 [[package]]
+name = "nanobind-backend"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/76/49/a4c01de9c358b5749560a5415b899a8b57399381e5c8ae64962381302a59/nanobind_backend-1.0.0-cp311-cp311-macosx_10_14_x86_64.whl", hash = "sha256:b20b3e4bbb672987f9d65e52f1829299589c1ccf0502360879846a922e9cb1ed", size = 80577, upload-time = "2026-08-22T04:22:45.852Z" },
+    { url = "https://files.pythonhosted.org/packages/a8/65/c3ff5ef09109a163a3cbe8a69250ae7c4b0b4d8df79b1cb447d03747529f/nanobind_backend-1.0.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:89c582f83d491ba01aa1a5ad39ed6c59bdead67ec3b8c88b288b7e4b6bac18df", size = 76586, upload-time = "2026-08-22T04:22:46.756Z" },
+    { url = "https://files.pythonhosted.org/packages/b3/14/40f0a465df491562debf55044bcfc728dca7cb8e3ef76f532aa8f75e775b/nanobind_backend-1.0.0-cp311-cp311-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:fdf41e97cfb9f149c89b323b7850bd9dc6316d1d79adf99081511b9a1d0858b1", size = 98356, upload-time = "2026-08-22T04:22:47.682Z" },
+    { url = "https://files.pythonhosted.org/packages/5f/9a/0db4d9982ac708b6c532ca6ea2a523d5c85a25f7fc288558c4d6fad725b0/nanobind_backend-1.0.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:33bdec0da2f78669d5c95bd546ff2bb7744dafa43a16bb72b2eecdf83d8c3b3a", size = 106460, upload-time = "2026-08-22T04:22:48.716Z" },
+    { url = "https://files.pythonhosted.org/packages/49/77/45d11f991aa78e8dfaac490c6330e38912d414b60a6b624024e8eaa4cadb/nanobind_backend-1.0.0-cp311-cp311-manylinux_2_39_riscv64.whl", hash = "sha256:d77ecad0d4b8526865f6bec7cd77603c686ef65b57cc7ec81795b3a468dba0f1", size = 100025, upload-time = "2026-08-22T04:22:49.763Z" },
+    { url = "https://files.pythonhosted.org/packages/d9/22/8a2576123da22743a1ca6b683e2e1a046990dd75ab3f70c21c0c8690d936/nanobind_backend-1.0.0-cp311-cp311-win_amd64.whl", hash = "sha256:691be892dcd6b4b1317d628b49bf3e688470f4f927ac316dca233ee19fab7ecd", size = 264783, upload-time = "2026-08-22T04:22:50.856Z" },
+    { url = "https://files.pythonhosted.org/packages/24/bb/fbaa64393f5ed253de5879e8d30477d05f53a3c2b106b9db4f33db7da310/nanobind_backend-1.0.0-cp311-cp311-win_arm64.whl", hash = "sha256:dc199056cbd534c5317899539a36245aa14bce6b8afd48c217e578b2463e0594", size = 435095, upload-time = "2026-08-22T04:22:52.035Z" },
+    { url = "https://files.pythonhosted.org/packages/b8/57/f02cc977a0ba1ddf2a41ebad61bcf2fbfd905aef7753082d9f39389a13e1/nanobind_backend-1.0.0-cp312-cp312-macosx_10_14_x86_64.whl", hash = "sha256:9fd9145b1aa8e9b78029308a73e1ade94369d7250c826783655210d1800f1493", size = 80504, upload-time = "2026-08-22T04:22:53.269Z" },
+    { url = "https://files.pythonhosted.org/packages/bc/3a/40e9ef3133573dddf32f7dcaf1bc7d4f459ecb632b2274c7a619fbfa40ea/nanobind_backend-1.0.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:dca8999e4e87a4e39e162c55b70f39fe1882913c4d7de1adab81cf82bb8cb9ad", size = 75568, upload-time = "2026-08-22T04:22:54.19Z" },
+    { url = "https://files.pythonhosted.org/packages/a3/3b/806d3346ae8175746853b204efd59a4ad8bbddf91d48d03f4eac48d15245/nanobind_backend-1.0.0-cp312-cp312-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:4a42503f65cd595f97a31f24d21c6ddbd017ffcb808626d0134e475e0db25f3d", size = 97730, upload-time = "2026-08-22T04:22:55.085Z" },
+    { url = "https://files.pythonhosted.org/packages/b9/2c/7fb13ecb1e8c0c268e26c6bc44be4a7f51996b2a3c006749ce6fc4fd7da2/nanobind_backend-1.0.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:6aa9864050cc5fd1ff59d1f9b79740efa278515eed27af848efae07125c029b8", size = 106063, upload-time = "2026-08-22T04:22:55.973Z" },
+    { url = "https://files.pythonhosted.org/packages/18/bf/2f6dbcedcca065c20b73346f037d69d78fdb545c9abbf7ad8b27da7890c5/nanobind_backend-1.0.0-cp312-cp312-manylinux_2_39_riscv64.whl", hash = "sha256:00dadccfa92d0f9eac0b1877fdc3fd99d2ebb1a651fbe44daff365a173bd2faa", size = 99415, upload-time = "2026-08-22T04:22:57.03Z" },
+    { url = "https://files.pythonhosted.org/packages/7f/da/f6af805e0737652d4b6aa2e51e3ec1485d906e77ee9389b126adbb9f9644/nanobind_backend-1.0.0-cp312-cp312-win_amd64.whl", hash = "sha256:9b1502e3f160358feff92f60a634e198c76754f50a60fdacd9a8b5dccbe5d9d0", size = 264454, upload-time = "2026-08-22T04:22:58.035Z" },
+    { url = "https://files.pythonhosted.org/packages/7a/45/851847d5246c0c47dbebe473ecfbb0ed44a41fae9ef7e2ec73cd7c8975a3/nanobind_backend-1.0.0-cp312-cp312-win_arm64.whl", hash = "sha256:a1f6e6320aee495e5cad933d671e9d60ee42f4bf460930ef7afed191243aa733", size = 434441, upload-time = "2026-08-22T04:22:59.442Z" },
+    { url = "https://files.pythonhosted.org/packages/06/eb/1c4f3e1fcc41093e321b1c4eb7ca79f628a36057496398bb9fba4d97e417/nanobind_backend-1.0.0-cp313-cp313-macosx_10_14_x86_64.whl", hash = "sha256:a6dd7a66fb7416d62be577d41d64478a187d9f36d089759555698bb08addc2c3", size = 80547, upload-time = "2026-08-22T04:23:00.75Z" },
+    { url = "https://files.pythonhosted.org/packages/18/c2/d59e5b6af43e45088c18895035e053c4585bce7d1bde9679368ef5b960e0/nanobind_backend-1.0.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:28a4c397d6d36dfb712acbab817c02ad2f8658a85fb1dbbae7385689d28d20e9", size = 75630, upload-time = "2026-08-22T04:23:01.674Z" },
+    { url = "https://files.pythonhosted.org/packages/24/a1/97ffb303def8e5a4e48694b01d58477899392468295e8af5c60fdae5f035/nanobind_backend-1.0.0-cp313-cp313-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:8ddf018fc62a2bd51e9d7cc6477af7ae13ccc0db69b775d67d837ba7e0bc41b4", size = 97824, upload-time = "2026-08-22T04:23:02.696Z" },
+    { url = "https://files.pythonhosted.org/packages/c0/3e/0a2143308fd413ae10da3fb8732e9d2fc87de4605a1126d304ffe9f63414/nanobind_backend-1.0.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:de2c78ed4b88ef6c59a835eebe7f5e91ab6869f17f915a61c7d4eec24a1e2b85", size = 106253, upload-time = "2026-08-22T04:23:03.583Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/01/7bb71f0a2566cb398d6877e3540307c3d0e684797001eb1128c2c3732a52/nanobind_backend-1.0.0-cp313-cp313-manylinux_2_39_riscv64.whl", hash = "sha256:36a116471c3ca0b6cd3af1e1fa2e38c52086a2d2daf00b86f90a99da5efdde53", size = 99504, upload-time = "2026-08-22T04:23:04.644Z" },
+    { url = "https://files.pythonhosted.org/packages/90/49/8038eedfd35433968e638081ca4eb6881869e517f766beff0f095387dc9a/nanobind_backend-1.0.0-cp313-cp313-win_amd64.whl", hash = "sha256:915c6ff4ce92584cdde18a24cc5d730f04a70c2f26bc0bc4db903ca54043eb86", size = 264501, upload-time = "2026-08-22T04:23:05.606Z" },
+    { url = "https://files.pythonhosted.org/packages/03/11/6c515cac31f723d2ce2c3155de4343a3ccf612025171cde25d48290c3680/nanobind_backend-1.0.0-cp313-cp313-win_arm64.whl", hash = "sha256:6b7c31403e6f39fd704359ce4a0687d894a9ffa67813da6a54c6d0eb6fde93aa", size = 434433, upload-time = "2026-08-22T04:23:06.626Z" },
+    { url = "https://files.pythonhosted.org/packages/33/82/474e530e562a2c98db0dbd35cc2bc08500895be7cab6b13c5c990c09a650/nanobind_backend-1.0.0-cp314-cp314-macosx_10_15_x86_64.whl", hash = "sha256:04a35c7395daeb9a33f6801ca3d1e11e0384702ae22b8e3e251ef9f6a4a54c10", size = 80613, upload-time = "2026-08-22T04:23:07.851Z" },
+    { url = "https://files.pythonhosted.org/packages/8f/36/7f79710b96ba643c91db149f7ba1b454124cf2cf97e379ef6c3529d97dd0/nanobind_backend-1.0.0-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:574d104bf6322711e5db55ed49409289df9582e8c1fd2a2f2d643d2136428e13", size = 76216, upload-time = "2026-08-22T04:23:08.78Z" },
+    { url = "https://files.pythonhosted.org/packages/08/08/fecefa8c4e5774222b2ed1b715822bca5c9bfb5623fef9be7cc9133df18c/nanobind_backend-1.0.0-cp314-cp314-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:926ba1e7e12bbf3f701f7a200e8801c5f9bd05ba2244962692fcafbd32b8a0d2", size = 98152, upload-time = "2026-08-22T04:23:09.791Z" },
+    { url = "https://files.pythonhosted.org/packages/fc/65/8073c078a91e2fed8c54154f6a0b1d39e362c0ab5ffa7cb93c73f87c9954/nanobind_backend-1.0.0-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:a42a2d594f22e689f15cbdbdf4bf1468ef7a8287da41842515c1cc836a1f2dec", size = 106486, upload-time = "2026-08-22T04:23:10.771Z" },
+    { url = "https://files.pythonhosted.org/packages/37/fe/69f69fbcd6d4e6cee3e27e65a2b10e354da8adfd0d88a87c4c33a845864f/nanobind_backend-1.0.0-cp314-cp314-manylinux_2_39_riscv64.whl", hash = "sha256:ce93f26da63eaa24729d214fa6669525293d75e56f394f2980839cd65a75d2e5", size = 99382, upload-time = "2026-08-22T04:23:11.881Z" },
+    { url = "https://files.pythonhosted.org/packages/89/3e/e33c10a7b0a728e83d492673612146ed7cd47c5d28c242969b4296cb6265/nanobind_backend-1.0.0-cp314-cp314-win_amd64.whl", hash = "sha256:b0eabf671c91fdcd6a61d2177aa434731680442aa2317de54acfabeac4a4cc06", size = 273371, upload-time = "2026-08-22T04:23:12.895Z" },
+    { url = "https://files.pythonhosted.org/packages/56/f2/7a44d3b12d4a876c123445fe6f4971eff1260c6f7660ee00e261cdbe2770/nanobind_backend-1.0.0-cp314-cp314-win_arm64.whl", hash = "sha256:1e5f8217887d1d83ccbe1e61c37d1502ab951fef466a06df2abb1161e246ef79", size = 450418, upload-time = "2026-08-22T04:23:13.996Z" },
+    { url = "https://files.pythonhosted.org/packages/a6/19/3104f9a204271cd57192bdf50577980c030ad3e53dd6ae6fe1aef9bbb5d8/nanobind_backend-1.0.0-cp315-cp315-macosx_10_15_x86_64.whl", hash = "sha256:4816cf6f998b0c2435aa643df7a5c59492202778c96e575e55da802e51c75461", size = 80862, upload-time = "2026-08-22T04:23:15.118Z" },
+    { url = "https://files.pythonhosted.org/packages/f3/6b/441ddd77a34b013350289c2fc99279d76403d45ab6cfdd6ea60be3e09a75/nanobind_backend-1.0.0-cp315-cp315-macosx_11_0_arm64.whl", hash = "sha256:7a7c76fc958eb7bf4b5454d9c036f1e92f8b406343c7b7b7f4e53302718ffee6", size = 76556, upload-time = "2026-08-22T04:23:16.217Z" },
+    { url = "https://files.pythonhosted.org/packages/65/29/101f4ebf5d0455ddab57785d8a341c1bd25d248e0c444ef9cb6ce85df9bb/nanobind_backend-1.0.0-cp315-cp315-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:d9a15c8155c465066fdf43a2589223cd41f4a688f52046f59edcded0790a8ad3", size = 98453, upload-time = "2026-08-22T04:23:17.215Z" },
+    { url = "https://files.pythonhosted.org/packages/34/e1/5630f4e2297fb03749551592e9850ba45d498952a135d3065b49bc68e603/nanobind_backend-1.0.0-cp315-cp315-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:9574cc624b9fff2e8f5946211422476977e43f6b796b83e143b289ecb70df4cf", size = 106886, upload-time = "2026-08-22T04:23:18.314Z" },
+    { url = "https://files.pythonhosted.org/packages/cd/68/698c970f8df703be42720b96678ce0de08536938c95b3ab551e64a33f9ca/nanobind_backend-1.0.0-cp315-cp315-manylinux_2_39_riscv64.whl", hash = "sha256:fac95e67ba91c639c52298388d22595c1d912a09a671d4793c8d16711a0dd1be", size = 99637, upload-time = "2026-08-22T04:23:19.266Z" },
+    { url = "https://files.pythonhosted.org/packages/9f/29/6dd73fdcd3deed710d0dc3b2a4a86ad491450dbc2cd58018a9091a4164f1/nanobind_backend-1.0.0-cp315-cp315-win_amd64.whl", hash = "sha256:4ae0214ad6708b8001d82f1dd6c302aaba9627d81aa0573efc896a3b90f95bce", size = 273532, upload-time = "2026-08-22T04:23:20.251Z" },
+    { url = "https://files.pythonhosted.org/packages/a2/14/cd5789bb09cb3a82b9e85b5164f2b4d7cff2ca6b861d4f89a7df9ae8d207/nanobind_backend-1.0.0-cp315-cp315-win_arm64.whl", hash = "sha256:a7a97a1326fa2d70e013b7af769305796047a01dc4567f5f90d769c6a2e2344d", size = 450650, upload-time = "2026-08-22T04:23:21.317Z" },
+    { url = "https://files.pythonhosted.org/packages/1d/60/7754c00b60994a790574ec6190aeafeb8878e7c72c2c1877b84ebc911451/nanobind_backend-1.0.0-cp315-cp315t-macosx_10_15_x86_64.whl", hash = "sha256:d8581ccc5f000a76b4304f9c8c4ee9e60499a9d9502e6e0e885c1606d6b29f60", size = 84440, upload-time = "2026-08-22T04:23:22.405Z" },
+    { url = "https://files.pythonhosted.org/packages/36/e8/526799c68933550776b2002a0240ff770474d11a527962541b212f9d23fc/nanobind_backend-1.0.0-cp315-cp315t-macosx_11_0_arm64.whl", hash = "sha256:17a9ddc6cc096d713151fbbaabe41d960d1d596c0e046abcd2b17c6d6565c443", size = 80036, upload-time = "2026-08-22T04:23:23.459Z" },
+    { url = "https://files.pythonhosted.org/packages/9b/29/a953f8be0c7b69509793d179f8f709b2c5d301bf65089bb3d87afa859f25/nanobind_backend-1.0.0-cp315-cp315t-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:a83f1c86aa2c7da33ce4a8df4304d34d6364335b2c455a490983059471e21c4d", size = 100522, upload-time = "2026-08-22T04:23:24.394Z" },
+    { url = "https://files.pythonhosted.org/packages/00/d4/cce583c8177b061a3ee82c23da857f64975c1f28bdd614ecf7beda52f38a/nanobind_backend-1.0.0-cp315-cp315t-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:6ea3fe04341040b09444cc946f5cd39145290b2de3b90ca9868b1b59cc75c23e", size = 108352, upload-time = "2026-08-22T04:23:25.411Z" },
+    { url = "https://files.pythonhosted.org/packages/6a/d0/7e56cf0b6faae40d23ec7b5c4d90ad74480038bc99dd9f8b05c58dc70726/nanobind_backend-1.0.0-cp315-cp315t-manylinux_2_39_riscv64.whl", hash = "sha256:983aaeaf65e61ddff125a3eea463675d322d9981510f6f6e462e6bcfc915dca6", size = 103571, upload-time = "2026-08-22T04:23:26.398Z" },
+    { url = "https://files.pythonhosted.org/packages/f4/cf/941d624be0dd41f4bb139fe74d489d83845909dadc9f19fe7d4da5d5c3d1/nanobind_backend-1.0.0-cp315-cp315t-win_amd64.whl", hash = "sha256:2a42cd509c1889cbccdcf8a23dc3733c4b7e2388973ac4292db094576e3e27d0", size = 279141, upload-time = "2026-08-22T04:23:27.535Z" },
+    { url = "https://files.pythonhosted.org/packages/8c/db/badc51c6b13ccb0f7a6ef88e8be014193cfe727f0849eaafa28489a848a2/nanobind_backend-1.0.0-cp315-cp315t-win_arm64.whl", hash = "sha256:8975422479b145ce46d4d79b4fc03dbfab40254470468a99ea417090bb1ce460", size = 453221, upload-time = "2026-08-22T04:23:28.568Z" },
+]
+
+[[package]]
 name = "packaging"
 version = "26.0"
 source = { registry = "https://pypi.org/simple" }
@@ -655,6 +706,22 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ba/63/06673d1eb6d8f83c0ea1f677d770e12565fb516928b4109c9e2055656a9e/pymdown_extensions-10.21.tar.gz", hash = "sha256:39f4a020f40773f6b2ff31d2cd2546c2c04d0a6498c31d9c688d2be07e1767d5", size = 853363, upload-time = "2026-02-15T20:44:06.748Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6f/2c/5b079febdc65e1c3fb2729bf958d18b45be7113828528e8a0b5850dd819a/pymdown_extensions-10.21-py3-none-any.whl", hash = "sha256:91b879f9f864d49794c2d9534372b10150e6141096c3908a455e45ca72ad9d3f", size = 268877, upload-time = "2026-02-15T20:44:05.464Z" },
+]
+
+[[package]]
+name = "pyslang"
+version = "12.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "nanobind-backend" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d7/ca/d150f106c2899e6e7924949b559e6ece26ef091ddbd72c4d5951d6539ed0/pyslang-12.0.0.tar.gz", hash = "sha256:db3a71e1cc013020f53b913dd26a1ecc00af2fd623d13d60642c92786a4f7929", size = 2015267, upload-time = "2026-09-29T11:51:11.959Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cf/55/6cbcd50cb4787689fc7c327f28436c9d7347304f1fe48514d0a26ee397f7/pyslang-12.0.0-cp311-abi3-macosx_11_0_arm64.whl", hash = "sha256:2e91089f4405e2865a1de44fbd62cd772d7c35e9732c42f9baa81e07beeb289b", size = 2887189, upload-time = "2026-09-29T11:51:03.387Z" },
+    { url = "https://files.pythonhosted.org/packages/23/8d/0c35e0de063ec9c8a1c7b6d84680bda8c977fcc463a35453e02093997cf0/pyslang-12.0.0-cp311-abi3-macosx_11_0_universal2.whl", hash = "sha256:e69f87128ae642303d397272326648f0778919ebda955128508997d12c096e91", size = 5971964, upload-time = "2026-09-29T11:51:05.249Z" },
+    { url = "https://files.pythonhosted.org/packages/1f/97/82c247efa75977e11fdcde5376c824def987e92c32f9ee227faa988b55f2/pyslang-12.0.0-cp311-abi3-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:3f8e2428545053dbae14466141d5823f47a9740832e62b1f758a227df7bf608e", size = 4153764, upload-time = "2026-09-29T11:51:07.118Z" },
+    { url = "https://files.pythonhosted.org/packages/c6/20/1b6aec1fcb6d9c6efc491d651fa8e4064efba4ad43bd8ee1fa16096eca3d/pyslang-12.0.0-cp311-abi3-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:3c24dfadf0f318928433eedd7558e128f7a05f8a4d514f81aab08f2cba3db47d", size = 4621859, upload-time = "2026-09-29T11:51:08.63Z" },
+    { url = "https://files.pythonhosted.org/packages/5b/1c/09975b8776b0552ec36263d5a18ca014574a80a3c84a9ff8bff909c0f2cc/pyslang-12.0.0-cp311-abi3-win_amd64.whl", hash = "sha256:90848d0a3853f7f4ed7f021df4af83c8e2130d7a498449c26f27a4509934596e", size = 3381618, upload-time = "2026-09-29T11:51:10.205Z" },
 ]
 
 [[package]]
