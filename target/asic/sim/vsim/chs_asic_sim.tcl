@@ -46,16 +46,18 @@ if { ${CHS_SIM_NETLIST} ne "" } {
         echo "Error: the netlist does not elaborate with the models alone"
         quit -f -code 1
     }
-    # With an SDF, cells and wires take its typical delays. Timing checks stay
-    # off: the synchronizers of the asynchronous clock domain crossings (serial
-    # link, JTAG) see setup and hold violations by design. The SDF's timing
-    # checks then have no counterpart in the models (vsim-SDF-3262, -12090).
+    # With an SDF, cells and wires take its typical delays; each interconnect
+    # delay applies at its load pin, and as every net of a netlist has a single
+    # driver, each load keeps its own delay. Timing checks stay off: the
+    # synchronizers of the asynchronous clock domain crossings (serial link,
+    # JTAG) see setup and hold violations by design. The SDF's timing checks
+    # then have no counterpart in the models (vsim-SDF-3262, -12090).
     # The VIP changes the DUT's inputs at mid-cycle, after the clock edge has
     # reached the flip-flops through the clock tree.
     if { ${CHS_SIM_SDF} ne "" } {
         append voptargs " +notimingchecks"
         append libargs " -GTAppl=0.5"
-        append libargs " -sdftyp /tb_cheshire_asic_top/fix/dut=${CHS_SIM_SDF} -v2k_int_delays"
+        append libargs " -sdftyp /tb_cheshire_asic_top/fix/dut=${CHS_SIM_SDF}"
         append libargs " -suppress 3262,12090"
     } else {
         append voptargs " +nospecify +notimingchecks"
