@@ -102,10 +102,10 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 7e9d560afa366d1903f04850e43da456e6638d9b
+    revision: 769752703305fa3dc9e1cfb3d378829b68b23a50
     version: null
     source:
-      Git: https://github.com/ricted98/cva6.git
+      Git: https://github.com/pulp-platform/cva6.git
     dependencies:
     - axi
     - common_cells
@@ -121,7 +121,7 @@ packages:
     dependencies:
     - axi
   fpnew:
-    revision: 58ca3c376beb914b2b80b811d4b270c063d4e6f7
+    revision: 3eb6afeab2cb33f7d8689222955d0171aeb3a801
     version: null
     source:
       Git: https://github.com/openhwgroup/cvfpu.git
@@ -136,10 +136,10 @@ packages:
     dependencies:
     - common_cells
   hpdcache:
-    revision: 24ebcfd186ee2472606939a7cf6c0bc073dfc572
+    revision: 9a5c0e9f9bbd367fc8cea185fe3ccc9c4015a3e5
     version: null
     source:
-      Git: https://github.com/ricted98/cv-hpdcache.git
+      Git: https://github.com/pulp-platform/cv-hpdcache.git
     dependencies:
     - axi
   idma:
@@ -164,8 +164,8 @@ packages:
     - common_cells
     - register_interface
   obi:
-    revision: 50a7b305a1ac15a07594429658ae9ce0c1ed3177
-    version: null
+    revision: 0155fc34e900c7c884e081c0a1114a247937ff69
+    version: 0.1.7
     source:
       Git: https://github.com/pulp-platform/obi.git
     dependencies:
