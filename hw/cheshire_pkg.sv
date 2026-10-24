@@ -467,6 +467,7 @@ package cheshire_pkg;
     ret.NrNonIdempotentRules  = 2;   // Periphs, ExtNonCI;
     ret.NonIdempotentAddrBase = {EXTROM_BASE_ADDR, NoCieBase};
     ret.NOCType               = config_pkg::NOC_TYPE_AXI4_ATOP;
+    ret.MemSubsystem          = config_pkg::MEM_HPDCACHE_AXI;
     ret.NonIdempotentLength   = {SPM_BASE_ADDR, 64'h6000_0000 - cfg.Cva6ExtCieLength};
     ret.NrExecuteRegionRules  = 6;   // Debug, Bootrom, SPM, SPM Uncached, LLCOut, ExtCI;
     ret.ExecuteRegionAddrBase = {EXTROM_BASE_ADDR, BOOTROM_BASE_ADDR, SPM_BASE_ADDR, SPM_UNC_BASE_ADDR, cfg.LlcOutRegionStart, CieBase};
