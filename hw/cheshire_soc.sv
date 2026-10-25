@@ -661,7 +661,7 @@ module cheshire_soc import cheshire_pkg::*; #(
     logic clic_irq_shv;
     logic [$clog2(NumClicIntrs)-1:0] clic_irq_id;
     logic [7:0]        clic_irq_level;
-    riscv::priv_lvl_t  clic_irq_priv;
+    logic [1:0]        clic_irq_priv;
     logic              clic_irq_v;
     logic [5:0]        clic_irq_vsid;
     logic [1:0]        clic_irq_rstk;
@@ -687,7 +687,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clic_irq_valid_i ( clic_irq_valid ),
       .clic_irq_id_i    ( clic_irq_id    ),
       .clic_irq_level_i ( clic_irq_level ),
-      .clic_irq_priv_i  ( clic_irq_priv  ),
+      .clic_irq_priv_i  ( riscv::priv_lvl_t'(clic_irq_priv) ),
       .clic_irq_rstk_i  ( clic_irq_rstk  ),
       .clic_irq_v_i     ( clic_irq_v     ),
       .clic_irq_vsid_i  ( clic_irq_vsid  ),
@@ -780,7 +780,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       assign clic_irq_id       = '0;
       assign clic_irq_level    = '0;
       assign clic_irq_shv      = '0;
-      assign clic_irq_priv     = riscv::priv_lvl_t'(0);
+      assign clic_irq_priv     = '0;
       assign clic_irq_v        = '0;
       assign clic_irq_vsid     = '0;
       assign clic_irq_kill_req = '0;
