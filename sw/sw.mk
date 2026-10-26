@@ -185,6 +185,10 @@ CHS_SW_TOOLS += $(CHS_SW_DIR)/boot/flash.spm.elf
 # Tests #
 #########
 
+# Keep the adjacent PT_LOAD layout specific to the serial link preload test.
+$(CHS_SW_DIR)/tests/slink_preload.spm.elf: $(CHS_SW_DIR)/tests/slink_preload.ld $(CHS_SW_DIR)/tests/slink_preload.spm.S $(CHS_SW_DIR)/lib/crt0.S $(CHS_SW_ADDRS_LDH)
+	$(CHS_SW_CC) $(CHS_SW_INCLUDES) -T$< $(CHS_SW_LDFLAGS) -o $@ $(filter %.S,$^)
+
 # Accumulate single-link-mode sources and corresponding .dump targets
 define chs_sw_tests_add_rule
 BLA += $(wildcard $(2)/*.$(1).c)
