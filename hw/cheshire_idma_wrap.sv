@@ -170,7 +170,7 @@ module cheshire_idma_wrap #(
       .next_id_i      ( next_id ),
       .stream_idx_o   ( ),
       .done_id_i      ( done_id ),
-      .busy_i         ( idma_busy ),
+      .busy_i         ( busy ),
       .midend_busy_i  ( 1'b0 )
     );
 
