@@ -708,4 +708,59 @@ package cheshire_pkg;
     default: '0
   };
 
+  // Cheshire as integrated in the Gwaihir chip (pulp-platform/gwaihir, `gwaihir_pkg::gen_cheshire_cfg`),
+  // with the NoC-derived widths and address windows written out.
+  function automatic cheshire_cfg_t gen_cheshire_gwaihir_cfg();
+    cheshire_cfg_t ret = DefaultCfg;
+    // External AXI ports to the NoC and register ports for the FLL, chip and LPDDR registers
+    ret.AxiExtNumMst          = 1;
+    ret.AxiExtNumSlv          = 1;
+    ret.AxiExtNumRules        = 2;
+    ret.RegExtNumSlv          = 3;
+    ret.RegExtNumRules        = 3;
+    ret.RegExtRegionIdx[0]    = 0;
+    ret.RegExtRegionStart[0]  = 'h1800_1000;
+    ret.RegExtRegionEnd[0]    = 'h1800_2000;
+    ret.RegExtRegionIdx[1]    = 1;
+    ret.RegExtRegionStart[1]  = 'h1800_2000;
+    ret.RegExtRegionEnd[1]    = 'h1800_3000;
+    ret.RegExtRegionIdx[2]    = 2;
+    ret.RegExtRegionStart[2]  = 'h4000_0000;
+    ret.RegExtRegionEnd[2]    = 'h4100_1020;
+    ret.Cva6ExtCieOnTop       = 0;
+    ret.Cva6ExtCieLength      = 'h0;
+    ret.AddrWidth             = 48;
+    ret.AxiDataWidth          = 64;
+    ret.AxiUserWidth          = 6;
+    ret.AxiMstIdWidth         = 2;
+    ret.NumExtIrqHarts        = 16;
+    ret.Vga                   = 1'b0;
+    ret.Usb                   = 1'b0;
+    ret.LlcOutRegionStart     = 'h8000_0000;
+    ret.LlcOutRegionEnd       = 'h1_0000_0000;
+    ret.AxiExtRegionIdx[0]    = 0;
+    ret.AxiExtRegionStart[0]  = 'h2000_0000;
+    ret.AxiExtRegionEnd[0]    = 'h8000_0000;
+    ret.AxiExtRegionIdx[1]    = 0;
+    ret.AxiExtRegionStart[1]  = 'h1_0000_0000;
+    ret.AxiExtRegionEnd[1]    = 'h6_0000_0000;
+    ret.SlinkRegionStart      = 'h100_0000_0000;
+    ret.SlinkRegionEnd        = 'h200_0000_0000;
+    // RT features
+    ret.Cva6InstrTlbEntries   = 16;
+    ret.Cva6DataTlbEntries    = 16;
+    ret.Cva6TlbColoring       = 1;
+    ret.Cva6NumTlbColors      = 16;
+    ret.Cva6LockableTlbWays   = 8;
+    ret.Cva6UseSharedTlb      = 0;
+    ret.AxiRt                 = 1;
+    ret.Clic                  = 1;
+    ret.ClicVsclic            = 1;
+    ret.ClicVsprio            = 1;
+    ret.ClicNumVsctxts        = 4;
+    ret.ClicPrioWidth         = 1;
+    ret.LlcCachePartition     = 1;
+    return ret;
+  endfunction
+
 endpackage
