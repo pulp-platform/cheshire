@@ -120,7 +120,8 @@ $(OTPROOT)/.generated: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
 	flock -x $@ sh -c "cp $< $(dir $@)/src/rv_plic/; $(MAKE) -j1 otp" && touch $@
 
 # AXI RT
-AXIRT_NUM_MGRS ?= 6
+# Gwaihir's Cheshire has 7 AXI managers (core, debug, DMA, serial link, IOMMU x2, NoC)
+AXIRT_NUM_MGRS ?= 7
 AXIRT_NUM_SUBS ?= 2
 include $(AXIRTROOT)/axirt.mk
 $(AXIRTROOT)/.generated:
