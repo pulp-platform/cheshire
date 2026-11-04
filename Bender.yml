@@ -19,11 +19,11 @@ dependencies:
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      rev: fix/tie-exists-ports }
   axi_rt:                   { git: "https://github.com/pulp-platform/axi_rt.git",                 rev: common-cells-v2 }
   axi_vga:                  { git: "https://github.com/pulp-platform/axi_vga.git",                rev: common-cells-v2 }
-  clic:                     { git: "https://github.com/pulp-platform/clic.git",                   rev: common-cells-v2 }
+  clic:                     { git: "https://github.com/pulp-platform/clic.git",                   rev: gwaihir }
   clint:                    { git: "https://github.com/pulp-platform/clint.git",                  version: 0.2.0  }
   common_cells:             { git: "https://github.com/pulp-platform/common_cells.git",           version: 2.0.0-beta }
   common_verification:      { git: "https://github.com/pulp-platform/common_verification.git",    version: 0.2.3  }
-  cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: gwaihir }
+  cva6:                     { git: "https://github.com/pulp-platform/cva6.git",                   rev: ez/gwaihir }
   iDMA:                     { git: "https://github.com/pulp-platform/iDMA.git",                   version: 0.7.0  }
   riscv-iommu:              { git: "https://github.com/FondazioneChipsIt/riscv-iommu.git",        version: =0.0.2 }
   irq_router:               { git: "https://github.com/pulp-platform/irq_router.git",             version: 0.0.1-beta.1 }
