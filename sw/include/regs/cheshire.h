@@ -537,17 +537,29 @@ typedef union {
     uint32_t w;
 } cheshire__slink__raw_mode_en_t;
 
-// reg - cheshire.slink.raw_mode_in_data
-#define CHESHIRE__SLINK__RAW_MODE_IN_DATA__RAW_MODE_IN_DATA_bm 0xff
-#define CHESHIRE__SLINK__RAW_MODE_IN_DATA__RAW_MODE_IN_DATA_bp 0
-#define CHESHIRE__SLINK__RAW_MODE_IN_DATA__RAW_MODE_IN_DATA_bw 8
+// reg - cheshire.slink.raw_mode_in_data[]
+#define CHESHIRE__SLINK__RAW_MODE_IN_DATAX__RAW_MODE_IN_DATA_bm 0xffffffff
+#define CHESHIRE__SLINK__RAW_MODE_IN_DATAX__RAW_MODE_IN_DATA_bp 0
+#define CHESHIRE__SLINK__RAW_MODE_IN_DATAX__RAW_MODE_IN_DATA_bw 32
 typedef union {
     struct __attribute__ ((__packed__)) {
-        uint32_t raw_mode_in_data :8;
-        uint32_t :24;
+        uint32_t raw_mode_in_data :32;
     } f;
     uint32_t w;
-} cheshire__slink__raw_mode_in_data_t;
+} cheshire__slink__raw_mode_in_datax_t;
+
+// reg - cheshire.slink.raw_mode_pop
+#define CHESHIRE__SLINK__RAW_MODE_POP__RAW_MODE_POP_bm 0x1
+#define CHESHIRE__SLINK__RAW_MODE_POP__RAW_MODE_POP_bp 0
+#define CHESHIRE__SLINK__RAW_MODE_POP__RAW_MODE_POP_bw 1
+#define CHESHIRE__SLINK__RAW_MODE_POP__RAW_MODE_POP_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t raw_mode_pop :1;
+        uint32_t :31;
+    } f;
+    uint32_t w;
+} cheshire__slink__raw_mode_pop_t;
 
 // reg - cheshire.slink.raw_mode_in_ch_sel
 #define CHESHIRE__SLINK__RAW_MODE_IN_CH_SEL__RAW_MODE_IN_CH_SEL_bm 0xff
@@ -562,26 +574,38 @@ typedef union {
     uint32_t w;
 } cheshire__slink__raw_mode_in_ch_sel_t;
 
-// reg - cheshire.slink.raw_mode_out_data_fifo
-#define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_bm 0xff
-#define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_bp 0
-#define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_bw 8
-#define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO__RAW_MODE_OUT_DATA_FIFO_reset 0x0
+// reg - cheshire.slink.raw_mode_out_data_fifo[]
+#define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFOX__RAW_MODE_OUT_DATA_FIFO_bm 0xffffffff
+#define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFOX__RAW_MODE_OUT_DATA_FIFO_bp 0
+#define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFOX__RAW_MODE_OUT_DATA_FIFO_bw 32
+#define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFOX__RAW_MODE_OUT_DATA_FIFO_reset 0x0
 typedef union {
     struct __attribute__ ((__packed__)) {
-        uint32_t raw_mode_out_data_fifo :8;
-        uint32_t :24;
+        uint32_t raw_mode_out_data_fifo :32;
     } f;
     uint32_t w;
-} cheshire__slink__raw_mode_out_data_fifo_t;
+} cheshire__slink__raw_mode_out_data_fifox_t;
+
+// reg - cheshire.slink.raw_mode_push
+#define CHESHIRE__SLINK__RAW_MODE_PUSH__RAW_MODE_PUSH_bm 0x1
+#define CHESHIRE__SLINK__RAW_MODE_PUSH__RAW_MODE_PUSH_bp 0
+#define CHESHIRE__SLINK__RAW_MODE_PUSH__RAW_MODE_PUSH_bw 1
+#define CHESHIRE__SLINK__RAW_MODE_PUSH__RAW_MODE_PUSH_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t raw_mode_push :1;
+        uint32_t :31;
+    } f;
+    uint32_t w;
+} cheshire__slink__raw_mode_push_t;
 
 // reg - cheshire.slink.raw_mode_out_data_fifo_ctrl
 #define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO_CTRL__CLEAR_bm 0x1
 #define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO_CTRL__CLEAR_bp 0
 #define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO_CTRL__CLEAR_bw 1
-#define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO_CTRL__FILL_STATE_bm 0x700
+#define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO_CTRL__FILL_STATE_bm 0xf00
 #define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO_CTRL__FILL_STATE_bp 8
-#define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO_CTRL__FILL_STATE_bw 3
+#define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO_CTRL__FILL_STATE_bw 4
 #define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO_CTRL__FILL_STATE_reset 0x0
 #define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO_CTRL__IS_FULL_bm 0x80000000
 #define CHESHIRE__SLINK__RAW_MODE_OUT_DATA_FIFO_CTRL__IS_FULL_bp 31
@@ -591,8 +615,8 @@ typedef union {
     struct __attribute__ ((__packed__)) {
         uint32_t clear :1;
         uint32_t :7;
-        uint32_t fill_state :3;
-        uint32_t :20;
+        uint32_t fill_state :4;
+        uint32_t :19;
         uint32_t is_full :1;
     } f;
     uint32_t w;
@@ -800,30 +824,24 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__slink__ctrl_t ctrl;
     cheshire__slink__isolated_t isolated;
     cheshire__slink__raw_mode_en_t raw_mode_en;
-    cheshire__slink__raw_mode_in_data_t raw_mode_in_data;
+    cheshire__slink__raw_mode_in_datax_t raw_mode_in_data[1];
+    cheshire__slink__raw_mode_pop_t raw_mode_pop;
     cheshire__slink__raw_mode_in_ch_sel_t raw_mode_in_ch_sel;
-    cheshire__slink__raw_mode_out_data_fifo_t raw_mode_out_data_fifo;
+    cheshire__slink__raw_mode_out_data_fifox_t raw_mode_out_data_fifo[1];
+    cheshire__slink__raw_mode_push_t raw_mode_push;
     cheshire__slink__raw_mode_out_data_fifo_ctrl_t raw_mode_out_data_fifo_ctrl;
     cheshire__slink__raw_mode_out_en_t raw_mode_out_en;
     cheshire__slink__flow_control_fifo_clear_t flow_control_fifo_clear;
-    uint8_t RESERVED_24_ff[0xdc];
     cheshire__slink__raw_mode_in_data_validx_t raw_mode_in_data_valid[1];
-    uint8_t RESERVED_104_1ff[0xfc];
     cheshire__slink__raw_mode_out_ch_maskx_t raw_mode_out_ch_mask[1];
-    uint8_t RESERVED_204_2ff[0xfc];
     cheshire__slink__tx_phy_clk_divx_t tx_phy_clk_div[1];
-    uint8_t RESERVED_304_3ff[0xfc];
     cheshire__slink__tx_phy_clk_startx_t tx_phy_clk_start[1];
-    uint8_t RESERVED_404_4ff[0xfc];
     cheshire__slink__tx_phy_clk_endx_t tx_phy_clk_end[1];
-    uint8_t RESERVED_504_5ff[0xfc];
     cheshire__slink__channel_alloc_tx_cfg_t channel_alloc_tx_cfg;
     cheshire__slink__channel_alloc_tx_ctrl_t channel_alloc_tx_ctrl;
     cheshire__slink__channel_alloc_rx_cfg_t channel_alloc_rx_cfg;
     cheshire__slink__channel_alloc_rx_ctrl_t channel_alloc_rx_ctrl;
-    uint8_t RESERVED_610_6ff[0xf0];
     cheshire__slink__channel_alloc_tx_ch_enx_t channel_alloc_tx_ch_en[1];
-    uint8_t RESERVED_704_7ff[0xfc];
     cheshire__slink__channel_alloc_rx_ch_enx_t channel_alloc_rx_ch_en[1];
 } cheshire__slink_t;
 
@@ -1082,7 +1100,7 @@ typedef struct __attribute__ ((__packed__)) {
     cheshire__spih_t spih;
     cheshire__gpio_t gpio;
     cheshire__slink_t slink;
-    uint8_t RESERVED_3006804_3006fff[0x7fc];
+    uint8_t RESERVED_3006058_3006fff[0xfa8];
     cheshire__vga_t vga;
     cheshire__usb_t usb;
     cheshire__bus_err_t bus_err;

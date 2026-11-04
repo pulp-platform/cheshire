@@ -204,10 +204,10 @@ typedef struct __attribute__ ((__packed__)) {
 #define IDMA_REG64_2D__COMPUTE_CFG__TRANSPOSE_TENSOR_N_bp 19
 #define IDMA_REG64_2D__COMPUTE_CFG__TRANSPOSE_TENSOR_N_bw 12
 #define IDMA_REG64_2D__COMPUTE_CFG__TRANSPOSE_TENSOR_N_reset 0x0
-#define IDMA_REG64_2D__COMPUTE_CFG__RESERVED_bm 0x80000000
-#define IDMA_REG64_2D__COMPUTE_CFG__RESERVED_bp 31
-#define IDMA_REG64_2D__COMPUTE_CFG__RESERVED_bw 1
-#define IDMA_REG64_2D__COMPUTE_CFG__RESERVED_reset 0x0
+#define IDMA_REG64_2D__COMPUTE_CFG__TRANSPOSE_COMPACT_bm 0x80000000
+#define IDMA_REG64_2D__COMPUTE_CFG__TRANSPOSE_COMPACT_bp 31
+#define IDMA_REG64_2D__COMPUTE_CFG__TRANSPOSE_COMPACT_bw 1
+#define IDMA_REG64_2D__COMPUTE_CFG__TRANSPOSE_COMPACT_reset 0x0
 typedef union {
     struct __attribute__ ((__packed__)) {
         uint32_t compute_enable :1;
@@ -215,10 +215,67 @@ typedef union {
         uint32_t transpose_mode :2;
         uint32_t transpose_tensor_m :12;
         uint32_t transpose_tensor_n :12;
-        uint32_t reserved :1;
+        uint32_t transpose_compact :1;
     } f;
     uint32_t w;
 } idma_reg64_2d__compute_cfg_t;
+
+// reg - idma_reg64_2d.mx_cfg
+#define IDMA_REG64_2D__MX_CFG__MX_POISON_DIS_bm 0x1
+#define IDMA_REG64_2D__MX_CFG__MX_POISON_DIS_bp 0
+#define IDMA_REG64_2D__MX_CFG__MX_POISON_DIS_bw 1
+#define IDMA_REG64_2D__MX_CFG__MX_POISON_DIS_reset 0x0
+#define IDMA_REG64_2D__MX_CFG__MX_RCEIL_bm 0x2
+#define IDMA_REG64_2D__MX_CFG__MX_RCEIL_bp 1
+#define IDMA_REG64_2D__MX_CFG__MX_RCEIL_bw 1
+#define IDMA_REG64_2D__MX_CFG__MX_RCEIL_reset 0x0
+#define IDMA_REG64_2D__MX_CFG__MX_ELEM_FMT_bm 0xc
+#define IDMA_REG64_2D__MX_CFG__MX_ELEM_FMT_bp 2
+#define IDMA_REG64_2D__MX_CFG__MX_ELEM_FMT_bw 2
+#define IDMA_REG64_2D__MX_CFG__MX_ELEM_FMT_reset 0x0
+#define IDMA_REG64_2D__MX_CFG__MX_GROUP_bm 0x10
+#define IDMA_REG64_2D__MX_CFG__MX_GROUP_bp 4
+#define IDMA_REG64_2D__MX_CFG__MX_GROUP_bw 1
+#define IDMA_REG64_2D__MX_CFG__MX_GROUP_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t mx_poison_dis :1;
+        uint32_t mx_rceil :1;
+        uint32_t mx_elem_fmt :2;
+        uint32_t mx_group :1;
+        uint32_t :27;
+    } f;
+    uint32_t w;
+} idma_reg64_2d__mx_cfg_t;
+
+// reg - idma_reg64_2d.scale_addr[]
+#define IDMA_REG64_2D__SCALE_ADDRX__SCALE_ADDR_bm 0xffffffff
+#define IDMA_REG64_2D__SCALE_ADDRX__SCALE_ADDR_bp 0
+#define IDMA_REG64_2D__SCALE_ADDRX__SCALE_ADDR_bw 32
+#define IDMA_REG64_2D__SCALE_ADDRX__SCALE_ADDR_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t scale_addr :32;
+    } f;
+    uint32_t w;
+} idma_reg64_2d__scale_addrx_t;
+
+// reg - idma_reg64_2d.mx_dim[].scale_stride[]
+#define IDMA_REG64_2D__MX_DIMX__SCALE_STRIDEX__SCALE_STRIDE_bm 0xffffffff
+#define IDMA_REG64_2D__MX_DIMX__SCALE_STRIDEX__SCALE_STRIDE_bp 0
+#define IDMA_REG64_2D__MX_DIMX__SCALE_STRIDEX__SCALE_STRIDE_bw 32
+#define IDMA_REG64_2D__MX_DIMX__SCALE_STRIDEX__SCALE_STRIDE_reset 0x0
+typedef union {
+    struct __attribute__ ((__packed__)) {
+        uint32_t scale_stride :32;
+    } f;
+    uint32_t w;
+} idma_reg64_2d__mx_dimx__scale_stridex_t;
+
+// regfile - idma_reg64_2d.mx_dim[]
+typedef struct __attribute__ ((__packed__)) {
+    idma_reg64_2d__mx_dimx__scale_stridex_t scale_stride[2];
+} idma_reg64_2d__mx_dimx_t;
 
 // addrmap - idma_reg64_2d
 typedef struct __attribute__ ((__packed__)) {
@@ -233,10 +290,13 @@ typedef struct __attribute__ ((__packed__)) {
     uint8_t RESERVED_e8_ff[0x18];
     idma_reg64_2d__dimx_t dim[1];
     idma_reg64_2d__compute_cfg_t compute_cfg;
+    idma_reg64_2d__mx_cfg_t mx_cfg;
+    idma_reg64_2d__scale_addrx_t scale_addr[2];
+    idma_reg64_2d__mx_dimx_t mx_dim[1];
 } idma_reg64_2d_t;
 
 
-static_assert(sizeof(idma_reg64_2d_t) == 0x11c, "Packing error");
+static_assert(sizeof(idma_reg64_2d_t) == 0x130, "Packing error");
 
 #ifdef __cplusplus
 }
