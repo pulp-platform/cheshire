@@ -118,6 +118,11 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
 
   // Use default config as far as possible
   function automatic cheshire_cfg_t gen_cheshire_xilinx_cfg();
+`ifdef USE_GWAIHIR_CFG
+    // Gwaihir's Cheshire; the board only sets the RTC frequency
+    cheshire_cfg_t ret  = gen_cheshire_gwaihir_cfg();
+    ret.RtcFreq         = 1000000;
+`else
     cheshire_cfg_t ret  = DefaultCfg;
     ret.RtcFreq         = 1000000;
     ret.SerialLink      = 0;
@@ -163,6 +168,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
   `ifdef USE_LLC_PARTITIONING
     ret.LlcCachePartition = 1;
   `endif
+`endif
     return ret;
   endfunction
 
@@ -628,6 +634,45 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
   assign axi_llc_mst_rsp  = axi_dram_mst_rsp;
 `endif
 
+`ifdef USE_GWAIHIR_CFG
+  /////////////////////////////////
+  // Gwaihir's external regions //
+  /////////////////////////////////
+
+  // The NoC and the chip registers behind Cheshire's external ports are not on the board: answer with errors
+  axi_slv_req_t [FPGACfg.AxiExtNumSlv-1:0] axi_ext_slv_req;
+  axi_slv_rsp_t [FPGACfg.AxiExtNumSlv-1:0] axi_ext_slv_rsp;
+  reg_req_t     [FPGACfg.RegExtNumSlv-1:0] reg_ext_slv_req;
+  reg_rsp_t     [FPGACfg.RegExtNumSlv-1:0] reg_ext_slv_rsp;
+
+  for (genvar i = 0; i < FPGACfg.AxiExtNumSlv; i++) begin : gen_axi_ext_err
+    axi_err_slv #(
+      .AxiIdWidth ( $bits(axi_slv_id_t) ),
+      .axi_req_t  ( axi_slv_req_t ),
+      .axi_resp_t ( axi_slv_rsp_t ),
+      .RespWidth  ( FPGACfg.AxiDataWidth ),
+      .ATOPs      ( 1'b1 )
+    ) i_axi_ext_err (
+      .clk_i      ( soc_clk ),
+      .rst_ni     ( rst_n ),
+      .slv_req_i  ( axi_ext_slv_req[i] ),
+      .slv_resp_o ( axi_ext_slv_rsp[i] )
+    );
+  end
+
+  for (genvar i = 0; i < FPGACfg.RegExtNumSlv; i++) begin : gen_reg_ext_err
+    reg_err_slv #(
+      .DW      ( 32 ),
+      .ERR_VAL ( 32'hBADCAB1E ),
+      .req_t   ( reg_req_t ),
+      .rsp_t   ( reg_rsp_t )
+    ) i_reg_ext_err (
+      .req_i ( reg_ext_slv_req[i] ),
+      .rsp_o ( reg_ext_slv_rsp[i] )
+    );
+  end
+`endif
+
   //////////////////
   // Cheshire SoC //
   //////////////////
@@ -653,12 +698,19 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
     .axi_llc_mst_rsp_i  ( axi_llc_mst_rsp ),
     .axi_ext_mst_req_i  ( '0 ),
     .axi_ext_mst_rsp_o  ( ),
+`ifdef USE_GWAIHIR_CFG
+    .axi_ext_slv_req_o  ( axi_ext_slv_req ),
+    .axi_ext_slv_rsp_i  ( axi_ext_slv_rsp ),
+    .reg_ext_slv_req_o  ( reg_ext_slv_req ),
+    .reg_ext_slv_rsp_i  ( reg_ext_slv_rsp ),
+`elsif USE_CFG_REGS
     .axi_ext_slv_req_o  ( ),
     .axi_ext_slv_rsp_i  ( '0 ),
-`ifdef USE_CFG_REGS
     .reg_ext_slv_req_o  ( cfg_reg_req ),
     .reg_ext_slv_rsp_i  ( cfg_reg_rsp ),
 `else
+    .axi_ext_slv_req_o  ( ),
+    .axi_ext_slv_rsp_i  ( '0 ),
     .reg_ext_slv_req_o  ( ),
     .reg_ext_slv_rsp_i  ( '0 ),
 `endif

@@ -49,12 +49,16 @@ $(CHS_XILINX_DIR)/build/%/out.xci: \
 
 CHS_XILINX_BOARDS := genesys2 vcu128 vcu118
 
+# Set to `gwaihir` to implement Gwaihir's Cheshire configuration instead of the board's (VCU boards)
+CHS_XILINX_CFG ?=
+
 CHS_XILINX_IPS_genesys2 := clkwiz vio mig7s
 CHS_XILINX_IPS_vcu128   := clkwiz vio ddr4
 CHS_XILINX_IPS_vcu118   := clkwiz vio ddr4
 
 $(CHS_XILINX_DIR)/scripts/add_sources.%.tcl: $(CHS_ROOT)/Bender.yml $(CHS_XILINX_HW)
-	$(BENDER) script vivado -t fpga -t $* -t tech_cells_generic_include_tc_sync $(CHS_BENDER_RTL_FLAGS) > $@
+	$(BENDER) script vivado -t fpga -t $* -t tech_cells_generic_include_tc_sync $(CHS_BENDER_RTL_FLAGS) \
+		$(if $(filter gwaihir,$(CHS_XILINX_CFG)),-t chs_gwaihir_cfg) > $@
 
 define chs_xilinx_bit_rule
 $$(CHS_XILINX_DIR)/out/%.$(1).bit: \

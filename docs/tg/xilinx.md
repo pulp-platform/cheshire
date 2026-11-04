@@ -26,6 +26,8 @@ Generate the bitstream `target/xilinx/out/cheshire.<myboard>.bit` for your desir
 make chs-xilinx-<myboard>
 ```
 
+On the VCU boards, `CHS_XILINX_CFG=gwaihir` implements Gwaihir's Cheshire configuration (`gen_cheshire_gwaihir_cfg` in `cheshire_pkg`) instead of the board's; its external AXI and register ports answer with errors. Regenerate `target/xilinx/scripts/add_sources.<myboard>.tcl` when changing it.
+
 Since available features vary between boards, we provide further documentation for each.
 
 ### Digilent Genesys 2 (`genesys2`)

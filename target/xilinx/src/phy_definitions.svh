@@ -66,6 +66,11 @@
 `define USE_CFG_REGS
 `endif
 
+// The `chs_gwaihir_cfg` target (CHS_XILINX_CFG=gwaihir) selects Gwaihir's Cheshire configuration
+`ifdef TARGET_CHS_GWAIHIR_CFG
+`define USE_GWAIHIR_CFG
+`endif
+
 `ifdef USE_CHESHIRE_RT
 `define USE_CVA6RT
 `define USE_AXIRT
