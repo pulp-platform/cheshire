@@ -197,6 +197,7 @@ When the CLIC is enabled, Cheshire optionally supports the [vCLIC](https://ieeex
 | `ClicNumVsctxts`    | `byte_bt`    | Number of supported virtual interrupt contexts         |
 | `ClicVsprio`        | `bit`        | Enable per-context priorities for virtual interrupts   |
 | `ClicPrioWidth`     | `aw_bt`      | Bit width of per-context priorities                    |
+| `ClicPipe`          | `bit`        | Register the selected interrupt (one cycle more)       |
 
 ### Debug Module
 

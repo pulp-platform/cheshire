@@ -219,6 +219,7 @@ package cheshire_pkg;
     bit     ClicVsprio;
     byte_bt ClicNumVsctxts;
     aw_bt   ClicPrioWidth;
+    bit     ClicPipe;
   } cheshire_cfg_t;
 
   //////////////////
@@ -704,6 +705,7 @@ package cheshire_pkg;
     ClicVsprio        : 0,
     ClicNumVsctxts    : 4,
     ClicPrioWidth     : 1,
+    ClicPipe          : 0,
     // All non-set values should be zero
     default: '0
   };
@@ -759,6 +761,7 @@ package cheshire_pkg;
     ret.ClicVsprio            = 1;
     ret.ClicNumVsctxts        = 4;
     ret.ClicPrioWidth         = 1;
+    ret.ClicPipe              = 1;
     ret.LlcCachePartition     = 1;
     return ret;
   endfunction
