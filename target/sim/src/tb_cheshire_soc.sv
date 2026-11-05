@@ -16,17 +16,21 @@ module tb_cheshire_soc #(
     .UseDramSys   (UseDramSys)
   ) fix();
 
-  string      preload_elf;
-  string      boot_hex;
-  logic [1:0] boot_mode;
-  logic [1:0] preload_mode;
-  bit [31:0]  exit_code;
+  string       preload_elf;
+  string       preload_dtb;
+  string       boot_hex;
+  logic [1:0]  boot_mode;
+  logic [1:0]  preload_mode;
+  logic [63:0] dtb_addr;
+  bit [31:0]   exit_code;
 
   initial begin
     // Fetch plusargs or use safe (fail-fast) defaults
     if (!$value$plusargs("BOOTMODE=%d", boot_mode))     boot_mode     = 0;
     if (!$value$plusargs("PRELMODE=%d", preload_mode))  preload_mode  = 0;
     if (!$value$plusargs("BINARY=%s",   preload_elf))   preload_elf   = "";
+    if (!$value$plusargs("DTB=%s",      preload_dtb))   preload_dtb   = "";
+    if (!$value$plusargs("DTB_ADDR=%h", dtb_addr))      dtb_addr      = 64'h8180_0000;
     if (!$value$plusargs("IMAGE=%s",    boot_hex))      boot_hex      = "";
 
     // Set boot mode and preload boot image if there is one
@@ -50,9 +54,9 @@ module tb_cheshire_soc #(
           fix.vip.slink_wait_for_eoc(exit_code);
         end 2: begin  // UART
           fix.vip.uart_debug_elf_run_and_wait(preload_elf, exit_code);
-        end 3: begin  // MEMH
+        end 3: begin  // MEMH (optionally with a separate device tree)
           fix.vip.jtag_init();
-          fix.vip.jtag_memh_run(preload_elf);
+          fix.vip.jtag_memh_run(preload_elf, preload_dtb, dtb_addr);
           fix.vip.jtag_wait_for_eoc(exit_code);
         end default: begin
           $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);

@@ -441,12 +441,24 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     end
   endtask
 
-  // Repoint all halted cores to entry and resume them
-  task automatic jtag_run_all_harts(input doub_bt entry);
+  // Repoint all halted cores to entry and resume them. If `set_boot_args` is
+  // set, also pass the RISC-V boot arguments (a0 = hart ID, a1 = `dtb`).
+  task automatic jtag_run_all_harts(input doub_bt entry, input bit set_boot_args = 0,
+      input doub_bt dtb = '0);
     for (int unsigned i = 0; i < DutCfg.NumCores; i++) begin
       dm::dmstatus_t status;
       // Select hart i, repoint execution, and resume
       jtag_write(dm::DMControl, dm::dmcontrol_t'{dmactive: 1, hartsello: i, default: '0});
+      if (set_boot_args) begin
+        // a0 = hart ID
+        jtag_write(dm::Data1, '0);
+        jtag_write(dm::Data0, i);
+        jtag_write(dm::Command, 32'h0033_100a, 1, 1);
+        // a1 = device tree pointer
+        jtag_write(dm::Data1, dtb[63:32]);
+        jtag_write(dm::Data0, dtb[31:0]);
+        jtag_write(dm::Command, 32'h0033_100b, 1, 1);
+      end
       jtag_write(dm::Data1, entry[63:32]);
       jtag_write(dm::Data0, entry[31:0]);
       jtag_write(dm::Command, 32'h0033_07b1, 1, 1);
@@ -467,14 +479,17 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     jtag_run_all_harts(entry);
   endtask
 
-  // Run a binary preloaded via memory backdoor
-  task automatic jtag_memh_run(input string binary);
+  // Run a binary preloaded via memory backdoor. If `dtb` is given, also backdoor
+  // it at `dtb_addr` and pass the RISC-V boot arguments (a0 = hart ID, a1 = dtb).
+  task automatic jtag_memh_run(input string binary, input string dtb = "",
+      input doub_bt dtb_addr = '0);
     doub_bt entry;
     jtag_wait_for_llc_config();
     jtag_halt_all_cores();
     memh_elf_preload(binary);
+    if (dtb != "") raw_bin_preload(dtb, dtb_addr);
     void'(get_entry(entry));
-    jtag_run_all_harts(entry);
+    jtag_run_all_harts(entry, dtb != "", dtb_addr);
   endtask
 
   // Wait for termination signal and get return code
@@ -1083,6 +1098,31 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
         jtag_load_section(sec_addr, bf, sec_len);
       end
     end
+  endtask
+
+  task automatic raw_bin_preload(input string filename, input doub_bt addr);
+    int fd;
+    longint len;
+    byte bf[];
+
+    fd = $fopen(filename, "rb");
+    if (!fd) $fatal(1, "[RAW] Failed to open raw binary %s!", filename);
+    void'($fseek(fd, 0, 2));
+    len = $ftell(fd);
+    void'($fseek(fd, 0, 0));
+    bf = new [len];
+    void'($fread(bf, fd));
+    $fclose(fd);
+
+    $display("[RAW] Preloading raw binary %s at 0x%h (%0d bytes)", filename, addr, len);
+
+    if (addr < DutCfg.LlcOutRegionStart || DutCfg.LlcOutRegionEnd < (addr + len))
+      $fatal(1, "[RAW] Address 0x%h (%0d bytes) is not in preloadable DRAM!", addr, len);
+    if (UseDramSys)
+      $fatal(1, "[RAW] Direct DRAMSYS preload is not supported!");
+
+    for (longint l = 0; l < len; l++)
+      fix.vip.i_dram_sim_mem.mem[addr + l] = bf[l];
   endtask
 
 endmodule

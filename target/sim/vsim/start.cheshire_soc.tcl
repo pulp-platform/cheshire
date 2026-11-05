@@ -34,6 +34,8 @@ set pargs ""
 if { [info exists BOOTMODE] } { append pargs "+BOOTMODE=${BOOTMODE} " }
 if { [info exists PRELMODE] } { append pargs "+PRELMODE=${PRELMODE} " }
 if { [info exists BINARY] } { append pargs "+BINARY=${BINARY} " }
+if { [info exists DTB] } { append pargs "+DTB=${DTB} " }
+if { [info exists DTB_ADDR] } { append pargs "+DTB_ADDR=${DTB_ADDR} " }
 if { [info exists IMAGE] } { append pargs "+IMAGE=${IMAGE} " }
 
 # DRAMSys
