@@ -1,6 +1,6 @@
 packages:
   ace:
-    revision: 6becc971119cf974f01704271712dc56d835c67d
+    revision: 225ea65d28730825a77e942aa9856e8d3c48d0eb
     version: null
     source:
       Git: https://github.com/pulp-platform/ace.git
@@ -8,6 +8,7 @@ packages:
     - apb
     - axi
     - common_cells
+    - tech_cells_generic
   apb:
     revision: 77ddf073f194d44b9119949d2421be59789e69ae
     version: 0.2.4
@@ -26,8 +27,8 @@ packages:
     - obi_peripherals
     - register_interface
   axi:
-    revision: a8c53cee2520d328d390c507c88818e8ac144c8c
-    version: 0.39.10
+    revision: 42ca270ebd8bbbc1c64ddc0ca712e722eb9e3f06
+    version: 0.39.11
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -71,8 +72,8 @@ packages:
     dependencies:
     - common_cells
   axi_vga:
-    revision: 3718b9930f94a9eaad8ee50b4bccc71df0403084
-    version: 0.1.3
+    revision: 4d3e70d4f47bb74edc1ab68d99ffc02382e0fb9e
+    version: 0.1.4
     source:
       Git: https://github.com/pulp-platform/axi_vga.git
     dependencies:
@@ -80,12 +81,13 @@ packages:
     - common_cells
     - register_interface
   clic:
-    revision: 6515a71eb4ae3b143ab912d265e79832b3179a76
-    version: 3.0.0
+    revision: fb9e40e46607387d65fb455d6432c7007e67f278
+    version: 3.1.0
     source:
       Git: https://github.com/pulp-platform/clic.git
     dependencies:
     - common_cells
+    - common_verification
     - register_interface
   clint:
     revision: fc7a1ae5ddbbbc76e5c71c3b184e50162b07d5ac
@@ -110,7 +112,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 79f061a59ed85ab03e4a86a3d2d57c665f6d2891
+    revision: a75f84b4c72488f596a3301c87e54f4d4bc2cf06
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -128,7 +130,7 @@ packages:
     dependencies:
     - axi
   fpnew:
-    revision: a74d99a32bd11ce0b05a82b0d6d26f98df3bba65
+    revision: 3eb6afeab2cb33f7d8689222955d0171aeb3a801
     version: null
     source:
       Git: https://github.com/openhwgroup/cvfpu.git
@@ -143,8 +145,8 @@ packages:
     dependencies:
     - common_cells
   idma:
-    revision: ff5d56fffb3767814db88d6bf8f381974ea33aa5
-    version: 0.6.4
+    revision: 28a36e5e07705549e59fc33db96ab681bc1ca88e
+    version: 0.6.5
     source:
       Git: https://github.com/pulp-platform/iDMA.git
     dependencies:
@@ -207,8 +209,8 @@ packages:
     - common_cells
     - tech_cells_generic
   serial_link:
-    revision: d4e513aebd368d77808c5e6629a1e2729c16eba0
-    version: 2.0.0
+    revision: bb06f8522c4b1f185fc09f0b9ef73fe9f19da391
+    version: 2.0.1
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:

@@ -67,31 +67,42 @@ module cheshire_core_region import cheshire_pkg::*; #(
   localparam ccu_pkg::ccu_user_config_t CcuUserCfg = '{
     numSubordinates          : NumIntHarts,
     numShareableTransactions : 8,
-    numWriteTransactions     : 4,
+    numDispatchSlots         : 8,
     numSnoopTransactions     : 4,
-    numArFifos               : 8,
-    arFifoDepth              : NumIntHarts,
-    writeHashWidth           : 2,
+    numCdBufferLines         : 1,
     axiAddressWidth          : Cfg.AddrWidth,
     axiDataWidth             : Cfg.AxiDataWidth,
     axiUserWidth             : Cfg.AxiUserWidth,
     axiSubordinateIdWidth    : Cva6IdWidth,
+    hasUntrackedArId         : 1,
+    untrackedArId            : 1 << (Cva6IdWidth - 1),
     cachelineWidth           : Cva6Cfg.DcacheLineWidth,
-    addressCheckLsb          : 4,
-    addressCheckMsb          : 19,
-    snoopReqFifoFallthrough  : 1,
-    snoopRespFifoFallthrough : 1,
+    enableSnoopFilter        :
+`ifdef TARGET_ASIC
+                               0,
+`else
+                               1,
+`endif
+    subordinateCacheSets     : Cva6Cfg.DcacheByteSize /
+                               (Cva6Cfg.DcacheSetAssoc * (Cva6Cfg.DcacheLineWidth / 8)),
+    subordinateCacheWays     : Cva6Cfg.DcacheSetAssoc,
+    snoopFilterAddrWidth     : 32,
     enableCSRs               : 1,
-    frontendPipeAw           : 1,
-    frontendPipeW            : 1,
-    frontendPipeB            : 1,
-    frontendPipeAr           : 1,
-    frontendPipeR            : 1,
+    numSlices                : 1,
+    numRSlots                : 4,
+    numPortSlots             : 4,
+    numWritebackSlots        : 2,
+    numBackInvalSlots        : 2,
+    // AR, AW and W reach admission and the write lane unregistered; R and B leave from registers
+    cutSubordinate           : (1 << ccu_pkg::CutAr) | (1 << ccu_pkg::CutAw) |
+                               (1 << ccu_pkg::CutW),
+    cutManager               : '0,
+    cutInternal              : '0,
     default                  : '0
   };
   localparam ccu_pkg::ccu_config_t CcuCfg = ccu_pkg::ccu_build_cfg(CcuUserCfg);
 
-  typedef logic [CcuCfg.axiManagerIdWidth-1:0] ccu_id_t;
+  typedef logic [CcuCfg.managerIdWidth-1:0] ccu_id_t;
   `CHESHIRE_TYPEDEF_AXI_CT(ccu_axi, addr_t, ccu_id_t, axi_data_t, axi_strb_t, axi_user_t)
   `ACE_TYPEDEF_DOMAIN_TYPEDEF_MAP_T(NumIntHarts, domain_map_t)
 
@@ -330,10 +341,11 @@ module cheshire_core_region import cheshire_pkg::*; #(
     );
 
     axi_iw_converter #(
-      .AxiSlvPortIdWidth      ( CcuCfg.axiManagerIdWidth ),
+      .AxiSlvPortIdWidth      ( CcuCfg.managerIdWidth ),
       .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth ),
-      .AxiSlvPortMaxUniqIds   ( 2 ** Cva6IdWidth ),
-      .AxiSlvPortMaxTxnsPerId ( 1 ),
+      // ARIDs are tids, one read each; AWIDs are write chains, up to every write slot each
+      .AxiSlvPortMaxUniqIds   ( 2 ** CcuCfg.managerIdWidth ),
+      .AxiSlvPortMaxTxnsPerId ( CcuCfg.numWSlots ),
       .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
       .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
       .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId ),
