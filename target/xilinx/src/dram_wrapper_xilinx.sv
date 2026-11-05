@@ -74,7 +74,7 @@ module dram_wrapper_xilinx #(
 `ifdef TARGET_VCU128
   localparam dram_cfg_t cfg = '{
     EnCdc         : 1,    // 333 MHz AXI (cf. CdcLogDepth)
-    CdcLogDepth   : 5,
+    CdcLogDepth   : 3,    // 512 b wide after the upsizer, so depth costs routing
     IdWidth       : 8,
     AddrWidth     : 32,
     DataWidth     : 512,
