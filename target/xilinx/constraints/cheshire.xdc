@@ -67,9 +67,9 @@ set_false_path -hold -to [get_ports uart_tx_o]
 
 # Disable hold checks on CDCs
 set_property KEEP_HIERARCHY SOFT [get_cells -hier \
-    -filter {ORIG_REF_NAME=="sync" || REF_NAME=="sync"}]
+    -filter {ORIG_REF_NAME=="tc_sync" || REF_NAME=="tc_sync"}]
 set_false_path -hold -through [get_pins -of_objects [get_cells -hier \
-    -filter {ORIG_REF_NAME=="sync" || REF_NAME=="sync"}] -filter {NAME=~*serial_i}]
+    -filter {ORIG_REF_NAME=="tc_sync" || REF_NAME=="tc_sync"}] -filter {NAME=~*serial_i}]
 
 set_false_path -hold -through [get_pins -of_objects [get_cells -hier \
     -filter {ORIG_REF_NAME == axi_cdc_src || REF_NAME == axi_cdc_src}] -filter {NAME =~ *async*}]
