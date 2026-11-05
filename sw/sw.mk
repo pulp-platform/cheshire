@@ -85,7 +85,7 @@ $(eval $(call chs_sw_gen_hdr_rule,axi_rt,$(AXIRTROOT)/src/regs/axi_rt.hjson $(AX
 .PRECIOUS: $(CHS_SW_DIR)/include/regs/cheshire.h
 CHS_SW_GEN_HDRS += $(CHS_SW_DIR)/include/regs/cheshire.h
 
-$(CHS_SW_DIR)/include/regs/cheshire.h: $(CHS_ROOT)/hw/cheshire.rdl $(CHS_SLINK_DIR)/.generated
+$(CHS_SW_DIR)/include/regs/cheshire.h: $(CHS_ROOT)/hw/cheshire.rdl $(CHS_SLINK_DIR)/.generated $(CHS_NUM_CORES_STAMP)
 	@mkdir -p $(dir $@)
 	$(PEAKRDL) c-header $< -o $@ -b ltoh --type-style hier $(CHS_PEAKRDL_INCLUDES) $(CHS_PEAKRDL_PARAMS) $(CHS_PEAKRDL_DEFINES)
 	@sed -i '1i// Copyright 2025 ETH Zurich and University of Bologna.\n// Licensed under the Apache License, Version 2.0, see LICENSE for details.\n// SPDX-License-Identifier: Apache-2.0\n' $@
@@ -97,7 +97,7 @@ CHS_SW_GEN_HDRS += $(OTPROOT)/.generated
 CHS_SW_ADDRS_LDH := $(CHS_SW_LD_DIR)/cheshire_addrs.ldh
 CHS_SW_ALL += $(CHS_SW_ADDRS_LDH)
 
-$(CHS_SW_ADDRS_LDH): $(CHS_ROOT)/hw/cheshire.rdl $(CHS_SLINK_DIR)/.generated
+$(CHS_SW_ADDRS_LDH): $(CHS_ROOT)/hw/cheshire.rdl $(CHS_SLINK_DIR)/.generated $(CHS_NUM_CORES_STAMP)
 	$(PEAKRDL) raw-header $< --format ldh $(CHS_PEAKRDL_INCLUDES) $(CHS_PEAKRDL_PARAMS) $(CHS_PEAKRDL_DEFINES) --no-prefix --license_str $$'Copyright 2025 ETH Zurich and University of Bologna.\nLicensed under the Apache License, Version 2.0, see LICENSE for details.\nSPDX-License-Identifier: Apache-2.0' -o $@
 
 ###############
@@ -137,6 +137,8 @@ $(foreach link,$(CHS_SW_LINK_MODES),$(eval $(call chs_sw_ld_elf_rule,$(link))))
 
 %.dtsi: %.dtsi.tpl
 	$(CHS_SW_MAKO) --var num_cores=$(NUM_CORES) $< > $@
+
+$(CHS_SW_DIR)/boot/cheshire.dtsi: $(CHS_NUM_CORES_STAMP)
 
 %.dtb: %.dts $(CHS_SW_DIR)/boot/cheshire.dtsi
 	$(CHS_SW_DTC) -I dts -O dtb -o $@ $<

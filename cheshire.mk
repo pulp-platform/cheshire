@@ -98,6 +98,15 @@ include $(CLINT_ROOT)/clint.mk
 CHS_PEAKRDL_INCLUDES += -I $(CLINT_ROOT)/rdl
 CHS_PEAKRDL_PARAMS   += -P ClintNumCores=$(CLINT_CORES)
 
+# Rewritten only when NUM_CORES changes; prerequisite of everything generated from it
+CHS_NUM_CORES_STAMP := $(CHS_ROOT)/.num_cores
+
+.PHONY: CHS_NUM_CORES_FORCE
+CHS_NUM_CORES_FORCE:
+
+$(CHS_NUM_CORES_STAMP): CHS_NUM_CORES_FORCE
+	@printf '%s\n' "$(NUM_CORES)" | cmp -s - $@ || printf '%s\n' "$(NUM_CORES)" > $@
+
 ############
 # Build SW #
 ############
@@ -113,12 +122,12 @@ $(CHS_ROOT)/hw/regs/cheshire_soc_regs_pkg.sv $(CHS_ROOT)/hw/regs/cheshire_soc_re
 	$(PEAKRDL) regblock $< -o $(CHS_ROOT)/hw/regs/ --cpuif apb4-flat --default-reset arst_n --module-name cheshire_soc_regs
 	@sed -i '1i// Copyright 2025 ETH Zurich and University of Bologna.\n// Solderpad Hardware License, Version 0.51, see LICENSE for details.\n// SPDX-License-Identifier: SHL-0.51\n' $(CHS_ROOT)/hw/regs/cheshire_soc_regs.sv $(CHS_ROOT)/hw/regs/cheshire_soc_regs_pkg.sv
 
-$(CHS_ROOT)/hw/cheshire_addrmap_pkg.sv: $(CHS_ROOT)/hw/cheshire.rdl $(CHS_SLINK_DIR)/.generated
+$(CHS_ROOT)/hw/cheshire_addrmap_pkg.sv: $(CHS_ROOT)/hw/cheshire.rdl $(CHS_SLINK_DIR)/.generated $(CHS_NUM_CORES_STAMP)
 	$(PEAKRDL) raw-header $< --format svpkg --no-prefix $(CHS_PEAKRDL_INCLUDES) $(CHS_PEAKRDL_PARAMS) $(CHS_PEAKRDL_DEFINES) --license-str $$'Copyright 2025 ETH Zurich and University of Bologna.\nSolderpad Hardware License, Version 0.51, see LICENSE for details.\nSPDX-License-Identifier: SHL-0.51' -o $@
 
 
 # OpenTitan peripherals
-$(CHS_ROOT)/hw/rv_plic.cfg.hjson: $(CHS_ROOT)/util/gen_pliccfg.py
+$(CHS_ROOT)/hw/rv_plic.cfg.hjson: $(CHS_ROOT)/util/gen_pliccfg.py $(CHS_NUM_CORES_STAMP)
 	$(CHS_ROOT)/util/gen_pliccfg.py --num-cores $(NUM_CORES) > $@
 
 include $(OTPROOT)/otp.mk
