@@ -98,6 +98,50 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   axi_llc_req_t axi_sim_mem_mst_req;
   axi_llc_rsp_t axi_sim_mem_mst_rsp;
 
+  // DRAM latency, as `USE_RAM_DELAY` on FPGA: +DRAM_{AR,AW,W,R,B}_DELAY=<cycles>
+  localparam int unsigned DramMaxDelay = 2**15-1;
+  localparam int unsigned DramDelayW   = $clog2(DramMaxDelay) + 1;
+
+  logic [DramDelayW-1:0] dram_ar_delay, dram_aw_delay, dram_w_delay, dram_r_delay, dram_b_delay;
+  axi_llc_req_t axi_dram_req;
+  axi_llc_rsp_t axi_dram_rsp;
+
+  initial begin
+    if (!$value$plusargs("DRAM_AR_DELAY=%d", dram_ar_delay)) dram_ar_delay = '0;
+    if (!$value$plusargs("DRAM_AW_DELAY=%d", dram_aw_delay)) dram_aw_delay = '0;
+    if (!$value$plusargs("DRAM_W_DELAY=%d",  dram_w_delay))  dram_w_delay  = '0;
+    if (!$value$plusargs("DRAM_R_DELAY=%d",  dram_r_delay))  dram_r_delay  = '0;
+    if (!$value$plusargs("DRAM_B_DELAY=%d",  dram_b_delay))  dram_b_delay  = '0;
+  end
+
+  axi_fifo_delay_dyn #(
+    .aw_chan_t  ( axi_llc_aw_chan_t ),
+    .w_chan_t   ( axi_llc_w_chan_t  ),
+    .b_chan_t   ( axi_llc_b_chan_t  ),
+    .ar_chan_t  ( axi_llc_ar_chan_t ),
+    .r_chan_t   ( axi_llc_r_chan_t  ),
+    .axi_req_t  ( axi_llc_req_t     ),
+    .axi_resp_t ( axi_llc_rsp_t     ),
+    .DepthAR    ( 32 ),
+    .DepthAW    ( 32 ),
+    .DepthR     ( 32 ),
+    .DepthW     ( 32 ),
+    .DepthB     ( 32 ),
+    .MaxDelay   ( DramMaxDelay )
+  ) i_dram_delay (
+    .clk_i      ( clk   ),
+    .rst_ni     ( rst_n ),
+    .aw_delay_i ( dram_aw_delay ),
+    .w_delay_i  ( dram_w_delay  ),
+    .b_delay_i  ( dram_b_delay  ),
+    .ar_delay_i ( dram_ar_delay ),
+    .r_delay_i  ( dram_r_delay  ),
+    .slv_req_i  ( axi_llc_mst_req ),
+    .slv_resp_o ( axi_llc_mst_rsp ),
+    .mst_req_o  ( axi_dram_req ),
+    .mst_resp_i ( axi_dram_rsp )
+  );
+
   if (UseDramSys) begin : gen_dramsys
     dram_sim_engine #(
       .ClkPeriod  ( ClkPeriodSys )
@@ -123,8 +167,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     ) i_axi_dram_sim (
       .clk_i      ( clk ),
       .rst_ni     ( rst_n ),
-      .axi_req_i  ( axi_llc_mst_req ),
-      .axi_resp_o ( axi_llc_mst_rsp )
+      .axi_req_i  ( axi_dram_req ),
+      .axi_resp_o ( axi_dram_rsp )
     );
 
     // Tie off the AXI sim mem
@@ -133,8 +177,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
   end else begin : gen_no_dramsys
 
     // Connect the AXI sim mem to the LLC
-    assign axi_sim_mem_mst_req = axi_llc_mst_req;
-    assign axi_llc_mst_rsp     = axi_sim_mem_mst_rsp;
+    assign axi_sim_mem_mst_req = axi_dram_req;
+    assign axi_dram_rsp        = axi_sim_mem_mst_rsp;
 
   end
 
