@@ -50,16 +50,18 @@ package tb_cheshire_pkg;
     endfunction
 
     // Number of Cheshire configurations
-    localparam int unsigned NumCheshireConfigs = 32'd6;
+    localparam int unsigned NumCheshireConfigs = 32'd8;
 
     // Assemble a configuration array indexed by a numeric parameter
     localparam cheshire_cfg_t [NumCheshireConfigs-1:0] TbCheshireConfigs = {
-        gen_cheshire_coherent_cfg(), // 5: Coherent multi-core configuration
-        gen_cheshire_dualcore_cfg(), // 4: Dual-core configuration
-        gen_cheshire_vclic_cfg(),    // 3: vCLIC-enabled configuration
-        gen_cheshire_clic_cfg(),     // 2: CLIC-enabled configuration
-        gen_cheshire_rt_cfg(),       // 1: RT-enabled configuration
-        DefaultCfg                   // 0: Default configuration
+        gen_cheshire_coherent_cfg(8), // 7: Coherent octa-core configuration
+        gen_cheshire_coherent_cfg(4), // 6: Coherent quad-core configuration
+        gen_cheshire_coherent_cfg(2), // 5: Coherent dual-core configuration
+        gen_cheshire_dualcore_cfg(),  // 4: Dual-core configuration
+        gen_cheshire_vclic_cfg(),     // 3: vCLIC-enabled configuration
+        gen_cheshire_clic_cfg(),      // 2: CLIC-enabled configuration
+        gen_cheshire_rt_cfg(),        // 1: RT-enabled configuration
+        DefaultCfg                    // 0: Default configuration
     };
 
 endpackage
