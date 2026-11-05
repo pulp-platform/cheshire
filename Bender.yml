@@ -14,7 +14,7 @@ package:
 dependencies:
   apb:                      { git: "https://github.com/pulp-platform/apb.git",                    version: 0.2.4  }
   apb_uart:                 { git: "https://github.com/pulp-platform/apb_uart.git",               version: 0.2.3  }
-  ace:                      { git: "https://github.com/pulp-platform/ace.git",                    rev: 225ea65d28730825a77e942aa9856e8d3c48d0eb }
+  ace:                      { git: "https://github.com/pulp-platform/ace.git",                    rev: 1bbed8b2d271e7258fdc1b1e29513c3446b07404 }
   axi:                      { git: "https://github.com/pulp-platform/axi.git",                    version: 0.39.8 }
   axi_llc:                  { git: "https://github.com/pulp-platform/axi_llc.git",                version: 0.3.0  }
   axi_riscv_atomics:        { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",      version: 0.8.2  }

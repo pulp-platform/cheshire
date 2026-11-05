@@ -1,6 +1,6 @@
 packages:
   ace:
-    revision: 225ea65d28730825a77e942aa9856e8d3c48d0eb
+    revision: 1bbed8b2d271e7258fdc1b1e29513c3446b07404
     version: null
     source:
       Git: https://github.com/pulp-platform/ace.git

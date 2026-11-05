@@ -82,7 +82,6 @@ module cheshire_core_region import cheshire_pkg::*; #(
     subordinateCacheWays     : Cva6Cfg.DcacheSetAssoc,
     snoopFilterAddrWidth     : 32,
     enableCSRs               : 1,
-    numSlices                : 1,
     numRSlots                : 4,
     numPortSlots             : 4,
     numWritebackSlots        : 2,
