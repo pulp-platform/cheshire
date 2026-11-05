@@ -23,6 +23,8 @@
   `define USE_QSPI
   `define USE_STARTUPE3
   `define USE_VIO
+  `define USE_CFG_REGS
+  `define USE_RAM_DELAY
 `endif
 
 `ifdef TARGET_GENESYS2

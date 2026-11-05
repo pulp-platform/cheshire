@@ -544,6 +544,8 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
     .pwm_setting_i  ( fan_setting ),
     .fan_pwm_o      ( fan_pwm     )
   );
+`else
+  assign hw2reg = '0;
 `endif
 
   //////////////
