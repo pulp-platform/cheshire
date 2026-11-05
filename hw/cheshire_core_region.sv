@@ -7,8 +7,8 @@
 `include "ace/domain.svh"
 
 // Parametric core region: instantiates `Cfg.NumCores` CVA6 cores and exposes an
-// AXI manager view to the Cheshire crossbar. When `Cfg.Coherence` is set the cores
-// are ACE masters aggregated by a CCU; otherwise they are plain AXI masters.
+// AXI manager view to the Cheshire crossbar. Multiple cores are ACE masters
+// aggregated by a CCU; a single core is a plain AXI master.
 module cheshire_core_region import cheshire_pkg::*; #(
   parameter cheshire_cfg_t Cfg          = '0,
   parameter logic [63:0]   BootAddr     = '0,
@@ -20,7 +20,6 @@ module cheshire_core_region import cheshire_pkg::*; #(
   parameter type           apb_rsp_t     = logic,
   // Derived
   localparam int unsigned  NumIntHarts     = Cfg.NumCores,
-  localparam int unsigned  NumNocMst       = Cfg.Coherence ? 1 : NumIntHarts,
   localparam int unsigned  NumClicSysIntrs = NumIntIntrs + Cfg.NumExtClicIntrs,
   localparam int unsigned  NumClicIntrs    = NumCoreIrqs + NumClicSysIntrs
 ) (
@@ -45,12 +44,12 @@ module cheshire_core_region import cheshire_pkg::*; #(
   // Per-core bus-error-unit register interface
   input  reg_req_t [NumIntHarts-1:0] bus_err_reg_req_i,
   output reg_rsp_t [NumIntHarts-1:0] bus_err_reg_rsp_o,
-  // CCU APB interface (coherent mode only)
+  // CCU APB interface (multiple cores only)
   input  apb_req_t ccu_apb_req_i,
   output apb_rsp_t ccu_apb_rsp_o,
-  // AXI manager ports to the crossbar
-  output axi_mst_req_t [NumNocMst-1:0] noc_req_o,
-  input  axi_mst_rsp_t [NumNocMst-1:0] noc_rsp_i
+  // AXI manager port to the crossbar
+  output axi_mst_req_t noc_req_o,
+  input  axi_mst_rsp_t noc_rsp_i
 );
 
   localparam config_pkg::cva6_user_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
@@ -185,7 +184,7 @@ module cheshire_core_region import cheshire_pkg::*; #(
     end
   end
 
-  if (Cfg.Coherence) begin : gen_coherent
+  if (NumIntHarts > 1) begin : gen_coherent
 
     cva6_ace_req_t       [NumIntHarts-1:0] ccu_in_req;
     cva6_ace_rsp_t       [NumIntHarts-1:0] ccu_in_rsp;
@@ -361,8 +360,8 @@ module cheshire_core_region import cheshire_pkg::*; #(
       .rst_ni,
       .slv_req_i  ( ccu_out_req ),
       .slv_resp_o ( ccu_out_rsp ),
-      .mst_req_o  ( noc_req_o[0] ),
-      .mst_resp_i ( noc_rsp_i[0] )
+      .mst_req_o  ( noc_req_o ),
+      .mst_resp_i ( noc_rsp_i )
     );
 
   end else begin : gen_noncoherent
@@ -477,8 +476,8 @@ module cheshire_core_region import cheshire_pkg::*; #(
         .rst_ni,
         .slv_req_i  ( core_ur_req ),
         .slv_resp_o ( core_ur_rsp ),
-        .mst_req_o  ( noc_req_o[i] ),
-        .mst_resp_i ( noc_rsp_i[i] )
+        .mst_req_o  ( noc_req_o ),
+        .mst_resp_i ( noc_rsp_i )
       );
     end
 

@@ -587,9 +587,6 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Boot from boot ROM only if available, otherwise from platform ROM
   localparam logic [63:0] BootAddr = 64'(Cfg.Bootrom ? BOOTROM_BASE_ADDR : Cfg.PlatformRom);
 
-  // Number of core AXI manager ports (collapsed to the CCU when coherent)
-  localparam int unsigned NumCoreNocMst = Cfg.Coherence ? 1 : NumIntHarts;
-
   // Debug interface for internal harts
   dm::hartinfo_t [NumIntHarts-1:0] dbg_int_info;
   logic          [NumIntHarts-1:0] dbg_int_unavail;
@@ -624,19 +621,11 @@ module cheshire_soc import cheshire_pkg::*; #(
       assign core_bus_err_reg_req[i]     = '0;
     end
   end
-  if (Cfg.Coherence) begin : gen_ccu_reg
+  if (NumIntHarts > 1) begin : gen_ccu_reg
     assign core_ccu_apb_req         = reg_apb_req[RegOut.ccu];
     assign reg_apb_rsp[RegOut.ccu]  = core_ccu_apb_rsp;
   end else begin : gen_no_ccu_reg
     assign core_ccu_apb_req         = '0;
-  end
-
-  // Core AXI manager ports into the crossbar
-  axi_mst_req_t [NumCoreNocMst-1:0] core_noc_req;
-  axi_mst_rsp_t [NumCoreNocMst-1:0] core_noc_rsp;
-  for (genvar i = 0; i < NumCoreNocMst; i++) begin : gen_core_noc_conn
-    assign axi_in_req[AxiIn.cores[i]] = core_noc_req[i];
-    assign core_noc_rsp[i]            = axi_in_rsp[AxiIn.cores[i]];
   end
 
   cheshire_core_region #(
@@ -666,8 +655,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .bus_err_reg_rsp_o    ( core_bus_err_reg_rsp ),
     .ccu_apb_req_i        ( core_ccu_apb_req ),
     .ccu_apb_rsp_o        ( core_ccu_apb_rsp ),
-    .noc_req_o            ( core_noc_req ),
-    .noc_rsp_i            ( core_noc_rsp )
+    .noc_req_o            ( axi_in_req[AxiIn.cores[0]] ),
+    .noc_rsp_i            ( axi_in_rsp[AxiIn.cores[0]] )
   );
 
   /////////////////////////

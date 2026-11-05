@@ -15,8 +15,7 @@
 // TODO: Expose more IO: unused SPI CS, Serial Link, etc.
 
 module cheshire_top_xilinx import cheshire_pkg::*; #(
-  parameter int unsigned NumCores  = 1,
-  parameter bit          Coherence = 0,
+  parameter int unsigned NumCores = 1,
 `ifdef TARGET_VCU128
   localparam int unsigned Ddr4CsNWidth = 2,
   localparam int unsigned Ddr4DmDbiNWidth = 8,
@@ -124,7 +123,6 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
     ret.RtcFreq         = 1000000;
     ret.SerialLink      = 0;
     ret.NumCores        = NumCores;
-    ret.Coherence       = Coherence;
   `ifdef USE_USB
     ret.Usb = 1;
   `else

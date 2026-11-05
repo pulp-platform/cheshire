@@ -124,7 +124,7 @@ Cheshire defaults on using CVA6 with hypervisor and CLIC support enabled; RV32 c
 
 | Parameter                    | Type / Range | Description                                     |
 | ---------------------------- | ------------ | ----------------------------------------------- |
-| `NumCores`                   | `1..31`      | Number of instantiated CVA6 cores               |
+| `NumCores`                   | `1..31`      | Number of CVA6 cores; several imply the CCU     |
 | `Cva6RASDepth`               | `shrt_bt`    | Depth of CVA6 return address stack (RAS)        |
 | `Cva6(BTB|BHT|NrPMP)Entries` | `shrt_bt`    | Number of BTB, BHT, and PMP entries in CVA6     |
 | `Cva6ExtCieLength`           | `doub_bt`    | CIE subregion length in external on-chip region |
