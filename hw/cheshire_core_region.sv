@@ -76,12 +76,7 @@ module cheshire_core_region import cheshire_pkg::*; #(
     hasUntrackedArId         : 1,
     untrackedArId            : 1 << (Cva6IdWidth - 1),
     cachelineWidth           : Cva6Cfg.DcacheLineWidth,
-    enableSnoopFilter        :
-`ifdef TARGET_ASIC
-                               0,
-`else
-                               1,
-`endif
+    enableSnoopFilter        : 1,
     subordinateCacheSets     : Cva6Cfg.DcacheByteSize /
                                (Cva6Cfg.DcacheSetAssoc * (Cva6Cfg.DcacheLineWidth / 8)),
     subordinateCacheWays     : Cva6Cfg.DcacheSetAssoc,
