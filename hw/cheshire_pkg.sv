@@ -445,7 +445,7 @@ package cheshire_pkg;
 
   // CVA6 imposes an ID width of 5: the HPDcache derives its memory-interface ID width as
   // AxiIdWidth-1, and needs at least `WtDcacheWbufDepth` (8) IDs for the write buffer.
-  localparam int unsigned Cva6IdWidth = 5;
+  localparam int unsigned Cva6IdWidth = 6;
   typedef logic [Cva6IdWidth-1:0] cva6_id_t;
 
   function automatic config_pkg::cva6_user_cfg_t gen_cva6_cfg(cheshire_cfg_t cfg);
@@ -475,6 +475,9 @@ package cheshire_pkg;
     ret.NrCachedRegionRules   = 3;   // CachedSPM, LLCOut, ExtCI;
     ret.CachedRegionAddrBase  = {SPM_BASE_ADDR, cfg.LlcOutRegionStart,  CieBase};
     ret.CachedRegionLength    = {SizeSpm,       SizeLlcOut,             cfg.Cva6ExtCieLength};
+    ret.NrBufferableRegionRules  = ret.NrCachedRegionRules;
+    ret.BufferableRegionAddrBase = ret.CachedRegionAddrBase;
+    ret.BufferableRegionLength   = ret.CachedRegionLength;
     ret.DebugEn               = 1;
     ret.SoftwareInterruptEn   = 1;
     // These fields do not exist in the OpenHW CVA6 config, which has no CLIC support.

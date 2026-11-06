@@ -16,7 +16,8 @@ VLOG_ARGS   ?= -suppress 2583 -suppress 13314 -timescale 1ns/1ps
 VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
 
 # Common Bender flags for Cheshire RTL
-CHS_CVA6_CONFIG      ?= cv32a65x
+# ////////////////// changing to 64-bit as default  /////////
+CHS_CVA6_CONFIG      ?= profile_perf64_axi
 CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t $(CHS_CVA6_CONFIG) -t openhw -t exclude_first_pass_decoder
 
 # Infer the SW XLEN from the selected CVA6 configuration so that the RTL and the
