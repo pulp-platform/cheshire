@@ -254,6 +254,7 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     input bit wait_sba = 0
   );
     jtag_dbg.write_dmi(addr, data);
+    jtag_dbg.wait_idle(8);
     if (wait_cmd) begin
       dm::abstractcs_t acs;
       do begin
