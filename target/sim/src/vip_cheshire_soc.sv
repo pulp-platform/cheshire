@@ -1069,9 +1069,9 @@ module vip_cheshire_soc_tristate import cheshire_pkg::*; (
 );
 
   // I2C
-  bufif1 (i2c_sda_i, i2c_sda, ~i2c_sda_en);
+  assign i2c_sda_i = i2c_sda;
   bufif1 (i2c_sda, i2c_sda_o,  i2c_sda_en);
-  bufif1 (i2c_scl_i, i2c_scl, ~i2c_scl_en);
+  assign i2c_scl_i = i2c_scl;
   bufif1 (i2c_scl, i2c_scl_o,  i2c_scl_en);
   pullup (i2c_sda);
   pullup (i2c_scl);
