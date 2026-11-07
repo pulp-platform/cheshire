@@ -45,10 +45,18 @@ int i2c_24fc1025_init(dif_i2c_t *i2c, uint64_t core_freq) {
 
 static inline int __i2c_24fc1025_access_chunk(dif_i2c_t *i2c, void *buf, uint64_t addr,
                                               uint64_t len, int write) {
-    // Wait for all FIFOs to be vacated
+    uint32_t rtc_freq = 0;
+    if (write) {
+        rtc_freq = CHS_REGS->rtc_freq.f.ref_freq;
+        CHECK_ASSERT(0x14, rtc_freq != 0);
+    }
+    // FIFO empty does not mean that the final ACK and STOP have finished.
     uint8_t lfmt, lrx, ltx, lacq;
-    do CHECK_CALL(dif_i2c_get_fifo_levels(i2c, &lfmt, &lrx, &ltx, &lacq))
-    while (lfmt || lrx || ltx || lacq);
+    dif_i2c_status_t status;
+    do {
+        CHECK_CALL(dif_i2c_get_fifo_levels(i2c, &lfmt, &lrx, &ltx, &lacq))
+        CHECK_CALL(dif_i2c_get_status(i2c, &status))
+    } while (lfmt || lrx || ltx || lacq || !status.host_idle);
     // Disable host until TX FIFO contains entire TX data to prevent (fatal) TX stalls
     clint_spin_ticks(1);
     CHECK_CALL(dif_i2c_host_set_enabled(i2c, kDifToggleDisabled))
@@ -68,7 +76,7 @@ static inline int __i2c_24fc1025_access_chunk(dif_i2c_t *i2c, void *buf, uint64_
         for (uint64_t b = 0; b < MIN(len - 1, half_fill); b++)
             CHECK_CALL(dif_i2c_write_byte(i2c, ((uint8_t *)buf)[b], kDifI2cFmtTx, true))
         // Send out last byte with stop bit
-        CHECK_CALL(dif_i2c_write_byte(i2c, ((uint8_t *)buf)[len - 1], kDifI2cFmtTx, true))
+        CHECK_CALL(dif_i2c_write_byte(i2c, ((uint8_t *)buf)[len - 1], kDifI2cFmtTxStop, true))
         // Enable the host to launch the half transfer
         CHECK_CALL(dif_i2c_host_set_enabled(i2c, kDifToggleEnabled))
         // If our length exceeded half the FIFO, invoke another half transfer
@@ -79,7 +87,7 @@ static inline int __i2c_24fc1025_access_chunk(dif_i2c_t *i2c, void *buf, uint64_
         // Request read of len bytes
         uint64_t ctrl_rdata = ctrl_waddr | 0x1;
         CHECK_CALL(dif_i2c_write_byte(i2c, ctrl_rdata, kDifI2cFmtStart, true))
-        CHECK_CALL(dif_i2c_write_byte(i2c, len, kDifI2cFmtRx, false))
+        CHECK_CALL(dif_i2c_write_byte(i2c, len, kDifI2cFmtRxStop, false))
         // Re-enable host (no more bytes to write for this chunk)
         CHECK_CALL(dif_i2c_host_set_enabled(i2c, kDifToggleEnabled))
         // Wait for read chunk to be fully received
@@ -87,6 +95,12 @@ static inline int __i2c_24fc1025_access_chunk(dif_i2c_t *i2c, void *buf, uint64_
         while (lrx < len);
         // Transfer chunk to memory destination
         for (uint64_t b = 0; b < len; b++) CHECK_CALL(dif_i2c_read_byte(i2c, (uint8_t *)buf + b))
+    }
+    do CHECK_CALL(dif_i2c_get_status(i2c, &status))
+    while (!status.fmt_fifo_empty || !status.host_idle);
+    if (write) {
+        // The maximum write cycle is 5 ms. Add one tick for the RTC phase.
+        clint_spin_ticks(((uint64_t)rtc_freq + 199) / 200 + 1);
     }
     // Nothing went wrong
     return 0;
