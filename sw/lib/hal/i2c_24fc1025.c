@@ -61,20 +61,11 @@ static inline int __i2c_24fc1025_access_chunk(dif_i2c_t *i2c, void *buf, uint64_
     CHECK_CALL(dif_i2c_write_byte(i2c, addr & 0xFF, write ? kDifI2cFmtTx : kDifI2cFmtTxStop, true))
     // From here, either read from or write to bus
     if (write) {
-        // For safe writes, we make *two* writes of half-block size.
-        // Fill at most half the FIFO immediately to avoid overflow
-        uint64_t half_fill = I2C_PARAM_FIFO_DEPTH / 2;
-        // Send out all except last byte of half transfer, which needs stop bit
-        for (uint64_t b = 0; b < MIN(len - 1, half_fill); b++)
+        // The caller limits this write to half the FIFO and a page boundary.
+        for (uint64_t b = 0; b < len - 1; b++)
             CHECK_CALL(dif_i2c_write_byte(i2c, ((uint8_t *)buf)[b], kDifI2cFmtTx, true))
-        // Send out last byte with stop bit
         CHECK_CALL(dif_i2c_write_byte(i2c, ((uint8_t *)buf)[len - 1], kDifI2cFmtTx, true))
-        // Enable the host to launch the half transfer
         CHECK_CALL(dif_i2c_host_set_enabled(i2c, kDifToggleEnabled))
-        // If our length exceeded half the FIFO, invoke another half transfer
-        if (len > half_fill)
-            CHECK_CALL(__i2c_24fc1025_access_chunk(i2c, (uint8_t *)buf + len, addr + len,
-                                                   len - half_fill, 1))
     } else {
         // Request read of len bytes
         uint64_t ctrl_rdata = ctrl_waddr | 0x1;
@@ -96,20 +87,15 @@ static inline int __i2c_24fc1025_access(void *priv, void *buf, uint64_t addr, ui
                                         int write) {
     // Ensure that FIFO size divides device pages (and hence is a power of two)
     CHECK_ASSERT(0x13, 128 % I2C_PARAM_FIFO_DEPTH == 0);
-    // The private pointer passed is an I2C handle
+    if (len == 0) return 0;
+    // Reads fit the RX FIFO. Writes leave space for the three address entries.
     dif_i2c_t *i2c = (dif_i2c_t *)priv;
-    // Align to FIFO size boundary if necessary
-    uint64_t addr_offs = addr % I2C_PARAM_FIFO_DEPTH;
-    uint64_t offs = 0;
-    if (addr_offs) {
-        offs = I2C_PARAM_FIFO_DEPTH - addr_offs;
-        CHECK_CALL(__i2c_24fc1025_access_chunk(i2c, buf, addr, offs, write))
-    }
-    // Copy start-aligned chunks
-    for (; offs < len; offs += I2C_PARAM_FIFO_DEPTH) {
-        uint64_t chunk_len = MIN(I2C_PARAM_FIFO_DEPTH, len - offs);
+    uint64_t chunk_size = write ? I2C_PARAM_FIFO_DEPTH / 2 : I2C_PARAM_FIFO_DEPTH;
+    for (uint64_t offs = 0; offs < len;) {
+        uint64_t chunk_len = MIN(len - offs, chunk_size - (addr + offs) % chunk_size);
         CHECK_CALL(
             __i2c_24fc1025_access_chunk(i2c, (uint8_t *)buf + offs, addr + offs, chunk_len, write))
+        offs += chunk_len;
     }
     // Nothing went wrong
     return 0;
