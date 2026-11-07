@@ -54,7 +54,7 @@ static inline int __i2c_24fc1025_access_chunk(dif_i2c_t *i2c, void *buf, uint64_
     CHECK_CALL(dif_i2c_host_set_enabled(i2c, kDifToggleDisabled))
     // 0xA0 identifies an 24FC1025 on the bus, followed by block and chip selects.
     // We overflow addresses to that device's upper block first, then further devices if any.
-    uint64_t ctrl_waddr = 0xA0 | ((addr & 0x10000) >> 1) | ((addr & 0x1100000) >> 4);
+    uint64_t ctrl_waddr = 0xA0 | ((addr >> 13) & 8) | ((addr >> 16) & 6);
     // Write address
     CHECK_CALL(dif_i2c_write_byte(i2c, ctrl_waddr, kDifI2cFmtStart, true))
     CHECK_CALL(dif_i2c_write_byte(i2c, (addr >> 8) & 0xFF, kDifI2cFmtTx, true))
