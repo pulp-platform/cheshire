@@ -82,6 +82,12 @@ and normal `$finish`. Original checks are higher because the stale section list
 exposes an extra segment and the test checks its bytes too. VCS returns zero
 for the original `$fatal` here; the log result is required.
 
+The hashes above identify the original comparison inputs. The test's license
+notice was later completed. The current test SHA256 is
+`371495085edf1df6b26adedf98b04f6dd16b55aae1364a84cbf6ec8710131929`.
+Both ELF hashes stay unchanged. The Make entry was rerun with this test and
+still reports 823 checks, zero errors, and normal finish.
+
 Require one fixed DONE summary with all the counts above, normal finish at
 1000 ps, no TEST_FAILED or deadline, and no unexpected errors. Both logs must
 contain exactly one expected unable-to-open diagnostic between
