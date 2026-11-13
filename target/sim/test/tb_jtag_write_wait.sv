@@ -1,4 +1,5 @@
 // Copyright 2026 CheshireAra contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 // Exact VIP task extraction with actual locked DTM/TAP/CDC/JTAG driver.
 `timescale 1ns/1ps
