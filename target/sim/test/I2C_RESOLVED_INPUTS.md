@@ -54,4 +54,9 @@ The patched log must contain one `I2C_PIN_DONE checks=78 errors=0`, a normal
 This is a four-state simulation-wrapper test. It does not verify the full
 I2C controller, EEPROM protocol, or SoC. No synthesizable RTL changes.
 
+The full SoC EEPROM boot was also compiled and run. Both the official base
+and the patch report a 385 ns SCL low pulse against the EEPROM model minimum
+of 500 ns. Full EEPROM boot therefore remains unverified. The finite input
+test above passes independently of that timing failure.
+
 AI assistance: OpenAI Codex assisted the patch, test, and validation.
