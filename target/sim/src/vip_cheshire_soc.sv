@@ -247,14 +247,49 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
     jtag_dbg.reset_master();
   end
 
+  // Return status without clearing errors or repeating a possibly completed write.
+  task automatic jtag_write_status(
+    input dm::dm_csr_e addr,
+    input word_bt data,
+    output dm::dtm_op_status_e op
+  );
+    localparam int unsigned DmiWidth = $bits(dm::dmi_req_t);
+    logic tx[DmiWidth], rx[DmiWidth];
+    logic [DmiWidth-1:0] request, response;
+    dm::dtmcs_t dtmcs;
+
+    @(posedge jtag.clk_i);
+    jtag_dbg.read_dtmcs(dtmcs);
+    op = dm::dtm_op_status_e'(dtmcs.dmistat);
+    if (op !== dm::DTM_SUCCESS) return;
+    for (int phase = 0; phase < 2; phase++) begin
+      request = phase == 0 ? {addr, data, dm::DTM_WRITE} : '0;
+      for (int b = 0; b < DmiWidth; b++) tx[b] = request[b];
+      jtag_dbg.jtag.set_ir(5'h11);
+      jtag_dbg.jtag.shift_dr();
+      jtag_dbg.jtag.readwrite_bits(rx, tx, 1'b1);
+      jtag_dbg.jtag.update_dr(1'b0);
+      for (int b = 0; b < DmiWidth; b++) response[b] = rx[b];
+      op = dm::dtm_op_status_e'(response[1:0]);
+      if (op !== dm::DTM_SUCCESS) return;
+      if (phase == 0) jtag_dbg.wait_idle(8);
+    end
+    // The locked DTM can retain old DMI scan bits after FAILED. Its sticky
+    // DTMCS status still reports that error, so check it independently.
+    jtag_dbg.read_dtmcs(dtmcs);
+    op = dm::dtm_op_status_e'(dtmcs.dmistat);
+  endtask
+
   task automatic jtag_write(
     input dm::dm_csr_e addr,
     input word_bt data,
     input bit wait_cmd = 0,
     input bit wait_sba = 0
   );
-    jtag_dbg.write_dmi(addr, data);
-    jtag_dbg.wait_idle(8);
+    dm::dtm_op_status_e op;
+    jtag_write_status(addr, data, op);
+    if (op !== dm::DTM_SUCCESS)
+      $fatal(1, "[JTAG] DMI write to %0h returned status %0d.", addr, op);
     if (wait_cmd) begin
       dm::abstractcs_t acs;
       do begin

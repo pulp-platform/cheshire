@@ -198,6 +198,35 @@ CHS_SIM_ALL += $(CHS_SIM_MODELS_ALL)
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh
 
+# Optional corrected DTM source for the compatibility comparison. The default uses the lock.
+CHS_JTAG_DTM ?=
+CHS_PHONY += chs-sim-test-jtag-write
+chs-sim-test-jtag-write:
+	mkdir -p $(BENDER_ROOT)/test-jtag-write
+	sed -n '/task automatic jtag_write_status(/,/task automatic jtag_poll_bit0(/p' $(CHS_ROOT)/target/sim/src/vip_cheshire_soc.sv | sed '$$d' > $(BENDER_ROOT)/test-jtag-write/jtag_write_task.svh
+	@set -e; dbg=$$($(BENDER) path riscv-dbg); cells=$$($(BENDER) path common_cells); tech=$$($(BENDER) path tech_cells_generic); \
+	dtm='$(CHS_JTAG_DTM)'; test -n "$$dtm" || dtm="$$dbg/src/dmi_jtag.sv"; \
+	cd $(BENDER_ROOT)/test-jtag-write; \
+	timeout 180 vcs -full64 -sverilog -timescale=1ns/1ps +lint=all \
+	    "+incdir+$$cells/include+$(BENDER_ROOT)/test-jtag-write" \
+	    "$$tech/src/rtl/tc_clk.sv" "$$cells/src/cf_math_pkg.sv" "$$cells/src/sync.sv" \
+	    "$$cells/src/cdc_reset_ctrlr_pkg.sv" "$$cells/src/cdc_4phase.sv" \
+	    "$$cells/src/cdc_reset_ctrlr.sv" "$$cells/src/cdc_2phase_clearable.sv" \
+	    "$$dbg/src/dm_pkg.sv" "$$dbg/src/dmi_cdc.sv" "$$dbg/src/dmi_jtag_tap.sv" \
+	    "$$dbg/tb/jtag_dmi/jtag_intf.sv" "$$dbg/tb/jtag_dmi/jtag_test.sv" \
+	    "$$dtm" $(CHS_ROOT)/target/sim/test/tb_jtag_write_wait.sv \
+	    -top tb_jtag_write_wait -o simv -l compile.log; \
+	for profile in 0 4 12 long blocked failed busy; do \
+	    mkdir -p $$profile; \
+	    case $$profile in 0|4|12) arg="+LATENCY=$$profile"; counts='checks=35 errors=0 accepted=32 returned=32';; \
+	        *) arg="+SCENARIO=$$profile"; counts='checks=7 errors=0 accepted=2 returned=2';; esac; \
+	    (cd $$profile; timeout 60 ../simv "$$arg" -l run.log; \
+	        test $$(grep -c 'JTAG_WAIT_DONE' run.log) = 1; \
+	        grep -q "JTAG_WAIT_DONE .*$$counts" run.log; \
+	        grep -q '\$$finish' run.log; \
+	        ! grep -q 'Fatal|Error|Offending|JTAG_WAIT_ERROR|JTAG_WAIT_HDL_LIMIT' run.log); \
+	done
+
 ###########
 # DRAMSys #
 ###########

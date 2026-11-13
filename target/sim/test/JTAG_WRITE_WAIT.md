@@ -1,28 +1,34 @@
-# JTAG VIP write spacing with strict Capture status
+# Check JTAG write request and completion status
 
 The current locked DTM does not report BUSY at Capture while a write is pending.
 [riscv-dbg #214](https://github.com/pulp-platform/riscv-dbg/pull/214) corrects that
 behavior. With that correction, the VIP's next back-to-back write scan can set
 sticky BUSY before the preceding response returns through the CDC.
-Wait eight TCK cycles after each VIP write, using the existing JTAG driver method.
-This provides spacing for the tested CDC path. It is not a general response
-polling protocol for an endpoint with arbitrary backpressure.
+The VIP now checks the write-request scan and a later NOP completion scan.
+It keeps eight idle TCK cycles between them. It also checks DTMCS before and
+after the operation, because the locked DTM can retain stale DMI bits after FAILED.
+`jtag_write` keeps its existing arguments and stops on any non-SUCCESS status.
+`jtag_write_status` returns the status for directed tests. Neither task retries
+a write or clears sticky status. The existing command and SBA polling stay unchanged.
 
 Base: Cheshire `6c6dd5e834347f72c7be31cd6c41021ec293c5b9`.
 The test uses its actual locked riscv-dbg `358f90110220adf7a083f8b65d157e836d706236`,
 common_cells `9afda9abb565971649c2aa0985639c096f351171` and
 tech_cells_generic `7968dd6e6180df2c644636bc6d2908a49f2190cf`.
 The strict comparison replaces only the DTM source with #214's
-`src/dmi_jtag.sv` at `7d278248e94ae35f5c913cdca5e269b1c9dfc0d7`.
+`src/dmi_jtag.sv` from the checked #214 correction, SHA256
+`b803ad7eb081560e28fd83fe66ccc03388d403d3a964409a7f75743d5d7761df`.
 That file also moves a declaration compared with the locked source; it retains
 the same public ports. All other modules and the driver stay at the lock.
 
-The test extracts the exact complete `jtag_write` task from the actual VIP.
+The test extracts the exact `jtag_write_status` and `jtag_write` tasks from the actual VIP.
 It uses the real locked JTAG driver, DTM, TAP and CDC, with a standard DMI endpoint.
 It does not elaborate the full SoC VIP or use an EEPROM model.
 The endpoint records all 32 literal address/payload writes and supplies SUCCESS
 responses after 0, 4 or 12 system cycles. System period is 5 ns; TCK is 20 ns.
 Each run checks accepted writes, responses, all payloads and final DTM status.
+
+The earlier spacing-only comparison is retained below.
 
 | DTM | VIP | Results at each latency |
 | --- | --- | --- |
@@ -39,38 +45,29 @@ A run is accepted only with one `JTAG_WAIT_DONE`, 35 checks, zero errors,
 An error count remains a failure even if simv exits zero.
 This is a simulation task change, so no synthesis check applies.
 
-## Reproduction
+## Status regression and Make entry
 
-Set `DBG`, `CC`, and `TC` to the exact locked dependency checkouts and `CHS` to
-this checkout. Keep all inputs fixed. Extract the task into the output directory:
+Run `make sim-test-jtag-write` with VCS on PATH. The target uses the
+locked Bender dependencies. It runs all seven profiles and checks their summary,
+normal finish, assertions and exit status. Output goes under `.bender/test-jtag-write`.
+For the corrected-DTM comparison, set `CHS_JTAG_DTM` to its absolute source path.
+Copy `.bender/test-jtag-write` before the comparison to keep both sets of logs.
 
-```bash
-mkdir run-jtag-write-wait
-cd run-jtag-write-wait
-python3 - "$CHS/target/sim/src/vip_cheshire_soc.sv" <<'EXTRACT'
-import pathlib, sys
-source = pathlib.Path(sys.argv[1]).read_text()
-start = source.index('  task automatic jtag_write(')
-end = source.index('  endtask', start) + len('  endtask')
-pathlib.Path('jtag_write_task.svh').write_text(source[start:end] + '\n')
-EXTRACT
-timeout 180 vcs -full64 -sverilog -timescale=1ns/1ps +lint=all \
-  "+incdir+$CC/include+$PWD" \
-  "$TC/src/rtl/tc_clk.sv" "$CC/src/cf_math_pkg.sv" "$CC/src/sync.sv" \
-  "$CC/src/cdc_reset_ctrlr_pkg.sv" "$CC/src/cdc_4phase.sv" \
-  "$CC/src/cdc_reset_ctrlr.sv" "$CC/src/cdc_2phase_clearable.sv" \
-  "$DBG/src/dm_pkg.sv" "$DBG/src/dmi_cdc.sv" "$DBG/src/dmi_jtag_tap.sv" \
-  "$DBG/tb/jtag_dmi/jtag_intf.sv" "$DBG/tb/jtag_dmi/jtag_test.sv" \
-  "$DTM" "$CHS/target/sim/test/tb_jtag_write_wait.sv" \
-  -top tb_jtag_write_wait -o simv -l compile.log
-for latency in 0 4 12; do
-  mkdir "latency-$latency"
-  (cd "latency-$latency"; timeout 60 ../simv "+LATENCY=$latency" -l run.log)
-done
-```
+The current status driver passes both DTM versions. Each version runs normal
+latencies 0/4/12 (35 checks, 32 accepted and returned writes), plus four error
+profiles (7 checks, 2 accepted and returned writes including recovery):
 
-`DTM` selects the locked or strict source specified above. Extract the task from
-the original base for the original-VIP comparison. Use independent build/run
-directories for each combination. Do not mutate active source inputs.
+- `long`: a response delayed by 4096 system cycles reports BUSY.
+- `blocked`: a held request reports BUSY, then completes once after release.
+- `failed` and `busy`: endpoint error responses remain sticky.
+
+Each error profile rejects a second write, waits for the original completion,
+clears sticky status explicitly, and checks a successful recovery write.
+No automatic retry is permitted. Both versions complete all seven profiles
+with zero errors, normal finish and no assertion failures under VCS W-2024.09-SP1.
+The 1 ms HDL and 60 s per-run wall limits remain in effect.
+
+The test uses extracted VIP tasks, not the full SoC. The original spacing-only
+failure above remains a compatibility control, not a claim against current main.
 
 AI assistance: OpenAI Codex assisted implementation, test and validation.
