@@ -28,6 +28,10 @@ They do not model the EEPROM or controller RTL.
 This test verifies software command encoding only. It does not verify bus timing,
 STOP completion, page writes, or the separate chunking defects.
 
+Run `make sw-test-eeprom` from the repository root to build and run the
+host regression against the actual HAL and locked DIF. The target uses `CC`
+and writes its binary under `.bender/test-eeprom`.
+
 ## Reproduction
 
 Set `OTP` to the locked dependency checkout.
