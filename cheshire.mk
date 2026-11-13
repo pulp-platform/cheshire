@@ -198,6 +198,17 @@ CHS_SIM_ALL += $(CHS_SIM_MODELS_ALL)
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh
 
+CHS_PHONY += chs-sim-test-elfloader
+chs-sim-test-elfloader:
+	mkdir -p $(BENDER_ROOT)/test-elfloader
+	clang --target=riscv64-unknown-elf -march=rv64i -mabi=lp64 -nostdlib -Wl,-T,$(CHS_ROOT)/target/sim/tests/elfloader_state/image.ld -DIMAGE_BYTES=96 -DIMAGE_TAG=17 -DENTRY_OFFSET=0 $(CHS_ROOT)/target/sim/tests/elfloader_state/image.S -o $(BENDER_ROOT)/test-elfloader/first.elf
+	clang --target=riscv64-unknown-elf -march=rv64i -mabi=lp64 -nostdlib -Wl,-T,$(CHS_ROOT)/target/sim/tests/elfloader_state/image.ld -DIMAGE_BYTES=64 -DIMAGE_TAG=114 -DENTRY_OFFSET=16 $(CHS_ROOT)/target/sim/tests/elfloader_state/image.S -o $(BENDER_ROOT)/test-elfloader/second.elf
+	cd $(BENDER_ROOT)/test-elfloader && timeout 1800 vcs -full64 -sverilog -timescale=1ns/1ps -top tb_elfloader_state $(CHS_ROOT)/target/sim/tests/elfloader_state/tb_elfloader_state.sv $(CHS_ROOT)/target/sim/src/elfloader.cpp -cpp $(CXX) -CFLAGS '-std=c++11 -Wall -Wextra' -o simv -l build.log
+	cd $(BENDER_ROOT)/test-elfloader && timeout 60 ./simv +FIRST=$(BENDER_ROOT)/test-elfloader/first.elf +SECOND=$(BENDER_ROOT)/test-elfloader/second.elf -l run.log
+	test $$(grep -c 'ELFLOADER_DONE loads=7 drained=6 checks=823 errors=0' $(BENDER_ROOT)/test-elfloader/run.log) = 1
+	grep -q '\$$finish' $(BENDER_ROOT)/test-elfloader/run.log
+	! grep -E 'Fatal|Error-|ELFLOADER_TEST_FAILED|ELFLOADER_HDL_LIMIT' $(BENDER_ROOT)/test-elfloader/run.log
+
 ###########
 # DRAMSys #
 ###########

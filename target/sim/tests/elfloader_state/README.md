@@ -13,6 +13,10 @@ leaves the earlier entry point visible.
 The change clears these four per-file states at the start of the POSIX
 `read_elf` implementation. The non-POSIX branch is unchanged. It keeps the existing API, parser, and first-load behavior.
 
+Run `make sim-test-elfloader` with the tools below on PATH. The target builds
+the two fixtures, runs the real DPI test, and checks its summary and finish.
+Logs stay under `.bender/test-elfloader`.
+
 ## Reproduction
 
 Requirements used here: LLVM 20.1.0, VCS W-2024.09-SP1, and GCC 13.3.1 on Linux.
