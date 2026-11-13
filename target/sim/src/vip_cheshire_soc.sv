@@ -967,8 +967,8 @@ module vip_cheshire_soc import cheshire_pkg::*; #(
               beat[8*e +: 8] = bf[sec_offs + b + e];
           beats.push_back(beat);
         end
-        // Address must be beat‑aligned for slink_write_beats
-        slink_write_beats(addr_cur - bus_offs, AxiStrbBits, beats);
+        // Preserve the offset so slink_write_beats masks the leading bytes.
+        slink_write_beats(addr_cur, AxiStrbBits, beats);
       end
     end
     void'(get_entry(entry));
