@@ -301,6 +301,11 @@ static void load_elf(char *buf, size_t size)
 #ifdef ELFLOADER_POSIX
 extern "C" char read_elf(const char *filename)
 {
+  sections.clear();
+  mems.clear();
+  section_index = 0;
+  entry = 0;
+
   char *buf = NULL;
   Elf64_Ehdr* eh64 = NULL;
   int fd = open(filename, O_RDONLY);
