@@ -33,6 +33,10 @@ This test checks software request/data progress. It does not check STOP
 completion, real bus timing, or the separate block/device control-byte issue.
 No EEPROM model is included.
 
+Run `make sw-test-eeprom` from the repository root to build and run the
+host regression against the actual HAL and locked DIF. The target uses `CC`
+and writes its binary under `.bender/test-eeprom`.
+
 ## Reproduction
 
 Set `OTP` to the locked dependency checkout. From the repository root:
