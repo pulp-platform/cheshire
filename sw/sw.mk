@@ -206,3 +206,19 @@ CHS_SW_TESTS += $(CHS_SW_TEST_ROM_DUMP:.rom.dump=.rom.memh) $(CHS_SW_TEST_ROM_DU
 
 # Add all dumps to test build
 CHS_SW_TESTS += $(CHS_SW_TEST_DUMP)
+
+# Run the EEPROM host regression against the actual HAL and locked DIF.
+CHS_PHONY += chs-sw-test-eeprom
+chs-sw-test-eeprom:
+	mkdir -p $(BENDER_ROOT)/test-eeprom
+	@set -e; for source in $(CHS_SW_DIR)/tests/host/test_eeprom_*.c; do \
+	$(CC) -std=gnu11 -O2 -Wall -Wextra -Werror -DMOCK_MMIO \
+	    -DHAL_SOURCE=\"$(CHS_SW_DIR)/lib/hal/i2c_24fc1025.c\" \
+	    -I$(CHS_SW_DIR)/include -I$(OTPROOT) -I$(OTPROOT)/sw/include \
+	    $$source \
+	    $(OTPROOT)/sw/device/lib/dif/dif_i2c.c \
+	    $(OTPROOT)/sw/device/lib/dif/autogen/dif_i2c_autogen.c \
+	    $(OTPROOT)/sw/device/lib/base/bitfield.c \
+	    -o $(BENDER_ROOT)/test-eeprom/test; \
+	timeout 10 $(BENDER_ROOT)/test-eeprom/test; \
+	done
