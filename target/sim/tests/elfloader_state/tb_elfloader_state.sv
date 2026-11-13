@@ -1,3 +1,5 @@
+// Copyright 2026 CheshireAra contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 // Exercise the real loader C API and real DPI open arrays. No RTL DUT.
 module tb_elfloader_state;

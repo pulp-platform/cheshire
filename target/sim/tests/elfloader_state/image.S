@@ -1,3 +1,5 @@
+// Copyright 2026 CheshireAra contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 // This ELF contains loader test bytes. It is never executed by a CPU.
 .section .fixture,"ax",@progbits
