@@ -198,6 +198,17 @@ CHS_SIM_ALL += $(CHS_SIM_MODELS_ALL)
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl
 CHS_SIM_ALL += $(CHS_ROOT)/target/sim/vcs/compile.cheshire_soc.sh
 
+CHS_PHONY += chs-sim-test-i2c-inputs
+chs-sim-test-i2c-inputs:
+	mkdir -p $(BENDER_ROOT)/test-i2c-inputs
+	printf '%s\n' 'package cheshire_pkg; localparam int unsigned SpihNumCs = 2; endpackage' > $(BENDER_ROOT)/test-i2c-inputs/package.sv
+	sed -n '/^module vip_cheshire_soc_tristate/,$$p' $(CHS_ROOT)/target/sim/src/vip_cheshire_soc.sv > $(BENDER_ROOT)/test-i2c-inputs/vip_tristate.sv
+	cd $(BENDER_ROOT)/test-i2c-inputs && timeout 120 vcs -full64 -sverilog -timescale=1ns/1ps package.sv vip_tristate.sv $(CHS_ROOT)/target/sim/test/tb_i2c_resolved_inputs.sv -top tb_i2c_resolved_inputs -o simv -l compile.log
+	cd $(BENDER_ROOT)/test-i2c-inputs && timeout 60 ./simv -l run.log
+	test $$(grep -c 'I2C_PIN_DONE checks=78 errors=0' $(BENDER_ROOT)/test-i2c-inputs/run.log) = 1
+	grep -q '\$$finish' $(BENDER_ROOT)/test-i2c-inputs/run.log
+	! grep -E 'Fatal|Error|I2C_PIN_ERROR|HDL_LIMIT' $(BENDER_ROOT)/test-i2c-inputs/run.log
+
 ###########
 # DRAMSys #
 ###########

@@ -18,6 +18,9 @@ VCS W-2024.09-SP1 compiled both versions. The same 78-check input produced
 The original ended with the expected failure. The patch finished normally at 250 ns.
 Both used a 1 us HDL deadline and a 60-second wall-clock limit.
 
+Run `make sim-test-i2c-inputs` with VCS on PATH. The target checks the
+summary, normal finish and errors. Logs stay under `.bender/test-i2c-inputs`.
+
 ## Reproduction
 
 The isolated test extracts the complete real tristate module without edits.
