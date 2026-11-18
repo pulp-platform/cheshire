@@ -480,6 +480,10 @@ package cheshire_pkg;
     ret.BufferableRegionLength   = ret.CachedRegionLength;
     ret.DebugEn               = 1;
     ret.SoftwareInterruptEn   = 1;
+    // Disable crypto extension (AES logic in genesys2 critical path)
+    `ifdef TARGET_OPENHW
+    ret.ZKN                   = 0; 
+    `endif
     // These fields do not exist in the OpenHW CVA6 config, which has no CLIC support.
     `ifndef TARGET_OPENHW
     ret.RVSCLIC               = cfg.Clic;
