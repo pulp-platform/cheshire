@@ -85,6 +85,8 @@ module cheshire_core_region import cheshire_pkg::*; #(
     numRSlots                : 4,
     numPortSlots             : 4,
     numWritebackSlots        : 2,
+    flopBuffers              : 1,
+    singlePortFilter         : 1,
     numBackInvalSlots        : 2,
     // AR, AW and W reach admission and the write lane unregistered; R and B leave from registers
     cutSubordinate           : (1 << ccu_pkg::CutAr) | (1 << ccu_pkg::CutAw) |
