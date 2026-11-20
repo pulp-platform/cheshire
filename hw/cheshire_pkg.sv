@@ -443,21 +443,30 @@ package cheshire_pkg;
   //  CVA6  //
   ////////////
 
-  // CVA6 imposes an ID width of 4, but only 7 of 16 IDs are ever used
-  localparam int unsigned Cva6IdWidth = 4;
-  localparam int unsigned Cva6IdsUsed = 7;
+  // CVA6's HPDcache subsystem has an ID width of 5: the MSB selects the I-cache (0) or the
+  // D-cache (1), and 12 of the 32 IDs are used
+  localparam int unsigned Cva6IdWidth = 5;
+  localparam int unsigned Cva6IdsUsed = 12;
   typedef logic [Cva6IdWidth-1:0] cva6_id_t;
   typedef int unsigned cva6_id_map_t [Cva6IdsUsed-1:0][0:1];
 
-  // Symbols for used CVA6 IDs
+  // Symbols for used CVA6 IDs. The I-cache refills on one ID per fetch buffer entry, the
+  // D-cache refills on one ID per MSHR (8, as CVA6 has 8 load buffer entries) and writes back
+  // on one ID per flush entry (7), and both caches issue their uncached accesses on their
+  // all-ones ID; the D-cache's also carry the AMOs.
   typedef enum cva6_id_t {
-    Cva6IdBypMmu    = 'b1000,
-    Cva6IdBypLoad   = 'b1001,
-    Cva6IdBypAccel  = 'b1010,
-    Cva6IdBypStore  = 'b1011,
-    Cva6IdBypAmo    = 'b1100,
-    Cva6IdICache    = 'b0000,
-    Cva6IdDCache    = 'b0111
+    Cva6IdICache0   = 'b00000,
+    Cva6IdICache1   = 'b00001,
+    Cva6IdICacheUnc = 'b01111,
+    Cva6IdDCache0   = 'b10000,
+    Cva6IdDCache1   = 'b10001,
+    Cva6IdDCache2   = 'b10010,
+    Cva6IdDCache3   = 'b10011,
+    Cva6IdDCache4   = 'b10100,
+    Cva6IdDCache5   = 'b10101,
+    Cva6IdDCache6   = 'b10110,
+    Cva6IdDCache7   = 'b10111,
+    Cva6IdUncached  = 'b11111
   } cva6_id_e;
 
   // Choose static colocation of IDs based on how heavily used and/or critical they are
@@ -465,15 +474,26 @@ package cheshire_pkg;
     int unsigned DefaultMapEntry[2] = '{0, 0};
     case (cfg.AxiMstIdWidth)
       // Provide exclusive ID to I-cache to prevent fetch blocking
-      1: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 0}, '{Cva6IdBypAccel, 0}, '{Cva6IdBypStore, 0},
-                  '{Cva6IdBypAmo, 0}, '{Cva6IdICache,  1}, '{Cva6IdDCache,   0}};
-      // Colocate Load/Store and MMU/AMO bypasses, respectively
-      2: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 1}, '{Cva6IdBypAccel, 1}, '{Cva6IdBypStore, 1},
-                  '{Cva6IdBypAmo, 0}, '{Cva6IdICache,  2}, '{Cva6IdDCache,   3}};
+      1: return '{'{Cva6IdICache0, 1}, '{Cva6IdICache1, 1}, '{Cva6IdICacheUnc, 1},
+                  '{Cva6IdDCache0, 0}, '{Cva6IdDCache1, 0}, '{Cva6IdDCache2, 0},
+                  '{Cva6IdDCache3, 0}, '{Cva6IdDCache4, 0}, '{Cva6IdDCache5, 0},
+                  '{Cva6IdDCache6, 0}, '{Cva6IdDCache7, 0}, '{Cva6IdUncached, 0}};
+      // Provide exclusive IDs to I-cache and uncached accesses, interleave D-cache on the rest
+      2: return '{'{Cva6IdICache0, 2}, '{Cva6IdICache1, 2}, '{Cva6IdICacheUnc, 2},
+                  '{Cva6IdDCache0, 1}, '{Cva6IdDCache1, 3}, '{Cva6IdDCache2, 1},
+                  '{Cva6IdDCache3, 3}, '{Cva6IdDCache4, 1}, '{Cva6IdDCache5, 3},
+                  '{Cva6IdDCache6, 1}, '{Cva6IdDCache7, 3}, '{Cva6IdUncached, 0}};
+      // Provide exclusive IDs to I-cache and uncached accesses, colocate D-cache 6/7 with 0/1
+      3: return '{'{Cva6IdICache0, 6}, '{Cva6IdICache1, 6}, '{Cva6IdICacheUnc, 6},
+                  '{Cva6IdDCache0, 0}, '{Cva6IdDCache1, 1}, '{Cva6IdDCache2, 2},
+                  '{Cva6IdDCache3, 3}, '{Cva6IdDCache4, 4}, '{Cva6IdDCache5, 5},
+                  '{Cva6IdDCache6, 0}, '{Cva6IdDCache7, 1}, '{Cva6IdUncached, 7}};
       // Compress output ID space without any serialization
-      3: return '{'{Cva6IdBypMmu, 0}, '{Cva6IdBypLoad, 1}, '{Cva6IdBypAccel, 6}, '{Cva6IdBypStore, 2},
-                  '{Cva6IdBypAmo, 3}, '{Cva6IdICache,  4}, '{Cva6IdDCache,   5}};
-      // With 4b of ID or more, no remapping is necessary; return redundant 0 -> 0 ID remaps.
+      4: return '{'{Cva6IdICache0, 8}, '{Cva6IdICache1, 9}, '{Cva6IdICacheUnc, 14},
+                  '{Cva6IdDCache0, 0}, '{Cva6IdDCache1, 1}, '{Cva6IdDCache2, 2},
+                  '{Cva6IdDCache3, 3}, '{Cva6IdDCache4, 4}, '{Cva6IdDCache5, 5},
+                  '{Cva6IdDCache6, 6}, '{Cva6IdDCache7, 7}, '{Cva6IdUncached, 15}};
+      // With 5b of ID or more, no remapping is necessary; return redundant 0 -> 0 ID remaps.
       // This leaves ID mapping unaltered only if `MstIdBaseOffset` in `axi_id_serialize` is 0.
       default: return '{Cva6IdsUsed {DefaultMapEntry}};
     endcase
@@ -497,7 +517,6 @@ package cheshire_pkg;
     ret.ExceptionAddress      = 'h810; // Relative to EXTROM_BASE_ADDR
     ret.NrNonIdempotentRules  = 2;   // Periphs, ExtNonCI;
     ret.NonIdempotentAddrBase = {EXTROM_BASE_ADDR, NoCieBase};
-    ret.NOCType               = config_pkg::NOC_TYPE_AXI4_ATOP;
     ret.NonIdempotentLength   = {SPM_BASE_ADDR, 64'h6000_0000 - cfg.Cva6ExtCieLength};
     ret.NrExecuteRegionRules  = 6;   // Debug, Bootrom, SPM, SPM Uncached, LLCOut, ExtCI;
     ret.ExecuteRegionAddrBase = {EXTROM_BASE_ADDR, BOOTROM_BASE_ADDR, SPM_BASE_ADDR, SPM_UNC_BASE_ADDR, cfg.LlcOutRegionStart, CieBase};
@@ -505,10 +524,11 @@ package cheshire_pkg;
     ret.NrCachedRegionRules   = 3;   // CachedSPM, LLCOut, ExtCI;
     ret.CachedRegionAddrBase  = {SPM_BASE_ADDR, cfg.LlcOutRegionStart,  CieBase};
     ret.CachedRegionLength    = {SizeSpm,       SizeLlcOut,             cfg.Cva6ExtCieLength};
+    // A write-back data cache needs every cached region bufferable
+    ret.NrBufferableRegionRules  = 3;
+    ret.BufferableRegionAddrBase = {SPM_BASE_ADDR, cfg.LlcOutRegionStart,  CieBase};
+    ret.BufferableRegionLength   = {SizeSpm,       SizeLlcOut,             cfg.Cva6ExtCieLength};
     ret.DebugEn               = 1;
-    ret.RVSCLIC               = cfg.Clic;
-    ret.RVXHCLIC              = cfg.ClicVsclic;
-    ret.CLICNumInterruptSrc   = NumCoreIrqs + NumIntIntrs + cfg.NumExtClicIntrs;
     // TODO: Should some things be removed from the main config?
     // TODO: Should other things be added to the main config?
     // TODO: Tune missing parameters of interest (esp. cache and interconnect) properly

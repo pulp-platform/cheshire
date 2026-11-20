@@ -8,6 +8,8 @@
 // Thomas Benz <tbenz@iis.ee.ethz.ch>
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
+`include "rvfi_types.svh"
+
 module cheshire_soc import cheshire_pkg::*; #(
   // Cheshire config
   parameter cheshire_cfg_t Cfg = '0,
@@ -587,6 +589,15 @@ module cheshire_soc import cheshire_pkg::*; #(
   `CHESHIRE_TYPEDEF_AXI_CT(axi_cva6, addr_t, cva6_id_t, axi_data_t, axi_strb_t, axi_user_t)
 
   localparam config_pkg::cva6_user_cfg_t Cva6Cfg = gen_cva6_cfg(Cfg);
+  localparam config_pkg::cva6_cfg_t Cva6BuiltCfg = build_config_pkg::build_config(Cva6Cfg);
+
+  // Probes from which CVA6 builds RVFI
+  localparam type cva6_rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(Cva6BuiltCfg);
+  localparam type cva6_rvfi_probes_csr_t   = `RVFI_PROBES_CSR_T(Cva6BuiltCfg);
+  typedef struct packed {
+    cva6_rvfi_probes_csr_t   csr;
+    cva6_rvfi_probes_instr_t instr;
+  } cva6_rvfi_probes_t;
 
   // Boot from boot ROM only if available, otherwise from platform ROM
   localparam logic [63:0] BootAddr = 64'(Cfg.Bootrom ? BOOTROM_BASE_ADDR : Cfg.PlatformRom);
@@ -619,23 +630,9 @@ module cheshire_soc import cheshire_pkg::*; #(
     axi_cva6_req_t core_out_req, core_ur_req;
     axi_cva6_rsp_t core_out_rsp, core_ur_rsp;
 
-    // CLIC interface
-    logic clic_irq_valid, clic_irq_ready;
-    logic clic_irq_kill_req, clic_irq_kill_ack;
-    logic clic_irq_shv;
-    logic [$clog2(NumClicIntrs)-1:0] clic_irq_id;
-    logic [7:0]        clic_irq_level;
-    riscv::priv_lvl_t  clic_irq_priv;
-    logic              clic_irq_v;
-    logic [5:0]        clic_irq_vsid;
-
-    cva6 #(
-      .CVA6Cfg        ( build_config_pkg::build_config(Cva6Cfg) ),
-      .axi_ar_chan_t  ( axi_cva6_ar_chan_t ),
-      .axi_aw_chan_t  ( axi_cva6_aw_chan_t ),
-      .axi_w_chan_t   ( axi_cva6_w_chan_t  ),
-      .b_chan_t       ( axi_cva6_b_chan_t  ),
-      .r_chan_t       ( axi_cva6_r_chan_t  ),
+    cva6_top #(
+      .CVA6Cfg        ( Cva6BuiltCfg ),
+      .rvfi_probes_t  ( cva6_rvfi_probes_t ),
       .noc_req_t      ( axi_cva6_req_t ),
       .noc_resp_t     ( axi_cva6_rsp_t )
     ) i_core_cva6 (
@@ -647,21 +644,13 @@ module cheshire_soc import cheshire_pkg::*; #(
       .ipi_i            ( msip[i] ),
       .time_irq_i       ( mtip[i] ),
       .debug_req_i      ( dbg_int_req[i] ),
-      .clic_irq_valid_i ( clic_irq_valid ),
-      .clic_irq_id_i    ( clic_irq_id    ),
-      .clic_irq_level_i ( clic_irq_level ),
-      .clic_irq_priv_i  ( clic_irq_priv  ),
-      .clic_irq_v_i     ( clic_irq_v     ),
-      .clic_irq_vsid_i  ( clic_irq_vsid  ),
-      .clic_irq_shv_i   ( clic_irq_shv   ),
-      .clic_irq_ready_o ( clic_irq_ready ),
-      .clic_kill_req_i  ( clic_irq_kill_req ),
-      .clic_kill_ack_o  ( clic_irq_kill_ack ),
       .rvfi_probes_o    ( ),
+      .perf_probes_o    ( ),
       .cvxif_req_o      ( ),
       .cvxif_resp_i     ( '0 ),
       .noc_req_o        ( core_out_req ),
-      .noc_resp_i       ( core_out_rsp )
+      .noc_resp_i       ( core_out_rsp ),
+      .dcls_alarm_o     ( )
     );
 
     if (Cfg.BusErr) begin : gen_cva6_bus_err
@@ -690,62 +679,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     end
 
     // Generate CLIC for core if enabled
-    if (Cfg.Clic) begin : gen_clic
-
-      cheshire_intr_clic_t clic_intr;
-
-      // Connect interrupts to CLIC
-      assign clic_intr = '{
-        intr: intr_routed[IntrRtdCoreBase+i][NumClicSysIntrs-1:0],
-        core: '{
-          meip: xeip[i].m,
-          seip: xeip[i].s,
-          mtip: mtip[i],
-          msip: msip[i],
-          default: '0
-        }
-      };
-
-      clic #(
-        .N_SOURCE    ( NumClicIntrs ),
-        .INTCTLBITS  ( Cfg.ClicIntCtlBits ),
-        .reg_req_t   ( reg_req_t ),
-        .reg_rsp_t   ( reg_rsp_t ),
-        .SSCLIC      ( 1 ),
-        .USCLIC      ( 0 ),
-        .VSCLIC      ( Cfg.ClicVsclic ),
-        .N_VSCTXTS   ( Cfg.ClicNumVsctxts ),
-        .VSPRIO      ( Cfg.ClicVsprio ),
-        .VSPRIO_W    ( Cfg.ClicPrioWidth )
-      ) i_clic (
-        .clk_i,
-        .rst_ni,
-        .reg_req_i      ( reg_out_req[RegOut.clic[i]] ),
-        .reg_rsp_o      ( reg_out_rsp[RegOut.clic[i]] ),
-        .intr_src_i     ( clic_intr ),
-        .irq_valid_o    ( clic_irq_valid ),
-        .irq_ready_i    ( clic_irq_ready ),
-        .irq_id_o       ( clic_irq_id    ),
-        .irq_level_o    ( clic_irq_level ),
-        .irq_shv_o      ( clic_irq_shv   ),
-        .irq_priv_o     ( clic_irq_priv  ),
-        .irq_v_o        ( clic_irq_v     ),
-        .irq_vsid_o     ( clic_irq_vsid  ),
-        .irq_kill_req_o ( clic_irq_kill_req ),
-        .irq_kill_ack_i ( clic_irq_kill_ack )
-      );
-
-    end else begin : gen_no_clic
-
-      assign clic_irq_valid    = '0;
-      assign clic_irq_id       = '0;
-      assign clic_irq_level    = '0;
-      assign clic_irq_shv      = '0;
-      assign clic_irq_priv     = riscv::priv_lvl_t'(0);
-      assign clic_irq_v        = '0;
-      assign clic_irq_vsid     = '0;
-      assign clic_irq_kill_req = '0;
-
+    if (Cfg.Clic) begin : gen_clic_unsupported
+      $fatal(1, "Cfg.Clic requires a CVA6 with a CLIC interface");
     end
 
     // Map user to AMO domain as we are an atomics-capable master.
