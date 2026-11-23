@@ -83,7 +83,7 @@ set_false_path -hold -through [get_pins -of_objects [get_cells -hier \
 # Synthesize `id_queue` within its own hierarchy: optimizing common_cells' v1.40.0 version across
 # its boundary yields a netlist that hangs the Linux boot on Genesys2
 set_property KEEP_HIERARCHY TRUE [get_cells -hier \
-    -filter {ORIG_REF_NAME=="id_queue" || REF_NAME=="id_queue"}]
+    -filter {(ORIG_REF_NAME=="id_queue" || REF_NAME=="id_queue") && NAME =~ "*i_write_in_flight_queue*"}]
 
 ########
 # QSPI #
