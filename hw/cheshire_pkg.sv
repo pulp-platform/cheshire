@@ -483,6 +483,7 @@ package cheshire_pkg;
     // Disable crypto extension (AES logic in genesys2 critical path)
     `ifdef TARGET_OPENHW
     ret.ZKN                   = 0; 
+    ret.DcacheFlushOnFence    = 1;
     `endif
     // These fields do not exist in the OpenHW CVA6 config, which has no CLIC support.
     `ifndef TARGET_OPENHW
