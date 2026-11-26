@@ -102,7 +102,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: 0d144bcffbcd84b220598cb12dd40a4c1cd07060
+    revision: 34452ad1eb3407fbea8910d8b6c3ad595dc02a86
     version: null
     source:
       Git: https://github.com/MZarinnal/cva6.git
@@ -136,7 +136,7 @@ packages:
     dependencies:
     - common_cells
   hpdcache:
-    revision: ae527d9ce463fd3819ab444effd21d04c725d3c0
+    revision: 42f448d842aa0dd79f08e859571a7d7a1ff5f76a
     version: null
     source:
       Git: https://github.com/MZarinnal/cv-hpdcache.git
