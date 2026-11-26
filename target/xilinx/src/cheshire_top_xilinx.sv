@@ -121,6 +121,10 @@ module cheshire_top_xilinx import cheshire_pkg::*; #(
     cheshire_cfg_t ret  = DefaultCfg;
     ret.RtcFreq         = 1000000;
     ret.SerialLink      = 0;
+  `ifdef TARGET_GENESYS2
+    // Bus error unit costs ~43k FFs with CVA6's 6-bit AXI IDs; drop it to close timing
+    ret.BusErr          = 0;
+  `endif
   `ifdef USE_USB
     ret.Usb = 1;
   `else
