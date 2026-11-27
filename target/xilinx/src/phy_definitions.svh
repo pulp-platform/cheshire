@@ -5,6 +5,7 @@
 // Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 // Yvan Tortorella <yvan.tortorella@gmail.com>
 // Mojtaba Rostami <m.rostami1989@gmail.com>
+// Simone Manoni <s.manoni@unibo.it>
 
 `ifdef TARGET_VCU118
   `define USE_RESET
@@ -44,6 +45,12 @@
   `define USE_NUM_LED 8
 `endif
 
+`ifdef TARGET_U280
+  `define USE_RESETN
+  `define USE_DDR4
+  `define USE_VIO
+`endif
+
 `ifdef TARGET_ZCU102
   `define USE_RESET
   `define USE_JTAG
@@ -81,7 +88,12 @@
   output                       c0_ddr4_act_n, \
   output [16:0]                c0_ddr4_adr, \
   output [1:0]                 c0_ddr4_ba, \
-  output [0:0]                 c0_ddr4_bg, \
+  `ifdef TARGET_U280 \
+    output [1:0]               c0_ddr4_bg, \
+    output                     c0_ddr4_parity, \
+  `else \
+    output [0:0]               c0_ddr4_bg, \
+  `endif \
   output [0:0]                 c0_ddr4_cke, \
   output [0:0]                 c0_ddr4_odt, \
   output [Ddr4CsNWidth-1:0]    c0_ddr4_cs_n, \

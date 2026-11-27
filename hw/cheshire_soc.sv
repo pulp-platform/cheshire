@@ -999,6 +999,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   );
 
   // Debug Transfer Module and JTAG interface
+  // In BSCAN mode, dmi_jtag_tap is replaced with dmi_bscane_tap
   dmi_jtag #(
     .IdcodeValue  ( Cfg.DbgIdCode )
   ) i_dbg_dmi_jtag (
