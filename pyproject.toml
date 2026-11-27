@@ -6,21 +6,28 @@
 name = "cheshire"
 version = "0.1.0"
 requires-python = ">=3.11"
+# Runtime dependencies of the generators invoked by `cheshire.mk`; these are
+# inherited by projects integrating Cheshire as a uv workspace member.
 dependencies = [
-    "requests",
-    "hjson",
-    "mako",
-    "pyyaml",
-    "tabulate",
-    "yapf",
+    "hjson",            # `regtool`, `ipgen`
+    "mako",             # `regtool`, `ipgen`
+    "pyyaml",           # `regtool`
+    "tabulate",         # Required by `reggen.gen_md`
+    "flatdict>=4.1.0",  # Required by iDMA's `mario` generator
+    "setuptools<81",    # Required by old `regtool`
+    "peakrdl>=1.5.0",
+    "peakrdl-rawheader>=0.2.3",
+]
+
+# Tooling used only when developing Cheshire itself (docs, linting). Dependency
+# groups are not carried along a dependency edge, so a project depending on
+# Cheshire as a uv workspace member inherits `dependencies` above, but not these.
+[dependency-groups]
+dev = [
     "mkdocs",
     "mkdocs-material",
     "markdown-grid-tables",
     "tclint==0.4.2",
-    "flatdict>=4.1.0",
-    "setuptools<81", # Required by old `regtool`
-    "peakrdl>=1.5.0",
-    "peakrdl-rawheader>=0.2.3",
 ]
 
 [tool.uv]
